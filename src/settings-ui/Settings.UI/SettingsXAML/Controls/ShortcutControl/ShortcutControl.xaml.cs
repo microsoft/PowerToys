@@ -49,11 +49,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-
             var newValue = (bool)(e?.NewValue ?? false);
 
-            var text = newValue ? resourceLoader.GetString("Activation_Shortcut_With_Disable_Description") : resourceLoader.GetString("Activation_Shortcut_Description");
+            var text = newValue ? LocalizerInstance.Instance.GetLocalizedString("Activation_Shortcut_With_Disable_Description") : LocalizerInstance.Instance.GetLocalizedString("Activation_Shortcut_Description");
             description.Text = text;
         }
 
@@ -116,7 +114,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             this.Unloaded += ShortcutControl_Unloaded;
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             if (App.GetSettingsWindow() != null)
             {
@@ -127,11 +124,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog = new ContentDialog
             {
                 XamlRoot = this.XamlRoot,
-                Title = resourceLoader.GetString("Activation_Shortcut_Title"),
+                Title = LocalizerInstance.Instance.GetLocalizedString("Activation_Shortcut_Title"),
                 Content = c,
-                PrimaryButtonText = resourceLoader.GetString("Activation_Shortcut_Save"),
-                SecondaryButtonText = resourceLoader.GetString("Activation_Shortcut_Reset"),
-                CloseButtonText = resourceLoader.GetString("Activation_Shortcut_Cancel"),
+                PrimaryButtonText = LocalizerInstance.Instance.GetLocalizedString("Activation_Shortcut_Save"),
+                SecondaryButtonText = LocalizerInstance.Instance.GetLocalizedString("Activation_Shortcut_Reset"),
+                CloseButtonText = LocalizerInstance.Instance.GetLocalizedString("Activation_Shortcut_Cancel"),
                 DefaultButton = ContentDialogButton.Primary,
             };
             shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
@@ -139,7 +136,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.RightTapped += ShortcutDialog_Disable;
             shortcutDialog.Opened += ShortcutDialog_Opened;
             shortcutDialog.Closing += ShortcutDialog_Closing;
-            AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
+            AutomationProperties.SetName(EditButton, LocalizerInstance.Instance.GetLocalizedString("Activation_Shortcut_Title"));
 
             OnAllowDisableChanged(this, null);
         }

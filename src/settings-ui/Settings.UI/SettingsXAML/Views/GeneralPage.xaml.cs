@@ -37,7 +37,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
 
             // Load string resources
-            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
             var settingsUtils = new SettingsUtils();
 
             Action stateUpdatingAction = () =>
@@ -69,8 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             ViewModel = new GeneralViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
-                loader.GetString("GeneralSettings_RunningAsAdminText"),
-                loader.GetString("GeneralSettings_RunningAsUserText"),
+                LocalizerInstance.Instance.GetLocalizedString("GeneralSettings_RunningAsAdminText"),
+                LocalizerInstance.Instance.GetLocalizedString("GeneralSettings_RunningAsUserText"),
                 ShellPage.IsElevated,
                 ShellPage.IsUserAnAdmin,
                 UpdateUIThemeMethod,
@@ -81,8 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 stateUpdatingAction,
                 hideBackupAndRestoreMessageArea,
                 doRefreshBackupRestoreStatus,
-                PickSingleFolderDialog,
-                loader);
+                PickSingleFolderDialog);
 
             DataContext = ViewModel;
 

@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
@@ -21,10 +22,10 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
             string targetValue = string.Empty;
             switch (value)
             {
-                case 0: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Centimeter"); break;
-                case 1: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Inch"); break;
-                case 2: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Percent"); break;
-                case 3: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Unit_Pixel"); break;
+                case 0: targetValue = LocalizerInstance.Instance.GetLocalizedString("ImageResizer_Unit_Centimeter"); break;
+                case 1: targetValue = LocalizerInstance.Instance.GetLocalizedString("ImageResizer_Unit_Inch"); break;
+                case 2: targetValue = LocalizerInstance.Instance.GetLocalizedString("ImageResizer_Unit_Percent"); break;
+                case 3: targetValue = LocalizerInstance.Instance.GetLocalizedString("ImageResizer_Unit_Pixel"); break;
             }
 
             if (toLower)

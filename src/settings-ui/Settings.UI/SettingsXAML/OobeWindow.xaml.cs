@@ -68,8 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             this.SizeChanged += OobeWindow_SizeChanged;
 
-            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            Title = loader.GetString("OobeWindow_Title");
+            Title = LocalizerInstance.Instance.GetLocalizedString("OobeWindow_Title");
 
             if (shellPage != null)
             {

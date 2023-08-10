@@ -51,8 +51,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
-            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            Title = LocalizerInstance.Instance.GetLocalizedString("SettingsWindow_Title");
+            string title = LocalizerInstance.Instance.GetLocalizedString("SettingsWindow_Title");
+            Title = title;
 
             // send IPC Message
             ShellPage.SetDefaultSndMessageCallback(msg =>

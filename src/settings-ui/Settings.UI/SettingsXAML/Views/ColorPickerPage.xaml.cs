@@ -22,8 +22,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ICommand UpdateCommand => new RelayCommand(Update);
 
-        private ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
-
         public ColorPickerPage()
         {
             var settingsUtils = new SettingsUtils();
@@ -89,10 +87,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ContentDialog dialog = new ContentDialog();
             dialog.XamlRoot = RootPage.XamlRoot;
             dialog.Title = color.Name;
-            dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
-            dialog.CloseButtonText = resourceLoader.GetString("No");
+            dialog.PrimaryButtonText = LocalizerInstance.Instance.GetLocalizedString("Yes");
+            dialog.CloseButtonText = LocalizerInstance.Instance.GetLocalizedString("No");
             dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+            dialog.Content = new TextBlock() { Text = LocalizerInstance.Instance.GetLocalizedString("Delete_Dialog_Description") };
             dialog.PrimaryButtonClick += (s, args) =>
             {
                 ViewModel.DeleteModel(color);
@@ -117,12 +115,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void NewFormatClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            ColorFormatDialog.Title = resourceLoader.GetString("AddCustomColorFormat");
+            ColorFormatDialog.Title = LocalizerInstance.Instance.GetLocalizedString("AddCustomColorFormat");
             ColorFormatModel newColorFormatModel = ViewModel.GetNewColorFormatModel();
             ColorFormatDialog.DataContext = newColorFormatModel;
             ColorFormatDialog.Tag = string.Empty;
 
-            ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatSave");
+            ColorFormatDialog.PrimaryButtonText = LocalizerInstance.Instance.GetLocalizedString("ColorFormatSave");
             ColorFormatDialog.PrimaryButtonCommand = AddCommand;
             await ColorFormatDialog.ShowAsync();
         }
@@ -144,11 +142,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             SettingsCard btn = sender as SettingsCard;
             ColorFormatModel colorFormatModel = btn.DataContext as ColorFormatModel;
-            ColorFormatDialog.Title = resourceLoader.GetString("EditCustomColorFormat");
+            ColorFormatDialog.Title = LocalizerInstance.Instance.GetLocalizedString("EditCustomColorFormat");
             ColorFormatDialog.DataContext = colorFormatModel;
             ColorFormatDialog.Tag = new KeyValuePair<string, string>(colorFormatModel.Name, colorFormatModel.Format);
 
-            ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatUpdate");
+            ColorFormatDialog.PrimaryButtonText = LocalizerInstance.Instance.GetLocalizedString("ColorFormatUpdate");
             ColorFormatDialog.PrimaryButtonCommand = UpdateCommand;
             await ColorFormatDialog.ShowAsync();
         }

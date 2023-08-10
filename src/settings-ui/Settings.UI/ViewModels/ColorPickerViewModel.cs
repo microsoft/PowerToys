@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -391,8 +392,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal ColorFormatModel GetNewColorFormatModel()
         {
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            string defaultName = resourceLoader.GetString("CustomColorFormatDefaultName");
+            string defaultName = LocalizerInstance.Instance.GetLocalizedString("CustomColorFormatDefaultName");
             ColorFormatModel newColorFormatModel = new ColorFormatModel();
             newColorFormatModel.Name = defaultName;
             int extensionNumber = 1;

@@ -2249,22 +2249,22 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Download &amp; install</value>
   </data>
   <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
-    <value>Fills</value>
+    <value>tele</value>
   </data>
   <data name="ImageResizer_Fit_Fit_ThirdPersonSingular" xml:space="preserve">
-    <value>Fits within</value>
+    <value>tabi</value>
   </data>
   <data name="ImageResizer_Fit_Stretch_ThirdPersonSingular" xml:space="preserve">
-    <value>Stretches to</value>
+    <value>labi</value>
   </data>
   <data name="ImageResizer_Unit_Centimeter" xml:space="preserve">
-    <value>Centimeters</value>
+    <value>babi</value>
   </data>
   <data name="ImageResizer_Unit_Inch" xml:space="preserve">
-    <value>Inches</value>
+    <value>bubi</value>
   </data>
   <data name="ImageResizer_Unit_Percent" xml:space="preserve">
-    <value>Percent</value>
+    <value>tubi</value>
   </data>
   <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
     <value>Pixels</value>

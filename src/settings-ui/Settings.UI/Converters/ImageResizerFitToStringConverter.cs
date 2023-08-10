@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
@@ -21,9 +22,9 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
             string targetValue = string.Empty;
             switch (value)
             {
-                case 0: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Fill_ThirdPersonSingular"); break;
-                case 1: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Fit_ThirdPersonSingular"); break;
-                case 2: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Stretch_ThirdPersonSingular"); break;
+                case 0: targetValue = LocalizerInstance.Instance.GetLocalizedString("ImageResizer_Fit_Fill_ThirdPersonSingular"); break;
+                case 1: targetValue = LocalizerInstance.Instance.GetLocalizedString("ImageResizer_Fit_Fit_ThirdPersonSingular"); break;
+                case 2: targetValue = LocalizerInstance.Instance.GetLocalizedString("ImageResizer_Fit_Stretch_ThirdPersonSingular"); break;
             }
 
             if (toLower)

@@ -21,10 +21,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             Func<string, string> loader = (string name) =>
             {
-                return resourceLoader.GetString(name);
+                return LocalizerInstance.Instance.GetLocalizedString(name);
             };
 
             ViewModel = new ImageResizerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, loader);
@@ -38,15 +37,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (deleteRowButton != null)
             {
                 ImageSize x = (ImageSize)deleteRowButton.DataContext;
-                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
                 ContentDialog dialog = new ContentDialog();
                 dialog.XamlRoot = RootPage.XamlRoot;
                 dialog.Title = x.Name;
-                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
-                dialog.CloseButtonText = resourceLoader.GetString("No");
+                dialog.PrimaryButtonText = LocalizerInstance.Instance.GetLocalizedString("Yes");
+                dialog.CloseButtonText = LocalizerInstance.Instance.GetLocalizedString("No");
                 dialog.DefaultButton = ContentDialogButton.Primary;
-                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+                dialog.Content = new TextBlock() { Text = LocalizerInstance.Instance.GetLocalizedString("Delete_Dialog_Description") };
                 dialog.PrimaryButtonClick += (s, args) =>
                 {
                     // Using InvariantCulture since this is internal and expected to be numerical
@@ -68,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             try
             {
-                ViewModel.AddRow(Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_DefaultSize_NewSizePrefix"));
+                ViewModel.AddRow(LocalizerInstance.Instance.GetLocalizedString("ImageResizer_DefaultSize_NewSizePrefix"));
             }
             catch (Exception ex)
             {

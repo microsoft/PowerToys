@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -32,13 +33,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to hangle outgoing IPC message.
             SendIPCMessage = ipcMSGCallBackFunc;
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
             if (GPOWrapper.GetConfiguredColorPickerEnabledValue() != GpoRuleConfigured.Disabled)
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("ColorPicker/ModuleTitle"),
+                    Label = LocalizerInstance.Instance.GetLocalizedString("ColorPicker/ModuleTitle"),
                     Tag = "ColorPicker",
                     Visible = generalSettingsConfig.Enabled.ColorPicker,
                     ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
@@ -50,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("FZEditorString"),
+                    Label = LocalizerInstance.Instance.GetLocalizedString("FZEditorString"),
                     Tag = "FancyZones",
                     Visible = generalSettingsConfig.Enabled.FancyZones,
                     ToolTip = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
@@ -62,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("Hosts/ModuleTitle"),
+                    Label = LocalizerInstance.Instance.GetLocalizedString("Hosts/ModuleTitle"),
                     Tag = "Hosts",
                     Visible = generalSettingsConfig.Enabled.Hosts,
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsHosts.png",
@@ -73,7 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("PowerLauncher/ModuleTitle"),
+                    Label = LocalizerInstance.Instance.GetLocalizedString("PowerLauncher/ModuleTitle"),
                     Tag = "PowerLauncher",
                     Visible = generalSettingsConfig.Enabled.PowerLauncher,
                     ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
@@ -85,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("TextExtractor/ModuleTitle"),
+                    Label = LocalizerInstance.Instance.GetLocalizedString("TextExtractor/ModuleTitle"),
                     Tag = "PowerOCR",
                     Visible = generalSettingsConfig.Enabled.PowerOCR,
                     ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
@@ -97,7 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("RegistryPreview/ModuleTitle"),
+                    Label = LocalizerInstance.Instance.GetLocalizedString("RegistryPreview/ModuleTitle"),
                     Tag = "RegistryPreview",
                     Visible = generalSettingsConfig.Enabled.RegistryPreview,
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png",
@@ -108,7 +109,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("MeasureTool/ModuleTitle"),
+                    Label = LocalizerInstance.Instance.GetLocalizedString("MeasureTool/ModuleTitle"),
                     Tag = "MeasureTool",
                     Visible = generalSettingsConfig.Enabled.MeasureTool,
                     ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
@@ -120,7 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
-                    Label = resourceLoader.GetString("ShortcutGuide/ModuleTitle"),
+                    Label = LocalizerInstance.Instance.GetLocalizedString("ShortcutGuide/ModuleTitle"),
                     Tag = "ShortcutGuide",
                     Visible = generalSettingsConfig.Enabled.ShortcutGuide,
                     ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),

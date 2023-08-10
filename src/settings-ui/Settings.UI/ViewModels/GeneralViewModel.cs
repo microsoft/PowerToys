@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Documents;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -74,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, object resourceLoader = null)
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -86,7 +87,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
             DoBackupAndRestoreDryRun = doBackupAndRestoreDryRun;
             PickSingleFolderDialog = pickSingleFolderDialog;
-            ResourceLoader = resourceLoader;
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
             if (settingsRepository == null)
@@ -190,7 +190,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (var item in langTagsAndIds)
             {
-                Languages.Add(new LanguageModel { Tag = item.Key, ResourceID = item.Value, Language = GetResourceString(item.Value) });
+                Languages.Add(new LanguageModel { Tag = item.Key, ResourceID = item.Value, Language = LocalizerInstance.Instance.GetLocalizedString(item.Value) });
 
                 if (item.Key.Equals(lang, StringComparison.Ordinal))
                 {
@@ -494,23 +494,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             else
                             {
                                 Logger.LogError("Failed to parse time from backup");
-                                return GetResourceString("General_SettingsBackupAndRestore_FailedToParseTime");
+                                return LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_FailedToParseTime");
                             }
                         }
                         else
                         {
-                            return GetResourceString("General_SettingsBackupAndRestore_UnknownBackupTime");
+                            return LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_UnknownBackupTime");
                         }
                     }
                     else
                     {
-                        return GetResourceString("General_SettingsBackupAndRestore_NoBackupFound");
+                        return LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_NoBackupFound");
                     }
                 }
                 catch (Exception e)
                 {
                     Logger.LogError("Error getting LastSettingsBackupDate", e);
-                    return GetResourceString("General_SettingsBackupAndRestore_UnknownBackupTime");
+                    return LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_UnknownBackupTime");
                 }
             }
         }
@@ -528,7 +528,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     if (!results.LastRan.HasValue)
                     {
                         // not ran since started.
-                        return GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsNoChecked"); // "Current Settings Unknown";
+                        return LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_CurrentSettingsNoChecked"); // "Current Settings Unknown";
                     }
                     else
                     {
@@ -537,12 +537,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             if (results.LastBackupExists)
                             {
                                 // if true, it means a backup would have been made
-                                resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
+                                resultText = LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_CurrentSettingsDiffer"); // "Current Settings Differ";
                             }
                             else
                             {
                                 // would have done the backup, but there also was not an existing one there.
-                                resultText = GetResourceString("General_SettingsBackupAndRestore_NoBackupFound");
+                                resultText = LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_NoBackupFound");
                             }
                         }
                         else
@@ -550,16 +550,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             if (results.HadError)
                             {
                                 // if false and error we don't really know
-                                resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsUnknown"); // "Current Settings Unknown";
+                                resultText = LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_CurrentSettingsUnknown"); // "Current Settings Unknown";
                             }
                             else
                             {
                                 // if false, it means a backup would not have been needed/made
-                                resultText = GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsMatch"); // "Current Settings Match";
+                                resultText = LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_CurrentSettingsMatch"); // "Current Settings Match";
                             }
                         }
 
-                        return $"{resultText} {GetResourceString("General_SettingsBackupAndRestore_CurrentSettingsStatusAt")} {results.LastRan.Value.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)}";
+                        return $"{resultText} {LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_CurrentSettingsStatusAt")} {results.LastRan.Value.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)}";
                     }
                 }
                 catch (Exception e)
@@ -583,7 +583,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             if (manifest["BackupSource"].ToString().Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase))
                             {
-                                return GetResourceString("General_SettingsBackupAndRestore_ThisMachine");
+                                return LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_ThisMachine");
                             }
                             else
                             {
@@ -592,18 +592,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
                         else
                         {
-                            return GetResourceString("General_SettingsBackupAndRestore_UnknownBackupSource");
+                            return LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_UnknownBackupSource");
                         }
                     }
                     else
                     {
-                        return GetResourceString("General_SettingsBackupAndRestore_NoBackupFound");
+                        return LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_NoBackupFound");
                     }
                 }
                 catch (Exception e)
                 {
                     Logger.LogError("Error getting LastSettingsBackupSource", e);
-                    return GetResourceString("General_SettingsBackupAndRestore_UnknownBackupSource");
+                    return LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_UnknownBackupSource");
                 }
             }
         }
@@ -615,7 +615,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 try
                 {
                     var fileName = settingsBackupAndRestoreUtils.GetLatestBackupFileName();
-                    return !string.IsNullOrEmpty(fileName) ? fileName : GetResourceString("General_SettingsBackupAndRestore_NoBackupFound");
+                    return !string.IsNullOrEmpty(fileName) ? fileName : LocalizerInstance.Instance.GetLocalizedString("General_SettingsBackupAndRestore_NoBackupFound");
                 }
                 catch (Exception e)
                 {
@@ -849,7 +849,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _settingsBackupRestoreMessageVisible = true;
 
-                _settingsBackupMessage = GetResourceString(results.Message);
+                _settingsBackupMessage = LocalizerInstance.Instance.GetLocalizedString(results.Message);
 
                 NotifyAllBackupAndRestoreProperties();
 
@@ -881,7 +881,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsBackupRestoreMessageVisible = true;
             _backupRestoreMessageSeverity = results.Severity;
-            _settingsBackupMessage = GetResourceString(results.Message) + results.OptionalMessage;
+            _settingsBackupMessage = LocalizerInstance.Instance.GetLocalizedString(results.Message) + results.OptionalMessage;
 
             // now we do a dry run to get the results for "setting match"
             var settingsUtils = new SettingsUtils();
@@ -921,36 +921,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
 
             Process.Start(new ProcessStartInfo(Helper.GetPowerToysInstallationFolder() + "\\PowerToys.exe") { Arguments = "powertoys://update_now/" });
-        }
-
-        /// <summary>
-        /// Class <c>GetResourceString</c> gets a localized text.
-        /// </summary>
-        /// <remarks>
-        /// To do: see if there is a betting way to do this, there should be. It does allow us to return missing localization in a way that makes it obvious they were missed.
-        /// </remarks>
-        public string GetResourceString(string resource)
-        {
-            if (ResourceLoader != null)
-            {
-                var type = ResourceLoader.GetType();
-                MethodInfo methodInfo = type.GetMethod("GetString");
-                object classInstance = Activator.CreateInstance(type, null);
-                object[] parametersArray = new object[] { resource };
-                var result = (string)methodInfo.Invoke(ResourceLoader, parametersArray);
-                if (string.IsNullOrEmpty(result))
-                {
-                    return resource.ToUpperInvariant() + "!!!";
-                }
-                else
-                {
-                    return result;
-                }
-            }
-            else
-            {
-                return resource;
-            }
         }
 
         public void RequestUpdateCheckedDate()

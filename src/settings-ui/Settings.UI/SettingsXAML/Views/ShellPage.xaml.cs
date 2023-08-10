@@ -272,11 +272,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
             {
-                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
-                    loader.GetString("Shell_NavigationMenu_Announce_Open"),
+                    LocalizerInstance.Instance.GetLocalizedString("Shell_NavigationMenu_Announce_Open"),
                     "navigationMenuPaneOpened");
             }
         }
@@ -297,11 +296,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuClosed))
             {
-                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
-                    loader.GetString("Shell_NavigationMenu_Announce_Collapse"),
+                    LocalizerInstance.Instance.GetLocalizedString("Shell_NavigationMenu_Announce_Collapse"),
                     "navigationMenuPaneClosed");
             }
         }
