@@ -192,11 +192,6 @@ namespace Peek.UI.Views
 
         private void TitleBarRootContainer_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            UpdateDragRegion();
-        }
-
-        private void UpdateDragRegion()
-        {
             if (MainWindow == null)
             {
                 return;
@@ -210,15 +205,15 @@ namespace Peek.UI.Views
                 var dragRectsList = new List<RectInt32>();
 
                 RectInt32 dragRectangleLeft;
-                dragRectangleLeft.X = (int)((appWindow.TitleBar.RightInset + IconColumn.ActualWidth + TitleColumn.ActualWidth) * scale);
+                dragRectangleLeft.X = (int)(appWindow.TitleBar.LeftInset * scale);
                 dragRectangleLeft.Y = 1;
-                dragRectangleLeft.Width = (int)(LeftDragColumn.ActualWidth * scale);
+                dragRectangleLeft.Width = (int)((IconAndTitleColumn.ActualWidth + LeftDragColumn.ActualWidth) * scale);
                 dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
                 RectInt32 dragRectangleRight;
-                dragRectangleRight.X = (int)((appWindow.TitleBar.LeftInset + IconColumn.ActualWidth + TitleColumn.ActualWidth + LeftDragColumn.ActualWidth + ButtonsColumn.ActualWidth) * scale);
+                dragRectangleRight.X = (int)((appWindow.TitleBar.LeftInset + IconAndTitleColumn.ActualWidth + LeftDragColumn.ActualWidth + ButtonsColumn.ActualWidth) * scale);
                 dragRectangleRight.Y = 1;
-                dragRectangleRight.Width = (int)(SystemRightPaddingColumn.ActualWidth * scale);
+                dragRectangleRight.Width = (int)(RightDragColumn.ActualWidth * scale);
                 dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
                 dragRectsList.Add(dragRectangleLeft);
