@@ -15,6 +15,7 @@ edwinzap
 Essey
 Garside
 Gershaft
+Guo
 hallatore
 Harmath
 Hemmerlein
@@ -23,9 +24,11 @@ Jaswal
 jefflord
 Kamra
 Karthick
+kevinguo
 Krigun
 Luecking
 Mahalingam
+Mikhayelyan
 mshtang
 Myrvold
 naveensrinivasan
@@ -33,6 +36,7 @@ nVidia
 Ponten
 Pooja
 robmen
+robmikh
 Schoen
 skycommand
 snickler

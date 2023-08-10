@@ -107,6 +107,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}" />
 
                 <NavigationViewItem
+                    x:Uid="Shell_CropAndLock"
+                    helpers:NavHelper.NavigateTo="views:CropAndLockPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCropAndLock.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_FancyZones"
                     helpers:NavHelper.NavigateTo="views:FancyZonesPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFancyZones.png}" />
