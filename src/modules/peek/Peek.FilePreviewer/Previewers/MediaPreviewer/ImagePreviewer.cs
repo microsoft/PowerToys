@@ -4,10 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GcodeFileFormat;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -85,6 +87,14 @@ namespace Peek.FilePreviewer.Previewers
             if (IsSvg(Item))
             {
                 var size = await Task.Run(Item.GetSvgSize);
+                if (size != null)
+                {
+                    ImageSize = size.Value;
+                }
+            }
+            else if (IsGcode(Item))
+            {
+                var size = await Task.Run(Item.GetGcodeSize);
                 if (size != null)
                 {
                     ImageSize = size.Value;
@@ -256,6 +266,26 @@ namespace Peek.FilePreviewer.Previewers
 
                         Preview = source;
                     }
+                    else if (IsGcode(Item))
+                    {
+                        using var reader = new StreamReader(stream);
+
+                        var gcodeThumbnail = GcodeHelper.GetBestThumbnail(reader);
+
+                        var bitmap = gcodeThumbnail?.GetBitmap();
+
+                        if (bitmap != null)
+                        {
+                            using var memory = new MemoryStream();
+
+                            bitmap.Save(memory, ImageFormat.Png);
+                            memory.Position = 0;
+
+                            var bitmapImage = new BitmapImage();
+                            await bitmapImage.SetSourceAsync(memory.AsRandomAccessStream());
+                            Preview = bitmapImage;
+                        }
+                    }
                     else
                     {
                         var bitmap = new BitmapImage();
@@ -283,6 +313,11 @@ namespace Peek.FilePreviewer.Previewers
         private bool IsSvg(IFileSystemItem item)
         {
             return item.Extension == ".svg";
+        }
+
+        private bool IsGcode(IFileSystemItem item)
+        {
+            return item.Extension == ".gcode";
         }
 
         private void Clear()
@@ -366,6 +401,8 @@ namespace Peek.FilePreviewer.Previewers
                 ".cr3",
 
                 ".svg",
+
+                ".gcode",
         };
     }
 }

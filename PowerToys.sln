@@ -536,6 +536,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CropAndLock", "src\modules\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CropAndLockModuleInterface", "src\modules\CropAndLock\CropAndLockModuleInterface\CropAndLockModuleInterface.vcxproj", "{3157FA75-86CF-4EE2-8F62-C43F776493C6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcodeFileFormat", "src\common\GcodeFileFormat\GcodeFileFormat.csproj", "{B3275DF4-F189-4328-ABD4-E3A4585F70B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2306,6 +2308,18 @@ Global
 		{3157FA75-86CF-4EE2-8F62-C43F776493C6}.Release|x64.Build.0 = Release|x64
 		{3157FA75-86CF-4EE2-8F62-C43F776493C6}.Release|x86.ActiveCfg = Release|x64
 		{3157FA75-86CF-4EE2-8F62-C43F776493C6}.Release|x86.Build.0 = Release|x64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Debug|ARM64.Build.0 = Debug|ARM64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Debug|x64.ActiveCfg = Debug|x64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Debug|x64.Build.0 = Debug|x64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Debug|x86.ActiveCfg = Debug|x64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Debug|x86.Build.0 = Debug|x64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Release|ARM64.ActiveCfg = Release|ARM64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Release|ARM64.Build.0 = Release|ARM64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Release|x64.ActiveCfg = Release|x64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Release|x64.Build.0 = Release|x64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Release|x86.ActiveCfg = Release|x64
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2500,6 +2514,7 @@ Global
 		{3B227528-4BA6-4CAF-B44A-A10C78A64849} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{F5E1146E-B7B3-4E11-85FD-270A500BD78C} = {3B227528-4BA6-4CAF-B44A-A10C78A64849}
 		{3157FA75-86CF-4EE2-8F62-C43F776493C6} = {3B227528-4BA6-4CAF-B44A-A10C78A64849}
+		{B3275DF4-F189-4328-ABD4-E3A4585F70B1} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

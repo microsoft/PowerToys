@@ -2,28 +2,24 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using Common.ComInterlop;
 using Microsoft.PowerToys.STATestExtension;
 using Microsoft.PowerToys.ThumbnailHandler.Gcode;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace GcodeThumbnailProviderUnitTests
 {
     [STATestClass]
     public class GcodeThumbnailProviderTests
     {
-        [TestMethod]
-        public void GetThumbnailValidStreamGcode()
+        [DataTestMethod]
+        [DataRow("HelperFiles/sample.gcode")]
+        [DataRow("HelperFiles/sample_JPG.gcode")]
+        [DataRow("HelperFiles/sample_QOI.gcode")]
+        public void GetThumbnailValidStreamGcode(string filePath)
         {
             // Act
-            var filePath = "HelperFiles/sample.gcode";
-
             GcodeThumbnailProvider provider = new GcodeThumbnailProvider(filePath);
 
             Bitmap bitmap = provider.GetThumbnail(256);

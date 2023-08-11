@@ -13,6 +13,7 @@
                 "os-detection.dll",
                 "PowerToys.exe",
                 "PowerToys.FilePreviewCommon.dll",
+                "PowerToys.GcodeFileFormat.dll",
                 "PowerToys.Interop.dll",
                 "BugReportTool\\PowerToys.BugReportTool.exe",
                 "WebcamReportTool\\PowerToys.WebcamReportTool.exe",

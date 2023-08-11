@@ -317,6 +317,7 @@ SOFTWARE.
 - MSTest.TestFramework 3.1.1
 - NLog.Extensions.Logging 5.0.4
 - NLog.Schema 5.0.4
+- QOI.Core 2.0.0
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.33.0
 - StreamJsonRpc 2.14.24
