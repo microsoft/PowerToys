@@ -266,6 +266,7 @@
                 "Vanara.PInvoke.User32.dll",
                 "WinUI3Apps\\clrcompression.dll",
                 "WinUI3Apps\\Microsoft.Graphics.Canvas.Interop.dll",
+                "WinUI3Apps\\WinUI3Localizer.dll",
                 "Microsoft.Web.WebView2.Core.dll",
                 "Microsoft.Web.WebView2.WinForms.dll",
                 "Microsoft.Web.WebView2.Wpf.dll",
