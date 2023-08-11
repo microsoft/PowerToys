@@ -128,7 +128,7 @@
     <Exec Command="dir /s &quot;$(ProjectDir)Strings\&quot;" />
 	  <Exec Command="if not exist &quot;$(SolutionDir)\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings\&quot; mkdir &quot;$(SolutionDir)\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings\&quot;" />
 	  <Exec Command="dir /s &quot;$(SolutionDir)\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings\&quot;" />
-	  <Exec Command="xcopy &quot;$(ProjectDir)Strings\&quot;  &quot;$(SolutionDir)\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings\&quot; /F /R /Y /I /S /C" />
+	  <Exec Command="xcopy &quot;$(ProjectDir)Strings&quot;  &quot;$(SolutionDir)\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings&quot; /F /R /Y /I /S /C" />
   </Target>
 	
 </Project>
