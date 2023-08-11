@@ -126,7 +126,8 @@
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="dir /s &quot;$(ProjectDir)Strings\&quot;" />
-    <Exec Command="xcopy &quot;$(ProjectDir)Strings\&quot;  &quot;$(ProjectDir)$(OutDir)Strings\Settings\&quot; /F /R /Y /I /S" />
+	  <Exec Command="if not exist &quot;$(ProjectDir)$(OutDir)Strings\Settings\&quot; mkdir &quot;$(ProjectDir)$(OutDir)Strings\Settings\&quot;" />
+	  <Exec Command="xcopy &quot;$(ProjectDir)Strings\&quot;  &quot;$(ProjectDir)$(OutDir)Strings\Settings\&quot; /F /R /Y /I /S" />
   </Target>
 	
 </Project>
