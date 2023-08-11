@@ -17,10 +17,10 @@
 #include <string>
 #include <filesystem>
 
-#include <common/logger/logger.h>
-#include <common/utils/winapi_error.h>
-#include <common/utils/process_path.h>
-#include <common/utils/processApi.h>
+#include "C:\Users\gokce\source\repos\jaime\PowerToys\src\common\logger\logger.h"
+#include "C:\Users\gokce\source\repos\jaime\PowerToys\src\common\utils\winapi_error.h"
+#include "C:\Users\gokce\source\repos\jaime\PowerToys\src\common\utils\process_path.h"
+#include "C:\Users\gokce\source\repos\jaime\PowerToys\src\common\utils\processApi.h"
 
 namespace
 {

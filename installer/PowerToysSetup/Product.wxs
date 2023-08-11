@@ -61,6 +61,7 @@
       <ComponentGroupRef Id="FileExplorerPreviewComponentGroup" />
       <ComponentGroupRef Id="FileLocksmithComponentGroup" />
       <ComponentGroupRef Id="HostsComponentGroup" />
+	  <ComponentGroupRef Id="HopperComponentGroup" />
       <ComponentGroupRef Id="ImageResizerComponentGroup" />
       <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
       <ComponentGroupRef Id="PeekComponentGroup" />

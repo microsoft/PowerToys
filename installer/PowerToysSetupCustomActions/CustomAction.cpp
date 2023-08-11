@@ -1016,7 +1016,7 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
     try
     {
         // Packages to unregister
-        const std::vector<std::wstring> packagesToRemoveDisplayName{ { L"PowerRenameContextMenu" }, { L"ImageResizerContextMenu" } };
+        const std::vector<std::wstring> packagesToRemoveDisplayName{ { L"PowerRenameContextMenu" }, { L"ImageResizerContextMenu" }, { L"Hopper.ContextMenu" } };
 
         PackageManager packageManager;
 
@@ -1091,13 +1091,14 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 27> processesToTerminate = {
+    std::array<std::wstring_view, 28> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.Awake.exe",
         L"PowerToys.FancyZones.exe",
         L"PowerToys.FancyZonesEditor.exe",
         L"PowerToys.FileLocksmithUI.exe",
+        L"PowerToys.Hopper.exe",
         L"PowerToys.MouseJumpUI.exe",
         L"PowerToys.ColorPickerUI.exe",
         L"PowerToys.AlwaysOnTop.exe",

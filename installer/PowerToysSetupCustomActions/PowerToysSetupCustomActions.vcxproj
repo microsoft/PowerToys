@@ -55,6 +55,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs.bk""""
+	  call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Hopper.wxs"" ""$(ProjectDir)..\PowerToysSetup\Hopper.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs"" ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs.bk""""
