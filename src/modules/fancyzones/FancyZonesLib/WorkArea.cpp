@@ -135,7 +135,7 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
         FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
     }
 
-    return true;
+    return FancyZonesWindowProperties::StampZoneIndexProperty(window, zones);
 }
 
 bool WorkArea::Unsnap(HWND window)
