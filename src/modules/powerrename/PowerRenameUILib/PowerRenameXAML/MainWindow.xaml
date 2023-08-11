@@ -391,9 +391,9 @@
                         HorizontalAlignment="Stretch"
                         AutomationProperties.LabeledBy="{Binding ElementName=ApplyToLabel}"
                         SelectedIndex="0">
-                        <x:String>Filename + extension</x:String>
-                        <x:String>Filename only</x:String>
-                        <x:String>Extension only</x:String>
+                        <ComboBoxItem x:Uid="RenameParts_FilenameAndExtension" />
+                        <ComboBoxItem x:Uid="RenameParts_FilenameOnly" />
+                        <ComboBoxItem x:Uid="RenameParts_ExtensionOnly" />
                     </ComboBox>
                     <AppBarSeparator Margin="5,0,5,0" />
                     <ToggleButton
