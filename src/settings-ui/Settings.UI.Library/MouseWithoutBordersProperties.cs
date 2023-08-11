@@ -23,6 +23,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
     public class MouseWithoutBordersProperties : ICloneable
     {
+        public static HotkeySettings DefaultHotKeySwitch2AllPC => new HotkeySettings();
+
+        public static HotkeySettings DefaultHotKeyLockMachine => new HotkeySettings(true, true, true, false, 0x4C);
+
+        public static HotkeySettings DefaultHotKeyReconnect => new HotkeySettings(true, true, true, false, 0x52);
+
+        public static HotkeySettings DefaultHotKeyToggleEasyMouse => new HotkeySettings(true, true, true, false, 0x45);
+
         public StringProperty SecurityKey { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -86,13 +94,29 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public IntProperty HotKeySwitchMachine { get; set; }
 
+        [ObsoleteAttribute("Use ToggleEasyMouseShortcut instead", false)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public IntProperty HotKeyToggleEasyMouse { get; set; }
 
+        [ObsoleteAttribute("Use LockMachineShortcut instead", false)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public IntProperty HotKeyLockMachine { get; set; }
 
+        [ObsoleteAttribute("Use ReconnectShortcut instead", false)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public IntProperty HotKeyReconnect { get; set; }
 
+        [ObsoleteAttribute("Use Switch2AllPCShortcut instead", false)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public IntProperty HotKeySwitch2AllPC { get; set; }
+
+        public HotkeySettings ToggleEasyMouseShortcut { get; set; }
+
+        public HotkeySettings LockMachineShortcut { get; set; }
+
+        public HotkeySettings ReconnectShortcut { get; set; }
+
+        public HotkeySettings Switch2AllPCShortcut { get; set; }
 
         public IntProperty TCPPort { get; set; }
 
@@ -127,10 +151,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             UseService = false;
 
             HotKeySwitchMachine = new IntProperty(0x70); // VK.F1
-            HotKeyToggleEasyMouse = new IntProperty(0x45); // VK.E
-            HotKeyLockMachine = new IntProperty(0x4C); // VK.L
-            HotKeyReconnect = new IntProperty(0x52); // VK.R
-            HotKeySwitch2AllPC = new IntProperty(0); // Disabled
+            ToggleEasyMouseShortcut = DefaultHotKeyToggleEasyMouse;
+            LockMachineShortcut = DefaultHotKeyLockMachine;
+            ReconnectShortcut = DefaultHotKeyReconnect;
+            Switch2AllPCShortcut = DefaultHotKeySwitch2AllPC;
 
             // These are internal, i.e. cannot be edited directly from UI
             MachinePool = ":,:,:,:";

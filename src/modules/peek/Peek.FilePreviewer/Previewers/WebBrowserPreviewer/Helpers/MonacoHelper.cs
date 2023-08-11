@@ -24,9 +24,12 @@ namespace Peek.FilePreviewer.Previewers
                 JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
                 foreach (JsonElement e in languageList.EnumerateArray())
             {
-                for (int j = 0; j < e.GetProperty("extensions").GetArrayLength(); j++)
+                if (e.TryGetProperty("extensions", out var extensions))
                 {
-                        set.Add(e.GetProperty("extensions")[j].ToString());
+                    for (int j = 0; j < extensions.GetArrayLength(); j++)
+                    {
+                            set.Add(extensions[j].ToString());
+                        }
                     }
                 }
             }

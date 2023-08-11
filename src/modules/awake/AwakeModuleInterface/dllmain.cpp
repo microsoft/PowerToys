@@ -59,7 +59,7 @@ private:
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"--use-pt-config --pid " + std::to_wstring(powertoys_pid);
-        std::wstring application_path = L"modules\\Awake\\PowerToys.Awake.exe";
+        std::wstring application_path = L"PowerToys.Awake.exe";
         std::wstring full_command_path = application_path + L" " + executable_args.data();
         Logger::trace(L"PowerToys Awake launching with parameters: " + executable_args);
 

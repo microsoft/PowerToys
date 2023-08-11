@@ -7,7 +7,6 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Awake</RootNamespace>
     <ProjectName>AwakeModuleInterface</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <TargetName>PowerToys.AwakeModuleInterface</TargetName>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
@@ -25,7 +24,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\Awake\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

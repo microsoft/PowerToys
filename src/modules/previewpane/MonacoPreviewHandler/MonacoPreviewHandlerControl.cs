@@ -77,6 +77,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// </summary>
         private string _base64FileCode;
 
+        public MonacoPreviewHandlerControl()
+        {
+            this.SetBackground();
+        }
+
         [STAThread]
         public override void DoPreview<T>(T dataSource)
         {
@@ -95,14 +100,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
             base.DoPreview(dataSource);
 
-            // Sets background color
-            SetBackground();
-
             // Starts loading screen
             InitializeLoadingScreen();
 
             // New webview2 element
             _webView = new WebView2();
+            _webView.DefaultBackgroundColor = Color.Transparent;
 
             // Checks if dataSource is a string
             if (!(dataSource is string filePath))
@@ -146,7 +149,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             {
                                 await _webView.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
 
-                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(FilePreviewCommon.MonacoHelper.VirtualHostName, Settings.AssemblyDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                                _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(FilePreviewCommon.MonacoHelper.VirtualHostName, FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
 
                                 Logger.LogInfo("Navigates to string of HTML file");
 

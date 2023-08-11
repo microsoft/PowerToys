@@ -32,7 +32,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <TargetName>PowerToys.PowerRenameContextMenu</TargetName>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerRename\</OutDir>
+    <!-- Needs a different int dir to avoid conflicts in msix creation. -->
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
@@ -51,7 +53,7 @@
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>del $(OutDir)*.msix /q
+      <Command>del $(OutDir)\PowerRenameContextMenuPackage.msix /q
 MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -76,7 +78,7 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Comma
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>del $(OutDir)*.msix /q
+      <Command>del $(OutDir)\PowerRenameContextMenuPackage.msix /q
 MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -98,10 +100,7 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Comma
     <ResourceCompile Include="PowerRenameContextMenu.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="PowerRenameUI.ico" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets\PowerRename\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">

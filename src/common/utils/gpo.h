@@ -22,6 +22,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP = L"ConfigureEnabledUtilityAlwaysOnTop";
     const std::wstring POLICY_CONFIGURE_ENABLED_AWAKE = L"ConfigureEnabledUtilityAwake";
     const std::wstring POLICY_CONFIGURE_ENABLED_COLOR_PICKER = L"ConfigureEnabledUtilityColorPicker";
+    const std::wstring POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK = L"ConfigureEnabledUtilityCropAndLock";
     const std::wstring POLICY_CONFIGURE_ENABLED_FANCYZONES = L"ConfigureEnabledUtilityFancyZones";
     const std::wstring POLICY_CONFIGURE_ENABLED_FILE_LOCKSMITH = L"ConfigureEnabledUtilityFileLocksmith";
     const std::wstring POLICY_CONFIGURE_ENABLED_SVG_PREVIEW = L"ConfigureEnabledUtilityFileExplorerSVGPreview";
@@ -127,6 +128,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredColorPickerEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_COLOR_PICKER);
+    }
+
+    inline gpo_rule_configured_t getConfiguredCropAndLockEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK);
     }
 
     inline gpo_rule_configured_t getConfiguredFancyZonesEnabledValue()

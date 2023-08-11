@@ -534,8 +534,7 @@ void toggleProxyCamRegistration(const bool enable)
         return;
     }
 
-    auto vcmRoot = fs::path{ get_module_folderpath() } / "modules";
-    vcmRoot /= "VideoConference";
+    auto vcmRoot = fs::path{ get_module_folderpath() };
 #if defined(_M_ARM64)
     std::array<fs::path, 2> proxyFilters = { vcmRoot / "PowerToys.VideoConferenceProxyFilter_ARM64.dll", vcmRoot / "PowerToys.VideoConferenceProxyFilter_x86.dll" };
 #else
@@ -687,7 +686,7 @@ void VideoConferenceModule::sendOverlayImageUpdate()
     PathRemoveFileSpecW(powertoysDirectory);
 
     std::wstring blankImagePath(powertoysDirectory);
-    blankImagePath += L"\\modules\\VideoConference\\black.bmp";
+    blankImagePath += L"\\Assets\\VCM\\black.bmp";
 
     _imageOverlayChannel = SerializedSharedMemory::create_readonly(CameraOverlayImageChannel::endpoint(),
                                                                    settings.imageOverlayPath != L"" ? settings.imageOverlayPath : blankImagePath);

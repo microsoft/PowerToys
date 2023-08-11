@@ -207,7 +207,7 @@ namespace Awake
                         }
                     }).Start();
 
-                    TrayHelper.InitializeTray(Core.Constants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images/awake.ico")), _exitSignal);
+                    TrayHelper.InitializeTray(Core.Constants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")), _exitSignal);
 
                     string? settingsPath = _settingsUtils!.GetSettingsFilePath(Core.Constants.AppName);
                     Logger.LogInfo($"Reading configuration file: {settingsPath}");

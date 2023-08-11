@@ -438,6 +438,8 @@ namespace RegistryPreview
                                 registryValue.Type = "ERROR";
                             }
 
+                            registryValue.Value = value;
+
                             break;
                         case "REG_QWORD":
                             if (value.Length <= 0)
@@ -800,7 +802,7 @@ namespace RegistryPreview
                 FileStreamOptions fileStreamOptions = new FileStreamOptions();
                 fileStreamOptions.Access = FileAccess.Write;
                 fileStreamOptions.Share = FileShare.Write;
-                fileStreamOptions.Mode = FileMode.OpenOrCreate;
+                fileStreamOptions.Mode = FileMode.Create;
 
                 fileStream = new FileStream(App.AppFilename, fileStreamOptions);
                 StreamWriter streamWriter = new StreamWriter(fileStream, System.Text.Encoding.Unicode);

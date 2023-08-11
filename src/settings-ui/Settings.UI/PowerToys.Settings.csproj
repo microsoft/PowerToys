@@ -2,8 +2,9 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
@@ -12,12 +13,21 @@
     <WindowsPackageType>None</WindowsPackageType>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Settings\icon.ico</ApplicationIcon>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <SelfContained>true</SelfContained>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="SettingsXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="SettingsXAML\App.xaml" />
+  </ItemGroup>
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
@@ -55,29 +65,15 @@
 	<PropertyGroup>
 		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
 	</PropertyGroup>
-	<ItemGroup>
-	  <None Remove="OOBE\Views\OobeOverviewPlaceholder.xaml" />
-	</ItemGroup>
-	<ItemGroup>
-	  <None Remove="Controls\ColorFormatEditor.xaml" />
-	</ItemGroup>
 
   <ItemGroup>
-    <None Remove="FlyoutWindow.xaml" />
-    <None Remove="Flyout\AppsListPage.xaml" />
-    <None Remove="Controls\FlyoutMenuButton\FlyoutMenuButton.xaml" />
-    <None Remove="Flyout\LaunchPage.xaml" />
-    <None Remove="Flyout\ShellPage.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\Settings\SplashScreen.scale-200.png" />
+    <Content Include="Assets\Settings\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\Settings\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Settings\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Settings\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\Settings\StoreLogo.png" />
+    <Content Include="Assets\Settings\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -91,6 +87,8 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
     <PackageReference Include="StreamJsonRpc" />
+    <!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since the Experimentation APIs that are added in CI reference some net standard 2.0 assemblies. -->
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
@@ -102,6 +100,8 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
+    <ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
     <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
@@ -118,44 +118,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Page Update="FlyoutWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Flyout\LaunchPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Flyout\ShellPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Controls\ColorFormatEditor.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Flyout\AppsListPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Flyout\Controls\FlyoutMenuButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <None Update="icon.ico">
+    <None Update="Assets\Settings\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Page Update="OOBE\Views\OobeOverviewPlaceholder.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="OOBE\Views\OobeHosts.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="OOBE\Views\OobeOverviewAlternate.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="Views\RegistryPreviewPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
   </ItemGroup>
 	
-  <ItemGroup>
-    <Page Update="OOBE\Views\OobePowerOCR.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-  </ItemGroup>
 </Project>
