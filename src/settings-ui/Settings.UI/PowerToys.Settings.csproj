@@ -125,7 +125,8 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-	  <Exec Command="xcopy &quot;$(ProjectDir)Strings\&quot;  &quot;$(ProjectDir)$(OutDir)Strings\Settings\&quot; /S&#xD;&#xA;" />
+    <Exec Command="dir /s &quot;$(ProjectDir)Strings\&quot;" />
+    <Exec Command="xcopy &quot;$(ProjectDir)Strings\&quot;  &quot;$(ProjectDir)$(OutDir)Strings\Settings\&quot; /S /Y&#xD;&#xA;" />
   </Target>
 	
 </Project>
