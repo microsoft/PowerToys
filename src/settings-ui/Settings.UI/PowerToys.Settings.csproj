@@ -125,8 +125,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-	<Exec Command="if not exist &quot;..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings\&quot; mkdir &quot;..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings\&quot;" />
-	<Exec Command="if exist &quot;..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings\&quot; xcopy &quot;Strings&quot;  &quot;..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings&quot; /F /R /Y /I /S /C" />
+	<Exec Command="if not exist &quot;..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings\&quot; (&#xD;&#xA;  mkdir &quot;..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings\&quot;&#xD;&#xA;  xcopy &quot;Strings&quot;  &quot;..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\Strings\Settings&quot; /F /R /Y /I /S /C&#xD;&#xA;)" />
   </Target>
 	
 </Project>
