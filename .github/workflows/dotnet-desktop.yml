@@ -19,6 +19,7 @@ jobs:
     env:
       Solution_Name: PowerToys.sln
       Test_Project_Path: /src/modules/launcher/Wox.Test/Wox.Test.csproj
+      
     steps:
     - name: Checkout
       uses: actions/checkout@v2
