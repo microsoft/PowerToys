@@ -27,9 +27,10 @@ jobs:
         fetch-depth: 0
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+        architecture: x64  # Specify the architecture as x64
 
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
@@ -42,8 +43,7 @@ jobs:
       env:
         Configuration: ${{ matrix.configuration }}
 
-    # The rest of the workflow continues without the Wap directory-related steps
-    # ...
+    # Continue with the rest of the workflow
 
     # Upload the MSIX package
     - name: Upload build artifacts
