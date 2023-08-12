@@ -36,5 +36,5 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Execute unit tests
-      run: dotnet test "$env:Test_Project_Path"
+      run: msbuild "$env:Test_Project_Path" /t:Test
 
