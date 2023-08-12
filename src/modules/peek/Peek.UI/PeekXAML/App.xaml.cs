@@ -10,7 +10,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Peek.FilePreviewer;
 using Peek.UI.Telemetry.Events;
-using Peek.UI.Views;
 
 namespace Peek.UI
 {
@@ -48,7 +47,6 @@ namespace Peek.UI
                 services.AddSingleton<IUserSettings, UserSettings>();
 
                 // Views and ViewModels
-                services.AddTransient<TitleBar>();
                 services.AddTransient<FilePreview>();
                 services.AddTransient<MainWindowViewModel>();
             }).

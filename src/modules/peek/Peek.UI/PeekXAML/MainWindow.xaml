@@ -8,7 +8,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fp="using:Peek.FilePreviewer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:views="using:Peek.UI.Views"
     xmlns:winuiex="using:WinUIEx"
     MinWidth="450"
     MinHeight="400"
@@ -30,18 +29,120 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <views:TitleBar
-            x:Name="TitleBarControl"
-            Grid.Row="0"
-            FileIndex="{x:Bind ViewModel.CurrentIndex, Mode=OneWay}"
-            IsMultiSelection="{x:Bind ViewModel.NeighboringItemsQuery.IsMultipleFilesActivation, Mode=OneWay}"
-            Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
-            NumberOfFiles="{x:Bind ViewModel.Items.Count, Mode=OneWay}" />
+        <Grid x:Name="TitleBarRootContainer" Height="48">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="SystemLeftPaddingColumn" Width="16" />
+                <ColumnDefinition x:Name="IconAndTitleColumn" Width="Auto" />
+                <ColumnDefinition x:Name="LeftDragColumn" Width="*"/>
+                <ColumnDefinition x:Name="ButtonsColumn" Width="Auto" />
+                <ColumnDefinition x:Name="RightDragColumn" Width="*"/>
+                <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="16" />
+            </Grid.ColumnDefinitions>
 
-        <fp:FilePreview
+            <StackPanel
+            Grid.Column="1"
+            Orientation="Horizontal"
+            Spacing="16"
+            VerticalAlignment="Center">
+                <Image
+                x:Name="PeekLogo"
+                x:Uid="PeekLogo"
+                Width="16"
+                Height="16"
+                Source="../../Assets/Peek/Icon.ico"/>
+                <TextBlock
+                x:Name="AppTitle_FileName"
+                x:Uid="AppTitle_FileName"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind Item.Name, Mode=OneWay}"
+                TextTrimming="Clip"/>
+                <TextBlock
+                x:Name="AppTitle_FileCount"
+                x:Uid="AppTitle_FileCount"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind FileCountText, Mode=OneWay}"
+                Visibility="{x:Bind IsMultiSelection, Mode=OneWay}" />
+            </StackPanel>
+
+            <StackPanel
+            Grid.Column="3"
+            Orientation="Horizontal"
+            Spacing="8">
+                <Button
+                x:Name="LaunchAppButton"
+                x:Uid="LaunchAppButton"
+                Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
+                ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
+                Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <FontIcon
+                            x:Name="LaunchAppButton_Icon"
+                            x:Uid="LaunchAppButton_Icon"
+                            FontSize="16"
+                            Glyph="&#xE8E5;" />
+                            <TextBlock
+                            x:Name="LaunchAppButton_Text"
+                            x:Uid="LaunchAppButton_Text"
+                            Text="{x:Bind OpenWithAppText, Mode=OneWay}"
+                            Style="{StaticResource CaptionTextBlockStyle}"/>
+                        </StackPanel>
+                    </Button.Content>
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Enter" />
+                    </Button.KeyboardAccelerators>
+                </Button>
+
+                <Button
+                x:Name="PinButton"
+                x:Uid="PinButton"
+                Command="{x:Bind PinCommand, Mode=OneWay}"
+                ToolTipService.ToolTip="{x:Bind PinToolTip(Pinned), Mode=OneWay}">
+                    <Button.Content>
+                        <FontIcon
+                        x:Name="PinButton_Icon"
+                        x:Uid="PinButton_Icon"
+                        FontSize="16"
+                        Glyph="{x:Bind PinGlyph(Pinned), Mode=OneWay}" />
+                    </Button.Content>
+                </Button>
+            </StackPanel>
+
+            <fp:FilePreview
             Grid.Row="1"
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
             ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
+        </Grid>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="AdaptiveWidth">
+                <VisualState x:Name="MaximumLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="560" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="MediumLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="340" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="MinimumLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="LaunchAppButton.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </winuiex:WindowEx>
