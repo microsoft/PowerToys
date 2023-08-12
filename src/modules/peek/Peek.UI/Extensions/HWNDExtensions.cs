@@ -28,7 +28,7 @@ namespace Peek.UI.Extensions
         // TODO: Refactor into same C++ class consumed by both.
         internal static bool IsDesktopWindow(this HWND windowHandle)
         {
-            StringBuilder strClassName = new StringBuilder(256);
+            StringBuilder strClassName = new(256);
             var result = NativeMethods.GetClassName(windowHandle, strClassName, 256);
             if (result == 0)
             {
@@ -53,7 +53,7 @@ namespace Peek.UI.Extensions
         internal static Size GetMonitorSize(this HWND hwnd)
         {
             var monitor = PInvoke.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
-            MONITORINFO info = default(MONITORINFO);
+            MONITORINFO info = default;
             info.cbSize = 40;
             PInvoke.GetMonitorInfo(monitor, ref info);
             return new Size(info.rcMonitor.Size.Width, info.rcMonitor.Size.Height);

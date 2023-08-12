@@ -22,7 +22,7 @@ namespace Peek.UI.Extensions
 
         private static string GetPath(this IShellItem shellItem)
         {
-            string path = string.Empty;
+            string path;
             try
             {
                 path = shellItem.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH);
@@ -39,7 +39,7 @@ namespace Peek.UI.Extensions
 
         private static string GetName(this IShellItem shellItem)
         {
-            string name = string.Empty;
+            string name;
             try
             {
                 name = shellItem.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_NORMALDISPLAY);

@@ -27,9 +27,7 @@ namespace Peek.Common.Extensions
 
             try
             {
-                PropVariant propVar;
-
-                propertyStore.GetValue(ref key, out propVar);
+                propertyStore.GetValue(ref key, out PropVariant propVar);
 
                 // VT_UI4 Indicates a 4-byte unsigned integer formatted in little-endian byte order.
                 if ((VarEnum)propVar.Vt == VarEnum.VT_UI4)
@@ -63,9 +61,7 @@ namespace Peek.Common.Extensions
 
             try
             {
-                PropVariant propVar;
-
-                propertyStore.GetValue(ref key, out propVar);
+                propertyStore.GetValue(ref key, out PropVariant propVar);
 
                 // VT_UI8 Indicates an 8-byte unsigned integer formatted in little-endian byte order.
                 if ((VarEnum)propVar.Vt == VarEnum.VT_UI8)
@@ -98,9 +94,7 @@ namespace Peek.Common.Extensions
 
             try
             {
-                PropVariant propVar;
-
-                propertyStore.GetValue(ref key, out propVar);
+                propertyStore.GetValue(ref key, out PropVariant propVar);
 
                 if ((VarEnum)propVar.Vt == VarEnum.VT_LPWSTR)
                 {

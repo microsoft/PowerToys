@@ -18,7 +18,7 @@ namespace Peek.Common.Models
         {
             get
             {
-                DateTime? dateModified = null;
+                DateTime? dateModified;
                 try
                 {
                     dateModified = System.IO.File.GetCreationTime(Path);

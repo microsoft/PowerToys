@@ -26,7 +26,7 @@ namespace Peek.UI.Extensions
         {
             // Ability to be able to set the Window to the Foreground is very limited. A current workaround is simulating mouse input before bringing to the foreground.
             var windowHandle = window.GetWindowHandle();
-            Windows.Win32.UI.Input.KeyboardAndMouse.INPUT input = new Windows.Win32.UI.Input.KeyboardAndMouse.INPUT { type = Windows.Win32.UI.Input.KeyboardAndMouse.INPUT_TYPE.INPUT_MOUSE, Anonymous = { } };
+            Windows.Win32.UI.Input.KeyboardAndMouse.INPUT input = new() { type = Windows.Win32.UI.Input.KeyboardAndMouse.INPUT_TYPE.INPUT_MOUSE, Anonymous = { } };
             Windows.Win32.UI.Input.KeyboardAndMouse.INPUT[] inputs = new Windows.Win32.UI.Input.KeyboardAndMouse.INPUT[] { input };
             _ = PInvoke.SendInput(inputs.AsSpan<Windows.Win32.UI.Input.KeyboardAndMouse.INPUT>(), Marshal.SizeOf(typeof(Windows.Win32.UI.Input.KeyboardAndMouse.INPUT)));
             if (PInvoke.SetForegroundWindow(new HWND(windowHandle)) == 0)
@@ -39,7 +39,7 @@ namespace Peek.UI.Extensions
         {
             var hwndToCenter = new HWND(window.GetWindowHandle());
             var monitor = PInvoke.MonitorFromWindow(hwndDesktop, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
-            MONITORINFO info = default(MONITORINFO);
+            MONITORINFO info = default;
             info.cbSize = 40;
             PInvoke.GetMonitorInfo(monitor, ref info);
             var dpi = PInvoke.GetDpiForWindow(new HWND(hwndDesktop));
@@ -51,7 +51,7 @@ namespace Peek.UI.Extensions
             var cy = (info.rcMonitor.bottom + info.rcMonitor.top) / 2;
             var left = cx - (w / 2);
             var top = cy - (h / 2);
-            SetWindowPosOrThrow(new HWND(hwndToCenter), default(HWND), left, top, w, h, SET_WINDOW_POS_FLAGS.SWP_SHOWWINDOW);
+            SetWindowPosOrThrow(new HWND(hwndToCenter), default, left, top, w, h, SET_WINDOW_POS_FLAGS.SWP_SHOWWINDOW);
         }
 
         private static void SetWindowPosOrThrow(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, SET_WINDOW_POS_FLAGS uFlags)
