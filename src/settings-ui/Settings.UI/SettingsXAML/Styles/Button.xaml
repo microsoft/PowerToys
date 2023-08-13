@@ -1,4 +1,5 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:WinUI3Localizer">
 
     <SolidColorBrush x:Key="SubtleButtonBackground" Color="{ThemeResource SubtleFillColorTransparent}" />
     <SolidColorBrush x:Key="SubtleButtonBackgroundPointerOver" Color="{ThemeResource SubtleFillColorSecondary}" />
