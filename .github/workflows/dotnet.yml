@@ -22,6 +22,12 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+        fetch-depth: 1
+
     - name: Install .NET Core
       uses: actions/setup-dotnet@v2
       with:
