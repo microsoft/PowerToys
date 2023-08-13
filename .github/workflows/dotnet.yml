@@ -1,41 +1,38 @@
-name: Build
+name: .NET Core Desktop
 
 on:
   push:
-    branches:
-      - test1
+    branches: [ "test1" ]
   pull_request:
+    branches: [ "test1" ]
 
 jobs:
-  build-test-and-deploy:
-    runs-on: ubuntu-latest
-    
+  build-and-test:
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    runs-on: windows-latest
+    env:
+      Solution_Name: PowerToys.sln
+      Test_Project_Path: /src/settings-ui/Settings.UI.UnitTests/Settings.UI.UnitTests.csproj
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
-      - name: Install build essentials
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 7.0.x
+        architecture: x64
 
-      - name: Run Tests
-        run: |
-          if [ -d "PowerToys/deps/spdlog/tests" ]; then
-            cd PowerToys/deps/spdlog/tests
-            mkdir build
-            cd build
-            cmake ..
-            cmake --build .
-            ctest
-          else
-            echo "Tests directory not found, skipping tests."
-          fi
+    - name: Execute unit tests
+      run: |
+        cd src/settings-ui/Settings.UI.UnitTests
+        dotnet test --no-restore --verbosity:normal
 
-      - name: Deploy if Tests Passed
-        if: ${{ job.status == 'success' }}
-        run: |
-          if [ -f "PowerToysInstaller.exe" ]; then
-            echo "Deploying PowerToysInstaller.exe..."
-            # Add your deployment commands here
-          else
-            echo "PowerToysInstaller.exe not found, skipping deployment."
-          fi
+    - name: Debug Environment
+      run: |
+        ls -la
+        pwd
