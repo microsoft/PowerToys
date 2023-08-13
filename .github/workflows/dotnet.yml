@@ -29,5 +29,5 @@ jobs:
 
     - name: Execute unit tests
       run: |
-        cd ${{ github.workspace }}
-        dotnet test -- "${{ env.Test_Project_Path }}"
+        cd src/settings-ui/Settings.UI.UnitTests
+        dotnet test --no-restore --verbosity:normal
