@@ -1,37 +1,29 @@
-name: .NET Core Desktop
+name: dotnet package
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: [push]
 
 jobs:
+  build:
 
-  build-and-test:
-
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        configuration: [Debug, Release]
+        dotnet-version: [ '3.1.x', '6.0.x' ]
 
-    runs-on: windows-latest
-
-    env:
-      Solution_Name: PowerToys.sln
-      Test_Project_Path: /src/modules/launcher/Wox.Test/Wox.Test.csproj
-      
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 1
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: 7.0.x
-        architecture: x64
-
-    - name: Execute unit tests
-      run: dotnet test "$env:Test_Project_Path"
-
+      steps:
+        - uses: actions/checkout@v3
+        - name: Setup dotnet
+          uses: actions/setup-dotnet@v3
+          with:
+            dotnet-version: ${{ matrix.dotnet-version }}
+        - name: Install dependencies
+          run: dotnet restore
+        - name: Test with dotnet
+          run: dotnet test --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
+        - name: Upload dotnet test results
+          uses: actions/upload-artifact@v3
+          with:
+            name: dotnet-results-${{ matrix.dotnet-version }}
+            path: TestResults-${{ matrix.dotnet-version }}
+          # Use always() to always run this step to publish test results when there are test failures
+          if: ${{ always() }}
