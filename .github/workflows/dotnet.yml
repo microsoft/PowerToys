@@ -28,5 +28,4 @@ jobs:
         architecture: x64
 
     - name: Execute unit tests
-  run: |
-    dotnet test "${{ env.Test_Project_Path }}"
+  run: dotnet test -- "${{ env.Test_Project_Path }}"
