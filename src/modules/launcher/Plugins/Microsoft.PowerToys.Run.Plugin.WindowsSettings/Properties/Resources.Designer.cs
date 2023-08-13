@@ -151,6 +151,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add devices.
+        /// </summary>
+        internal static string AddDevices {
+            get {
+                return ResourceManager.GetString("AddDevices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add Hardware.
         /// </summary>
         internal static string AddHardware {
@@ -390,6 +399,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string AreaApps {
             get {
                 return ResourceManager.GetString("AreaApps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bluetooth &amp; devices.
+        /// </summary>
+        internal static string AreaBluetoothAndDevices11 {
+            get {
+                return ResourceManager.GetString("AreaBluetoothAndDevices11", resourceCulture);
             }
         }
         
@@ -750,6 +768,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Bluetooth {
             get {
                 return ResourceManager.GetString("Bluetooth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bluetooth and other devices.
+        /// </summary>
+        internal static string BluetoothAndDevices10 {
+            get {
+                return ResourceManager.GetString("BluetoothAndDevices10", resourceCulture);
             }
         }
         
@@ -1308,6 +1335,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string DeviceManagerSnapIn {
             get {
                 return ResourceManager.GetString("DeviceManagerSnapIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Devices.
+        /// </summary>
+        internal static string Devices {
+            get {
+                return ResourceManager.GetString("Devices", resourceCulture);
             }
         }
         
@@ -2154,6 +2190,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string main_cpl {
             get {
                 return ResourceManager.GetString("main.cpl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage devices.
+        /// </summary>
+        internal static string ManageDevices {
+            get {
+                return ResourceManager.GetString("ManageDevices", resourceCulture);
             }
         }
         
@@ -3207,6 +3252,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string PhoneDefaultApps {
             get {
                 return ResourceManager.GetString("PhoneDefaultApps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone Link.
+        /// </summary>
+        internal static string PhoneLink {
+            get {
+                return ResourceManager.GetString("PhoneLink", resourceCulture);
             }
         }
         

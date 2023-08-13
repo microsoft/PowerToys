@@ -548,6 +548,11 @@ int InclusiveCrosshairsMain(HINSTANCE hInstance, InclusiveCrosshairsSettings& se
     }
     Logger::info("Initialized the crosshairs instance.");
 
+    if (settings.autoActivate)
+    {
+        crosshairs.SwitchActivationMode();
+    }
+
     MSG msg;
 
     // Main message loop:

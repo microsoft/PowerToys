@@ -66,7 +66,7 @@ namespace Peek.Common.Helpers
         /// <param name="path">The file/folder path</param>
         /// <param name="flags">The property store flags</param>
         /// <returns>an IPropertyStroe interface</returns>
-        private static DisposablePropertyStore GetPropertyStoreFromPath(string path, GETPROPERTYSTOREFLAGS flags = GETPROPERTYSTOREFLAGS.GPS_EXTRINSICPROPERTIES)
+        private static DisposablePropertyStore GetPropertyStoreFromPath(string path, GETPROPERTYSTOREFLAGS flags = GETPROPERTYSTOREFLAGS.GPS_EXTRINSICPROPERTIES | GETPROPERTYSTOREFLAGS.GPS_BESTEFFORT)
         {
             IShellItem2? shellItem2 = null;
             IntPtr ppPropertyStore = IntPtr.Zero;

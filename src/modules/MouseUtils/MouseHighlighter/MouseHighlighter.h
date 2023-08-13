@@ -7,6 +7,7 @@ const winrt::Windows::UI::Color MOUSE_HIGHLIGHTER_DEFAULT_ALWAYS_COLOR = winrt::
 constexpr int MOUSE_HIGHLIGHTER_DEFAULT_RADIUS = 20;
 constexpr int MOUSE_HIGHLIGHTER_DEFAULT_DELAY_MS = 500;
 constexpr int MOUSE_HIGHLIGHTER_DEFAULT_DURATION_MS = 250;
+constexpr bool MOUSE_HIGHLIGHTER_DEFAULT_AUTO_ACTIVATE = false;
 
 struct MouseHighlighterSettings
 {
@@ -16,6 +17,7 @@ struct MouseHighlighterSettings
     int radius = MOUSE_HIGHLIGHTER_DEFAULT_RADIUS;
     int fadeDelayMs = MOUSE_HIGHLIGHTER_DEFAULT_DELAY_MS;
     int fadeDurationMs = MOUSE_HIGHLIGHTER_DEFAULT_DURATION_MS;
+    bool autoActivate = MOUSE_HIGHLIGHTER_DEFAULT_AUTO_ACTIVATE;
 };
 
 int MouseHighlighterMain(HINSTANCE hinst, MouseHighlighterSettings settings);
