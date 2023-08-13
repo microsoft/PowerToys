@@ -7,19 +7,14 @@ on:
     branches: [ "test1" ]
 
 jobs:
-
   build-and-test:
-
     strategy:
       matrix:
         configuration: [Debug, Release]
-
     runs-on: windows-latest
-
     env:
       Solution_Name: PowerToys.sln
       Test_Project_Path: /src/settings-ui/Settings.UI.UnitTests/Settings.UI.UnitTests.csproj
-      
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -33,5 +28,4 @@ jobs:
         architecture: x64
 
     - name: Execute unit tests
-      run: dotnet test "$env:Test_Project_Path"
-
+      run: dotnet test "${{ env.Test_Project_Path }}"
