@@ -37,6 +37,8 @@ namespace Microsoft.Plugin.Program
 
         public string Description => Properties.Resources.wox_plugin_program_plugin_description;
 
+        public static string PluginID => "791FC278BA414111B8D1886DFE447410";
+
         private static PluginInitContext _context;
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed;

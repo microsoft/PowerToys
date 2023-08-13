@@ -17,5 +17,8 @@ namespace Wox.Plugin
 
         // Localized description
         string Description { get; }
+
+        // Plugin ID for validating the plugin.json entry (It must be static for accessing it before loading the plugin.)
+        public static string PluginID { get; }
     }
 }

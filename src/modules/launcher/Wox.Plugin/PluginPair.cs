@@ -167,6 +167,19 @@ namespace Wox.Plugin
                 return false;
             }
 
+            // Validate plugin ID to prevent bypassing the GPO by changing the ID in the plugin.json file.
+            string pluginID = (string)type.GetProperty("PluginID", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            if (pluginID == null)
+            {
+                Log.Error($"Can't validate plugin ID of plugin <{Metadata.Name}> in {Metadata.ExecuteFilePath}: Property <Main.PluginID> not found.", MethodBase.GetCurrentMethod().DeclaringType);
+                return false;
+            }
+            else if (pluginID != Metadata.ID)
+            {
+                Log.Error($"Wrong plugin ID found in plugin.json of plugin <{Metadata.Name}>. ('{Metadata.ID}' != '{pluginID}')", MethodBase.GetCurrentMethod().DeclaringType);
+                return false;
+            }
+
             try
             {
                 Plugin = (IPlugin)Activator.CreateInstance(type);
