@@ -1,3 +1,4 @@
+
 name: .NET Core Desktop
 
 on:
@@ -31,8 +32,3 @@ jobs:
       run: |
         cd src/settings-ui/Settings.UI.UnitTests
         dotnet test --no-restore --verbosity:normal
-
-    - name: Debug Environment
-      run: |
-        ls -la
-        pwd
