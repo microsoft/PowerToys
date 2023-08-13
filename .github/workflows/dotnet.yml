@@ -1,4 +1,3 @@
-
 name: .NET Core Desktop
 
 on:
@@ -12,29 +11,40 @@ jobs:
     strategy:
       matrix:
         configuration: [Debug, Release]
+        dotnet-version: ['6.0.x']
     runs-on: windows-latest
-    env:
-      Solution_Name: PowerToys.sln
-      Test_Project_Path: /src/settings-ui/Settings.UI.UnitTests/Settings.UI.UnitTests.csproj
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
         ref: ${{ github.ref }}
         fetch-depth: 1
 
+    - name: Cache .NET SDK and NuGet packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          nuget-
+
     - name: Install .NET Core
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: ${{ matrix.dotnet-version }}
         architecture: x64
 
     - name: Execute unit tests
+       strategy:
+        matrix:
+          configuration: [Debug, Release]
       run: |
         cd src/settings-ui/Settings.UI.UnitTests
-        dotnet test --no-restore --verbosity:normal
+        dotnet test --no-restore --verbosity:normal --logger:trx /p:Configuration=${{ matrix.configuration }}
+      continue-on-error: true
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-results
+        path: src/settings-ui/Settings.UI.UnitTests/TestResults
