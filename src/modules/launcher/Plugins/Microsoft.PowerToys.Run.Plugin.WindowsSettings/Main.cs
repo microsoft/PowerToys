@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         public string Description => Resources.PluginDescription;
 
         /// <summary>
-        /// Gets the plugin ID vor validation
+        /// Gets the plugin ID for validation
         /// </summary>
         public static string PluginID => "5043CECEE6A748679CBE02D27D83747A";
 
