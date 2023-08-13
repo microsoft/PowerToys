@@ -28,4 +28,6 @@ jobs:
         architecture: x64
 
     - name: Execute unit tests
-  run: dotnet test -- "${{ env.Test_Project_Path }}"
+      run: |
+        cd ${{ github.workspace }}
+        dotnet test -- "${{ env.Test_Project_Path }}"
