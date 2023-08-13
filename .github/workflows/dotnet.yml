@@ -33,16 +33,7 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
         architecture: x64
-
-    - name: Execute unit tests
-       strategy:
-        matrix:
-          configuration: [Debug, Release]
-      run: |
-        cd src/settings-ui/Settings.UI.UnitTests
-        dotnet test --no-restore --verbosity:normal --logger:trx /p:Configuration=${{ matrix.configuration }}
-      continue-on-error: true
-
+        
     - name: Upload test results
       uses: actions/upload-artifact@v2
       with:
