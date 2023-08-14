@@ -26,7 +26,6 @@
 #include <vector>
 #include <variant>
 #include <charconv>
-#include <compare>
 #include <string>
 
 #include <ProjectTelemetry.h>
