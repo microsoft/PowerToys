@@ -193,6 +193,16 @@ namespace FancyZonesUnitTests
             .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{310F2924-B587-4D87-97C2-90031BDBE3F1}").value()
         };
 
+        TEST_METHOD_INITIALIZE(Init) noexcept
+        {
+            AppZoneHistory::instance().LoadData();
+        }
+
+        TEST_METHOD_CLEANUP(CleanUp) noexcept
+        {
+            std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
+        }
+
         TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
         {
             LayoutData layout{
