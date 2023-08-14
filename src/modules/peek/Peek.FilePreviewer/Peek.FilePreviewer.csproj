@@ -34,7 +34,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
-    <ProjectReference Include="..\..\..\common\GcodeFileFormat\GcodeFileFormat.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
   </ItemGroup>

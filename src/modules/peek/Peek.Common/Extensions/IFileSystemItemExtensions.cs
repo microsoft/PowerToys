@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
-using GcodeFileFormat;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Scripting;
@@ -70,29 +70,6 @@ namespace Peek.Common.Extensions
 
                             reader.Close();
                         }
-                    }
-                }
-            }
-
-            return size;
-        }
-
-        public static Size? GetGcodeSize(this IFileSystemItem item)
-        {
-            Size? size = null;
-            using (FileStream stream = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
-            {
-                using var reader = new StreamReader(stream);
-
-                var gcodeThumbnail = GcodeHelper.GetBestThumbnail(reader);
-
-                var bitmap = gcodeThumbnail?.GetBitmap();
-
-                if (bitmap != null)
-                {
-                    using (bitmap)
-                    {
-                        size = new Size(bitmap.Size.Width, bitmap.Size.Height);
                     }
                 }
             }
