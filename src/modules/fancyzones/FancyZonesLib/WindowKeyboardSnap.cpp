@@ -12,12 +12,12 @@
 
 bool WindowKeyboardSnap::Snap(HWND window, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors)
 {
-    if (FancyZonesSettings::settings().moveWindowsBasedOnPosition)
-    {
-        return SnapHotkeyBasedOnPosition(window, vkCode, monitor, activeWorkAreas);
-    }
-
     return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && SnapHotkeyBasedOnZoneNumber(window, vkCode, monitor, activeWorkAreas, monitors);
+}
+
+bool WindowKeyboardSnap::Snap(HWND window, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors)
+{
+    return SnapHotkeyBasedOnPosition(window, vkCode, monitor, activeWorkAreas, monitors);
 }
 
 bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors)
@@ -94,7 +94,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
     return false;
 }
 
-bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
+bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors)
 {
     if (!activeWorkAreas.contains(current))
     {
@@ -102,9 +102,8 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HM
     }
 
     const auto& currentWorkArea = activeWorkAreas.at(current);
-    auto allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
-
-    if (current && allMonitors.size() > 1 && FancyZonesSettings::settings().moveWindowAcrossMonitors)
+    
+    if (current && monitors.size() > 1 && FancyZonesSettings::settings().moveWindowAcrossMonitors)
     {
         // Multi monitor environment.
         // First, try to stay on the same monitor
@@ -119,7 +118,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HM
         std::vector<std::pair<ZoneIndex, WorkArea*>> zoneRectsInfo;
         RECT currentMonitorRect{ .top = 0, .bottom = -1 };
 
-        for (const auto& [monitor, monitorRect] : allMonitors)
+        for (const auto& [monitor, monitorRect] : monitors)
         {
             if (monitor == current)
             {
@@ -232,8 +231,6 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HM
         // Single monitor environment, or combined multi-monitor environment.
         return ProcessDirectedSnapHotkey(window, vkCode, true, currentWorkArea.get());
     }
-
-    return false;
 }
 
 bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea)

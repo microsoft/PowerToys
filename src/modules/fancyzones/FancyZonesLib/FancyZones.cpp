@@ -609,7 +609,15 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
                 monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTONULL);
             }
 
-            m_windowKeyboardSnapper.Snap(foregroundWindow, monitor, static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas(), FancyZonesUtils::GetMonitorsOrdered());
+            if (FancyZonesSettings::settings().moveWindowsBasedOnPosition)
+            {
+                auto monitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+                m_windowKeyboardSnapper.Snap(foregroundWindow, monitor, static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas(), monitors);
+            }
+            else
+            {
+                m_windowKeyboardSnapper.Snap(foregroundWindow, monitor, static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas(), FancyZonesUtils::GetMonitorsOrdered());
+            }
         }
         else if (message == WM_PRIV_INIT)
         {
