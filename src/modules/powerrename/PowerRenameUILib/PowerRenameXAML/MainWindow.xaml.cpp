@@ -21,6 +21,7 @@
 
 #include "microsoft.ui.xaml.window.h"
 #include <winrt/Microsoft.UI.Interop.h>
+#include <winrt/Windows.UI.ViewManagement.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <common/Themes/theme_helpers.h>
 #include <common/Themes/theme_listener.h>
@@ -133,8 +134,7 @@ namespace winrt::PowerRenameUI::implementation
             GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &x_dpi, &x_dpi);
             UINT window_dpi = GetDpiForWindow(m_window);
 
-            int width = 1400;
-            int height = 800;
+            const auto& [width, height] = CSettingsInstance().GetLastWindowSize();
 
             winrt::Windows::Graphics::RectInt32 rect;
             // Scale window size
@@ -285,6 +285,23 @@ namespace winrt::PowerRenameUI::implementation
         InitAutoComplete();
         SearchReplaceChanged();
         InvalidateItemListViewState();
+
+        SizeChanged({ this, &MainWindow::OnSizeChanged });
+        Closed({ this, &MainWindow::OnClosed });
+    }
+
+    void MainWindow::OnSizeChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& /*args*/)
+    {
+        const auto appWindow =
+            Microsoft::UI::Windowing::AppWindow::GetFromWindowId(Microsoft::UI::GetWindowIdFromWindow(m_window));
+        const auto [width, height] = appWindow.Size();
+
+        CSettingsInstance().UpdateLastWindowSize(static_cast<int>(width), static_cast<int>(height));
+    }
+
+    void MainWindow::OnClosed(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::WindowEventArgs const&)
+    {
+        CSettingsInstance().Save();
     }
 
     void MainWindow::InvalidateItemListViewState()

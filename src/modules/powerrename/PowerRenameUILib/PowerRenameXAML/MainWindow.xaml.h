@@ -74,6 +74,9 @@ namespace winrt::PowerRenameUI::implementation
 
         MainWindow();
 
+        void OnSizeChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::WindowSizeChangedEventArgs const&);
+        void OnClosed(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::WindowEventArgs const&);
+
         void InvalidateItemListViewState();
 
         Windows::Foundation::Collections::IObservableVector<hstring> SearchMRU() { return m_searchMRUList; }
@@ -95,6 +98,7 @@ namespace winrt::PowerRenameUI::implementation
         void ShowRenamed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
     private:
+        winrt::Windows::Foundation::Size m_lastWindowSize;
         bool m_allSelected;
 
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_searchMRUList;
