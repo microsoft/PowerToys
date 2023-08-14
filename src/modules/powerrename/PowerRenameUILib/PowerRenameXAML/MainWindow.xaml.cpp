@@ -134,7 +134,7 @@ namespace winrt::PowerRenameUI::implementation
             GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &x_dpi, &x_dpi);
             UINT window_dpi = GetDpiForWindow(m_window);
 
-            const auto [width, height] = CSettingsInstance().GetLastWindowSize();
+            const auto& [width, height] = CSettingsInstance().GetLastWindowSize();
 
             winrt::Windows::Graphics::RectInt32 rect;
             // Scale window size
