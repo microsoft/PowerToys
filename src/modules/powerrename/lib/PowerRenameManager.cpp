@@ -923,7 +923,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                 winrt::check_hresult(pwtd->spsrm->GetRenameRegEx(&spRenameRegEx));
 
                 UINT itemCount = 0;
-                unsigned long itemEnumIndex = 1;
+                unsigned long itemEnumIndex = 0;
                 winrt::check_hresult(pwtd->spsrm->GetItemCount(&itemCount));
 
                 for (UINT u = 0; u < itemCount; u++)
