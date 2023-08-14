@@ -44,7 +44,6 @@ namespace FancyZonesUnitTests
         {
             std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
             std::filesystem::remove(AppZoneHistory::AppZoneHistoryFileName());
-
             std::filesystem::remove(DefaultLayouts::DefaultLayoutsFileName());
         }
 
@@ -196,6 +195,16 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
         {
+            LayoutData layout{
+                .uuid = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC58}").value(),
+                .type = FancyZonesDataTypes::ZoneSetLayoutType::Grid,
+                .showSpacing = false,
+                .spacing = 0,
+                .zoneCount = 4,
+                .sensitivityRadius = 20,
+            };
+            AppliedLayouts::instance().ApplyLayout(m_workAreaId, layout);
+
             const auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
 
@@ -207,6 +216,9 @@ namespace FancyZonesUnitTests
 
             Assert::IsTrue(workArea->Snap(window, { 1 }, true));
 
+            // wait for the window to be resized
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
             RECT inZoneRect;
             GetWindowRect(window, &inZoneRect);
 
@@ -216,6 +228,16 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (WhenWindowIsResizablePlacingItIntoTheZoneShouldResizeIt)
         {
+            LayoutData layout{
+                .uuid = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC58}").value(),
+                .type = FancyZonesDataTypes::ZoneSetLayoutType::Grid,
+                .showSpacing = false,
+                .spacing = 0,
+                .zoneCount = 4,
+                .sensitivityRadius = 20,
+            };
+            AppliedLayouts::instance().ApplyLayout(m_workAreaId, layout);
+
             const auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
             const auto window = Mocks::WindowCreate(m_hInst);
 
@@ -223,12 +245,18 @@ namespace FancyZonesUnitTests
             
             Assert::IsTrue(workArea->Snap(window, { 1 }, true));
 
+            // wait for the window to be resized
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
             RECT zonedWindowRect;
             GetWindowRect(window, &zonedWindowRect);
 
             RECT zoneRect = workArea->GetLayout()->Zones().at(1).GetZoneRect();
 
-            Assert::IsTrue(zoneRect == zonedWindowRect);
+            Assert::AreEqual(zoneRect.left, zonedWindowRect.left);
+            Assert::AreEqual(zoneRect.right, zonedWindowRect.right);
+            Assert::AreEqual(zoneRect.top, zonedWindowRect.top);
+            Assert::AreEqual(zoneRect.bottom, zonedWindowRect.bottom);
         }
 
         TEST_METHOD (SnapWindowPropertyTest)
