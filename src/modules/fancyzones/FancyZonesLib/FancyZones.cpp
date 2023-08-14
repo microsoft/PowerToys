@@ -600,7 +600,16 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
         if (message == WM_PRIV_SNAP_HOTKEY)
         {
-            m_windowKeyboardSnapper.SnapForegroundWindow(static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas());
+            // We already checked in ShouldProcessSnapHotkey whether the foreground window is a candidate for zoning
+            auto foregroundWindow = GetForegroundWindow();
+
+            HMONITOR monitor{ nullptr };
+            if (!FancyZonesSettings::settings().spanZonesAcrossMonitors)
+            {
+                monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTONULL);
+            }
+
+            m_windowKeyboardSnapper.Snap(foregroundWindow, monitor, static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas(), FancyZonesUtils::GetMonitorsOrdered());
         }
         else if (message == WM_PRIV_INIT)
         {

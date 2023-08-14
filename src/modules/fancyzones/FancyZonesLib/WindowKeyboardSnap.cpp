@@ -10,31 +10,21 @@
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 
-bool WindowKeyboardSnap::SnapForegroundWindow(DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
+bool WindowKeyboardSnap::Snap(HWND window, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors)
 {
-    // We already checked in ShouldProcessSnapHotkey whether the foreground window is a candidate for zoning
-    auto window = GetForegroundWindow();
-
-    HMONITOR monitor{nullptr};
-    if (!FancyZonesSettings::settings().spanZonesAcrossMonitors)
-    {
-        monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-    }
-
     if (FancyZonesSettings::settings().moveWindowsBasedOnPosition)
     {
         return SnapHotkeyBasedOnPosition(window, vkCode, monitor, activeWorkAreas);
     }
 
-    return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && SnapHotkeyBasedOnZoneNumber(window, vkCode, monitor, activeWorkAreas);
+    return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && SnapHotkeyBasedOnZoneNumber(window, vkCode, monitor, activeWorkAreas, monitors);
 }
 
-bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
+bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors)
 {
     // clean previous extention data
     m_extendData.Reset();
 
-    std::vector<HMONITOR> monitors = FancyZonesUtils::GetMonitorsOrdered();
     if (current && monitors.size() > 1 && FancyZonesSettings::settings().moveWindowAcrossMonitors)
     {
         // Multi monitor environment.
@@ -84,32 +74,20 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
         if (activeWorkAreas.contains(current))
         {
             const auto& workArea = activeWorkAreas.at(current);
-            // Single monitor environment, or combined multi-monitor environment.
-            if (FancyZonesSettings::settings().restoreSize)
-            {
-                bool moved = MoveByDirectionAndIndex(window, vkCode, false /* cycle through zones */, workArea.get());
-                if (!moved)
-                {
-                    FancyZonesWindowUtils::RestoreWindowOrigin(window);
-                    FancyZonesWindowUtils::RestoreWindowSize(window);
-                }
-                else if (workArea)
-                {
-                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
-                }
-                return moved;
-            }
-            else
-            {
-                bool moved = MoveByDirectionAndIndex(window, vkCode, true /* cycle through zones */, workArea.get());
+            bool moved = MoveByDirectionAndIndex(window, vkCode, FancyZonesSettings::settings().moveWindowAcrossMonitors /* cycle through zones */, workArea.get());
 
-                if (moved)
-                {
-                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
-                }
-
-                return moved;
+            if (FancyZonesSettings::settings().restoreSize && !moved)
+            {
+                FancyZonesWindowUtils::RestoreWindowOrigin(window);
+                FancyZonesWindowUtils::RestoreWindowSize(window);
             }
+
+            if (moved && workArea)
+            {
+                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+            }
+
+            return moved;
         }
     }
 
