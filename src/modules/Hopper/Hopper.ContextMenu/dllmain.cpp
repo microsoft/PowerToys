@@ -7,9 +7,9 @@
 #include <shobjidl_core.h>
 #include <string>
 
-#include "C:\Users\gokce\source\repos\jaime\PowerToys\src\common\utils\elevation.h"
-#include "C:\Users\gokce\source\repos\jaime\PowerToys\src\common\utils\process_path.h"
-#include "C:\Users\gokce\source\repos\jaime\PowerToys\src\common\utils\resources.h"
+#include <common/utils/elevation.h>
+#include <common\utils\process_path.h>
+#include <common\utils\resources.h>
 
 #include <wil/win32_helpers.h>
 #include <wrl/module.h>
