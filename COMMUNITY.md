@@ -156,8 +156,7 @@ Other contributors:
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Product Manager
 - [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
+- [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
-- [@sosssego](https://github.com/sosssego) - Frederico Moron - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
-- [@taras-janea](https://github.com/taras-janea) - Taras Sich - Dev
 - [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
