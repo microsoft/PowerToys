@@ -81,7 +81,7 @@ namespace FancyZonesEditor
 
             // set default layouts
             DefaultLayouts.Set(priorityGridModel, MonitorConfigurationType.Horizontal);
-            DefaultLayouts.Set(priorityGridModel, MonitorConfigurationType.Vertical);
+            DefaultLayouts.Set(rowsModel, MonitorConfigurationType.Vertical);
         }
 
         // IsShiftKeyPressed - is the shift key currently being held down
@@ -259,11 +259,6 @@ namespace FancyZonesEditor
                         break;
                     }
                 }
-            }
-
-            if (foundModel == null)
-            {
-                foundModel = TemplateModels[(int)LayoutType.PriorityGrid];
             }
 
             SetSelectedModel(foundModel);
