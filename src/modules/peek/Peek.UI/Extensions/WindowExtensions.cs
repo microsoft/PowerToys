@@ -44,13 +44,16 @@ namespace Peek.UI.Extensions
             PInvoke.GetMonitorInfo(monitor, ref info);
             var dpi = PInvoke.GetDpiForWindow(new HWND(hwndDesktop));
             PInvoke.GetWindowRect(new HWND(hwndToCenter), out RECT windowRect);
+
             var scalingFactor = dpi / 96d;
+
             var w = width.HasValue ? (int)(width * scalingFactor) : windowRect.right - windowRect.left;
             var h = height.HasValue ? (int)(height * scalingFactor) : windowRect.bottom - windowRect.top;
             var cx = (info.rcMonitor.left + info.rcMonitor.right) / 2;
             var cy = (info.rcMonitor.bottom + info.rcMonitor.top) / 2;
             var left = cx - (w / 2);
             var top = cy - (h / 2);
+
             SetWindowPosOrThrow(new HWND(hwndToCenter), default, left, top, w, h, SET_WINDOW_POS_FLAGS.SWP_SHOWWINDOW);
         }
 

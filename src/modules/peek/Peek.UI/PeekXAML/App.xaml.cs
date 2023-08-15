@@ -47,8 +47,8 @@ namespace Peek.UI
                 services.AddSingleton<IUserSettings, UserSettings>();
 
                 // Views and ViewModels
-                services.AddTransient<FilePreview>();
                 services.AddTransient<MainWindowViewModel>();
+                services.AddTransient<FilePreview>();
             }).
             Build();
 

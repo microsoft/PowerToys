@@ -2,10 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Peek.Common.Models;
-using Peek.UI.Extensions;
 using Peek.UI.Helpers;
 using Peek.UI.Models;
 
@@ -32,12 +29,7 @@ namespace Peek.UI
             IsMultipleFilesActivation = hasMoreThanOneItem;
 
             var neighboringItemsShellArray = hasMoreThanOneItem ? selectedItemsShellArray : FileExplorerHelper.GetItems(foregroundWindowHandle);
-            if (neighboringItemsShellArray == null)
-            {
-                return null;
-            }
-
-            return new NeighboringItems(neighboringItemsShellArray);
+            return neighboringItemsShellArray == null ? null : new NeighboringItems(neighboringItemsShellArray);
         }
     }
 }

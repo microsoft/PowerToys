@@ -13,11 +13,9 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Peek.Common.Constants;
-using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
@@ -38,29 +36,19 @@ namespace Peek.UI
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
     [INotifyPropertyChanged]
-    public sealed partial class MainWindow : WindowEx, IDisposable
+    public sealed partial class MainWindow : WindowEx
     {
         public MainWindowViewModel ViewModel { get; }
 
-        private readonly ThemeListener? themeListener;
         private bool activated;
 
         public MainWindow()
         {
             InitializeComponent();
             Title = ResourceLoaderInstance.ResourceLoader.GetString("AppTitle");
-            SetTitleBar(TitleBarRootContainer);
-            TitleBarRootContainer.SizeChanged += TitleBarRootContainer_SizeChanged;
 
-            try
-            {
-                themeListener = new ThemeListener();
-                themeListener.ThemeChanged += (_) => HandleThemeChange();
-            }
-            catch (Exception e)
-            {
-                Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
-            }
+            SetTitleBarToWindow();
+            TitleBarRootContainer.SizeChanged += TitleBarRootContainer_SizeChanged;
 
             ViewModel = App.GetService<MainWindowViewModel>();
 
@@ -68,18 +56,6 @@ namespace Peek.UI
 
             Activated += PeekWindow_Activated;
             AppWindow.Closing += AppWindow_Closing;
-        }
-
-        private void HandleThemeChange()
-        {
-            if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
-            {
-                AppWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
-            }
-            else
-            {
-                AppWindow.TitleBar.ButtonForegroundColor = Colors.White;
-            }
         }
 
         private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
@@ -113,9 +89,16 @@ namespace Peek.UI
                 return;
             }
 
-            if (!IsNewSingleSelectedItem())
+            if (AppWindow.IsVisible)
             {
-                Uninitialize();
+                if (IsNewSingleSelectedItem())
+                {
+                    Initialize();
+                }
+                else
+                {
+                    Uninitialize();
+                }
             }
             else
             {
@@ -176,14 +159,14 @@ namespace Peek.UI
             var contentScale = e.PreviewSize.UseEffectivePixels ? 1 : monitorScale;
             Size scaledRequestedSize = new(requestedSize.Width / contentScale, requestedSize.Height / contentScale);
 
-            // TODO: Investigate why portrait images do not perfectly fit edge-to-edge
+            // TODO: Investigate why portrait images do not perfectly fit edge-to-edge --> WindowHeightContentPadding can be 0 (or close to that) if custom? [Jay]
             Size monitorMinContentSize = GetMonitorMinContentSize(monitorScale);
             Size monitorMaxContentSize = GetMonitorMaxContentSize(monitorSize, monitorScale);
             Size adjustedContentSize = scaledRequestedSize.Fit(monitorMaxContentSize, monitorMinContentSize);
 
             var titleBarHeight = TitleBarRootContainer.ActualHeight;
-            var desiredWindowHeight = adjustedContentSize.Height + titleBarHeight + WindowConstants.WindowHeightContentPadding;
-            var desiredWindowWidth = adjustedContentSize.Width + WindowConstants.WindowWidthContentPadding;
+            var desiredWindowWidth = adjustedContentSize.Width;
+            var desiredWindowHeight = adjustedContentSize.Height + titleBarHeight;
 
             if (!Pinned)
             {
@@ -194,20 +177,20 @@ namespace Peek.UI
             this.BringToForeground();
         }
 
-        private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
-        {
-            var titleBarHeight = TitleBarRootContainer.ActualHeight;
-            var maxContentWidth = monitorSize.Width * WindowConstants.MaxWindowToMonitorRatio;
-            var maxContentHeight = (monitorSize.Height - titleBarHeight) * WindowConstants.MaxWindowToMonitorRatio;
-            return new Size(maxContentWidth / scaling, maxContentHeight / scaling);
-        }
-
         private Size GetMonitorMinContentSize(double scaling)
         {
             var titleBarHeight = TitleBarRootContainer.ActualHeight;
             var minContentWidth = WindowConstants.MinWindowWidth;
             var minContentHeight = WindowConstants.MinWindowHeight - titleBarHeight;
             return new Size(minContentWidth / scaling, minContentHeight / scaling);
+        }
+
+        private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
+        {
+            var titleBarHeight = TitleBarRootContainer.ActualHeight;
+            var maxContentWidth = monitorSize.Width * WindowConstants.MaxWindowToMonitorRatio;
+            var maxContentHeight = (monitorSize.Height - titleBarHeight) * WindowConstants.MaxWindowToMonitorRatio;
+            return new Size(maxContentWidth / scaling, maxContentHeight / scaling);
         }
 
         /// <summary>
@@ -252,11 +235,6 @@ namespace Peek.UI
             return false;
         }
 
-        public void Dispose()
-        {
-            themeListener?.Dispose();
-        }
-
         [ObservableProperty]
         private string openWithAppText = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_Text");
 
@@ -272,7 +250,7 @@ namespace Peek.UI
         [ObservableProperty]
         private bool pinned = false;
 
-        public IFileSystemItem Item { get; set; }
+        public IFileSystemItem Item { get; set; } = new FileItem(string.Empty, string.Empty);
 
         public int FileIndex { get; set; }
 
@@ -280,23 +258,23 @@ namespace Peek.UI
 
         public int NumberOfFiles { get; set; }
 
-        public void SetTitleBarToWindow(MainWindow mainWindow)
+        public void SetTitleBarToWindow()
         {
             if (AppWindowTitleBar.IsCustomizationSupported())
             {
                 // AppWindow appWindow = mainWindow.AppWindow;
-                mainWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
-                mainWindow.AppWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-                mainWindow.AppWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-                mainWindow.AppWindow.SetIcon("Assets/Peek/Icon.ico");
+                ExtendsContentIntoTitleBar = true;
+                AppWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+                AppWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 
-                // appWindow.TitleBar.ButtonForegroundColor = ThemeHelpers.GetAppTheme() == AppTheme.Light ? Colors.DarkSlateGray : Colors.White;
-                mainWindow.SetTitleBar(TitleBarRootContainer);
+                // AppWindow.TitleBar.ButtonForegroundColor = ThemeHelpers.GetAppTheme() == AppTheme.Light ? Colors.DarkSlateGray : Colors.White;
+                SetTitleBar(TitleBarRootContainer);
+
+                AppWindow.SetIcon("Assets/Peek/Icon.ico");
             }
             else
             {
                 var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-                ThemeHelpers.SetImmersiveDarkMode(hWnd, ThemeHelpers.GetAppTheme() == AppTheme.Dark);
                 TitleBarRootContainer.Visibility = Visibility.Collapsed;
 
                 // Set window icon
@@ -361,7 +339,7 @@ namespace Peek.UI
         }
 
         [RelayCommand]
-        private void Pin()
+        public void Pin()
         {
             Pinned = !Pinned;
         }
@@ -378,17 +356,17 @@ namespace Peek.UI
                 RectInt32 dragRectangleLeft;
                 dragRectangleLeft.X = (int)(appWindow.TitleBar.LeftInset * scale);
                 dragRectangleLeft.Y = 1;
-                dragRectangleLeft.Width = (int)((IconAndTitleColumn.ActualWidth + LeftDragColumn.ActualWidth) * scale);
+                dragRectangleLeft.Width = (int)((appWindow.TitleBar.LeftInset + IconAndTitleColumn.ActualWidth + LeftDragColumn.ActualWidth) * scale);
                 dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
-                RectInt32 dragRectangleRight;
+/*                RectInt32 dragRectangleRight;
                 dragRectangleRight.X = (int)((appWindow.TitleBar.LeftInset + IconAndTitleColumn.ActualWidth + LeftDragColumn.ActualWidth + ButtonsColumn.ActualWidth) * scale);
                 dragRectangleRight.Y = 1;
                 dragRectangleRight.Width = (int)(RightDragColumn.ActualWidth * scale);
                 dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
-                dragRectsList.Add(dragRectangleLeft);
                 dragRectsList.Add(dragRectangleRight);
+*/                dragRectsList.Add(dragRectangleLeft);
 
                 appWindow.TitleBar.SetDragRectangles(dragRectsList.ToArray());
             }
@@ -410,7 +388,7 @@ namespace Peek.UI
             UpdateFileCountText();
         }
 
-        private void UpdateFileCountText()
+        public void UpdateFileCountText()
         {
             // Update file count
             if (NumberOfFiles > 1)

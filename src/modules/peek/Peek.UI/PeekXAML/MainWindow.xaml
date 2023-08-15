@@ -35,8 +35,8 @@
                 <ColumnDefinition x:Name="IconAndTitleColumn" Width="Auto" />
                 <ColumnDefinition x:Name="LeftDragColumn" Width="*"/>
                 <ColumnDefinition x:Name="ButtonsColumn" Width="Auto" />
-                <ColumnDefinition x:Name="RightDragColumn" Width="*"/>
-                <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="16" />
+                <!--<ColumnDefinition x:Name="RightDragColumn" Width="*"/>-->
+                <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="120" /> <!-- work-around -->
             </Grid.ColumnDefinitions>
 
             <StackPanel
@@ -107,13 +107,13 @@
                     </Button.Content>
                 </Button>
             </StackPanel>
-
-            <fp:FilePreview
-            Grid.Row="1"
-            Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
-            PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
-            ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
         </Grid>
+
+        <fp:FilePreview
+        Grid.Row="1"
+        Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
+        PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
+        ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="AdaptiveWidth">
