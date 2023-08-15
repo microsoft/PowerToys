@@ -35,57 +35,58 @@
                 <ColumnDefinition x:Name="IconAndTitleColumn" Width="Auto" />
                 <ColumnDefinition x:Name="LeftDragColumn" Width="*"/>
                 <ColumnDefinition x:Name="ButtonsColumn" Width="Auto" />
-                <ColumnDefinition x:Name="RightDragColumn" Width="*"/>
-                <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="16" />
+                <!--<ColumnDefinition x:Name="RightDragColumn" Width="*"/>-->
+                <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="128" /><!-- work-around -->
             </Grid.ColumnDefinitions>
 
             <StackPanel
-            Grid.Column="1"
-            Orientation="Horizontal"
-            Spacing="16"
-            VerticalAlignment="Center">
+                Grid.Column="1"
+                Orientation="Horizontal"
+                VerticalAlignment="Center"
+                Spacing="16">
                 <Image
-                x:Name="PeekLogo"
-                x:Uid="PeekLogo"
-                Width="16"
-                Height="16"
-                Source="../../Assets/Peek/Icon.ico"/>
+                    x:Name="PeekLogo"
+                    x:Uid="PeekLogo"
+                    Width="16"
+                    Height="16"
+                    Source="../../Assets/Peek/Icon.ico"/>
                 <TextBlock
-                x:Name="AppTitle_FileName"
-                x:Uid="AppTitle_FileName"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind Item.Name, Mode=OneWay}"
-                TextTrimming="Clip"/>
+                    x:Name="AppTitle_FileName"
+                    x:Uid="AppTitle_FileName"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Item.Name, Mode=OneWay}"
+                    TextTrimming="Clip"/>
                 <TextBlock
-                x:Name="AppTitle_FileCount"
-                x:Uid="AppTitle_FileCount"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind FileCountText, Mode=OneWay}"
-                Visibility="{x:Bind IsMultiSelection, Mode=OneWay}" />
+                    x:Name="AppTitle_FileCount"
+                    x:Uid="AppTitle_FileCount"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind FileCountText, Mode=OneWay}"
+                    Visibility="{x:Bind IsMultiSelection, Mode=OneWay}" />
             </StackPanel>
 
             <StackPanel
-            Grid.Column="3"
-            Orientation="Horizontal"
-            Spacing="8">
+                Grid.Column="3"
+                Orientation="Horizontal"
+                VerticalAlignment="Center"
+                Spacing="8">
                 <Button
-                x:Name="LaunchAppButton"
-                x:Uid="LaunchAppButton"
-                Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
-                ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
-                Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
+                    x:Name="LaunchAppButton"
+                    x:Uid="LaunchAppButton"
+                    Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
+                    ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
+                    Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
                     <Button.Content>
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <FontIcon
-                            x:Name="LaunchAppButton_Icon"
-                            x:Uid="LaunchAppButton_Icon"
-                            FontSize="16"
-                            Glyph="&#xE8E5;" />
+                                x:Name="LaunchAppButton_Icon"
+                                x:Uid="LaunchAppButton_Icon"
+                                FontSize="16"
+                                Glyph="&#xE8E5;" />
                             <TextBlock
-                            x:Name="LaunchAppButton_Text"
-                            x:Uid="LaunchAppButton_Text"
-                            Text="{x:Bind OpenWithAppText, Mode=OneWay}"
-                            Style="{StaticResource CaptionTextBlockStyle}"/>
+                                x:Name="LaunchAppButton_Text"
+                                x:Uid="LaunchAppButton_Text"
+                                Text="{x:Bind OpenWithAppText, Mode=OneWay}"
+                                Style="{StaticResource CaptionTextBlockStyle}"/>
                         </StackPanel>
                     </Button.Content>
                     <Button.KeyboardAccelerators>
@@ -94,26 +95,26 @@
                 </Button>
 
                 <Button
-                x:Name="PinButton"
-                x:Uid="PinButton"
-                Command="{x:Bind PinCommand, Mode=OneWay}"
-                ToolTipService.ToolTip="{x:Bind PinToolTip(Pinned), Mode=OneWay}">
+                    x:Name="PinButton"
+                    x:Uid="PinButton"
+                    Command="{x:Bind PinCommand, Mode=OneWay}"
+                    ToolTipService.ToolTip="{x:Bind PinToolTip(Pinned), Mode=OneWay}">
                     <Button.Content>
                         <FontIcon
-                        x:Name="PinButton_Icon"
-                        x:Uid="PinButton_Icon"
-                        FontSize="16"
-                        Glyph="{x:Bind PinGlyph(Pinned), Mode=OneWay}" />
+                            x:Name="PinButton_Icon"
+                            x:Uid="PinButton_Icon"
+                            FontSize="16"
+                            Glyph="{x:Bind PinGlyph(Pinned), Mode=OneWay}" />
                     </Button.Content>
                 </Button>
             </StackPanel>
+        </Grid>
 
-            <fp:FilePreview
+        <fp:FilePreview
             Grid.Row="1"
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
             ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
-        </Grid>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="AdaptiveWidth">
