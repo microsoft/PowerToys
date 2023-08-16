@@ -47,30 +47,15 @@ internal sealed class ImageMethods
         return dest;
     }
 
-    internal static ImageSource GetWindowBoundsImage(Window passedWindow)
+    internal static ImageSource GetWindowBoundsImage(OCROverlay passedWindow)
     {
-        bool isGrabFrame = false;
+        var bounds = (passedWindow.CurrentScreen ?? throw new InvalidOperationException())
+            .DisplayArea;
 
-        DpiScale dpi = VisualTreeHelper.GetDpi(passedWindow);
-        int windowWidth = (int)(passedWindow.ActualWidth * dpi.DpiScaleX);
-        int windowHeight = (int)(passedWindow.ActualHeight * dpi.DpiScaleY);
-
-        System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
-        int thisCorrectedLeft = (int)absPosPoint.X;
-        int thisCorrectedTop = (int)absPosPoint.Y;
-
-        if (isGrabFrame == true)
-        {
-            thisCorrectedLeft += (int)(2 * dpi.DpiScaleX);
-            thisCorrectedTop += (int)(26 * dpi.DpiScaleY);
-            windowWidth -= (int)(4 * dpi.DpiScaleX);
-            windowHeight -= (int)(70 * dpi.DpiScaleY);
-        }
-
-        using Bitmap bmp = new(windowWidth, windowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using Bitmap bmp = new(bounds.Width, bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         using Graphics g = Graphics.FromImage(bmp);
 
-        g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+        g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
         return BitmapToImageSource(bmp);
     }
 

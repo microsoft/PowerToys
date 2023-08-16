@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using FancyMouse.Models.Drawing;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
@@ -39,10 +40,16 @@ public partial class OCROverlay : Window
     private Language? selectedLanguage;
     private MenuItem cancelMenuItem;
 
-    private System.Windows.Forms.Screen? CurrentScreen
+    internal ScreenInfo? CurrentScreen
     {
         get;
-        set;
+        init;
+    }
+
+    internal DpiScale? CurrentScaling
+    {
+        get;
+        init;
     }
 
     private double selectLeft;
@@ -105,8 +112,10 @@ public partial class OCROverlay : Window
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        /*
         WindowState = WindowState.Maximized;
         FullWindow.Rect = new Rect(0, 0, Width, Height);
+        */
         KeyDown += MainWindow_KeyDown;
         KeyUp += MainWindow_KeyUp;
 
@@ -119,7 +128,9 @@ public partial class OCROverlay : Window
         BackgroundImage.Source = null;
         BackgroundImage.UpdateLayout();
 
+        /*
         CurrentScreen = null;
+        */
         dpiScale = null;
 
         KeyDown -= MainWindow_KeyDown;
@@ -193,6 +204,7 @@ public partial class OCROverlay : Window
         Canvas.SetLeft(selectBorder, clickedPoint.X);
         Canvas.SetTop(selectBorder, clickedPoint.Y);
 
+        /*
         var screens = System.Windows.Forms.Screen.AllScreens;
         System.Drawing.Point formsPoint = new((int)clickedPoint.X, (int)clickedPoint.Y);
         foreach (var scr in screens)
@@ -203,6 +215,7 @@ public partial class OCROverlay : Window
                 break;
             }
         }
+        */
 
         IsSelecting = true;
     }
@@ -232,6 +245,7 @@ public partial class OCROverlay : Window
             double leftValue = selectLeft + xShiftDelta;
             double topValue = selectTop + yShiftDelta;
 
+            /*
             if (CurrentScreen is not null && dpiScale is not null)
             {
                 double currentScreenLeft = CurrentScreen.Bounds.Left; // Should always be 0
@@ -243,6 +257,7 @@ public partial class OCROverlay : Window
                 // leftValue = Math.Clamp(leftValue, currentScreenLeft, currentScreenRight - selectBorder.Width);
                 // topValue = Math.Clamp(topValue, currentScreenTop, currentScreenBottom - selectBorder.Height);
             }
+            */
 
             clippingGeometry.Rect = new Rect(
                 new Point(leftValue, topValue),
@@ -278,7 +293,9 @@ public partial class OCROverlay : Window
 
         IsSelecting = false;
 
+        /*
         CurrentScreen = null;
+        */
         CursorClipper.UnClipCursor();
         RegionClickCanvas.ReleaseMouseCapture();
         Matrix m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;

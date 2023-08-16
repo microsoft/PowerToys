@@ -9,7 +9,9 @@
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <!--
     <UseWindowsForms>true</UseWindowsForms>
+    -->
     <SelfContained>true</SelfContained>
   </PropertyGroup>
 
@@ -32,7 +34,9 @@
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectTypeGuids>{2150E333-8FDC-42A3-9474-1A3956D46DE8}</ProjectTypeGuids>
+    <!--
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    -->
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 

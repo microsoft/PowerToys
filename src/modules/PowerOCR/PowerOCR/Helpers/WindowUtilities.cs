@@ -2,8 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using System.Windows;
+/*
 using System.Windows.Forms;
+*/
+using System.Windows.Media;
+using FancyMouse.Helpers;
+using FancyMouse.NativeMethods;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
@@ -20,37 +29,61 @@ public static class WindowUtilities
             return;
         }
 
-        foreach (Screen screen in Screen.AllScreens)
-        {
-            OCROverlay overlay = new OCROverlay()
-            {
-                WindowStartupLocation = WindowStartupLocation.Manual,
-                Width = 200,
-                Height = 200,
-                WindowState = WindowState.Normal,
-            };
+        var screens = ScreenHelper.GetAllScreens().ToList();
+        var dpiScales = screens.Select(
+                screen =>
+                {
+                    var dpiX = new Core.UINT(0);
+                    var dpiY = new Core.UINT(0);
+                    var apiResult = PInvoke.GetDpiForMonitor(
+                        hmonitor: new(screen.Handle),
+                        dpiType: 0,
+                        dpiX: ref dpiX,
+                        dpiY: ref dpiY);
 
-            if (screen.WorkingArea.Left >= 0)
-            {
-                overlay.Left = screen.WorkingArea.Left;
-            }
-            else
-            {
-                overlay.Left = screen.WorkingArea.Left + (screen.WorkingArea.Width / 2);
-            }
+                    if (apiResult != 0)
+                    {
+                        throw new InvalidOperationException();
+                    }
 
-            if (screen.WorkingArea.Top >= 0)
-            {
-                overlay.Top = screen.WorkingArea.Top;
-            }
-            else
-            {
-                overlay.Top = screen.WorkingArea.Top + (screen.WorkingArea.Height / 2);
-            }
+                    return new DpiScale(dpiX.Value / 96.0, dpiY.Value / 96.0);
+                })
+            .ToList();
 
-            overlay.Show();
-            ActivateWindow(overlay);
-        }
+        var overlays = screens.Zip(dpiScales, (screen, dpiScale) => (Screen: screen, DpiScale: dpiScale))
+            .Select(
+                item =>
+                {
+                    var overlay = new OCROverlay
+                    {
+                        CurrentScreen = item.Screen,
+                        CurrentScaling = item.DpiScale,
+                    };
+
+                    // get the system dpi settings (i.e. the scaling for the *primary* monitor)
+                    var systemDpi = VisualTreeHelper.GetDpi(overlay);
+
+                    // get the physical coordinates of the screen
+                    var bounds = item.Screen.DisplayArea;
+
+                    // WPF works internally with *system* scaling settings regardless of
+                    // the process dpi awareness, so we need to convert physical pixel
+                    // sizes to "Device-Independent Pixels" (DIPs) when setting the
+                    // window size and position - that way we'll magically end up with
+                    // the right coordinates when WPF scales them back up again
+                    overlay.WindowStartupLocation = WindowStartupLocation.Manual;
+                    overlay.WindowState = WindowState.Normal;
+                    overlay.Left = bounds.Left * systemDpi.DpiScaleX / item.DpiScale.DpiScaleX;
+                    overlay.Top = bounds.Top * systemDpi.DpiScaleY / item.DpiScale.DpiScaleY;
+                    overlay.Width = bounds.Width * systemDpi.DpiScaleX / item.DpiScale.DpiScaleX;
+                    overlay.Height = bounds.Height * systemDpi.DpiScaleY / item.DpiScale.DpiScaleY;
+
+                    overlay.Show();
+                    ActivateWindow(overlay);
+
+                    return overlay;
+                })
+            .ToList();
 
         PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRInvokedEvent());
     }
