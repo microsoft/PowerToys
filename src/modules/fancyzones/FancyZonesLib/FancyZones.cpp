@@ -612,7 +612,15 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             if (FancyZonesSettings::settings().moveWindowsBasedOnPosition)
             {
                 auto monitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
-                m_windowKeyboardSnapper.Snap(foregroundWindow, monitor, static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas(), monitors);
+                RECT windowRect;
+                if (GetWindowRect(foregroundWindow, &windowRect))
+                {
+                    m_windowKeyboardSnapper.Snap(foregroundWindow, windowRect, monitor, static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas(), monitors);
+                }
+                else
+                {
+                    Logger::error("Error snapping window by keyboard shortcut: failed to get window rect");
+                }
             }
             else
             {

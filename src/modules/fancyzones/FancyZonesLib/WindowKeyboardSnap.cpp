@@ -15,9 +15,39 @@ bool WindowKeyboardSnap::Snap(HWND window, HMONITOR monitor, DWORD vkCode, const
     return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && SnapHotkeyBasedOnZoneNumber(window, vkCode, monitor, activeWorkAreas, monitors);
 }
 
-bool WindowKeyboardSnap::Snap(HWND window, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors)
+bool WindowKeyboardSnap::Snap(HWND window, RECT windowRect, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors)
 {
-    return SnapHotkeyBasedOnPosition(window, vkCode, monitor, activeWorkAreas, monitors);
+    if (!activeWorkAreas.contains(monitor))
+    {
+        return false;
+    }
+
+    const auto& currentWorkArea = activeWorkAreas.at(monitor);
+    if (monitors.size() > 1 && FancyZonesSettings::settings().moveWindowAcrossMonitors)
+    {
+        // Multi monitor environment.
+        // First, try to stay on the same monitor
+        bool success = ProcessDirectedSnapHotkey(window, vkCode, false, currentWorkArea.get());
+        if (success)
+        {
+            return true;
+        }
+
+        // Try to snap on another monitor
+        success = SnapBasedOnPositionOnAnotherMonitor(window, windowRect, vkCode, monitor, activeWorkAreas, monitors);
+        if (success)
+        {
+            // Unsnap from previous work area
+            currentWorkArea->Unsnap(window);
+        }
+
+        return success;
+    }
+    else
+    {
+        // Single monitor environment, or combined multi-monitor environment.
+        return ProcessDirectedSnapHotkey(window, vkCode, true, currentWorkArea.get());
+    }
 }
 
 bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors)
@@ -94,93 +124,25 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
     return false;
 }
 
-bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors)
+bool WindowKeyboardSnap::SnapBasedOnPositionOnAnotherMonitor(HWND window, RECT windowRect, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors)
 {
-    if (!activeWorkAreas.contains(current))
+    // Extract zones from all other monitors and target one of them
+    std::vector<RECT> zoneRects;
+    std::vector<std::pair<ZoneIndex, WorkArea*>> zoneRectsInfo;
+    RECT currentMonitorRect{ .top = 0, .bottom = -1 };
+
+    for (const auto& [monitor, monitorRect] : monitors)
     {
-        return false;
-    }
-
-    const auto& currentWorkArea = activeWorkAreas.at(current);
-    
-    if (current && monitors.size() > 1 && FancyZonesSettings::settings().moveWindowAcrossMonitors)
-    {
-        // Multi monitor environment.
-        // First, try to stay on the same monitor
-        bool success = ProcessDirectedSnapHotkey(window, vkCode, false, currentWorkArea.get());
-        if (success)
+        if (monitor == current)
         {
-            return true;
+            currentMonitorRect = monitorRect;
         }
-
-        // If that didn't work, extract zones from all other monitors and target one of them
-        std::vector<RECT> zoneRects;
-        std::vector<std::pair<ZoneIndex, WorkArea*>> zoneRectsInfo;
-        RECT currentMonitorRect{ .top = 0, .bottom = -1 };
-
-        for (const auto& [monitor, monitorRect] : monitors)
+        else
         {
-            if (monitor == current)
+            if (activeWorkAreas.contains(monitor))
             {
-                currentMonitorRect = monitorRect;
-            }
-            else
-            {
-                if (activeWorkAreas.contains(monitor))
-                {
-                    const auto& workArea = activeWorkAreas.at(monitor);
-                    const auto& layout = workArea->GetLayout();
-                    if (layout)
-                    {
-                        const auto& zones = layout->Zones();
-                        for (const auto& [zoneId, zone] : zones)
-                        {
-                            RECT zoneRect = zone.GetZoneRect();
-
-                            zoneRect.left += monitorRect.left;
-                            zoneRect.right += monitorRect.left;
-                            zoneRect.top += monitorRect.top;
-                            zoneRect.bottom += monitorRect.top;
-
-                            zoneRects.emplace_back(zoneRect);
-                            zoneRectsInfo.emplace_back(zoneId, workArea.get());
-                        }
-                    }
-                }
-            }
-        }
-
-        // Ensure we can get the windowRect, if not, just quit
-        RECT windowRect;
-        if (!GetWindowRect(window, &windowRect))
-        {
-            return false;
-        }
-
-        auto chosenIdx = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
-
-        if (chosenIdx < zoneRects.size())
-        {
-            // Moving to another monitor succeeded
-            const auto& [trueZoneIdx, workArea] = zoneRectsInfo[chosenIdx];
-            if (workArea)
-            {
-                workArea->Snap(window, { trueZoneIdx });
-                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
-            }
-
-            return true;
-        }
-
-        // We reached the end of all monitors.
-        // Try again, cycling on all monitors.
-        // First, add zones from the origin monitor to zoneRects
-        // Sanity check: the current monitor is valid
-        if (currentMonitorRect.top <= currentMonitorRect.bottom)
-        {
-            if (currentWorkArea)
-            {
-                const auto& layout = currentWorkArea->GetLayout();
+                const auto& workArea = activeWorkAreas.at(monitor);
+                const auto& layout = workArea->GetLayout();
                 if (layout)
                 {
                     const auto& zones = layout->Zones();
@@ -188,48 +150,97 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnPosition(HWND window, DWORD vkCode, HM
                     {
                         RECT zoneRect = zone.GetZoneRect();
 
-                        zoneRect.left += currentMonitorRect.left;
-                        zoneRect.right += currentMonitorRect.left;
-                        zoneRect.top += currentMonitorRect.top;
-                        zoneRect.bottom += currentMonitorRect.top;
+                        zoneRect.left += monitorRect.left;
+                        zoneRect.right += monitorRect.left;
+                        zoneRect.top += monitorRect.top;
+                        zoneRect.bottom += monitorRect.top;
 
                         zoneRects.emplace_back(zoneRect);
-                        zoneRectsInfo.emplace_back(zoneId, currentWorkArea.get());
+                        zoneRectsInfo.emplace_back(zoneId, workArea.get());
                     }
                 }
             }
         }
-        else
+    }
+
+    auto chosenIdx = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+
+    if (chosenIdx < zoneRects.size())
+    {
+        // Moving to another monitor succeeded
+        const auto& [trueZoneIdx, workArea] = zoneRectsInfo[chosenIdx];
+        bool snapped = false;
+        if (workArea)
         {
-            return false;
+            snapped = workArea->Snap(window, { trueZoneIdx });
         }
 
-        RECT combinedRect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
-        windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, combinedRect, vkCode);
-        chosenIdx = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
-        if (chosenIdx < zoneRects.size())
+        if (snapped)
         {
-            // Moving to another monitor succeeded
-            const auto& [trueZoneIdx, workArea] = zoneRectsInfo[chosenIdx];
+            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+        }
 
-            if (workArea)
+        return snapped;
+    }
+
+    // We reached the end of all monitors.
+    // Try again, cycling on all monitors.
+    // First, add zones from the origin monitor to zoneRects
+    // Sanity check: the current monitor is valid
+    if (currentMonitorRect.top <= currentMonitorRect.bottom)
+    {
+        const auto& currentWorkArea = activeWorkAreas.at(current);
+        if (currentWorkArea)
+        {
+            const auto& layout = currentWorkArea->GetLayout();
+            if (layout)
             {
-                workArea->Snap(window, { trueZoneIdx });
-                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
-            }
+                const auto& zones = layout->Zones();
+                for (const auto& [zoneId, zone] : zones)
+                {
+                    RECT zoneRect = zone.GetZoneRect();
 
-            return true;
-        }
-        else
-        {
-            // Giving up
-            return false;
+                    zoneRect.left += currentMonitorRect.left;
+                    zoneRect.right += currentMonitorRect.left;
+                    zoneRect.top += currentMonitorRect.top;
+                    zoneRect.bottom += currentMonitorRect.top;
+
+                    zoneRects.emplace_back(zoneRect);
+                    zoneRectsInfo.emplace_back(zoneId, currentWorkArea.get());
+                }
+            }
         }
     }
     else
     {
-        // Single monitor environment, or combined multi-monitor environment.
-        return ProcessDirectedSnapHotkey(window, vkCode, true, currentWorkArea.get());
+        return false;
+    }
+
+    RECT combinedRect = FancyZonesUtils::GetMonitorsCombinedRect<&MONITORINFOEX::rcWork>(monitors);
+    windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, combinedRect, vkCode);
+    chosenIdx = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+    if (chosenIdx < zoneRects.size())
+    {
+        // Moving to another monitor succeeded
+        const auto& [trueZoneIdx, workArea] = zoneRectsInfo[chosenIdx];
+
+        bool snapped = false;
+        if (workArea)
+        {
+            snapped = workArea->Snap(window, { trueZoneIdx });
+        }
+
+        if (snapped)
+        {
+            Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+        }
+
+        return snapped;
+    }
+    else
+    {
+        // Giving up
+        return false;
     }
 }
 
