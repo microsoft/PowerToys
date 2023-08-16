@@ -188,15 +188,15 @@ internal sealed class ImageMethods
         using WrappingStream wrappingStream = new(memoryStream);
         passedBitmap.Save(wrappingStream, ImageFormat.Bmp);
         wrappingStream.Position = 0;
-        BitmapImage bitmapimage = new();
-        bitmapimage.BeginInit();
-        bitmapimage.StreamSource = wrappingStream;
-        bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapimage.EndInit();
-        bitmapimage.Freeze();
+        BitmapImage bitmapImage = new();
+        bitmapImage.BeginInit();
+        bitmapImage.StreamSource = wrappingStream;
+        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.EndInit();
+        bitmapImage.Freeze();
         TransformedBitmap transformedBmp = new();
         transformedBmp.BeginInit();
-        transformedBmp.Source = bitmapimage;
+        transformedBmp.Source = bitmapImage;
         transformedBmp.Transform = new ScaleTransform(scale, scale);
         transformedBmp.EndInit();
         transformedBmp.Freeze();
@@ -231,14 +231,14 @@ internal sealed class ImageMethods
 
         bitmap.Save(wrappingStream, ImageFormat.Bmp);
         wrappingStream.Position = 0;
-        BitmapImage bitmapimage = new();
-        bitmapimage.BeginInit();
-        bitmapimage.StreamSource = wrappingStream;
-        bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapimage.EndInit();
-        bitmapimage.Freeze();
+        BitmapImage bitmapImage = new();
+        bitmapImage.BeginInit();
+        bitmapImage.StreamSource = wrappingStream;
+        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.EndInit();
+        bitmapImage.Freeze();
         GC.Collect();
-        return bitmapimage;
+        return bitmapImage;
     }
 
     public static Language? GetOCRLanguage()
