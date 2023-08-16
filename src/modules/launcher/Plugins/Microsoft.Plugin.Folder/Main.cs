@@ -56,10 +56,7 @@ namespace Microsoft.Plugin.Folder
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var expandedName = FolderHelper.Expand(query.Search);
 
@@ -80,10 +77,7 @@ namespace Microsoft.Plugin.Folder
 
         public static IEnumerable<Result> GetFolderPluginResults(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var expandedName = FolderHelper.Expand(query.Search);
 

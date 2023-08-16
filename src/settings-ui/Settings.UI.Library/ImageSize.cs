@@ -225,10 +225,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public void Update(ImageSize modifiedSize)
         {
-            if (modifiedSize == null)
-            {
-                throw new ArgumentNullException(nameof(modifiedSize));
-            }
+            ArgumentNullException.ThrowIfNull(modifiedSize);
 
             Id = modifiedSize.Id;
             Name = modifiedSize.Name;

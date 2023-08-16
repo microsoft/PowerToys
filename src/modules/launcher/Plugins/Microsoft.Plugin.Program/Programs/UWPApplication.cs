@@ -91,10 +91,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public Result Result(string query, string queryArguments, IPublicAPI api)
         {
-            if (api == null)
-            {
-                throw new ArgumentNullException(nameof(api));
-            }
+            ArgumentNullException.ThrowIfNull(api);
 
             var score = Score(query);
             if (score <= 0)
@@ -130,10 +127,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
-            if (api == null)
-            {
-                throw new ArgumentNullException(nameof(api));
-            }
+            ArgumentNullException.ThrowIfNull(api);
 
             var contextMenus = new List<ContextMenuResult>();
 
@@ -229,10 +223,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public UWPApplication(IAppxManifestApplication manifestApp, UWP package)
         {
-            if (manifestApp == null)
-            {
-                throw new ArgumentNullException(nameof(manifestApp));
-            }
+            ArgumentNullException.ThrowIfNull(manifestApp);
 
             var hr = manifestApp.GetAppUserModelId(out var tmpUserModelId);
             UserModelId = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpUserModelId);

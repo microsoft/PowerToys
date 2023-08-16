@@ -36,15 +36,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// <returns>Number translator for target culture</returns>
         public static NumberTranslator Create(CultureInfo sourceCulture, CultureInfo targetCulture)
         {
-            if (sourceCulture == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(sourceCulture));
-            }
+            ArgumentNullException.ThrowIfNull(sourceCulture);
 
-            if (targetCulture == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(targetCulture));
-            }
+            ArgumentNullException.ThrowIfNull(targetCulture);
 
             return new NumberTranslator(sourceCulture, targetCulture);
         }

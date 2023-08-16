@@ -1003,15 +1003,9 @@ namespace PowerLauncher.ViewModel
         /// </summary>
         public void UpdateResultView(List<Result> list, string originQuery, CancellationToken ct)
         {
-            if (list == null)
-            {
-                throw new ArgumentNullException(nameof(list));
-            }
+            ArgumentNullException.ThrowIfNull(list);
 
-            if (originQuery == null)
-            {
-                throw new ArgumentNullException(nameof(originQuery));
-            }
+            ArgumentNullException.ThrowIfNull(originQuery);
 
             foreach (var result in list)
             {

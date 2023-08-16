@@ -53,10 +53,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
         public List<Result> Query(Query query)
         {
-            if (query is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var results = new List<Result>();
 

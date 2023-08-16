@@ -56,10 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this.isDark = isDark;
 
             // To obtain the general Settings configurations of PowerToys
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 

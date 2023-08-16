@@ -33,10 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _settingsConfigFileFolder = configFileSubfolder;
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 

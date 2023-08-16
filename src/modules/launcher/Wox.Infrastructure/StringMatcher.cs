@@ -90,10 +90,7 @@ namespace Wox.Infrastructure
                 return new MatchResult(false, UserSettingSearchPrecision);
             }
 
-            if (opt == null)
-            {
-                throw new ArgumentNullException(nameof(opt));
-            }
+            ArgumentNullException.ThrowIfNull(opt);
 
             query = query.Trim();
 

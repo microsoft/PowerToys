@@ -57,10 +57,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             CultureInfo inputCulture = _inputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
             CultureInfo outputCulture = _outputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
 
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             // Happens if the user has only typed the action key so far
             if (string.IsNullOrEmpty(query.Search))

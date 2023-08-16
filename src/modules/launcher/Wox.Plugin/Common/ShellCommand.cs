@@ -18,10 +18,7 @@ namespace Wox.Plugin.Common
 
         public static Process RunAsDifferentUser(ProcessStartInfo processStartInfo)
         {
-            if (processStartInfo == null)
-            {
-                throw new ArgumentNullException(nameof(processStartInfo));
-            }
+            ArgumentNullException.ThrowIfNull(processStartInfo);
 
             processStartInfo.Verb = "RunAsUser";
             var process = Process.Start(processStartInfo);

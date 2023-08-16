@@ -84,10 +84,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public IEnumerable<IItemResult> Query(string search)
         {
-            if (search == null)
-            {
-                throw new ArgumentNullException(nameof(search));
-            }
+            ArgumentNullException.ThrowIfNull(search);
 
             var processed = Process(search);
 

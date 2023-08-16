@@ -105,10 +105,7 @@ namespace Wox.Infrastructure.Storage
 
         public StoragePowerToysVersionInfo(string associatedFilePath, int type)
         {
-            if (associatedFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(associatedFilePath));
-            }
+            ArgumentNullException.ThrowIfNull(associatedFilePath);
 
             FilePath = GetFilePath(associatedFilePath, type);
 
