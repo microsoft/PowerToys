@@ -39,4 +39,31 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
+    <data name="BtnBounds.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Bounds (Ctrl+1)</value>
+    </data>
+    <data name="BtnBoundsTooltip.Text" xml:space="preserve">
+        <value>Bounds (Ctrl+1)</value>
+    </data>
+    <data name="BtnSpacing.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Spacing (Ctrl+2)</value>
+    </data>
+    <data name="BtnSpacingTooltip.Text" xml:space="preserve">
+        <value>Spacing (Ctrl+2)</value>
+    </data>
+    <data name="BtnHorizontalSpacing.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Horizontal spacing (Ctrl+3)</value>
+    </data>
+    <data name="BtnHorizontalSpacingTooltip.Text" xml:space="preserve">
+        <value>Horizontal spacing (Ctrl+3)</value>
+    </data>
+    <data name="BtnVerticalSpacing.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+        <value>Vertical spacing (Ctrl+4)</value>
+    </data>
+    <data name="BtnVerticalSpacingTooltip.Text" xml:space="preserve">
+        <value>Vertical spacing (Ctrl+4)</value>
+    </data>
+    <data name="BtnClosePanelTooltip.Text" xml:space="preserve">
+        <value>Close (Esc)</value>
+    </data>
 </root>

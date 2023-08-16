@@ -84,6 +84,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "ColorPicker",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.CropAndLock, new OobePowerToysModule()
+            {
+                ModuleName = "CropAndLock",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.FancyZones, new OobePowerToysModule()
             {
                 ModuleName = "FancyZones",
@@ -241,6 +246,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
                     case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
+                    case "CropAndLock": NavigationFrame.Navigate(typeof(OobeCropAndLock)); break;
                     case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
                     case "FileLocksmith": NavigationFrame.Navigate(typeof(OobeFileLocksmith)); break;
                     case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;

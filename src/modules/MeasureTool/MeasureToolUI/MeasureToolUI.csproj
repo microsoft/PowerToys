@@ -53,22 +53,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Assets\MeasureTool\SplashScreen.scale-200.png" />
     <Content Include="Assets\MeasureTool\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\MeasureTool\Square150x150Logo.scale-200.png" />

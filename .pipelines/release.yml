@@ -71,7 +71,7 @@ jobs:
       packageType: sdk
       version: '7.x'
 
-  - task: NuGetAuthenticate@0
+  - task: NuGetAuthenticate@1
       
   - task: NuGetToolInstaller@1
     displayName: Use NuGet Installer latest
@@ -82,14 +82,6 @@ jobs:
 # - Webcam report tool
 # - Installer
 # - Bootstrapper Installer
-  - task: NuGetCommand@2
-    displayName: NuGet restore solutions dependencies
-    inputs:
-      command: restore
-      restoreSolution: '**/*.sln'
-      selectOrConfig: config
-      nugetConfigPath: .pipelines/release-nuget.config
-
   - task: PowerShell@2
     displayName: Download and install WiX 3.14 development build
     inputs:
@@ -136,7 +128,7 @@ jobs:
     inputs:
       solution: '**\PowerToys.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -147,7 +139,7 @@ jobs:
     inputs:
       solution: '**/tools/BugReportTool/BugReportTool.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -158,7 +150,7 @@ jobs:
     inputs:
       solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -169,7 +161,7 @@ jobs:
     inputs:
       solution: '**/tools/StylesReportTool/StylesReportTool.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -396,14 +388,6 @@ jobs:
       targetType: inline
       script: git clean -xfd  -e *exe -- .\installer\
       pwsh: true
-
-  - task: NuGetCommand@2
-    displayName: NuGet restore solutions dependencies
-    inputs:
-      command: restore
-      restoreSolution: 'installer/*.sln'
-      selectOrConfig: config
-      nugetConfigPath: .pipelines/release-nuget.config
 
   - template: installer-steps.yml
     parameters:

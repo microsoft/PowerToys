@@ -1,12 +1,12 @@
 # Keyboard Manager UI
 
 ## Table of Contents:
-1. [C++ XAML Islands](#c---xaml-islands)
+1. [C++ XAML Islands](#c-xaml-islands)
     1. [Debugging exceptions in XAML Islands](#debugging-exceptions-in-xaml-islands)
     2. [Build times](#build-times)
     3. [Setting custom backgrounds for Xaml Controls using brushes](#setting-custom-backgrounds-for-xaml-controls-using-brushes)
 2. [UI Structure](#ui-structure)
-3. [EditKeyboardWindow/EditShortcutsWindow](#editkeyboardwindow-editshortcutswindow)
+3. [EditKeyboardWindow / EditShortcutsWindow](#editkeyboardwindow--editshortcutswindow)
     1. [OK and Cancel button](#ok-and-cancel-button)
     2. [Delete button](#delete-button)
     3. [Handling common modifiers in EditKeyboardWindow](#handling-common-modifiers-in-editkeyboardwindow)
@@ -51,7 +51,7 @@ Since ComboBoxes are added dynamically, handlers have been added which [update t
 
 When the `EditKeyboardWindow`/`EditShortcutsWindow` is created, [we iterate through the remappings](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/EditKeyboardWindow.cpp#L254-L262) stored in `KeyboardManagerState` and add rows to the UI Grid. For both the windows we have `static` buffers [`singleKeyRemapBuffer`](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/SingleKeyRemapControl.h#L39-L40) and [`shortcutRemapBuffer`](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/ShortcutControl.h#L42-L43) which store the corresponding key/shortcuts as per the selections in the UI if they are valid with no warnings.
 
-## EditKeyboardWindow/EditShortcutsWindow 
+## EditKeyboardWindow / EditShortcutsWindow
 
 ### OK and Cancel button
 [On pressing the OK button](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/EditKeyboardWindow.cpp#L66-L89) in `EditKeyboardWindow`, first the [`CheckIfRemappingsAreValid` method](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/LoadingAndSavingRemappingHelper.cpp#L10-L44) is executed which performs basic validity checks on the current remappings in the remap buffer (`static SingleKeyRemapControl::singleKeyRemapBuffer`), such as if there are no NULL columns and none of the source keys are repeated. All other validity checks are assumed to happen while the user adds the remapping. If this is found to be invalid a ContentDialog is displayed which shows that some remappings are invalid and if the user proceeds only the valid ones will be applied. If it is valid [`GetOrphanedKeys`](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/LoadingAndSavingRemappingHelper.cpp#L46-L75) is executed which checks if any keys are orphaned (i.e. the key has been remapped and no other key has been remapped to it, so there is no way to send that key code), and a dialog is shown for notifying the user with a list of orphaned keys. After this the settings are [applied by adding it to the `KeyboardManagerState.singleKeyReMap` member](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/LoadingAndSavingRemappingHelper.cpp#L102-L164) and they are saved to the JSON file. `EditShortcutsWindow` differs slightly from this, as there is no orphaned keys check, and [on pressing OK](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/EditShortcutsWindow.cpp#L32-L47) both the global and app-specific shortcuts are validated and [updated](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/ui/LoadingAndSavingRemappingHelper.cpp#L166-L223).
