@@ -282,6 +282,7 @@ public partial class OCROverlay : Window
 
         if (regionScaled.Width < 3 || regionScaled.Height < 3)
         {
+            BackgroundBrush.Opacity = 0;
             grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled), selectedLanguage);
         }
         else
@@ -289,20 +290,23 @@ public partial class OCROverlay : Window
             grabbedText = await ImageMethods.GetRegionsText(this, regionScaled, selectedLanguage);
         }
 
-        if (string.IsNullOrWhiteSpace(grabbedText) == false)
+        if (string.IsNullOrWhiteSpace(grabbedText))
         {
-            try
-            {
-                Clipboard.SetText(grabbedText);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Clipboard.SetText exception: {ex}");
-            }
-
-            WindowUtilities.CloseAllOCROverlays();
-            PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCaptureEvent());
+            BackgroundBrush.Opacity = ActiveOpacity;
+            return;
         }
+
+        try
+        {
+            Clipboard.SetText(grabbedText);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Clipboard.SetText exception: {ex}");
+        }
+
+        WindowUtilities.CloseAllOCROverlays();
+        PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCaptureEvent());
     }
 
     private void CancelMenuItem_Click(object sender, RoutedEventArgs e)

@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Forms;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
-using PowerOCR.Helpers;
 
 namespace PowerOCR.Utilities;
 
@@ -40,7 +39,7 @@ public static class WindowUtilities
 
         foreach (Window window in allWindows)
         {
-            if (window is OCROverlay overlay)
+            if (window is OCROverlay)
             {
                 return true;
             }

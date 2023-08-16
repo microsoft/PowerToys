@@ -178,10 +178,8 @@ internal sealed class ImageMethods
 
             return text.ToString();
         }
-        else
-        {
-            return text.ToString();
-        }
+
+        return text.ToString();
     }
 
     public static Bitmap ScaleBitmapUniform(Bitmap passedBitmap, double scale)
