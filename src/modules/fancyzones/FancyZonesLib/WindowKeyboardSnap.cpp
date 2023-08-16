@@ -27,7 +27,7 @@ bool WindowKeyboardSnap::Snap(HWND window, RECT windowRect, HMONITOR monitor, DW
     {
         // Multi monitor environment.
         // First, try to stay on the same monitor
-        bool success = ProcessDirectedSnapHotkey(window, vkCode, false, currentWorkArea.get());
+        bool success = ProcessDirectedSnapHotkey(window, windowRect, vkCode, false, currentWorkArea.get());
         if (success)
         {
             return true;
@@ -46,7 +46,7 @@ bool WindowKeyboardSnap::Snap(HWND window, RECT windowRect, HMONITOR monitor, DW
     else
     {
         // Single monitor environment, or combined multi-monitor environment.
-        return ProcessDirectedSnapHotkey(window, vkCode, true, currentWorkArea.get());
+        return ProcessDirectedSnapHotkey(window, windowRect, vkCode, true, currentWorkArea.get());
     }
 }
 
@@ -244,7 +244,7 @@ bool WindowKeyboardSnap::SnapBasedOnPositionOnAnotherMonitor(HWND window, RECT w
     }
 }
 
-bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea)
+bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, RECT windowRect, DWORD vkCode, bool cycle, WorkArea* const workArea)
 {
     if (!workArea)
     {
@@ -264,7 +264,7 @@ bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bo
         // clean previous extention data
         m_extendData.Reset();
 
-        result = MoveByDirectionAndPosition(window, vkCode, cycle, workArea);    
+        result = MoveByDirectionAndPosition(window, windowRect, vkCode, cycle, workArea);    
     }
 
     if (result)
@@ -331,7 +331,7 @@ bool WindowKeyboardSnap::MoveByDirectionAndIndex(HWND window, DWORD vkCode, bool
     return true;
 }
 
-bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea)
+bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, RECT windowRect, DWORD vkCode, bool cycle, WorkArea* const workArea)
 {
     if (!workArea)
     {
@@ -364,13 +364,6 @@ bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, DWORD vkCode, b
             zoneRects.emplace_back(zones.at(zoneId).GetZoneRect());
             freeZoneIndices.emplace_back(zoneId);
         }
-    }
-
-    RECT windowRect;
-    if (!GetWindowRect(window, &windowRect))
-    {
-        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
-        return false;
     }
 
     // Move to coordinates relative to windowZone
