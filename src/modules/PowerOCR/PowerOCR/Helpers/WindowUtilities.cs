@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Windows;
 using System.Windows.Forms;
 using ManagedCommon;
@@ -20,33 +21,11 @@ public static class WindowUtilities
             return;
         }
 
+        Logger.LogInfo($"Adding Overlays for each screen");
         foreach (Screen screen in Screen.AllScreens)
         {
-            OCROverlay overlay = new OCROverlay()
-            {
-                WindowStartupLocation = WindowStartupLocation.Manual,
-                Width = 200,
-                Height = 200,
-                WindowState = WindowState.Normal,
-            };
-
-            if (screen.WorkingArea.Left >= 0)
-            {
-                overlay.Left = screen.WorkingArea.Left;
-            }
-            else
-            {
-                overlay.Left = screen.WorkingArea.Left + (screen.WorkingArea.Width / 2);
-            }
-
-            if (screen.WorkingArea.Top >= 0)
-            {
-                overlay.Top = screen.WorkingArea.Top;
-            }
-            else
-            {
-                overlay.Top = screen.WorkingArea.Top + (screen.WorkingArea.Height / 2);
-            }
+            Logger.LogInfo($"screen {screen}");
+            OCROverlay overlay = new(screen.Bounds);
 
             overlay.Show();
             ActivateWindow(overlay);
@@ -81,6 +60,8 @@ public static class WindowUtilities
                 overlay.Close();
             }
         }
+
+        GC.Collect();
 
         // TODO: Decide when to close the process
         // System.Windows.Application.Current.Shutdown();
