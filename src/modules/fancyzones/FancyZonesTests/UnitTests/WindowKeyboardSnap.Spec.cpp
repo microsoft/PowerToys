@@ -517,6 +517,15 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
         }
 
+        // using zone rects instead of the actual window rect 
+        // otherwise we'll need to wait after snapping, for the window to be resized
+        RECT GetZoneRect(const WorkArea* workArea, ZoneIndex index)
+        {
+            auto rect = workArea->GetLayout()->Zones().at(index).GetZoneRect();
+            auto workAreaRect = workArea->GetWorkAreaRect();
+            return rect;
+        }
+
         TEST_METHOD_INITIALIZE(Init)
         {
             AppZoneHistory::instance().LoadData();
@@ -594,8 +603,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 1 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 1);
 
             Assert::IsTrue(windowKeyboardSnap.Snap(window, windowRect, m_monitor, VK_LEFT, m_workAreaMap, { { m_monitor, m_rect } }));
 
@@ -609,8 +617,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 0 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 0);
 
             Assert::IsTrue(windowKeyboardSnap.Snap(window, windowRect, m_monitor, VK_RIGHT, m_workAreaMap, { { m_monitor, m_rect } }));
 
@@ -624,8 +631,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 2 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 2);
 
             Assert::IsTrue(windowKeyboardSnap.Snap(window, windowRect, m_monitor, VK_UP, m_workAreaMap, { { m_monitor, m_rect } }));
 
@@ -639,8 +645,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 0 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 0);
 
             Assert::IsTrue(windowKeyboardSnap.Snap(window, windowRect, m_monitor, VK_DOWN, m_workAreaMap, { { m_monitor, m_rect } }));
 
@@ -654,8 +659,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 0 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 0);
 
             auto settings = FancyZonesSettings::settings();
             settings.moveWindowAcrossMonitors = true;
@@ -673,8 +677,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 1 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 1);
 
             auto settings = FancyZonesSettings::settings();
             settings.moveWindowAcrossMonitors = true;
@@ -692,8 +695,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 0 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 0);
 
             auto settings = FancyZonesSettings::settings();
             settings.moveWindowAcrossMonitors = true;
@@ -711,8 +713,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 2 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 2);
 
             auto settings = FancyZonesSettings::settings();
             settings.moveWindowAcrossMonitors = true;
@@ -1320,6 +1321,16 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().LoadData();
         }
 
+        // use zone rects instead of the actual window rect
+        // otherwise we'll need to wait after snapping, for the window to be resized
+        // important when snapping/extending by position
+        RECT GetZoneRect(const WorkArea* workArea, ZoneIndex index)
+        {
+            auto rect = workArea->GetLayout()->Zones().at(index).GetZoneRect();
+            auto workAreaRect = workArea->GetWorkAreaRect();
+            return rect;
+        }
+
         TEST_METHOD_INITIALIZE(Init)
         {
             AppZoneHistory::instance().LoadData();
@@ -1396,8 +1407,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 0 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 0);
 
             Assert::IsTrue(windowKeyboardSnap.Snap(window, windowRect, m_monitor, VK_RIGHT, m_workAreaMap, { { m_monitor, m_rect } }));
 
@@ -1411,8 +1421,7 @@ namespace FancyZonesUnitTests
             WindowKeyboardSnap windowKeyboardSnap;
             const auto window = Mocks::WindowCreate(m_hInst);
             m_workAreaMap.at(m_monitor)->Snap(window, { 0 }, true);
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 0);
 
             auto settings = FancyZonesSettings::settings();
             settings.moveWindowAcrossMonitors = true;
@@ -1431,8 +1440,7 @@ namespace FancyZonesUnitTests
             const auto window = Mocks::WindowCreate(m_hInst);
             const auto& workArea = m_workAreaMap[m_monitor];
             workArea->Snap(window, { 0 });
-            RECT windowRect;
-            Assert::IsTrue(GetWindowRect(window, &windowRect));
+            RECT windowRect = GetZoneRect(m_workAreaMap[m_monitor].get(), 0);
 
             Assert::IsTrue(windowKeyboardSnap.Extend(window, windowRect, m_monitor, VK_DOWN, m_workAreaMap));
 
