@@ -345,9 +345,12 @@ bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, RECT windowRect
     ZoneIndex result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
     if (static_cast<size_t>(result) < zoneRects.size())
     {
-        workArea->Snap(window, { freeZoneIndices[result] });
-        Trace::FancyZones::KeyboardSnapWindowToZone(layout.get(), layoutWindows);
-        return true;
+        bool success = workArea->Snap(window, { freeZoneIndices[result] });
+        if (success)
+        {
+            Trace::FancyZones::KeyboardSnapWindowToZone(layout.get(), layoutWindows); 
+        }
+        return success;
     }
     else if (cycle)
     {
@@ -360,9 +363,14 @@ bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, RECT windowRect
 
         if (static_cast<size_t>(result) < zoneRects.size())
         {
-            workArea->Snap(window, { result });
-            Trace::FancyZones::KeyboardSnapWindowToZone(layout.get(), layoutWindows);
-            return true;
+            bool success = workArea->Snap(window, { result });
+
+            if (success)
+            {
+                Trace::FancyZones::KeyboardSnapWindowToZone(layout.get(), layoutWindows);
+            }
+            
+            return success;
         }
     }
 
@@ -463,7 +471,11 @@ bool WindowKeyboardSnap::Extend(HWND window, DWORD vkCode, WorkArea* const workA
         resultIndexSet = layout->GetCombinedZoneRange(m_extendData.windowInitialIndexSet, { targetZone });
     }
 
-    workArea->Snap(window, resultIndexSet);
+    bool success = workArea->Snap(window, resultIndexSet);
+    if (success)
+    {
+        Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+    }
 
-    return true;
+    return success;
 }
