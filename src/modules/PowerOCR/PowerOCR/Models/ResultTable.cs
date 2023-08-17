@@ -229,11 +229,11 @@ public class ResultTable
         return rowAreas;
     }
 
-    private static void CheckIntersectionsWithWordBorders(int hitGridSpacing, ICollection<WordBorder> wordBorders, ICollection<int> rowAreas, int i, Rect horzLineRect)
+    private static void CheckIntersectionsWithWordBorders(int hitGridSpacing, ICollection<WordBorder> wordBorders, ICollection<int> rowAreas, int i, Rect horizontalLineRect)
     {
         foreach (WordBorder wb in wordBorders)
         {
-            if (wb.IntersectsWith(horzLineRect))
+            if (wb.IntersectsWith(horizontalLineRect))
             {
                 rowAreas.Add(i * hitGridSpacing);
                 break;
@@ -432,8 +432,8 @@ public class ResultTable
         {
             for (int j = 0; j < resultColumns.Count; j++)
             {
-                ResultColumn jthColumn = resultColumns[j];
-                if (jthColumn.ID == outlierColumnIDs[i])
+                ResultColumn column = resultColumns[j];
+                if (column.ID == outlierColumnIDs[i])
                 {
                     if (j == 0)
                     {
@@ -441,7 +441,7 @@ public class ResultTable
                         if (j + 1 < resultColumns.Count)
                         {
                             ResultColumn nextColumn = resultColumns[j + 1];
-                            nextColumn.Left = jthColumn.Left;
+                            nextColumn.Left = column.Left;
                         }
                     }
                     else if (j == resultColumns.Count - 1)
@@ -450,7 +450,7 @@ public class ResultTable
                         if (j - 1 >= 0)
                         {
                             ResultColumn prevColumn = resultColumns[j - 1];
-                            prevColumn.Right = jthColumn.Right;
+                            prevColumn.Right = column.Right;
                         }
                     }
                     else
@@ -458,18 +458,18 @@ public class ResultTable
                         // merge with closet column
                         ResultColumn prevColumn = resultColumns[j - 1];
                         ResultColumn nextColumn = resultColumns[j + 1];
-                        int distanceToPrev = (int)(jthColumn.Left - prevColumn.Right);
-                        int distanceToNext = (int)(nextColumn.Left - jthColumn.Right);
+                        int distanceToPrev = (int)(column.Left - prevColumn.Right);
+                        int distanceToNext = (int)(nextColumn.Left - column.Right);
 
                         if (distanceToNext < distanceToPrev)
                         {
                             // merge with next column
-                            nextColumn.Left = jthColumn.Left;
+                            nextColumn.Left = column.Left;
                         }
                         else
                         {
                             // merge with prev column
-                            prevColumn.Right = jthColumn.Right;
+                            prevColumn.Right = column.Right;
                         }
                     }
 
