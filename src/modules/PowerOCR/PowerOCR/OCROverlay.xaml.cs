@@ -67,7 +67,7 @@ public partial class OCROverlay : Window
         // build context menu
         if (string.IsNullOrEmpty(selectedLanguageName))
         {
-            selectedLanguage = ImageMethods.GetOCRLanguage();
+            selectedLanguage = LanguageHelper.GetOCRLanguage();
             selectedLanguageName = selectedLanguage?.DisplayName;
         }
 

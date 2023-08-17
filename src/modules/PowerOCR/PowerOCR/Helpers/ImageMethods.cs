@@ -3,27 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
-using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using PowerOCR.Helpers;
 using PowerOCR.Models;
 using Windows.Globalization;
-using Windows.Graphics.Imaging;
-using Windows.Media.Ocr;
-using BitmapDecoder = Windows.Graphics.Imaging.BitmapDecoder;
 
-namespace PowerOCR;
+namespace PowerOCR.Helpers;
 
 internal sealed class ImageMethods
 {
@@ -72,7 +62,7 @@ internal sealed class ImageMethods
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
         bmp = PadImage(bmp);
-        string? resultText = await ExtractText(bmp, preferredLanguage);
+        string? resultText = await OcrExtensions.ExtractText(bmp, preferredLanguage);
 
         return resultText != null ? resultText.Trim() : string.Empty;
     }
@@ -91,90 +81,8 @@ internal sealed class ImageMethods
 
         System.Windows.Point adjustedPoint = new(clickedPoint.X, clickedPoint.Y);
 
-        string resultText = await ExtractText(bmp, preferredLanguage, adjustedPoint);
+        string resultText = await OcrExtensions.ExtractText(bmp, preferredLanguage, adjustedPoint);
         return resultText.Trim();
-    }
-
-    public static async Task<string> ExtractText(Bitmap bmp, Language? preferredLanguage, System.Windows.Point? singlePoint = null)
-    {
-        Language? selectedLanguage = preferredLanguage ?? GetOCRLanguage();
-        if (selectedLanguage == null)
-        {
-            return string.Empty;
-        }
-
-        XmlLanguage lang = XmlLanguage.GetLanguage(selectedLanguage.LanguageTag);
-        CultureInfo culture = lang.GetEquivalentCulture();
-
-        bool isSpaceJoiningLang = LanguageHelper.IsLanguageSpaceJoining(selectedLanguage);
-
-        bool scaleBMP = true;
-
-        if (singlePoint != null
-            || bmp.Width * 1.5 > OcrEngine.MaxImageDimension)
-        {
-            scaleBMP = false;
-        }
-
-        using Bitmap scaledBitmap = scaleBMP ? ScaleBitmapUniform(bmp, 1.5) : ScaleBitmapUniform(bmp, 1.0);
-        StringBuilder text = new();
-
-        await using MemoryStream memoryStream = new();
-        using WrappingStream wrappingStream = new(memoryStream);
-
-        scaledBitmap.Save(wrappingStream, ImageFormat.Bmp);
-        wrappingStream.Position = 0;
-        BitmapDecoder bmpDecoder = await BitmapDecoder.CreateAsync(wrappingStream.AsRandomAccessStream());
-        SoftwareBitmap softwareBmp = await bmpDecoder.GetSoftwareBitmapAsync();
-
-        OcrEngine ocrEngine = OcrEngine.TryCreateFromLanguage(selectedLanguage);
-        OcrResult ocrResult = await ocrEngine.RecognizeAsync(softwareBmp);
-
-        GC.Collect();
-
-        if (singlePoint == null)
-        {
-            foreach (OcrLine ocrLine in ocrResult.Lines)
-            {
-                ocrLine.GetTextFromOcrLine(isSpaceJoiningLang, text);
-            }
-        }
-        else
-        {
-            Windows.Foundation.Point fPoint = new(singlePoint.Value.X, singlePoint.Value.Y);
-            foreach (OcrLine ocrLine in ocrResult.Lines)
-            {
-                foreach (OcrWord ocrWord in ocrLine.Words)
-                {
-                    if (ocrWord.BoundingRect.Contains(fPoint))
-                    {
-                        _ = text.Append(ocrWord.Text);
-                    }
-                }
-            }
-        }
-
-        if (culture.TextInfo.IsRightToLeft)
-        {
-            string[] textListLines = text.ToString().Split(new char[] { '\n', '\r' });
-
-            _ = text.Clear();
-            foreach (string textLine in textListLines)
-            {
-                List<string> wordArray = textLine.Split().ToList();
-                wordArray.Reverse();
-                _ = text.Append(string.Join(' ', wordArray));
-
-                if (textLine.Length > 0)
-                {
-                    _ = text.Append('\n');
-                }
-            }
-
-            return text.ToString();
-        }
-
-        return text.ToString();
     }
 
     public static Bitmap ScaleBitmapUniform(Bitmap passedBitmap, double scale)
@@ -234,35 +142,5 @@ internal sealed class ImageMethods
         bitmapImage.Freeze();
         GC.Collect();
         return bitmapImage;
-    }
-
-    public static Language? GetOCRLanguage()
-    {
-        // use currently selected Language
-        string inputLang = InputLanguageManager.Current.CurrentInputLanguage.Name;
-
-        Language? selectedLanguage = new(inputLang);
-        List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
-
-        if (possibleOcrLanguages.Count < 1)
-        {
-            MessageBox.Show("No possible OCR languages are installed.", "Text Grab");
-            return null;
-        }
-
-        if (possibleOcrLanguages.All(l => l.LanguageTag != selectedLanguage.LanguageTag))
-        {
-            List<Language>? similarLanguages = possibleOcrLanguages.Where(
-                la => la.AbbreviatedName == selectedLanguage.AbbreviatedName).ToList();
-
-            if (similarLanguages != null)
-            {
-                selectedLanguage = similarLanguages.Count > 0
-                    ? similarLanguages.FirstOrDefault()
-                    : possibleOcrLanguages.FirstOrDefault();
-            }
-        }
-
-        return selectedLanguage;
     }
 }
