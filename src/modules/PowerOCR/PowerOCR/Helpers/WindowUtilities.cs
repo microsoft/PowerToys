@@ -15,7 +15,6 @@ using FancyMouse.Helpers;
 using FancyMouse.NativeMethods;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
-using PowerOCR.Helpers;
 
 namespace PowerOCR.Utilities;
 
@@ -28,7 +27,6 @@ public static class WindowUtilities
             Logger.LogWarning("Tried to launch the overlay, but it has been already created.");
             return;
         }
-
         var screens = ScreenHelper.GetAllScreens().ToList();
         var dpiScales = screens.Select(
                 screen =>
@@ -94,7 +92,7 @@ public static class WindowUtilities
 
         foreach (Window window in allWindows)
         {
-            if (window is OCROverlay overlay)
+            if (window is OCROverlay)
             {
                 return true;
             }
@@ -114,6 +112,8 @@ public static class WindowUtilities
                 overlay.Close();
             }
         }
+
+        GC.Collect();
 
         // TODO: Decide when to close the process
         // System.Windows.Application.Current.Shutdown();

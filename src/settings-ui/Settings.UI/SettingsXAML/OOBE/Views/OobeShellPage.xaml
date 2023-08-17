@@ -92,6 +92,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}"
                     Tag="ColorPicker" />
                 <NavigationViewItem
+                    x:Uid="Shell_CropAndLock"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCropAndLock.png}"
+                    Tag="CropAndLock" />
+                <NavigationViewItem
                     x:Uid="Shell_FancyZones"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFancyZones.png}"
                     Tag="FancyZones" />

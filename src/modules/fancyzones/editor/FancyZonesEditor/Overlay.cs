@@ -180,30 +180,6 @@ namespace FancyZonesEditor
             }
         }
 
-        public void SetLayoutSettings(Monitor monitor, LayoutModel model)
-        {
-            if (model == null)
-            {
-                return;
-            }
-
-            monitor.Settings.ZonesetUuid = model.Uuid;
-            monitor.Settings.Type = model.Type;
-            monitor.Settings.SensitivityRadius = model.SensitivityRadius;
-            monitor.Settings.ZoneCount = model.TemplateZoneCount;
-
-            if (model is GridLayoutModel grid)
-            {
-                monitor.Settings.ShowSpacing = grid.ShowSpacing;
-                monitor.Settings.Spacing = grid.Spacing;
-            }
-            else
-            {
-                monitor.Settings.ShowSpacing = false;
-                monitor.Settings.Spacing = 0;
-            }
-        }
-
         public void OpenEditor(LayoutModel model)
         {
             Logger.LogTrace();

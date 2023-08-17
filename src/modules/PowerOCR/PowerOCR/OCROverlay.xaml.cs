@@ -28,17 +28,9 @@ public partial class OCROverlay : Window
     private bool isShiftDown;
     private Point clickedPoint;
     private Point shiftPoint;
-
-    private bool IsSelecting { get; set; }
-
     private Border selectBorder = new();
-
-    private DpiScale? dpiScale;
-
-    private Point GetMousePos() => PointToScreen(Mouse.GetPosition(this));
-
     private Language? selectedLanguage;
-    private MenuItem cancelMenuItem;
+    private MenuItem? cancelMenuItem;
 
     internal ScreenInfo? CurrentScreen
     {
@@ -51,6 +43,7 @@ public partial class OCROverlay : Window
         get;
         init;
     }
+    private bool IsSelecting { get; set; }
 
     private double selectLeft;
     private double selectTop;
@@ -60,10 +53,18 @@ public partial class OCROverlay : Window
 
     private const double ActiveOpacity = 0.4;
 
-    public OCROverlay()
+    public OCROverlay(System.Drawing.Rectangle screenRectangle)
     {
+        Left = screenRectangle.Left >= 0 ? screenRectangle.Left : screenRectangle.Left + (screenRectangle.Width / 2);
+        Top = screenRectangle.Top >= 0 ? screenRectangle.Top : screenRectangle.Top + (screenRectangle.Height / 2);
+
         InitializeComponent();
 
+        PopulateLanguageMenu();
+    }
+
+    private void PopulateLanguageMenu()
+    {
         var userSettings = new UserSettings(new ThrottledActionInvoker());
         string? selectedLanguageName = userSettings.PreferredLanguage.Value;
 
@@ -143,7 +144,10 @@ public partial class OCROverlay : Window
         RegionClickCanvas.MouseUp -= RegionClickCanvas_MouseUp;
         RegionClickCanvas.MouseMove -= RegionClickCanvas_MouseMove;
 
-        cancelMenuItem.Click -= CancelMenuItem_Click;
+        if (cancelMenuItem is not null)
+        {
+            cancelMenuItem.Click -= CancelMenuItem_Click;
+        }
     }
 
     private void MainWindow_KeyUp(object sender, KeyEventArgs e)
@@ -187,8 +191,6 @@ public partial class OCROverlay : Window
         selectBorder.Height = 1;
         selectBorder.Width = 1;
 
-        dpiScale = VisualTreeHelper.GetDpi(this);
-
         try
         {
             RegionClickCanvas.Children.Remove(selectBorder);
@@ -203,19 +205,6 @@ public partial class OCROverlay : Window
         _ = RegionClickCanvas.Children.Add(selectBorder);
         Canvas.SetLeft(selectBorder, clickedPoint.X);
         Canvas.SetTop(selectBorder, clickedPoint.Y);
-
-        /*
-        var screens = System.Windows.Forms.Screen.AllScreens;
-        System.Drawing.Point formsPoint = new((int)clickedPoint.X, (int)clickedPoint.Y);
-        foreach (var scr in screens)
-        {
-            if (scr.Bounds.Contains(formsPoint))
-            {
-                CurrentScreen = scr;
-                break;
-            }
-        }
-        */
 
         IsSelecting = true;
     }
@@ -244,20 +233,6 @@ public partial class OCROverlay : Window
 
             double leftValue = selectLeft + xShiftDelta;
             double topValue = selectTop + yShiftDelta;
-
-            /*
-            if (CurrentScreen is not null && dpiScale is not null)
-            {
-                double currentScreenLeft = CurrentScreen.Bounds.Left; // Should always be 0
-                double currentScreenRight = CurrentScreen.Bounds.Right / dpiScale.Value.DpiScaleX;
-                double currentScreenTop = CurrentScreen.Bounds.Top; // Should always be 0
-                double currentScreenBottom = CurrentScreen.Bounds.Bottom / dpiScale.Value.DpiScaleY;
-
-                // this is giving issues on different monitors
-                // leftValue = Math.Clamp(leftValue, currentScreenLeft, currentScreenRight - selectBorder.Width);
-                // topValue = Math.Clamp(topValue, currentScreenTop, currentScreenBottom - selectBorder.Height);
-            }
-            */
 
             clippingGeometry.Rect = new Rect(
                 new Point(leftValue, topValue),
@@ -293,14 +268,10 @@ public partial class OCROverlay : Window
 
         IsSelecting = false;
 
-        /*
-        CurrentScreen = null;
-        */
         CursorClipper.UnClipCursor();
         RegionClickCanvas.ReleaseMouseCapture();
         Matrix m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;
 
-        Point mPt = GetMousePos();
         Point movingPoint = e.GetPosition(this);
         movingPoint.X *= m.M11;
         movingPoint.Y *= m.M22;
@@ -330,6 +301,7 @@ public partial class OCROverlay : Window
 
         if (regionScaled.Width < 3 || regionScaled.Height < 3)
         {
+            BackgroundBrush.Opacity = 0;
             grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled), selectedLanguage);
         }
         else
@@ -337,20 +309,23 @@ public partial class OCROverlay : Window
             grabbedText = await ImageMethods.GetRegionsText(this, regionScaled, selectedLanguage);
         }
 
-        if (string.IsNullOrWhiteSpace(grabbedText) == false)
+        if (string.IsNullOrWhiteSpace(grabbedText))
         {
-            try
-            {
-                Clipboard.SetText(grabbedText);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Clipboard.SetText exception: {ex}");
-            }
-
-            WindowUtilities.CloseAllOCROverlays();
-            PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCaptureEvent());
+            BackgroundBrush.Opacity = ActiveOpacity;
+            return;
         }
+
+        try
+        {
+            Clipboard.SetText(grabbedText);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Clipboard.SetText exception: {ex}");
+        }
+
+        WindowUtilities.CloseAllOCROverlays();
+        PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCaptureEvent());
     }
 
     private void CancelMenuItem_Click(object sender, RoutedEventArgs e)

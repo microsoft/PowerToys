@@ -56,8 +56,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="ModernWpfUI" />
     <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="WPF-UI" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />

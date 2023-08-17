@@ -38,13 +38,13 @@ internal sealed class ImageMethods
         int height = Math.Max(image.Height + 16, minH + 16);
 
         // Create a compatible bitmap
-        Bitmap dest = new(width, height, image.PixelFormat);
-        using Graphics gd = Graphics.FromImage(dest);
+        Bitmap destination = new(width, height, image.PixelFormat);
+        using Graphics gd = Graphics.FromImage(destination);
 
         gd.Clear(image.GetPixel(0, 0));
         gd.DrawImageUnscaled(image, 8, 8);
 
-        return dest;
+        return destination;
     }
 
     internal static ImageSource GetWindowBoundsImage(OCROverlay passedWindow)
@@ -64,7 +64,7 @@ internal sealed class ImageMethods
         Bitmap bmp = new(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         using Graphics g = Graphics.FromImage(bmp);
 
-        System.Windows.Point absPosPoint = passedWindow == null ? default(System.Windows.Point) : passedWindow.GetAbsolutePosition();
+        System.Windows.Point absPosPoint = passedWindow == null ? default : passedWindow.GetAbsolutePosition();
 
         int thisCorrectedLeft = (int)absPosPoint.X + selectedRegion.Left;
         int thisCorrectedTop = (int)absPosPoint.Y + selectedRegion.Top;
@@ -89,7 +89,7 @@ internal sealed class ImageMethods
 
         g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
-        System.Windows.Point adjustedPoint = new System.Windows.Point(clickedPoint.X, clickedPoint.Y);
+        System.Windows.Point adjustedPoint = new(clickedPoint.X, clickedPoint.Y);
 
         string resultText = await ExtractText(bmp, preferredLanguage, adjustedPoint);
         return resultText.Trim();
@@ -141,7 +141,7 @@ internal sealed class ImageMethods
         }
         else
         {
-            Windows.Foundation.Point fPoint = new Windows.Foundation.Point(singlePoint.Value.X, singlePoint.Value.Y);
+            Windows.Foundation.Point fPoint = new(singlePoint.Value.X, singlePoint.Value.Y);
             foreach (OcrLine ocrLine in ocrResult.Lines)
             {
                 foreach (OcrWord ocrWord in ocrLine.Words)
@@ -173,10 +173,8 @@ internal sealed class ImageMethods
 
             return text.ToString();
         }
-        else
-        {
-            return text.ToString();
-        }
+
+        return text.ToString();
     }
 
     public static Bitmap ScaleBitmapUniform(Bitmap passedBitmap, double scale)
@@ -185,15 +183,15 @@ internal sealed class ImageMethods
         using WrappingStream wrappingStream = new(memoryStream);
         passedBitmap.Save(wrappingStream, ImageFormat.Bmp);
         wrappingStream.Position = 0;
-        BitmapImage bitmapimage = new();
-        bitmapimage.BeginInit();
-        bitmapimage.StreamSource = wrappingStream;
-        bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapimage.EndInit();
-        bitmapimage.Freeze();
+        BitmapImage bitmapImage = new();
+        bitmapImage.BeginInit();
+        bitmapImage.StreamSource = wrappingStream;
+        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.EndInit();
+        bitmapImage.Freeze();
         TransformedBitmap transformedBmp = new();
         transformedBmp.BeginInit();
-        transformedBmp.Source = bitmapimage;
+        transformedBmp.Source = bitmapImage;
         transformedBmp.Transform = new ScaleTransform(scale, scale);
         transformedBmp.EndInit();
         transformedBmp.Freeze();
@@ -228,14 +226,14 @@ internal sealed class ImageMethods
 
         bitmap.Save(wrappingStream, ImageFormat.Bmp);
         wrappingStream.Position = 0;
-        BitmapImage bitmapimage = new();
-        bitmapimage.BeginInit();
-        bitmapimage.StreamSource = wrappingStream;
-        bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapimage.EndInit();
-        bitmapimage.Freeze();
+        BitmapImage bitmapImage = new();
+        bitmapImage.BeginInit();
+        bitmapImage.StreamSource = wrappingStream;
+        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.EndInit();
+        bitmapImage.Freeze();
         GC.Collect();
-        return bitmapimage;
+        return bitmapImage;
     }
 
     public static Language? GetOCRLanguage()

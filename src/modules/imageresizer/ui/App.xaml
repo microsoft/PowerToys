@@ -4,13 +4,12 @@
              xmlns:m="clr-namespace:ImageResizer.Models"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:v="clr-namespace:ImageResizer.Views"
-             xmlns:ui="http://schemas.modernwpf.com/2019">
-
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ui:ThemeResources />
-                <ui:XamlControlsResources />
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
 
             <ObjectDataProvider x:Key="ResizeFitValues"

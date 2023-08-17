@@ -269,10 +269,17 @@
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <labs:SettingsCard
-                        x:Uid="Run_PluginUseDescription"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 Glyph=&#xEA86;}">
+                   <labs:SettingsCard
+                        x:Uid="Run_PluginUse"
+                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEA86;}">
+                        <labs:SettingsCard.Description>
+                            <StackPanel>
+                                <TextBlock x:Uid="Run_PluginUseDescription" />
+                                <HyperlinkButton
+                                    x:Uid="Run_PluginUseFindMorePlugins"
+                                    NavigateUri="https://aka.ms/powerToysRunPlugins" />
+                            </StackPanel>
+                        </labs:SettingsCard.Description>
                         <AutoSuggestBox
                             x:Uid="PowerLauncher_SearchList"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -477,6 +484,9 @@
             <controls:PageLink
                 x:Uid="LearnMore_Run"
                 Link="https://aka.ms/PowerToysOverview_PowerToysRun" />
+            <controls:PageLink
+                x:Uid="Run_FindMorePlugins"
+                Link="https://aka.ms/powerToysRunPlugins" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink

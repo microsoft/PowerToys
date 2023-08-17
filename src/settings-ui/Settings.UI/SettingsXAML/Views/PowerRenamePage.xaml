@@ -36,7 +36,7 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <labs:SettingsExpander
                         x:Uid="PowerRename_Toggle_ContextMenu"
-                        IsExpanded="True">
+                        IsExpanded="False">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu, Converter={StaticResource BoolToComboBoxIndexConverter}}">
@@ -51,6 +51,12 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
+                    <InfoBar
+                        x:Uid="ExtendedContextMenuInfo"
+                        IsClosable="False"
+                        IsOpen="True"
+                        IsTabStop="True"
+                        Severity="Informational" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup
