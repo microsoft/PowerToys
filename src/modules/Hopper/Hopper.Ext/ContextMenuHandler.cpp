@@ -161,6 +161,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
     // sub menu
     int currentMenuPos = 0;
+    int iMenuCounter = 0;
 
     mii.fMask = MIIM_SUBMENU | MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
@@ -170,21 +171,20 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
     mii.fMask = MIIM_STRING | MIIM_ID;
-    mii.wID = idCmdFirst++;
     mii.dwTypeData = strViewHopper;
     if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
-
-    mii.wID = idCmdFirst++;
     mii.dwTypeData = strClearHopper;
     if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
     mii.fMask = MIIM_FTYPE | MIIM_ID;
     mii.wID = idCmdFirst++;
@@ -193,6 +193,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
     mii.fMask = MIIM_SUBMENU | MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
@@ -202,6 +203,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
     mii.hSubMenu = hAddSubMenu;
     mii.dwTypeData = strAddHopper;
@@ -210,6 +212,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return  HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
     
     // "Fetch" menu
     currentMenuPos = 0;
@@ -221,6 +224,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return  HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
@@ -229,6 +233,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
     // "Add" menu
     currentMenuPos = 0;
@@ -239,6 +244,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
@@ -247,6 +253,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
     mii.fMask = MIIM_FTYPE | MIIM_ID;
     mii.wID = idCmdFirst++;
@@ -255,6 +262,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
         
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
@@ -263,6 +271,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
@@ -271,8 +280,9 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+    iMenuCounter++;
 
-    return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
+    return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, iMenuCounter);
 }
 
 HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
