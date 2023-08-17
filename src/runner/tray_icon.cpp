@@ -16,12 +16,13 @@ namespace
 {
     HWND tray_icon_hwnd = NULL;
 
-    // Message code that Windows will use for tray icon notifications.
-    UINT wm_icon_notify = 0;
+    enum { 
+        wm_icon_notify = WM_APP,
+        wm_run_on_main_ui_thread,
+    };
 
     // Contains the Windows Message for taskbar creation.
     UINT wm_taskbar_restart = 0;
-    UINT wm_run_on_main_ui_thread = 0;
 
     NOTIFYICONDATAW tray_icon_data;
     bool tray_icon_created = false;
@@ -157,7 +158,6 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         {
             tray_icon_hwnd = window;
             wm_taskbar_restart = RegisterWindowMessageW(L"TaskbarCreated");
-            wm_run_on_main_ui_thread = RegisterWindowMessage(L"RunOnMainThreadCallback");
         }
         break;
     case WM_DESTROY:
@@ -274,7 +274,7 @@ void start_tray_icon()
     auto icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
     if (icon)
     {
-        wm_icon_notify = RegisterWindowMessageW(L"WM_PowerToysIconNotify");
+        UINT id_tray_icon = 1;
 
         WNDCLASS wc = {};
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -302,13 +302,11 @@ void start_tray_icon()
         tray_icon_data.cbSize = sizeof(tray_icon_data);
         tray_icon_data.hIcon = icon;
         tray_icon_data.hWnd = hwnd;
-        GUID guid;
-        CLSIDFromString(tray_icon_guid, &guid);
-        tray_icon_data.guidItem = guid;
+        tray_icon_data.uID = id_tray_icon;
         tray_icon_data.uCallbackMessage = wm_icon_notify;
         std::wstring about_msg_pt_version = L"PowerToys " + get_product_version();
         wcscpy_s(tray_icon_data.szTip, sizeof(tray_icon_data.szTip) / sizeof(WCHAR), about_msg_pt_version.c_str());
-        tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE | NIF_GUID;
+        tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
         ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, nullptr);
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;

@@ -149,31 +149,35 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <labs:SettingsCard
+                    <labs:SettingsExpander
                         x:Uid="MouseUtils_MouseHighlighter_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
-                        IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
+                        IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}"
+                        IsExpanded="True">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
-                    </labs:SettingsCard>
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="MouseUtils_AutoActivate"
+                                    IsChecked="{x:Bind ViewModel.MouseHighlighterAutoActivate, Mode=TwoWay}" />
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                    </labs:SettingsExpander>
                     <labs:SettingsExpander
                         x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightOpacity">
-                                <Slider
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    Maximum="100"
-                                    Minimum="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterOpacity}" />
+                            <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
                                 <NumberBox
@@ -321,14 +325,22 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <labs:SettingsCard
+                    <labs:SettingsExpander
                         x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
-                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
+                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}"
+                        IsExpanded="True">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
-                    </labs:SettingsCard>
+                        <labs:SettingsExpander.Items>
+                            <labs:SettingsCard ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="MouseUtils_AutoActivate"
+                                    IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoActivate, Mode=TwoWay}" />
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.Items>
+                    </labs:SettingsExpander>
 
                     <labs:SettingsExpander
                         x:Uid="Appearance_Behavior"

@@ -97,6 +97,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "ColorPicker":
                         needToUpdate = generalSettingsConfig.Enabled.ColorPicker != isEnabled;
                         generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
+                    case "CropAndLock":
+                        needToUpdate = generalSettingsConfig.Enabled.CropAndLock != isEnabled;
+                        generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
                     case "FancyZones":
                         needToUpdate = generalSettingsConfig.Enabled.FancyZones != isEnabled;
                         generalSettingsConfig.Enabled.FancyZones = isEnabled; break;

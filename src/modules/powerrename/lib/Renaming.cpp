@@ -86,7 +86,7 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
 
     // Failure here means we didn't match anything or had nothing to match
     // Call put_newName with null in that case to reset it
-    winrt::check_hresult(spRenameRegEx->Replace(sourceName, &newName));
+    winrt::check_hresult(spRenameRegEx->Replace(sourceName, &newName, itemEnumIndex));
 
     if (useFileTime)
     {
@@ -164,17 +164,6 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     if (lstrcmp(originalName, newNameToUse) == 0)
     {
         newNameToUse = nullptr;
-    }
-
-    wchar_t uniqueName[MAX_PATH] = { 0 };
-    if (newNameToUse != nullptr && (flags & EnumerateItems))
-    {
-        unsigned long countUsed = 0;
-        if (GetEnumeratedFileName(uniqueName, ARRAYSIZE(uniqueName), newNameToUse, nullptr, itemEnumIndex, &countUsed))
-        {
-            newNameToUse = uniqueName;
-        }
-        itemEnumIndex++;
     }
 
     spItem->PutStatus(PowerRenameItemRenameStatus::ShouldRename);

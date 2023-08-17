@@ -11,6 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerToys.PowerAccentKeyboardService;
 
 namespace PowerAccent.Core.Services;
+
 public class SettingsService
 {
     private const string PowerAccentModuleName = "QuickAccent";

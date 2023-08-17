@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading;
 using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.WindowWalker.Components
@@ -15,6 +17,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// </summary>
     internal class OpenWindows
     {
+        /// <summary>
+        /// Used to enforce single execution of EnumWindows
+        /// </summary>
+        private static readonly object _enumWindowsLock = new();
+
         /// <summary>
         /// PowerLauncher main executable
         /// </summary>
@@ -33,10 +40,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the list of all open windows
         /// </summary>
-        internal List<Window> Windows
-        {
-            get { return new List<Window>(windows); }
-        }
+        internal List<Window> Windows => new List<Window>(windows);
 
         /// <summary>
         /// Gets an instance property of this class that makes sure that
@@ -68,11 +72,26 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Updates the list of open windows
         /// </summary>
-        internal void UpdateOpenWindowsList()
+        internal void UpdateOpenWindowsList(CancellationToken cancellationToken)
         {
-            windows.Clear();
-            EnumWindowsProc callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
-            _ = NativeMethods.EnumWindows(callbackptr, 0);
+            var tokenHandle = GCHandle.Alloc(cancellationToken);
+            try
+            {
+                var tokenHandleParam = GCHandle.ToIntPtr(tokenHandle);
+                lock (_enumWindowsLock)
+                {
+                    windows.Clear();
+                    EnumWindowsProc callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
+                    _ = NativeMethods.EnumWindows(callbackptr, tokenHandleParam);
+                }
+            }
+            finally
+            {
+                if (tokenHandle.IsAllocated)
+                {
+                    tokenHandle.Free();
+                }
+            }
         }
 
         /// <summary>
@@ -84,6 +103,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>true to make sure to continue enumeration</returns>
         internal bool WindowEnumerationCallBack(IntPtr hwnd, IntPtr lParam)
         {
+            var tokenHandle = GCHandle.FromIntPtr(lParam);
+            var cancellationToken = (CancellationToken)tokenHandle.Target;
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Stop enumeration
+                return false;
+            }
+
             Window newWindow = new Window(hwnd);
 
             if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
