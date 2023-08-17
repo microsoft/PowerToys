@@ -9,10 +9,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using FancyMouse.Models.Drawing;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
+using PowerOCR.Models.Drawing;
 using PowerOCR.Settings;
 using PowerOCR.Utilities;
 using Windows.Globalization;
@@ -43,6 +43,7 @@ public partial class OCROverlay : Window
         get;
         init;
     }
+
     private bool IsSelecting { get; set; }
 
     private double selectLeft;
@@ -53,14 +54,9 @@ public partial class OCROverlay : Window
 
     private const double ActiveOpacity = 0.4;
 
-    public OCROverlay(System.Drawing.Rectangle screenRectangle)
+    public OCROverlay()
     {
-        Left = screenRectangle.Left >= 0 ? screenRectangle.Left : screenRectangle.Left + (screenRectangle.Width / 2);
-        Top = screenRectangle.Top >= 0 ? screenRectangle.Top : screenRectangle.Top + (screenRectangle.Height / 2);
-
         InitializeComponent();
-
-        PopulateLanguageMenu();
     }
 
     private void PopulateLanguageMenu()
@@ -113,26 +109,21 @@ public partial class OCROverlay : Window
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        /*
-        WindowState = WindowState.Maximized;
         FullWindow.Rect = new Rect(0, 0, Width, Height);
-        */
+
         KeyDown += MainWindow_KeyDown;
         KeyUp += MainWindow_KeyUp;
 
         BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
         BackgroundBrush.Opacity = ActiveOpacity;
+
+        PopulateLanguageMenu();
     }
 
     private void Window_Unloaded(object sender, RoutedEventArgs e)
     {
         BackgroundImage.Source = null;
         BackgroundImage.UpdateLayout();
-
-        /*
-        CurrentScreen = null;
-        */
-        dpiScale = null;
 
         KeyDown -= MainWindow_KeyDown;
         KeyUp -= MainWindow_KeyUp;

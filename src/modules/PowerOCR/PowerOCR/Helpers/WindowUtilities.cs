@@ -4,17 +4,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
-/*
-using System.Windows.Forms;
-*/
 using System.Windows.Media;
-using FancyMouse.Helpers;
-using FancyMouse.NativeMethods;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using PowerOCR.Helpers;
+using PowerOCR.NativeMethods;
 
 namespace PowerOCR.Utilities;
 
@@ -27,6 +24,7 @@ public static class WindowUtilities
             Logger.LogWarning("Tried to launch the overlay, but it has been already created.");
             return;
         }
+
         var screens = ScreenHelper.GetAllScreens().ToList();
         var dpiScales = screens.Select(
                 screen =>
@@ -48,7 +46,7 @@ public static class WindowUtilities
                 })
             .ToList();
 
-        var overlays = screens.Zip(dpiScales, (screen, dpiScale) => (Screen: screen, DpiScale: dpiScale))
+        List<OCROverlay> overlays = screens.Zip(dpiScales, (screen, dpiScale) => (Screen: screen, DpiScale: dpiScale))
             .Select(
                 item =>
                 {
@@ -69,14 +67,22 @@ public static class WindowUtilities
                     // sizes to "Device-Independent Pixels" (DIPs) when setting the
                     // window size and position - that way we'll magically end up with
                     // the right coordinates when WPF scales them back up again
-                    overlay.WindowStartupLocation = WindowStartupLocation.Manual;
-                    overlay.WindowState = WindowState.Normal;
                     overlay.Left = bounds.Left * systemDpi.DpiScaleX / item.DpiScale.DpiScaleX;
                     overlay.Top = bounds.Top * systemDpi.DpiScaleY / item.DpiScale.DpiScaleY;
                     overlay.Width = bounds.Width * systemDpi.DpiScaleX / item.DpiScale.DpiScaleX;
                     overlay.Height = bounds.Height * systemDpi.DpiScaleY / item.DpiScale.DpiScaleY;
 
+                    /*
+                     * bit of a hack here trying to get the window to fit the screen
+                     * It is slightly too large...and changing the width & height
+                     * before calling Show() it doesn't actually change it
+                     */
+
+                    overlay.Opacity = 0;
                     overlay.Show();
+                    overlay.Width -= 16;
+                    overlay.Height -= 16;
+                    overlay.Opacity = 1;
                     ActivateWindow(overlay);
 
                     return overlay;
@@ -88,7 +94,7 @@ public static class WindowUtilities
 
     internal static bool IsOCROverlayCreated()
     {
-        WindowCollection allWindows = System.Windows.Application.Current.Windows;
+        WindowCollection allWindows = Application.Current.Windows;
 
         foreach (Window window in allWindows)
         {
@@ -103,7 +109,7 @@ public static class WindowUtilities
 
     internal static void CloseAllOCROverlays()
     {
-        WindowCollection allWindows = System.Windows.Application.Current.Windows;
+        WindowCollection allWindows = Application.Current.Windows;
 
         foreach (Window window in allWindows)
         {
@@ -114,18 +120,15 @@ public static class WindowUtilities
         }
 
         GC.Collect();
-
-        // TODO: Decide when to close the process
-        // System.Windows.Application.Current.Shutdown();
     }
 
     public static void ActivateWindow(Window window)
     {
-        var handle = new System.Windows.Interop.WindowInteropHelper(window).Handle;
-        var fgHandle = OSInterop.GetForegroundWindow();
+        nint handle = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+        nint fgHandle = OSInterop.GetForegroundWindow();
 
-        var threadId1 = OSInterop.GetWindowThreadProcessId(handle, System.IntPtr.Zero);
-        var threadId2 = OSInterop.GetWindowThreadProcessId(fgHandle, System.IntPtr.Zero);
+        uint threadId1 = OSInterop.GetWindowThreadProcessId(handle, nint.Zero);
+        uint threadId2 = OSInterop.GetWindowThreadProcessId(fgHandle, nint.Zero);
 
         if (threadId1 != threadId2)
         {

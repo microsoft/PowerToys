@@ -20,9 +20,7 @@
     WindowStyle="None"
     mc:Ignorable="d">
     <Grid>
-        <Viewbox>
-            <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
-        </Viewbox>
+        <Image x:Name="BackgroundImage" Stretch="Fill" />
         <Canvas
             Name="RegionClickCanvas"
             Cursor="Cross"
