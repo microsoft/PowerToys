@@ -91,7 +91,6 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
                         }
                     }
 
-                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
                     return true;
                 }
                 // We iterated through all zones in current monitor zone layout, move on to next one (or previous depending on direction).
@@ -125,11 +124,6 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
             {
                 FancyZonesWindowUtils::RestoreWindowOrigin(window);
                 FancyZonesWindowUtils::RestoreWindowSize(window);
-            }
-
-            if (moved && workArea)
-            {
-                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
             }
 
             return moved;
@@ -276,12 +270,13 @@ bool WindowKeyboardSnap::MoveByDirectionAndIndex(HWND window, DWORD vkCode, bool
 
     auto zoneIndexes = layoutWindows.GetZoneIndexSetFromWindow(window);
     const auto numZones = zones.size();
+    bool snapped = false;
 
     // The window was not assigned to any zone here
     if (zoneIndexes.size() == 0)
     {
         const ZoneIndex zone = vkCode == VK_LEFT ? numZones - 1 : 0;
-        workArea->Snap(window, { zone });
+        snapped = workArea->Snap(window, { zone });
     }
     else
     {
@@ -296,23 +291,28 @@ bool WindowKeyboardSnap::MoveByDirectionAndIndex(HWND window, DWORD vkCode, bool
             }
 
             const ZoneIndex zone = vkCode == VK_LEFT ? numZones - 1 : 0;
-            workArea->Snap(window, { zone });
+            snapped = workArea->Snap(window, { zone });
         }
         else
         {
             // We didn't reach the edge
             if (vkCode == VK_LEFT)
             {
-                workArea->Snap(window, { oldId - 1 });
+                snapped = workArea->Snap(window, { oldId - 1 });
             }
             else
             {
-                workArea->Snap(window, { oldId + 1 });
+                snapped = workArea->Snap(window, { oldId + 1 });
             }
         }
     }
 
-    return true;
+    if (snapped)
+    {
+        Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+    }
+
+    return snapped;
 }
 
 bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, RECT windowRect, DWORD vkCode, bool cycle, WorkArea* const workArea)
