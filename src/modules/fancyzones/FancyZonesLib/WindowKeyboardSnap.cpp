@@ -27,7 +27,7 @@ bool WindowKeyboardSnap::Snap(HWND window, RECT windowRect, HMONITOR monitor, DW
     {
         // Multi monitor environment.
         // First, try to stay on the same monitor
-        bool success = ProcessDirectedSnapHotkey(window, windowRect, vkCode, false, currentWorkArea.get());
+        bool success = MoveByDirectionAndPosition(window, windowRect, vkCode, false, currentWorkArea.get());
         if (success)
         {
             return true;
@@ -46,7 +46,7 @@ bool WindowKeyboardSnap::Snap(HWND window, RECT windowRect, HMONITOR monitor, DW
     else
     {
         // Single monitor environment, or combined multi-monitor environment.
-        return ProcessDirectedSnapHotkey(window, windowRect, vkCode, true, currentWorkArea.get());
+        return MoveByDirectionAndPosition(window, windowRect, vkCode, true, currentWorkArea.get());
     }
 }
 
@@ -242,37 +242,6 @@ bool WindowKeyboardSnap::SnapBasedOnPositionOnAnotherMonitor(HWND window, RECT w
         // Giving up
         return false;
     }
-}
-
-bool WindowKeyboardSnap::ProcessDirectedSnapHotkey(HWND window, RECT windowRect, DWORD vkCode, bool cycle, WorkArea* const workArea)
-{
-    if (!workArea)
-    {
-        return false;
-    }
-
-    bool result = false;
-
-    // Check whether Alt is used in the shortcut key combination
-    if (GetAsyncKeyState(VK_MENU) & 0x8000)
-    {
-        // continue extention process
-        result = Extend(window, vkCode, workArea);
-    }
-    else
-    {
-        // clean previous extention data
-        m_extendData.Reset();
-
-        result = MoveByDirectionAndPosition(window, windowRect, vkCode, cycle, workArea);    
-    }
-
-    if (result)
-    {
-        Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
-    }
-
-    return result;
 }
 
 bool WindowKeyboardSnap::MoveByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea)
