@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using static FancyMouse.NativeMethods.Core;
+using static PowerOCR.NativeMethods.Core;
 
-namespace FancyMouse.NativeMethods;
+namespace PowerOCR.NativeMethods;
 
 internal static partial class User32
 {

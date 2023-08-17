@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace FancyMouse.NativeMethods;
+namespace PowerOCR.NativeMethods;
 
 internal static partial class Core
 {

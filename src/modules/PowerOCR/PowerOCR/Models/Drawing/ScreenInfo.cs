@@ -4,9 +4,9 @@
 
 using System;
 using System.Drawing;
-using FancyMouse.NativeMethods;
+using PowerOCR.NativeMethods;
 
-namespace FancyMouse.Models.Drawing;
+namespace PowerOCR.Models.Drawing;
 
 /// <summary>
 /// Immutable version of a System.Windows.Forms.Screen object so we don't need to
