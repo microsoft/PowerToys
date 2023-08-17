@@ -22,6 +22,9 @@ bool WindowKeyboardSnap::Snap(HWND window, RECT windowRect, HMONITOR monitor, DW
         return false;
     }
 
+    // clean previous extention data
+    m_extendData.Reset();
+
     const auto& currentWorkArea = activeWorkAreas.at(monitor);
     if (monitors.size() > 1 && FancyZonesSettings::settings().moveWindowAcrossMonitors)
     {
@@ -48,6 +51,18 @@ bool WindowKeyboardSnap::Snap(HWND window, RECT windowRect, HMONITOR monitor, DW
         // Single monitor environment, or combined multi-monitor environment.
         return MoveByDirectionAndPosition(window, windowRect, vkCode, true, currentWorkArea.get());
     }
+}
+
+bool WindowKeyboardSnap::Extend(HWND window, RECT windowRect, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
+{
+    if (!activeWorkAreas.contains(monitor))
+    {
+        return false;
+    }
+
+    // continue extention process
+    const auto& workArea = activeWorkAreas.at(monitor);
+    return Extend(window, windowRect, vkCode, workArea.get());
 }
 
 bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors)
@@ -377,7 +392,7 @@ bool WindowKeyboardSnap::MoveByDirectionAndPosition(HWND window, RECT windowRect
     return false;
 }
 
-bool WindowKeyboardSnap::Extend(HWND window, DWORD vkCode, WorkArea* const workArea)
+bool WindowKeyboardSnap::Extend(HWND window, RECT windowRect, DWORD vkCode, WorkArea* const workArea)
 {
     if (!workArea)
     {
@@ -388,13 +403,6 @@ bool WindowKeyboardSnap::Extend(HWND window, DWORD vkCode, WorkArea* const workA
     const auto& layoutWindows = workArea->GetLayoutWindows();
     if (!layout || layout->Zones().empty())
     {
-        return false;
-    }
-
-    RECT windowRect;
-    if (!GetWindowRect(window, &windowRect))
-    {
-        Logger::error(L"GetWindowRect failed, {}", get_last_error_or_default(GetLastError()));
         return false;
     }
 

@@ -615,7 +615,15 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
                 RECT windowRect;
                 if (GetWindowRect(foregroundWindow, &windowRect))
                 {
-                    m_windowKeyboardSnapper.Snap(foregroundWindow, windowRect, monitor, static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas(), monitors);
+                    // Check whether Alt is used in the shortcut key combination
+                    if (GetAsyncKeyState(VK_MENU) & 0x8000)
+                    {
+                        m_windowKeyboardSnapper.Extend(foregroundWindow, windowRect, monitor, static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas());
+                    }
+                    else
+                    {
+                        m_windowKeyboardSnapper.Snap(foregroundWindow, windowRect, monitor, static_cast<DWORD>(lparam), m_workAreaHandler.GetAllWorkAreas(), monitors);
+                    }
                 }
                 else
                 {

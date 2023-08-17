@@ -36,18 +36,21 @@ public:
     WindowKeyboardSnap() = default;
     ~WindowKeyboardSnap() = default;
 
-    bool Snap(HWND window, HMONITOR activeMonitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors);
+    bool Snap(HWND window, HMONITOR activeMonitor, DWORD vkCode, 
+        const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, 
+        const std::vector<HMONITOR>& monitors);
     bool Snap(HWND window, RECT windowRect, HMONITOR activeMonitor, DWORD vkCode, 
         const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, 
         const std::vector<std::pair<HMONITOR, RECT>>& monitors);
+    bool Extend(HWND window, RECT windowRect, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
 	
 private:
     bool SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR monitor, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors);
     bool SnapBasedOnPositionOnAnotherMonitor(HWND window, RECT windowRect, DWORD vkCode, HMONITOR monitor, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors);
-
+    
     bool MoveByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, WorkArea* const workArea);
     bool MoveByDirectionAndPosition(HWND window, RECT windowRect, DWORD vkCode, bool cycle, WorkArea* const workArea);
-    bool Extend(HWND window, DWORD vkCode, WorkArea* const workArea);
+    bool Extend(HWND window, RECT windowRect, DWORD vkCode, WorkArea* const workArea);
 
     ExtendWindowModeData m_extendData{}; // Needed for ExtendWindowByDirectionAndPosition
 };
