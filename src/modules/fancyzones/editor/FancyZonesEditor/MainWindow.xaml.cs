@@ -244,21 +244,15 @@ namespace FancyZonesEditor
             Logger.LogTrace();
 
             var dataContext = ((FrameworkElement)sender).DataContext;
-            Select((LayoutModel)dataContext);
-
             EditLayoutDialog.Hide();
 
-            var mainEditor = App.Overlay;
-            if (mainEditor.CurrentDataContext is not LayoutModel model)
+            if (dataContext is not LayoutModel model)
             {
                 return;
             }
 
-            model.IsSelected = false;
-
             // make a copy
             model = model.Clone();
-            mainEditor.CurrentDataContext = model;
 
             string name = model.Name;
             var index = name.LastIndexOf('(');
@@ -293,11 +287,8 @@ namespace FancyZonesEditor
             }
 
             model.Name = name + " (" + (++maxCustomIndex) + ')';
-
             model.Persist();
 
-            App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(model);
-            App.FancyZonesEditorIO.SerializeAppliedLayouts();
             App.FancyZonesEditorIO.SerializeCustomLayouts();
         }
 
