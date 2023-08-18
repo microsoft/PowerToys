@@ -13,6 +13,8 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using ManagedCommon;
+using Microsoft.Plugin.Shell.Properties;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Plugin.Common;
@@ -21,7 +23,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Microsoft.Plugin.Shell
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable
+    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu, ISavable
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
@@ -37,7 +39,18 @@ namespace Microsoft.Plugin.Shell
 
         public string Description => Properties.Resources.wox_plugin_cmd_plugin_description;
 
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = "LeaveShellOpen",
+                DisplayLabel = Resources.wox_leave_shell_open,
+                Value = _settings.LeaveShellOpen,
+            },
+        };
+
         private PluginInitContext _context;
+        private bool _leaveShellOpen;
 
         public Main()
         {
@@ -401,6 +414,21 @@ namespace Microsoft.Plugin.Shell
             };
 
             return resultlist;
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            var leaveShellOpen = false;
+
+            if (settings != null && settings.AdditionalOptions != null)
+            {
+                var optionConfirm = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LeaveShellOpen");
+                leaveShellOpen = optionConfirm?.Value ?? leaveShellOpen;
+                _settings.LeaveShellOpen = leaveShellOpen;
+            }
+
+            _leaveShellOpen = leaveShellOpen;
+            Save();
         }
     }
 }
