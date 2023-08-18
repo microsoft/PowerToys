@@ -22,7 +22,7 @@ bool WindowKeyboardSnap::Snap(HWND window, RECT windowRect, HMONITOR monitor, DW
         return false;
     }
 
-    // clean previous extention data
+    // clean previous extension data
     m_extendData.Reset();
 
     const auto& currentWorkArea = activeWorkAreas.at(monitor);
@@ -60,14 +60,14 @@ bool WindowKeyboardSnap::Extend(HWND window, RECT windowRect, HMONITOR monitor, 
         return false;
     }
 
-    // continue extention process
+    // continue extension process
     const auto& workArea = activeWorkAreas.at(monitor);
     return Extend(window, windowRect, vkCode, workArea.get());
 }
 
 bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR current, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors)
 {
-    // clean previous extention data
+    // clean previous extension data
     m_extendData.Reset();
 
     if (current && monitors.size() > 1 && FancyZonesSettings::settings().moveWindowAcrossMonitors)
