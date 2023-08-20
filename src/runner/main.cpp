@@ -296,57 +296,6 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
 }
 
-void cleanup_updates()
-{
-    auto state = UpdateState::read();
-    if (state.state != UpdateState::upToDate)
-    {
-        return;
-    }
-
-    auto update_dir = updating::get_pending_updates_path();
-    if (std::filesystem::exists(update_dir))
-    {
-        // Msi and exe files
-        for (const auto& entry : std::filesystem::directory_iterator(update_dir))
-        {
-            auto entryPath = entry.path().wstring();
-            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
-
-            if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
-            {
-                std::error_code err;
-                std::filesystem::remove(entry, err);
-                if (err.value())
-                {
-                    Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
-                }
-            }
-        }
-    }
-
-    // Log files
-    auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
-    auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
-    if (std::filesystem::exists(rootPath))
-    {
-        for (const auto& entry : std::filesystem::directory_iterator(rootPath))
-        {
-            auto entryPath = entry.path().wstring();
-            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
-            if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::string::npos)
-            {
-                std::error_code err;
-                std::filesystem::remove(entry, err);
-                if (err.value())
-                {
-                    Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
-                }
-            }
-        }
-    }
-}
-
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
     Gdiplus::GdiplusStartupInput gpStartupInput;
@@ -455,7 +404,11 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         modules();
 
         std::thread{ [] {
-            cleanup_updates();
+            auto state = UpdateState::read();
+            if (state.state == UpdateState::upToDate)
+            {
+                updating::cleanup_updates();
+            }
         } }.detach();
 
         auto general_settings = load_general_settings();

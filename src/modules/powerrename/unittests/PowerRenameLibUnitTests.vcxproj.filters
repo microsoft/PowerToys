@@ -17,9 +17,11 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TestFileHelper.h" />
+    <ClInclude Include="CommonRegExTests.h" />
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CppUnitTestInclude.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Resource Files">

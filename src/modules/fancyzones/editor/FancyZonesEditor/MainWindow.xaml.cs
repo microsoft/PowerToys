@@ -296,7 +296,7 @@ namespace FancyZonesEditor
 
             model.Persist();
 
-            App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
+            App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(model);
             App.FancyZonesEditorIO.SerializeAppliedLayouts();
             App.FancyZonesEditorIO.SerializeCustomLayouts();
         }
@@ -318,7 +318,7 @@ namespace FancyZonesEditor
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
                 _settings.SetAppliedModel(model);
-                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
+                App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(model);
                 App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
             }
@@ -366,7 +366,7 @@ namespace FancyZonesEditor
                 _backup = new CanvasLayoutModel(canvas);
             }
 
-            _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.DefaultLayouts);
+            _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.Layouts);
 
             Keyboard.ClearFocus();
             EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Edit_Template, ((LayoutModel)dataContext).Name);
@@ -480,7 +480,7 @@ namespace FancyZonesEditor
             // update current settings
             if (model == _settings.AppliedModel)
             {
-                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
+                App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(model);
             }
 
             App.FancyZonesEditorIO.SerializeAppliedLayouts();
@@ -528,7 +528,7 @@ namespace FancyZonesEditor
                 {
                     if (monitor.Settings.ZonesetUuid == model.Uuid)
                     {
-                        App.Overlay.SetLayoutSettings(monitor, _settings.BlankModel);
+                        monitor.SetLayoutSettings(_settings.BlankModel);
                     }
                 }
 
