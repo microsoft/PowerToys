@@ -125,6 +125,8 @@ namespace powertoys_gpo {
 
         HKEY key{};
         DWORD reg_value_type = REG_SZ;
+
+        // TODO: Switching to dynamic buffer size detection for being more flexible.
         char string_value[1024]{};
         DWORD string_value_length = 1024;
 
