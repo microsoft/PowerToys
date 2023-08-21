@@ -50,7 +50,6 @@ namespace Microsoft.Plugin.Shell
         };
 
         private PluginInitContext _context;
-        private bool _leaveShellOpen;
 
         public Main()
         {
@@ -427,7 +426,6 @@ namespace Microsoft.Plugin.Shell
                 _settings.LeaveShellOpen = leaveShellOpen;
             }
 
-            _leaveShellOpen = leaveShellOpen;
             Save();
         }
     }
