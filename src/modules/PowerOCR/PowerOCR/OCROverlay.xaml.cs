@@ -108,6 +108,10 @@ public partial class OCROverlay : Window
 
         BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
         BackgroundBrush.Opacity = ActiveOpacity;
+
+#if DEBUG
+        Topmost = false;
+#endif
     }
 
     private void Window_Unloaded(object sender, RoutedEventArgs e)

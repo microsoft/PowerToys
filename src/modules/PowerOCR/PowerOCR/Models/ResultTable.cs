@@ -154,6 +154,16 @@ public class ResultTable
         List<int> columnAreas = CalculateColumnAreas(rectCanvasSize, hitGridSpacing, numberOfVerticalLines, tableIntersectionCanvas, wordBorders);
         List<ResultColumn> resultColumns = CalculateResultColumns(hitGridSpacing, columnAreas);
 
+        Rect tableBoundingRect = new()
+        {
+            X = columnAreas.FirstOrDefault(),
+            Y = rowAreas.FirstOrDefault(),
+            Width = columnAreas.LastOrDefault() - columnAreas.FirstOrDefault(),
+            Height = rowAreas.LastOrDefault() - rowAreas.FirstOrDefault(),
+        };
+
+        CombineOutliers(wordBorders, resultRows, tableIntersectionCanvas, resultColumns, tableBoundingRect);
+
         Rows.Clear();
         Rows.AddRange(resultRows);
         Columns.Clear();
@@ -241,7 +251,7 @@ public class ResultTable
         }
     }
 
-    private static ICollection<WordBorder> CombineOutliers(ICollection<WordBorder> wordBorders, List<ResultRow> resultRows, Canvas tableIntersectionCanvas, List<ResultColumn> resultColumns, Rect tableBoundingRect)
+    private static void CombineOutliers(ICollection<WordBorder> wordBorders, List<ResultRow> resultRows, Canvas tableIntersectionCanvas, List<ResultColumn> resultColumns, Rect tableBoundingRect)
     {
         // try 4 times to refine the rows and columns for outliers
         // on the fifth time set the word boundary properties
@@ -262,8 +272,6 @@ public class ResultTable
                 MergeTheseColumnIDs(resultColumns, outlierColumnIDs);
             }
         }
-
-        return wordBorders;
     }
 
     private static List<int> FindOutlierRowIds(

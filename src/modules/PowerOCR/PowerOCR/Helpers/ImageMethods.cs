@@ -64,19 +64,67 @@ internal sealed class ImageMethods
         return BitmapToImageSource(bmp);
     }
 
-    internal static async Task<string> GetRegionsText(Window? passedWindow, Rectangle selectedRegion, Language? preferredLanguage)
+    internal static Bitmap GetWindowBoundsBitmap(Window passedWindow)
     {
-        Bitmap bmp = new(selectedRegion.Width, selectedRegion.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        DpiScale dpi = VisualTreeHelper.GetDpi(passedWindow);
+        int windowWidth = (int)(passedWindow.ActualWidth * dpi.DpiScaleX);
+        int windowHeight = (int)(passedWindow.ActualHeight * dpi.DpiScaleY);
+
+        System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
+        int thisCorrectedLeft = (int)absPosPoint.X;
+        int thisCorrectedTop = (int)absPosPoint.Y;
+
+        Bitmap bmp = new(
+            windowWidth,
+            windowHeight,
+            System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         using Graphics g = Graphics.FromImage(bmp);
 
-        System.Windows.Point absPosPoint = passedWindow == null ? default : passedWindow.GetAbsolutePosition();
+        g.CopyFromScreen(
+            thisCorrectedLeft,
+            thisCorrectedTop,
+            0,
+            0,
+            bmp.Size,
+            CopyPixelOperation.SourceCopy);
+
+        return bmp;
+    }
+
+    internal static Bitmap GetRegionAsBitmap(Window passedWindow, Rectangle selectedRegion)
+    {
+        Bitmap bmp = new(
+            selectedRegion.Width,
+            selectedRegion.Height,
+            System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+        using Graphics g = Graphics.FromImage(bmp);
+
+        System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
 
         int thisCorrectedLeft = (int)absPosPoint.X + selectedRegion.Left;
         int thisCorrectedTop = (int)absPosPoint.Y + selectedRegion.Top;
 
-        g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+        g.CopyFromScreen(
+            thisCorrectedLeft,
+            thisCorrectedTop,
+            0,
+            0,
+            bmp.Size,
+            CopyPixelOperation.SourceCopy);
 
         bmp = PadImage(bmp);
+        return bmp;
+    }
+
+    internal static async Task<string> GetRegionsText(Window? passedWindow, Rectangle selectedRegion, Language? preferredLanguage)
+    {
+        if (passedWindow is null)
+        {
+            return string.Empty;
+        }
+
+        Bitmap bmp = GetRegionAsBitmap(passedWindow, selectedRegion);
         string? resultText = await ExtractText(bmp, preferredLanguage);
 
         return resultText != null ? resultText.Trim() : string.Empty;
