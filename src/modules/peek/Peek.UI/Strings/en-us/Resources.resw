@@ -154,7 +154,7 @@
     <comment>Date Modified label for the unsupported files view. {0} is the date.</comment>
   </data>
   <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} bytes</value>
+    <value>{0} byte</value>
     <comment>Abbreviation for the size unit byte.</comment>
   </data>
   <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">
@@ -232,5 +232,9 @@
   <data name="Archive_Size" xml:space="preserve">
     <value>{0} (extracted {1})</value>
     <comment>{0} is the size of the archive, {1} is the extracted size</comment>
+  </data>
+  <data name="ReadableString_BytesAbbreviationFormat" xml:space="preserve">
+    <value>{0} bytes</value>
+    <comment>Abbreviation for the size bytes</comment>
   </data>
 </root>
