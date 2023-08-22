@@ -421,8 +421,8 @@ namespace Microsoft.Plugin.Shell
 
             if (settings != null && settings.AdditionalOptions != null)
             {
-                var optionConfirm = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LeaveShellOpen");
-                leaveShellOpen = optionConfirm?.Value ?? leaveShellOpen;
+                var optionLeaveShellOpen = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LeaveShellOpen");
+                leaveShellOpen = optionLeaveShellOpen?.Value ?? leaveShellOpen;
                 _settings.LeaveShellOpen = leaveShellOpen;
             }
 
