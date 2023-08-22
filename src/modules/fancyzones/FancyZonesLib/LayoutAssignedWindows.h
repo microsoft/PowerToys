@@ -5,7 +5,7 @@
 class LayoutAssignedWindows
 {
 public :
-    LayoutAssignedWindows();
+    LayoutAssignedWindows() = default;
     ~LayoutAssignedWindows() = default;
 
     void Assign(HWND window, const ZoneIndexSet& zones);

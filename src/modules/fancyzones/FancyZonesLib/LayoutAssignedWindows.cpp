@@ -6,11 +6,6 @@
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowUtils.h>
 
-LayoutAssignedWindows::LayoutAssignedWindows()
-{
-    
-}
-
 void LayoutAssignedWindows::Assign(HWND window, const ZoneIndexSet& zones)
 {
     Dismiss(window);
