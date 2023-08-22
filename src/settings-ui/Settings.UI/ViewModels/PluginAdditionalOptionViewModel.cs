@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -17,9 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _additionalOption = additionalOption;
         }
 
-        public string DisplayLabel { get => _additionalOption.DisplayLabel; }
+        public string DisplayLabel => _additionalOption.DisplayLabel;
 
-        public string DisplayDescription { get => _additionalOption.DisplayDescription; }
+        public string DisplayDescription => _additionalOption.DisplayDescription;
 
         public bool Value
         {
@@ -33,6 +35,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public List<string> ComboBoxOptions => _additionalOption.ComboBoxOptions;
+
+        public int Option
+        {
+            get => _additionalOption.Option;
+            set
+            {
+                if (value != _additionalOption.Option)
+                {
+                    _additionalOption.Option = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowComboBox => _additionalOption.HasComboBox && _additionalOption.ComboBoxOptions.Count > 0;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

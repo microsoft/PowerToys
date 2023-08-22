@@ -13,6 +13,9 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using ManagedCommon;
+using Microsoft.Plugin.Folder.Sources;
+using Microsoft.Plugin.Shell.Properties;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Plugin.Common;
@@ -36,6 +39,24 @@ namespace Microsoft.Plugin.Shell
         public string Name => Properties.Resources.wox_plugin_cmd_plugin_name;
 
         public string Description => Properties.Resources.wox_plugin_cmd_plugin_description;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = "LeaveShellOpen",
+                DisplayLabel = Resources.wox_leave_shell_open,
+                Value = _settings.LeaveShellOpen,
+            },
+
+            new PluginAdditionalOption()
+            {
+                Key = "ShellCommandExecution",
+                DisplayLabel = Resources.wox_shell_command_execution,
+                Option = (int)_settings.Shell,
+                ComboBoxOptions = new List<string> { "Option 1", "Option 2", "Option 3" },
+            },
+        };
 
         private PluginInitContext _context;
 
@@ -377,6 +398,25 @@ namespace Microsoft.Plugin.Shell
             };
 
             return resultlist;
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            var leaveShellOpen = false;
+            var shellOption = 2;
+
+            if (settings != null && settings.AdditionalOptions != null)
+            {
+                var optionLeaveShellOpen = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LeaveShellOpen");
+                leaveShellOpen = optionLeaveShellOpen?.Value ?? leaveShellOpen;
+                _settings.LeaveShellOpen = leaveShellOpen;
+
+                var optionShell = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ShellCommandExecution");
+                shellOption = optionShell?.Option ?? shellOption;
+                _settings.Shell = (ExecutionShell)shellOption;
+            }
+
+            Save();
         }
     }
 }

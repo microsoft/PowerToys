@@ -131,5 +131,14 @@ namespace Microsoft.Plugin.Shell.Properties {
                 return ResourceManager.GetString("wox_plugin_cmd_run_as_user", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shell command execution.
+        /// </summary>
+        public static string wox_shell_command_execution {
+            get {
+                return ResourceManager.GetString("wox_shell_command_execution", resourceCulture);
+            }
+        }
     }
 }

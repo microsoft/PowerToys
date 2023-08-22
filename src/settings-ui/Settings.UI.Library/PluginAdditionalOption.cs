@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PluginAdditionalOption
@@ -16,5 +18,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string DisplayDescription { get; set; }
 
         public bool Value { get; set; }
+
+        public List<string> ComboBoxOptions { get; set; }
+
+        public int Option { get; set; }
+
+        public bool HasComboBox => Key == "ComboBoxOptions";
     }
 }
