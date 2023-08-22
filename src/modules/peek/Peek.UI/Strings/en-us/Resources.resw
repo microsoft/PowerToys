@@ -253,16 +253,12 @@
     <value>Do you want Peek to open the external application?</value>
     <comment>Title of the dialog showed when an URI is clicked,"Peek" is the name of the utility. </comment>
   </data>
-  <data name="ReadableString_BytesAbbreviationFormat" xml:space="preserve">
-    <value>{0} bytes</value>
-    <comment>Abbreviation for the size bytes</comment>
-  </data>
   <data name="ReadableString_BytesString" xml:space="preserve">
-    <value> ({1} bytes)</value>
+    <value> ({1:N0} bytes)</value>
     <comment>Displays total number of bytes</comment>
   </data>
   <data name="ReadableString_ByteString" xml:space="preserve">
-    <value> ({1} byte)</value>
+    <value> ({1:N0} byte)</value>
     <comment>Displays unit byte</comment>
   </data>
 </root>
