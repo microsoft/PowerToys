@@ -503,6 +503,7 @@
                     <ToggleButton
                         x:Name="toggleButton_enumItems"
                         x:Uid="ToggleButton_EnumItems"
+                        IsChecked="True"
                         Height="32"
                         Content="&#xEA40;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}" />
