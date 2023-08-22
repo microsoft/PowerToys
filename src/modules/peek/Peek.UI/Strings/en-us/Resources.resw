@@ -157,28 +157,28 @@
     <value>{0} byte</value>
     <comment>Abbreviation for the size unit byte.</comment>
   </data>
-  <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} KB</value>
+  <data name="ReadableString_KibiByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} KiB</value>
     <comment>Abbreviation for the size unit kilobyte.</comment>
   </data>
-  <data name="ReadableString_MegaByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} MB</value>
+  <data name="ReadableString_MebiByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} MiB</value>
     <comment>Abbreviation for the size unit megabyte.</comment>
   </data>
-  <data name="ReadableString_GigaByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} GB</value>
+  <data name="ReadableString_GibiByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} GiB</value>
     <comment>Abbreviation for the size unit gigabyte.</comment>
   </data>
-  <data name="ReadableString_TeraByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} TB</value>
+  <data name="ReadableString_TebiByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} TiB</value>
     <comment>Abbreviation for the size unit terabyte.</comment>
   </data>
-  <data name="ReadableString_PetaByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} PB</value>
+  <data name="ReadableString_PebiByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} PiB</value>
     <comment>Abbreviation for the size unit petabyte.</comment>
   </data>
-  <data name="ReadableString_ExaByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} EB</value>
+  <data name="ReadableString_ExbiByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} EiB</value>
     <comment>Abbreviation for the size unit exabyte.</comment>
   </data>
   <data name="PreviewTooltip_FileName" xml:space="preserve">
@@ -236,5 +236,13 @@
   <data name="ReadableString_BytesAbbreviationFormat" xml:space="preserve">
     <value>{0} bytes</value>
     <comment>Abbreviation for the size bytes</comment>
+  </data>
+  <data name="ReadableString_BytesString" xml:space="preserve">
+    <value> ({1} bytes)</value>
+    <comment>Displays total number of bytes</comment>
+  </data>
+  <data name="ReadableString_ByteString" xml:space="preserve">
+    <value> ({1} byte)</value>
+    <comment>Displays unit byte</comment>
   </data>
 </root>

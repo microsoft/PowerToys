@@ -10,7 +10,7 @@ namespace Peek.Common.Helpers
 {
     public static class ReadableStringHelper
     {
-        private const int DecimalPercision = 10;
+        private const int DecimalPercision = 100;
 
         public static string BytesToReadableString(ulong bytes)
         {
@@ -20,13 +20,17 @@ namespace Peek.Common.Helpers
                 (bytes == 1) ?
                     resourceLoader.GetString("ReadableString_ByteAbbreviationFormat") : // "byte"
                     resourceLoader.GetString("ReadableString_BytesAbbreviationFormat"), // "bytes"
-                resourceLoader.GetString("ReadableString_KiloByteAbbreviationFormat"), // "KB"
-                resourceLoader.GetString("ReadableString_MegaByteAbbreviationFormat"), // "MB"
-                resourceLoader.GetString("ReadableString_GigaByteAbbreviationFormat"), // "GB"
-                resourceLoader.GetString("ReadableString_TeraByteAbbreviationFormat"), // "TB"
-                resourceLoader.GetString("ReadableString_PetaByteAbbreviationFormat"), // "PB"
-                resourceLoader.GetString("ReadableString_ExaByteAbbreviationFormat"),  // "EB"
+                resourceLoader.GetString("ReadableString_KibiByteAbbreviationFormat"), // "KB"
+                resourceLoader.GetString("ReadableString_MebiByteAbbreviationFormat"), // "MB"
+                resourceLoader.GetString("ReadableString_GibiByteAbbreviationFormat"), // "GB"
+                resourceLoader.GetString("ReadableString_TebiByteAbbreviationFormat"), // "TB"
+                resourceLoader.GetString("ReadableString_PebiByteAbbreviationFormat"), // "PB"
+                resourceLoader.GetString("ReadableString_ExbiByteAbbreviationFormat"),  // "EB"
             };
+
+            string totalBytesDisplays = (bytes == 1) ?
+                resourceLoader.GetString("ReadableString_ByteString") :
+                resourceLoader.GetString("ReadableString_BytesString");
 
             int index = 0;
             double number = 0.0;
@@ -37,7 +41,7 @@ namespace Peek.Common.Helpers
                 number = Math.Round((bytes / Math.Pow(1024, index)) * DecimalPercision) / DecimalPercision;
             }
 
-            return string.Format(CultureInfo.InvariantCulture, format[index], number);
+            return string.Format(CultureInfo.InvariantCulture, format[index] + totalBytesDisplays, number, bytes);
         }
 
         public static string FormatResourceString(string resourceId, object? args)
