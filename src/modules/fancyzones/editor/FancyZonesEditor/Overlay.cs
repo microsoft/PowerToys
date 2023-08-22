@@ -17,6 +17,7 @@ namespace FancyZonesEditor
         private LayoutPreview _layoutPreview;
         private UserControl _editorLayout;
         private EditorWindow _editorWindow;
+        private LayoutBackup _layoutBackup = new LayoutBackup();
 
         public List<Monitor> Monitors { get; private set; }
 
@@ -259,6 +260,21 @@ namespace FancyZonesEditor
             {
                 _editorWindow.Focus();
             }
+        }
+
+        public void StartEditing(LayoutModel model)
+        {
+            _layoutBackup.Backup(model);
+        }
+
+        public void EndEditing(bool restoreBackup)
+        {
+            if (restoreBackup)
+            {
+                _layoutBackup.Restore();
+            }
+
+            _layoutBackup.Clear();
         }
 
         public void CloseLayoutWindow()

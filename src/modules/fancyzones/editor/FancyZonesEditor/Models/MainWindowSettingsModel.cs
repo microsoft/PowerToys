@@ -267,27 +267,6 @@ namespace FancyZonesEditor
             return foundModel;
         }
 
-        public void RestoreSelectedModel(LayoutModel model)
-        {
-            if (SelectedModel == null || model == null)
-            {
-                return;
-            }
-
-            SelectedModel.SensitivityRadius = model.SensitivityRadius;
-            SelectedModel.TemplateZoneCount = model.TemplateZoneCount;
-            SelectedModel.IsSelected = model.IsSelected;
-            SelectedModel.IsApplied = model.IsApplied;
-            SelectedModel.Name = model.Name;
-            SelectedModel.QuickKey = model.QuickKey;
-
-            if (model is GridLayoutModel grid)
-            {
-                ((GridLayoutModel)SelectedModel).Spacing = grid.Spacing;
-                ((GridLayoutModel)SelectedModel).ShowSpacing = grid.ShowSpacing;
-            }
-        }
-
         public void SetSelectedModel(LayoutModel model)
         {
             if (_selectedModel != null)
