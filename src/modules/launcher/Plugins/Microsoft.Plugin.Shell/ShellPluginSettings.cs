@@ -2,7 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Reflection;
 
 namespace Microsoft.Plugin.Shell
 {
@@ -31,13 +34,34 @@ namespace Microsoft.Plugin.Shell
                 Count.Add(cmdName, 1);
             }
         }
+
+        public static string GetDescription(Enum value)
+        {
+            FieldInfo fi = value.GetType().GetField(value.ToString());
+
+            DescriptionAttribute[] attributes =
+                (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+            if (attributes != null && attributes.Length > 0)
+            {
+                return attributes[0].Description;
+            }
+            else
+            {
+                return value.ToString();
+            }
+        }
     }
 
     public enum ExecutionShell
     {
+        [Description("Run command in Command Prompt (cmd.exe)")]
         Cmd = 0,
+        [Description("Run command in PowerShell (PowerShell.exe)")]
         Powershell = 1,
+        [Description("Find executable file and run it")]
         RunCommand = 2,
+        [Description("Run command in Windows Terminal (wt.exe)")]
         WindowsTerminal = 3,
     }
 }
