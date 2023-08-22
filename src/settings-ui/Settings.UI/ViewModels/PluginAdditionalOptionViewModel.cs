@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowComboBox => _additionalOption.HasComboBox && _additionalOption.ComboBoxOptions.Count > 0;
+        public bool ShowComboBox => _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

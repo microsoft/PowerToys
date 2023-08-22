@@ -22,7 +22,5 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public List<string> ComboBoxOptions { get; set; }
 
         public int Option { get; set; }
-
-        public bool HasComboBox => Key == "ComboBoxOptions";
     }
 }

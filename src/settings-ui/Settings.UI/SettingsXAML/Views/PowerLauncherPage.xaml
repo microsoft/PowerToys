@@ -454,7 +454,7 @@
                                                                             Margin="56,0,0,0"
                                                                             ItemsSource="{x:Bind Path=ComboBoxOptions}"
                                                                             SelectedIndex="{x:Bind Path=Option, Mode=TwoWay}"
-                                                                            Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                                                            Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                                     </StackPanel>
                                                                 </labs:SettingsCard>
                                                                 <Rectangle
