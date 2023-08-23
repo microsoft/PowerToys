@@ -51,7 +51,7 @@
     <PackageVersion Include="StreamJsonRpc" Version="2.14.24" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.507" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="System.ComponentModel.Composition" Version="7.0.0" />
+    <PackageVersion Include="System.ComponentModel.Composition" Version="8.0.0-preview.7.23375.6" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0-preview.7.23375.6" />
     <PackageVersion Include="System.Data.OleDb" Version="8.0.0-preview.7.23375.6" />
     <PackageVersion Include="System.Drawing.Common" Version="8.0.0-preview.7.23375.5" />
