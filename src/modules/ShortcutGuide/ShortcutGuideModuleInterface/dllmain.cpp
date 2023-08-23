@@ -342,7 +342,7 @@ private:
                 }
                 else
                 {
-                    throw;
+                    throw std::exception();
                 }
                 value = static_cast<int>(jsonPressTimeForTaskbarIconShortcutsObject.GetNamedNumber(L"value"));
                 if (value >= 0)
@@ -351,7 +351,7 @@ private:
                 }
                 else
                 {
-                    throw;
+                    throw std::exception();
                 }
             }
             catch (...)

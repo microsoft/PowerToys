@@ -192,7 +192,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::exception();
             }
                 
         }
@@ -258,7 +258,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::exception();
             }
         }
         catch (...)
@@ -276,7 +276,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::exception();
             }
         }
         catch (...)
@@ -294,7 +294,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::exception();
             }
         }
         catch (...)
@@ -312,7 +312,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::exception();
             }
         }
         catch (...)
@@ -355,7 +355,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::exception();
             }
         }
         catch (...)

@@ -233,7 +233,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::exception();
                 }
             }
             catch (...)
@@ -270,7 +270,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::exception();
                 }
                 
             }
@@ -289,7 +289,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::exception();
                 }
                 
             }
@@ -327,7 +327,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::exception();
                 }
             }
             catch (...)
@@ -366,7 +366,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::exception();
                 }
             }
             catch (...)
