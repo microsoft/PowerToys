@@ -157,28 +157,28 @@
     <value>{0} byte</value>
     <comment>Abbreviation for the size unit byte.</comment>
   </data>
-  <data name="ReadableString_KibiByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} KiB</value>
+  <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} KB</value>
     <comment>Abbreviation for the size unit kilobyte.</comment>
   </data>
-  <data name="ReadableString_MebiByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} MiB</value>
+  <data name="ReadableString_MegaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} MB</value>
     <comment>Abbreviation for the size unit megabyte.</comment>
   </data>
-  <data name="ReadableString_GibiByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} GiB</value>
+  <data name="ReadableString_GigaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} GB</value>
     <comment>Abbreviation for the size unit gigabyte.</comment>
   </data>
-  <data name="ReadableString_TebiByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} TiB</value>
+  <data name="ReadableString_TeraByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} TB</value>
     <comment>Abbreviation for the size unit terabyte.</comment>
   </data>
-  <data name="ReadableString_PebiByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} PiB</value>
+  <data name="ReadableString_PetaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} PB</value>
     <comment>Abbreviation for the size unit petabyte.</comment>
   </data>
-  <data name="ReadableString_ExbiByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} EiB</value>
+  <data name="ReadableString_ExaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} EB</value>
     <comment>Abbreviation for the size unit exabyte.</comment>
   </data>
   <data name="PreviewTooltip_FileName" xml:space="preserve">
