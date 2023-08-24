@@ -80,6 +80,13 @@ public:
 #endif
     }
 
+#if defined(UNIT_TESTS)
+    inline void SetSettings(const Settings& settings)
+    {
+        m_settings = settings;
+    }
+#endif
+
     void AddObserver(SettingsObserver& observer);
     void RemoveObserver(SettingsObserver& observer);
 

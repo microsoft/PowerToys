@@ -45,6 +45,14 @@ namespace FancyZonesEditor
 
         protected void OnCancel(object sender, RoutedEventArgs e)
         {
+            // restore backup, clean up
+            App.Overlay.EndEditing(true);
+
+            // select and draw applied layout
+            var settings = ((App)Application.Current).MainWindowSettings;
+            settings.SetSelectedModel(settings.AppliedModel);
+            App.Overlay.CurrentDataContext = settings.AppliedModel;
+
             Close();
         }
     }
