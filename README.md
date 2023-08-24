@@ -1,5 +1,3 @@
-# NOTE TO UPDATE DATA TO .73
-
 # Microsoft PowerToys
 
 ![Hero image for Microsoft PowerToys](doc/images/overview/PT_hero_image.png)
@@ -41,19 +39,19 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F46
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F45
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.72.0/PowerToysUserSetup-0.72.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.72.0/PowerToysUserSetup-0.72.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.72.0/PowerToysSetup-0.72.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.72.0/PowerToysSetup-0.72.0-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F47
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F46
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.73.0/PowerToysUserSetup-0.73.0-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.73.0/PowerToysUserSetup-0.73.0-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.73.0/PowerToysSetup-0.73.0-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.73.0/PowerToysSetup-0.73.0-arm64.exe
 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.72.0-x64.exe][ptUserX64] | 9925894D797458C78A8C3DF6FE4BD748580638B01BB43680477763662915109A |
-| Per user - ARM64     | [PowerToysUserSetup-0.72.0-arm64.exe][ptUserArm64] | 2E68139C22C56648E64514E4E8E0A0D12882F6CF30B48EB20ECC66B4CCDD5909 |
-| Machine wide - x64   | [PowerToysSetup-0.72.0-x64.exe][ptMachineX64] | 788EE4D828169F092737A739030B218CEFEC79583E42858BB8F9F036B701BE6F |
-| Machine wide - ARM64 | [PowerToysSetup-0.72.0-arm64.exe][ptMachineArm64] | 39C1D430A538B0F3D7869D39DF7F636A64AAFAD8DFB3C82059A97F4EBD3369C4 |
+| Per user - x64       | [PowerToysUserSetup-0.73.0-x64.exe][ptUserX64] | XXX |
+| Per user - ARM64     | [PowerToysUserSetup-0.73.0-arm64.exe][ptUserArm64] | XXX |
+| Machine wide - x64   | [PowerToysSetup-0.73.0-x64.exe][ptMachineX64] | XXX |
+| Machine wide - ARM64 | [PowerToysSetup-0.73.0-arm64.exe][ptMachineArm64] | XXX |
 
 This is our preferred method.
 
@@ -108,6 +106,8 @@ In this release, we focused on XXX.
  - Keyboard manager now supports Numpad.  Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
 
 ### Known issues
+
+# validate are these still issues
 
  - Due to changing paths in the installation folder, the Mouse Without Borders service might be pointing to the wrong place. Users not running as admin will have to enable service mode again after install. A toast notification will appear if Mouse Without Borders is unable to start the service correctly.
  - File Explorer extensions changed paths might not be loaded correctly until File Explorer and Preview Host processes are restarted, so we advise restarting the computer when possible after updating PowerToys.
