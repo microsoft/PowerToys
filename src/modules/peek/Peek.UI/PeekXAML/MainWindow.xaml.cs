@@ -45,7 +45,6 @@ namespace Peek.UI
         {
             InitializeComponent();
             Title = ResourceLoaderInstance.ResourceLoader.GetString("AppTitle");
-
             SetTitleBarToWindow();
             TitleBarRootContainer.SizeChanged += TitleBarRootContainer_SizeChanged;
 
@@ -55,6 +54,59 @@ namespace Peek.UI
 
             Activated += PeekWindow_Activated;
             AppWindow.Closing += AppWindow_Closing;
+        }
+
+        public void SetTitleBarToWindow()
+        {
+            if (AppWindowTitleBar.IsCustomizationSupported())
+            {
+                ExtendsContentIntoTitleBar = true;
+                AppWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+                AppWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+                SetTitleBar(TitleBarRootContainer);
+
+                AppWindow.SetIcon("Assets/Peek/Icon.ico");
+            }
+            else
+            {
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                TitleBarRootContainer.Visibility = Visibility.Collapsed;
+
+                // Set window icon
+                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+                appWindow.SetIcon("Assets/Peek/Icon.ico");
+            }
+        }
+
+        private void TitleBarRootContainer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            AppWindow appWindow = AppWindow;
+            if (AppWindowTitleBar.IsCustomizationSupported() && appWindow != null && appWindow.TitleBar.ExtendsContentIntoTitleBar)
+            {
+                double scale = System.Windows.PresentationSource.FromVisual(System.Windows.Application.Current.MainWindow).CompositionTarget.TransformToDevice.M11;
+
+                var dragRectsList = new List<RectInt32>();
+
+                RectInt32 dragRectangleLeft;
+                dragRectangleLeft.X = (int)(appWindow.TitleBar.LeftInset * scale);
+                dragRectangleLeft.Y = 1;
+                dragRectangleLeft.Width = (int)((appWindow.TitleBar.LeftInset + IconAndTitleColumn.ActualWidth + LeftDragColumn.ActualWidth) * scale);
+                dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
+                dragRectsList.Add(dragRectangleLeft);
+
+/*                RectInt32 dragRectangleRight;
+                dragRectangleRight.X = (int)((appWindow.TitleBar.LeftInset + IconAndTitleColumn.ActualWidth + LeftDragColumn.ActualWidth + ButtonsColumn.ActualWidth) * scale);
+                dragRectangleRight.Y = 1;
+                dragRectangleRight.Width = (int)(RightDragColumn.ActualWidth * scale);
+                dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
+
+                dragRectsList.Add(dragRectangleRight);
+*/
+
+                appWindow.TitleBar.SetDragRectangles(dragRectsList.ToArray());
+            }
         }
 
         private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
@@ -257,32 +309,6 @@ namespace Peek.UI
 
         public int NumberOfFiles { get; set; }
 
-        public void SetTitleBarToWindow()
-        {
-            if (AppWindowTitleBar.IsCustomizationSupported())
-            {
-                // AppWindow appWindow = mainWindow.AppWindow;
-                ExtendsContentIntoTitleBar = true;
-                AppWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-                AppWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
-                // AppWindow.TitleBar.ButtonForegroundColor = ThemeHelpers.GetAppTheme() == AppTheme.Light ? Colors.DarkSlateGray : Colors.White;
-                SetTitleBar(TitleBarRootContainer);
-
-                AppWindow.SetIcon("Assets/Peek/Icon.ico");
-            }
-            else
-            {
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-                TitleBarRootContainer.Visibility = Visibility.Collapsed;
-
-                // Set window icon
-                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                appWindow.SetIcon("Assets/Peek/Icon.ico");
-            }
-        }
-
         public Visibility IsLaunchDefaultAppButtonVisible(string appName)
         {
             return string.IsNullOrEmpty(appName) ? Visibility.Collapsed : Visibility.Visible;
@@ -341,34 +367,6 @@ namespace Peek.UI
         public void Pin()
         {
             Pinned = !Pinned;
-        }
-
-        private void TitleBarRootContainer_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            AppWindow appWindow = AppWindow;
-            if (AppWindowTitleBar.IsCustomizationSupported() && appWindow != null && appWindow.TitleBar.ExtendsContentIntoTitleBar)
-            {
-                double scale = System.Windows.PresentationSource.FromVisual(System.Windows.Application.Current.MainWindow).CompositionTarget.TransformToDevice.M11;
-
-                var dragRectsList = new List<RectInt32>();
-
-                RectInt32 dragRectangleLeft;
-                dragRectangleLeft.X = (int)(appWindow.TitleBar.LeftInset * scale);
-                dragRectangleLeft.Y = 1;
-                dragRectangleLeft.Width = (int)((appWindow.TitleBar.LeftInset + IconAndTitleColumn.ActualWidth + LeftDragColumn.ActualWidth) * scale);
-                dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
-
-/*                RectInt32 dragRectangleRight;
-                dragRectangleRight.X = (int)((appWindow.TitleBar.LeftInset + IconAndTitleColumn.ActualWidth + LeftDragColumn.ActualWidth + ButtonsColumn.ActualWidth) * scale);
-                dragRectangleRight.Y = 1;
-                dragRectangleRight.Width = (int)(RightDragColumn.ActualWidth * scale);
-                dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
-
-                dragRectsList.Add(dragRectangleRight);
-*/                dragRectsList.Add(dragRectangleLeft);
-
-                appWindow.TitleBar.SetDragRectangles(dragRectsList.ToArray());
-            }
         }
 
         private void OnFilePropertyChanged()
