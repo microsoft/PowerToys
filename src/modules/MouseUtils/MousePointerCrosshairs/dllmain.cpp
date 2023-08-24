@@ -233,7 +233,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Opacity value");
                 }
             }
             catch (...)
@@ -270,7 +270,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Radius value");
                 }
                 
             }
@@ -289,7 +289,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Thickness value");
                 }
                 
             }
@@ -327,7 +327,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Border Color value");
                 }
             }
             catch (...)
@@ -366,7 +366,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Fixed Length value");
                 }
             }
             catch (...)

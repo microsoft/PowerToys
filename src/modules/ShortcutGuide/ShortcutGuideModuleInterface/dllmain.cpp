@@ -342,7 +342,7 @@ private:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Press Time Windows Shortcuts value");
                 }
                 value = static_cast<int>(jsonPressTimeForTaskbarIconShortcutsObject.GetNamedNumber(L"value"));
                 if (value >= 0)
@@ -351,7 +351,7 @@ private:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Press Time Taskbar Shortcuts value");
                 }
             }
             catch (...)
