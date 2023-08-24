@@ -27,6 +27,7 @@ namespace Common.UI
             MeasureTool,
             PowerOCR,
             RegistryPreview,
+            CropAndLock,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -65,6 +66,8 @@ namespace Common.UI
                     return "PowerOCR";
                 case SettingsWindow.RegistryPreview:
                     return "RegistryPreview";
+                case SettingsWindow.CropAndLock:
+                    return "CropAndLock";
                 default:
                     {
                         return string.Empty;
