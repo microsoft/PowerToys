@@ -32,8 +32,6 @@ namespace Wox.Infrastructure.Image
 
         public static string ErrorIconPath { get; set; }
 
-        public static string DefaultIconPath { get; set; }
-
         private static readonly string[] ImageExtensions =
         {
             ".png",
@@ -49,7 +47,7 @@ namespace Wox.Infrastructure.Image
         {
             _hashGenerator = new ImageHashGenerator();
 
-            foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon, Constant.LightThemedDefaultIcon, Constant.LightThemedErrorIcon })
+            foreach (var icon in new[] { Constant.ErrorIcon, Constant.LightThemedErrorIcon })
             {
                 BitmapImage bmi = new BitmapImage();
                 bmi.BeginInit();
@@ -88,12 +86,10 @@ namespace Wox.Infrastructure.Image
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
                 ErrorIconPath = Constant.LightThemedErrorIcon;
-                DefaultIconPath = Constant.LightThemedDefaultIcon;
             }
             else
             {
                 ErrorIconPath = Constant.ErrorIcon;
-                DefaultIconPath = Constant.DefaultIcon;
             }
         }
 

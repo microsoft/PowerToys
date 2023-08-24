@@ -115,12 +115,14 @@ TestCase\("[^"]+"
 \\Registry
 \\registry
 \\reinstall
+\\release
 \\Resize
 \\resource
 \\Resources
 \\restart
 \\restore
 \\result
+\\robmikh
 \\rotating
 \\runner
 \\runtimes

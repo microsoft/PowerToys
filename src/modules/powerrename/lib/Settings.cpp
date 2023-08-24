@@ -25,6 +25,8 @@ namespace
     const wchar_t c_replaceText[] = L"ReplaceText";
     const wchar_t c_mruEnabled[] = L"MRUEnabled";
     const wchar_t c_useBoostLib[] = L"UseBoostLib";
+    const wchar_t c_lastWindowWidth[] = L"LastWindowWidth";
+    const wchar_t c_lastWindowHeight[] = L"LastWindowHeight";
 
 }
 
@@ -49,6 +51,8 @@ void CSettings::Save()
     jsonData.SetNamedValue(c_searchText, json::value(settings.searchText));
     jsonData.SetNamedValue(c_replaceText, json::value(settings.replaceText));
     jsonData.SetNamedValue(c_useBoostLib, json::value(settings.useBoostLib));
+    jsonData.SetNamedValue(c_lastWindowWidth, json::value(settings.lastWindowWidth));
+    jsonData.SetNamedValue(c_lastWindowHeight, json::value(settings.lastWindowHeight));
 
     json::to_file(jsonFilePath, jsonData);
     GetSystemTimeAsFileTime(&lastLoadedTime);
@@ -139,6 +143,9 @@ void CSettings::ParseJson()
             {
                 settings.useBoostLib = jsonSettings.GetNamedBoolean(c_useBoostLib);
             }
+
+            settings.lastWindowWidth = static_cast<int>(jsonSettings.GetNamedNumber(c_lastWindowWidth, DEFAULT_WINDOW_WIDTH));
+            settings.lastWindowHeight = static_cast<int>(jsonSettings.GetNamedNumber(c_lastWindowHeight, DEFAULT_WINDOW_HEIGHT));
         }
         catch (const winrt::hresult_error&)
         {

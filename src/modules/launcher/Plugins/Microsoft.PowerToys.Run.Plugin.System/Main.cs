@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Controls;
-using ControlzEx.Standard;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.System.Components;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;

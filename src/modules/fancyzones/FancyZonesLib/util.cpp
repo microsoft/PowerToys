@@ -123,6 +123,15 @@ namespace FancyZonesUtils
         monitorInfo = std::move(sortedMonitorInfo);
     }
 
+    std::vector<HMONITOR> GetMonitorsOrdered()
+    {
+        auto monitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+        FancyZonesUtils::OrderMonitors(monitors);
+        std::vector<HMONITOR> output;
+        std::transform(std::begin(monitors), std::end(monitors), std::back_inserter(output), [](const auto& info) { return info.first; });
+        return output;
+    }
+
     bool IsValidGuid(const std::wstring& str)
     {
         GUID id;

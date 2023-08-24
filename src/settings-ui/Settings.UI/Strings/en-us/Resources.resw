@@ -229,19 +229,19 @@
     <value>It is not possible to use drag and drop while running PowerToys elevated. As a workaround, please restart PowerToys without elevation to edit the device layout.</value>
   </data>
   <data name="MouseWithoutBorders_KeySettings.Header" xml:space="preserve">
-    <value>Encryption Key</value>
+    <value>Encryption key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Header" xml:space="preserve">
     <value>Security key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
-    <value>The key must be auto generated in one machine by click on New Key, then typed in other machines</value>
+    <value>The key must be auto generated in one machine by clicking on New Key, then typed in other machines</value>
   </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
   </data>
   <data name="MouseWithoutBorders_CopyMachineName.Text" xml:space="preserve">
-    <value>Copy this PC name to the clipboard</value>
+    <value>Copy to clipboard</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectButton.Text" xml:space="preserve">
     <value>Refresh connections</value>
@@ -250,7 +250,7 @@
     <value>Reestablishes connections with other devices if you are experiencing issues.</value>
   </data>
   <data name="MouseWithoutBorders_ThisMachineNameLabel.Header" xml:space="preserve">
-    <value>The local machine's host name is:</value>
+    <value>Host name of this device</value>
   </data>
   <data name="MouseWithoutBorders_Connect.Content" xml:space="preserve">
     <value>Connect</value>
@@ -301,22 +301,20 @@
   <data name="MouseWithoutBorders_UseService.Header" xml:space="preserve">
     <value>Use Service</value>
   </data>
-  <data name="MouseWithoutBorders_UseService.Description"
-      xml:space="preserve">
-      <value>Runs in service mode, that allows MWB to control remote machines when they're locked. Also allows control of system and administrator applications.</value>
+  <data name="MouseWithoutBorders_UseService.Description" xml:space="preserve">
+    <value>Runs in service mode, that allows MWB to control remote machines when they're locked. Also allows control of system and administrator applications.</value>
   </data>
   <data name="MouseWithoutBorders_MatrixOneRow.Header" xml:space="preserve">
     <value>Devices in a single row</value>
   </data>
   <data name="MouseWithoutBorders_MatrixOneRow.Description" xml:space="preserve">
-    <value>Sets whether the devices should are aligned on a single row. A two by two matrix is considered otherwise.</value>
+    <value>Sets whether the devices are aligned on a single row. A two by two matrix is considered otherwise.</value>
   </data>
   <data name="MouseWithoutBorders_WrapMouse.Header" xml:space="preserve">
     <value>Wrap mouse</value>
   </data>
-  <data name="MouseWithoutBorders_WrapMouse.Description"
-      xml:space="preserve">
-      <value>Move control back to the first machine when mouse moves past the last one.</value>
+  <data name="MouseWithoutBorders_WrapMouse.Description" xml:space="preserve">
+    <value>Move control back to the first machine when mouse moves past the last one.</value>
   </data>
   <data name="MouseWithoutBorders_ShareClipboard.Header" xml:space="preserve">
     <value>Share clipboard</value>
@@ -354,52 +352,55 @@
   <data name="MouseWithoutBorders_ShowOriginalUI.Description" xml:space="preserve">
     <value>This is accessible from the system tray and requires a restart.</value>
   </data>
-  <data name="MouseWithoutBorders_ShareClipboard.Description"
-      xml:space="preserve">
-      <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem.</value>
+  <data name="MouseWithoutBorders_ShareClipboard.Description" xml:space="preserve">
+    <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem.</value>
   </data>
-  <data name="MouseWithoutBorders_TransferFile.Description"
-      xml:space="preserve">
-      <value>If a file (&lt;100MB) is copied, it will be transferred to the remote machine clipboard.</value>
+  <data name="MouseWithoutBorders_TransferFile.Description" xml:space="preserve">
+    <value>If a file (&lt;100MB) is copied, it will be transferred to the remote machine clipboard.</value>
   </data>
-  <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Description"
-      xml:space="preserve">
-      <value>Hide the mouse cursor at the top edge of the screen when switching to other machine. This option also steals the focus from any full-screen app to ensure the keyboard input is redirected.</value>
+  <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Description" xml:space="preserve">
+    <value>Hide the mouse cursor at the top edge of the screen when switching to other machine. This option also steals the focus from any full-screen app to ensure the keyboard input is redirected.</value>
   </data>
-  <data name="MouseWithoutBorders_DrawMouseCursor.Description"
-      xml:space="preserve">
-      <value>Mouse cursor may not be visible in Windows 10 and later versions of Windows when there is no physical mouse attached.</value>
+  <data name="MouseWithoutBorders_DrawMouseCursor.Description" xml:space="preserve">
+    <value>Mouse cursor may not be visible in Windows 10 and later versions of Windows when there is no physical mouse attached.</value>
   </data>
-  <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description"
-      xml:space="preserve">
-      <value>Reverse DNS lookup to validate machine IP Address.</value>
+  <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description" xml:space="preserve">
+    <value>Reverse DNS lookup to validate machine IP Address.</value>
   </data>
-  <data name="MouseWithoutBorders_SameSubnetOnly.Description"
-      xml:space="preserve">
-      <value>Only connect to machines in the same intranet NNN.NNN.*.* (only works when both machines have IPv4 enabled)</value>
+  <data name="MouseWithoutBorders_SameSubnetOnly.Description" xml:space="preserve">
+    <value>Only connect to machines in the same intranet NNN.NNN.*.* (only works when both machines have IPv4 enabled)</value>
   </data>
-  <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Description"
-      xml:space="preserve">
-      <value>Prevent screen saver from starting on other machines when user is actively working on this machine.</value>
+  <data name="MouseWithoutBorders_IPAddressMapping_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: MyLaptop 192.168.0.24</value>
+    <comment>Don't translate MyLaptop</comment>
   </data>
-  <data name="MouseWithoutBorders_MoveMouseRelatively.Description"
-      xml:space="preserve">
-      <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors.</value>
+  <data name="MouseWithoutBorders_IPAddressMapping.Header" xml:space="preserve">
+    <value>IP address mapping</value>
   </data>
-  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Description"
-      xml:space="preserve">
-      <value>To avoid accident machine-switch at screen corners.</value>
+  <data name="MouseWithoutBorders_IPAddressMapping.Description" xml:space="preserve">
+    <value>Resolve machine's IP address using manually entered mappings below.</value>
   </data>
-  <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Description"
-      xml:space="preserve">
-      <value>Show clipboard activities and network status in system tray notifications</value>
+  <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Description" xml:space="preserve">
+    <value>Prevent screen saver from starting on other machines when user is actively working on this machine.</value>
+  </data>
+  <data name="MouseWithoutBorders_MoveMouseRelatively.Description" xml:space="preserve">
+    <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors.</value>
+  </data>
+  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Description" xml:space="preserve">
+    <value>To avoid accident machine-switch at screen corners.</value>
+  </data>
+  <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Description" xml:space="preserve">
+    <value>Show clipboard activities and network status in system tray notifications</value>
   </data>
   <data name="MouseWithoutBorders_KeyboardShortcuts_Group.Header" xml:space="preserve">
-    <value>Keyboard Shortcuts</value>
+    <value>Keyboard shortcuts</value>
     <comment>keyboard is the hardware peripheral</comment>
   </data>
+  <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
+    <value>Advanced Settings</value>
+  </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
-    <value>Easy Mouse: Move between machines by moving the mouse pointer to the screen edges.</value>
+    <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Description" xml:space="preserve">
     <value>Can also be set to move only when pressing Shift or Ctrl.</value>
@@ -419,8 +420,14 @@
     <value>Shift</value>
     <comment>This is the Shift keyboard key</comment>
   </data>
+  <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
+    <value>Shortcut to lock all machines.</value>
+  </data>
+  <data name="MouseWithoutBorders_LockMachinesShortcut.Description" xml:space="preserve">
+    <value>Hit this hotkey twice to lock all machines. Note: Only the machines which have the same shortcut configured will be locked.</value>
+  </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Header" xml:space="preserve">
-    <value>Shortcut to toggle Easy Mouse. Ctrl+Alt+:</value>
+    <value>Shortcut to toggle Easy Mouse.</value>
     <comment>Ctrl and Alt are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Description" xml:space="preserve">
@@ -448,35 +455,23 @@
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
   </data>
-  <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
-    <value>Shortcut to press twice quickly to lock all machines. Ctrl+Alt+:</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
-  </data>
-  <data name="MouseWithoutBorders_LockMachinesShortcut.Description" xml:space="preserve">
-    <value>Click on Ctrl+Alt+ the chosen option twice quickly to lock all machines. Note: Only the machines which have the same shortcut configured will be locked.</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
-  </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectShortcut.Header" xml:space="preserve">
-    <value>Shortcut to try reconnecting. Ctrl+Alt+:</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
+    <value>Shortcut to try reconnecting</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectShortcut.Description" xml:space="preserve">
-    <value>Click on Ctrl+Alt+ the chosen option to reconnect.</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
+    <value>Just in case the connection is lost for any reason.</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
-    <value>Shortcut to switch to multiple machine mode. Ctrl+Alt+:</value>
-    <comment>Ctrl and Alt are the keyboard keys</comment>
+    <value>Shortcut to switch to multiple machine mode.</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Description" xml:space="preserve">
-    <value>Allows controlling all computers at once. Pressing Ctrl three times is also an option.</value>
-    <comment>This is the Ctrl keyboard key</comment>
+    <value>Allows controlling all computers at once.</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
@@ -896,6 +891,9 @@
   <data name="FancyZones_MouseDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Use a non-primary mouse button to toggle zone activation</value>
   </data>
+  <data name="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Use middle-click mouse button to toggle multiple zones spanning</value>
+  </data>
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors</value>
   </data>
@@ -1023,8 +1021,8 @@
   <data name="PowerRename_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
     <value>Extended context menu only</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
-    <value>Press Shift + right-click on files to open the extended menu</value>
+  <data name="ExtendedContextMenuInfo.Title" xml:space="preserve">
+    <value>Press Shift + right-click on files to open the extended context menu</value>
   </data>
   <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
     <value>Maximum number of items</value>
@@ -1855,10 +1853,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
     <value>Enable at least one plugin to get started</value>
   </data>
-  <data name="Run_PluginUseDescription.Header" xml:space="preserve">
+  <data name="Run_PluginUse.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>
-  <data name="Run_PluginUseDescription.Description" xml:space="preserve">
+  <data name="Run_PluginUseDescription.Text" xml:space="preserve">
     <value>Include or remove plugins from the global results, change the direct activation phrase and configure additional options</value>
   </data>
   <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
@@ -2002,7 +2000,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Press the **Restart Elevated** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
-    <value>Open File Explorer, select the **View** tab in the File Explorer ribbon, then select **Preview Pane**. 
+    <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**. 
 From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
@@ -2147,6 +2145,9 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Give feedback</value>
   </data>
   <data name="OobeWindow_Title" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
+  </data>
+  <data name="OobeWindow_TitleTxt.Text" xml:space="preserve">
     <value>Welcome to PowerToys</value>
   </data>
   <data name="SettingsWindow_Title" xml:space="preserve">
@@ -2338,6 +2339,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Paste as Plain Text</value>
     <comment> Paste as Plain Text is the name of the module. </comment>
   </data>
+  <data name="LearnMore_MouseWithoutBorders.Text" xml:space="preserve">
+    <value>Learn more about Mouse Without Borders</value>
+    <comment>Mouse Without Borders is the name of the module. </comment>
+  </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, localize as Windows does</comment>
@@ -2460,8 +2465,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Activation_Shortcut_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="Activation_Shortcut_Description.Text" xml:space="preserve">
+  <data name="Activation_Shortcut_Description" xml:space="preserve">
     <value>Press a combination of keys to change this shortcut</value>
+  </data>
+  <data name="Activation_Shortcut_With_Disable_Description" xml:space="preserve">
+    <value>Press a combination of keys to change this shortcut.
+Right-click to remove the key combination, thereby deactivating the shortcut.</value>
+  </data>
+  <data name="Activation_Shortcut_Reset" xml:space="preserve">
+    <value>Reset</value>
   </data>
   <data name="Activation_Shortcut_Save" xml:space="preserve">
     <value>Save</value>
@@ -2589,9 +2601,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_MouseHighlighter_SecondaryButtonClickColor.Header" xml:space="preserve">
     <value>Secondary button highlight color</value>
   </data>
-  <data name="MouseUtils_MouseHighlighter_HighlightOpacity.Header" xml:space="preserve">
-    <value>Opacity (%)</value>
-  </data>
   <data name="MouseUtils_MouseHighlighter_HighlightRadius.Header" xml:space="preserve">
     <value>Radius (px)</value>
     <comment>px = pixels</comment>
@@ -2651,6 +2660,13 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Crosshairs border size (px)</value>
     <comment>px = pixels</comment>
   </data>
+  <data name="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled.Header" xml:space="preserve">
+    <value>Fix crosshairs length</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength.Header" xml:space="preserve">
+    <value>Crosshairs fixed length (px)</value>
+    <comment>px = pixels</comment>
+  </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
   </data>
@@ -2702,6 +2718,59 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ToggleSwitch.OnContent" xml:space="preserve">
     <value>On</value>
     <comment>The state of a ToggleSwitch when it's on</comment>
+  </data>
+  <data name="CropAndLock.ModuleDescription" xml:space="preserve">
+    <value>Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="CropAndLock.ModuleTitle" xml:space="preserve">
+    <value>Crop And Lock </value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="CropAndLock_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="CropAndLock_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Crop And Lock</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="Shell_CropAndLock.Content" xml:space="preserve">
+    <value>Crop And Lock</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_CropAndLock.Text" xml:space="preserve">
+    <value>Learn more about Crop And Lock</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="CropAndLock_ReparentActivation_Shortcut.Header" xml:space="preserve">
+    <value>Reparent shortcut</value>
+  </data>
+  <data name="CropAndLock_ReparentActivation_Shortcut.Description" xml:space="preserve">
+    <value>Shortcut to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
+  </data>
+  <data name="CropAndLock_ThumbnailActivation_Shortcut.Header" xml:space="preserve">
+    <value>Thumbnail shortcut</value>
+  </data>
+  <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
+    <value>Shortcut to crop and create a thumbnail of another window. The application isn't controllable through the thumbnail but it'll have less compatibility issues. </value>
+  </data>
+  <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
+  <data name="Oobe_CropAndLock.Title" xml:space="preserve">
+    <value>Crop And Lock</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_CropAndLock.Description" xml:space="preserve">
+    <value>Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Thumbnail.Text" xml:space="preserve">
+    <value>to crop and create a thumbnail of another window. The application isn't controllable through the thumbnail but it'll have less compatibility issues.</value>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Reparent.Text" xml:space="preserve">
+    <value>to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
@@ -2826,6 +2895,20 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Peek_EnablePeek.Header" xml:space="preserve">
     <value>Enable Peek</value>
+    <comment>Peek is a product name, do not loc</comment>
+  </data>
+  <data name="Peek_BehaviorHeader.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="Peek_AlwaysRunNotElevated.Header" xml:space="preserve">
+    <value>Always run not elevated, even when PowerToys is elevated</value>
+  </data>
+  <data name="Peek_AlwaysRunNotElevated.Description" xml:space="preserve">
+    <value>Tries to run Peek without elevated permissions, to fix access to network shares. You need to disable and re-enable Peek for changes to this value to take effect.</value>
+    <comment>Peek is a product name, do not loc</comment>
+  </data>
+  <data name="Peek_CloseAfterLosingFocus.Header" xml:space="preserve">
+    <value>Automatically close the Peek window after it loses focus</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
@@ -3017,6 +3100,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="General_SettingsBackupAndRestore_BackupError" xml:space="preserve">
     <value>There was an error. Try another backup location.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_SettingsFormatError" xml:space="preserve">
+    <value>There was an error in the settings format. Please check the settings file:</value>
   </data>
   <data name="General_SettingsBackupAndRestore_BackupComplete" xml:space="preserve">
     <value>Backup completed.</value>
@@ -3287,6 +3373,19 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Enable File Locksmith</value>
     <comment>File Locksmith is the name of the utility</comment>
   </data>
+  <data name="FileLocksmith_Toggle_StandardContextMenu.Content" xml:space="preserve">
+    <value>Default and extended context menu</value>
+  </data>
+  <data name="FileLocksmith_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
+    <value>Extended context menu only</value>
+  </data>
+  <data name="FileLocksmith_Toggle_ContextMenu.Header" xml:space="preserve">
+    <value>Show File Locksmith in</value>
+  </data>
+  <data name="FileLocksmith_ShellIntegration.Header" xml:space="preserve">
+    <value>Shell integration</value>
+    <comment>This refers to directly integrating in with Windows</comment>
+  </data>
   <data name="GPO_IsSettingForced.Title" xml:space="preserve">
     <value>The system administrator is forcing this setting.</value>
   </data>
@@ -3483,6 +3582,13 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
     <value>Launch Registry Preview</value>
   </data>
+  <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">
+    <value>Default app</value>
+  </data>
+  <data name="RegistryPreview_DefaultRegApp.Description" xml:space="preserve">
+    <value>Make Registry Preview default app for opening .reg files</value>
+    <comment>Registry Preview is app name. Do not localize.</comment>
+  </data>
   <data name="PastePlain_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
   </data>
@@ -3503,6 +3609,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
   </data>
+  <data name="SettingsWindow_TitleTxt.Text" xml:space="preserve">
+    <value>PowerToys Settings</value>
+  </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
   </data>
@@ -3511,5 +3620,39 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_Peek_HowToUse.Text" xml:space="preserve">
     <value>to preview the file that's currently selected in File Explorer.</value>
+  </data>
+  <data name="MWB_PCNameLabel.PlaceholderText" xml:space="preserve">
+    <value>Device name</value>
+  </data>
+  <data name="MWB_SecurityKeyLabel.PlaceholderText" xml:space="preserve">
+    <value>Security key</value>
+  </data>
+  <data name="Hosts_Encoding.Description" xml:space="preserve">
+    <value>Chose the encoding of the hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Encoding.Header" xml:space="preserve">
+    <value>Encoding</value>
+  </data>
+  <data name="Hosts_Encoding_Utf8.Content" xml:space="preserve">
+    <value>UTF-8</value>
+  </data>
+  <data name="Hosts_Encoding_Utf8Bom.Content" xml:space="preserve">
+    <value>UTF-8 with BOM</value>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_AlwaysColor.Header" xml:space="preserve">
+    <value>Always highlight color</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide.Content" xml:space="preserve">
+    <value>Automatically hide crosshairs when the mouse pointer is hidden</value>
+  </data>
+  <data name="MouseUtils_AutoActivate.Content" xml:space="preserve">
+    <value>Automatically activate on utility startup</value>
+  </data>
+  <data name="Run_FindMorePlugins.Text" xml:space="preserve">
+    <value>Find more plugins</value>
+  </data>
+  <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
+    <value>Find more plugins</value>
   </data>
 </root>

@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -437,6 +438,8 @@ namespace RegistryPreview
                                 registryValue.Type = "ERROR";
                             }
 
+                            registryValue.Value = value;
+
                             break;
                         case "REG_QWORD":
                             if (value.Length <= 0)
@@ -799,7 +802,7 @@ namespace RegistryPreview
                 FileStreamOptions fileStreamOptions = new FileStreamOptions();
                 fileStreamOptions.Access = FileAccess.Write;
                 fileStreamOptions.Share = FileShare.Write;
-                fileStreamOptions.Mode = FileMode.OpenOrCreate;
+                fileStreamOptions.Mode = FileMode.Create;
 
                 fileStream = new FileStream(App.AppFilename, fileStreamOptions);
                 StreamWriter streamWriter = new StreamWriter(fileStream, System.Text.Encoding.Unicode);
@@ -842,7 +845,7 @@ namespace RegistryPreview
             ChangeCursor(gridPreview, false);
         }
 
-        private void OpenSettingsFile(string path, string filename)
+        private void OpenWindowPlacementFile(string path, string filename)
         {
             string fileContents = string.Empty;
             string storageFile = Path.Combine(path, filename);
@@ -860,23 +863,27 @@ namespace RegistryPreview
                     fileContents = "{ }";
                 }
             }
+            else
+            {
+                Task.Run(() => SaveWindowPlacementFile(path, filename)).GetAwaiter().GetResult();
+            }
 
             try
             {
-                jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
+                jsonWindowPlacement = Windows.Data.Json.JsonObject.Parse(fileContents);
             }
             catch
             {
                 // set up default JSON blob
                 fileContents = "{ }";
-                jsonSettings = Windows.Data.Json.JsonObject.Parse(fileContents);
+                jsonWindowPlacement = Windows.Data.Json.JsonObject.Parse(fileContents);
             }
         }
 
         /// <summary>
-        /// Save the settings JSON blob out to a local file
+        /// Save the window placement JSON blob out to a local file
         /// </summary>
-        private async void SaveSettingsFile(string path, string filename)
+        private async void SaveWindowPlacementFile(string path, string filename)
         {
             StorageFolder storageFolder = null;
             StorageFile storageFile = null;
@@ -905,7 +912,7 @@ namespace RegistryPreview
 
             try
             {
-                fileContents = jsonSettings.Stringify();
+                fileContents = jsonWindowPlacement.Stringify();
                 await Windows.Storage.FileIO.WriteTextAsync(storageFile, fileContents);
             }
             catch (Exception ex)

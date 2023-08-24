@@ -136,6 +136,9 @@ IFACEMETHODIMP SvgThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_A
             }
             file.close();
 
+            m_pStream->Release();
+            m_pStream = NULL;
+
             try
             {
                 Logger::info(L"Start SvgThumbnailProvider.exe");

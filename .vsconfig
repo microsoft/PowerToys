@@ -14,6 +14,7 @@
     "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
     "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
     "Microsoft.VisualStudio.Component.VC.ATL.ARM64.Spectre",
+    "Microsoft.VisualStudio.Component.VC.ATL",
     "Microsoft.VisualStudio.Component.VC.ATL.Spectre",
     "Microsoft.VisualStudio.ComponentGroup.WindowsAppSDK.Cs"
   ]

@@ -18,6 +18,19 @@ namespace ImageResizer.ViewModels
         private readonly MainViewModel _mainViewModel;
         private readonly IMainView _mainView;
 
+        public enum Dimension
+        {
+            Width,
+            Height,
+        }
+
+        public class KeyPressParams
+        {
+            public double Value { get; set; }
+
+            public Dimension Dimension { get; set; }
+        }
+
         public InputViewModel(
             Settings settings,
             MainViewModel mainViewModel,
@@ -37,6 +50,7 @@ namespace ImageResizer.ViewModels
             ResizeCommand = new RelayCommand(Resize);
             CancelCommand = new RelayCommand(Cancel);
             OpenSettingsCommand = new RelayCommand(OpenSettings);
+            EnterKeyPressedCommand = new RelayCommand<KeyPressParams>(HandleEnterKeyPress);
         }
 
         public Settings Settings { get; }
@@ -46,6 +60,8 @@ namespace ImageResizer.ViewModels
         public ICommand CancelCommand { get; }
 
         public ICommand OpenSettingsCommand { get; }
+
+        public ICommand EnterKeyPressedCommand { get; private set; }
 
         public bool TryingToResizeGifFiles
         {
@@ -64,7 +80,20 @@ namespace ImageResizer.ViewModels
 
         public static void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ImageResizer);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ImageResizer, false);
+        }
+
+        private void HandleEnterKeyPress(KeyPressParams parameters)
+        {
+            switch (parameters.Dimension)
+            {
+                case Dimension.Width:
+                    Settings.CustomSize.Width = parameters.Value;
+                    break;
+                case Dimension.Height:
+                    Settings.CustomSize.Height = parameters.Value;
+                    break;
+            }
         }
 
         public void Cancel()

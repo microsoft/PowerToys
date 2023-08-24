@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RootNamespace>Peek.FilePreviewer</RootNamespace>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
@@ -14,6 +15,7 @@
       </PRIResource>
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Controls\ArchiveControl.xaml" />
     <None Remove="Controls\BrowserControl.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\InformationalPreviewControl.xaml" />
@@ -25,6 +27,7 @@
       <PackageReference Include="CommunityToolkit.Mvvm" />
       <PackageReference Include="Microsoft.WindowsAppSDK" />
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+      <PackageReference Include="SharpCompress" />
       <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 
@@ -33,6 +36,12 @@
     <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\ArchiveControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

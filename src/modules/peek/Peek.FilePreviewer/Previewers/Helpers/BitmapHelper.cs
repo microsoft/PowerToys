@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
@@ -16,12 +17,23 @@ namespace Peek.FilePreviewer.Previewers.Helpers
     {
         public static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, bool isSupportingTransparency, CancellationToken cancellationToken)
         {
+            Bitmap? bitmap = null;
+
             try
             {
-                var bitmap = System.Drawing.Image.FromHbitmap(hbitmap);
-                if (isSupportingTransparency)
+                bitmap = Image.FromHbitmap(hbitmap);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (isSupportingTransparency && bitmap.PixelFormat == PixelFormat.Format32bppRgb)
                 {
-                    bitmap.MakeTransparent();
+                    var bitmapRectangle = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+                    var bitmapData = bitmap.LockBits(bitmapRectangle, ImageLockMode.ReadOnly, bitmap.PixelFormat);
+
+                    var transparentBitmap = new Bitmap(bitmapData.Width, bitmapData.Height, bitmapData.Stride, PixelFormat.Format32bppArgb, bitmapData.Scan0);
+
+                    bitmap.Dispose();
+                    bitmap = transparentBitmap;
                 }
 
                 var bitmapImage = new BitmapImage();
@@ -40,8 +52,37 @@ namespace Peek.FilePreviewer.Previewers.Helpers
             }
             finally
             {
+                bitmap?.Dispose();
+
                 // delete HBitmap to avoid memory leaks
                 NativeMethods.DeleteObject(hbitmap);
+            }
+        }
+
+        public static async Task<BitmapSource> GetBitmapFromHIconAsync(IntPtr hicon, CancellationToken cancellationToken)
+        {
+            try
+            {
+                using var icon = (Icon)Icon.FromHandle(hicon).Clone();
+                using var bitmap = icon.ToBitmap();
+
+                var bitmapImage = new BitmapImage();
+
+                using (var stream = new MemoryStream())
+                {
+                    bitmap.Save(stream, ImageFormat.Png);
+                    stream.Position = 0;
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
+                }
+
+                return bitmapImage;
+            }
+            finally
+            {
+                // Delete HIcon to avoid memory leaks
+                _ = NativeMethods.DestroyIcon(hicon);
             }
         }
     }

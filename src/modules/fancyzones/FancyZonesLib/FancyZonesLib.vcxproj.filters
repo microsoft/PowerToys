@@ -51,7 +51,7 @@
     <ClInclude Include="FancyZonesWinHookEventIDs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SecondaryMouseButtonsHook.h">
+    <ClInclude Include="MouseButtonsHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MonitorWorkAreaMap.h">
@@ -162,7 +162,10 @@
     <ClInclude Include="DraggingState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowDrag.h">
+    <ClInclude Include="WindowMouseSnap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowKeyboardSnap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -194,7 +197,7 @@
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SecondaryMouseButtonsHook.cpp">
+    <ClCompile Include="MouseButtonsHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MonitorWorkAreaMap.cpp">
@@ -263,7 +266,10 @@
     <ClCompile Include="DraggingState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WindowDrag.cpp">
+    <ClCompile Include="WindowMouseSnap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowKeyboardSnap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -47,7 +47,7 @@ namespace MouseWithoutBorders
             {
                 checkBoxEnabled.Checked = value;
                 Editable = value;
-                pictureBoxLogo.Image = value ? Resources.MachineEnabled : (System.Drawing.Image)Resources.MachineDisabled;
+                pictureBoxLogo.Image = value ? Images.MachineEnabled : (System.Drawing.Image)Images.MachineDisabled;
                 OnEnabledChanged(EventArgs.Empty); // Borrow this event since we do not use it for any other purpose:) (we can create one but l...:))
             }
         }

@@ -68,12 +68,6 @@ namespace PowerRenameManagerTests
                 int itemId = 0;
                 Assert::IsTrue(item->GetId(&itemId) == S_OK);
                 mgr->AddItem(item);
-
-                // Verify the item we added is the same from the event
-                Assert::IsTrue(mockMgrEvents->m_itemAdded != nullptr && mockMgrEvents->m_itemAdded == item);
-                int eventItemId = 0;
-                Assert::IsTrue(mockMgrEvents->m_itemAdded->GetId(&eventItemId) == S_OK);
-                Assert::IsTrue(itemId == eventItemId);
             }
 
             // TODO: Setup match and replace parameters
@@ -146,11 +140,6 @@ namespace PowerRenameManagerTests
             Assert::IsTrue(item->GetId(&itemId) == S_OK);
             mgr->AddItem(item);
 
-            // Verify the item we added is the same from the event
-            Assert::IsTrue(mockMgrEvents->m_itemAdded != nullptr && mockMgrEvents->m_itemAdded == item);
-            int eventItemId = 0;
-            Assert::IsTrue(mockMgrEvents->m_itemAdded->GetId(&eventItemId) == S_OK);
-            Assert::IsTrue(itemId == eventItemId);
             Assert::IsTrue(mgr->Shutdown() == S_OK);
 
             mockMgrEvents->Release();

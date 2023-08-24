@@ -9,6 +9,50 @@
 
 namespace Helpers
 {
+    DWORD EncodeKeyNumpadOrigin(const DWORD key, const bool extended)
+    {
+        bool numpad_originated = false;
+        switch (key)
+        {
+        case VK_LEFT:
+        case VK_RIGHT:
+        case VK_UP:
+        case VK_DOWN:
+        case VK_INSERT:
+        case VK_DELETE:
+        case VK_PRIOR:
+        case VK_NEXT:
+        case VK_HOME:
+        case VK_END:
+            numpad_originated = !extended;
+            break;
+        case VK_RETURN:
+        case VK_DIVIDE:
+            numpad_originated = extended;
+            break;
+        }
+
+        if (numpad_originated)
+            return key | GetNumpadOriginEncodingBit();
+        else
+            return key;
+    }
+
+    DWORD ClearKeyNumpadOrigin(const DWORD key)
+    {
+        return (key & ~GetNumpadOriginEncodingBit());
+    }
+
+    bool IsNumpadOriginated(const DWORD key)
+    {
+        return !!(key & GetNumpadOriginEncodingBit());
+    }
+    DWORD GetNumpadOriginEncodingBit()
+    {
+        // Intentionally do not mimic KF_EXTENDED to avoid confusion, because it's not the same thing
+        // See EncodeKeyNumpadOrigin.
+        return 1ull << 31;
+    }
     // Function to check if the key is a modifier key
     bool IsModifierKey(DWORD key)
     {
@@ -18,7 +62,8 @@ namespace Helpers
     // Function to get the combined key for modifier keys
     DWORD GetCombinedKey(DWORD key)
     {
-        switch (key) {
+        switch (key)
+        {
         case VK_LWIN:
         case VK_RWIN:
             return CommonSharedConstants::VK_WIN_BOTH;

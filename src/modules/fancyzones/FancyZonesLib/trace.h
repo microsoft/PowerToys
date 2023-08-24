@@ -19,8 +19,8 @@ public:
         static void EditorLaunched(int value) noexcept;
         static void Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;
         static void QuickLayoutSwitched(bool shortcutUsed) noexcept;
-        static void SnapNewWindowIntoZone(Layout* activeLayout, LayoutAssignedWindows* layoutWindows) noexcept;
-        static void KeyboardSnapWindowToZone(Layout* activeLayout, LayoutAssignedWindows* layoutWindows) noexcept;
+        static void SnapNewWindowIntoZone(Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept;
+        static void KeyboardSnapWindowToZone(Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept;
     };
 
     static void SettingsTelemetry(const Settings& settings) noexcept;
@@ -36,8 +36,8 @@ public:
         };
 
         static void KeyUp(WPARAM wparam) noexcept;
-        static void MoveOrResizeStarted(_In_opt_ Layout* activeLayout, _In_opt_ LayoutAssignedWindows* layoutWindows) noexcept;
-        static void MoveOrResizeEnd(_In_opt_ Layout* activeLayout, _In_opt_ LayoutAssignedWindows* layoutWindows) noexcept;
-        static void CycleActiveZoneSet(_In_opt_ Layout* activeLayout, _In_opt_ LayoutAssignedWindows* layoutWindows, InputMode mode) noexcept;
+        static void MoveOrResizeStarted(_In_opt_ Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept;
+        static void MoveOrResizeEnd(_In_opt_ Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept;
+        static void CycleActiveZoneSet(_In_opt_ Layout* activeLayout, const LayoutAssignedWindows& layoutWindows, InputMode mode) noexcept;
     };
 };

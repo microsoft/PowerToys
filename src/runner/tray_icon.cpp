@@ -16,12 +16,13 @@ namespace
 {
     HWND tray_icon_hwnd = NULL;
 
-    // Message code that Windows will use for tray icon notifications.
-    UINT wm_icon_notify = 0;
+    enum { 
+        wm_icon_notify = WM_APP,
+        wm_run_on_main_ui_thread,
+    };
 
     // Contains the Windows Message for taskbar creation.
     UINT wm_taskbar_restart = 0;
-    UINT wm_run_on_main_ui_thread = 0;
 
     NOTIFYICONDATAW tray_icon_data;
     bool tray_icon_created = false;
@@ -42,6 +43,8 @@ struct run_on_main_ui_thread_msg
     main_loop_callback_function _callback;
     PVOID data;
 };
+
+std::atomic_bool isBugReportThreadRunning = false;
 
 bool dispatch_run_on_main_ui_thread(main_loop_callback_function _callback, PVOID data)
 {
@@ -96,16 +99,25 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     {
         std::wstring bug_report_path = get_module_folderpath();
         bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
-        sei.lpFile = bug_report_path.c_str();
-        sei.nShow = SW_HIDE;
-        if (ShellExecuteExW(&sei))
-        {
-            WaitForSingleObject(sei.hProcess, INFINITE);
-            CloseHandle(sei.hProcess);
-            static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
-            MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
+        
+         bool expected_isBugReportThreadRunning = false;
+        if (isBugReportThreadRunning.compare_exchange_strong(expected_isBugReportThreadRunning, true))
+         {
+            std::thread([bug_report_path]() {
+                SHELLEXECUTEINFOW sei{ sizeof(sei) };
+                sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
+                sei.lpFile = bug_report_path.c_str();
+                sei.nShow = SW_HIDE;
+                if (ShellExecuteExW(&sei))
+                {
+                    WaitForSingleObject(sei.hProcess, INFINITE);
+                    CloseHandle(sei.hProcess);
+                    static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
+                    MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
+                }
+
+                isBugReportThreadRunning.store(false);
+            }).detach();
         }
 
         break;
@@ -146,7 +158,6 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         {
             tray_icon_hwnd = window;
             wm_taskbar_restart = RegisterWindowMessageW(L"TaskbarCreated");
-            wm_run_on_main_ui_thread = RegisterWindowMessage(L"RunOnMainThreadCallback");
         }
         break;
     case WM_DESTROY:
@@ -263,7 +274,7 @@ void start_tray_icon()
     auto icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
     if (icon)
     {
-        UINT id_tray_icon = wm_icon_notify = RegisterWindowMessageW(L"WM_PowerToysIconNotify");
+        UINT id_tray_icon = 1;
 
         WNDCLASS wc = {};
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);

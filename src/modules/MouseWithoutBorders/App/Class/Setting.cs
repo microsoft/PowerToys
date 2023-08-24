@@ -303,7 +303,7 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.MatrixOneRow = true;
+                    _properties.MatrixOneRow = value;
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();
@@ -501,25 +501,6 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal bool BlockScreenSaverEx
-        {
-            get
-            {
-                lock (_loadingSettingsLock)
-                {
-                    return _properties.BlockScreenSaverOnOtherMachines;
-                }
-            }
-
-            set
-            {
-                lock (_loadingSettingsLock)
-                {
-                    _properties.BlockScreenSaverOnOtherMachines = value;
-                }
-            }
-        }
-
         internal bool MoveMouseRelatively
         {
             get
@@ -667,13 +648,24 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal int HotKeyToggleEasyMouse
+        internal HotkeySettings HotKeySwitch2AllPC
         {
             get
             {
                 lock (_loadingSettingsLock)
                 {
-                    return _properties.HotKeyToggleEasyMouse.Value;
+                    return _properties.Switch2AllPCShortcut;
+                }
+            }
+        }
+
+        internal HotkeySettings HotKeyToggleEasyMouse
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.ToggleEasyMouseShortcut;
                 }
             }
 
@@ -681,18 +673,18 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.HotKeyToggleEasyMouse.Value = value;
+                    _properties.ToggleEasyMouseShortcut = value;
                 }
             }
         }
 
-        internal int HotKeyLockMachine
+        internal HotkeySettings HotKeyLockMachine
         {
             get
             {
                 lock (_loadingSettingsLock)
                 {
-                    return _properties.HotKeyLockMachine.Value;
+                    return _properties.LockMachineShortcut;
                 }
             }
 
@@ -700,18 +692,18 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.HotKeyLockMachine.Value = value;
+                    _properties.LockMachineShortcut = value;
                 }
             }
         }
 
-        internal int HotKeyReconnect
+        internal HotkeySettings HotKeyReconnect
         {
             get
             {
                 lock (_loadingSettingsLock)
                 {
-                    return _properties.HotKeyReconnect.Value;
+                    return _properties.ReconnectShortcut;
                 }
             }
 
@@ -719,16 +711,8 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.HotKeyReconnect.Value = value;
+                    _properties.ReconnectShortcut = value;
                 }
-            }
-        }
-
-        internal int HotKeyCaptureScreen
-        {
-            get
-            {
-                return 0;
             }
         }
 
@@ -737,25 +721,6 @@ namespace MouseWithoutBorders.Class
             get
             {
                 return 0;
-            }
-        }
-
-        internal int HotKeySwitch2AllPC
-        {
-            get
-            {
-                lock (_loadingSettingsLock)
-                {
-                    return _properties.HotKeySwitch2AllPC.Value;
-                }
-            }
-
-            set
-            {
-                lock (_loadingSettingsLock)
-                {
-                    _properties.HotKeySwitch2AllPC.Value = value;
-                }
             }
         }
 
@@ -877,25 +842,6 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal bool UseVKMap
-        {
-            get
-            {
-                lock (_loadingSettingsLock)
-                {
-                    return _properties.UseVKMap;
-                }
-            }
-
-            set
-            {
-                lock (_loadingSettingsLock)
-                {
-                    _properties.UseVKMap = value;
-                }
-            }
-        }
-
         internal bool FirstCtrlShiftS
         {
             get
@@ -915,15 +861,9 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal Hashtable VKMap
-        {
-            get
-            {
-                return new Hashtable();
-            }
-        }
-
-        internal bool StealFocusWhenSwitchingMachine => _properties.StealFocusWhenSwitchingMachine;
+        // Was a value read from registry on original Mouse Without Border, but default should be true. We wrongly released it as false, so we're forcing true here.
+        // This value wasn't changeable from UI, anyway.
+        internal bool StealFocusWhenSwitchingMachine => true;
 
         private string deviceId;
 
@@ -1019,6 +959,30 @@ namespace MouseWithoutBorders.Class
                 lock (_loadingSettingsLock)
                 {
                     _properties.ShowOriginalUI = value;
+                }
+            }
+        }
+
+        // If starting the service fails, work in not service mode.
+        internal bool UseService
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.UseService;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.UseService = value;
+                    if (!PauseInstantSaving)
+                    {
+                        SaveSettings();
+                    }
                 }
             }
         }

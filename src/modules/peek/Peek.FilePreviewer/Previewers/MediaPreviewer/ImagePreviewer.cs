@@ -11,10 +11,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Peek.Common;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Exceptions;
+using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
@@ -58,6 +60,14 @@ namespace Peek.FilePreviewer.Previewers
 
         private bool IsFullImageLoaded => FullQualityImageTask?.Status == TaskStatus.RanToCompletion;
 
+        private IntPtr lowQualityThumbnail;
+
+        private ImageSource? lowQualityThumbnailPreview;
+
+        private IntPtr highQualityThumbnail;
+
+        private ImageSource? highQualityThumbnailPreview;
+
         public static bool IsFileTypeSupported(string fileExt)
         {
             return _supportedFileTypes.Contains(fileExt);
@@ -65,10 +75,11 @@ namespace Peek.FilePreviewer.Previewers
 
         public void Dispose()
         {
+            Clear();
             GC.SuppressFinalize(this);
         }
 
-        public async Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public async Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (IsSvg(Item))
@@ -88,11 +99,12 @@ namespace Peek.FilePreviewer.Previewers
                 }
             }
 
-            return ImageSize;
+            return new PreviewSize { MonitorSize = ImageSize };
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
+            Clear();
             State = PreviewState.Loading;
 
             LowQualityThumbnailTask = LoadLowQualityThumbnailAsync(cancellationToken);
@@ -101,6 +113,19 @@ namespace Peek.FilePreviewer.Previewers
             cancellationToken.ThrowIfCancellationRequested();
 
             await Task.WhenAll(LowQualityThumbnailTask, HighQualityThumbnailTask, FullQualityImageTask);
+
+            // If Preview is still null, FullQualityImage was not available. Preview the thumbnail instead.
+            if (Preview == null)
+            {
+                if (highQualityThumbnailPreview != null)
+                {
+                    Preview = highQualityThumbnailPreview;
+                }
+                else
+                {
+                    Preview = lowQualityThumbnailPreview;
+                }
+            }
 
             if (Preview == null && HasFailedLoadingPreview())
             {
@@ -156,11 +181,11 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var hr = ThumbnailHelper.GetThumbnail(Item.Path, out IntPtr hbitmap, ThumbnailHelper.LowQualityThumbnailSize);
+                var hr = ThumbnailHelper.GetThumbnail(Item.Path, out lowQualityThumbnail, ThumbnailHelper.LowQualityThumbnailSize);
                 if (hr != HResult.Ok)
                 {
                     Logger.LogError("Error loading low quality thumbnail - hresult: " + hr);
-                    throw new ImageLoadingException(nameof(hbitmap));
+                    throw new ImageLoadingException(nameof(lowQualityThumbnail));
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -168,10 +193,10 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, IsPng(Item), cancellationToken);
                     if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
                     {
-                        Preview = thumbnailBitmap;
+                        var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(lowQualityThumbnail, IsPng(Item), cancellationToken);
+                        lowQualityThumbnailPreview = thumbnailBitmap;
                     }
                 });
             });
@@ -183,11 +208,11 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var hr = ThumbnailHelper.GetThumbnail(Item.Path, out IntPtr hbitmap, ThumbnailHelper.HighQualityThumbnailSize);
+                var hr = ThumbnailHelper.GetThumbnail(Item.Path, out highQualityThumbnail, ThumbnailHelper.HighQualityThumbnailSize);
                 if (hr != HResult.Ok)
                 {
                     Logger.LogError("Error loading high quality thumbnail - hresult: " + hr);
-                    throw new ImageLoadingException(nameof(hbitmap));
+                    throw new ImageLoadingException(nameof(highQualityThumbnail));
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -195,10 +220,10 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, IsPng(Item), cancellationToken);
                     if (!IsFullImageLoaded)
                     {
-                        Preview = thumbnailBitmap;
+                        var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(highQualityThumbnail, IsPng(Item), cancellationToken);
+                        highQualityThumbnailPreview = thumbnailBitmap;
                     }
                 });
             });
@@ -210,11 +235,11 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using FileStream stream = ReadHelper.OpenReadOnly(Item.Path);
-
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
+                    using FileStream stream = ReadHelper.OpenReadOnly(Item.Path);
 
                     if (IsSvg(Item))
                     {
@@ -258,6 +283,23 @@ namespace Peek.FilePreviewer.Previewers
         private bool IsSvg(IFileSystemItem item)
         {
             return item.Extension == ".svg";
+        }
+
+        private void Clear()
+        {
+            lowQualityThumbnailPreview = null;
+            highQualityThumbnailPreview = null;
+            Preview = null;
+
+            if (lowQualityThumbnail != IntPtr.Zero)
+            {
+                NativeMethods.DeleteObject(lowQualityThumbnail);
+            }
+
+            if (highQualityThumbnail != IntPtr.Zero)
+            {
+                NativeMethods.DeleteObject(highQualityThumbnail);
+            }
         }
 
         private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>

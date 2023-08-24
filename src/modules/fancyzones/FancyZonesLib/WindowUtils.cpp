@@ -26,6 +26,7 @@ namespace NonLocalizable
 enum DWMWINDOWATTRIBUTE_CUSTOM
 {
     DWMWA_WINDOW_CORNER_PREFERENCE = 33
+
 };
 
 enum DWM_WINDOW_CORNER_PREFERENCE
@@ -227,12 +228,12 @@ bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
 
     std::wstring processPath = get_process_path_waiting_uwp(window);
     CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), static_cast<DWORD>(processPath.length()));
-    if (IsExcludedByUser(processPath))
+    if (IsExcludedByUser(window, processPath))
     {
         return false;
     }
 
-    if (IsExcludedByDefault(processPath))
+    if (IsExcludedByDefault(window, processPath))
     {
         return false;
     }
@@ -267,12 +268,12 @@ bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
     return false;
 }
 
-bool FancyZonesWindowUtils::IsExcludedByUser(const std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcludedByUser(const HWND& hwnd, std::wstring& processPath) noexcept
 {
-    return (find_app_name_in_path(processPath, FancyZonesSettings::settings().excludedAppsArray));
+    return (check_excluded_app(hwnd, processPath, FancyZonesSettings::settings().excludedAppsArray));
 }
 
-bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, std::wstring& processPath) noexcept
 {
     static std::vector<std::wstring> defaultExcludedFolders = { NonLocalizable::SystemAppsFolder };
     if (find_folder_in_path(processPath, defaultExcludedFolders))
@@ -281,7 +282,7 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath)
     }
 
     static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
-    return (find_app_name_in_path(processPath, defaultExcludedApps));
+    return (check_excluded_app(hwnd, processPath, defaultExcludedApps));
 }
 
 void FancyZonesWindowUtils::SwitchToWindow(HWND window) noexcept
@@ -455,15 +456,19 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
     ::GetWindowRect(window, &windowRect);
 
     // Take care of borders
-    RECT frameRect{};
-    if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+    // Skip when windowOfRect is not initialized (in unit tests)
+    if (windowOfRect)
     {
-        LONG leftMargin = frameRect.left - windowRect.left;
-        LONG rightMargin = frameRect.right - windowRect.right;
-        LONG bottomMargin = frameRect.bottom - windowRect.bottom;
-        newWindowRect.left -= leftMargin;
-        newWindowRect.right -= rightMargin;
-        newWindowRect.bottom -= bottomMargin;
+        RECT frameRect{};
+        if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+        {
+            LONG leftMargin = frameRect.left - windowRect.left;
+            LONG rightMargin = frameRect.right - windowRect.right;
+            LONG bottomMargin = frameRect.bottom - windowRect.bottom;
+            newWindowRect.left -= leftMargin;
+            newWindowRect.right -= rightMargin;
+            newWindowRect.bottom -= bottomMargin;
+        }
     }
 
     // Take care of windows that cannot be resized
@@ -474,7 +479,10 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
     }
 
     // Convert to screen coordinates
-    MapWindowRect(windowOfRect, nullptr, &newWindowRect);
+    if (windowOfRect)
+    {
+        MapWindowRect(windowOfRect, nullptr, &newWindowRect);
+    }
 
     return newWindowRect;
 }

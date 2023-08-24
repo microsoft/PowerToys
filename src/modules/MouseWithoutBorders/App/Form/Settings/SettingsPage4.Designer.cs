@@ -212,7 +212,7 @@
             // DisabledRadioButton
             // 
             this.DisabledRadioButton.AutoSize = true;
-            this.DisabledRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Resources.radio_button_checked;
+            this.DisabledRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Images.radio_button_checked;
             this.DisabledRadioButton.Font = new System.Drawing.Font(DefaultFont.Name, 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DisabledRadioButton.ForeColor = System.Drawing.Color.White;
             this.DisabledRadioButton.ImageLocation = new System.Drawing.Point(0, 3);
@@ -222,14 +222,14 @@
             this.DisabledRadioButton.TabIndex = 2;
             this.DisabledRadioButton.Text = "Disabled";
             this.DisabledRadioButton.TextLocation = new System.Drawing.Point(14, 0);
-            this.DisabledRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.radio_button_unchecked;
+            this.DisabledRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Images.radio_button_unchecked;
             this.DisabledRadioButton.UseVisualStyleBackColor = true;
             this.DisabledRadioButton.CheckedChanged += new System.EventHandler(this.DisabledRadioButton_CheckedChanged);
             // 
             // NumbersRadioButton
             // 
             this.NumbersRadioButton.AutoSize = true;
-            this.NumbersRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Resources.radio_button_checked;
+            this.NumbersRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Images.radio_button_checked;
             this.NumbersRadioButton.Font = new System.Drawing.Font(DefaultFont.Name, 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.NumbersRadioButton.ForeColor = System.Drawing.Color.White;
             this.NumbersRadioButton.ImageLocation = new System.Drawing.Point(0, 3);
@@ -239,14 +239,14 @@
             this.NumbersRadioButton.TabIndex = 1;
             this.NumbersRadioButton.Text = "1, 2, 3, 4";
             this.NumbersRadioButton.TextLocation = new System.Drawing.Point(14, 0);
-            this.NumbersRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.radio_button_unchecked;
+            this.NumbersRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Images.radio_button_unchecked;
             this.NumbersRadioButton.UseVisualStyleBackColor = true;
             this.NumbersRadioButton.CheckedChanged += new System.EventHandler(this.NumbersRadioButton_CheckedChanged);
             // 
             // FKeysRadioButton
             // 
             this.FKeysRadioButton.AutoSize = true;
-            this.FKeysRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Resources.radio_button_checked;
+            this.FKeysRadioButton.CheckedImage = global::MouseWithoutBorders.Properties.Images.radio_button_checked;
             this.FKeysRadioButton.Font = new System.Drawing.Font(DefaultFont.Name, 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FKeysRadioButton.ForeColor = System.Drawing.Color.White;
             this.FKeysRadioButton.ImageLocation = new System.Drawing.Point(0, 3);
@@ -256,7 +256,7 @@
             this.FKeysRadioButton.TabIndex = 0;
             this.FKeysRadioButton.Text = "F1, F2, F3, F4";
             this.FKeysRadioButton.TextLocation = new System.Drawing.Point(14, 0);
-            this.FKeysRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.radio_button_unchecked;
+            this.FKeysRadioButton.UncheckedImage = global::MouseWithoutBorders.Properties.Images.radio_button_unchecked;
             this.FKeysRadioButton.UseVisualStyleBackColor = true;
             this.FKeysRadioButton.CheckedChanged += new System.EventHandler(this.FKeysRadioButton_CheckedChanged);
             // 

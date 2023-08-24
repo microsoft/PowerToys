@@ -4,11 +4,9 @@
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
@@ -51,10 +49,11 @@ namespace Peek.FilePreviewer.Previewers
             GC.SuppressFinalize(this);
         }
 
-        public Task<Size?> GetPreviewSizeAsync(CancellationToken cancellationToken)
+        public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             Size? size = new Size(680, 500);
-            return Task.FromResult(size);
+            var previewSize = new PreviewSize { MonitorSize = size, UseEffectivePixels = true };
+            return Task.FromResult(previewSize);
         }
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
@@ -75,7 +74,7 @@ namespace Peek.FilePreviewer.Previewers
             else
             {
                 State = PreviewState.Loaded;
-        }
+            }
         }
 
         public async Task CopyAsync()
@@ -98,13 +97,14 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var iconBitmap = await IconHelper.GetIconAsync(Item.Path, cancellationToken);
+                    var iconBitmap = await IconHelper.GetThumbnailAsync(Item.Path, cancellationToken)
+                        ?? await IconHelper.GetIconAsync(Item.Path, cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
                     isIconValid = iconBitmap != null;
 
-                    Preview.IconPreview = iconBitmap ?? new SvgImageSource(new Uri("ms-appx:///Assets/DefaultFileIcon.svg"));
+                    Preview.IconPreview = iconBitmap ?? new SvgImageSource(new Uri("ms-appx:///Assets/Peek/DefaultFileIcon.svg"));
                 });
             });
 

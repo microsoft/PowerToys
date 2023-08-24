@@ -72,7 +72,7 @@ namespace MouseWithoutBorders
             // 
             // ExamplePicture
             // 
-            this.ExamplePicture.Image = global::MouseWithoutBorders.Properties.Resources.copy_paste_example;
+            this.ExamplePicture.Image = global::MouseWithoutBorders.Properties.Images.copy_paste_example;
             this.ExamplePicture.Location = new System.Drawing.Point(101, 251);
             this.ExamplePicture.Name = "ExamplePicture";
             this.ExamplePicture.Size = new System.Drawing.Size(251, 79);

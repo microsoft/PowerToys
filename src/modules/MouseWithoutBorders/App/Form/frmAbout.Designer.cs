@@ -42,7 +42,7 @@
             // logoPictureBox
             // 
             this.logoPictureBox.ErrorImage = null;
-            this.logoPictureBox.Image = global::MouseWithoutBorders.Properties.Resources.Logo;
+            this.logoPictureBox.Image = global::MouseWithoutBorders.Properties.Images.Logo;
             this.logoPictureBox.Location = new System.Drawing.Point(12, 12);
             this.logoPictureBox.Name = "logoPictureBox";
             this.logoPictureBox.Size = new System.Drawing.Size(131, 136);

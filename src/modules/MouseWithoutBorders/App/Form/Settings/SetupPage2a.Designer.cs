@@ -98,14 +98,14 @@ namespace MouseWithoutBorders
             // 
             // LinkButton
             // 
-            this.LinkButton.DisabledImage = global::MouseWithoutBorders.Properties.Resources.link_button_disabled;
-            this.LinkButton.DownImage = global::MouseWithoutBorders.Properties.Resources.link_button_click;
+            this.LinkButton.DisabledImage = global::MouseWithoutBorders.Properties.Images.link_button_disabled;
+            this.LinkButton.DownImage = global::MouseWithoutBorders.Properties.Images.link_button_click;
             this.LinkButton.Enabled = false;
-            this.LinkButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.link_button_hover;
-            this.LinkButton.Image = global::MouseWithoutBorders.Properties.Resources.link_button_normal;
+            this.LinkButton.HoverImage = global::MouseWithoutBorders.Properties.Images.link_button_hover;
+            this.LinkButton.Image = global::MouseWithoutBorders.Properties.Images.link_button_normal;
             this.LinkButton.Location = new System.Drawing.Point(199, 366);
             this.LinkButton.Name = "LinkButton";
-            this.LinkButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.link_button_normal;
+            this.LinkButton.NormalImage = global::MouseWithoutBorders.Properties.Images.link_button_normal;
             this.LinkButton.Size = new System.Drawing.Size(55, 55);
             this.LinkButton.TabIndex = 15;
             this.LinkButton.TabStop = false;
@@ -126,12 +126,12 @@ namespace MouseWithoutBorders
             // ExpandHelpButton
             // 
             this.ExpandHelpButton.DisabledImage = null;
-            this.ExpandHelpButton.DownImage = global::MouseWithoutBorders.Properties.Resources.expand_button_click;
-            this.ExpandHelpButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.expand_button_highlight;
-            this.ExpandHelpButton.Image = global::MouseWithoutBorders.Properties.Resources.expand_button_normal;
+            this.ExpandHelpButton.DownImage = global::MouseWithoutBorders.Properties.Images.expand_button_click;
+            this.ExpandHelpButton.HoverImage = global::MouseWithoutBorders.Properties.Images.expand_button_highlight;
+            this.ExpandHelpButton.Image = global::MouseWithoutBorders.Properties.Images.expand_button_normal;
             this.ExpandHelpButton.Location = new System.Drawing.Point(360, 211);
             this.ExpandHelpButton.Name = "ExpandHelpButton";
-            this.ExpandHelpButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.expand_button_normal;
+            this.ExpandHelpButton.NormalImage = global::MouseWithoutBorders.Properties.Images.expand_button_normal;
             this.ExpandHelpButton.Size = new System.Drawing.Size(11, 11);
             this.ExpandHelpButton.TabIndex = 24;
             this.ExpandHelpButton.TabStop = false;
@@ -140,12 +140,12 @@ namespace MouseWithoutBorders
             // CollapseHelpButton
             // 
             this.CollapseHelpButton.DisabledImage = null;
-            this.CollapseHelpButton.DownImage = global::MouseWithoutBorders.Properties.Resources.collapse_button_click;
-            this.CollapseHelpButton.HoverImage = global::MouseWithoutBorders.Properties.Resources.collapse_button_hover;
-            this.CollapseHelpButton.Image = global::MouseWithoutBorders.Properties.Resources.collapse_button_normal;
+            this.CollapseHelpButton.DownImage = global::MouseWithoutBorders.Properties.Images.collapse_button_click;
+            this.CollapseHelpButton.HoverImage = global::MouseWithoutBorders.Properties.Images.collapse_button_hover;
+            this.CollapseHelpButton.Image = global::MouseWithoutBorders.Properties.Images.collapse_button_normal;
             this.CollapseHelpButton.Location = new System.Drawing.Point(360, 211);
             this.CollapseHelpButton.Name = "CollapseHelpButton";
-            this.CollapseHelpButton.NormalImage = global::MouseWithoutBorders.Properties.Resources.collapse_button_normal;
+            this.CollapseHelpButton.NormalImage = global::MouseWithoutBorders.Properties.Images.collapse_button_normal;
             this.CollapseHelpButton.Size = new System.Drawing.Size(11, 11);
             this.CollapseHelpButton.TabIndex = 25;
             this.CollapseHelpButton.TabStop = false;

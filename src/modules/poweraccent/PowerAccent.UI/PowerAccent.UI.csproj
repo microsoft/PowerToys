@@ -2,7 +2,9 @@
 	<Import Project="..\..\..\Version.props" />
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+		<TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 		<Nullable>disable</Nullable>
 		<UseWPF>true</UseWPF>
@@ -11,7 +13,7 @@
 		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
 		<XamlDebuggingInformation>True</XamlDebuggingInformation>
 		<StartupObject>PowerAccent.UI.Program</StartupObject>
-		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerAccent</OutputPath>
+		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<SelfContained>true</SelfContained>

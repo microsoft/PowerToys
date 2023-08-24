@@ -4,6 +4,7 @@
 
 using Microsoft.PowerToys.Telemetry;
 using Peek.Common.Models;
+using Peek.FilePreviewer.Previewers.Archives;
 using Peek.UI.Telemetry.Events;
 
 namespace Peek.FilePreviewer.Previewers
@@ -23,6 +24,10 @@ namespace Peek.FilePreviewer.Previewers
             else if (WebBrowserPreviewer.IsFileTypeSupported(file.Extension))
             {
                 return new WebBrowserPreviewer(file);
+            }
+            else if (ArchivePreviewer.IsFileTypeSupported(file.Extension))
+            {
+                return new ArchivePreviewer(file);
             }
 
             // Other previewer types check their supported file types here

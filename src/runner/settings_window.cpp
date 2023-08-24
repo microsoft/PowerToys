@@ -32,6 +32,7 @@
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
 std::mutex ipc_mutex;
 std::atomic_bool g_isLaunchInProgress = false;
+std::atomic_bool isUpdateCheckThreadRunning = false;
 
 json::JsonObject get_power_toys_settings()
 {
@@ -106,7 +107,14 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    CheckForUpdatesCallback();
+                    bool expected_isUpdateCheckThreadRunning = false;
+                    if (isUpdateCheckThreadRunning.compare_exchange_strong(expected_isUpdateCheckThreadRunning,true))
+                    {
+                        std::thread([]() {
+                            CheckForUpdatesCallback();
+                            isUpdateCheckThreadRunning.store(false);
+                        }).detach();
+                    }
                 }
                 else if (action == L"request_update_state_date")
                 {
@@ -333,7 +341,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
 
-    executable_path.append(L"\\Settings\\PowerToys.Settings.exe");
+    executable_path.append(L"\\WinUI3Apps\\PowerToys.Settings.exe");
 
     // Args 2,3: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
     std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
@@ -677,6 +685,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "PowerOCR";
     case ESettingsWindowNames::RegistryPreview:
         return "RegistryPreview";
+    case ESettingsWindowNames::CropAndLock:
+        return "CropAndLock";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -751,6 +761,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "RegistryPreview")
     {
         return ESettingsWindowNames::RegistryPreview;
+    }
+    else if (value == "CropAndLock")
+    {
+        return ESettingsWindowNames::CropAndLock;
     }
     else
     {

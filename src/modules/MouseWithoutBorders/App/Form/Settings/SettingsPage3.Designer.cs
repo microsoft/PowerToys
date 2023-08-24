@@ -67,7 +67,7 @@
             // ShareClipboardCheckbox
             // 
             this.ShareClipboardCheckbox.AutoSize = true;
-            this.ShareClipboardCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_checked;
+            this.ShareClipboardCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_checked;
             this.ShareClipboardCheckbox.DisabledImage = null;
             this.ShareClipboardCheckbox.Font = new System.Drawing.Font(DefaultFont.Name, 8.25F);
             this.ShareClipboardCheckbox.Location = new System.Drawing.Point(54, 188);
@@ -76,14 +76,14 @@
             this.ShareClipboardCheckbox.Size = new System.Drawing.Size(128, 34);
             this.ShareClipboardCheckbox.TabIndex = 16;
             this.ShareClipboardCheckbox.Text = "Share Clipboard (Text \r\nand Image)";
-            this.ShareClipboardCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_unchecked;
+            this.ShareClipboardCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_unchecked;
             this.ShareClipboardCheckbox.UseVisualStyleBackColor = true;
             this.ShareClipboardCheckbox.CheckedChanged += new System.EventHandler(this.ShareClipboardCheckbox_CheckedChanged);
             // 
             // HideOnLoginCheckbox
             // 
             this.HideOnLoginCheckbox.AutoSize = true;
-            this.HideOnLoginCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_checked;
+            this.HideOnLoginCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_checked;
             this.HideOnLoginCheckbox.DisabledImage = null;
             this.HideOnLoginCheckbox.Font = new System.Drawing.Font(DefaultFont.Name, 8.25F);
             this.HideOnLoginCheckbox.Location = new System.Drawing.Point(54, 238);
@@ -92,14 +92,14 @@
             this.HideOnLoginCheckbox.Size = new System.Drawing.Size(143, 34);
             this.HideOnLoginCheckbox.TabIndex = 17;
             this.HideOnLoginCheckbox.Text = "Hide Mouse w/o Borders \r\non the Login Desktop";
-            this.HideOnLoginCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_unchecked;
+            this.HideOnLoginCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_unchecked;
             this.HideOnLoginCheckbox.UseVisualStyleBackColor = true;
             this.HideOnLoginCheckbox.CheckedChanged += new System.EventHandler(this.HideOnLoginCheckbox_CheckedChanged);
             // 
             // EnableEasyMouseCheckbox
             // 
             this.EnableEasyMouseCheckbox.AutoSize = true;
-            this.EnableEasyMouseCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_checked;
+            this.EnableEasyMouseCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_checked;
             this.EnableEasyMouseCheckbox.DisabledImage = null;
             this.EnableEasyMouseCheckbox.Font = new System.Drawing.Font(DefaultFont.Name, 8.25F);
             this.EnableEasyMouseCheckbox.Location = new System.Drawing.Point(54, 288);
@@ -108,14 +108,14 @@
             this.EnableEasyMouseCheckbox.Size = new System.Drawing.Size(114, 19);
             this.EnableEasyMouseCheckbox.TabIndex = 18;
             this.EnableEasyMouseCheckbox.Text = "Enable Easy Mouse";
-            this.EnableEasyMouseCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_unchecked;
+            this.EnableEasyMouseCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_unchecked;
             this.EnableEasyMouseCheckbox.UseVisualStyleBackColor = true;
             this.EnableEasyMouseCheckbox.CheckedChanged += new System.EventHandler(this.EnableEasyMouseCheckbox_CheckedChanged);
             // 
             // WrapMouseCheckbox
             // 
             this.WrapMouseCheckbox.AutoSize = true;
-            this.WrapMouseCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_checked;
+            this.WrapMouseCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_checked;
             this.WrapMouseCheckbox.DisabledImage = null;
             this.WrapMouseCheckbox.Font = new System.Drawing.Font(DefaultFont.Name, 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.WrapMouseCheckbox.Location = new System.Drawing.Point(238, 288);
@@ -124,14 +124,14 @@
             this.WrapMouseCheckbox.Size = new System.Drawing.Size(85, 19);
             this.WrapMouseCheckbox.TabIndex = 19;
             this.WrapMouseCheckbox.Text = "Wrap Mouse";
-            this.WrapMouseCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_unchecked;
+            this.WrapMouseCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_unchecked;
             this.WrapMouseCheckbox.UseVisualStyleBackColor = true;
             this.WrapMouseCheckbox.CheckedChanged += new System.EventHandler(this.WrapMouseCheckbox_CheckedChanged);
             // 
             // DisableCADCheckbox
             // 
             this.DisableCADCheckbox.AutoSize = true;
-            this.DisableCADCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_checked;
+            this.DisableCADCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_checked;
             this.DisableCADCheckbox.DisabledImage = null;
             this.DisableCADCheckbox.Font = new System.Drawing.Font(DefaultFont.Name, 8.25F);
             this.DisableCADCheckbox.Location = new System.Drawing.Point(238, 188);
@@ -140,14 +140,14 @@
             this.DisableCADCheckbox.Size = new System.Drawing.Size(154, 34);
             this.DisableCADCheckbox.TabIndex = 20;
             this.DisableCADCheckbox.Text = "Disable Ctrl+Alt+Del on the \r\nLogin Screen";
-            this.DisableCADCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_unchecked;
+            this.DisableCADCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_unchecked;
             this.DisableCADCheckbox.UseVisualStyleBackColor = true;
             this.DisableCADCheckbox.CheckedChanged += new System.EventHandler(this.DisableCADCheckbox_CheckedChanged);
             // 
             // BlockScreenSaverCheckbox
             // 
             this.BlockScreenSaverCheckbox.AutoSize = true;
-            this.BlockScreenSaverCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_checked;
+            this.BlockScreenSaverCheckbox.CheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_checked;
             this.BlockScreenSaverCheckbox.DisabledImage = null;
             this.BlockScreenSaverCheckbox.Font = new System.Drawing.Font(DefaultFont.Name, 8.25F);
             this.BlockScreenSaverCheckbox.Location = new System.Drawing.Point(238, 238);
@@ -156,7 +156,7 @@
             this.BlockScreenSaverCheckbox.Size = new System.Drawing.Size(158, 34);
             this.BlockScreenSaverCheckbox.TabIndex = 21;
             this.BlockScreenSaverCheckbox.Text = "Block Screen Saver on Other\r\nMachines";
-            this.BlockScreenSaverCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Resources.checkbox_unchecked;
+            this.BlockScreenSaverCheckbox.UncheckedImage = global::MouseWithoutBorders.Properties.Images.checkbox_unchecked;
             this.BlockScreenSaverCheckbox.UseVisualStyleBackColor = true;
             this.BlockScreenSaverCheckbox.CheckedChanged += new System.EventHandler(this.BlockScreenSaverCheckbox_CheckedChanged);
             // 

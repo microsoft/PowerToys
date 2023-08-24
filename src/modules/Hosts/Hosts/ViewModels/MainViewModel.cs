@@ -65,23 +65,22 @@ namespace Hosts.ViewModels
         [ObservableProperty]
         private bool _filtered;
 
+        [ObservableProperty]
         private bool _showOnlyDuplicates;
 
-        public bool ShowOnlyDuplicates
+        [ObservableProperty]
+        private bool _showSplittedEntriesTooltip;
+
+        partial void OnShowOnlyDuplicatesChanged(bool value)
         {
-            get => _showOnlyDuplicates;
-            set
-            {
-                SetProperty(ref _showOnlyDuplicates, value);
-                ApplyFilters();
-            }
+            ApplyFilters();
         }
 
         private ObservableCollection<Entry> _entries;
 
         public AdvancedCollectionView Entries { get; set; }
 
-        public int NextId => _entries.Max(e => e.Id) + 1;
+        public int NextId => _entries?.Count > 0 ? _entries.Max(e => e.Id) + 1 : 0;
 
         public MainViewModel(IHostsService hostService, IUserSettings userSettings)
         {
@@ -126,11 +125,11 @@ namespace Hosts.ViewModels
 
         public void UpdateAdditionalLines(string lines)
         {
-            _additionalLines = lines;
+            AdditionalLines = lines;
 
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
+                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
@@ -168,11 +167,13 @@ namespace Hosts.ViewModels
             Task.Run(async () =>
             {
                 _readingHosts = true;
-                (_additionalLines, var entries) = await _hostsService.ReadAsync();
+                var data = await _hostsService.ReadAsync();
 
                 await _dispatcherQueue.EnqueueAsync(() =>
                 {
-                    _entries = new ObservableCollection<Entry>(entries);
+                    ShowSplittedEntriesTooltip = data.SplittedEntries;
+                    AdditionalLines = data.AdditionalLines;
+                    _entries = new ObservableCollection<Entry>(data.Entries);
 
                     foreach (var e in _entries)
                     {
@@ -199,22 +200,22 @@ namespace Hosts.ViewModels
         {
             var expressions = new List<Expression<Func<object, bool>>>(4);
 
-            if (!string.IsNullOrWhiteSpace(_addressFilter))
+            if (!string.IsNullOrWhiteSpace(AddressFilter))
             {
-                expressions.Add(e => ((Entry)e).Address.Contains(_addressFilter, StringComparison.OrdinalIgnoreCase));
+                expressions.Add(e => ((Entry)e).Address.Contains(AddressFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (!string.IsNullOrWhiteSpace(_hostsFilter))
+            if (!string.IsNullOrWhiteSpace(HostsFilter))
             {
-                expressions.Add(e => ((Entry)e).Hosts.Contains(_hostsFilter, StringComparison.OrdinalIgnoreCase));
+                expressions.Add(e => ((Entry)e).Hosts.Contains(HostsFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (!string.IsNullOrWhiteSpace(_commentFilter))
+            if (!string.IsNullOrWhiteSpace(CommentFilter))
             {
-                expressions.Add(e => ((Entry)e).Comment.Contains(_commentFilter, StringComparison.OrdinalIgnoreCase));
+                expressions.Add(e => ((Entry)e).Comment.Contains(CommentFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (_showOnlyDuplicates)
+            if (ShowOnlyDuplicates)
             {
                 expressions.Add(e => ((Entry)e).Duplicate);
             }
@@ -238,23 +239,22 @@ namespace Hosts.ViewModels
             HostsFilter = null;
             CommentFilter = null;
             ShowOnlyDuplicates = false;
-            Entries.Filter = null;
-            Entries.RefreshFilter();
+            ApplyFilters();
         }
 
         public async Task PingSelectedAsync()
         {
-            var selected = _selected;
+            var selected = Selected;
             selected.Ping = null;
             selected.Pinging = true;
-            selected.Ping = await _hostsService.PingAsync(_selected.Address);
+            selected.Ping = await _hostsService.PingAsync(Selected.Address);
             selected.Pinging = false;
         }
 
         [RelayCommand]
         public void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts, true);
         }
 
         [RelayCommand]
@@ -289,7 +289,7 @@ namespace Hosts.ViewModels
 
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
+                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
@@ -298,7 +298,7 @@ namespace Hosts.ViewModels
         {
             Task.Run(async () =>
             {
-                var error = !await _hostsService.WriteAsync(_additionalLines, _entries);
+                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
                 await _dispatcherQueue.EnqueueAsync(() => Error = error);
             });
         }
@@ -350,12 +350,28 @@ namespace Hosts.ViewModels
                 return;
             }
 
-            var hosts = entry.SplittedHosts;
+            var duplicate = false;
 
-            var duplicate = _entries.FirstOrDefault(e => e != entry
+            /*
+             * Duplicate are based on the following criteria:
+             * Entries with the same type and at least one host in common
+             * Entries with the same type and address, except when there is only one entry with less than 9 hosts for that type and address
+             */
+            if (_entries.Any(e => e != entry
                 && e.Type == entry.Type
-                && (string.Equals(e.Address, entry.Address, StringComparison.OrdinalIgnoreCase)
-                    || hosts.Intersect(e.SplittedHosts, StringComparer.OrdinalIgnoreCase).Any())) != null;
+                && entry.SplittedHosts.Intersect(e.SplittedHosts, StringComparer.OrdinalIgnoreCase).Any()))
+            {
+                duplicate = true;
+            }
+            else if (_entries.Any(e => e != entry
+                && e.Type == entry.Type
+                && string.Equals(e.Address, entry.Address, StringComparison.OrdinalIgnoreCase)))
+            {
+                duplicate = entry.SplittedHosts.Length < Consts.MaxHostsCount
+                    && _entries.Count(e => e.Type == entry.Type
+                        && string.Equals(e.Address, entry.Address, StringComparison.OrdinalIgnoreCase)
+                        && e.SplittedHosts.Length < Consts.MaxHostsCount) > 1;
+            }
 
             _dispatcherQueue.TryEnqueue(() =>
             {

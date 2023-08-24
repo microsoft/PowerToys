@@ -46,6 +46,8 @@ namespace MouseWithoutBorders.Class
 
         private static readonly string ServiceModeArg = "UseService";
 
+        public static bool ShowServiceModeErrorTooltip;
+
         [STAThread]
         private static void Main()
         {
@@ -86,15 +88,26 @@ namespace MouseWithoutBorders.Class
 
                 // If we're started from the .dll module or from the service process, we should
                 // assume the service mode.
-                if (serviceMode || runningAsSystem)
+                if (serviceMode && !runningAsSystem)
                 {
-                    if (!runningAsSystem)
+                    try
                     {
                         var sc = new ServiceController(ServiceName);
                         sc.Start();
                         return;
                     }
+                    catch (Exception ex)
+                    {
+                        Common.Log("Couldn't start the service. Will try to continue as not a service.");
+                        Common.Log(ex);
+                        ShowServiceModeErrorTooltip = true;
+                        serviceMode = false;
+                        Setting.Values.UseService = false;
+                    }
+                }
 
+                if (serviceMode || runningAsSystem)
+                {
                     if (args.Length > 2)
                     {
                         Helper.UserLocalAppDataPath = args[2].Trim();
@@ -350,7 +363,6 @@ namespace MouseWithoutBorders.Class
 
         internal static void StartInputCallbackThread()
         {
-            System.Collections.Hashtable dummy = Setting.Values.VKMap; // Reading from registry to memory.
             Thread inputCallback = new(new ThreadStart(InputCallbackThread), "InputCallback Thread");
             inputCallback.SetApartmentState(ApartmentState.STA);
             inputCallback.Priority = ThreadPriority.Highest;
