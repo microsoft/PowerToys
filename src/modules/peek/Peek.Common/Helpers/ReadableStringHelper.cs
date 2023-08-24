@@ -41,7 +41,7 @@ namespace Peek.Common.Helpers
                 number = Math.Round((bytes / Math.Pow(1000, index)) * DecimalPercision) / DecimalPercision;
             }
 
-            return string.Format(CultureInfo.InvariantCulture, format[index] + totalBytesDisplays, number, bytes);
+            return string.Format(CultureInfo.CurrentCulture, format[index] + totalBytesDisplays, number, bytes);
         }
 
         public static string FormatResourceString(string resourceId, object? args)
