@@ -456,15 +456,19 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
     ::GetWindowRect(window, &windowRect);
 
     // Take care of borders
-    RECT frameRect{};
-    if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+    // Skip when windowOfRect is not initialized (in unit tests)
+    if (windowOfRect)
     {
-        LONG leftMargin = frameRect.left - windowRect.left;
-        LONG rightMargin = frameRect.right - windowRect.right;
-        LONG bottomMargin = frameRect.bottom - windowRect.bottom;
-        newWindowRect.left -= leftMargin;
-        newWindowRect.right -= rightMargin;
-        newWindowRect.bottom -= bottomMargin;
+        RECT frameRect{};
+        if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+        {
+            LONG leftMargin = frameRect.left - windowRect.left;
+            LONG rightMargin = frameRect.right - windowRect.right;
+            LONG bottomMargin = frameRect.bottom - windowRect.bottom;
+            newWindowRect.left -= leftMargin;
+            newWindowRect.right -= rightMargin;
+            newWindowRect.bottom -= bottomMargin;
+        }
     }
 
     // Take care of windows that cannot be resized
@@ -475,7 +479,10 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
     }
 
     // Convert to screen coordinates
-    MapWindowRect(windowOfRect, nullptr, &newWindowRect);
+    if (windowOfRect)
+    {
+        MapWindowRect(windowOfRect, nullptr, &newWindowRect);
+    }
 
     return newWindowRect;
 }

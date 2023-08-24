@@ -27,7 +27,7 @@ DWORD KeyDropDownControl::GetSelectedValue(ComboBox comboBox)
     }
 
     auto value = winrt::unbox_value<hstring>(dataContext);
-    return stoi(std::wstring(value));
+    return stoul(std::wstring(value));
 }
 
 void KeyDropDownControl::SetSelectedValue(std::wstring value)
