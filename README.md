@@ -142,6 +142,10 @@ In this release, we focused on stability and improvements.
  - Refactored the Monaco dependency inclusion. What to install is now being generated automatically.
  - Removed hardlinks and simplified the installer files, now that many utilities use the same paths.
 
+### Keyboard Manager
+
+ - Previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
+
 ### Mouse Highlighter
 
  - Added a feature so that a highlight follows the mouse even if no mouse button is being pressed. Thanks [@hayatogh](https://github.com/hayatogh)!
