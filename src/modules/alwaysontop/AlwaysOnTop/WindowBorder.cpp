@@ -113,6 +113,14 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         return false;
     }
 
+    // make window transparent
+    int const pos = -GetSystemMetrics(SM_CXVIRTUALSCREEN) - 8;
+    if (wil::unique_hrgn hrgn{ CreateRectRgn(pos, 0, (pos + 1), 1) })
+    {
+        DWM_BLURBEHIND bh = { DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, hrgn.get(), FALSE };
+        DwmEnableBlurBehindWindow(m_window, &bh);
+    }
+
     if (!SetLayeredWindowAttributes(m_window, RGB(0, 0, 0), 0, LWA_COLORKEY))
     {
         return false;
