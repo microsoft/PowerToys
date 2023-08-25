@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowComboBox => _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
 
-        public bool ShowCheckBox => ShowComboBox == false;
+        public bool HideCheckBox => _additionalOption.HideCheckBox == false;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

@@ -13,7 +13,6 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using ManagedCommon;
-using Microsoft.Plugin.Folder.Sources;
 using Microsoft.Plugin.Shell.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
@@ -53,12 +52,15 @@ namespace Microsoft.Plugin.Shell
             {
                 Key = "ShellCommandExecution",
                 DisplayLabel = Resources.wox_shell_command_execution,
+                HideCheckBox = true,
+                ComboBoxOptions = new List<string>
+                {
+                    "Run command in Command Prompt (cmd.exe)",
+                    "Run command in PowerShell (PowerShell.exe)",
+                    "Find executable file and run it",
+                    "Run command in Windows Terminal (wt.exe)",
+                },
                 Option = (int)_settings.Shell,
-
-                ComboBoxOptions = Enum.GetValues(typeof(ExecutionShell))
-                                            .Cast<ExecutionShell>()
-                                            .Select(shellEnumValue => ShellPluginSettings.GetDescription(shellEnumValue))
-                                            .ToList(),
             },
         };
 
@@ -431,7 +433,7 @@ namespace Microsoft.Plugin.Shell
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
             var leaveShellOpen = false;
-            var shellOption = 0;
+            var shellOption = 2;
 
             if (settings != null && settings.AdditionalOptions != null)
             {
