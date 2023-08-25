@@ -5,7 +5,7 @@
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
     mc:Ignorable="d">

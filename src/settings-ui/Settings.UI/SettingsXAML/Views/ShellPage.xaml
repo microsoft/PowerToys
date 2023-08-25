@@ -8,7 +8,7 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"

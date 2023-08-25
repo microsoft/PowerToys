@@ -2,28 +2,28 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerAccentPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl
+    <custom:SettingsPageControl
         x:Uid="QuickAccent"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerAccent.png">
-        <controls:SettingsPageControl.ModuleContent>
+        <custom:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
-                <labs:SettingsCard
+                <controls:SettingsCard
                     x:Uid="QuickAccent_EnableQuickAccent"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerAccent.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
                         IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </labs:SettingsCard>
+                </controls:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
@@ -32,10 +32,10 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <controls:SettingsGroup
+                <custom:SettingsGroup
                     x:Uid="QuickAccent_Activation_GroupSettings"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="QuickAccent_Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xEDA7;}">
@@ -46,13 +46,13 @@
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either" />
                         </ComboBox>
-                    </labs:SettingsCard>
-                </controls:SettingsGroup>
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
 
-                <controls:SettingsGroup
+                <custom:SettingsGroup
                     x:Uid="QuickAccent_Language"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="QuickAccent_SelectedLanguage"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xF2B7;}">
@@ -91,13 +91,13 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Welsh" />
                         </ComboBox>
-                    </labs:SettingsCard>
-                </controls:SettingsGroup>
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
 
-                <controls:SettingsGroup
+                <custom:SettingsGroup
                     x:Uid="QuickAccent_Toolbar"
                     IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="QuickAccent_ToolbarPosition"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xEC12;}">
@@ -114,22 +114,22 @@
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner" />
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Center" />
                         </ComboBox>
-                    </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE946;}">
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE946;}">
                         <ToggleSwitch x:Uid="QuickAccent_UnicodeDescription_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.ShowUnicodeDescription}" />
-                    </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="QuickAccent_SortByUsageFrequency_Indicator" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE8CB;}">
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="QuickAccent_SortByUsageFrequency_Indicator" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE8CB;}">
                         <ToggleSwitch x:Uid="QuickAccent_SortByUsageFrequency_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SortByUsageFrequency}" />
-                    </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE974;}">
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE974;}">
                         <ToggleSwitch x:Uid="QuickAccent_StartSelectionFromTheLeft_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.StartSelectionFromTheLeft}" />
-                    </labs:SettingsCard>
-                </controls:SettingsGroup>
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
 
-                <controls:SettingsGroup
+                <custom:SettingsGroup
                     x:Uid="QuickAccent_Behavior"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="QuickAccent_InputTimeMs"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xE916;}">
@@ -140,14 +140,14 @@
                             SmallChange="10"
                             SpinButtonPlacementMode="Compact"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.InputTimeMs}" />
-                    </labs:SettingsCard>
+                    </controls:SettingsCard>
 
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         x:Uid="QuickAccent_ExcludedApps"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xECE4;}">
-                        <labs:SettingsExpander.Items>
-                            <labs:SettingsCard
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard
                                 HorizontalContentAlignment="Stretch"
                                 ContentAlignment="Vertical">
                                 <TextBox
@@ -160,22 +160,22 @@
                                     ScrollViewer.VerticalScrollMode="Enabled"
                                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
-                            </labs:SettingsCard>
-                        </labs:SettingsExpander.Items>
-                    </labs:SettingsExpander>
-                </controls:SettingsGroup>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
             </StackPanel>
-        </controls:SettingsPageControl.ModuleContent>
+        </custom:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink
                 x:Uid="LearnMore_QuickAccent"
                 Link="https://aka.ms/PowerToysOverview_QuickAccent" />
-        </controls:SettingsPageControl.PrimaryLinks>
-        <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink
+        </custom:SettingsPageControl.PrimaryLinks>
+        <custom:SettingsPageControl.SecondaryLinks>
+            <custom:PageLink
                 Link="https://github.com/damienleroy/PowerAccent"
                 Text="Damien Leroy's PowerAccent" />
-        </controls:SettingsPageControl.SecondaryLinks>
-    </controls:SettingsPageControl>
+        </custom:SettingsPageControl.SecondaryLinks>
+    </custom:SettingsPageControl>
 </Page>

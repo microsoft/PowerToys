@@ -3,30 +3,30 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ViewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl
+    <custom:SettingsPageControl
         x:Uid="PowerLauncher"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerLauncher.png">
-        <controls:SettingsPageControl.ModuleContent>
+        <custom:SettingsPageControl.ModuleContent>
 
             <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
-                <labs:SettingsCard
+                <controls:SettingsCard
                     x:Uid="PowerLauncher_EnablePowerLauncher"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
                         IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
-                </labs:SettingsCard>
+                </controls:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -34,31 +34,31 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <controls:SettingsGroup
+                <custom:SettingsGroup
                     x:Uid="Shortcut"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl
+                        <custom:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
-                        <labs:SettingsExpander.Items>
-                            <labs:SettingsCard ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <custom:CheckBoxWithDescriptionControl
                                     x:Uid="PowerLauncher_UseCentralizedKeyboardHook"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}" />
-                            </labs:SettingsCard>
-                            <labs:SettingsCard ContentAlignment="Left">
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
                                 <CheckBox
                                     x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" />
-                            </labs:SettingsCard>
-                        </labs:SettingsExpander.Items>
-                    </labs:SettingsExpander>
-                </controls:SettingsGroup>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
 
 
                 <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
@@ -94,17 +94,17 @@
                       IsEnabled="False"
                       />-->
 
-                <controls:SettingsGroup
+                <custom:SettingsGroup
                     x:Uid="PowerLauncher_SearchResults"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xec48;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}" />
-                        <labs:SettingsExpander.Items>
-                            <labs:SettingsCard 
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard 
                                 x:Uid="PowerLauncher_FastSearchInputDelayMs"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
                                 <NumberBox
@@ -115,8 +115,8 @@
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}" />
-                            </labs:SettingsCard>
-                            <labs:SettingsCard
+                            </controls:SettingsCard>
+                            <controls:SettingsCard
                                 x:Uid="PowerLauncher_SlowSearchInputDelayMs"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
                                 <NumberBox
@@ -127,11 +127,11 @@
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}" />
-                            </labs:SettingsCard>
-                        </labs:SettingsExpander.Items>
-                    </labs:SettingsExpander>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         x:Uid="PowerLauncher_MaximumNumberOfResults"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xec8f;}"
@@ -141,23 +141,23 @@
                             Minimum="1"
                             SpinButtonPlacementMode="Compact"
                             Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}" />
-                        <labs:SettingsExpander.Items>
-                            <labs:SettingsCard ContentAlignment="Left">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
                                 <CheckBox
                                     x:Uid="PowerLauncher_ClearInputOnLaunch"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" />
-                            </labs:SettingsCard>
-                        </labs:SettingsExpander.Items>
-                    </labs:SettingsExpander>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryTuningEnabled"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xE8CB;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryTuningEnabled}" />
-                        <labs:SettingsExpander.Items>
-                            <labs:SettingsCard
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard
                                 x:Uid="PowerLauncher_SearchClickedItemWeight"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
                                 <NumberBox
@@ -168,34 +168,34 @@
                                     SmallChange="5"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}" />
-                            </labs:SettingsCard>
-                            <labs:SettingsCard
+                            </controls:SettingsCard>
+                            <controls:SettingsCard
                                 ContentAlignment="Left"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
-                                <controls:CheckBoxWithDescriptionControl
+                                <custom:CheckBoxWithDescriptionControl
                                     x:Uid="PowerLauncher_WaitForSlowResults"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}" />
-                            </labs:SettingsCard>
-                        </labs:SettingsExpander.Items>
-                    </labs:SettingsExpander>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="PowerLauncher_TabSelectsContextButtons"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE7FD;}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
-                    </labs:SettingsCard>
+                    </controls:SettingsCard>
 
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="PowerLauncher_GenerateThumbnailsFromFiles"
                         >
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
-                    </labs:SettingsCard>
+                    </controls:SettingsCard>
 
-                </controls:SettingsGroup>
+                </custom:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
                       MinWidth="320"
@@ -217,10 +217,10 @@
                       IsEnabled="False"
                       />-->
 
-                <controls:SettingsGroup
+                <custom:SettingsGroup
                     x:Uid="Run_PositionAppearance_GroupSettings"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="Run_PositionHeader"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xe78b;}">
@@ -231,17 +231,17 @@
                             <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
                         </ComboBox>
-                    </labs:SettingsCard>
+                    </controls:SettingsCard>
 
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="ColorModeHeader"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                  Glyph=&#xE790;}">
-                        <labs:SettingsCard.Description>
+                        <controls:SettingsCard.Description>
                             <HyperlinkButton
                                 x:Uid="Windows_Color_Settings"
                                 Click="OpenColorsSettings_Click" />
-                        </labs:SettingsCard.Description>
+                        </controls:SettingsCard.Description>
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
@@ -249,10 +249,10 @@
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
                         </ComboBox>
-                    </labs:SettingsCard>
-                </controls:SettingsGroup>
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
 
-                <controls:SettingsGroup
+                <custom:SettingsGroup
                     x:Uid="PowerLauncher_Plugins"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
 
@@ -269,17 +269,17 @@
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                   <labs:SettingsCard
+                   <controls:SettingsCard
                         x:Uid="Run_PluginUse"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEA86;}">
-                        <labs:SettingsCard.Description>
+                        <controls:SettingsCard.Description>
                             <StackPanel>
                                 <TextBlock x:Uid="Run_PluginUseDescription" />
                                 <HyperlinkButton
                                     x:Uid="Run_PluginUseFindMorePlugins"
                                     NavigateUri="https://aka.ms/powerToysRunPlugins" />
                             </StackPanel>
-                        </labs:SettingsCard.Description>
+                        </controls:SettingsCard.Description>
                         <AutoSuggestBox
                             x:Uid="PowerLauncher_SearchList"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -291,7 +291,7 @@
                                 </ic:EventTriggerBehavior>
                             </i:Interaction.Behaviors>
                         </AutoSuggestBox>
-                    </labs:SettingsCard>
+                    </controls:SettingsCard>
 
 
 
@@ -329,12 +329,12 @@
                                 x:DataType="ViewModels:PowerLauncherPluginViewModel"
                                 x:DefaultBindMode="OneWay">
                                 <Grid>
-                                    <labs:SettingsExpander
+                                    <controls:SettingsExpander
                                         Description="{x:Bind Description}"
                                         Header="{x:Bind Path=Name}">
-                                        <labs:SettingsExpander.HeaderIcon>
+                                        <controls:SettingsExpander.HeaderIcon>
                                             <BitmapIcon UriSource="{x:Bind IconPath}" />
-                                        </labs:SettingsExpander.HeaderIcon>
+                                        </controls:SettingsExpander.HeaderIcon>
                                         <StackPanel
                                             Orientation="Horizontal"
                                             Spacing="16">
@@ -363,15 +363,15 @@
                                                 x:Uid="PowerLauncher_EnablePluginToggle"
                                                 IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}" />
                                         </StackPanel>
-                                        <labs:SettingsExpander.Items>
-                                            <labs:SettingsCard
+                                        <controls:SettingsExpander.Items>
+                                            <controls:SettingsCard
                                                 x:Uid="PowerLauncher_ActionKeyword"
                                                 IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                 <TextBox
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     Text="{x:Bind Path=ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                            </labs:SettingsCard>
-                                            <labs:SettingsCard
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard
                                                 Padding="0,-4,0,0"
                                                 HorizontalContentAlignment="Left"
                                                 Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
@@ -386,8 +386,8 @@
                                                     IsOpen="True"
                                                     IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                     Severity="Error" />
-                                            </labs:SettingsCard>
-                                            <labs:SettingsCard
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard
                                                 ContentAlignment="Left"
                                                 IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                 <CheckBox
@@ -398,14 +398,14 @@
                                                         <TextBlock
                                                             x:Name="IncludeInGlobalResultTitle"
                                                             x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
-                                                        <controls:IsEnabledTextBlock
+                                                        <custom:IsEnabledTextBlock
                                                             x:Uid="PowerLauncher_IncludeInGlobalResultDescription"
                                                             FontSize="{StaticResource SecondaryTextFontSize}"
                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                     </StackPanel>
                                                 </CheckBox>
-                                            </labs:SettingsCard>
-                                            <labs:SettingsCard
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard
                                                 x:Uid="PowerLauncher_PluginWeightBoost"
                                                 IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                 <NumberBox
@@ -416,15 +416,15 @@
                                                     SmallChange="10"
                                                     SpinButtonPlacementMode="Compact"
                                                     Value="{x:Bind Mode=TwoWay, Path=WeightBoost}" />
-                                            </labs:SettingsCard>
-                                            <labs:SettingsCard
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard
                                                 MinHeight="0"
                                                 HorizontalContentAlignment="Stretch"
                                                 ContentAlignment="Vertical">
-                                                <labs:SettingsCard.Resources>
+                                                <controls:SettingsCard.Resources>
                                                     <Thickness x:Key="SettingsCardPadding">0</Thickness>
                                                     <Thickness x:Key="SettingsExpanderItemPadding">0,0,0,0</Thickness>
-                                                </labs:SettingsCard.Resources>
+                                                </controls:SettingsCard.Resources>
                                                 <ItemsControl
                                                     Margin="0,-6,0,0"
                                                     HorizontalAlignment="Stretch"
@@ -436,7 +436,7 @@
                                                             <StackPanel
                                                                 HorizontalAlignment="Stretch"
                                                                 Orientation="Vertical">
-                                                                <labs:SettingsCard
+                                                                <controls:SettingsCard
                                                                     MinHeight="0"
                                                                     Margin="1"
                                                                     Padding="0,6,0,12"
@@ -444,12 +444,12 @@
                                                                     BorderThickness="0,0,0,0"
                                                                     ContentAlignment="Left"
                                                                     CornerRadius="0">
-                                                                    <controls:CheckBoxWithDescriptionControl
+                                                                    <custom:CheckBoxWithDescriptionControl
                                                                         Margin="56,0,0,0"
                                                                         Description="{x:Bind Path=DisplayDescription}"
                                                                         Header="{x:Bind Path=DisplayLabel}"
                                                                         IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
-                                                                </labs:SettingsCard>
+                                                                </controls:SettingsCard>
                                                                 <Rectangle
                                                                     Height="1"
                                                                     HorizontalAlignment="Stretch"
@@ -458,8 +458,8 @@
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
-                                            </labs:SettingsCard>
-                                            <labs:SettingsCard
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard
                                                 MinHeight="0"
                                                 BorderThickness="0"
                                                 ContentAlignment="Right">
@@ -469,32 +469,32 @@
                                                     <Run x:Uid="PowerLauncher_AuthoredBy" />
                                                     <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                                 </TextBlock>
-                                            </labs:SettingsCard>
-                                        </labs:SettingsExpander.Items>
-                                    </labs:SettingsExpander>
+                                            </controls:SettingsCard>
+                                        </controls:SettingsExpander.Items>
+                                    </controls:SettingsExpander>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </controls:SettingsGroup>
+                </custom:SettingsGroup>
             </StackPanel>
 
-        </controls:SettingsPageControl.ModuleContent>
-        <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink
+        </custom:SettingsPageControl.ModuleContent>
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink
                 x:Uid="LearnMore_Run"
                 Link="https://aka.ms/PowerToysOverview_PowerToysRun" />
-            <controls:PageLink
+            <custom:PageLink
                 x:Uid="Run_FindMorePlugins"
                 Link="https://aka.ms/powerToysRunPlugins" />
-        </controls:SettingsPageControl.PrimaryLinks>
-        <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink
+        </custom:SettingsPageControl.PrimaryLinks>
+        <custom:SettingsPageControl.SecondaryLinks>
+            <custom:PageLink
                 Link="https://github.com/Wox-launcher/Wox/"
                 Text="Wox" />
-            <controls:PageLink
+            <custom:PageLink
                 Link="https://github.com/betsegaw/windowwalker/"
                 Text="Beta Tadele's Window Walker" />
-        </controls:SettingsPageControl.SecondaryLinks>
-    </controls:SettingsPageControl>
+        </custom:SettingsPageControl.SecondaryLinks>
+    </custom:SettingsPageControl>
 </Page>
