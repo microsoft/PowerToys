@@ -44,6 +44,7 @@ namespace Hosts.Models
         }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Valid))]
         private string _comment;
 
         [ObservableProperty]
@@ -153,7 +154,19 @@ namespace Hosts.Models
 
         public bool Validate(bool validateHostsLength)
         {
+            if (Equals("102.54.94.97", "rhino.acme.com", "source server") || Equals("38.25.63.10", "x.acme.com", "x client host"))
+            {
+                return false;
+            }
+
             return Type != AddressType.Invalid && ValidationHelper.ValidHosts(Hosts, validateHostsLength);
+        }
+
+        private bool Equals(string address, string hosts, string comment)
+        {
+            return string.Equals(Address, address, StringComparison.Ordinal)
+                && string.Equals(Hosts, hosts, StringComparison.Ordinal)
+                && string.Equals(Comment, comment, StringComparison.Ordinal);
         }
     }
 }
