@@ -17,6 +17,7 @@ namespace FancyZonesEditor
         private LayoutPreview _layoutPreview;
         private UserControl _editorLayout;
         private EditorWindow _editorWindow;
+        private LayoutBackup _layoutBackup = new LayoutBackup();
 
         public List<Monitor> Monitors { get; private set; }
 
@@ -180,30 +181,6 @@ namespace FancyZonesEditor
             }
         }
 
-        public void SetLayoutSettings(Monitor monitor, LayoutModel model)
-        {
-            if (model == null)
-            {
-                return;
-            }
-
-            monitor.Settings.ZonesetUuid = model.Uuid;
-            monitor.Settings.Type = model.Type;
-            monitor.Settings.SensitivityRadius = model.SensitivityRadius;
-            monitor.Settings.ZoneCount = model.TemplateZoneCount;
-
-            if (model is GridLayoutModel grid)
-            {
-                monitor.Settings.ShowSpacing = grid.ShowSpacing;
-                monitor.Settings.Spacing = grid.Spacing;
-            }
-            else
-            {
-                monitor.Settings.ShowSpacing = false;
-                monitor.Settings.Spacing = 0;
-            }
-        }
-
         public void OpenEditor(LayoutModel model)
         {
             Logger.LogTrace();
@@ -283,6 +260,21 @@ namespace FancyZonesEditor
             {
                 _editorWindow.Focus();
             }
+        }
+
+        public void StartEditing(LayoutModel model)
+        {
+            _layoutBackup.Backup(model);
+        }
+
+        public void EndEditing(bool restoreBackup)
+        {
+            if (restoreBackup)
+            {
+                _layoutBackup.Restore();
+            }
+
+            _layoutBackup.Clear();
         }
 
         public void CloseLayoutWindow()
