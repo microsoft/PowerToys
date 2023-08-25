@@ -24,9 +24,11 @@ All:
 - Hosts File Editor
 - File Locksmith
 - GPO
-- Paste As Plain Text
+- Paste as plain text
 - Registry Preview
 - Peek
+- MWB
+- Crop And Lock
 ```
 
 ```
@@ -40,6 +42,7 @@ Group 1:
 - File Locksmith
 - GPO
 - Paste As Plain Text
+- Crop And Lock
 ```
 
 ```
@@ -68,6 +71,7 @@ Group 3:
 - Text Extractor
 - GPO
 - Paste As Plain Text
+- MWB
 ```
 
 ```
@@ -92,6 +96,8 @@ Group 5:
 - FZ
 - File Explorer Add-ons
 - Awake
+- Crop And Lock
+- MWB
 ```
 
 ```

@@ -367,7 +367,7 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
     - [ ] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
     - [ ] Exclude Folders/Files/Subfolder Items (could be selected several)
     - [ ] Item Name/Extension Only (one at the time)
-    - [ ] Enumerate Items
+    - [ ] Enumerate Items. Test advanced enumeration using different values for every field ${start=10,increment=2,padding=4}.
     - [ ] Case Sensitive
     - [ ] Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
     * Use regular expressions
@@ -743,3 +743,12 @@ Mouse Jump:
  * Test Settings:
    - [ ] Change the rest of available settings on MWB page and verify that each setting works as described.
    
+## Crop And Lock
+ * Thumbnail mode
+   - [ ] Test with win32 app
+   - [ ] Test with packaged app
+   
+ * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
+   - [ ] Test with win32 app
+   - [ ] Test with packaged app
+
