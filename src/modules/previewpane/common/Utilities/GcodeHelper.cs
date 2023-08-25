@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace GcodeFileFormat
+namespace Common.Utilities
 {
     /// <summary>
     /// Gcode file helper class.

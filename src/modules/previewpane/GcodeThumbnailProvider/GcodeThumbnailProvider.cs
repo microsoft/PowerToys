@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System.Drawing.Drawing2D;
-using GcodeFileFormat;
+using Common.Utilities;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 {

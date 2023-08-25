@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Common;
-using GcodeFileFormat;
+using Common.Utilities;
 using Microsoft.PowerToys.PreviewHandler.Gcode.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 

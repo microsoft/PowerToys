@@ -8,7 +8,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using QOI.Core;
 
-namespace GcodeFileFormat
+namespace Common.Utilities
 {
     /// <summary>
     /// Represents a gcode thumbnail.
