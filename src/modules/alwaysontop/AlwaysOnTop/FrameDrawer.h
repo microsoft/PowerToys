@@ -18,7 +18,7 @@ public:
 
     void Show();
     void Hide();
-    void SetBorderRect(RECT windowRect, COLORREF color, int thickness, float radius);
+    void SetBorderRect(RECT windowRect, COLORREF rgb, float alpha, int thickness, float radius);
 
 private:
     bool CreateRenderTargets(const RECT& clientRect);
@@ -33,7 +33,7 @@ private:
 
     static ID2D1Factory* GetD2DFactory();
     static IDWriteFactory* GetWriteFactory();
-    static D2D1_COLOR_F ConvertColor(COLORREF color);
+    static D2D1_COLOR_F ConvertColor(COLORREF color, float alpha);
     static D2D1_ROUNDED_RECT ConvertRect(RECT rect, int thickness, float radius);
     static D2D1_RECT_F ConvertRect(RECT rect, int thickness);
     void Render();

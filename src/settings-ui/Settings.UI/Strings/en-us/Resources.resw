@@ -3655,4 +3655,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
     <value>Find more plugins</value>
   </data>
+  <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
+    <value>Opacity (%)</value>
+  </data>
 </root>
