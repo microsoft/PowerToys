@@ -275,7 +275,7 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
    - [x] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
    
 ## Crop And Lock
  * Thumbnail mode
