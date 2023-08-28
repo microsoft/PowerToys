@@ -279,12 +279,12 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
    
 ## Crop And Lock
  * Thumbnail mode
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
    
  * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
 
 ## Additional tests
 ## Text Extractor
