@@ -85,6 +85,7 @@ Group 4:
 - Screen Ruler
 - Quick Accent
 - Hosts File Editor
+- MWB
 ```
 
 ```
@@ -97,7 +98,6 @@ Group 5:
 - File Explorer Add-ons
 - Awake
 - Crop And Lock
-- MWB
 ```
 
 ```
