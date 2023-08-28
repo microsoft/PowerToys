@@ -109,45 +109,45 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 
 ## Screen Ruler
  * Enable Screen Ruler. Then:
-   - [ ] Press the activation shortcut and verify the toolbar appears.
-   - [ ] Press the activation shortcut again and verify the toolbar disappears.
-   - [ ] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
-   - [ ] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
-   - [ ] Select the close button in the toolbar and verify it closes the utility.
+   - [x] Press the activation shortcut and verify the toolbar appears.
+   - [x] Press the activation shortcut again and verify the toolbar disappears.
+   - [x] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
+   - [x] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
+   - [x] Select the close button in the toolbar and verify it closes the utility.
  * With Screen Ruler enabled and activated:
-   - [ ] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
-   - [ ] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
-   - [ ] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
+   - [x] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
+   - [x] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [x] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [x] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [x] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
+   - [x] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
  * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify that the utilities work well on each monitor, with continuous mode on and off.
-   - [ ] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
-   - [ ] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
+   - [x] Verify that the utilities work well on each monitor, with continuous mode on and off.
+   - [x] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
+   - [x] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
    
  * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] Continous mode
-   - [ ] Per color channel edge detection
-   - [ ] Pixel tolerance for edge detection
-   - [ ] Draw feet on cross
-   - [ ] Line color
+   - [x] Activation shortcut
+   - [x] Continous mode
+   - [x] Per color channel edge detection
+   - [x] Pixel tolerance for edge detection
+   - [x] Draw feet on cross
+   - [x] Line color
 
 ## File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
-   - [ ] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
-   - [ ] End the tasks in File Locksmith UI and verify that closes the installer.
-   - [ ] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
-   - [ ] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
+   - [x] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
+   - [x] End the tasks in File Locksmith UI and verify that closes the installer.
+   - [x] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
+   - [x] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
  * Start the PowerToys installer executable again and let it stay in the initial screen.
-   - [ ] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
-   - [ ] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
+   - [x] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
+   - [x] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
  * Restart PowerToys as admin.
-   - [ ] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
-   - [ ] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
- - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
- - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
+   - [x] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
+   - [x] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
+ - [x] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
+ - [x] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
