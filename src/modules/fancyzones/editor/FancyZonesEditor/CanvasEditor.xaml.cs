@@ -48,7 +48,6 @@ namespace FancyZonesEditor
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            var workArea = App.Overlay.WorkArea;
             UpdateZoneRects();
             _model.PropertyChanged += OnModelChanged;
         }
