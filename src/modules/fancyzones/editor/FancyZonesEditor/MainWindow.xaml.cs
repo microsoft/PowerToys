@@ -146,29 +146,17 @@ namespace FancyZonesEditor
 
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
         {
-            var mainEditor = App.Overlay;
-            if (mainEditor.CurrentDataContext is not LayoutModel model)
+            if (_settings.SelectedModel.TemplateZoneCount > 1)
             {
-                return;
-            }
-
-            if (model.TemplateZoneCount > 1)
-            {
-                model.TemplateZoneCount--;
+                _settings.SelectedModel.TemplateZoneCount--;
             }
         }
 
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
-            var mainEditor = App.Overlay;
-            if (mainEditor.CurrentDataContext is not LayoutModel model)
+            if (_settings.SelectedModel.IsZoneAddingAllowed)
             {
-                return;
-            }
-
-            if (model.IsZoneAddingAllowed)
-            {
-                model.TemplateZoneCount++;
+                _settings.SelectedModel.TemplateZoneCount++;
             }
         }
 
@@ -303,14 +291,12 @@ namespace FancyZonesEditor
         private void Apply()
         {
             Logger.LogTrace();
-            var mainEditor = App.Overlay;
-            if (mainEditor.CurrentDataContext is LayoutModel model)
-            {
-                _settings.SetAppliedModel(model);
-                App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(model);
-                App.FancyZonesEditorIO.SerializeAppliedLayouts();
-                App.FancyZonesEditorIO.SerializeCustomLayouts();
-            }
+
+            LayoutModel model = _settings.SelectedModel;
+            _settings.SetAppliedModel(model);
+            App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(model);
+            App.FancyZonesEditorIO.SerializeAppliedLayouts();
+            App.FancyZonesEditorIO.SerializeCustomLayouts();
         }
 
         private void OnClosing(object sender, EventArgs e)
@@ -344,7 +330,8 @@ namespace FancyZonesEditor
 
             var dataContext = ((FrameworkElement)sender).DataContext;
             Select((LayoutModel)dataContext);
-            App.Overlay.StartEditing((LayoutModel)dataContext);
+
+            App.Overlay.StartEditing(_settings.SelectedModel);
 
             Keyboard.ClearFocus();
             EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Edit_Template, ((LayoutModel)dataContext).Name);
@@ -357,16 +344,8 @@ namespace FancyZonesEditor
             var dataContext = ((FrameworkElement)sender).DataContext;
             Select((LayoutModel)dataContext);
             EditLayoutDialog.Hide();
-            var mainEditor = App.Overlay;
-            if (mainEditor.CurrentDataContext is not LayoutModel model)
-            {
-                return;
-            }
-
-            _settings.SetSelectedModel(model);
-
             Hide();
-            mainEditor.OpenEditor(model);
+            App.Overlay.OpenEditor(_settings.SelectedModel);
         }
 
         private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -437,7 +416,7 @@ namespace FancyZonesEditor
         // EditLayout: Cancel changes
         private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            App.Overlay.EndEditing(null);
+            App.Overlay.EndEditing(_settings.SelectedModel);
             Select(_settings.AppliedModel);
         }
 
@@ -446,12 +425,8 @@ namespace FancyZonesEditor
         {
             Logger.LogTrace();
 
-            if (App.Overlay.CurrentDataContext is not LayoutModel model)
-            {
-                return;
-            }
-
             App.Overlay.EndEditing(null);
+            LayoutModel model = _settings.SelectedModel;
 
             // update current settings
             if (model == _settings.AppliedModel)
