@@ -112,7 +112,7 @@ AUTHN
 AUTHZ
 AUTOHIDE
 AUTOMATIONPROPERTIES
-Autorun
+autorun
 AUTOUPDATE
 AValid
 awakeness
@@ -144,7 +144,7 @@ Blockquotes
 blogs
 Blt
 BLUEGRAY
-Bluetooth
+bluetooth
 BLURBEHIND
 BLURREGION
 bmi
@@ -564,7 +564,6 @@ FARPROC
 fdw
 feimage
 fff
-fileapi
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
@@ -606,9 +605,9 @@ FZE
 gabime
 GAC
 gacutil
-Galaxi
 Gaeilge
 Gaidhlig
+Galaxi
 GBarm
 Gbits
 Gbps
@@ -1569,7 +1568,6 @@ renamable
 RENAMEONCOLLISION
 Renamer
 reparent
-reparented
 reparenting
 reparse
 reportbug
@@ -1882,7 +1880,6 @@ talynone
 TApp
 TApplication
 TApplied
-Taras
 targ
 TARGETAPPHEADER
 TARGETDIR

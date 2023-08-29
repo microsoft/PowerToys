@@ -202,7 +202,7 @@ In this release, we focused on releasing new features, stability and improvement
 
  - Fixed issue causing problems with modifier keys and ShortcutControl. Thanks [@sh0ckj0ckey](https://github.com/sh0ckj0ckey)!
  - Fixed crash when clicking "Windows color settings" link.
- - Added suport for launching Settings app directly.
+ - Added support for launching Settings app directly.
  - Fixed issue causing DisplayDescription not showing for PowerToys Run PluginAdditionalOption.
 
 ### Documentation
