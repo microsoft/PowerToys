@@ -182,7 +182,7 @@ In this release, we focused on releasing new features, stability and improvement
  - Fixed InvalidOperationException exception thrown. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Add Base64 Decoding function to the Value Generator plugin. Thanks [@LeagueOfPoro](https://github.com/LeagueOfPoro)!
  - Added Keep shell open option for Shell plugin.
- - Added Crop And Lock to PowerToys plugin. Thanks [@LeagueOfPoro](https://github.com/LeagueOfPoro)!
+ - Added Crop And Lock to PowerToys plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Registry Preview
 
