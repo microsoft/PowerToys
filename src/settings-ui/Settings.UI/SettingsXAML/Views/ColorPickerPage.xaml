@@ -2,10 +2,10 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -40,11 +40,11 @@
                     Severity="Informational" />
 
                 <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                    <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEC4E;}">
+                    <controls:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="EditorFirst" />
                             <ComboBoxItem x:Uid="ColorPickerFirst" />
@@ -55,7 +55,7 @@
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xF0E3;}">
+                    <controls:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -85,8 +85,7 @@
                     <controls:SettingsCard
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 Glyph=&#xE762;}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE762;}">
                         <Button
                             x:Uid="ColorPickerAddNewFormat"
                             HorizontalAlignment="Right"
@@ -133,29 +132,19 @@
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveUp"
                                                         Click="ReorderButtonUp_Click"
-                                                        IsEnabled="{x:Bind CanMoveUp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                                        <MenuFlyoutItem.Icon>
-                                                            <FontIcon Glyph="&#xE74A;" />
-                                                        </MenuFlyoutItem.Icon>
-                                                    </MenuFlyoutItem>
+                                                        Icon="{ui:FontIcon Glyph=&#xE74A;}"
+                                                        IsEnabled="{x:Bind CanMoveUp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveDown"
                                                         Click="ReorderButtonDown_Click"
-                                                        IsEnabled="{x:Bind CanMoveDown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                                        <MenuFlyoutItem.Icon>
-                                                            <FontIcon Glyph="&#xE74B;" />
-                                                        </MenuFlyoutItem.Icon>
-                                                    </MenuFlyoutItem>
+                                                        Icon="{ui:FontIcon Glyph=&#xE74B;}"
+                                                        IsEnabled="{x:Bind CanMoveDown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                     <MenuFlyoutSeparator />
                                                     <MenuFlyoutItem
                                                         x:Uid="RemoveItem"
                                                         Click="RemoveButton_Click"
-                                                        IsEnabled="{x:Bind CanBeDeleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                                        <MenuFlyoutItem.Icon>
-                                                            <FontIcon Glyph="&#xE74D;" />
-                                                        </MenuFlyoutItem.Icon>
-                                                    </MenuFlyoutItem>
-
+                                                        Icon="{ui:FontIcon Glyph=&#xE74D;}"
+                                                        IsEnabled="{x:Bind CanBeDeleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                 </MenuFlyout>
                                             </Button.Flyout>
                                             <ToolTipService.ToolTip>

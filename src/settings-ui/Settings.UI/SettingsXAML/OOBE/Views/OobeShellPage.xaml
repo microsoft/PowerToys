@@ -171,7 +171,7 @@
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem
                     x:Uid="Shell_WhatsNew"
-                    Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                    Icon="{ui:FontIcon 
                                        Glyph=&#xF133;}"
                     Tag="WhatsNew" />
             </NavigationView.FooterMenuItems>

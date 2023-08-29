@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkControls="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkConverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
     <Page.Resources>
         <tkConverters:BoolToVisibilityConverter
@@ -59,8 +60,11 @@
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Spacing="8">
-                <Button Command="{Binding LoadProcessesCommand}" Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xe72c;" />
+                <Button
+                    Command="{Binding LoadProcessesCommand}"
+                    Content="{ui:FontIcon Glyph=&#xe72c;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}">
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="Reload" />
                     </ToolTipService.ToolTip>
@@ -68,9 +72,10 @@
                 <Button
                     x:Name="RestartAsAdminBtn"
                     Command="{Binding RestartElevatedCommand}"
+                    Content="{ui:FontIcon Glyph=&#xe7ef;,
+                                          FontSize=16}"
                     Style="{StaticResource SubtleButtonStyle}"
                     Visibility="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolToVisibilityConverter}}">
-                    <FontIcon FontSize="16" Glyph="&#xe7ef;" />
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="RestartAsAdmin" />
                     </ToolTipService.ToolTip>

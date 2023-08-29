@@ -72,6 +72,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+	<PackageReference Include="CommunityToolkit.WinUI.Converters" />
+	<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />

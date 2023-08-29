@@ -146,8 +146,8 @@
 
                 <NavigationViewItem
                     x:Uid="Shell_MouseWithoutBorders"
-                        helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
-                        Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}" />
+                    helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_PastePlain"
@@ -203,13 +203,11 @@
                 <StackPanel Orientation="Vertical">
                     <NavigationViewItem
                         x:Uid="OOBE_NavViewItem"
-                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                           Glyph=&#xF133;}"
+                        Icon="{ui:FontIcon Glyph=&#xF133;}"
                         Tapped="OOBEItem_Tapped" />
                     <NavigationViewItem
                         x:Uid="Feedback_NavViewItem"
-                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                           Glyph=&#xED15;}"
+                        Icon="{ui:FontIcon Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />
                 </StackPanel>
             </NavigationView.PaneFooter>

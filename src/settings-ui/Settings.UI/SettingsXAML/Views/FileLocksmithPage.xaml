@@ -2,20 +2,18 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.FileLocksmithPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <custom:SettingsPageControl
-        x:Uid="FileLocksmith"
-        ModuleImageSource="ms-appx:///Assets/Settings/Modules/FileLocksmith.png">
+    <custom:SettingsPageControl x:Uid="FileLocksmith" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FileLocksmith.png">
         <custom:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:SettingsCard
                     x:Uid="FileLocksmith_Enable_FileLocksmith"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFileLocksmith.png}"
@@ -30,17 +28,12 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup
-                    x:Uid="FileLocksmith_ShellIntegration"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFileLocksmithEnabled}">
-                    <controls:SettingsCard
-                        x:Uid="FileLocksmith_Toggle_ContextMenu">
-                        <ComboBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                <custom:SettingsGroup x:Uid="FileLocksmith_ShellIntegration" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFileLocksmithEnabled}">
+                    <controls:SettingsCard x:Uid="FileLocksmith_Toggle_ContextMenu">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="FileLocksmith_Toggle_StandardContextMenu" />
                             <ComboBoxItem x:Uid="FileLocksmith_Toggle_ExtendedContextMenu" />
-                        </ComboBox>                        
+                        </ComboBox>
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="ExtendedContextMenuInfo"
@@ -52,9 +45,7 @@
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>
         <custom:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink
-                x:Uid="LearnMore_FileLocksmith"
-                Link="https://aka.ms/PowerToysOverview_FileLocksmith" />
+            <custom:PageLink x:Uid="LearnMore_FileLocksmith" Link="https://aka.ms/PowerToysOverview_FileLocksmith" />
         </custom:SettingsPageControl.PrimaryLinks>
     </custom:SettingsPageControl>
 </Page>

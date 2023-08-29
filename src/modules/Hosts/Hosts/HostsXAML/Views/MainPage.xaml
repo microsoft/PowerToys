@@ -10,6 +10,7 @@
     xmlns:local="using:Hosts.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Hosts.Models"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="Page"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
@@ -69,15 +70,16 @@
                     x:Uid="AdditionalLinesBtn"
                     Height="32"
                     Command="{x:Bind AdditionalLinesDialogCommand}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xe8a5;" />
-                </Button>
+                    Content="{ui:FontIcon Glyph=&#xe8a5;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
 
                 <Button
                     x:Uid="FilterBtn"
                     Height="32"
+                    Content="{ui:FontIcon Glyph=&#xe71c;,
+                                          FontSize=16}"
                     Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xe71c;" />
                     <Button.Flyout>
                         <Flyout>
                             <StackPanel
@@ -131,17 +133,18 @@
                     x:Uid="OpenHostsFileBtn"
                     Height="32"
                     Command="{x:Bind ViewModel.OpenHostsFileCommand}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xe8a7;" />
-                </Button>
+                    Content="{ui:FontIcon Glyph=&#xe8a7;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
+
 
                 <Button
                     x:Uid="SettingsBtn"
                     Height="32"
                     Command="{x:Bind ViewModel.OpenSettingsCommand}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xe713;" />
-                </Button>
+                    Content="{ui:FontIcon Glyph=&#xe713;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
             </StackPanel>
         </Grid>
 
@@ -211,19 +214,13 @@
                                     <MenuFlyoutItem
                                         x:Uid="MoveUp"
                                         Click="ReorderButtonUp_Click"
-                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                        <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xE74A;" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
+                                        Icon="{ui:FontIcon Glyph=&#xE74A;}"
+                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
                                     <MenuFlyoutItem
                                         x:Uid="MoveDown"
                                         Click="ReorderButtonDown_Click"
-                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                        <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xE74B;" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
+                                        Icon="{ui:FontIcon Glyph=&#xE74B;}"
+                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
                                     <MenuFlyoutSeparator />
                                     <MenuFlyoutItem
                                         x:Uid="Delete"
@@ -463,12 +460,10 @@
 
         <TeachingTip
             x:Uid="TooManyHostsTeachingTip"
+            IconSource="{ui:FontIconSource Glyph=&#xe946;}"
             IsOpen="{x:Bind ViewModel.ShowSplittedEntriesTooltip, Mode=OneWay}"
             PlacementMargin="20"
             PreferredPlacement="Top">
-            <TeachingTip.IconSource>
-                <FontIconSource Glyph="&#xe946;" />
-            </TeachingTip.IconSource>
             <TeachingTip.Content>
                 <TextBlock x:Uid="TooManyHostsTeachingTipContent" TextWrapping="Wrap" />
             </TeachingTip.Content>
