@@ -1,16 +1,17 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Windows;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
     public class LayoutBackup
     {
         private LayoutModel _backup;
+        private string _hotkeyBackup;
         private List<LayoutModel> _defaultLayoutsBackup;
 
         public LayoutBackup()
@@ -28,6 +29,7 @@ namespace FancyZonesEditor
                 _backup = new CanvasLayoutModel(canvas);
             }
 
+            _hotkeyBackup = MainWindowSettingsModel.LayoutHotkeys.Key(model.Uuid);
             _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.Layouts);
         }
 
@@ -46,6 +48,11 @@ namespace FancyZonesEditor
                 }
             }
 
+            if (_hotkeyBackup != null)
+            {
+                MainWindowSettingsModel.LayoutHotkeys.SelectKey(_hotkeyBackup, layoutToRestore.Uuid);
+            }
+
             if (_defaultLayoutsBackup != null)
             {
                 MainWindowSettingsModel.DefaultLayouts.Restore(_defaultLayoutsBackup);
@@ -55,6 +62,7 @@ namespace FancyZonesEditor
         public void Clear()
         {
             _backup = null;
+            _hotkeyBackup = null;
             _defaultLayoutsBackup = null;
         }
     }
