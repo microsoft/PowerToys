@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,8 +13,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:VisibleIfNotEmptyConverter x:Key="visibleIfNotEmptyConverter" />
-
+        <converters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
         <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
             <Setter Property="IsTabStop" Value="False" />
         </Style>
@@ -82,7 +81,7 @@
                         IsSwipeEnabled="False"
                         ItemsSource="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay}"
                         SelectionMode="None"
-                        Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}">
+                        Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="Lib:KeysDataModel">
                                 <controls:SettingsCard ContentAlignment="Left">
@@ -136,7 +135,7 @@
                         IsSwipeEnabled="False"
                         ItemsSource="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay}"
                         SelectionMode="None"
-                        Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}">
+                        Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
                                 <controls:SettingsCard ContentAlignment="Left">
