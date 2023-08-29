@@ -3,14 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Windows;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
     public class LayoutBackup
     {
         private LayoutModel _backup;
+        private string _hotkeyBackup;
         private List<LayoutModel> _defaultLayoutsBackup;
 
         public LayoutBackup()
@@ -28,30 +29,29 @@ namespace FancyZonesEditor
                 _backup = new CanvasLayoutModel(canvas);
             }
 
+            _hotkeyBackup = MainWindowSettingsModel.LayoutHotkeys.Key(model.Uuid);
             _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.Layouts);
         }
 
-        public void Restore()
+        public void Restore(LayoutModel layoutToRestore)
         {
-            if (_backup != null)
+            if (_backup != null && layoutToRestore != null)
             {
-                var settings = ((App)Application.Current).MainWindowSettings;
-                var selectedModel = settings.SelectedModel;
-
-                if (selectedModel == null)
-                {
-                    return;
-                }
-
                 if (_backup is GridLayoutModel grid)
                 {
-                    grid.RestoreTo((GridLayoutModel)selectedModel);
+                    grid.RestoreTo((GridLayoutModel)layoutToRestore);
                     grid.InitTemplateZones();
                 }
                 else if (_backup is CanvasLayoutModel canvas)
                 {
-                    canvas.RestoreTo((CanvasLayoutModel)selectedModel);
+                    canvas.RestoreTo((CanvasLayoutModel)layoutToRestore);
+                    canvas.InitTemplateZones();
                 }
+            }
+
+            if (_hotkeyBackup != null)
+            {
+                MainWindowSettingsModel.LayoutHotkeys.SelectKey(_hotkeyBackup, layoutToRestore.Uuid);
             }
 
             if (_defaultLayoutsBackup != null)
@@ -63,6 +63,7 @@ namespace FancyZonesEditor
         public void Clear()
         {
             _backup = null;
+            _hotkeyBackup = null;
             _defaultLayoutsBackup = null;
         }
     }

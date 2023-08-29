@@ -186,25 +186,18 @@ namespace FancyZonesEditor
             Logger.LogTrace();
 
             _layoutPreview = null;
-            if (CurrentDataContext is GridLayoutModel)
+            if (model is GridLayoutModel grid)
             {
-                _editorLayout = new GridEditor();
+                _editorLayout = new GridEditor(grid);
+                _editorWindow = new GridEditorWindow(grid);
             }
-            else if (CurrentDataContext is CanvasLayoutModel)
+            else if (model is CanvasLayoutModel canvas)
             {
-                _editorLayout = new CanvasEditor();
+                _editorLayout = new CanvasEditor(canvas);
+                _editorWindow = new CanvasEditorWindow(canvas);
             }
 
             CurrentLayoutWindow.Content = _editorLayout;
-
-            if (model is GridLayoutModel)
-            {
-                _editorWindow = new GridEditorWindow();
-            }
-            else
-            {
-                _editorWindow = new CanvasEditorWindow();
-            }
 
             _editorWindow.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
             _editorWindow.DataContext = model;
@@ -267,11 +260,11 @@ namespace FancyZonesEditor
             _layoutBackup.Backup(model);
         }
 
-        public void EndEditing(bool restoreBackup)
+        public void EndEditing(LayoutModel modelToRestore)
         {
-            if (restoreBackup)
+            if (modelToRestore != null)
             {
-                _layoutBackup.Restore();
+                _layoutBackup.Restore(modelToRestore);
             }
 
             _layoutBackup.Clear();
