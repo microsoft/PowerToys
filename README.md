@@ -99,37 +99,129 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.73 - August 2023 Update
 
-In this release, we focused on XXX.
+In this release, we focused on releasing new features, stability and improvements.
 
 **Highlights**
 
- - Keyboard manager now supports Numpad.  Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
-
-### Known issues
-
-# validate are these still issues
-
- - Due to changing paths in the installation folder, the Mouse Without Borders service might be pointing to the wrong place. Users not running as admin will have to enable service mode again after install. A toast notification will appear if Mouse Without Borders is unable to start the service correctly.
- - File Explorer extensions changed paths might not be loaded correctly until File Explorer and Preview Host processes are restarted, so we advise restarting the computer when possible after updating PowerToys.
+ - Keyboard manager now supports Numpad. Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
+ - New utility: Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.
+ - FancyZones code improvements and refactor.
+ - Modernized ImageResizer UX.
+ - PowerRename advanced counter functionality.
 
 ### General
 
- - XXX
+ - Added missing CoUninitialize call in elevation logic. Thanks [@sredna](https://github.com/sredna)!
+ - New utility: Crop And Lock. Thanks [@robmikh](https://github.com/robmikh)! and [@kevinguo305](https://github.com/kevinguo305)!
+ - Added new /helped fabric bot command to GitHub repo. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Fixed crashes caused by invalid settings. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### FancyZones
+
+ - Fixed issue causing canvas zones being drawn only when dragging in zone area.
+ - Fixed user-defined default layout highlighting issue.
+ - Refactored and improved code quality.
+ - Fixed issue causing wrong layout to be applied when duplicating non-selected layout.
+
+### File Locksmith
+
+ - Icon update. Thanks [@jmaraujouy](https://github.com/jmaraujouy)!
+ 
+### File Explorer add-ons
+
+ - Fixed issue causing thumbnail previewers to lock files.
+ - Open URIs from developer files in default browser. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Installer
+
+ - Fixed PowerToys autorun after installing as SYSTEM user. 
+ - Removed CreateScheduledTask custom action to handle task creation only from runner code.
+
+### Image Resizer
+
+ -  Moved from ModernWPF to WpfUI to refresh and modernize UI/UX. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### Keyboard Manager
 
- - Keyboard manager now supports Numpad.  Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
+ - Rephrased labels to enhance clarity. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+ - Keyboard manager now supports Numpad. Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
 
+### Mouse Highlighter
+
+ - Fixed highlighter being invisible issue for Always on Top windows.
+ - Added settings for automatic activation on startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Mouse Pointer Crosshairs
+
+ - Added settings for automatic activation on startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Peek
+
+ - Show correct file type for shortcuts. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed issue causing wrong file size to be displayed. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Show 1 byte instead of 1 bytes file size. Thanks [@Deepak-Sangle](https://github.com/Deepak-Sangle)!
+ - Open URIs from developer files in default browser. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Show thumbnail and fallback to icon for unsupported files. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+
+### PowerRename
+
+ - Updated OOBE gif. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden)!
+ - Localized renamed parts combo box.
+ - Introduced advanced counter functionality.
+ - Added remember last window size logic and optimized items sorting.
+ - Enable "Enumerate items" option by default.
+
+### PowerToys Run
+
+ - Fixed issue causing original search to be abandoned when cycling through results.
+ - Updated device and bluetooth results for Settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Fixed InvalidOperationException exception thrown. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Add Base64 Decoding function to the Value Generator plugin. Thanks [@LeagueOfPoro](https://github.com/LeagueOfPoro)!
+ - Added Keep shell open option for Shell plugin.
+ - Added Crop And Lock to PowerToys plugin. Thanks [@LeagueOfPoro](https://github.com/LeagueOfPoro)!
+
+### Registry Preview
+
+ - Updated AppBarButtons to use an explicit AppBarButton.Icon. Thanks [@randyrants](https://github.com/randyrants)!
+
+### Runner
+
+ - Removed unneeded RegisterWindowMessage from tray icon logic. Thanks [@sredna](https://github.com/sredna)!
+ - Fixed startup looping issue.
+ - Improved old logs and installers cleanup logic. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Screen Ruler
+
+ - Use proper resources file.
+
+### Settings
+
+ - Fixed issue causing problems with modifier keys and ShortcutControl. Thanks [@sh0ckj0ckey](https://github.com/sh0ckj0ckey)!
+ - Fixed crash when clicking "Windows color settings" link.
+ - Added suport for launching Settings app directly.
+ - Fixed issue causing DisplayDescription not showing for PowerToys Run PluginAdditionalOption.
+
+### Documentation
+
+ - Added documentation for PowerToys Run third-party plugins. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed broken links in keyboardmanagerui.md. Thanks [@shubhsardana29](https://github.com/shubhsardana29)!
+ - Updated core team in COMMUNITY.md.
+ - Fixed broken links in ui-architecture.md. Thanks [@SamB](https://github.com/SamB)!
+ - Updated community.valuegenerator.md with Base64DecodeRequest description.
 
 ### Development
 
- - XXX
+ - Updated test packages and StyleCop. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Condense NuGet Restore into MSBuild Tasks. Thanks [@snickler](https://github.com/snickler)!
 
 #### What is being planned for version 0.74
 
 For [v0.74][github-next-release-work], we'll work on below:
 
- - XXX
+ - Language selection
+ - Modernize and refresh UX of PowerToys based on WPF
+ - Stability / bug fixes
+ - Peek: UI improvements
 
 ## PowerToys Community
 
