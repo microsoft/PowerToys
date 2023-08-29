@@ -307,6 +307,7 @@ namespace FancyZonesEditor
             App.FancyZonesEditorIO.SerializeCustomLayouts();
             App.FancyZonesEditorIO.SerializeLayoutHotkeys();
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
+            App.FancyZonesEditorIO.SerializeDefaultLayouts();
             App.Overlay.CloseLayoutWindow();
             App.Current.Shutdown();
         }
@@ -438,6 +439,7 @@ namespace FancyZonesEditor
             App.FancyZonesEditorIO.SerializeCustomLayouts();
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
             App.FancyZonesEditorIO.SerializeLayoutHotkeys();
+            App.FancyZonesEditorIO.SerializeDefaultLayouts();
 
             // reset selected model
             Select(_settings.AppliedModel);
@@ -626,7 +628,6 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Vertical);
-                App.FancyZonesEditorIO.SerializeDefaultLayouts();
             }
         }
 
@@ -636,7 +637,6 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Horizontal);
-                App.FancyZonesEditorIO.SerializeDefaultLayouts();
             }
         }
 
@@ -646,7 +646,6 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Horizontal);
-                App.FancyZonesEditorIO.SerializeDefaultLayouts();
             }
         }
 
@@ -656,7 +655,6 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Vertical);
-                App.FancyZonesEditorIO.SerializeDefaultLayouts();
             }
         }
     }
