@@ -18,6 +18,7 @@ namespace Peek.FilePreviewer.Previewers.Helpers
         public static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, bool isSupportingTransparency, CancellationToken cancellationToken)
         {
             Bitmap? bitmap = null;
+            Bitmap? tempBitmapForDeletion = null;
 
             try
             {
@@ -32,7 +33,8 @@ namespace Peek.FilePreviewer.Previewers.Helpers
 
                     var transparentBitmap = new Bitmap(bitmapData.Width, bitmapData.Height, bitmapData.Stride, PixelFormat.Format32bppArgb, bitmapData.Scan0);
 
-                    bitmap.Dispose();
+                    // Can't dispose of original bitmap yet as that causes crashes on png files. Saving it for later disposal after saving to stream.
+                    tempBitmapForDeletion = bitmap;
                     bitmap = transparentBitmap;
                 }
 
@@ -53,6 +55,7 @@ namespace Peek.FilePreviewer.Previewers.Helpers
             finally
             {
                 bitmap?.Dispose();
+                tempBitmapForDeletion?.Dispose();
 
                 // delete HBitmap to avoid memory leaks
                 NativeMethods.DeleteObject(hbitmap);
