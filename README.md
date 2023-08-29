@@ -116,6 +116,10 @@ In this release, we focused on releasing new features, stability and improvement
  - Added new /helped fabric bot command to GitHub repo. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
  - Fixed crashes caused by invalid settings. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
+### Always On Top
+
+ - Added border transparency.
+
 ### FancyZones
 
  - Fixed issue causing canvas zones being drawn only when dragging in zone area.
