@@ -310,9 +310,6 @@
                 Grid.Column="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
-                Background="Transparent"
-                CursorBehavior="ChangeOnSplitterHover"
-                GripperCursor="SizeWestEast"
                 IsTabStop="False" />
             <sizers:GridSplitter
                 x:Name="horizontalSplitter"
@@ -320,9 +317,6 @@
                 Grid.Column="2"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
-                Background="Transparent"
-                CursorBehavior="ChangeOnSplitterHover"
-                GripperCursor="SizeNorthSouth"
                 IsTabStop="False" />
         </Grid>
     </Grid>
