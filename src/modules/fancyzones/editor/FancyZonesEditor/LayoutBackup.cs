@@ -31,26 +31,18 @@ namespace FancyZonesEditor
             _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.Layouts);
         }
 
-        public void Restore()
+        public void Restore(LayoutModel layoutToRestore)
         {
-            if (_backup != null)
+            if (_backup != null && layoutToRestore != null)
             {
-                var settings = ((App)Application.Current).MainWindowSettings;
-                var selectedModel = settings.SelectedModel;
-
-                if (selectedModel == null)
-                {
-                    return;
-                }
-
                 if (_backup is GridLayoutModel grid)
                 {
-                    grid.RestoreTo((GridLayoutModel)selectedModel);
+                    grid.RestoreTo((GridLayoutModel)layoutToRestore);
                     grid.InitTemplateZones();
                 }
                 else if (_backup is CanvasLayoutModel canvas)
                 {
-                    canvas.RestoreTo((CanvasLayoutModel)selectedModel);
+                    canvas.RestoreTo((CanvasLayoutModel)layoutToRestore);
                 }
             }
 

@@ -10,7 +10,8 @@ namespace FancyZonesEditor
 {
     public partial class GridEditorWindow : EditorWindow
     {
-        public GridEditorWindow()
+        public GridEditorWindow(GridLayoutModel model)
+            : base(model)
         {
             InitializeComponent();
 

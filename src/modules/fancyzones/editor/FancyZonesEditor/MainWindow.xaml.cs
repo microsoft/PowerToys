@@ -316,7 +316,6 @@ namespace FancyZonesEditor
         private void OnClosing(object sender, EventArgs e)
         {
             Logger.LogTrace();
-            App.Overlay.EndEditing(true);
 
             App.FancyZonesEditorIO.SerializeAppliedLayouts();
             App.FancyZonesEditorIO.SerializeCustomLayouts();
@@ -438,7 +437,7 @@ namespace FancyZonesEditor
         // EditLayout: Cancel changes
         private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            App.Overlay.EndEditing(false);
+            App.Overlay.EndEditing(null);
             Select(_settings.AppliedModel);
         }
 
@@ -447,13 +446,12 @@ namespace FancyZonesEditor
         {
             Logger.LogTrace();
 
-            var mainEditor = App.Overlay;
-            if (mainEditor.CurrentDataContext is not LayoutModel model)
+            if (App.Overlay.CurrentDataContext is not LayoutModel model)
             {
                 return;
             }
 
-            mainEditor.EndEditing(false);
+            App.Overlay.EndEditing(null);
 
             // update current settings
             if (model == _settings.AppliedModel)
