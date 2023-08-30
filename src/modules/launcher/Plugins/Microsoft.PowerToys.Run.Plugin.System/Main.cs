@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         public List<Result> Query(Query query)
         {
             List<Result> results = new List<Result>();
-            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US", false);
+            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
 
             if (query == null)
             {
@@ -135,7 +135,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         public List<Result> Query(Query query, bool delayedExecution)
         {
             List<Result> results = new List<Result>();
-            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US", false);
+            CultureInfo culture = _localizeSystemCommands ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
 
             if (query == null)
             {
