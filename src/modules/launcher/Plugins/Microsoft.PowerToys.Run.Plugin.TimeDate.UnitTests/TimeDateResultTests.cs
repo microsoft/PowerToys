@@ -26,9 +26,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
         }
 
-        private DateTime GetDateTimeForTest()
+        private DateTime GetDateTimeForTest(bool embedUtc = false)
         {
-            return new DateTime(2022, 03, 02, 22, 30, 45);
+            var dateTime = new DateTime(2022, 03, 02, 22, 30, 45);
+            if (embedUtc)
+            {
+                return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+            }
+            else
+            {
+                return dateTime;
+            }
         }
 
         [DataTestMethod]
@@ -181,8 +189,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithShortTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, false, GetDateTimeForTest());
-            var expectedResult = GetDateTimeForTest().ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+            var helperResults = AvailableResultsList.GetList(true, false, false, GetDateTimeForTest(true));
+            var expectedResult = GetDateTimeForTest().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -201,8 +209,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithShortTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, true, GetDateTimeForTest());
-            var expectedResult = GetDateTimeForTest().ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+            var helperResults = AvailableResultsList.GetList(true, false, true, GetDateTimeForTest(true));
+            var expectedResult = GetDateTimeForTest().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -221,8 +229,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithLongTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, false, GetDateTimeForTest());
-            var expectedResult = GetDateTimeForTest().ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+            var helperResults = AvailableResultsList.GetList(true, true, false, GetDateTimeForTest(true));
+            var expectedResult = GetDateTimeForTest().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -241,8 +249,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithLongTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, true, GetDateTimeForTest());
-            var expectedResult = GetDateTimeForTest().ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+            var helperResults = AvailableResultsList.GetList(true, true, true, GetDateTimeForTest(true));
+            var expectedResult = GetDateTimeForTest().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
