@@ -6,7 +6,7 @@ This project contains common code used for previewing and displaying files.
 
 Monaco preview enables to display developer files. It is based on [Microsoft's Monaco Editor](https://microsoft.github.io/monaco-editor/) which is maintained by the Visual Studio Code team.
 
-This previewer is used for the File Explorer Dev File Previewer, aswell as PowerToys Peek.
+This previewer is used for the File Explorer Dev File Previewer, as well as PowerToys Peek.
 
 ### Update Monaco Editor
 
