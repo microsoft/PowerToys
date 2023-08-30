@@ -1019,6 +1019,25 @@ namespace FancyZonesEditor.Utils
                     continue;
                 }
 
+                // check if the custom layout wasn't deleted
+                if (JsonTagToLayoutType(layout.AppliedLayout.Type) == LayoutType.Custom)
+                {
+                    bool layoutExists = false;
+                    foreach (LayoutModel custom in MainWindowSettingsModel.CustomModels)
+                    {
+                        if (custom.Uuid == layout.AppliedLayout.Uuid)
+                        {
+                            layoutExists = true;
+                            break;
+                        }
+                    }
+
+                    if (!layoutExists)
+                    {
+                        continue;
+                    }
+                }
+
                 bool unused = true;
                 foreach (Monitor monitor in monitors)
                 {
