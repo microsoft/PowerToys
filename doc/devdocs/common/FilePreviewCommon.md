@@ -19,7 +19,7 @@ This previewer is used for the File Explorer Dev File Previewer, as well as Powe
 
 As an example on how to add a new language definition you can look at the one for [registry files](/src/common/FilePreviewCommon/Assets/Monaco/customLanguages/reg.js).
 
-1. Add the language definition (written with [Monarch](https://microsoft.github.io/monaco-editor/monarch.html)) to the [folder containing Monaco custom languages](/src/common/FilePreviewCommon/Assets/Monaco/customLanguages/). The file should be formatted like in the example below. (Please change `idDefinition` to the name of your language.)
+1. Add the new language definition (written with [Monarch](https://microsoft.github.io/monaco-editor/monarch.html)) as a new file to the [folder containing Monaco custom languages](/src/common/FilePreviewCommon/Assets/Monaco/customLanguages/) (Remember the file name and the string you used for "idDefinition" as you need it later.). The file should be formatted like in the example below. (Please change `idDefinition` to the name of your language.)
 
 ```javascript
 export function idDefinition() {
@@ -29,22 +29,25 @@ export function idDefinition() {
 }
 ```
 
-2. Add the following line to the [`monacoSpecialLanguages.js`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js) file:
+2. Add the following line to the [`monacoSpecialLanguages.js`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js) file, after the other import statements:
 
 ```javascript
 import { idDefinition } from './customLanguages/file.js';
 ```
 
-3. In the [`monacoSpecialLanguages.js`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js) file add the following line to the `registerAdditionalLanguages` function:
+> Replace file.js with the name of your definition file from step 1. Please replace idDefinition with the string you used in step 1.
+
+3. In the [`monacoSpecialLanguages.js`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js) file add the following line in to the `registerAdditionalLanguages` function:
 
 ```javascript
 registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
 ```
 
-  * The id can be anything. Recommended is one of the file extensions. For example "php" or "reg".
-4. Copy the existing language definition into the `languageDefinitions` function in the same file. You can find the existing definitions in the following folder: [`/src/common/FilePreviewCommon//Assets/Monaco/monacoSRC/min/vs/basic-languages/`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSRC/min/vs/basic-languages/).
+> Replace id and idDefinition with your id and string used in step 1. Replace fileExtension with a set of file extensions you want the language to register to.
 
-5. Execute the steps described in the [monaco_languages.json](#monaco_languagesjson) section.
+  * The id can be anything. Recommended is one of the file extensions. For example "php" or "reg".
+
+4. Execute the steps described in the [monaco_languages.json](#monaco_languagesjson) section.
 
 ### Add a new file extension to an existing language
 
@@ -56,7 +59,9 @@ registerAdditionalLanguage("id", [".fileExtension"], "existingId", monaco)
 
   * If for instance you want to add more extensions to the php language set the id to `phpExt` and the existingId to `php`.
 
-2. Execute the steps described in the [monaco_languages.json](#monaco_languagesjson) section.
+2. Copy the existing language definition into the `languageDefinitions` function in the same file. You can find the existing definitions in the following folder: [`/src/common/FilePreviewCommon/Assets/Monaco/monacoSRC/min/vs/basic-languages/`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSRC/min/vs/basic-languages/).
+
+3. Execute the steps described in the [monaco_languages.json](#monaco_languagesjson) section.
 
 ### monaco_languages.json
 
