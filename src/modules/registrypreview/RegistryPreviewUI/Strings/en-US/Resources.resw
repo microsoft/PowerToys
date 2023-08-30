@@ -179,7 +179,7 @@
     <value>Open Key</value>
   </data>
   <data name="SaveDialogTitle" xml:space="preserve">
-    <value>Save Registry file</value>
+    <value>Save As</value>
   </data>
   <data name="SaveAsButton.Label" xml:space="preserve">
     <value>Save as…</value>
