@@ -187,6 +187,7 @@ In this release, we focused on releasing new features, stability and improvement
 ### Registry Preview
 
  - Updated AppBarButtons to use an explicit AppBarButton.Icon. Thanks [@randyrants](https://github.com/randyrants)!
+ - Fixed crash on clicking Save As button.
 
 ### Runner
 
@@ -204,6 +205,8 @@ In this release, we focused on releasing new features, stability and improvement
  - Fixed crash when clicking "Windows color settings" link.
  - Added support for launching Settings app directly.
  - Fixed issue causing DisplayDescription not showing for PowerToys Run PluginAdditionalOption.
+ - Fixed issue causing FileLocksmith 'Show File Locksmith in' setting not showing correct value.
+ - Fixed issue causing Awake on/off toggle in Settings flyout not to work when Settings Awake page is opened.
 
 ### Documentation
 
