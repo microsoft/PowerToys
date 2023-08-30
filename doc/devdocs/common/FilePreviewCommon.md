@@ -10,7 +10,7 @@ This previewer is used for the File Explorer Dev File Previewer, as well as Powe
 
 ### Update Monaco Editor
 
-1. Download Monaco editor with [npm](https://www.npmjs.com/): Enter `npm i monaco-editor` in the command prompt.
+1. Download Monaco editor with [npm](https://www.npmjs.com/): Run `npm i monaco-editor` in the command prompt.
 2. Delete everything except the `min` folder (the minimised code) from the downloaded files.
 3. Copy the `min` folder into the `src/common/FilePreviewCommon/monacoSRC` folder of the PowerToys project.
 4. Generate the JSON file as described in the [Generate monaco_languages.json file](#monaco_languagesjson) section.
