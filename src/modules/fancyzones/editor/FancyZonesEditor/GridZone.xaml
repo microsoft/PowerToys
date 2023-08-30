@@ -28,20 +28,18 @@
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
                 Content="ID"
+                FontSize="68"
                 FontWeight="SemiBold"
-                FontSize="64"
                 Foreground="{DynamicResource PrimaryForegroundBrush}" />
             <TextBlock FontSize="16"
                        Foreground="{DynamicResource SecondaryForegroundBrush}"
-                       DockPanel.Dock="Bottom"
                        FontWeight="SemiBold"
+                       DockPanel.Dock="Bottom"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center">
-                     <Run x:Name="WidthLabel" />
-                     <Run Text="&#xe894;"
-                          FontSize="10"
-                          FontFamily="Segoe MDL2 Assets" />
-                    <Run x:Name="HeightLabel" />
+                <Run x:Name="WidthLabel" />
+                <Run Text="×" />
+                <Run x:Name="HeightLabel" />
             </TextBlock>
 
         </DockPanel>

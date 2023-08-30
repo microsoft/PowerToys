@@ -209,7 +209,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (Settings.Properties.ActivationShortcut != value)
                 {
-                    Settings.Properties.ActivationShortcut = value;
+                    Settings.Properties.ActivationShortcut = value ?? Settings.Properties.DefaultActivationShortcut;
 
                     NotifyPropertyChanged();
 
@@ -219,6 +219,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                          "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                          MeasureToolSettings.ModuleName,
                          JsonSerializer.Serialize(Settings)));
+                }
+            }
+        }
+
+        public int DefaultMeasureStyle
+        {
+            get
+            {
+                return Settings.Properties.DefaultMeasureStyle.Value;
+            }
+
+            set
+            {
+                if (Settings.Properties.DefaultMeasureStyle.Value != value)
+                {
+                    Settings.Properties.DefaultMeasureStyle.Value = value;
+                    NotifyPropertyChanged();
                 }
             }
         }

@@ -22,6 +22,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP = L"ConfigureEnabledUtilityAlwaysOnTop";
     const std::wstring POLICY_CONFIGURE_ENABLED_AWAKE = L"ConfigureEnabledUtilityAwake";
     const std::wstring POLICY_CONFIGURE_ENABLED_COLOR_PICKER = L"ConfigureEnabledUtilityColorPicker";
+    const std::wstring POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK = L"ConfigureEnabledUtilityCropAndLock";
     const std::wstring POLICY_CONFIGURE_ENABLED_FANCYZONES = L"ConfigureEnabledUtilityFancyZones";
     const std::wstring POLICY_CONFIGURE_ENABLED_FILE_LOCKSMITH = L"ConfigureEnabledUtilityFileLocksmith";
     const std::wstring POLICY_CONFIGURE_ENABLED_SVG_PREVIEW = L"ConfigureEnabledUtilityFileExplorerSVGPreview";
@@ -48,8 +49,12 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
     const std::wstring POLICY_CONFIGURE_ENABLED_PASTE_PLAIN = L"ConfigureEnabledUtilityPastePlain";
     const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
+    const std::wstring POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW = L"ConfigureEnabledUtilityRegistryPreview";
+    const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_WITHOUT_BORDERS = L"ConfigureEnabledUtilityMouseWithoutBorders";
+    const std::wstring POLICY_CONFIGURE_ENABLED_PEEK = L"ConfigureEnabledUtilityPeek";
 
     // The registry value names for PowerToys installer and update policies.
+    const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
     const std::wstring POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD = L"AutomaticUpdateDownloadDisabled";
     const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_PERIODIC_UPDATE_CHECK = L"PeriodicUpdateCheckDisabled";
@@ -123,6 +128,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredColorPickerEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_COLOR_PICKER);
+    }
+
+    inline gpo_rule_configured_t getConfiguredCropAndLockEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK);
     }
 
     inline gpo_rule_configured_t getConfiguredFancyZonesEnabledValue()
@@ -253,6 +263,26 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredVideoConferenceMuteEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMouseWithoutBordersEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MOUSE_WITHOUT_BORDERS);
+    }
+    
+    inline gpo_rule_configured_t getConfiguredPeekEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_PEEK);
+    }
+
+    inline gpo_rule_configured_t getConfiguredRegistryPreviewEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW);
+    }
+
+    inline gpo_rule_configured_t getDisablePerUserInstallationValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_PER_USER_INSTALLATION);
     }
 
     inline gpo_rule_configured_t getDisableAutomaticUpdateDownloadValue()

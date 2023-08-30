@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {

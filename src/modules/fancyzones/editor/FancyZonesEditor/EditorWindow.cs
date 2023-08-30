@@ -4,36 +4,42 @@
 
 using System;
 using System.Windows;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {
     public class EditorWindow : Window
     {
+        public LayoutModel EditingLayout { get; set; }
+
+        public EditorWindow(LayoutModel editingLayout)
+        {
+            EditingLayout = editingLayout;
+        }
+
         protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
-            var mainEditor = App.Overlay;
-            if (mainEditor.CurrentDataContext is LayoutModel model)
+
+            // If new custom Canvas layout is created (i.e. edited Blank layout),
+            // it's type needs to be updated
+            if (EditingLayout.Type == LayoutType.Blank)
             {
-                // If new custom Canvas layout is created (i.e. edited Blank layout),
-                // it's type needs to be updated
-                if (model.Type == LayoutType.Blank)
-                {
-                    model.Type = LayoutType.Custom;
-                }
-
-                model.Persist();
-
-                MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-                settings.SetAppliedModel(model);
-                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
+                EditingLayout.Type = LayoutType.Custom;
             }
+
+            EditingLayout.Persist();
+
+            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
+            settings.SetAppliedModel(EditingLayout);
+            App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(EditingLayout);
 
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
             App.FancyZonesEditorIO.SerializeCustomLayouts();
             App.FancyZonesEditorIO.SerializeAppliedLayouts();
+            App.FancyZonesEditorIO.SerializeDefaultLayouts();
+            App.FancyZonesEditorIO.SerializeLayoutHotkeys();
 
             Close();
         }
@@ -45,6 +51,14 @@ namespace FancyZonesEditor
 
         protected void OnCancel(object sender, RoutedEventArgs e)
         {
+            // restore backup, clean up
+            App.Overlay.EndEditing(EditingLayout);
+
+            // select and draw applied layout
+            var settings = ((App)Application.Current).MainWindowSettings;
+            settings.SetSelectedModel(settings.AppliedModel);
+            App.Overlay.CurrentDataContext = settings.AppliedModel;
+
             Close();
         }
     }

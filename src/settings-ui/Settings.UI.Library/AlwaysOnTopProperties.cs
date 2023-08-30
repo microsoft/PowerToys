@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const int DefaultFrameThickness = 15;
         public const string DefaultFrameColor = "#0099cc";
         public const bool DefaultFrameAccentColor = true;
+        public const int DefaultFrameOpacity = 100;
         public const bool DefaultSoundEnabled = true;
         public const bool DefaultDoNotActivateOnGameMode = true;
         public const bool DefaultRoundCornersEnabled = true;
@@ -26,6 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FrameThickness = new IntProperty(DefaultFrameThickness);
             FrameColor = new StringProperty(DefaultFrameColor);
             FrameAccentColor = new BoolProperty(DefaultFrameAccentColor);
+            FrameOpacity = new IntProperty(DefaultFrameOpacity);
             SoundEnabled = new BoolProperty(DefaultSoundEnabled);
             DoNotActivateOnGameMode = new BoolProperty(DefaultDoNotActivateOnGameMode);
             RoundCornersEnabled = new BoolProperty(DefaultRoundCornersEnabled);
@@ -43,6 +45,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("frame-color")]
         public StringProperty FrameColor { get; set; }
+
+        [JsonPropertyName("frame-opacity")]
+        public IntProperty FrameOpacity { get; set; }
 
         [JsonPropertyName("frame-accent-color")]
         public BoolProperty FrameAccentColor { get; set; }

@@ -5,7 +5,6 @@
 using System;
 using System.Text;
 using System.Windows;
-using Common.UI;
 using ImageResizer.Models;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
@@ -16,9 +15,6 @@ namespace ImageResizer
 {
     public partial class App : Application, IDisposable
     {
-        private ThemeManager _themeManager;
-        private bool _isDisposed;
-
         static App()
         {
             Console.InputEncoding = Encoding.Unicode;
@@ -44,8 +40,6 @@ namespace ImageResizer
             var mainWindow = new MainWindow(new MainViewModel(batch, Settings.Default));
             mainWindow.Show();
 
-            _themeManager = new ThemeManager(this);
-
             // Temporary workaround for issue #1273
             BecomeForegroundWindow(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
         }
@@ -58,23 +52,9 @@ namespace ImageResizer
             NativeMethods.SetForegroundWindow(hWnd);
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_isDisposed)
-            {
-                if (disposing)
-                {
-                    _themeManager?.Dispose();
-                }
-
-                _isDisposed = true;
-            }
-        }
-
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
     }

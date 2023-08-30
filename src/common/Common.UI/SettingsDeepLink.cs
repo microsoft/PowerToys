@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,10 @@ namespace Common.UI
             ShortcutGuide,
             VideoConference,
             Hosts,
+            MeasureTool,
+            PowerOCR,
+            RegistryPreview,
+            CropAndLock,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -56,6 +60,14 @@ namespace Common.UI
                     return "VideoConference";
                 case SettingsWindow.Hosts:
                     return "Hosts";
+                case SettingsWindow.MeasureTool:
+                    return "MeasureTool";
+                case SettingsWindow.PowerOCR:
+                    return "PowerOCR";
+                case SettingsWindow.RegistryPreview:
+                    return "RegistryPreview";
+                case SettingsWindow.CropAndLock:
+                    return "CropAndLock";
                 default:
                     {
                         return string.Empty;
@@ -63,13 +75,24 @@ namespace Common.UI
             }
         }
 
-        public static void OpenSettings(SettingsWindow window)
+        public static void OpenSettings(SettingsWindow window, bool mainExecutableIsOnTheParentFolder)
         {
             try
             {
                 var assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                var fullPath = Directory.GetParent(assemblyPath).FullName;
-                Process.Start(new ProcessStartInfo(fullPath + "\\..\\PowerToys.exe") { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
+                var fullPath = new DirectoryInfo(assemblyPath).FullName;
+                if (mainExecutableIsOnTheParentFolder)
+                {
+                    // Need to go into parent folder for PowerToys.exe. Likely a WinUI3 App SDK application.
+                    fullPath = fullPath + "\\..\\PowerToys.exe";
+                }
+                else
+                {
+                    // PowerToys.exe is in the same path as the application.
+                    fullPath = fullPath + "\\PowerToys.exe";
+                }
+
+                Process.Start(new ProcessStartInfo(fullPath) { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
             }
             catch
             {

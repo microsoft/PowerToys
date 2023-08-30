@@ -158,7 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_powerOcrSettings.Properties.ActivationShortcut != value)
                 {
-                    _powerOcrSettings.Properties.ActivationShortcut = value;
+                    _powerOcrSettings.Properties.ActivationShortcut = value ?? _powerOcrSettings.Properties.DefaultActivationShortcut;
                     OnPropertyChanged(nameof(ActivationShortcut));
 
                     _settingsUtils.SaveSettings(_powerOcrSettings.ToJsonString(), PowerOcrSettings.ModuleName);

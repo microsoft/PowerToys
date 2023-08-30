@@ -1,0 +1,26 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<UserControl
+    x:Class="Peek.FilePreviewer.Controls.BrowserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Peek.FilePreviewer.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d">
+
+    <Grid>
+        <controls:WebView2
+            x:Name="PreviewBrowser"
+            Loaded="PreviewWV2_Loaded"
+            NavigationStarting="PreviewBrowser_NavigationStarting"
+            NavigationCompleted="PreviewWV2_NavigationCompleted" />
+        <ContentDialog
+            x:Name="OpenUriDialog"
+            x:Uid="OpenUriDialog"
+            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
+            SecondaryButtonClick="OpenUriDialog_SecondaryButtonClick" />
+    </Grid>
+</UserControl>

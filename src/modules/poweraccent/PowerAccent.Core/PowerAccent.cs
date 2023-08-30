@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text;
 using System.Unicode;
 using System.Windows;
+using ManagedCommon;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 using PowerToys.PowerAccentKeyboardService;
@@ -41,6 +42,8 @@ public class PowerAccent : IDisposable
 
     public PowerAccent()
     {
+        Logger.InitializeLogger("\\QuickAccent\\Logs");
+
         LoadUnicodeInfoCache();
 
         _keyboardListener = new KeyboardListener();
@@ -197,6 +200,18 @@ public class PowerAccent : IDisposable
             case InputType.Space:
                 {
                     WindowsFunctions.Insert(" ");
+                    break;
+                }
+
+            case InputType.Right:
+                {
+                    SendKeys.SendWait("{RIGHT}");
+                    break;
+                }
+
+            case InputType.Left:
+                {
+                    SendKeys.SendWait("{LEFT}");
                     break;
                 }
 

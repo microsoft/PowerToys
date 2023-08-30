@@ -166,6 +166,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool cropAndLock = true;
+
+        [JsonPropertyName("CropAndLock")]
+        public bool CropAndLock
+        {
+            get => cropAndLock;
+            set
+            {
+                if (cropAndLock != value)
+                {
+                    LogTelemetryEvent(value);
+                    cropAndLock = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool awake;
 
         [JsonPropertyName("Awake")]
@@ -178,6 +195,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     awake = value;
+                }
+            }
+        }
+
+        private bool mouseWithoutBorders = true;
+
+        [JsonPropertyName("MouseWithoutBorders")]
+        public bool MouseWithoutBorders
+        {
+            get => mouseWithoutBorders;
+            set
+            {
+                if (mouseWithoutBorders != value)
+                {
+                    LogTelemetryEvent(value);
+                    mouseWithoutBorders = value;
                 }
             }
         }
@@ -358,6 +391,38 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     fileLocksmith = value;
+                }
+            }
+        }
+
+        private bool peek = true;
+
+        [JsonPropertyName("Peek")]
+        public bool Peek
+        {
+            get => peek;
+            set
+            {
+                if (peek != value)
+                {
+                    LogTelemetryEvent(value);
+                    peek = value;
+                }
+            }
+        }
+
+        private bool registryPreview = true;
+
+        [JsonPropertyName("RegistryPreview")]
+        public bool RegistryPreview
+        {
+            get => registryPreview;
+            set
+            {
+                if (registryPreview != value)
+                {
+                    LogTelemetryEvent(value);
+                    registryPreview = value;
                 }
             }
         }

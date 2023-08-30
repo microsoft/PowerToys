@@ -18,13 +18,15 @@ $versionExceptions = @(
     "Microsoft.Xaml.Interactions.dll",
     "Microsoft.Xaml.Interactivity.dll",
     "hyjiacan.py4n.dll",
-    "Microsoft.WindowsAppRuntime.Release.Net.dll") -join '|';
+    "Microsoft.WindowsAppRuntime.Release.Net.dll",
+    "Microsoft.Windows.Widgets.Projection.dll") -join '|';
 $nullVersionExceptions = @(
     "codicon.ttf",
     "e_sqlite3.dll",
     "vcamp140_app.dll",
     "marshal.dll",
     "Microsoft.UI.Composition.OSSupport.dll",
+    "Microsoft.UI.Windowing.dll",
     "Microsoft.UI.Xaml.Internal.dll",
     "Microsoft.Windows.ApplicationModel.Resources.dll",
     "Microsoft.WindowsAppRuntime.dll",
@@ -32,7 +34,8 @@ $nullVersionExceptions = @(
     "MRM.dll",
     "PushNotificationsLongRunningTask.ProxyStub.dll",
     "WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll",
-    "System.Diagnostics.EventLog.Messages.dll") -join '|';
+    "System.Diagnostics.EventLog.Messages.dll",
+    "Microsoft.Windows.Widgets.dll") -join '|';
 $totalFailure = 0;
 
 Write-Host $DirPath;

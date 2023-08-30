@@ -7,7 +7,7 @@ namespace MonitorUtils
 {
     namespace Display
     {
-        std::vector<FancyZonesDataTypes::MonitorId> GetDisplays();
+        std::pair<bool, std::vector<FancyZonesDataTypes::MonitorId>> GetDisplays();
         FancyZonesDataTypes::DeviceId SplitDisplayDeviceId(const std::wstring& str) noexcept;
         FancyZonesDataTypes::DeviceId ConvertObsoleteDeviceId(const std::wstring& str) noexcept;
     }

@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppTitle.Title" xml:space="preserve">
+    <value>Peek</value>
+    <comment>Name of application.</comment>
+  </data>
+  <data name="AppTitle_FileCounts_Text" xml:space="preserve">
+    <value>({0}/{1})</value>
+    <comment>Text for the file count in the title bar. 0: the index of the current file. 1: the total number of files selected.</comment>
+  </data>
+  <data name="LaunchAppButton_OpenWith_Text" xml:space="preserve">
+    <value>Open with</value>
+    <comment>Text for button to launch the application picker.</comment>
+  </data>
+  <data name="LaunchAppButton_OpenWith_ToolTip" xml:space="preserve">
+    <value>Open with (Enter)</value>
+    <comment>Tooltip for button to launch the application picker.</comment>
+  </data>
+  <data name="LaunchAppButton_OpenWithApp_Text" xml:space="preserve">
+    <value>Open with {0}</value>
+    <comment>Text for button to launch default application. 0: name of the default application.</comment>
+  </data>
+  <data name="LaunchAppButton_OpenWithApp_ToolTip" xml:space="preserve">
+    <value>Open with {0} (Enter)</value>
+    <comment>Tooltip for button to launch default application. 0: name of the default application.</comment>
+  </data>
+  <data name="UnsupportedFile_FileType" xml:space="preserve">
+    <value>File Type: {0}</value>
+    <comment>File Type label for the unsupported files view. {0} is the type.</comment>
+  </data>
+  <data name="UnsupportedFile_FileSize" xml:space="preserve">
+    <value>Size: {0}</value>
+    <comment>File Size label for the unsupported files view. {0} is the size.</comment>
+  </data>
+  <data name="UnsupportedFile_DateModified" xml:space="preserve">
+    <value>Date Modified: {0}</value>
+    <comment>Date Modified label for the unsupported files view. {0} is the date.</comment>
+  </data>
+  <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} byte</value>
+    <comment>Abbreviation for the size unit byte.</comment>
+  </data>
+  <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} KB</value>
+    <comment>Abbreviation for the size unit kilobyte.</comment>
+  </data>
+  <data name="ReadableString_MegaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} MB</value>
+    <comment>Abbreviation for the size unit megabyte.</comment>
+  </data>
+  <data name="ReadableString_GigaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} GB</value>
+    <comment>Abbreviation for the size unit gigabyte.</comment>
+  </data>
+  <data name="ReadableString_TeraByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} TB</value>
+    <comment>Abbreviation for the size unit terabyte.</comment>
+  </data>
+  <data name="ReadableString_PetaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} PB</value>
+    <comment>Abbreviation for the size unit petabyte.</comment>
+  </data>
+  <data name="ReadableString_ExaByteAbbreviationFormat" xml:space="preserve">
+    <value>{0} EB</value>
+    <comment>Abbreviation for the size unit exabyte.</comment>
+  </data>
+  <data name="PreviewTooltip_FileName" xml:space="preserve">
+    <value>Filename: {0}</value>
+    <comment>Filename for the tooltip of preview. {0} is the name.</comment>
+  </data>
+  <data name="PreviewTooltip_FileType" xml:space="preserve">
+    <value>Item Type: {0}</value>
+    <comment>Item Type for the tooltip of preview. {0} is the type.</comment>
+  </data>
+  <data name="PreviewTooltip_DateModified" xml:space="preserve">
+    <value>Date Modified: {0}</value>
+    <comment>Date Modified label for the tooltip of preview. {0} is the date.</comment>
+  </data>
+  <data name="PreviewTooltip_Dimensions" xml:space="preserve">
+    <value>Dimensions: {0} x {1}</value>
+    <comment>Dimensions label for the tooltip of preview. {0} is the width, {1} is the height.</comment>
+  </data>
+  <data name="PreviewTooltip_FileSize" xml:space="preserve">
+    <value>Size: {0}</value>
+    <comment>File Size label for the tooltip of preview. {0} is the size.</comment>
+  </data>
+  <data name="PreviewTooltip_Blank" xml:space="preserve">
+    <value>File preview</value>
+    <comment>Tooltip of preview when there's no file info available.</comment>
+  </data>
+  <data name="PinButton_Tooltip" xml:space="preserve">
+    <value>Pin the window to the current location</value>
+    <comment>Tooltip for button to pin the Peek window.</comment>
+  </data>
+  <data name="UnpinButton_ToolTip" xml:space="preserve">
+    <value>Unpin the window</value>
+    <comment>Tooltip for button to unpin the Peek window.</comment>
+  </data>
+  <data name="FailedFallbackReportBugHyperlinkButton.Content" xml:space="preserve">
+    <value>Report a bug</value>
+    <comment>Failed fallback preview Report bug hyperlink button content.</comment>
+  </data>
+  <data name="FailedFallbackTextBlock.Text" xml:space="preserve">
+    <value>An error occurred while previewing this file.</value>
+    <comment>Failed fallback preview text.</comment>
+  </data>
+  <data name="Archive_Directory_Count" xml:space="preserve">
+    <value>{0} directories</value>
+    <comment>{0} is the number of directories in the archive</comment>
+  </data>
+  <data name="Archive_File_Count" xml:space="preserve">
+    <value>{0} files</value>
+    <comment>{0} is the number of files in the archive</comment>
+  </data>
+  <data name="Archive_Size" xml:space="preserve">
+    <value>{0} (extracted {1})</value>
+    <comment>{0} is the size of the archive, {1} is the extracted size</comment>
+  </data>
+  <data name="ReadableString_BytesAbbreviationFormat" xml:space="preserve">
+    <value>{0} bytes</value>
+    <comment>Abbreviation for the size bytes</comment>
+  </data>
+  <data name="OpenUriDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Dialog showed when an URI is clicked. Button to close the dialog.</comment>
+  </data>
+  <data name="OpenUriDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Open</value>
+    <comment>Dialog showed when an URI is clicked. Button to open the URI.</comment>
+  </data>
+  <data name="OpenUriDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Dialog showed when an URI is clicked. Button to copy the URI.</comment>
+  </data>
+  <data name="OpenUriDialog.Title" xml:space="preserve">
+    <value>Do you want Peek to open the external application?</value>
+    <comment>Title of the dialog showed when an URI is clicked,"Peek" is the name of the utility. </comment>
+  </data>
+</root>

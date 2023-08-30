@@ -73,6 +73,9 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
             return std::nullopt;
         }
 
+        // Cleanup old updates before downloading the latest
+        updating::cleanup_updates();
+
         auto downloaded_installer = download_new_version(std::get<new_version_download_info>(*new_version_info)).get();
         if (!downloaded_installer)
         {
@@ -110,7 +113,7 @@ bool InstallNewVersionStage1(fs::path installer)
     {
         // Detect if PT was running
         const auto pt_main_window = FindWindowW(pt_tray_icon_window_class, nullptr);
-        const bool launch_powertoys = pt_main_window != nullptr;
+
         if (pt_main_window != nullptr)
         {
             SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
@@ -119,10 +122,7 @@ bool InstallNewVersionStage1(fs::path installer)
         std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2 };
         arguments += L" \"";
         arguments += installer.c_str();
-        arguments += L"\" \"";
-        arguments += get_module_folderpath();
-        arguments += L"\" ";
-        arguments += launch_powertoys ? UPDATE_STAGE2_RESTART_PT : UPDATE_STAGE2_DONT_START_PT;
+        arguments += L"\"";
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
         sei.lpFile = copy_in_temp->c_str();
@@ -137,7 +137,7 @@ bool InstallNewVersionStage1(fs::path installer)
     }
 }
 
-bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view install_path, bool launch_powertoys)
+bool InstallNewVersionStage2(std::wstring installer_path)
 {
     std::transform(begin(installer_path), end(installer_path), begin(installer_path), ::towlower);
 
@@ -181,18 +181,6 @@ bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view inst
         state.state = UpdateState::upToDate;
     });
 
-    if (launch_powertoys)
-    {
-        std::wstring new_pt_path{ install_path };
-        new_pt_path += L"\\PowerToys.exe";
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
-        sei.lpFile = new_pt_path.c_str();
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = UPDATE_REPORT_SUCCESS;
-        return ShellExecuteExW(&sei) == TRUE;
-    }
-
     return true;
 }
 
@@ -230,7 +218,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     else if (action == UPDATE_NOW_LAUNCH_STAGE2)
     {
         using namespace std::string_view_literals;
-        const bool failed = !InstallNewVersionStage2(args[2], args[3], args[4] == std::wstring_view{ UPDATE_STAGE2_RESTART_PT });
+        const bool failed = !InstallNewVersionStage2(args[2]);
         if (failed)
         {
             UpdateState::store([&](UpdateState& state) {

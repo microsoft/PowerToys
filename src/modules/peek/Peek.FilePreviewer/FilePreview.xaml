@@ -1,0 +1,75 @@
+﻿<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+<!--  Licensed under the MIT License.  -->
+
+<UserControl
+    x:Class="Peek.FilePreviewer.FilePreview"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Peek.FilePreviewer.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Peek.FilePreviewer"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:previewers="using:Peek.FilePreviewer.Previewers"
+    mc:Ignorable="d">
+
+    <Grid>
+        <ProgressRing
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsActive="{x:Bind MatchPreviewState(Previewer.State, previewers:PreviewState.Loading), Mode=OneWay}" />
+
+        <Image
+            x:Name="ImagePreview"
+            MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"
+            MaxHeight="{x:Bind ImagePreviewer.MaxImageSize.Height, Mode=OneWay}"
+            Source="{x:Bind ImagePreviewer.Preview, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}" />
+
+        <MediaPlayerElement
+            x:Name="VideoPreview"
+            AreTransportControlsEnabled="True"
+            AutoPlay="True"
+            Source="{x:Bind VideoPreviewer.Preview, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
+            <MediaPlayerElement.TransportControls>
+                <MediaTransportControls
+                    x:Name="mediaTransport"
+                    Width="auto"
+                    MaxWidth="420"
+                    IsCompact="True" />
+            </MediaPlayerElement.TransportControls>
+        </MediaPlayerElement>
+
+        <controls:BrowserControl
+            x:Name="BrowserPreview"
+            x:Load="True"
+            DOMContentLoaded="BrowserPreview_DOMContentLoaded"
+            IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"
+            NavigationCompleted="PreviewBrowser_NavigationCompleted"
+            Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(BrowserPreviewer, Previewer.State), Mode=OneWay, FallbackValue=Collapsed}" />
+
+        <controls:ArchiveControl
+            x:Name="ArchivePreview"
+            LoadingState="{x:Bind ArchivePreviewer.State, Mode=OneWay}"
+            Source="{x:Bind ArchivePreviewer.Tree, Mode=OneWay}"
+            FileCount="{x:Bind ArchivePreviewer.FileCountText, Mode=OneWay}"
+            DirectoryCount="{x:Bind ArchivePreviewer.DirectoryCountText, Mode=OneWay}"
+            Size="{x:Bind ArchivePreviewer.SizeText, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(ArchivePreviewer, Previewer.State), Mode=OneWay}" />
+        
+        <controls:UnsupportedFilePreview
+            x:Name="UnsupportedFilePreview"
+            LoadingState="{x:Bind UnsupportedFilePreviewer.State, Mode=OneWay}"
+            Source="{x:Bind UnsupportedFilePreviewer.Preview, Mode=OneWay}"
+            Visibility="{x:Bind IsUnsupportedPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
+    </Grid>
+    <UserControl.KeyboardAccelerators>
+        <KeyboardAccelerator
+            Key="C"
+            Invoked="KeyboardAccelerator_CtrlC_Invoked"
+            Modifiers="Control" />
+    </UserControl.KeyboardAccelerators>
+</UserControl>

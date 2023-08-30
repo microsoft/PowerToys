@@ -16,6 +16,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredColorPickerEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredCropAndLockEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCropAndLockEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredFancyZonesEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredFancyZonesEnabledValue());
@@ -100,6 +104,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredQuickAccentEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredRegistryPreviewEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredRegistryPreviewEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredScreenRulerEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredScreenRulerEnabledValue());
@@ -119,6 +127,14 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     GpoRuleConfigured GPOWrapper::GetConfiguredVideoConferenceMuteEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredVideoConferenceMuteEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMouseWithoutBordersEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMouseWithoutBordersEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredPeekEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPeekEnabledValue());
     }
     GpoRuleConfigured GPOWrapper::GetDisableAutomaticUpdateDownloadValue()
     {

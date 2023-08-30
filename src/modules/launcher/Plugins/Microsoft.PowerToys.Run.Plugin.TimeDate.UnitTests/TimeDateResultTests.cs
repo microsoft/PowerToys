@@ -26,11 +26,16 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             CultureInfo.CurrentUICulture = new CultureInfo("en-us");
         }
 
+        private DateTime GetDateTimeForTest()
+        {
+            return new DateTime(2022, 03, 02, 22, 30, 45);
+        }
+
         [DataTestMethod]
-        [DataRow("time", "10:30 AM")]
+        [DataRow("time", "10:30 PM")]
         [DataRow("date", "3/2/2022")]
-        [DataRow("date and time", "3/2/2022 10:30 AM")]
-        [DataRow("hour", "10")]
+        [DataRow("date and time", "3/2/2022 10:30 PM")]
+        [DataRow("hour", "22")]
         [DataRow("minute", "30")]
         [DataRow("second", "45")]
         [DataRow("millisecond", "0")]
@@ -45,13 +50,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
         [DataRow("month and year", "March 2022")]
-        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
-        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
-        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        [DataRow("ISO 8601", "2022-03-02T22:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T22:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 22:30:45 GMT")]
+        [DataRow("Date and time in filename-compatible format", "2022-03-02_22-30-45")]
         public void LocalFormatsWithShortTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, false, false, GetDateTimeForTest());
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -61,10 +67,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("time", "10:30 AM")]
+        [DataRow("time", "10:30 PM")]
         [DataRow("date", "Wednesday, March 2, 2022")]
-        [DataRow("date and time", "Wednesday, March 2, 2022 10:30 AM")]
-        [DataRow("hour", "10")]
+        [DataRow("date and time", "Wednesday, March 2, 2022 10:30 PM")]
+        [DataRow("hour", "22")]
         [DataRow("minute", "30")]
         [DataRow("second", "45")]
         [DataRow("millisecond", "0")]
@@ -79,13 +85,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
         [DataRow("month and year", "March 2022")]
-        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
-        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
-        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        [DataRow("ISO 8601", "2022-03-02T22:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T22:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 22:30:45 GMT")]
+        [DataRow("Date and time in filename-compatible format", "2022-03-02_22-30-45")]
         public void LocalFormatsWithShortTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, false, true, GetDateTimeForTest());
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -95,10 +102,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("time", "10:30:45 AM")]
+        [DataRow("time", "10:30:45 PM")]
         [DataRow("date", "3/2/2022")]
-        [DataRow("date and time", "3/2/2022 10:30:45 AM")]
-        [DataRow("hour", "10")]
+        [DataRow("date and time", "3/2/2022 10:30:45 PM")]
+        [DataRow("hour", "22")]
         [DataRow("minute", "30")]
         [DataRow("second", "45")]
         [DataRow("millisecond", "0")]
@@ -113,13 +120,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
         [DataRow("month and year", "March 2022")]
-        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
-        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
-        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        [DataRow("ISO 8601", "2022-03-02T22:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T22:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 22:30:45 GMT")]
+        [DataRow("Date and time in filename-compatible format", "2022-03-02_22-30-45")]
         public void LocalFormatsWithLongTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, true, false, GetDateTimeForTest());
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -129,10 +137,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("time", "10:30:45 AM")]
+        [DataRow("time", "10:30:45 PM")]
         [DataRow("date", "Wednesday, March 2, 2022")]
-        [DataRow("date and time", "Wednesday, March 2, 2022 10:30:45 AM")]
-        [DataRow("hour", "10")]
+        [DataRow("date and time", "Wednesday, March 2, 2022 10:30:45 PM")]
+        [DataRow("hour", "22")]
         [DataRow("minute", "30")]
         [DataRow("second", "45")]
         [DataRow("millisecond", "0")]
@@ -147,13 +155,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("month and day", "March 2")]
         [DataRow("year", "2022")]
         [DataRow("month and year", "March 2022")]
-        [DataRow("ISO 8601", "2022-03-02T10:30:45")]
-        [DataRow("ISO 8601 with time zone", "2022-03-02T10:30:45")]
-        [DataRow("RFC1123", "Wed, 02 Mar 2022 10:30:45 GMT")]
+        [DataRow("ISO 8601", "2022-03-02T22:30:45")]
+        [DataRow("ISO 8601 with time zone", "2022-03-02T22:30:45")]
+        [DataRow("RFC1123", "Wed, 02 Mar 2022 22:30:45 GMT")]
+        [DataRow("Date and time in filename-compatible format", "2022-03-02_22-30-45")]
         public void LocalFormatsWithLongTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
+            var helperResults = AvailableResultsList.GetList(true, true, true, GetDateTimeForTest());
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -168,11 +177,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
+        [DataRow("Date and time in filename-compatible format", "yyyy-MM-dd_HH-mm-ss")]
         public void UtcFormatsWithShortTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, false, new DateTime(2022, 03, 02, 10, 30, 45));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+            var helperResults = AvailableResultsList.GetList(true, false, false, GetDateTimeForTest());
+            var expectedResult = GetDateTimeForTest().ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -187,11 +197,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
+        [DataRow("Date and time in filename-compatible format", "yyyy-MM-dd_HH-mm-ss")]
         public void UtcFormatsWithShortTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, true, new DateTime(2022, 03, 02, 10, 30, 45));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+            var helperResults = AvailableResultsList.GetList(true, false, true, GetDateTimeForTest());
+            var expectedResult = GetDateTimeForTest().ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -206,11 +217,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
+        [DataRow("Date and time in filename-compatible format", "yyyy-MM-dd_HH-mm-ss")]
         public void UtcFormatsWithLongTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, false, new DateTime(2022, 03, 02, 10, 30, 45));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+            var helperResults = AvailableResultsList.GetList(true, true, false, GetDateTimeForTest());
+            var expectedResult = GetDateTimeForTest().ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -225,11 +237,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
         [DataRow("ISO 8601 UTC with time zone", "yyyy-MM-ddTHH:mm:ss'Z'")]
         [DataRow("Universal time format: YYYY-MM-DD hh:mm:ss", "u")]
+        [DataRow("Date and time in filename-compatible format", "yyyy-MM-dd_HH-mm-ss")]
         public void UtcFormatsWithLongTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, true, new DateTime(2022, 03, 02, 10, 30, 45));
-            var expectedResult = new DateTime(2022, 03, 02, 10, 30, 45).ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
+            var helperResults = AvailableResultsList.GetList(true, true, true, GetDateTimeForTest());
+            var expectedResult = GetDateTimeForTest().ToUniversalTime().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));

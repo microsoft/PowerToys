@@ -5,9 +5,10 @@
     <AssemblyTitle>PowerToys.FileLocksmith</AssemblyTitle>
     <AssemblyDescription>PowerToys File Locksmith</AssemblyDescription>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\FileLocksmith</OutputPath>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <RootNamespace>PowerToys.FileLocksmithUI</RootNamespace>
     <AssemblyName>PowerToys.FileLocksmithUI</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -19,10 +20,18 @@
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-    <ApplicationIcon>Assets/Icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets/FileLocksmith/Icon.ico</ApplicationIcon>
     <SelfContained>true</SelfContained>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.FileLocksmithUI.pri</ProjectPriFileName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="FileLocksmithXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="FileLocksmithXAML\App.xaml" />
+  </ItemGroup>
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
@@ -37,16 +46,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\Icon.ico" />
+    <Content Include="Assets\FileLocksmith\Icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Assets\AppList.scale-100.png" />
-    <None Remove="Assets\AppList.scale-125.png" />
-    <None Remove="Assets\AppList.scale-150.png" />
-    <None Remove="Assets\AppList.scale-200.png" />
-    <None Remove="Assets\AppList.scale-400.png" />
-    <None Remove="Views\MainPage.xaml" />
+    <None Remove="Assets\FileLocksmith\AppList.scale-100.png" />
+    <None Remove="Assets\FileLocksmith\AppList.scale-125.png" />
+    <None Remove="Assets\FileLocksmith\AppList.scale-150.png" />
+    <None Remove="Assets\FileLocksmith\AppList.scale-200.png" />
+    <None Remove="Assets\FileLocksmith\AppList.scale-400.png" />
   </ItemGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
@@ -84,14 +92,11 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\MainPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 </Project>

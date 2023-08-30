@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.Telemetry;
 using Microsoft.PowerToys.Telemetry;
+using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -14,6 +15,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string DefaultStlThumbnailColor = "#FFC924";
         public const int DefaultMonacoMaxFileSize = 50;
+        public const int DefaultSvgBackgroundColorMode = (int)SvgPreviewColorMode.Default;
+        public const string DefaultSvgBackgroundSolidColor = "#FFFFFF";
+        public const int DefaultSvgBackgroundCheckeredShade = (int)SvgPreviewCheckeredShade.Light;
 
         private bool enableSvgPreview = true;
 
@@ -31,6 +35,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
             }
         }
+
+        [JsonPropertyName("svg-previewer-background-color-mode")]
+        public IntProperty SvgBackgroundColorMode { get; set; }
+
+        [JsonPropertyName("svg-previewer-background-solid-color")]
+        public StringProperty SvgBackgroundSolidColor { get; set; }
+
+        [JsonPropertyName("svg-previewer-background-checkered-shade")]
+        public IntProperty SvgBackgroundCheckeredShade { get; set; }
 
         private bool enableSvgThumbnail = true;
 
@@ -210,6 +223,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public PowerPreviewProperties()
         {
+            SvgBackgroundColorMode = new IntProperty(DefaultSvgBackgroundColorMode);
+            SvgBackgroundSolidColor = new StringProperty(DefaultSvgBackgroundSolidColor);
+            SvgBackgroundCheckeredShade = new IntProperty(DefaultSvgBackgroundCheckeredShade);
             StlThumbnailColor = new StringProperty(DefaultStlThumbnailColor);
             MonacoPreviewMaxFileSize = new IntProperty(DefaultMonacoMaxFileSize);
         }

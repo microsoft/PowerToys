@@ -1,0 +1,137 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+    
+<UserControl
+    x:Class="Peek.FilePreviewer.Controls.ArchiveControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Peek.FilePreviewer.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Peek.FilePreviewer.Previewers.Archives.Models"
+    xmlns:converters="using:Peek.Common.Converters"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <DataTemplate
+            x:Key="DirectoryTemplate"
+            x:DataType="models:ArchiveItem">
+            <TreeViewItem
+                AutomationProperties.Name="{x:Bind Name}"
+                ItemsSource="{x:Bind Children}"
+                IsExpanded="{x:Bind IsExpanded}">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <Image
+                        Width="16"
+                        Height="16"
+                        Grid.Column="0"
+                        Source="{x:Bind Icon}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Text="{x:Bind Name}" />
+                </Grid>
+            </TreeViewItem>
+        </DataTemplate>
+        
+        <DataTemplate
+                x:Key="FileTemplate"
+                x:DataType="models:ArchiveItem">
+                <TreeViewItem
+                    AutomationProperties.Name="{x:Bind Name}">
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+                        <Image
+                            Width="16"
+                            Height="16"
+                            Grid.Column="0"
+                            Source="{x:Bind Icon}" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Text="{x:Bind Name}" />
+                        <TextBlock
+                            Grid.Column="2"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{Binding Size, Converter={StaticResource BytesToStringConverter}}" />
+                    </Grid>
+                </TreeViewItem>
+            </DataTemplate>
+        
+         <models:ArchiveItemTemplateSelector
+                x:Key="ArchiveItemTemplateSelector"
+                DirectoryTemplate="{StaticResource DirectoryTemplate}"
+                FileTemplate="{StaticResource FileTemplate}" />
+
+        <converters:BytesToStringConverter x:Key="BytesToStringConverter" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer
+            Grid.Row="0"
+            HorizontalScrollBarVisibility="Auto">
+            <TreeView
+                x:Name="ArchivePreview"
+                ItemsSource="{x:Bind Source, Mode=OneWay}"
+                ItemTemplateSelector="{StaticResource ArchiveItemTemplateSelector}"
+                SelectionMode="None"
+                CanReorderItems="False"
+                CanDragItems="False" />
+        </ScrollViewer>
+        <Border
+            Grid.Row="1"
+            MinWidth="300"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Margin="16"
+            HorizontalAlignment="Center">
+            <Grid
+                ColumnSpacing="16"
+                Padding="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Text="{x:Bind DirectoryCount, Mode=OneWay}"
+                    IsTextSelectionEnabled="True"
+                    VerticalAlignment="Center"
+                    TextWrapping="Wrap" />
+                <Border
+                    Grid.Column="1"
+                    BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
+                    BorderThickness="0 0 1 0" />
+                <TextBlock
+                    Grid.Column="2"
+                    Text="{x:Bind FileCount, Mode=OneWay}"
+                    IsTextSelectionEnabled="True"
+                    VerticalAlignment="Center"
+                    TextWrapping="Wrap" />
+                <Border
+                    Grid.Column="3"
+                    BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
+                    BorderThickness="0 0 1 0" />
+                <TextBlock
+                    Grid.Column="4"
+                    Text="{x:Bind Size, Mode=OneWay}"
+                    IsTextSelectionEnabled="True"
+                    VerticalAlignment="Center"
+                    TextWrapping="Wrap" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

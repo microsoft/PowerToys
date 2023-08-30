@@ -1,0 +1,149 @@
+parameters:
+  - name: versionNumber
+    type: string
+    default: "0.0.1"
+  - name: perUserArg
+    type: string
+    default: "false"
+  - name: buildSubDir
+    type: string
+    default: "MachineSetup"
+  - name: installerPrefix
+    type: string
+    default: "PowerToysSetup"
+
+steps:
+  - task: VSBuild@1
+    displayName: Build PowerToysSetupCustomActions DLL # This dll needs to be build and signed before building the MSI.
+    inputs:
+      solution: "**/installer/PowerToysSetup.sln"
+      vsVersion: 17.0
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog /t:PowerToysSetupCustomActions /p:RunBuildEvents=true /p:PerUser=${{parameters.perUserArg}}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      maximumCpuCount: true
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign PowerToysSetupCustomActions DLL
+    inputs:
+      ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
+      FolderPath: 'installer/PowerToysSetupCustomActions/$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  ## INSTALLER START
+  #### MSI BUILDING AND SIGNING
+  - task: VSBuild@1
+    displayName: Build MSI
+    inputs:
+      solution: "**/installer/PowerToysSetup.sln"
+      vsVersion: 17.0
+      msbuildArgs: /p:CIBuild=true /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog /p:RunBuildEvents=false /p:PerUser=${{parameters.perUserArg}}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the CustomActions dll
+      maximumCpuCount: true
+
+  - task: CmdLine@2
+    displayName: "Extracting MSI to verify contents"
+    inputs:
+      script: |
+        "C:\Program Files (x86)\WiX Toolset v3.14\bin\dark.exe" -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).msi
+        dir $(build.sourcesdirectory)\extractedMsi
+
+  # Check if deps.json files don't reference different dll versions.
+  - task: PowerShell@2
+    displayName: Audit deps.json in MSI extracted files
+    inputs:
+      filePath: '.pipelines/verifyDepsJsonLibraryVersions.ps1'
+      arguments: -targetDir '$(build.sourcesdirectory)\extractedMsi\File'
+      pwsh: true
+
+  # Did we sign all files
+  - task: PowerShell@1
+    displayName: Verifying entire build is signed and version set
+    inputs:
+      scriptName: .pipelines/versionAndSignCheck.ps1
+      arguments: -targetDir '$(build.sourcesdirectory)\extractedMsi\File'
+
+  - task: PowerShell@1
+    displayName: Verifying MSI Custom Actions DLL is signed
+    inputs:
+      scriptName: .pipelines/versionAndSignCheck.ps1
+      arguments: -targetDir '$(build.sourcesdirectory)\extractedMsi\Binary'
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign MSI
+    inputs:
+      ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
+      FolderPath: 'installer/PowerToysSetup/$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+  #### END MSI
+  #### BOOTSTRAP BUILDING AND SIGNING
+
+  - task: VSBuild@1
+    displayName: Build Bootstrapper
+    inputs:
+      solution: "**/installer/PowerToysSetup.sln"
+      vsVersion: 17.0
+      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog /t:PowerToysBootstrapper /p:PerUser=${{parameters.perUserArg}}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the MSI
+      maximumCpuCount: true
+
+  - task: CmdLine@2
+    displayName: "Insignia: Extract Engine from Bundle"
+    inputs:
+      script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ib installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\engine.exe'
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: "ESRP CodeSigning (Engine)"
+    inputs:
+      ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
+      FolderPath: "installer"
+      Pattern: engine.exe
+      signConfigType: inlineSignParams
+      inlineOperation: |
+        [
+            {
+                "KeyCode": "CP-230012",
+                "OperationCode": "SigntoolSign",
+                "Parameters": {
+                    "OpusName": "Microsoft",
+                    "OpusInfo": "http://www.microsoft.com",
+                    "FileDigest": "/fd \"SHA256\"",
+                    "PageHash": "/NPH",
+                    "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                },
+                "ToolName": "sign",
+                "ToolVersion": "1.0"
+            },
+            {
+                "KeyCode": "CP-230012",
+                "OperationCode": "SigntoolVerify",
+                "Parameters": {},
+                "ToolName": "sign",
+                "ToolVersion": "1.0"
+            }
+        ]
+
+  - task: CmdLine@2
+    displayName: "Insignia: Merge Engine into Bundle"
+    inputs:
+      script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ab installer\engine.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe'
+
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign Bootstrapper
+    inputs:
+      ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
+      FolderPath: 'installer/PowerToysSetup/$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}'
+      signType: batchSigning
+      batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+      ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+  #### END BOOTSTRAP
+  ## END INSTALLER

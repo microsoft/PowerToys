@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\..\..\Version.props" />
     <PropertyGroup>
-        <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+        <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+        <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+        <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
         <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
@@ -35,6 +37,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+        <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
         <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
         <ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
     </ItemGroup>

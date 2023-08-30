@@ -15,7 +15,7 @@
 
 namespace NonLocalizable
 {
-    const wchar_t ModulePath[] = L"modules\\AlwaysOnTop\\PowerToys.AlwaysOnTop.exe";
+    const wchar_t ModulePath[] = L"PowerToys.AlwaysOnTop.exe";
 }
 
 namespace

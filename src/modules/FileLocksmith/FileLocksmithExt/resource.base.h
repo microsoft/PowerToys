@@ -8,6 +8,7 @@
 #define FILE_DESCRIPTION "PowerToys File Locksmith Static Library"
 #define INTERNAL_NAME "PowerToys.FileLocksmithLib.lib"
 #define ORIGINAL_FILENAME "PowerToys.FileLocksmithLib.lib"
+#define IDI_FILELOCKSMITH 1001
 
 // Non-localizable
 //////////////////////////////

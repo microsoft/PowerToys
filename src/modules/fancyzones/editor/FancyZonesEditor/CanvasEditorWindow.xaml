@@ -43,7 +43,7 @@
                     ui:ControlHelper.CornerRadius="64"
                     Margin="0,8,0,0"
                     Style="{StaticResource AccentButtonStyle}"
-                    FontFamily="Segoe MDL2 Assets"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
                     Content="&#xE710;"
                     FontSize="24"
                     TabIndex="0"
