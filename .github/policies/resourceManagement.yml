@@ -236,7 +236,7 @@ configuration:
     - if:
       - payloadType: Issue_Comment
       - commentContains:
-          pattern: 'like to help|like helping|would like to contribute'
+          pattern: 'I would [like|love] [to help|helping|to contribute|contributing|to implement|implementing|to fix|fixing]'
           isRegex: True
       then:
       - addReply:
