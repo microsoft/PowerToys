@@ -1850,6 +1850,7 @@ subquery
 subresource
 Superbar
 sut
+svchost
 SVE
 SVGIn
 SVGIO

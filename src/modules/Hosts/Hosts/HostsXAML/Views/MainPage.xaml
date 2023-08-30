@@ -390,6 +390,7 @@
                     x:Uid="FileSaveError"
                     Margin="0,8,0,0"
                     Severity="Error"
+                    Message="{x:Bind ViewModel.ErrorMessage, Mode=TwoWay}"
                     IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
                     Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
