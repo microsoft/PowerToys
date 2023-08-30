@@ -19,7 +19,7 @@ This previewer is used for the File Explorer Dev File Previewer, as well as Powe
 
 As an example on how to add a new language definition you can look at the one for [registry files](/src/common/FilePreviewCommon/Assets/Monaco/customLanguages/reg.js).
 
-1. Add the language definition (written with [Monarch](https://microsoft.github.io/monaco-editor/monarch.html)) to the [folder conatining Monaco costum languages](/src/common/FilePreviewCommon/Assets/Monaco/customLanguages/). The file should be formatted like in the example below. (Please change `idDefinition` to the name of your language.)
+1. Add the language definition (written with [Monarch](https://microsoft.github.io/monaco-editor/monarch.html)) to the [folder containing Monaco custom languages](/src/common/FilePreviewCommon/Assets/Monaco/customLanguages/). The file should be formatted like in the example below. (Please change `idDefinition` to the name of your language.)
 
 ```javascript
 export function idDefinition() {
