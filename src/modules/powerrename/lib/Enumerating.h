@@ -32,7 +32,7 @@ std::vector<EnumOptions> parseEnumOptions(const std::wstring& replaceWith);
 struct Enumerator
 {
     inline Enumerator(EnumOptions options) :
-        start{ options.start.value_or(0) }, increment{ options.increment.value_or(1) }, padding{ options.padding.value_or(0) }, replaceStrSpan{ options.replaceStrSpan }
+        start{ options.start.value_or(0) }, increment{ options.increment.value_or(1) }, padding{ options.padding.value_or(0) % MAX_PATH }, replaceStrSpan{ options.replaceStrSpan }
     {
     }
 
@@ -43,6 +43,14 @@ struct Enumerator
         const int32_t enumeratedIndex = enumerate(index);
         wchar_t format[32];
         swprintf_s(format, sizeof(format) / sizeof(wchar_t), L"%%0%ud", padding);
+
+        const size_t requiredBufSize = swprintf(nullptr, 0, format, enumeratedIndex) + 1ull;
+        const bool fitsBuf = requiredBufSize < bufSize;
+        if (!fitsBuf)
+        {
+            swprintf_s(format, sizeof(format) / sizeof(wchar_t), L"%%%ud", 0);
+        }
+
         return swprintf_s(buf, bufSize, format, enumeratedIndex);
     }
 
