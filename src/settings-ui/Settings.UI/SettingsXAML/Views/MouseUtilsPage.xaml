@@ -100,13 +100,15 @@
                                     Minimum="1"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightInitialZoom}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
+                            <labs:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs"
+                                Description="{x:Bind Mode=OneWay, Path=ViewModel.AnimationDuration_Description}" >
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAnimationEnabledBySystem}"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseAnimationDurationMs}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>

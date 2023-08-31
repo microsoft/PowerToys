@@ -9,6 +9,7 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -25,6 +26,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private MouseJumpSettings MouseJumpSettingsConfig { get; set; }
 
         private MousePointerCrosshairsSettings MousePointerCrosshairsSettingsConfig { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
+        private const int SPI_GETCLIENTAREAANIMATION = 0x1042;
 
         public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
@@ -113,6 +117,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
+
+            int isEnabled = 0;
+            NativeMethods.SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
+            _isAnimationEnabledBySystem = isEnabled != 0;
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            _animationDuration_Description = resourceLoader.GetString(
+                _isAnimationEnabledBySystem ? "MouseUtils_FindMyMouse_AnimationDurationMs/Description" : "MouseUtils_FindMyMouse_AnimationDurationMs_DescriptionNotEnabled");
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -307,6 +318,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     FindMyMouseSettingsConfig.Properties.SpotlightRadius.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
+            }
+        }
+
+        public bool IsAnimationEnabledBySystem
+        {
+            get
+            {
+                return _isAnimationEnabledBySystem;
+            }
+
+            set
+            {
+                _isAnimationEnabledBySystem = value;
+            }
+        }
+
+        public string AnimationDuration_Description
+        {
+            get
+            {
+                return _animationDuration_Description;
+            }
+
+            set
+            {
+                _animationDuration_Description = value;
             }
         }
 
@@ -953,5 +990,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mousePointerCrosshairsIsFixedLengthEnabled;
         private int _mousePointerCrosshairsFixedLength;
         private bool _mousePointerCrosshairsAutoActivate;
+        private bool _isAnimationEnabledBySystem;
+        private string _animationDuration_Description;
     }
 }

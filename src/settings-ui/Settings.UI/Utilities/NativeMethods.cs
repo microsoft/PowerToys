@@ -22,5 +22,8 @@ namespace Microsoft.PowerToys.Settings.Utilities
 
         [System.Runtime.InteropServices.DllImport("User32.dll")]
         public static extern bool IsIconic(IntPtr handle);
+
+        [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
+        internal static extern bool SystemParametersInfo(int uiAction, int uiParam, ref int pvParam, int fWinIni);
     }
 }
