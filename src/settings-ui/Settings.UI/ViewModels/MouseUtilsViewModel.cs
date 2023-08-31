@@ -121,9 +121,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             int isEnabled = 0;
             NativeMethods.SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
             _isAnimationEnabledBySystem = isEnabled != 0;
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            _animationDuration_Description = resourceLoader.GetString(
-                _isAnimationEnabledBySystem ? "MouseUtils_FindMyMouse_AnimationDurationMs/Description" : "MouseUtils_FindMyMouse_AnimationDurationMs_DescriptionNotEnabled");
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -331,19 +328,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set
             {
                 _isAnimationEnabledBySystem = value;
-            }
-        }
-
-        public string AnimationDuration_Description
-        {
-            get
-            {
-                return _animationDuration_Description;
-            }
-
-            set
-            {
-                _animationDuration_Description = value;
             }
         }
 
@@ -991,6 +975,5 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _mousePointerCrosshairsFixedLength;
         private bool _mousePointerCrosshairsAutoActivate;
         private bool _isAnimationEnabledBySystem;
-        private string _animationDuration_Description;
     }
 }

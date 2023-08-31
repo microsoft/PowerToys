@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
@@ -12,6 +13,8 @@
     mc:Ignorable="d">
     <Page.Resources>
         <localConverters:FindMyMouseActivationShakeMouseIntToVisibilityConverter x:Key="FindMyMouseActivationShakeMouseIntToVisibilityConverter" />
+        <converters:NegativeBoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter" />
     </Page.Resources>
     <controls:SettingsPageControl
         x:Uid="MouseUtils"
@@ -64,7 +67,6 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
-
                     <labs:SettingsExpander
                         x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEB3C;}"
@@ -100,8 +102,7 @@
                                     Minimum="1"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightInitialZoom}" />
                             </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs"
-                                Description="{x:Bind Mode=OneWay, Path=ViewModel.AnimationDuration_Description}" >
+                            <labs:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
@@ -113,7 +114,12 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
-
+                    <InfoBar
+                        x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Severity="Informational"
+                        Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsAnimationEnabledBySystem, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                     <labs:SettingsExpander
                         x:Uid="MouseUtils_FindMyMouse_ExcludedApps"
                         HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xECE4;}"
