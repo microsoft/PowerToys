@@ -185,7 +185,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                         return;
                     }
 
-                    if (SvgContents.Length > 1_500_00)
+                    if (SvgContents.Length > 1_500_000)
                     {
                         string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
                         File.WriteAllText(filename, SvgContents);
