@@ -36,7 +36,7 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
         }
     }
 
-    std::map<DWORD, std::set<std::wstring>> pid_files;
+    std::map<ULONG_PTR, std::set<std::wstring>> pid_files;
 
     // Returns a normal path of the file specified by kernel_name, if it matches
     // the search criteria. Otherwise, return an empty string.
