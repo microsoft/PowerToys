@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows;
@@ -29,24 +30,27 @@ public static class WindowUtilities
             return;
         }
 
+        // get the bounds of each screens and their dpi scaling factors
         var screens = ScreenHelper.GetAllScreens().ToList();
         var dpiScales = screens.Select(
                 screen =>
                 {
                     var dpiX = new Core.UINT(0);
                     var dpiY = new Core.UINT(0);
-                    var apiResult = PInvoke.GetDpiForMonitor(
+                    var hResult = Shcore.GetDpiForMonitor(
                         hmonitor: new(screen.Handle),
                         dpiType: 0,
                         dpiX: ref dpiX,
                         dpiY: ref dpiY);
-
-                    if (apiResult != 0)
+                    if (hResult != 0)
                     {
-                        throw new InvalidOperationException();
+                        throw new Win32Exception(
+                            $"{nameof(Shcore.GetDpiForMonitor)} returned {hResult}");
                     }
 
-                    return new DpiScale(dpiX.Value / 96.0, dpiY.Value / 96.0);
+                    return new DpiScale(
+                        dpiScaleX: dpiX.Value / (double)Shcore.USER_DEFAULT_SCREEN_DPI,
+                        dpiScaleY: dpiY.Value / (double)Shcore.USER_DEFAULT_SCREEN_DPI);
                 })
             .ToList();
 
