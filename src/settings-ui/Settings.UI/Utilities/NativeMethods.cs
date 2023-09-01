@@ -25,5 +25,8 @@ namespace Microsoft.PowerToys.Settings.Utilities
 
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
         internal static extern bool SystemParametersInfo(int uiAction, int uiParam, ref int pvParam, int fWinIni);
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
+        public const int SPI_GETCLIENTAREAANIMATION = 0x1042;
     }
 }
