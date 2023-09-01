@@ -13,9 +13,11 @@ namespace
     const wchar_t JSON_KEY_LEFT_BUTTON_CLICK_COLOR[] = L"left_button_click_color";
     const wchar_t JSON_KEY_RIGHT_BUTTON_CLICK_COLOR[] = L"right_button_click_color";
     const wchar_t JSON_KEY_HIGHLIGHT_OPACITY[] = L"highlight_opacity";
+    const wchar_t JSON_KEY_ALWAYS_COLOR[] = L"always_color";
     const wchar_t JSON_KEY_HIGHLIGHT_RADIUS[] = L"highlight_radius";
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DELAY_MS[] = L"highlight_fade_delay_ms";
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DURATION_MS[] = L"highlight_fade_duration_ms";
+    const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -210,45 +212,53 @@ public:
             {
                 Logger::warn("Failed to initialize Mouse Highlighter activation shortcut");
             }
-            uint8_t opacity = MOUSE_HIGHLIGHTER_DEFAULT_OPACITY;
-            try
+            // Migration from <=1.1
+            auto version = (std::wstring)settingsObject.GetNamedString(L"version");
+            auto migration = false;
+            uint8_t opacity = 166;
+            if (version == L"1.0" || version == L"1.1")
             {
-                // Parse Opacity
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_OPACITY);
-                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-                if (value >= 0)
+                migration = true;
+                try
                 {
-                    opacity = value;
+                    // Parse Opacity
+                    auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_OPACITY);
+                    int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                    if (value >= 0)
+                    {
+                        if (version == L"1.0")
+                        {
+                            opacity = value;
+                        }
+                        else
+                        {
+                            // 1.1
+                            opacity = value * 255 / 100;
+                        }
+                    }
+                    else
+                    {
+                        throw std::runtime_error("Invalid Opacity value");
+                    }
                 }
-                else
+                catch (...)
                 {
-                    throw;
+                    Logger::warn("Failed to initialize Opacity from settings. Will use default value");
                 }
             }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize Opacity from settings. Will use default value");
-            }
-
-            // Convert % to uint8_t
-            if ((std::wstring)settingsObject.GetNamedString(L"version") != L"1.0")
-            {
-                opacity = opacity * 255 / 100;
-            }
-
             try
             {
                 // Parse left button click color
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_LEFT_BUTTON_CLICK_COLOR);
                 auto leftColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-                uint8_t r, g, b;
-                if (!checkValidRGB(leftColor, &r, &g, &b))
+                uint8_t a = opacity, r, g, b;
+                if (!migration && !checkValidARGB(leftColor, &a, &r, &g, &b) || migration && !checkValidRGB(leftColor, &r, &g, &b))
                 {
-                    Logger::error("Left click color RGB value is invalid. Will use default value");
+                    Logger::error("Left click color ARGB value is invalid. Will use default value");
                 }
                 else
                 {
-                    highlightSettings.leftButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+                    highlightSettings.leftButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
                 }
             }
             catch (...)
@@ -260,19 +270,38 @@ public:
                 // Parse right button click color
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIGHT_BUTTON_CLICK_COLOR);
                 auto rightColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-                uint8_t r, g, b;
-                if (!checkValidRGB(rightColor, &r, &g, &b))
+                uint8_t a = opacity, r, g, b;
+                if (!migration && !checkValidARGB(rightColor, &a, &r, &g, &b) || migration && !checkValidRGB(rightColor, &r, &g, &b))
                 {
-                    Logger::error("Right click color RGB value is invalid. Will use default value");
+                    Logger::error("Right click color ARGB value is invalid. Will use default value");
                 }
                 else
                 {
-                    highlightSettings.rightButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+                    highlightSettings.rightButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
                 }
             }
             catch (...)
             {
                 Logger::warn("Failed to initialize right click color from settings. Will use default value");
+            }
+            try
+            {
+                // Parse always color
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ALWAYS_COLOR);
+                auto alwaysColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                uint8_t a, r, g, b;
+                if (!migration && !checkValidARGB(alwaysColor, &a, &r, &g, &b))
+                {
+                    Logger::error("Always color ARGB value is invalid. Will use default value");
+                }
+                else
+                {
+                    highlightSettings.alwaysColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize always color from settings. Will use default value");
             }
             try
             {
@@ -285,7 +314,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Radius value");
                 }
             }
             catch (...)
@@ -303,7 +332,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Fade Delay value");
                 }
             }
             catch (...)
@@ -321,12 +350,22 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Fade Duration value");
                 }
             }
             catch (...)
             {
                 Logger::warn("Failed to initialize Fade Duration from settings. Will use default value");
+            }
+            try
+            {
+                // Parse auto activate
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_AUTO_ACTIVATE);
+                highlightSettings.autoActivate = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize auto activate from settings. Will use default value");
             }
         }
         else

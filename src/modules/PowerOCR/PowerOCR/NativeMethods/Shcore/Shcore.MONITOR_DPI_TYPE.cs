@@ -4,7 +4,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace FancyMouse.NativeMethods;
+namespace PowerOCR.NativeMethods;
 
 [SuppressMessage("SA1310", "SA1310:FieldNamesMustNotContainUnderscore", Justification = "Names match Win32 api")]
 internal static partial class Shcore

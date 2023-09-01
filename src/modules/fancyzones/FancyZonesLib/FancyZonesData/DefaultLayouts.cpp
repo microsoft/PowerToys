@@ -171,5 +171,20 @@ LayoutData DefaultLayouts::GetDefaultLayout(MonitorConfigurationType type) const
         return iter->second;
     }
 
+    switch (type)
+    {
+    case MonitorConfigurationType::Horizontal:
+        return LayoutData{};
+    case MonitorConfigurationType::Vertical:
+        return LayoutData{
+            .uuid = GUID_NULL,
+            .type = FancyZonesDataTypes::ZoneSetLayoutType::Rows,
+            .showSpacing = DefaultValues::ShowSpacing,
+            .spacing = DefaultValues::Spacing,
+            .zoneCount = DefaultValues::ZoneCount,
+            .sensitivityRadius = DefaultValues::SensitivityRadius
+        };
+    }
+
     return LayoutData{};
 }

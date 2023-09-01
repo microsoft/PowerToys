@@ -166,6 +166,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool cropAndLock = true;
+
+        [JsonPropertyName("CropAndLock")]
+        public bool CropAndLock
+        {
+            get => cropAndLock;
+            set
+            {
+                if (cropAndLock != value)
+                {
+                    LogTelemetryEvent(value);
+                    cropAndLock = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool awake;
 
         [JsonPropertyName("Awake")]

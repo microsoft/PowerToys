@@ -192,7 +192,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::runtime_error("Invalid Activation Method value");
             }
                 
         }
@@ -258,7 +258,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::runtime_error("Invalid Overlay Opacity value");
             }
         }
         catch (...)
@@ -276,7 +276,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::runtime_error("Invalid Spotlight Radius value");
             }
         }
         catch (...)
@@ -294,7 +294,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::runtime_error("Invalid Animation Duration value");
             }
         }
         catch (...)
@@ -312,7 +312,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::runtime_error("Invalid Spotlight Initial Zoom value");
             }
         }
         catch (...)
@@ -355,7 +355,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else
             {
-                throw;
+                throw std::runtime_error("Invalid Shaking Minimum Distance value");
             }
         }
         catch (...)

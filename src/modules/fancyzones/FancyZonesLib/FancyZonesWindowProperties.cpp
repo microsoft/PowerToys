@@ -15,7 +15,7 @@ namespace ZonedWindowProperties
     const wchar_t PropertySortKeyWithinZone[] = L"FancyZones_TabSortKeyWithinZone";
 }
 
-void FancyZonesWindowProperties::StampZoneIndexProperty(HWND window, const ZoneIndexSet& zoneSet)
+bool FancyZonesWindowProperties::StampZoneIndexProperty(HWND window, const ZoneIndexSet& zoneSet)
 {
     RemoveZoneIndexProperty(window);
     ZoneIndexSetBitmask bitmask = ZoneIndexSetBitmask::FromIndexSet(zoneSet);
@@ -33,6 +33,7 @@ void FancyZonesWindowProperties::StampZoneIndexProperty(HWND window, const ZoneI
         if (!SetProp(window, ZonedWindowProperties::PropertyMultipleZone64ID, rawData))
         {
             Logger::error(L"Failed to stamp window {}", get_last_error_or_default(GetLastError()));
+            return false;
         }
     }
 
@@ -49,8 +50,11 @@ void FancyZonesWindowProperties::StampZoneIndexProperty(HWND window, const ZoneI
         if (!SetProp(window, ZonedWindowProperties::PropertyMultipleZone128ID, rawData))
         {
             Logger::error(L"Failed to stamp window {}", get_last_error_or_default(GetLastError()));
+            return false;
         }
     }
+
+    return true;
 }
 
 void FancyZonesWindowProperties::RemoveZoneIndexProperty(HWND window)

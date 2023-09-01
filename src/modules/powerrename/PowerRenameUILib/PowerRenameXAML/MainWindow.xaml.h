@@ -74,6 +74,9 @@ namespace winrt::PowerRenameUI::implementation
 
         MainWindow();
 
+        void OnSizeChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::WindowSizeChangedEventArgs const&);
+        void OnClosed(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::WindowEventArgs const&);
+
         void InvalidateItemListViewState();
 
         Windows::Foundation::Collections::IObservableVector<hstring> SearchMRU() { return m_searchMRUList; }
@@ -81,6 +84,8 @@ namespace winrt::PowerRenameUI::implementation
         PowerRenameUI::ExplorerItemsSource ExplorerItems() { return m_explorerItems; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> SearchRegExShortcuts() { return m_searchRegExShortcuts; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> DateTimeShortcuts() { return m_dateTimeShortcuts; }
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> CounterShortcuts() { return m_CounterShortcuts; }
+
         hstring OriginalCount();
         void OriginalCount(hstring value);
         hstring RenamedCount();
@@ -93,6 +98,7 @@ namespace winrt::PowerRenameUI::implementation
         void ShowRenamed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
     private:
+        winrt::Windows::Foundation::Size m_lastWindowSize;
         bool m_allSelected;
 
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_searchMRUList;
@@ -100,6 +106,7 @@ namespace winrt::PowerRenameUI::implementation
         PowerRenameUI::ExplorerItemsSource m_explorerItems;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_searchRegExShortcuts;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_dateTimeShortcuts;
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_CounterShortcuts;
 
         // Used by PowerRenameManagerEvents
         HRESULT OnRename(_In_ IPowerRenameItem* renameItem);

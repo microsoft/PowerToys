@@ -10,6 +10,7 @@ constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE = 1;
 constexpr bool INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE = false;
 constexpr bool INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED = false;
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH = 1;
+constexpr bool INCLUSIVE_MOUSE_DEFAULT_AUTO_ACTIVATE = false;
 
 struct InclusiveCrosshairsSettings
 {
@@ -22,6 +23,7 @@ struct InclusiveCrosshairsSettings
     bool crosshairsAutoHide = INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE;
     bool crosshairsIsFixedLengthEnabled = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED;
     int crosshairsFixedLength = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH;
+    bool autoActivate = INCLUSIVE_MOUSE_DEFAULT_AUTO_ACTIVATE;
 };
 
 int InclusiveCrosshairsMain(HINSTANCE hinst, InclusiveCrosshairsSettings& settings);

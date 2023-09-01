@@ -203,6 +203,18 @@ public class PowerAccent : IDisposable
                     break;
                 }
 
+            case InputType.Right:
+                {
+                    SendKeys.SendWait("{RIGHT}");
+                    break;
+                }
+
+            case InputType.Left:
+                {
+                    SendKeys.SendWait("{LEFT}");
+                    break;
+                }
+
             case InputType.Char:
                 {
                     if (_selectedIndex != -1)

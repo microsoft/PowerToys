@@ -137,6 +137,8 @@ IFACEMETHODIMP GcodeThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS
             }
             file.close();
 
+            m_pStream->Release();
+            m_pStream = NULL;
 
             try
             {

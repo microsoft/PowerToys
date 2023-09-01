@@ -33,6 +33,9 @@
                 "PowerToys.ColorPickerUI.dll",
                 "PowerToys.ColorPickerUI.exe",
 
+                "PowerToys.CropAndLockModuleInterface.dll",
+                "PowerToys.CropAndLock.exe",
+
                 "PowerToys.PowerOCRModuleInterface.dll",
                 "PowerToys.PowerOCR.dll",
                 "PowerToys.PowerOCR.exe",
@@ -281,7 +284,8 @@
                 "WinUI3Apps\\SharpCompress.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
-                "UnitsNet.dll"
+                "UnitsNet.dll",
+                "Wpf.Ui.dll"
             ],
             "SigningInfo": {
                 "Operations": [

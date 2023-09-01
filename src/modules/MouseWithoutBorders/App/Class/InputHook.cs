@@ -11,11 +11,13 @@
 //     2023- Included in PowerToys.
 // </history>
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.InputHook.#MouseHookProc(System.Int32,System.Int32,System.IntPtr)", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Scope = "member", Target = "MouseWithoutBorders.InputHook.#ProcessKeyEx(System.Int32,System.Int32)", Justification = "Dotnet port with style preservation")]
@@ -364,17 +366,8 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        // Returns false if we do not want to redirect the keystrokes to other machine(s).
-        private int ctrlTouchesDnIndex;
-
-        private int ctrlTouchesUpIndex = 1;
-        private const int CONTROL_TOUCH = 4;
-        private readonly long[] ctrlTouches = new long[CONTROL_TOUCH];
-
         private bool ProcessKeyEx(int vkCode, int flags, KEYBDDATA hookCallbackKeybdData)
         {
-            bool allTouched;
-
             if ((flags & (int)Common.LLKHF.UP) == (int)Common.LLKHF.UP)
             {
                 EasyMouseKeyDown = false;
@@ -389,13 +382,6 @@ namespace MouseWithoutBorders.Class
                     case VK.LCONTROL:
                     case VK.RCONTROL:
                         CtrlDown = false;
-
-                        if (Setting.Values.HotKeySwitch2AllPC == 1)
-                        {
-                            ctrlTouches[ctrlTouchesUpIndex] = Common.GetTick();
-                            ctrlTouchesUpIndex = ((ctrlTouchesUpIndex % CONTROL_TOUCH) + 2) % CONTROL_TOUCH;
-                        }
-
                         break;
 
                     case VK.LMENU:
@@ -424,32 +410,7 @@ namespace MouseWithoutBorders.Class
 
                     case VK.LCONTROL:
                     case VK.RCONTROL:
-                        Common.LogDebug("VK.RCONTROL");
                         CtrlDown = true;
-
-                        if (Setting.Values.HotKeySwitch2AllPC == 1)
-                        {
-                            ctrlTouches[ctrlTouchesDnIndex] = Common.GetTick();
-                            ctrlTouchesDnIndex = (ctrlTouchesDnIndex + 2) % CONTROL_TOUCH;
-                        }
-
-                        allTouched = true;
-
-                        for (int i = 0; i < CONTROL_TOUCH; i++)
-                        {
-                            if (ctrlTouches[i] == 0 || Common.GetTick() - ctrlTouches[i] > 400)
-                            {
-                                allTouched = false;
-                                break;
-                            }
-                        }
-
-                        if (allTouched && Common.GetTick() - Common.JustGotAKey > 1000)
-                        {
-                            ResetLastSwitchKeys();
-                            Common.SwitchToMultipleMode(Common.DesMachineID != ID.ALL, true);
-                        }
-
                         break;
 
                     case VK.LMENU:
@@ -484,24 +445,6 @@ namespace MouseWithoutBorders.Class
 
                         break;
 
-                    case (VK)'L':
-                        if (winDown)
-                        {
-                            winDown = false;
-
-                            if (Common.DesMachineID != ID.ALL)
-                            {
-                                KeyboardEvent(hookCallbackKeybdData);
-                                Common.SwitchToMachine(Common.MachineName.Trim());
-                            }
-                        }
-                        else
-                        {
-                            return ProcessHotKeys(vkCode, hookCallbackKeybdData);
-                        }
-
-                        break;
-
                     case VK.ESCAPE:
                         if (Common.IsTopMostMessageNotNull())
                         {
@@ -529,18 +472,113 @@ namespace MouseWithoutBorders.Class
 
         private static long lastHotKeyLockMachine;
 
+        private void ResetModifiersState(HotkeySettings matchingHotkey)
+        {
+            CtrlDown = CtrlDown && matchingHotkey.Ctrl;
+            altDown = altDown && matchingHotkey.Alt;
+            shiftDown = shiftDown && matchingHotkey.Shift;
+            winDown = winDown && matchingHotkey.Win;
+        }
+
+        private List<short> GetVkCodesList(HotkeySettings hotkey)
+        {
+            var list = new List<short>();
+            if (hotkey.Alt)
+            {
+                list.Add((short)VK.MENU);
+            }
+
+            if (hotkey.Shift)
+            {
+                list.Add((short)VK.SHIFT);
+            }
+
+            if (hotkey.Win)
+            {
+                list.Add((short)VK.LWIN);
+            }
+
+            if (hotkey.Ctrl)
+            {
+                list.Add((short)VK.CONTROL);
+            }
+
+            if (hotkey.Code != 0)
+            {
+                list.Add((short)hotkey.Code);
+            }
+
+            return list;
+        }
+
         private bool ProcessHotKeys(int vkCode, KEYBDDATA hookCallbackKeybdData)
         {
-            if (vkCode == Setting.Values.HotKeyCaptureScreen && CtrlDown && shiftDown && !altDown &&
-                (Common.DesMachineID == Common.MachineID || Common.DesMachineID == ID.ALL))
+            if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeySwitch2AllPC))
             {
-                CtrlDown = shiftDown = false;
+                ResetLastSwitchKeys();
+                Common.SwitchToMultipleMode(Common.DesMachineID != ID.ALL, true);
+            }
 
+            if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeyToggleEasyMouse))
+            {
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                 {
-                    Common.PrepareScreenCapture();
+                    EasyMouseOption easyMouseOption = (EasyMouseOption)Setting.Values.EasyMouse;
+
+                    if (easyMouseOption is EasyMouseOption.Disable or EasyMouseOption.Enable)
+                    {
+                        Setting.Values.EasyMouse = (int)(easyMouseOption == EasyMouseOption.Disable ? EasyMouseOption.Enable : EasyMouseOption.Disable);
+
+                        Common.ShowToolTip($"Easy Mouse has been toggled to [{(EasyMouseOption)Setting.Values.EasyMouse}] by a hotkey. You can change the hotkey in the Settings form.", 5000);
+                        return false;
+                    }
+                }
+            }
+            else if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeyLockMachine))
+            {
+                if (!Common.RunOnLogonDesktop
+                    && !Common.RunOnScrSaverDesktop)
+                {
+                    if (Common.GetTick() - lastHotKeyLockMachine < 500)
+                    {
+                        Common.SwitchToMultipleMode(true, true);
+
+                        var codes = GetVkCodesList(Setting.Values.HotKeyLockMachine);
+
+                        foreach (var code in codes)
+                        {
+                            hookCallbackKeybdData.wVk = code;
+                            KeyboardEvent(hookCallbackKeybdData);
+                        }
+
+                        hookCallbackKeybdData.dwFlags |= (int)Common.LLKHF.UP;
+
+                        foreach (var code in codes)
+                        {
+                            hookCallbackKeybdData.wVk = code;
+                            KeyboardEvent(hookCallbackKeybdData);
+                        }
+
+                        Common.SwitchToMultipleMode(false, true);
+
+                        _ = NativeMethods.LockWorkStation();
+                    }
+                    else
+                    {
+                        KeyboardEvent(hookCallbackKeybdData);
+                    }
+
+                    lastHotKeyLockMachine = Common.GetTick();
+
                     return false;
                 }
+            }
+            else if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeyReconnect))
+            {
+                Common.ShowToolTip("Reconnecting...", 2000);
+                Common.LastReconnectByHotKeyTime = Common.GetTick();
+                Common.PleaseReopenSocket = Common.REOPEN_WHEN_HOTKEY;
+                return false;
             }
 
             if (CtrlDown && altDown)
@@ -576,72 +614,6 @@ namespace MouseWithoutBorders.Class
                     if (Switch2(vkCode - Setting.Values.HotKeySwitchMachine))
                     {
                         return false;
-                    }
-                }
-                else if (vkCode == Setting.Values.HotKeyLockMachine)
-                {
-                    if (!Common.RunOnLogonDesktop
-                        && !Common.RunOnScrSaverDesktop)
-                    {
-                        if (Common.GetTick() - lastHotKeyLockMachine < 500)
-                        {
-                            Common.SwitchToMultipleMode(true, true);
-
-                            hookCallbackKeybdData.wVk = (short)VK.LCONTROL;
-                            KeyboardEvent(hookCallbackKeybdData);
-                            hookCallbackKeybdData.wVk = (short)VK.LMENU;
-                            KeyboardEvent(hookCallbackKeybdData);
-                            hookCallbackKeybdData.wVk = vkCode;
-                            KeyboardEvent(hookCallbackKeybdData);
-
-                            hookCallbackKeybdData.dwFlags |= (int)Common.LLKHF.UP;
-
-                            hookCallbackKeybdData.wVk = (short)VK.LCONTROL;
-                            KeyboardEvent(hookCallbackKeybdData);
-                            hookCallbackKeybdData.wVk = (short)VK.LMENU;
-                            KeyboardEvent(hookCallbackKeybdData);
-                            hookCallbackKeybdData.wVk = vkCode;
-                            KeyboardEvent(hookCallbackKeybdData);
-
-                            Common.SwitchToMultipleMode(false, true);
-
-                            _ = NativeMethods.LockWorkStation();
-                        }
-                        else
-                        {
-                            KeyboardEvent(hookCallbackKeybdData);
-                        }
-
-                        lastHotKeyLockMachine = Common.GetTick();
-
-                        return false;
-                    }
-                }
-                else if (vkCode == Setting.Values.HotKeyReconnect)
-                {
-                    Common.ShowToolTip("Reconnecting...", 2000);
-                    Common.LastReconnectByHotKeyTime = Common.GetTick();
-                    Common.PleaseReopenSocket = Common.REOPEN_WHEN_HOTKEY;
-                    return false;
-                }
-                else if (vkCode == Setting.Values.HotKeySwitch2AllPC)
-                {
-                    Common.SwitchToMultipleMode(Common.DesMachineID != ID.ALL, true);
-                    return false;
-                }
-                else if (vkCode == Setting.Values.HotKeyToggleEasyMouse)
-                {
-                    if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
-                    {
-                        EasyMouseOption easyMouseOption = (EasyMouseOption)Setting.Values.EasyMouse;
-
-                        if (easyMouseOption is EasyMouseOption.Disable or EasyMouseOption.Enable)
-                        {
-                            Setting.Values.EasyMouse = (int)(easyMouseOption == EasyMouseOption.Disable ? EasyMouseOption.Enable : EasyMouseOption.Disable);
-
-                            Common.ShowToolTip($"Easy Mouse has been toggled to [{(EasyMouseOption)Setting.Values.EasyMouse}] by a hotkey. You can change the hotkey in the Settings form.", 5000);
-                            return false;
-                        }
                     }
                 }
             }
@@ -685,11 +657,6 @@ namespace MouseWithoutBorders.Class
 
         internal void ResetLastSwitchKeys()
         {
-            for (int i = 0; i < CONTROL_TOUCH; i++)
-            {
-                ctrlTouches[i] = 0;
-            }
-
             CtrlDown = winDown = altDown = false;
         }
     }

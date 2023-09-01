@@ -254,131 +254,40 @@
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Shift" />
                         </ComboBox>
                     </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToggleEasyMouseShortcutIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut_Disabled" />
-                            <ComboBoxItem>A</ComboBoxItem>
-                            <ComboBoxItem>B</ComboBoxItem>
-                            <ComboBoxItem>C</ComboBoxItem>
-                            <ComboBoxItem>D</ComboBoxItem>
-                            <ComboBoxItem>E</ComboBoxItem>
-                            <ComboBoxItem>F</ComboBoxItem>
-                            <ComboBoxItem>G</ComboBoxItem>
-                            <ComboBoxItem>H</ComboBoxItem>
-                            <ComboBoxItem>I</ComboBoxItem>
-                            <ComboBoxItem>J</ComboBoxItem>
-                            <ComboBoxItem>K</ComboBoxItem>
-                            <ComboBoxItem>L</ComboBoxItem>
-                            <ComboBoxItem>M</ComboBoxItem>
-                            <ComboBoxItem>N</ComboBoxItem>
-                            <ComboBoxItem>O</ComboBoxItem>
-                            <ComboBoxItem>P</ComboBoxItem>
-                            <ComboBoxItem>Q</ComboBoxItem>
-                            <ComboBoxItem>R</ComboBoxItem>
-                            <ComboBoxItem>S</ComboBoxItem>
-                            <ComboBoxItem>T</ComboBoxItem>
-                            <ComboBoxItem>U</ComboBoxItem>
-                            <ComboBoxItem>V</ComboBoxItem>
-                            <ComboBoxItem>W</ComboBoxItem>
-                            <ComboBoxItem>X</ComboBoxItem>
-                            <ComboBoxItem>Y</ComboBoxItem>
-                            <ComboBoxItem>Z</ComboBoxItem>
-                        </ComboBox>
+                    
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut"
+                            HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                                AllowDisable="True"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                HotkeySettings="{x:Bind Path=ViewModel.ToggleEasyMouseShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="MouseWithoutBorders_LockMachinesShortcut">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.LockMachinesShortcutIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="MouseWithoutBorders_LockMachinesShortcut_Disabled" />
-                            <ComboBoxItem>A</ComboBoxItem>
-                            <ComboBoxItem>B</ComboBoxItem>
-                            <ComboBoxItem>C</ComboBoxItem>
-                            <ComboBoxItem>D</ComboBoxItem>
-                            <ComboBoxItem>E</ComboBoxItem>
-                            <ComboBoxItem>F</ComboBoxItem>
-                            <ComboBoxItem>G</ComboBoxItem>
-                            <ComboBoxItem>H</ComboBoxItem>
-                            <ComboBoxItem>I</ComboBoxItem>
-                            <ComboBoxItem>J</ComboBoxItem>
-                            <ComboBoxItem>K</ComboBoxItem>
-                            <ComboBoxItem>L</ComboBoxItem>
-                            <ComboBoxItem>M</ComboBoxItem>
-                            <ComboBoxItem>N</ComboBoxItem>
-                            <ComboBoxItem>O</ComboBoxItem>
-                            <ComboBoxItem>P</ComboBoxItem>
-                            <ComboBoxItem>Q</ComboBoxItem>
-                            <ComboBoxItem>R</ComboBoxItem>
-                            <ComboBoxItem>S</ComboBoxItem>
-                            <ComboBoxItem>T</ComboBoxItem>
-                            <ComboBoxItem>U</ComboBoxItem>
-                            <ComboBoxItem>V</ComboBoxItem>
-                            <ComboBoxItem>W</ComboBoxItem>
-                            <ComboBoxItem>X</ComboBoxItem>
-                            <ComboBoxItem>Y</ComboBoxItem>
-                            <ComboBoxItem>Z</ComboBoxItem>
-                        </ComboBox>
+                    
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_LockMachinesShortcut"
+                            HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                                AllowDisable="True"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                HotkeySettings="{x:Bind Path=ViewModel.LockMachinesShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="MouseWithoutBorders_ReconnectShortcut">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ReconnectShortcutIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="MouseWithoutBorders_ReconnectShortcut_Disabled" />
-                            <ComboBoxItem>A</ComboBoxItem>
-                            <ComboBoxItem>B</ComboBoxItem>
-                            <ComboBoxItem>C</ComboBoxItem>
-                            <ComboBoxItem>D</ComboBoxItem>
-                            <ComboBoxItem>E</ComboBoxItem>
-                            <ComboBoxItem>F</ComboBoxItem>
-                            <ComboBoxItem>G</ComboBoxItem>
-                            <ComboBoxItem>H</ComboBoxItem>
-                            <ComboBoxItem>I</ComboBoxItem>
-                            <ComboBoxItem>J</ComboBoxItem>
-                            <ComboBoxItem>K</ComboBoxItem>
-                            <ComboBoxItem>L</ComboBoxItem>
-                            <ComboBoxItem>M</ComboBoxItem>
-                            <ComboBoxItem>N</ComboBoxItem>
-                            <ComboBoxItem>O</ComboBoxItem>
-                            <ComboBoxItem>P</ComboBoxItem>
-                            <ComboBoxItem>Q</ComboBoxItem>
-                            <ComboBoxItem>R</ComboBoxItem>
-                            <ComboBoxItem>S</ComboBoxItem>
-                            <ComboBoxItem>T</ComboBoxItem>
-                            <ComboBoxItem>U</ComboBoxItem>
-                            <ComboBoxItem>V</ComboBoxItem>
-                            <ComboBoxItem>W</ComboBoxItem>
-                            <ComboBoxItem>X</ComboBoxItem>
-                            <ComboBoxItem>Y</ComboBoxItem>
-                            <ComboBoxItem>Z</ComboBoxItem>
-                        </ComboBox>
+
+                    <labs:SettingsCard x:Uid="MouseWithoutBorders_Switch2AllPcShortcut"
+                            HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                                AllowDisable="True"                            
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                HotkeySettings="{x:Bind Path=ViewModel.HotKeySwitch2AllPC, Mode=TwoWay}" />
+                    </labs:SettingsCard>                  
+                    
+                    <labs:SettingsCard
+                            x:Uid="MouseWithoutBorders_ReconnectShortcut"
+                            HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                                AllowDisable="True"                            
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                HotkeySettings="{x:Bind Path=ViewModel.ReconnectShortcut, Mode=TwoWay}" />
                     </labs:SettingsCard>
-                    <labs:SettingsCard x:Uid="MouseWithoutBorders_Switch2AllPcShortcut">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Switch2AllPcShortcutIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="MouseWithoutBorders_Switch2AllPcShortcut_Disabled" />
-                            <ComboBoxItem x:Uid="MouseWithoutBorders_Switch2AllPcShortcut_Ctrl3" />
-                            <ComboBoxItem>A</ComboBoxItem>
-                            <ComboBoxItem>B</ComboBoxItem>
-                            <ComboBoxItem>C</ComboBoxItem>
-                            <ComboBoxItem>D</ComboBoxItem>
-                            <ComboBoxItem>E</ComboBoxItem>
-                            <ComboBoxItem>F</ComboBoxItem>
-                            <ComboBoxItem>G</ComboBoxItem>
-                            <ComboBoxItem>H</ComboBoxItem>
-                            <ComboBoxItem>I</ComboBoxItem>
-                            <ComboBoxItem>J</ComboBoxItem>
-                            <ComboBoxItem>K</ComboBoxItem>
-                            <ComboBoxItem>L</ComboBoxItem>
-                            <ComboBoxItem>M</ComboBoxItem>
-                            <ComboBoxItem>N</ComboBoxItem>
-                            <ComboBoxItem>O</ComboBoxItem>
-                            <ComboBoxItem>P</ComboBoxItem>
-                            <ComboBoxItem>Q</ComboBoxItem>
-                            <ComboBoxItem>R</ComboBoxItem>
-                            <ComboBoxItem>S</ComboBoxItem>
-                            <ComboBoxItem>T</ComboBoxItem>
-                            <ComboBoxItem>U</ComboBoxItem>
-                            <ComboBoxItem>V</ComboBoxItem>
-                            <ComboBoxItem>W</ComboBoxItem>
-                            <ComboBoxItem>X</ComboBoxItem>
-                            <ComboBoxItem>Y</ComboBoxItem>
-                            <ComboBoxItem>Z</ComboBoxItem>
-                        </ComboBox>
-                    </labs:SettingsCard>
+                    
                     <labs:SettingsCard x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE92E;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedSwitchBetweenMachineShortcutOptionsIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in MouseWithoutBordersViewModel.cs  -->

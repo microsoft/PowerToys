@@ -18,12 +18,13 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 |              | Current utilities: |              |
 |--------------|--------------------|--------------|
 | [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) |
-| [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) |
-| [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) |
-| [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) | [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) | [Peek](https://aka.ms/PowerToysOverview_Peek) |
-| [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) |
-| [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
-| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
+| [Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) |
+| [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) |
+| [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) | [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) |
+| [Peek](https://aka.ms/PowerToysOverview_Peek) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
+| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) |
+| [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) |
+| [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
 
 ## Installing and running Microsoft PowerToys
 
@@ -37,18 +38,20 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=issue+project%3Amicrosoft%2FPowerToys%2F44
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.71.0/PowerToysUserSetup-0.71.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.71.0/PowerToysUserSetup-0.71.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.71.0/PowerToysSetup-0.71.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.71.0/PowerToysSetup-0.71.0-arm64.exe
+<!-- items that need to be updated release to release -->
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F47
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F46
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.73.0/PowerToysUserSetup-0.73.0-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.73.0/PowerToysUserSetup-0.73.0-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.73.0/PowerToysSetup-0.73.0-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.73.0/PowerToysSetup-0.73.0-arm64.exe
 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.71.0-x64.exe][ptUserX64] | 4C6CCB3055E3838DA50FF529A670BAAD129570F4BFABF497B5D92259D3052794 | 
-| Per user - ARM64     | [PowerToysUserSetup-0.71.0-arm64.exe][ptUserArm64] | 48633758DFBB99DE34BA2D3E3F294A60EF7E01015296D29A884251068B6FE3F6 | 
-| Machine wide - x64   | [PowerToysSetup-0.71.0-x64.exe][ptMachineX64] | 44F092DFAC002536A27ABC701750D8C78FF30F8879768990BC4A0AFD0D5119F1 | 
-| Machine wide - ARM64 | [PowerToysSetup-0.71.0-arm64.exe][ptMachineArm64] | 283A67539EDA5D3AD88735C7B0150852ECB57D569BAC80396F942C60D6ACB33F |
+| Per user - x64       | [PowerToysUserSetup-0.73.0-x64.exe][ptUserX64] | BA55D245BDD734FD6F19803DD706A3AB8E0ABC491591195534997CF2122D3B7E |
+| Per user - ARM64     | [PowerToysUserSetup-0.73.0-arm64.exe][ptUserArm64] | FBFA40EA5FFA05236A7CCDD05E5142EE0C93D7485B965784196ED9B086BFEBF4 |
+| Machine wide - x64   | [PowerToysSetup-0.73.0-x64.exe][ptMachineX64] | 7FDA06292C7C2E6DA5AEF88D8E9D3DE89D331E9E356A232289F9B37CE4503894 |
+| Machine wide - ARM64 | [PowerToysSetup-0.73.0-arm64.exe][ptMachineArm64] | 4260AA30A1F52F194EE07E9E7ECD9E9F4CF35289267F213BC933F7A5191AC17C |
 
 This is our preferred method.
 
@@ -74,6 +77,10 @@ winget install --scope machine Microsoft.PowerToys -s winget
 
 There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
 
+## Third-Party Run Plugins
+
+Collection of [third-party plugins](./doc/thirdPartyRunPlugins.md) created by the community that aren't distributed with PowerToys.
+
 ## Contributing
 
 This project welcomes contributions of all types. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
@@ -90,155 +97,138 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.71 - June 2023 Update
+### 0.73 - August 2023 Update
 
-In this release, we focused on stability and improvements.
+In this release, we focused on releasing new features, stability and improvements.
 
 **Highlights**
- - Support previewing archive files with Peek. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed PT Run crash caused by missing App.Dark.png file.
- - Added setting to set Registry Preview as default app for opening .reg files. Thanks [@randyrants](https://github.com/randyrants)!
- - Modernized Settings app title bar and styling (Mica background material) to be inline with Windows 11 guidelines. Thanks [@niels9001](https://github.com/niels9001)!
+
+ - Keyboard manager now supports Numpad. Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
+ - New utility: Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.
+ - FancyZones code improvements and refactor.
+ - Modernized ImageResizer UX.
+ - PowerRename advanced counter functionality.
 
 ### General
 
- - Fixed infinite loop issue caused by global event not being reset. (This was a hotfix for 0.70)
- - Bump CommunityToolkit.Mvvm package version to 8.2.0. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed issue causing runner lag by moving check for updates and running bug report logic to the background thread.
- - Bump WinUIEx package version to 2.2. Thanks [@niels9001](https://github.com/niels9001)!
- - Fixed issue causing Settings app crash when launching a second app process. Thanks [@BLM16](https://github.com/BLM16)!
- - Fixed network errors when checking for updates on virtual machines.
- - Bump Microsoft.CodeAnalysis.NetAnalyzers package version to 7.0.3. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Bump Microsoft.Windows.Compatibility package version to 7.0.3.
- - Bump System.Management package version to 7.0.2.
- - Fixed issue causing PowerToys to start with Below Normal priority on startup.
+ - Added missing CoUninitialize call in elevation logic. Thanks [@sredna](https://github.com/sredna)!
+ - New utility: Crop And Lock. Thanks [@robmikh](https://github.com/robmikh)! and [@kevinguo305](https://github.com/kevinguo305)!
+ - Added new /helped fabric bot command to GitHub repo. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Fixed crashes caused by invalid settings. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
-### ColorPicker
+### Always On Top
 
- - Store color history in a separated file.
+ - Added border transparency.
 
 ### FancyZones
 
- - Added feature to use middle click to toggle multiple zones spanning. Thanks [@BasitAli](https://github.com/BasitAli)!
- - Fixed issue causing zoning not to happen until the cursor is moved.
- - Improved monitor identification logic to mitigate issues causing layout reset.
- - Fixed issue where default layout was applied instead of blank layout.
+ - Fixed issue causing canvas zones being drawn only when dragging in zone area.
+ - Fixed user-defined default layout highlighting issue.
+ - Refactored and improved code quality.
+ - Fixed issue causing wrong layout to be applied when duplicating non-selected layout.
 
 ### File Locksmith
 
- - Added setting to show only in extended context menu.
-
+ - Icon update. Thanks [@jmaraujouy](https://github.com/jmaraujouy)!
+ 
 ### File Explorer add-ons
 
- - Developer files preview support for .vsconfig, .sln, .vcproj, .vbproj, .fsproj and .vcxproj files. (This was a hotfix for 0.70)
- - Developer files preview support .vbs, .inf, .gitconfig, .gitattributes and .editorconfig files. (This was a hotfix for 0.70) Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Changed order of developer files preview` context menu items. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Developer files preview support for .gitignore files. (This was a hotfix for 0.70) Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Fixed issue causing preview pane flickering on file selection and resizing. Thanks [@tanchekwei](https://github.com/tanchekwei)!
-
-### Hosts
-
- - Improved UX by adding keyboard shortcuts. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Added setting to select the file encoding. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed parsing of commented lines with an address and host in the middle of the comment. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed issue on adding first entry and improve empty hosts list UI. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Added logic to handle more than 9 hosts per entry (Windows limitation) by splitting them into separate entries. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-
-### ImageResizer
-
- - Added Enter key event handler when setting width/height of the new custom size.
+ - Fixed issue causing thumbnail previewers to lock files.
+ - Open URIs from developer files in default browser. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Installer
 
- - Fixed PowerToys Plugin installation. (This was a hotfix for 0.70) Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed issue causing missing Mouse Without Borders service after upgrade. (This was a hotfix for 0.70)
- - Removed unneeded PT Run registry entries.
+ - Fixed PowerToys autorun after installing as SYSTEM user. 
+ - Removed CreateScheduledTask custom action to handle task creation only from runner code.
 
-### Mouse Without Borders
+### Image Resizer
 
- - Added Name2IP setting. (This was a hotfix for 0.70)
- - Fixed device layout issues. (This was a hotfix for 0.70)
- - Fixed hiding cursor at the top of the screen when "Hide mouse at the screen edge" is enabled. (This was a hotfix for 0.70)
- - Fixed issue that was preventing OS going to sleep mode. (This was a hotfix for 0.70)
- - Remove shortcut for deprecated VKMap functionality. (This was a hotfix for 0.70) Thanks [@dtaylor84](https://github.com/dtaylor84)!
- - Make MWB work without service if service doesn't start properly. (This was a hotfix for 0.70)
- - Fixed focus issue causing "Hide mouse at the screen edge" not to work properly. (This was a hotfix for 0.70)
- - Fixed issue causing app to hijack shortcut keys if they are only partially matched.
+ -  Moved from ModernWPF to WpfUI to refresh and modernize UI/UX. Thanks [@niels9001](https://github.com/niels9001)!
+
+### Keyboard Manager
+
+ - Rephrased labels to enhance clarity. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+ - Keyboard manager now supports Numpad. Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
+
+### Mouse Highlighter
+
+ - Fixed highlighter being invisible issue for Always on Top windows.
+ - Added settings for automatic activation on startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Mouse Pointer Crosshairs
+
+ - Added settings for automatic activation on startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Peek
 
- - Consume Ctrl+Space shortcut only if Desktop or Shell are in the foreground. (This was a hotfix for 0.70)
- - Added feature to hide window with Esc key. (This was a hotfix for 0.70) Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Added a setting to always run not-elevated (enabled by default). (This was a hotfix for 0.70)
- - Support .vsconfig, .sln, .vcproj, .vbproj, .fsproj and .vcxproj files. (This was a hotfix for 0.70)
- - Fixed blinking issue while loading developer files. (This was a hotfix for 0.70)
- - Reset preview Source on Peek window close. (This was a hotfix for 0.70)
- - Center Peek window on File Explorer activated monitor. (This was a hotfix for 0.70) Thanks [@SamChaps](https://github.com/SamChaps)!
- - Fix previewing unsupported file types by using effective pixels. (This was a hotfix for 0.70) Thanks [@SamChaps](https://github.com/SamChaps)!
- - Support .vbs, .inf, .gitconfig, .gitattributes and .editorconfig files. (This was a hotfix for 0.70) Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Fixed memory leak by clearing generated thumbnails. (This was a hotfix for 0.70)
- - Added setting to close on focus lost. (This was a hotfix for 0.70)
- - Fixed crash when triggering Peek with no files being selected. (This was a hotfix for 0.70)
- - Fixed setting Peek window as a foreground window. (This was a hotfix for 0.70)
- - Fixed race condition causing low quality preview to be displayed even if high quality preview is present. (This was a hotfix for 0.70)
- - Added support for .htm files.
- - Fixed issue where title bar button colors were not update on Windows theme change.
- - Added up/down arrow key item navigation. Thanks [@DanWiseProgramming](https://github.com/DanWiseProgramming)!
- - Improved UX by defining minimum window size and adding tooltips for shown text. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed crash on previewing internet shortcuts files.
- - Support previewing archive files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Show correct file type for shortcuts. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed issue causing wrong file size to be displayed. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Show 1 byte instead of 1 bytes file size. Thanks [@Deepak-Sangle](https://github.com/Deepak-Sangle)!
+ - Open URIs from developer files in default browser. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Show thumbnail and fallback to icon for unsupported files. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+
+### PowerRename
+
+ - Updated OOBE gif. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden)!
+ - Localized renamed parts combo box.
+ - Introduced advanced counter functionality.
+ - Added remember last window size logic and optimized items sorting.
+ - Enable "Enumerate items" option by default.
 
 ### PowerToys Run
 
- - Fixed crash caused by non thread-safe Results update.
- - Fixed crash caused by missing App.Dark.png
- - Code cleanup and fixed possible crash caused by missing VS Code instance in VS Code plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fix environment helper for nested environment variables. Thanks [@htcfreek](https://github.com/htcfreek)!
-
-### Quick Accent
-
- - Added multiplication and division signs. Thanks [@ailintom](https://github.com/ailintom)!
- - Added opening exclamation mark to Catalan and Spanish language. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Added the section sign ("§", U+00A7). Thanks [@EikeJoo](https://github.com/EikeJoo)!
- - Added accent units and more additional signs. Thanks [@WilkoLu](https://github.com/WilkoLu)!
+ - Fixed issue causing original search to be abandoned when cycling through results.
+ - Updated device and bluetooth results for Settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Fixed InvalidOperationException exception thrown. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Add Base64 Decoding function to the Value Generator plugin. Thanks [@LeagueOfPoro](https://github.com/LeagueOfPoro)!
+ - Added Keep shell open option for Shell plugin.
+ - Added Crop And Lock to PowerToys plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Registry Preview
 
- - Added setting to set the app as default app for opening .reg files. Thanks [@randyrants](https://github.com/randyrants)!
- - Merge settings to single folder.
- - Fixed issue of saving files without truncation. Thanks [@qwerty472123](https://github.com/qwerty472123)!
+ - Updated AppBarButtons to use an explicit AppBarButton.Icon. Thanks [@randyrants](https://github.com/randyrants)!
+ - Fixed crash on clicking Save As button.
 
-### Text Extractor
+### Runner
 
- - Various improvements and fixes. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
+ - Removed unneeded RegisterWindowMessage from tray icon logic. Thanks [@sredna](https://github.com/sredna)!
+ - Fixed startup looping issue.
+ - Improved old logs and installers cleanup logic. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Screen Ruler
+
+ - Use proper resources file.
 
 ### Settings
 
- - Styling fixes for Peek and Mouse Without Borders pages. (This was a hotfix for 0.70) Thanks [@niels9001](https://github.com/niels9001)!
- - Fixed Mouse Without Borders machine connection status styling. (This was a hotfix for 0.70)
- - Improved Mouse Without Border page Uninstall service UX when it is inaccessible. (This was a hotfix for 0.70)
- - Updated File Explorer module screenshots and instructions to reflect the Windows 11 File Explorer. Thanks [@infinitepower18](https://github.com/infinitepower18)!
- - Modernized the app title bar and styling (Mica background material) to be inline with Windows11 guidelines. Thanks [@niels9001](https://github.com/niels9001)!
- - Improved error handling on settings backup failure.
- - Added Reset button to shortcut control to reset activation shortcut to default value. Thanks [@Svenlaa](https://github.com/Svenlaa)!
- - Improved Exclude apps setting for all modules to also detect apps by title.
+ - Fixed issue causing problems with modifier keys and ShortcutControl. Thanks [@sh0ckj0ckey](https://github.com/sh0ckj0ckey)!
+ - Fixed crash when clicking "Windows color settings" link.
+ - Added support for launching Settings app directly.
+ - Fixed issue causing DisplayDescription not showing for PowerToys Run PluginAdditionalOption.
+ - Fixed issue causing FileLocksmith 'Show File Locksmith in' setting not showing correct value.
+ - Fixed issue causing Awake on/off toggle in Settings flyout not to work when Settings Awake page is opened.
+
+### Documentation
+
+ - Added documentation for PowerToys Run third-party plugins. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed broken links in keyboardmanagerui.md. Thanks [@shubhsardana29](https://github.com/shubhsardana29)!
+ - Updated core team in COMMUNITY.md.
+ - Fixed broken links in ui-architecture.md. Thanks [@SamB](https://github.com/SamB)!
+ - Updated community.valuegenerator.md with Base64DecodeRequest description.
 
 ### Development
 
- - Added Peek and Mouse Without Borders to GitHub templates. (This was a hotfix for 0.70)
- - Fixed the CI release pipelines winget package submission. (This was a hotfix for 0.70)
- - Fixed process report and termination lists for Peek and Mouse Without Borders. (This was a hotfix for 0.70)
- - Added Winget configuration file. (This was a hotfix for 0.70) Thanks [@ryfu-msft](https://github.com/ryfu-msft)!
- - Fixed tests localization issues.
- - Added Microsoft.VisualStudio.Component.VC.ATL library to .vsconfig.
- - Onboarding to GitOps.ResourceManagement.
+ - Updated test packages and StyleCop. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Condense NuGet Restore into MSBuild Tasks. Thanks [@snickler](https://github.com/snickler)!
 
-#### What is being planned for version 0.72
+#### What is being planned for version 0.74
 
-For [v0.72][github-next-release-work], we'll work on below:
+For [v0.74][github-next-release-work], we'll work on below:
 
- - Adjustments on feedback / stability / bug fixes
+ - Language selection
  - Modernize and refresh UX of PowerToys based on WPF
+ - Stability / bug fixes
+ - Peek: UI improvements
 
 ## PowerToys Community
 
@@ -263,7 +253,3 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
 [loc-bug]: https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=translation_issue.md&title=
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
-
-<!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F45
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F44

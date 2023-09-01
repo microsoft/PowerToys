@@ -182,6 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public void RefreshEnabledState()
         {
+            UpdateEnabledState(_generalSettingsRepository.SettingsConfig.Enabled.Awake);
             ViewModel.RefreshEnabledState();
         }
     }

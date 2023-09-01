@@ -42,6 +42,12 @@
                             <ComboBoxItem x:Uid="FileLocksmith_Toggle_ExtendedContextMenu" />
                         </ComboBox>                        
                     </labs:SettingsCard>
+                    <InfoBar
+                        x:Uid="ExtendedContextMenuInfo"
+                        IsClosable="False"
+                        IsOpen="True"
+                        IsTabStop="True"
+                        Severity="Informational" />
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

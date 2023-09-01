@@ -2,15 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using FancyMouse.Models.Drawing;
-using FancyMouse.NativeMethods;
-using static FancyMouse.NativeMethods.Core;
+using PowerOCR.Models.Drawing;
+using PowerOCR.NativeMethods;
+using static PowerOCR.NativeMethods.Core;
 
-namespace FancyMouse.Helpers;
+namespace PowerOCR.Helpers;
 
 internal static class ScreenHelper
 {

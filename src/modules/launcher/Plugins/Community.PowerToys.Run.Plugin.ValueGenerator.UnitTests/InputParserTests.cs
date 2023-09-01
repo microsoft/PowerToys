@@ -29,6 +29,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
         [DataRow("base64 abc", typeof(Base64.Base64Request))]
         [DataRow("base99 abc", null)]
         [DataRow("base64s abc", null)]
+        [DataRow("base64d abc=", typeof(Base64.Base64DecodeRequest))]
         public void ParserTest(string input, Type? expectedRequestType)
         {
             var parser = new InputParser();
@@ -77,7 +78,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
 
         private static bool CommandIsKnown(string command)
         {
-            string[] hashes = new string[] { "md5", "sha1", "sha256", "sha384", "sha512", "base64" };
+            string[] hashes = new string[] { "md5", "sha1", "sha256", "sha384", "sha512", "base64", "base64d" };
 
             if (hashes.Contains(command.ToLowerInvariant()))
             {

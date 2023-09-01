@@ -66,13 +66,14 @@ void KeyboardManager::LoadSettings()
     }
 }
 
-LRESULT CALLBACK KeyboardManager::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
 {
     LowlevelKeyboardEvent event;
     if (nCode == HC_ACTION)
     {
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
+        event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
         if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
         {
             // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
@@ -83,7 +84,7 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             return 1;
         }
     }
-    
+
     return CallNextHookEx(hookHandleCopy, nCode, wParam, lParam);
 }
 

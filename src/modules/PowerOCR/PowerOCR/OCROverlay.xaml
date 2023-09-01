@@ -6,21 +6,21 @@
     xmlns:local="clr-namespace:PowerOCR"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="TextExtractor"
-    Width="800"
-    Height="450"
-    ShowActivated="False"
-    ShowInTaskbar="False"
+    Width="200"
+    Height="200"
     AllowsTransparency="True"
     Loaded="Window_Loaded"
-    Unloaded="Window_Unloaded"
     ResizeMode="NoResize"
+    ShowActivated="False"
+    ShowInTaskbar="False"
     Topmost="True"
+    Unloaded="Window_Unloaded"
+    WindowStartupLocation="Manual"
+    WindowState="Normal"
     WindowStyle="None"
     mc:Ignorable="d">
     <Grid>
-        <Viewbox>
-            <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
-        </Viewbox>
+        <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
         <Canvas
             Name="RegionClickCanvas"
             Cursor="Cross"

@@ -40,7 +40,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the list of all open windows
         /// </summary>
-        internal List<Window> Windows => windows;
+        internal List<Window> Windows => new List<Window>(windows);
 
         /// <summary>
         /// Gets an instance property of this class that makes sure that

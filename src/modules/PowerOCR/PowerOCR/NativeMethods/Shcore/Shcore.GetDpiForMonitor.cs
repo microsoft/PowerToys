@@ -5,7 +5,7 @@
 using System.Runtime.InteropServices;
 using static FancyMouse.NativeMethods.Core;
 
-namespace FancyMouse.NativeMethods;
+namespace PowerOCR.NativeMethods;
 
 internal static partial class Shcore
 {
