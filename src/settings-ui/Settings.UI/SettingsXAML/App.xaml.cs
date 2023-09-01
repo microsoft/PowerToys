@@ -401,6 +401,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
                 case "PastePlain": return typeof(PastePlainPage);
                 case "Peek": return typeof(PeekPage);
+                case "CropAndLock": return typeof(CropAndLockPage);
                 default:
                     // Fallback to general
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

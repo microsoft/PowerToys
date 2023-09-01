@@ -254,5 +254,13 @@ public
         static String ^ ShowHostsAdminSharedEvent() {
             return gcnew String(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
         }
+
+        static String ^ CropAndLockThumbnailEvent() {
+            return gcnew String(CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT);
+        }
+
+        static String ^ CropAndLockReparentEvent() {
+            return gcnew String(CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
+        }
     };
 }

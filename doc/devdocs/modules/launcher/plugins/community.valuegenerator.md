@@ -24,6 +24,10 @@ The Value Generator plugin is used to generate hashes for strings, to calculate 
 - Implements IComputeRequest
 - `Compute()` will populate `Result` with the base64 encoding of the byte array passed in the constructor
 
+### [`Base64DecodeRequest`](/src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.ValueGenerator/Base64/Base64DecodeRequest.cs)
+- Implements IComputeRequest
+- `Compute()` will populate `Result` with the decoded byte array of the base64 string passed in the constructor
+
 ### [`GUIDRequest`](/src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.ValueGenerator/GUID/GUIDRequest.cs)
 - Implements IComputeRequest
 - Uses the [`GUIDGenerator`](#guidgenerator) class to generate or compute the requested GUID

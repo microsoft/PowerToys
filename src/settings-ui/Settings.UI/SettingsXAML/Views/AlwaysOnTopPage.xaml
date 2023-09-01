@@ -80,6 +80,15 @@
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FrameColor, Mode=TwoWay}" />
                             </labs:SettingsCard>
+                            <labs:SettingsCard 
+                                x:Uid="AlwaysOnTop_FrameOpacity"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FrameOpacity}" />
+                            </labs:SettingsCard>
                             <labs:SettingsCard
                                 x:Uid="AlwaysOnTop_FrameThickness"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">

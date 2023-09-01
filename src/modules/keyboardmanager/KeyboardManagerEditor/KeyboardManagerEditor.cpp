@@ -207,6 +207,8 @@ LRESULT KeyboardManagerEditor::KeyHookProc(int nCode, WPARAM wParam, LPARAM lPar
     {
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
+        event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
+
         if (editor->HandleKeyboardHookEvent(&event) == 1)
         {
             // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks

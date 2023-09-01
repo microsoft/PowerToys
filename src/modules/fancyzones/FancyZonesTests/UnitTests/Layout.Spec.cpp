@@ -140,10 +140,9 @@ namespace FancyZonesUnitTests
             data.zoneCount = 4;
             
             // prepare settings
-            PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
-            values.add_property(L"fancyzones_overlappingZonesAlgorithm", json::value(static_cast<int>(OverlappingZonesAlgorithm::Smallest)));
-            json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
-            FancyZonesSettings::instance().LoadSettings();
+            auto settings = FancyZonesSettings::settings();
+            settings.overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
+            FancyZonesSettings::instance().SetSettings(settings);
 
             auto layout = std::make_unique<Layout>(data);
             layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor());
@@ -168,10 +167,9 @@ namespace FancyZonesUnitTests
             data.zoneCount = 4;
 
             // prepare settings
-            PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
-            values.add_property(L"fancyzones_overlappingZonesAlgorithm", json::value(static_cast<int>(OverlappingZonesAlgorithm::Smallest)));
-            json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
-            FancyZonesSettings::instance().LoadSettings();
+            auto settings = FancyZonesSettings::settings();
+            settings.overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
+            FancyZonesSettings::instance().SetSettings(settings);
 
             auto layout = std::make_unique<Layout>(data);
             layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor());

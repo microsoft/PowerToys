@@ -17,7 +17,9 @@ namespace Peek.Common.Helpers
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             List<string> format = new List<string>
             {
-                resourceLoader.GetString("ReadableString_ByteAbbreviationFormat"),     // "B"
+                (bytes == 1) ?
+                    resourceLoader.GetString("ReadableString_ByteAbbreviationFormat") : // "byte"
+                    resourceLoader.GetString("ReadableString_BytesAbbreviationFormat"), // "bytes"
                 resourceLoader.GetString("ReadableString_KiloByteAbbreviationFormat"), // "KB"
                 resourceLoader.GetString("ReadableString_MegaByteAbbreviationFormat"), // "MB"
                 resourceLoader.GetString("ReadableString_GigaByteAbbreviationFormat"), // "GB"

@@ -55,6 +55,7 @@
     </ClCompile>
     <ClCompile Include="Util.Spec.cpp" />
     <ClCompile Include="Util.cpp" />
+    <ClCompile Include="WindowKeyboardSnap.Spec.cpp" />
     <ClCompile Include="WorkArea.Spec.cpp" />
     <ClCompile Include="WorkAreaIdTests.Spec.cpp" />
     <ClCompile Include="Zone.Spec.cpp" />
