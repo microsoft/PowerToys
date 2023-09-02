@@ -65,6 +65,35 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
 
 
+    inline std::optional<std::wstring> ReadRegistryStringValue(HKEY hKey, const std::wstring& registry_value_name)
+    {
+        DWORD reg_value_type = REG_SZ;
+
+        DWORD string_buffer_capacity;
+        // Request required buffer capacity / string length
+        if (RegQueryValueExW(hKey, registry_value_name.c_str(), 0, nullptr, nullptr, &string_buffer_capacity) != ERROR_SUCCESS)
+        {
+            return std::nullopt;
+        }
+        else if (string_buffer_capacity == 0)
+        {
+            return std::nullopt;
+        }
+
+        wchar_t* string_value = new wchar_t[(string_buffer_capacity / sizeof(WCHAR))](0);
+        // Read string
+        if (RegQueryValueEx(hKey, registry_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_buffer_capacity) != ERROR_SUCCESS)
+        {
+            return std::nullopt;
+        }
+
+        wprintf(string_value);
+
+        // Return string value
+        // return string_value;
+        return std::nullopt;
+    }
+
     inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
     {
         HKEY key{};
@@ -119,53 +148,48 @@ namespace powertoys_gpo {
         }
     }
 
-    inline std::string getPolicyListValue(const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
+    inline std::optional<std::wstring> getPolicyListValue(const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
     {
         // This function returns the value of an entry of an policy list. The user scope is only checked, if the list is not enabled for the machine to not mix the lists. If there is no value or no list is found in the registry we return an empty string.
 
         HKEY key{};
-        DWORD reg_value_type = REG_SZ;
-
-        // TODO: Switching to dynamic buffer size detection for being more flexible.
-        char string_value[1024]{};
-        DWORD string_value_length = 1024;
 
         // Try to read from the machine list.
         bool machine_list_found = false;
-        if (auto res = RegOpenKeyExW(POLICIES_SCOPE_MACHINE, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
+        if (RegOpenKeyExW(POLICIES_SCOPE_MACHINE, registry_list_path.c_str(), 0, KEY_READ, &key) == ERROR_SUCCESS)
         {
             machine_list_found = true;
 
             // If the path exists in the machine registry, we try to read the value.
-            auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
+            auto regValueData = ReadRegistryStringValue(key, registry_list_value_name);
             RegCloseKey(key);
 
-            if (resValue == ERROR_SUCCESS)
+            if (regValueData.has_value())
             {
                 // Return the value from the machine list.
-                return string_value;
+                return *regValueData;
             }
         }
 
         // If no list exists for machine, we try to read from the user list.
         if (!machine_list_found)
         {
-            if (auto res = RegOpenKeyExW(POLICIES_SCOPE_USER, registry_list_path.c_str(), 0, KEY_READ, &key); res == ERROR_SUCCESS)
+            if (RegOpenKeyExW(POLICIES_SCOPE_USER, registry_list_path.c_str(), 0, KEY_READ, &key) == ERROR_SUCCESS)
             {
                 // If the path exists in the user registry, we try to read the value.
-                auto resValue = RegQueryValueEx(key, registry_list_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_value_length);
+                auto regValueData = ReadRegistryStringValue(key, registry_list_value_name);
                 RegCloseKey(key);
 
-                if (resValue == ERROR_SUCCESS)
+                if (regValueData.has_value())
                 {
                     // Return the value from the user list.
-                    return string_value;
+                    return *regValueData;
                 }
             }
         }
 
         // No list exists for machine and user, or no value was found in the list, or an error ocurred while reading the value.
-        return "";
+        return std::nullopt;
     }
 
     inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue() {
@@ -366,21 +390,21 @@ namespace powertoys_gpo {
         }
 
         std::wstring plugin_id(pluginID.begin(), pluginID.end());
-        std::string individual_plugin_setting = getPolicyListValue(POWER_LAUNCHER_INDIVIDUAL_PLUGIN_ENABLED_LIST_PATH, plugin_id);
+        auto individual_plugin_setting = getPolicyListValue(POWER_LAUNCHER_INDIVIDUAL_PLUGIN_ENABLED_LIST_PATH, plugin_id);
         
-        if (individual_plugin_setting != "")
+        if (individual_plugin_setting.has_value())
         {
-            if (individual_plugin_setting == "0")
+            if (*individual_plugin_setting == L"0")
             {
                 // force disabled
                 return gpo_rule_configured_disabled;
             }
-            else if (individual_plugin_setting == "1")
+            else if (*individual_plugin_setting == L"1")
             {
                 // force enabled
                 return gpo_rule_configured_enabled;
             }
-            else if (individual_plugin_setting == "2")
+            else if (*individual_plugin_setting == L"2")
             {
                 // force user takes control
                 return gpo_rule_configured_not_configured;
