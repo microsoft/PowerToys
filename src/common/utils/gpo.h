@@ -80,18 +80,18 @@ namespace powertoys_gpo {
             return std::nullopt;
         }
 
-        wchar_t* string_value = new wchar_t[(string_buffer_capacity / sizeof(WCHAR))](0);
+        // int b_size = string_buffer_capacity / sizeof(WCHAR);
+        string_buffer_capacity = 1024;
+        wchar_t string_value[1024]{};
+
         // Read string
-        if (RegQueryValueEx(hKey, registry_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_buffer_capacity) != ERROR_SUCCESS)
+        if (RegQueryValueExW(hKey, registry_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_buffer_capacity) != ERROR_SUCCESS)
         {
             return std::nullopt;
         }
 
-        wprintf(string_value);
-
         // Return string value
-        // return string_value;
-        return std::nullopt;
+        return string_value;
     }
 
     inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
