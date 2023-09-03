@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <RootNamespace>EnvironmentVariables</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AssemblyName>PowerToys.EnvironmentVariables</AssemblyName>
+    <SelfContained>true</SelfContained>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.EnvironmentVariables.pri</ProjectPriFileName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="EnvironmentVariablesXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="EnvironmentVariablesXAML\App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\EnvironmentVariables\SplashScreen.scale-200.png" />
+    <Content Include="Assets\EnvironmentVariables\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\EnvironmentVariables\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\EnvironmentVariables\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\EnvironmentVariables\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\EnvironmentVariables\StoreLogo.png" />
+    <Content Include="Assets\EnvironmentVariables\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- 
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+</Project>
