@@ -537,6 +537,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CropAndLock", "src\modules\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CropAndLockModuleInterface", "src\modules\CropAndLock\CropAndLockModuleInterface\CropAndLockModuleInterface.vcxproj", "{3157FA75-86CF-4EE2-8F62-C43F776493C6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EnvironmentVariables", "EnvironmentVariables", "{538ED0BB-B863-4B20-98CC-BCDF7FA0B68A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnvironmentVariables", "src\modules\EnvironmentVariables\EnvironmentVariables\EnvironmentVariables.csproj", "{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2307,6 +2311,18 @@ Global
 		{3157FA75-86CF-4EE2-8F62-C43F776493C6}.Release|x64.Build.0 = Release|x64
 		{3157FA75-86CF-4EE2-8F62-C43F776493C6}.Release|x86.ActiveCfg = Release|x64
 		{3157FA75-86CF-4EE2-8F62-C43F776493C6}.Release|x86.Build.0 = Release|x64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Debug|ARM64.Build.0 = Debug|ARM64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Debug|x64.ActiveCfg = Debug|x64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Debug|x64.Build.0 = Debug|x64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Debug|x86.ActiveCfg = Debug|x64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Debug|x86.Build.0 = Debug|x64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Release|ARM64.ActiveCfg = Release|ARM64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Release|ARM64.Build.0 = Release|ARM64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Release|x64.ActiveCfg = Release|x64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Release|x64.Build.0 = Release|x64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Release|x86.ActiveCfg = Release|x64
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2501,6 +2517,8 @@ Global
 		{3B227528-4BA6-4CAF-B44A-A10C78A64849} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{F5E1146E-B7B3-4E11-85FD-270A500BD78C} = {3B227528-4BA6-4CAF-B44A-A10C78A64849}
 		{3157FA75-86CF-4EE2-8F62-C43F776493C6} = {3B227528-4BA6-4CAF-B44A-A10C78A64849}
+		{538ED0BB-B863-4B20-98CC-BCDF7FA0B68A} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA} = {538ED0BB-B863-4B20-98CC-BCDF7FA0B68A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
