@@ -57,11 +57,8 @@
             <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="controls:CheckBoxWithDescriptionControl" />
             <!--  Other app resources here  -->
 
-            <SolidColorBrush x:Key="WindowCaptionBackground" Color="Transparent" />
-            <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled" Color="Transparent" />
-
             <TransitionCollection x:Key="SettingsCardsAnimations">
-                <EntranceThemeTransition FromVerticalOffset="50" /> 
+                <EntranceThemeTransition FromVerticalOffset="50" />
                 <!--  Animates cards when loaded  -->
                 <RepositionThemeTransition IsStaggeringEnabled="False" />
                 <!--  Smoothly animates individual cards upon whenever Expanders are expanded/collapsed  -->
