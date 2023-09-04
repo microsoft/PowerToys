@@ -280,11 +280,27 @@ public partial class OCROverlay : Window
         if (regionScaled.Width < 3 || regionScaled.Height < 3)
         {
             BackgroundBrush.Opacity = 0;
+            Logger.LogInfo($"Getting clicked word, {selectedLanguage?.LanguageTag}");
             grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled), selectedLanguage);
         }
         else
         {
-            grabbedText = await ImageMethods.GetRegionsText(this, regionScaled, selectedLanguage);
+            if (TableMenuItem.IsChecked)
+            {
+                Logger.LogInfo($"Getting region as table, {selectedLanguage?.LanguageTag}");
+                grabbedText = await OcrExtensions.GetRegionsTextAsTableAsync(this, regionScaled, selectedLanguage);
+            }
+            else
+            {
+                Logger.LogInfo($"Standard region capture, {selectedLanguage?.LanguageTag}");
+                grabbedText = await ImageMethods.GetRegionsText(this, regionScaled, selectedLanguage);
+
+                if (SingleLineMenuItem.IsChecked)
+                {
+                    Logger.LogInfo($"Making grabbed text single line");
+                    grabbedText = grabbedText.MakeStringSingleLine();
+                }
+            }
         }
 
         if (string.IsNullOrWhiteSpace(grabbedText))
@@ -322,6 +338,8 @@ public partial class OCROverlay : Window
         // TODO: Set the preferred language based upon what was chosen here
         int selection = languageCmbBox.SelectedIndex;
         selectedLanguage = languageCmbBox.SelectedItem as Language;
+
+        Logger.LogError($"Changed language to {selectedLanguage?.LanguageTag}");
 
         // Set the language in the context menu
         foreach (var item in CanvasContextMenu.Items)

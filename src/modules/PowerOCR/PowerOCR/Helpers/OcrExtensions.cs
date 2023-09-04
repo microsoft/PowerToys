@@ -62,8 +62,13 @@ namespace PowerOCR.Helpers
             }
         }
 
-        public static async Task<string> GetRegionsTextAsTableAsync(Window passedWindow, Rectangle regionScaled, Language language)
+        public static async Task<string> GetRegionsTextAsTableAsync(Window passedWindow, Rectangle regionScaled, Language? language)
         {
+            if (language is null)
+            {
+                return string.Empty;
+            }
+
             Bitmap bmp = ImageMethods.GetRegionAsBitmap(passedWindow, regionScaled);
 
             bool scaleBMP = true;
