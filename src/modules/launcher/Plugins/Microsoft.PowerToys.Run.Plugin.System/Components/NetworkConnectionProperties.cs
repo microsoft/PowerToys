@@ -143,15 +143,13 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <returns>List containing all network adapters</returns>
         internal static List<NetworkConnectionProperties> GetList()
         {
-            List<NetworkConnectionProperties> list = new List<NetworkConnectionProperties>();
-
-            var interfaces = NetworkInterface.GetAllNetworkInterfaces().Where(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.GetPhysicalAddress() != null);
-            foreach (NetworkInterface i in interfaces)
-            {
-                list.Add(new NetworkConnectionProperties(i));
-            }
-
-            return list;
+            var interfaces = NetworkInterface.GetAllNetworkInterfaces()
+                                             .Where(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.GetPhysicalAddress() != null)
+                                             .Select(i => new NetworkConnectionProperties(i))
+                                             .OrderByDescending(i => i.IPv4) // list IPv4 first
+                                             .ThenBy(i => i.IPv6Primary) // then IPv6
+                                             .ToList();
+            return interfaces;
         }
 
         /// <summary>
