@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Set up .NET 7.x
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.x
+      
+      - name: Install NuGet
+        run: nuget restore
+
+      - name: Build PowerToys.sln
+        run: |
+          dotnet build PowerToys.sln -c $(BuildConfiguration)
+        env:
+          BuildConfiguration: 'Release'
+      
+      # Add similar steps for other solutions as needed
+      # ...
+
+      - name: Install WiX 3.14
+        run: |
+          .pipelines\installWiX.ps1
+      
+      - name: Build PowerToys per-machine MSI
+        run: |
+          msbuild installer\PowerToysSetup.sln /t:PowerToysInstaller /p:Configuration=$(BuildConfiguration)
+        env:
+          BuildConfiguration: 'Release'
+      
+      - name: Build PowerToys per-machine Bootstrapper
+        run: |
+          msbuild installer\PowerToysSetup.sln /t:PowerToysBootstrapper /p:Configuration=$(BuildConfiguration)
+        env:
+          BuildConfiguration: 'Release'
+      
+      - name: Clean installer directory before building per-user installer
+        run: git clean -xfd -e *exe -- ./installer/
+      
+      - name: Restore NuGet packages for PowerToysSetup.sln (per-user)
+        run: nuget restore installer\PowerToysSetup.sln
+
+      - name: Build PowerToys per-user MSI
+        run: |
+          msbuild installer\PowerToysSetup.sln /t:PowerToysInstaller /p:Configuration=$(BuildConfiguration) /p:PerUser=true
+        env:
+          BuildConfiguration: 'Release'
+      
+      - name: Build PowerToys per-user Bootstrapper
+        run: |
+          msbuild installer\PowerToysSetup.sln /t:PowerToysBootstrapper /p:Configuration=$(BuildConfiguration) /p:PerUser=true
+        env:
+          BuildConfiguration: 'Release'
+
+      - name: Audit deps.json files for all applications
+        run: |
+          .pipelines\verifyDepsJsonLibraryVersions.ps1 $(BuildPlatform)\$(BuildConfiguration)
+      
+      - name: Audit base applications path asset conflicts
+        run: |
+          .pipelines\verifyPossibleAssetConflicts.ps1 $(BuildPlatform)\$(BuildConfiguration)
+      
+      - name: Audit WinAppSDK applications path asset conflicts
+        run: |
+          .pipelines\verifyPossibleAssetConflicts.ps1 $(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps
+      
+      - name: MS Tests
+        run: |
+          vstest.console.exe **\UnitTests-GcodeThumbnailProvider.dll **\UnitTests-StlThumbnailProvider.dll **\UnitTests-PdfThumbnailProvider.dll **\Settings.UI.UnitTests.dll **\UnitTests-GcodePreviewHandler.dll **\UnitTests-PdfPreviewHandler.dll **\UnitTests-PreviewHandlerCommon.dll **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll **\UnitTest-ColorPickerUI.dll **\Microsoft.Interop.Tests.dll **\ImageResizer.Test.dll **\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.dll **\Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests.dll **\Microsoft.Plugin.Folder.UnitTests.dll **\Microsoft.Plugin.Program.UnitTests.dll **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll **\Microsoft.Plugin.Uri.UnitTests.dll **\Wox.Test.dll **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll **\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.dll **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll **\Microsoft.Plugin.WindowWalker.UnitTests.dll **\PreviewPaneUnitTests.dll **\UnitTests-SvgThumbnailProvider.dll **\UnitTests-SvgPreviewHandler.dll **\PowerToys.Hosts.Tests.dll **\MouseJumpUI.UnitTests.dll --noresults --logger:trx --framework:.NETCoreApp,Version=v5.0
+        env:
+          BuildPlatform: 'x64'
+      
+      - name: Native Tests
+        run: |
+          vstest.console.exe **\KeyboardManagerEngineTest.dll **\KeyboardManagerEditorTest.dll **\UnitTests-CommonLib.dll **\PowerRenameUnitTests.dll **\powerpreviewTest.dll **\UnitTests-FancyZones.dll --noresults --logger:trx --framework:.NETCoreApp,Version=v5.0
+        env:
+          BuildPlatform: 'x64'
+      
+      - name: Trigger dotnet welcome message
+        run: dotnet list src\common\Common.UI\Common.UI.csproj package
+      
+      - name: Verifying Notice.md and Nuget packages match
+        run: |
+          .pipelines\verifyNoticeMdAgainstNugetPackages.ps1 .
+
