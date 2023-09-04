@@ -3,7 +3,7 @@ trigger:
   branches:
     include:
       - main
-      - stable
+      - test1
   paths:
     exclude:
       - doc/*
@@ -14,7 +14,7 @@ pr:
   branches:
     include:
       - main
-      - stable
+      - test1
 
 #     0.0.yyMM.dd##
 #     0.0.1904.0900
