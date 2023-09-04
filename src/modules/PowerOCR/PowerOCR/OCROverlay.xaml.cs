@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using ManagedCommon;
@@ -37,8 +38,9 @@ public partial class OCROverlay : Window
 
     private double xShiftDelta;
     private double yShiftDelta;
-
+    private bool isComboBoxReady;
     private const double ActiveOpacity = 0.4;
+    private readonly UserSettings userSettings = new(new ThrottledActionInvoker());
 
     public OCROverlay(System.Drawing.Rectangle screenRectangle)
     {
@@ -52,7 +54,6 @@ public partial class OCROverlay : Window
 
     private void PopulateLanguageMenu()
     {
-        var userSettings = new UserSettings(new ThrottledActionInvoker());
         string? selectedLanguageName = userSettings.PreferredLanguage.Value;
 
         // build context menu
@@ -81,6 +82,8 @@ public partial class OCROverlay : Window
             CanvasContextMenu.Items.Add(menuItem);
             count++;
         }
+
+        isComboBoxReady = true;
     }
 
     private void LanguageMenuItem_Click(object sender, RoutedEventArgs e)
@@ -95,6 +98,7 @@ public partial class OCROverlay : Window
         }
 
         selectedLanguage = menuItem.Tag as Language;
+        LanguagesComboBox.SelectedItem = selectedLanguage;
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -146,15 +150,7 @@ public partial class OCROverlay : Window
 
     private void MainWindow_KeyDown(object sender, KeyEventArgs e)
     {
-        switch (e.Key)
-        {
-            case Key.Escape:
-                WindowUtilities.CloseAllOCROverlays();
-                PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
-                break;
-            default:
-                break;
-        }
+        WindowUtilities.OcrOverlayKeyDown(e.Key);
     }
 
     private void RegionClickCanvas_MouseDown(object sender, MouseButtonEventArgs e)
@@ -164,6 +160,7 @@ public partial class OCROverlay : Window
             return;
         }
 
+        TopButtonsStackPanel.Visibility = Visibility.Collapsed;
         RegionClickCanvas.CaptureMouse();
 
         CursorClipper.ClipCursor(this);
@@ -246,6 +243,7 @@ public partial class OCROverlay : Window
             return;
         }
 
+        TopButtonsStackPanel.Visibility = Visibility.Visible;
         IsSelecting = false;
 
         CursorClipper.UnClipCursor();
@@ -314,35 +312,147 @@ public partial class OCROverlay : Window
         PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
     }
 
-    private void LanguagesComboBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-    {
-    }
-
     private void LanguagesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-    }
+        if (sender is not ComboBox languageCmbBox || !isComboBoxReady)
+        {
+            return;
+        }
 
-    private void FreezeMenuItem_Click(object sender, RoutedEventArgs e)
-    {
+        // TODO: Set the preferred language based upon what was chosen here
+        int selection = languageCmbBox.SelectedIndex;
+        selectedLanguage = languageCmbBox.SelectedItem as Language;
+
+        // Set the language in the context menu
+        foreach (var item in CanvasContextMenu.Items)
+        {
+            if (item is MenuItem menuItemLoop)
+            {
+                menuItemLoop.IsChecked = menuItemLoop.Tag as Language == selectedLanguage;
+            }
+        }
+
+        switch (selection)
+        {
+            case 0:
+                WindowUtilities.OcrOverlayKeyDown(Key.D1);
+                break;
+            case 1:
+                WindowUtilities.OcrOverlayKeyDown(Key.D2);
+                break;
+            case 2:
+                WindowUtilities.OcrOverlayKeyDown(Key.D3);
+                break;
+            case 3:
+                WindowUtilities.OcrOverlayKeyDown(Key.D4);
+                break;
+            case 4:
+                WindowUtilities.OcrOverlayKeyDown(Key.D5);
+                break;
+            case 5:
+                WindowUtilities.OcrOverlayKeyDown(Key.D6);
+                break;
+            case 6:
+                WindowUtilities.OcrOverlayKeyDown(Key.D7);
+                break;
+            case 7:
+                WindowUtilities.OcrOverlayKeyDown(Key.D8);
+                break;
+            case 8:
+                WindowUtilities.OcrOverlayKeyDown(Key.D9);
+                break;
+            default:
+                break;
+        }
     }
 
     private void SingleLineMenuItem_Click(object sender, RoutedEventArgs e)
     {
+        bool isActive = CheckIfCheckingOrUnchecking(sender);
+        WindowUtilities.OcrOverlayKeyDown(Key.S, isActive);
     }
 
-    private void NewGrabFrameMenuItem_Click(object sender, RoutedEventArgs e)
+    private void TableToggleButton_Click(object sender, RoutedEventArgs e)
     {
-    }
-
-    private void SendToEditTextToggleButton_Click(object sender, RoutedEventArgs e)
-    {
+        bool isActive = CheckIfCheckingOrUnchecking(sender);
+        WindowUtilities.OcrOverlayKeyDown(Key.T, isActive);
     }
 
     private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
     {
     }
 
-    private void EditLastGrab_Click(object sender, RoutedEventArgs e)
+    private static bool CheckIfCheckingOrUnchecking(object? sender)
     {
+        if (sender is ToggleButton tb && tb.IsChecked is not null)
+        {
+            return tb.IsChecked.Value;
+        }
+
+        if (sender is MenuItem mi)
+        {
+            return mi.IsChecked;
+        }
+
+        return false;
+    }
+
+    internal void KeyPressed(Key key, bool? isActive)
+    {
+        switch (key)
+        {
+            // This case is handled in the WindowUtilities.OcrOverlayKeyDown
+            // case Key.Escape:
+            //     WindowUtilities.CloseAllFullscreenGrabs();
+            //     break;
+            case Key.S:
+                if (isActive is null)
+                {
+                    SingleLineMenuItem.IsChecked = !SingleLineMenuItem.IsChecked;
+                }
+                else
+                {
+                    SingleLineMenuItem.IsChecked = isActive.Value;
+                }
+
+                // Possibly save this in settings later and remember this preference
+                // Settings.Default.FSGMakeSingleLineToggle = SingleLineMenuItem.IsChecked;
+                // Settings.Default.Save();
+                break;
+            case Key.T:
+                if (isActive is null)
+                {
+                    TableToggleButton.IsChecked = !TableToggleButton.IsChecked;
+                }
+                else
+                {
+                    TableToggleButton.IsChecked = isActive.Value;
+                }
+
+                break;
+            case Key.D1:
+            case Key.D2:
+            case Key.D3:
+            case Key.D4:
+            case Key.D5:
+            case Key.D6:
+            case Key.D7:
+            case Key.D8:
+            case Key.D9:
+                int numberPressed = (int)key - 34; // D1 casts to 35, D2 to 36, etc.
+                int numberOfLanguages = LanguagesComboBox.Items.Count;
+
+                if (numberPressed <= numberOfLanguages
+                    && numberPressed - 1 >= 0
+                    && numberPressed - 1 != LanguagesComboBox.SelectedIndex
+                    && isComboBoxReady)
+                {
+                    LanguagesComboBox.SelectedIndex = numberPressed - 1;
+                }
+
+                break;
+            default:
+                break;
+        }
     }
 }

@@ -5,7 +5,9 @@
 using System;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 
 namespace PowerOCR.Utilities;
@@ -83,6 +85,25 @@ public static class WindowUtilities
         else
         {
             OSInterop.SetForegroundWindow(handle);
+        }
+    }
+
+    internal static void OcrOverlayKeyDown(Key key, bool? isActive = null)
+    {
+        WindowCollection allWindows = System.Windows.Application.Current.Windows;
+
+        if (key == Key.Escape)
+        {
+            PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
+            CloseAllOCROverlays();
+        }
+
+        foreach (Window window in allWindows)
+        {
+            if (window is OCROverlay overlay)
+            {
+                overlay.KeyPressed(key, isActive);
+            }
         }
     }
 }

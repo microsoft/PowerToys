@@ -184,7 +184,7 @@
         <Border
             x:Name="TopButtonsStackPanel"
             Margin="12"
-            Padding="8"
+            Padding="4,8,12,8"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             d:Background="White"
@@ -204,27 +204,20 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Orientation="Horizontal">
-                <TextBlock
-                    x:Name="TesseractTextBlock"
-                    Margin="4,1,4,0"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Text="Tesseract"
-                    Visibility="Collapsed" />
                 <ComboBox
                     x:Name="LanguagesComboBox"
-                    Margin="0"
+                    Margin="2,0"
+                    Padding="4,2,0,2"
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    PreviewMouseDown="LanguagesComboBox_PreviewMouseDown"
                     SelectionChanged="LanguagesComboBox_SelectionChanged">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock
-                                HorizontalAlignment="Center"
+                                HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 FontFamily="Segoe UI"
                                 Style="{StaticResource SymbolTextStyle}"
-                                Text="{Binding LanguageTag}" />
+                                Text="{Binding NativeName}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
@@ -246,6 +239,7 @@
                     Height="34"
                     Margin="2,0"
                     d:IsChecked="True"
+                    Click="TableToggleButton_Click"
                     IsChecked="{Binding IsChecked, ElementName=TableMenuItem, Mode=TwoWay}"
                     Style="{StaticResource ToggleSymbolButton}"
                     ToolTip="(T) OCR text as a table">
