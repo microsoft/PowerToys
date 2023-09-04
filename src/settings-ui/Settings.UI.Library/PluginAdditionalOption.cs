@@ -19,8 +19,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public bool Value { get; set; }
 
-        public bool HideCheckBox { get; set; }
-
         public List<string> ComboBoxOptions { get; set; }
 
         public int Option { get; set; }

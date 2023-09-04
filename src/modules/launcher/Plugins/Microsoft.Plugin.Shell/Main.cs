@@ -52,7 +52,6 @@ namespace Microsoft.Plugin.Shell
             {
                 Key = "ShellCommandExecution",
                 DisplayLabel = Resources.wox_shell_command_execution,
-                HideCheckBox = true,
                 ComboBoxOptions = new List<string>
                 {
                     "Run command in Command Prompt (cmd.exe)",
