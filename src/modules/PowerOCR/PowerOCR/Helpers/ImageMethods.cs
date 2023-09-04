@@ -183,6 +183,8 @@ internal sealed class ImageMethods
         OcrEngine ocrEngine = OcrEngine.TryCreateFromLanguage(selectedLanguage);
         OcrResult ocrResult = await ocrEngine.RecognizeAsync(softwareBmp);
 
+        await memoryStream.DisposeAsync();
+        await wrappingStream.DisposeAsync();
         GC.Collect();
 
         if (singlePoint == null)
@@ -248,6 +250,9 @@ internal sealed class ImageMethods
         transformedBmp.Transform = new ScaleTransform(scale, scale);
         transformedBmp.EndInit();
         transformedBmp.Freeze();
+
+        memoryStream.Dispose();
+        wrappingStream.Dispose();
         GC.Collect();
         return BitmapSourceToBitmap(transformedBmp);
     }
@@ -285,6 +290,9 @@ internal sealed class ImageMethods
         bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
         bitmapImage.EndInit();
         bitmapImage.Freeze();
+
+        memoryStream.Dispose();
+        wrappingStream.Dispose();
         GC.Collect();
         return bitmapImage;
     }
