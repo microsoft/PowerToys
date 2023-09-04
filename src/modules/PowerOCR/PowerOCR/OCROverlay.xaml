@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PowerOCR"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="TextExtractor"
     Width="200"
     Height="200"
@@ -20,6 +21,115 @@
     WindowState="Normal"
     WindowStyle="None"
     mc:Ignorable="d">
+
+    <Window.Resources>
+        <Style x:Key="SymbolTextStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Margin" Value="4" />
+        </Style>
+        <Style TargetType="ToggleButton">
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+        </Style>
+        <Style x:Key="ToggleSymbolButton" TargetType="{x:Type ToggleButton}">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
+            <Setter Property="Background" Value="{StaticResource Button.Static.Background}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Button.Static.Border}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border
+                            x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            SnapsToDevicePixels="true">
+                            <ContentPresenter
+                                x:Name="contentPresenter"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Focusable="False"
+                                RecognizesAccessKey="True"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Button.IsDefaulted" Value="true">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource Teal}" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource Button.Pressed.Border}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource DarkTeal}" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource Button.Disabled.Background}" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource Button.Disabled.Border}" />
+                                <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="{StaticResource Button.Disabled.Foreground}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter TargetName="border" Property="Background" Value="#1E595F" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SymbolButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border
+                            x:Name="border"
+                            CornerRadius="4"
+                            SnapsToDevicePixels="true">
+                            <ContentPresenter
+                                x:Name="contentPresenter"
+                                Margin="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Focusable="False"
+                                RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="#1E595F" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="#071818" />
+                                <Setter Property="Foreground" Value="#1E595F" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.3" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Viewbox>
             <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
@@ -47,8 +157,121 @@
                     Color="Black" />
             </Canvas.Background>
             <Canvas.ContextMenu>
-                <ContextMenu x:Name="CanvasContextMenu" />
+                <ContextMenu x:Name="CanvasContextMenu">
+                    <MenuItem
+                        Name="SingleLineMenuItem"
+                        Click="SingleLineMenuItem_Click"
+                        Header="Make Result Text Single Line"
+                        IsCheckable="True" />
+                    <MenuItem
+                        Name="TableMenuItem"
+                        Click="SingleLineMenuItem_Click"
+                        Header="OCR text as a table"
+                        IsCheckable="True" />
+                    <Separator />
+                    <MenuItem
+                        Name="SettingsMenuItem"
+                        Click="SettingsMenuItem_Click"
+                        Header="Settings" />
+                    <Separator />
+                    <MenuItem
+                        Name="CancelMenuItem"
+                        Click="CancelMenuItem_Click"
+                        Header="Cancel" />
+                </ContextMenu>
             </Canvas.ContextMenu>
         </Canvas>
+        <Border
+            x:Name="TopButtonsStackPanel"
+            Margin="12"
+            Padding="8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            d:Background="White"
+            d:Visibility="Visible"
+            Background="{DynamicResource ApplicationBackgroundBrush}"
+            CornerRadius="8"
+            Visibility="Collapsed">
+            <Border.Effect>
+                <DropShadowEffect
+                    BlurRadius="32"
+                    Direction="-90"
+                    Opacity="0.6"
+                    RenderingBias="Performance" />
+            </Border.Effect>
+            <StackPanel
+                Margin="2,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Orientation="Horizontal">
+                <TextBlock
+                    x:Name="TesseractTextBlock"
+                    Margin="4,1,4,0"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="Tesseract"
+                    Visibility="Collapsed" />
+                <ComboBox
+                    x:Name="LanguagesComboBox"
+                    Margin="0"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    PreviewMouseDown="LanguagesComboBox_PreviewMouseDown"
+                    SelectionChanged="LanguagesComboBox_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontFamily="Segoe UI"
+                                Style="{StaticResource SymbolTextStyle}"
+                                Text="{Binding LanguageTag}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <ToggleButton
+                    x:Name="SingleLineToggleButton"
+                    Width="34"
+                    Height="34"
+                    Margin="2,0"
+                    d:IsChecked="True"
+                    Click="SingleLineMenuItem_Click"
+                    IsChecked="{Binding IsChecked, ElementName=SingleLineMenuItem, Mode=TwoWay}"
+                    Style="{StaticResource ToggleSymbolButton}"
+                    ToolTip="(S) Make result a single line">
+                    <TextBlock Style="{StaticResource SymbolTextStyle}" Text="" />
+                </ToggleButton>
+                <ToggleButton
+                    x:Name="TableToggleButton"
+                    Width="34"
+                    Height="34"
+                    Margin="2,0"
+                    d:IsChecked="True"
+                    IsChecked="{Binding IsChecked, ElementName=TableMenuItem, Mode=TwoWay}"
+                    Style="{StaticResource ToggleSymbolButton}"
+                    ToolTip="(T) OCR text as a table">
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="" />
+                </ToggleButton>
+                <Button
+                    x:Name="SettingsButton"
+                    Width="34"
+                    Height="34"
+                    Margin="2,0"
+                    Click="SettingsMenuItem_Click"
+                    Style="{StaticResource SymbolButton}"
+                    ToolTip="Settings">
+                    <TextBlock Style="{StaticResource SymbolTextStyle}" Text="" />
+                </Button>
+                <Button
+                    x:Name="CancelButton"
+                    Width="34"
+                    Height="34"
+                    Margin="2,0,0,0"
+                    Click="CancelMenuItem_Click"
+                    Style="{StaticResource SymbolButton}"
+                    ToolTip="(Esc) Cancel">
+                    <TextBlock Style="{StaticResource SymbolTextStyle}" Text="" />
+                </Button>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

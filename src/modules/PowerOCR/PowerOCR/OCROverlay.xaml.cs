@@ -29,7 +29,6 @@ public partial class OCROverlay : Window
     private Point shiftPoint;
     private Border selectBorder = new();
     private Language? selectedLanguage;
-    private MenuItem? cancelMenuItem;
 
     private bool IsSelecting { get; set; }
 
@@ -64,25 +63,24 @@ public partial class OCROverlay : Window
         }
 
         List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
+
+        int count = 0;
+
         foreach (Language language in possibleOcrLanguages)
         {
             MenuItem menuItem = new() { Header = language.NativeName, Tag = language, IsCheckable = true };
             menuItem.IsChecked = language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal);
+            LanguagesComboBox.Items.Add(language);
             if (language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal))
             {
                 selectedLanguage = language;
+                LanguagesComboBox.SelectedIndex = count;
             }
 
             menuItem.Click += LanguageMenuItem_Click;
             CanvasContextMenu.Items.Add(menuItem);
+            count++;
         }
-
-        CanvasContextMenu.Items.Add(new Separator());
-
-        // ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse(); // resourceLoader.GetString("TextExtractor_Cancel")
-        cancelMenuItem = new MenuItem() { Header = "cancel" };
-        cancelMenuItem.Click += CancelMenuItem_Click;
-        CanvasContextMenu.Items.Add(cancelMenuItem);
     }
 
     private void LanguageMenuItem_Click(object sender, RoutedEventArgs e)
@@ -109,6 +107,8 @@ public partial class OCROverlay : Window
         BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
         BackgroundBrush.Opacity = ActiveOpacity;
 
+        TopButtonsStackPanel.Visibility = Visibility.Visible;
+
 #if DEBUG
         Topmost = false;
 #endif
@@ -128,11 +128,6 @@ public partial class OCROverlay : Window
         RegionClickCanvas.MouseDown -= RegionClickCanvas_MouseDown;
         RegionClickCanvas.MouseUp -= RegionClickCanvas_MouseUp;
         RegionClickCanvas.MouseMove -= RegionClickCanvas_MouseMove;
-
-        if (cancelMenuItem is not null)
-        {
-            cancelMenuItem.Click -= CancelMenuItem_Click;
-        }
     }
 
     private void MainWindow_KeyUp(object sender, KeyEventArgs e)
@@ -317,5 +312,37 @@ public partial class OCROverlay : Window
     {
         WindowUtilities.CloseAllOCROverlays();
         PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
+    }
+
+    private void LanguagesComboBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+    }
+
+    private void LanguagesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+    }
+
+    private void FreezeMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+    }
+
+    private void SingleLineMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+    }
+
+    private void NewGrabFrameMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+    }
+
+    private void SendToEditTextToggleButton_Click(object sender, RoutedEventArgs e)
+    {
+    }
+
+    private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+    }
+
+    private void EditLastGrab_Click(object sender, RoutedEventArgs e)
+    {
     }
 }
