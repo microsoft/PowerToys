@@ -338,6 +338,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             KeyboardManagerProfile kbmProfile = GetKBMProfile();
             _kbmItem = new DashboardModuleKBMItem() { RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys, RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts) };
+
+            _kbmItem.RemapKeys = _kbmItem.RemapKeys.Concat(kbmProfile?.RemapKeysToText.InProcessRemapKeys).ToList();
+
             var list = new List<DashboardModuleItem>
             {
                 _kbmItem,

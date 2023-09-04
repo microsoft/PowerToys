@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // Using Ordinal comparison for internal text
             return OriginalKeys.Equals(arg.OriginalKeys, StringComparison.Ordinal) &&
                 NewRemapKeys.Equals(arg.NewRemapKeys, StringComparison.Ordinal) &&
+                NewRemapString.Equals(arg.NewRemapString, StringComparison.Ordinal) &&
                 TargetApp.Equals(arg.TargetApp, StringComparison.Ordinal);
         }
     }

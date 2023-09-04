@@ -2,6 +2,7 @@
 #include "SingleKeyRemapControl.h"
 
 #include "KeyboardManagerState.h"
+#include "KeyboardManagerEditorStrings.h"
 #include "ShortcutControl.h"
 #include "UIHelpers.h"
 #include "EditorHelpers.h"
@@ -23,7 +24,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
     singleKeyRemapControlLayout.as<StackPanel>().Spacing(10);
     singleKeyRemapControlLayout.as<StackPanel>().Children().Append(typeKey.as<Button>());
 
-    // Key column
+    // Key column (From key)
     if (colIndex == 0)
     {
         keyDropDownControlObjects.emplace_back(std::make_unique<KeyDropDownControl>(false));
@@ -32,13 +33,50 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
         keyDropDownControlObjects[0]->SetSelectionHandler(table, row, colIndex, singleKeyRemapBuffer);
     }
 
-    // Hybrid column
+    // Hybrid column (To Key/Shortcut/Text)
     else
     {
         hybridDropDownVariableSizedWrapGrid = VariableSizedWrapGrid();
-        hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-        KeyDropDownControl::AddDropDown(table, row, hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), colIndex, singleKeyRemapBuffer, keyDropDownControlObjects, nullptr, true, true);
-        singleKeyRemapControlLayout.as<StackPanel>().Children().Append(hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
+        auto grid = hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>();
+        grid.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+        KeyDropDownControl::AddDropDown(table, row, grid, colIndex, singleKeyRemapBuffer, keyDropDownControlObjects, nullptr, true, true);
+
+        singleKeyRemapControlLayout.as<StackPanel>().Children().Append(grid);
+
+        auto textInput = TextBox();
+        textInput.AcceptsReturn(false);
+        textInput.Visibility(Visibility::Collapsed);
+        textInput.Width(EditorConstants::TableDropDownHeight);
+        singleKeyRemapControlLayout.as<StackPanel>().Children().Append(textInput);
+        textInput.HorizontalAlignment(HorizontalAlignment::Left);
+        textInput.TextChanged([this, row, table](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+            auto textbox = sender.as<TextBox>();
+            auto text = textbox.Text();
+            uint32_t rowIndex = -1;
+            if (!table.Children().IndexOf(row, rowIndex))
+            {
+                return;
+            }
+
+            singleKeyRemapBuffer[rowIndex].first[1] = text.c_str();
+        });
+
+        auto typeCombo = ComboBox();
+        typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeKey()));
+        typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
+        singleKeyRemapControlLayout.as<StackPanel>().Children().InsertAt(0, typeCombo);
+        typeCombo.SelectedIndex(0);
+        typeCombo.SelectionChanged([this, typeCombo, grid, textInput](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
+            const bool textSelected = typeCombo.SelectedIndex() == 1;
+
+            const auto keyInputVisibility = textSelected ? Visibility::Collapsed : Visibility::Visible;
+
+            grid.Visibility(keyInputVisibility);
+            typeKey.as<Button>().Visibility(keyInputVisibility);
+
+            const auto textInputVisibility = textSelected ? Visibility::Visible : Visibility::Collapsed;
+            textInput.Visibility(textInputVisibility);
+        });
     }
 
     typeKey.as<Button>().Click([&, table, colIndex, row](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
@@ -73,8 +111,15 @@ void SingleKeyRemapControl::UpdateAccessibleNames(StackPanel sourceColumn, Stack
     deleteButton.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_AUTOMATIONPROPERTIES_ROW) + std::to_wstring(rowIndex) + L", " + GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
 }
 
+void SingleKeyRemapControl::TextToMapChangedHandler(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) // TODO: remove
+{
+    auto textbox = sender.as<TextBox>();
+    auto text = textbox.Text();
+    (void)text;
+}
+
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const KeyShortcutUnion newKey)
+void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const KeyShortcutTextUnion newKey)
 {
     // Create new SingleKeyRemapControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<SingleKeyRemapControl>> newrow;
@@ -120,9 +165,17 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         {
             keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects[0]->SetSelectedValue(std::to_wstring(std::get<DWORD>(newKey)));
         }
-        else
+        else if (newKey.index() == 1)
         {
             KeyDropDownControl::AddShortcutToControl(std::get<Shortcut>(newKey), parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 1, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects, singleKeyRemapBuffer, row, nullptr, true, true);
+        }
+        else if (newKey.index() == 2)
+        {
+            auto& singleKeyRemapControl = keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1];
+
+            singleKeyRemapControl->singleKeyRemapControlLayout.as<StackPanel>().Children().GetAt(0).as<ComboBox>().SelectedIndex(1);
+
+            singleKeyRemapControl->singleKeyRemapControlLayout.as<StackPanel>().Children().GetAt(3).as<TextBox>().Text(std::get<std::wstring>(newKey));
         }
     }
     else
@@ -178,7 +231,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         {
         }
         singleKeyRemapBuffer.erase(singleKeyRemapBuffer.begin() + rowIndex);
-    
+
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + rowIndex);
     });
