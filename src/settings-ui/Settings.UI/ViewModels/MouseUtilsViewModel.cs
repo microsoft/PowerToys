@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
-            _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value;
+            _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value < 2 ? FindMyMouseSettingsConfig.Properties.ActivationMethod.Value : 0;
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
 
             string backgroundColor = FindMyMouseSettingsConfig.Properties.BackgroundColor.Value;

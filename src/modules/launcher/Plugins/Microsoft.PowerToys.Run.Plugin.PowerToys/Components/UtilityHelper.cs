@@ -2,11 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Threading;
 using Common.UI;
-using interop;
-using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
 {
@@ -23,6 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                 UtilityKey.PowerOCR => "Images/PowerOcr.png",
                 UtilityKey.ShortcutGuide => "Images/ShortcutGuide.png",
                 UtilityKey.RegistryPreview => "Images/RegistryPreview.png",
+                UtilityKey.CropAndLock => "Images/CropAndLock.png",
                 _ => null,
             };
         }
@@ -38,77 +35,8 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                 UtilityKey.PowerOCR => SettingsDeepLink.SettingsWindow.PowerOCR,
                 UtilityKey.ShortcutGuide => SettingsDeepLink.SettingsWindow.ShortcutGuide,
                 UtilityKey.RegistryPreview => SettingsDeepLink.SettingsWindow.RegistryPreview,
+                UtilityKey.CropAndLock => SettingsDeepLink.SettingsWindow.CropAndLock,
                 _ => null,
-            };
-        }
-
-        public static Func<ActionContext, bool> GetAction(UtilityKey key)
-        {
-            return (context) =>
-            {
-                switch (key)
-                {
-                    case UtilityKey.ColorPicker: // Launch ColorPicker
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowColorPickerSharedEvent()))
-                        {
-                            eventHandle.Set();
-                        }
-
-                        break;
-                    case UtilityKey.FancyZones: // Launch FancyZones Editor
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent()))
-                        {
-                            eventHandle.Set();
-                        }
-
-                        break;
-
-                    case UtilityKey.Hosts: // Launch Hosts
-                        {
-                            using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowHostsSharedEvent()))
-                            {
-                                eventHandle.Set();
-                            }
-                        }
-
-                        break;
-
-                    case UtilityKey.MeasureTool: // Launch Screen Ruler
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent()))
-                        {
-                            eventHandle.Set();
-                        }
-
-                        break;
-                    case UtilityKey.PowerOCR: // Launch Text Extractor
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent()))
-                        {
-                            eventHandle.Set();
-                        }
-
-                        break;
-
-                    case UtilityKey.ShortcutGuide: // Launch Shortcut Guide
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
-                        {
-                            eventHandle.Set();
-                        }
-
-                        break;
-
-                    case UtilityKey.RegistryPreview: // Launch Registry Preview
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RegistryPreviewTriggerEvent()))
-                        {
-                            eventHandle.Set();
-                        }
-
-                        break;
-
-                    default:
-                        break;
-                }
-
-                return true;
             };
         }
     }

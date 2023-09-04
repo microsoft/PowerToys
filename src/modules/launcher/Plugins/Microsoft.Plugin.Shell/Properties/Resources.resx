@@ -141,4 +141,7 @@
   <data name="wox_plugin_cmd_run_as_user" xml:space="preserve">
     <value>Run as different user (Ctrl+Shift+U)</value>
   </data>
+  <data name="wox_leave_shell_open" xml:space="preserve">
+    <value>Keep shell open</value>
+  </data>
 </root>

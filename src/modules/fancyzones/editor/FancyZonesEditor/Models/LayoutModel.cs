@@ -339,6 +339,12 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        public void RestoreTo(LayoutModel layout)
+        {
+            layout.SensitivityRadius = SensitivityRadius;
+            layout.TemplateZoneCount = TemplateZoneCount;
+        }
+
         // Adds new custom Layout
         public void AddCustomLayout(LayoutModel model)
         {
