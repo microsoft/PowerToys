@@ -11,7 +11,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <Page.Resources>
-        <localConverters:FindMyMouseActivationShakeMouseIntToVisibilityConverter x:Key="FindMyMouseActivationShakeMouseIntToVisibilityConverter" />
+        <localConverters:FindMyMouseActivationIntToVisibilityConverter x:Key="FindMyMouseActivationIntToVisibilityConverter" />
     </Page.Resources>
     <controls:SettingsPageControl
         x:Uid="MouseUtils"
@@ -42,12 +42,14 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind Path=ViewModel.FindMyMouseActivationMethod, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationDoubleControlPress" />
+                            <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationDoubleRightControlPress" />
                             <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationShakeMouse" />
+                            <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationCustomizedShortcut" />
                         </ComboBox>
                         <labs:SettingsExpander.Items>
                             <labs:SettingsCard
                                 x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance"
-                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationShakeMouseIntToVisibilityConverter}}">
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=2}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="1000"
@@ -56,6 +58,14 @@
                                     SmallChange="100"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseShakingMinimumDistance}" />
+                            </labs:SettingsCard>
+                            <labs:SettingsCard
+                                x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
+                                HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEDA7;}"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=3}">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
                             </labs:SettingsCard>
                             <labs:SettingsCard ContentAlignment="Left">
                                 <CheckBox

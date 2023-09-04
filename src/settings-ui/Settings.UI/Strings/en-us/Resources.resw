@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1148,7 +1148,7 @@
     <value>Use a shortcut or press the Windows key for some time to activate</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
-    <value>Customized shortcut</value>
+    <value>Custom shortcut</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" xml:space="preserve">
     <value>Hold down Windows key</value>
@@ -2384,7 +2384,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Shake the mouse or press the left Ctrl key twice to focus the mouse pointer.</value>
+    <value>Focus the mouse pointer pressing the Ctrl key twice, using a custom shortcut or shaking the mouse.</value>
     <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
@@ -2512,7 +2512,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when shaking the mouse or pressing the left Ctrl key twice.</value>
+    <value>Find My Mouse highlights the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
@@ -3657,5 +3657,18 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationCustomizedShortcut.Content" xml:space="preserve">
+    <value>Custom shortcut</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationDoubleRightControlPress.Content" xml:space="preserve">
+    <value>Press Right Control twice</value>
+    <comment>Right control is the physical key on the keyboard.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to turn on or off this mode</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
   </data>
 </root>
