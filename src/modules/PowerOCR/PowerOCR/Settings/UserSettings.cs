@@ -113,7 +113,7 @@ namespace PowerOCR.Settings
             // var telemetrySettings = new Telemetry.PowerOcrSettings(properties.VisibleColorFormats)
             // {
             //     ActivationShortcut = properties.ActivationShortcut.ToString(),
-            //     ActivationBehaviour = properties.ActivationAction.ToString(),
+            //     ActivationBehavior = properties.ActivationAction.ToString(),
             //     ColorFormatForClipboard = properties.CopiedColorRepresentation.ToString(),
             //     ShowColorName = properties.ShowColorName,
             // };
