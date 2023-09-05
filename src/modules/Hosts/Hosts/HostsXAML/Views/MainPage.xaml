@@ -41,11 +41,11 @@
         Margin="16"
         RowSpacing="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" /><!-- buttons -->
-            <RowDefinition Height="*" /><!-- content -->
+            <RowDefinition Height="Auto" /> <!-- Buttons -->
+            <RowDefinition Height="*" /> <!-- Content -->
         </Grid.RowDefinitions>
 
-        <Grid><!-- buttons -->
+        <Grid> <!-- Buttons -->
             <Button
                 x:Uid="AddEntryBtn"
                 Command="{x:Bind NewDialogCommand}">
@@ -183,74 +183,76 @@
                 CornerRadius="{StaticResource OverlayCornerRadius}"
                 IsItemClickEnabled="True"
                 ItemClick="Entries_ItemClick"
-                KeyDown="Entries_KeyDown"
                 GotFocus="Entries_GotFocus"
+                RightTapped="Entries_RightTapped"
                 ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
                 SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}">
+                <ListView.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            x:Uid="Edit"
+                            Click="Edit_Click"
+                            Icon="Edit">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Modifiers="Control"
+                                    Key="E"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="Ping"
+                            Click="Ping_Click"
+                            Icon="TwoBars">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Modifiers="Control"
+                                    Key="P"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="MoveUp"
+                            Click="ReorderButtonUp_Click"
+                            IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74A;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="MoveDown"
+                            Click="ReorderButtonDown_Click"
+                            IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74B;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem
+                            x:Uid="Delete"
+                            Click="Delete_Click"
+                            Icon="Delete">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="Delete"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </ListView.ContextFlyout>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Entry">
                         <Grid
                             AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
                             Background="Transparent"
-                            IsRightTapEnabled="True"
-                            RightTapped="Grid_RightTapped"
                             ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="256"/><!--address-->
-                                <ColumnDefinition Width="*"/><!--comment-->
-                                <ColumnDefinition Width="Auto"/><!--status-->
-                                <ColumnDefinition Width="Auto"/><!--duplicate-->
-                                <ColumnDefinition Width="Auto"/><!--toggleswitch-->
+                                <ColumnDefinition Width="256"/> <!-- Address -->
+                                <ColumnDefinition Width="*"/> <!-- Comment -->
+                                <ColumnDefinition Width="Auto"/> <!-- Status -->
+                                <ColumnDefinition Width="Auto"/> <!-- Duplicate -->
+                                <ColumnDefinition Width="Auto"/> <!-- ToggleSwitch -->
                             </Grid.ColumnDefinitions>
-                            <FlyoutBase.AttachedFlyout>
-                                <MenuFlyout Opened="MenuFlyout_Opened">
-                                    <MenuFlyoutItem
-                                        x:Uid="Edit"
-                                        Click="Edit_Click"
-                                        Icon="Edit">
-                                        <MenuFlyoutItem.KeyboardAccelerators>
-                                            <KeyboardAccelerator
-                                                Modifiers="Control"
-                                                Key="E" />
-                                        </MenuFlyoutItem.KeyboardAccelerators>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem
-                                        x:Uid="Ping"
-                                        Click="Ping_Click"
-                                        Icon="TwoBars">
-                                        <MenuFlyoutItem.KeyboardAccelerators>
-                                            <KeyboardAccelerator
-                                                Modifiers="Control"
-                                                Key="P" />
-                                        </MenuFlyoutItem.KeyboardAccelerators>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem
-                                        x:Uid="MoveUp"
-                                        Click="ReorderButtonUp_Click"
-                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                        <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xE74A;" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem
-                                        x:Uid="MoveDown"
-                                        Click="ReorderButtonDown_Click"
-                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                        <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xE74B;" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutSeparator />
-                                    <MenuFlyoutItem
-                                        x:Uid="Delete"
-                                        Click="Delete_Click"
-                                        Icon="Delete">
-                                        <MenuFlyoutItem.KeyboardAccelerators>
-                                            <KeyboardAccelerator Key="Delete" />
-                                        </MenuFlyoutItem.KeyboardAccelerators>
-                                    </MenuFlyoutItem>
-                                </MenuFlyout>
-                            </FlyoutBase.AttachedFlyout>
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
