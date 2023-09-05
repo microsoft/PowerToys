@@ -120,6 +120,18 @@
   <data name="DefaultSetsLabel.Text" xml:space="preserve">
     <value>Default variables</value>
   </data>
+  <data name="DefaultVariablesLbl.Text" xml:space="preserve">
+    <value>Default variables</value>
+  </data>
+  <data name="NewProfileBtn.Content" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>User</value>
+  </data>
   <data name="WindowTitle" xml:space="preserve">
     <value>Environment Variables</value>
   </data>

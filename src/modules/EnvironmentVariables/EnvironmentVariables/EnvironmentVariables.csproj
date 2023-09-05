@@ -50,6 +50,9 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
 	<PackageReference Include="Microsoft.Extensions.Hosting" />
 	<PackageReference Include="WinUIEx" />
+	<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
+	<PackageReference Include="CommunityToolkit.Mvvm" />
+	<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" />
 	<Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

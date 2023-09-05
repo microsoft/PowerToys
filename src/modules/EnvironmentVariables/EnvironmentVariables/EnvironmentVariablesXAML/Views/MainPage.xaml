@@ -4,12 +4,115 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:EnvironmentVariables.EnvironmentVariablesXAML.Views"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:local="using:EnvironmentVariables.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:EnvironmentVariables.Models"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
 
-    <Grid>
-        <TextBlock>AAAAAAAAA</TextBlock>
+    <i:Interaction.Behaviors>
+        <ic:EventTriggerBehavior EventName="Loaded">
+            <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadEnvironmentVariablesCommand}" />
+        </ic:EventTriggerBehavior>
+    </i:Interaction.Behaviors>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <!--  Button  -->
+            <RowDefinition />
+            <!--  Profiles  -->
+            <RowDefinition />
+            <!--  Default sets  -->
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <!--  Left side  -->
+            <ColumnDefinition />
+            <!--  Applied values  -->
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Button
+            x:Uid="NewProfileBtn"
+            Grid.Row="0"
+            Grid.Column="0" />
+        <TextBlock Grid.Row="1" Grid.Column="0">Placeholder for profiles</TextBlock>
+        <Grid Grid.Row="2" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <TextBlock x:Uid="DefaultVariablesLbl" />
+            <StackPanel Grid.Row="1" Orientation="Vertical">
+                <labs:SettingsExpander>
+                    <labs:SettingsExpander.Header>
+                        <!--  TODO(stefan): How to use HeaderIcon here instead of this stack panel????  -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Image
+                                Width="16"
+                                Height="16"
+                                Source="{x:Bind ViewModel.UserDefaultSet.IconPath}" />
+                            <TextBlock Text="{x:Bind ViewModel.UserDefaultSet.Name}" />
+                        </StackPanel>
+                    </labs:SettingsExpander.Header>
+                    <labs:SettingsExpander.Items>
+                        <ListView
+                            x:Name="UserDefaultSetVariablesList"
+                            x:Uid="UserDefaultSetVariablesList"
+                            ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Variable">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="50" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="1"><Run Text="{x:Bind Name}" /></TextBlock>
+                                        <TextBlock Grid.Column="2"><Run Text="{x:Bind Values}" /></TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </labs:SettingsExpander.Items>
+                </labs:SettingsExpander>
+                <labs:SettingsExpander>
+                    <labs:SettingsExpander.Header>
+                        <!--  TODO(stefan): How to use HeaderIcon here instead of this stack panel????  -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Image
+                                Width="16"
+                                Height="16"
+                                Source="{x:Bind ViewModel.SystemDefaultSet.IconPath}" />
+                            <TextBlock Text="{x:Bind ViewModel.SystemDefaultSet.Name}" />
+                        </StackPanel>
+                    </labs:SettingsExpander.Header>
+                    <labs:SettingsExpander.Items>
+                        <ListView
+                            x:Name="SystemDefaultSetVariablesList"
+                            x:Uid="SystemDefaultSetVariablesList"
+                            ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Variable">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="50" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="1"><Run Text="{x:Bind Name}" /></TextBlock>
+                                        <TextBlock Grid.Column="2"><Run Text="{x:Bind Values}" /></TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </labs:SettingsExpander.Items>
+                </labs:SettingsExpander>
+
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

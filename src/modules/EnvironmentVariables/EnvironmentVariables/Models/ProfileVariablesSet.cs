@@ -3,14 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 
 namespace EnvironmentVariables.Models
 {
     public class ProfileVariablesSet : VariablesSet
     {
-        public ProfileVariablesSet(Guid id, string name, List<Variable> variables)
-            : base(id, name, VariablesSetType.UserProfile, variables)
+        public ProfileVariablesSet(Guid id, string name)
+            : base(id, name, VariablesSetType.Profile)
         {
         }
     }
