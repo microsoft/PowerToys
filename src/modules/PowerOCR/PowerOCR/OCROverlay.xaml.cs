@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
@@ -398,6 +399,8 @@ public partial class OCROverlay : Window
 
     private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
     {
+        WindowUtilities.CloseAllOCROverlays();
+        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.PowerOCR, false);
     }
 
     private static bool CheckIfCheckingOrUnchecking(object? sender)
