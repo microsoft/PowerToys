@@ -2570,6 +2570,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Time before the spotlight appears (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
+  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Message" xml:space="preserve">
+    <value>Animations are disabled by OS. See Settings &gt; Accessibility &gt; Visual effects</value>
+  </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
     <value>Shake minimum distance</value>
   </data>
