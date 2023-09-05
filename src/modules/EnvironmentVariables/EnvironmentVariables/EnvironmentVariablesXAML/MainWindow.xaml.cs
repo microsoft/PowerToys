@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using EnvironmentVariables.Helpers;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using WinUIEx;
 
 namespace EnvironmentVariables
@@ -21,6 +23,20 @@ namespace EnvironmentVariables
 
             AppWindow.SetIcon("Assets/EnvironmentVariables/EnvironmentVariables.ico");
             Title = ResourceLoaderInstance.ResourceLoader.GetString("WindowTitle");
+
+            Activated += MainWindow_Activated;
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
+            }
+            else
+            {
+                AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+            }
         }
     }
 }
