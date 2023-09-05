@@ -23,7 +23,6 @@ internal partial class MainForm : Form
     {
         this.InitializeComponent();
         this.Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        this.ShowThumbnail();
     }
 
     public MouseJumpSettings Settings
@@ -104,14 +103,8 @@ internal partial class MainForm : Form
 
     private void MainForm_Deactivate(object sender, EventArgs e)
     {
-        this.Close();
-
-        if (this.Thumbnail.Image is not null)
-        {
-            var tmp = this.Thumbnail.Image;
-            this.Thumbnail.Image = null;
-            tmp.Dispose();
-        }
+        this.Hide();
+        this.ClearPreview();
     }
 
     private void Thumbnail_Click(object sender, EventArgs e)
@@ -139,8 +132,11 @@ internal partial class MainForm : Form
         this.OnDeactivate(EventArgs.Empty);
     }
 
-    public void ShowThumbnail()
+    public void ShowPreview()
     {
+        // hide the form while we redraw it...
+        this.Visible = false;
+
         var stopwatch = Stopwatch.StartNew();
         var layoutInfo = MainForm.GetLayoutInfo(this);
         LayoutHelper.PositionForm(this, layoutInfo.FormBounds);
@@ -184,11 +180,11 @@ internal partial class MainForm : Form
             maximumFormSize: new(
                 form.Settings.Properties.ThumbnailSize.Width,
                 form.Settings.Properties.ThumbnailSize.Height),
-            formPadding: new(
-                form.panel1.Padding.Left,
-                form.panel1.Padding.Top,
-                form.panel1.Padding.Right,
-                form.panel1.Padding.Bottom),
+            /*
+              don't read the panel padding values because they are affected by dpi scaling
+              and can give wrong values when moving between monitors with different dpi scaling
+            */
+            formPadding: new(5, 5, 5, 5),
             previewPadding: new(0));
         Logger.LogInfo(string.Join(
             '\n',
@@ -295,10 +291,30 @@ internal partial class MainForm : Form
         stopwatch.Stop();
     }
 
+    private void ClearPreview()
+    {
+        if (this.Thumbnail.Image is null)
+        {
+            return;
+        }
+
+        var tmp = this.Thumbnail.Image;
+        this.Thumbnail.Image = null;
+        tmp.Dispose();
+
+        // force preview image memory to be released, otherwise
+        // all the disposed images can pile up without being GC'ed
+        GC.Collect();
+    }
+
     private static void RefreshPreview(MainForm form)
     {
         if (!form.Visible)
         {
+            // we seem to need to turn off topmost and then re-enable it again
+            // when we show the form, otherwise it doesn't get shown topmost...
+            form.TopMost = false;
+            form.TopMost = true;
             form.Show();
         }
 

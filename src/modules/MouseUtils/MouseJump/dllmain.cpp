@@ -1,18 +1,20 @@
+// dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
 #include <interface/powertoy_module_interface.h>
-//#include <interface/lowlevel_keyboard_event_data.h>
-//#include <interface/win_hook_event_data.h>
-#include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
-#include <common/utils/winapi_error.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/interop/shared_constants.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/winapi_error.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 HMODULE m_hModule;
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
+BOOL APIENTRY DllMain(HMODULE hModule,
+                      DWORD ul_reason_for_call,
+                      LPVOID /*lpReserved*/)
 {
     m_hModule = hModule;
     switch (ul_reason_for_call)
@@ -21,12 +23,14 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID /*lpRese
         Trace::RegisterProvider();
         break;
     case DLL_THREAD_ATTACH:
+        break;
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
         Trace::UnregisterProvider();
         break;
     }
+
     return TRUE;
 }
 
@@ -54,7 +58,15 @@ private:
     bool m_enabled = false;
 
     // Hotkey to invoke the module
+
+    // Time to wait for process to close after sending WM_CLOSE signal
+    static const int MAX_WAIT_MILLISEC = 10000;
+
     Hotkey m_hotkey;
+
+    // Handle to event used to invoke PowerOCR
+    HANDLE m_hInvokeEvent;
+
     HANDLE m_hProcess;
 
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
@@ -123,7 +135,22 @@ private:
     }
 
     // Load initial settings from the persisted values.
-    void init_settings();
+    void init_settings()
+    {
+        try
+        {
+            // Load and parse the settings file for this PowerToy.
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
+
+            parse_hotkey(settings);
+        }
+        catch (std::exception&)
+        {
+            Logger::warn(L"An exception occurred while loading the settings file");
+            // Error while loading from the settings file. Let default values stay as they are.
+        }
+    }
 
     void terminate_process()
     {
@@ -135,6 +162,7 @@ public:
     MouseJump()
     {
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mouseJumpLoggerName);
+        m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::MOUSEJUMP_SHOW_PREVIEW_EVENT);
         init_settings();
     };
 
@@ -142,7 +170,7 @@ public:
     {
         if (m_enabled)
         {
-            terminate_process();
+            disable();
         }
         m_enabled = false;
     }
@@ -150,6 +178,7 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        Logger::trace("MouseJump::destroy()");
         delete this;
     }
 
@@ -180,12 +209,14 @@ public:
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
 
+        settings.set_overview_link(L"https://aka.ms/PowerToysOverview_MouseUtilities/#mouse-jump");
+
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
     }
 
@@ -199,7 +230,6 @@ public:
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             parse_hotkey(values);
-
             values.save_to_settings_file();
         }
         catch (std::exception&)
@@ -211,6 +241,9 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        Logger::trace("MouseJump::enable()");
+        ResetEvent(m_hInvokeEvent);
+        launch_process();
         m_enabled = true;
         Trace::EnableJumpTool(true);
     }
@@ -218,19 +251,15 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
+        Logger::trace("MouseJump::disable()");
         if (m_enabled)
         {
+            ResetEvent(m_hInvokeEvent);
             terminate_process();
         }
 
         m_enabled = false;
         Trace::EnableJumpTool(false);
-    }
-
-    // Returns if the powertoys is enabled
-    virtual bool is_enabled() override
-    {
-        return m_enabled;
     }
 
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
@@ -239,12 +268,14 @@ public:
         {
             Logger::trace(L"MouseJump hotkey pressed");
             Trace::InvokeJumpTool();
-            if (is_process_running())
+            if (!is_process_running())
             {
-                terminate_process();
+                launch_process();
             }
-            launch_process();
 
+            Logger::trace(L"Setting event");
+            SetEvent(m_hInvokeEvent);
+            Logger::trace(L"Event set");
             return true;
         }
 
@@ -268,6 +299,12 @@ public:
         }
     }
 
+    // Returns if the powertoys is enabled
+    virtual bool is_enabled() override
+    {
+        return m_enabled;
+    }
+
     // Returns whether the PowerToys should be enabled by default
     virtual bool is_enabled_by_default() const override
     {
@@ -275,26 +312,6 @@ public:
     }
 
 };
-
-// Load the settings file.
-void MouseJump::init_settings()
-{
-    try
-    {
-        // Load and parse the settings file for this PowerToy.
-        PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(MouseJump::get_name());
-
-        parse_hotkey(settings);
-
-    }
-    catch (std::exception&)
-    {
-        Logger::warn(L"An exception occurred while loading the settings file");
-        // Error while loading from the settings file. Let default values stay as they are.
-    }
-}
-
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
