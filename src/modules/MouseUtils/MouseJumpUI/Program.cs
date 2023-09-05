@@ -46,7 +46,7 @@ internal static class Program
         }
 
         // validate command line arguments - we're expecting
-        // a single argument containing the the runner pid
+        // a single argument containing the runner pid
         if ((args.Length != 1) || !int.TryParse(args[0], out Program.runnerPid))
         {
             var message = string.Join("\r\n", new[]
