@@ -7,6 +7,7 @@
 #include "common/utils/game_mode.h"
 #include "common/utils/process_path.h"
 #include "common/utils/excluded_apps.h"
+#include "common/utils/MsWindowsSettings.h"
 #include <vector>
 
 #ifdef COMPOSITION
@@ -648,6 +649,8 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
     void SetSonarVisibility(bool visible)
     {
         m_batch = m_compositor.GetCommitBatch(winrt::CompositionBatchTypes::Animation);
+        BOOL isEnabledAnimations = GetAnimationsEnabled();
+        m_animation.Duration(std::chrono::milliseconds{ isEnabledAnimations ? m_fadeDuration : 1 });
         m_batch.Completed([hwnd = m_hwnd](auto&&, auto&&) {
             PostMessage(hwnd, WM_OPACITY_ANIMATION_COMPLETED, 0, 0);
         });

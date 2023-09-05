@@ -9,6 +9,7 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -113,6 +114,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
+
+            int isEnabled = 0;
+            NativeMethods.SystemParametersInfo(NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
+            _isAnimationEnabledBySystem = isEnabled != 0;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -324,6 +329,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     FindMyMouseSettingsConfig.Properties.SpotlightRadius.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
+            }
+        }
+
+        public bool IsAnimationEnabledBySystem
+        {
+            get
+            {
+                return _isAnimationEnabledBySystem;
+            }
+
+            set
+            {
+                _isAnimationEnabledBySystem = value;
             }
         }
 
@@ -970,5 +988,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mousePointerCrosshairsIsFixedLengthEnabled;
         private int _mousePointerCrosshairsFixedLength;
         private bool _mousePointerCrosshairsAutoActivate;
+        private bool _isAnimationEnabledBySystem;
     }
 }
