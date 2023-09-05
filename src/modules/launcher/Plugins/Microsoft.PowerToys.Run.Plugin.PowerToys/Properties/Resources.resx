@@ -127,6 +127,14 @@
     <value>Color Picker</value>
     <comment>"Color Picker" is the name of the utility</comment>
   </data>
+  <data name="Crop_And_Lock_Reparent" xml:space="preserve">
+    <value>Crop And Lock (Reparent)</value>
+    <comment>"Crop And Lock" is the name of the utility, "Reparent" is the activation mode</comment>
+  </data>
+  <data name="Crop_And_Lock_Thumbnail" xml:space="preserve">
+    <value>Crop And Lock (Thumbnail)</value>
+    <comment>"Crop And Lock" is the name of the utility, "Thumbnail" is the activation mode</comment>
+  </data>
   <data name="FancyZones_Editor" xml:space="preserve">
     <value>FancyZones Editor</value>
     <comment>"FancyZones" is the name of the utility</comment>

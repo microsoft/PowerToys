@@ -61,6 +61,15 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Keep shell open.
+        /// </summary>
+        public static string wox_leave_shell_open {
+            get {
+                return ResourceManager.GetString("wox_leave_shell_open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to this command has been executed {0} times.
         /// </summary>
         public static string wox_plugin_cmd_cmd_has_been_executed_times {

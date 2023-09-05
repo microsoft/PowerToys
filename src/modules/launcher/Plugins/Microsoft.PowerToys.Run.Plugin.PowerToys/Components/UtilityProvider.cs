@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using interop;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Components;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -32,37 +33,141 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
 
             if (GPOWrapper.GetConfiguredColorPickerEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.ColorPicker, Resources.Color_Picker, generalSettings.Enabled.ColorPicker));
+                _utilities.Add(new Utility(
+                    UtilityKey.ColorPicker,
+                    Resources.Color_Picker,
+                    generalSettings.Enabled.ColorPicker,
+                    (_) =>
+                    {
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowColorPickerSharedEvent());
+                        eventHandle.Set();
+                        return true;
+                    }));
             }
 
             if (GPOWrapper.GetConfiguredFancyZonesEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.FancyZones, Resources.FancyZones_Editor, generalSettings.Enabled.FancyZones));
+                _utilities.Add(new Utility(
+                    UtilityKey.FancyZones,
+                    Resources.FancyZones_Editor,
+                    generalSettings.Enabled.FancyZones,
+                    (_) =>
+                    {
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent());
+                        eventHandle.Set();
+                        return true;
+                    }));
             }
 
             if (GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.Hosts, Resources.Hosts_File_Editor, generalSettings.Enabled.Hosts));
+                _utilities.Add(new Utility(
+                    UtilityKey.Hosts,
+                    Resources.Hosts_File_Editor,
+                    generalSettings.Enabled.Hosts,
+                    (_) =>
+                    {
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowHostsSharedEvent());
+                        eventHandle.Set();
+                        return true;
+                    }));
             }
 
             if (GPOWrapper.GetConfiguredScreenRulerEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.MeasureTool, Resources.Screen_Ruler, generalSettings.Enabled.MeasureTool));
+                _utilities.Add(new Utility(
+                    UtilityKey.MeasureTool,
+                    Resources.Screen_Ruler,
+                    generalSettings.Enabled.MeasureTool,
+                    (_) =>
+                    {
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent());
+                        eventHandle.Set();
+                        return true;
+                    }));
             }
 
             if (GPOWrapper.GetConfiguredTextExtractorEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.PowerOCR, Resources.Text_Extractor, generalSettings.Enabled.PowerOCR));
+                _utilities.Add(new Utility(
+                    UtilityKey.PowerOCR,
+                    Resources.Text_Extractor,
+                    generalSettings.Enabled.PowerOCR,
+                    (_) =>
+                    {
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent());
+                        eventHandle.Set();
+                        return true;
+                    }));
             }
 
             if (GPOWrapper.GetConfiguredShortcutGuideEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.ShortcutGuide, Resources.Shortcut_Guide, generalSettings.Enabled.ShortcutGuide));
+                _utilities.Add(new Utility(
+                    UtilityKey.ShortcutGuide,
+                    Resources.Shortcut_Guide,
+                    generalSettings.Enabled.ShortcutGuide,
+                    (_) =>
+                    {
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent());
+                        eventHandle.Set();
+                        return true;
+                    }));
             }
 
             if (GPOWrapper.GetConfiguredRegistryPreviewEnabledValue() != GpoRuleConfigured.Disabled)
             {
-                _utilities.Add(new Utility(UtilityKey.RegistryPreview, Resources.Registry_Preview, generalSettings.Enabled.RegistryPreview));
+                _utilities.Add(new Utility(
+                    UtilityKey.RegistryPreview,
+                    Resources.Registry_Preview,
+                    generalSettings.Enabled.RegistryPreview,
+                    (_) =>
+                    {
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RegistryPreviewTriggerEvent());
+                        eventHandle.Set();
+                        return true;
+                    }));
+            }
+
+            if (GPOWrapper.GetConfiguredCropAndLockEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                _utilities.Add(new Utility(
+                    UtilityKey.CropAndLock,
+                    Resources.Crop_And_Lock_Thumbnail,
+                    generalSettings.Enabled.CropAndLock,
+                    (_) =>
+                    {
+                        // Wait for the Launcher window to be hidden and activate Crop And Lock in the correct window
+                        var timer = new System.Timers.Timer(TimeSpan.FromMilliseconds(500));
+                        timer.Elapsed += (_, _) =>
+                        {
+                            timer.Stop();
+                            using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockThumbnailEvent());
+                            eventHandle.Set();
+                        };
+
+                        timer.Start();
+                        return true;
+                    }));
+
+                _utilities.Add(new Utility(
+                    UtilityKey.CropAndLock,
+                    Resources.Crop_And_Lock_Reparent,
+                    generalSettings.Enabled.CropAndLock,
+                    (_) =>
+                    {
+                        // Wait for the Launcher window to be hidden and activate Crop And Lock in the correct window
+                        var timer = new System.Timers.Timer(TimeSpan.FromMilliseconds(500));
+                        timer.Elapsed += (_, _) =>
+                        {
+                            timer.Stop();
+                            using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockReparentEvent());
+                            eventHandle.Set();
+                        };
+
+                        timer.Start();
+                        return true;
+                    }));
             }
 
             _watcher = new FileSystemWatcher
@@ -108,6 +213,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                                 case UtilityKey.MeasureTool: u.Enable(generalSettings.Enabled.MeasureTool); break;
                                 case UtilityKey.ShortcutGuide: u.Enable(generalSettings.Enabled.ShortcutGuide); break;
                                 case UtilityKey.RegistryPreview: u.Enable(generalSettings.Enabled.RegistryPreview); break;
+                                case UtilityKey.CropAndLock: u.Enable(generalSettings.Enabled.CropAndLock); break;
                             }
                         }
 

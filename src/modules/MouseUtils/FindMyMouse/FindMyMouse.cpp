@@ -2,6 +2,7 @@
 //
 #include "pch.h"
 #include "FindMyMouse.h"
+#include "WinHookEventIDs.h"
 #include "trace.h"
 #include "common/utils/game_mode.h"
 #include "common/utils/process_path.h"
@@ -247,6 +248,18 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
         return HTTRANSPARENT;
     }
 
+    if (message == WM_PRIV_SHORTCUT)
+    {
+        if (m_sonarStart == NoSonar)
+        {
+            StartSonar();
+        }
+        else
+        {
+            StopSonar();
+        }
+    }
+
     return DefWindowProc(m_hwnd, message, wParam, lParam);
 }
 
@@ -292,26 +305,27 @@ void SuperSonar<D>::OnSonarInput(WPARAM flags, HRAWINPUT hInput)
 template<typename D>
 void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
 {
-    if ( m_activationMethod != FindMyMouseActivationMethod::DoubleControlKey || input.data.keyboard.VKey != VK_CONTROL)
+    // Don't stop the sonar when the shortcut is released
+    if (m_activationMethod == FindMyMouseActivationMethod::Shortcut && (input.data.keyboard.Flags & RI_KEY_BREAK) != 0)
+    {
+        return;
+    }
+
+    if ((m_activationMethod != FindMyMouseActivationMethod::DoubleRightControlKey && m_activationMethod != FindMyMouseActivationMethod::DoubleLeftControlKey)
+        || input.data.keyboard.VKey != VK_CONTROL)
     {
         StopSonar();
         return;
     }
 
     bool pressed = (input.data.keyboard.Flags & RI_KEY_BREAK) == 0;
-    bool rightCtrl = (input.data.keyboard.Flags & RI_KEY_E0) != 0;
 
-    // Deal with rightCtrl first.
-    if (rightCtrl)
+    bool leftCtrlPressed = (input.data.keyboard.Flags & RI_KEY_E0) == 0;
+    bool rightCtrlPressed = (input.data.keyboard.Flags & RI_KEY_E0) != 0;
+
+    if ((m_activationMethod == FindMyMouseActivationMethod::DoubleRightControlKey && !rightCtrlPressed)
+        || (m_activationMethod == FindMyMouseActivationMethod::DoubleLeftControlKey && !leftCtrlPressed))
     {
-        /*
-        * SuperSonar originally exited when pressing right control after pressing left control twice.
-        * We take care of exiting FindMyMouse through module disabling in PowerToys settings instead.
-        if (m_sonarState == SonarState::ControlUp2)
-        {
-            Terminate();
-        }
-        */
         StopSonar();
         return;
     }
@@ -645,6 +659,11 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
         {
             ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
         }
+    }
+
+    HWND GetHwnd() noexcept
+    {
+        return m_hwnd;
     }
 
 private:
@@ -1060,6 +1079,8 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
     m_sonar = &sonar;
     Logger::info("Initialized the sonar instance.");
 
+    InitializeWinhookEventIds();
+
     MSG msg;
 
     // Main message loop:
@@ -1073,6 +1094,16 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
     m_sonar = nullptr;
 
     return (int)msg.wParam;
+}
+
+HWND GetSonarHwnd() noexcept
+{
+    if (m_sonar != nullptr)
+    {
+        return m_sonar->GetHwnd();
+    }
+
+    return nullptr;
 }
 
 #pragma endregion Super_Sonar_API

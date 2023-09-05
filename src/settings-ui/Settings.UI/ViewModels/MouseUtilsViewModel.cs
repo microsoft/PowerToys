@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
-            _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value;
+            _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value < 4 ? FindMyMouseSettingsConfig.Properties.ActivationMethod.Value : 0;
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
 
             string backgroundColor = FindMyMouseSettingsConfig.Properties.BackgroundColor.Value;
@@ -218,6 +218,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _findMyMouseActivationMethod = value;
                     FindMyMouseSettingsConfig.Properties.ActivationMethod.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings FindMyMouseActivationShortcut
+        {
+            get
+            {
+                return FindMyMouseSettingsConfig.Properties.ActivationShortcut;
+            }
+
+            set
+            {
+                if (FindMyMouseSettingsConfig.Properties.ActivationShortcut != value)
+                {
+                    FindMyMouseSettingsConfig.Properties.ActivationShortcut = value ?? FindMyMouseSettingsConfig.Properties.DefaultActivationShortcut;
                     NotifyFindMyMousePropertyChanged();
                 }
             }

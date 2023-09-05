@@ -1,6 +1,5 @@
 #pragma once
 
-#include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/Layout.h>
 #include <FancyZonesLib/LayoutAssignedWindows.h>
 
@@ -39,26 +38,20 @@ public:
     
     FancyZonesDataTypes::WorkAreaId UniqueId() const noexcept { return { m_uniqueId }; }
     const std::unique_ptr<Layout>& GetLayout() const noexcept { return m_layout; }
-    const std::unique_ptr<LayoutAssignedWindows>& GetLayoutWindows() const noexcept { return m_layoutWindows; }
+    const LayoutAssignedWindows& GetLayoutWindows() const noexcept { return m_layoutWindows; }
     const HWND GetWorkAreaWindow() const noexcept { return m_window; }
     const GUID GetLayoutId() const noexcept;
+    const FancyZonesUtils::Rect& GetWorkAreaRect() const noexcept { return m_workAreaRect; }
     
-    ZoneIndexSet GetWindowZoneIndexes(HWND window) const;
-
-    void MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index);
-    void MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool updatePosition = true);
-    bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle);
-    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle);
-    bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode);
-
-    void SnapWindow(HWND window, const ZoneIndexSet& zones, bool extend = false);
-    void UnsnapWindow(HWND window);
-
-    void UpdateActiveZoneSet();
+    void InitLayout();
+    void InitSnappedWindows();
     void UpdateWindowPositions();
 
-    void ShowZonesOverlay(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
-    void HideZonesOverlay();
+    bool Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition = true);
+    bool Unsnap(HWND window);
+
+    void ShowZones(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
+    void HideZones();
     void FlashZones();
     
     void CycleWindows(HWND window, bool reverse);
@@ -79,6 +72,6 @@ private:
     const FancyZonesDataTypes::WorkAreaId m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     std::unique_ptr<Layout> m_layout;
-    std::unique_ptr<LayoutAssignedWindows> m_layoutWindows;
+    LayoutAssignedWindows m_layoutWindows{};
     std::unique_ptr<ZonesOverlay> m_zonesOverlay;
 };

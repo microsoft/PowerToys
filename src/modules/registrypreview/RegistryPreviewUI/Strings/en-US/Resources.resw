@@ -178,6 +178,9 @@
   <data name="RegistryJumpToKeyButton.Label" xml:space="preserve">
     <value>Open Key</value>
   </data>
+  <data name="SaveDialogTitle" xml:space="preserve">
+    <value>Save As</value>
+  </data>
   <data name="SaveAsButton.Label" xml:space="preserve">
     <value>Save as…</value>
   </data>

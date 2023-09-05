@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void Translate_ThrowError_WhenCalledNull(string input)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-DE"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
             Assert.ThrowsException<ArgumentNullException>(() => translator.Translate(input));
@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void Translate_WhenCalledEmpty(string input)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-DE"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
             var result = translator.Translate(input);
@@ -76,7 +76,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void Translate_NoErrors_WhenCalled(string input, string expectedResult)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-DE"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
             var result = translator.Translate(input);
@@ -95,7 +95,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void TranslateBack_NoErrors_WhenCalled(string input, string expectedResult)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-DE"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
             var result = translator.TranslateBack(input);
@@ -113,7 +113,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void Translate_RemoveNumberGroupSeparator_WhenCalled(string decimalSeparator, string groupSeparator, string input, string expectedResult)
         {
             // Arrange
-            var sourceCulture = new CultureInfo("en-US")
+            var sourceCulture = new CultureInfo("en-US", false)
             {
                 NumberFormat =
                 {
@@ -121,7 +121,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                     NumberGroupSeparator = groupSeparator,
                 },
             };
-            var translator = NumberTranslator.Create(sourceCulture, new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(sourceCulture, new CultureInfo("en-US", false));
 
             // Act
             var result = translator.Translate(input);
@@ -137,7 +137,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void Translate_NoRemovalOfLeadingZeroesOnEdgeCases(string input, string expectedResult)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-de"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-de", false), new CultureInfo("en-US", false));
 
             // Act
             var result = translator.Translate(input);

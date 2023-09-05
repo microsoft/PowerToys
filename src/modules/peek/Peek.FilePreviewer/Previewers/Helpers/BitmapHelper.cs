@@ -17,12 +17,25 @@ namespace Peek.FilePreviewer.Previewers.Helpers
     {
         public static async Task<BitmapSource> GetBitmapFromHBitmapAsync(IntPtr hbitmap, bool isSupportingTransparency, CancellationToken cancellationToken)
         {
+            Bitmap? bitmap = null;
+            Bitmap? tempBitmapForDeletion = null;
+
             try
             {
-                var bitmap = Image.FromHbitmap(hbitmap);
-                if (isSupportingTransparency)
+                bitmap = Image.FromHbitmap(hbitmap);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (isSupportingTransparency && bitmap.PixelFormat == PixelFormat.Format32bppRgb)
                 {
-                    bitmap.MakeTransparent();
+                    var bitmapRectangle = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+                    var bitmapData = bitmap.LockBits(bitmapRectangle, ImageLockMode.ReadOnly, bitmap.PixelFormat);
+
+                    var transparentBitmap = new Bitmap(bitmapData.Width, bitmapData.Height, bitmapData.Stride, PixelFormat.Format32bppArgb, bitmapData.Scan0);
+
+                    // Can't dispose of original bitmap yet as that causes crashes on png files. Saving it for later disposal after saving to stream.
+                    tempBitmapForDeletion = bitmap;
+                    bitmap = transparentBitmap;
                 }
 
                 var bitmapImage = new BitmapImage();
@@ -41,6 +54,9 @@ namespace Peek.FilePreviewer.Previewers.Helpers
             }
             finally
             {
+                bitmap?.Dispose();
+                tempBitmapForDeletion?.Dispose();
+
                 // delete HBitmap to avoid memory leaks
                 NativeMethods.DeleteObject(hbitmap);
             }
@@ -50,8 +66,8 @@ namespace Peek.FilePreviewer.Previewers.Helpers
         {
             try
             {
-                var icon = (Icon)Icon.FromHandle(hicon).Clone();
-                var bitmap = icon.ToBitmap();
+                using var icon = (Icon)Icon.FromHandle(hicon).Clone();
+                using var bitmap = icon.ToBitmap();
 
                 var bitmapImage = new BitmapImage();
 
