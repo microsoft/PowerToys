@@ -123,7 +123,7 @@
   <data name="DefaultVariablesLbl.Text" xml:space="preserve">
     <value>Default variables</value>
   </data>
-  <data name="NewProfileBtn.Content" xml:space="preserve">
+  <data name="NewProfileBtn.Text" xml:space="preserve">
     <value>New</value>
   </data>
   <data name="ProfilesDescriptionLbl.Text" xml:space="preserve">
