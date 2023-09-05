@@ -1,13 +1,13 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="Menu.Static.Background" Color="{DynamicResource SolidBackgroundFillColorSecondaryBrush}" />
-    <SolidColorBrush x:Key="Menu.Static.Border" Color="#308E98" />
+    <SolidColorBrush x:Key="Menu.Static.Border" Color="{DynamicResource SystemAccentColor}" />
     <SolidColorBrush x:Key="Menu.Static.Foreground" Color="White" />
-    <SolidColorBrush x:Key="Menu.Static.Separator" Color="#18474C" />
+    <SolidColorBrush x:Key="Menu.Static.Separator" Color="{DynamicResource SystemAccentColorSecondary}" />
     <SolidColorBrush x:Key="Menu.Disabled.Foreground" Color="#FF707070" />
     <SolidColorBrush x:Key="MenuItem.Selected.Background" Color="#3D26A0DA" />
-    <SolidColorBrush x:Key="MenuItem.Selected.Border" Color="#308E98" />
+    <SolidColorBrush x:Key="MenuItem.Selected.Border" Color="{DynamicResource SystemAccentColor}" />
     <SolidColorBrush x:Key="MenuItem.Highlight.Background" Color="#3D26A0DA" />
-    <SolidColorBrush x:Key="MenuItem.Highlight.Border" Color="#308E98" />
+    <SolidColorBrush x:Key="MenuItem.Highlight.Border" Color="{DynamicResource SystemAccentColor}" />
     <SolidColorBrush x:Key="MenuItem.Highlight.Disabled.Background" Color="#0A000000" />
     <SolidColorBrush x:Key="MenuItem.Highlight.Disabled.Border" Color="#21000000" />
     <MenuScrollingVisibilityConverter x:Key="MenuScrollingVisibilityConverter" />
@@ -31,7 +31,7 @@
     </Style>
     <SolidColorBrush x:Key="Button.Static.Background" Color="Transparent" />
     <SolidColorBrush x:Key="Button.Static.Border" Color="Transparent" />
-    <SolidColorBrush x:Key="Button.MouseOver.Background" Color="#1E595F" />
+    <SolidColorBrush x:Key="Button.MouseOver.Background" Color="{DynamicResource SystemAccentColorSecondaryBrush}" />
     <SolidColorBrush x:Key="Button.MouseOver.Border" Color="Transparent" />
     <SolidColorBrush x:Key="Button.Pressed.Background" Color="#071818" />
     <SolidColorBrush x:Key="Button.Pressed.Border" Color="#071818" />
@@ -72,11 +72,11 @@
                             <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource Teal}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SystemAccentColorBrush}" />
                             <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource Button.Pressed.Border}" />
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource DarkTeal}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
@@ -86,7 +86,7 @@
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
                             <Setter Property="Foreground" Value="White" />
-                            <Setter TargetName="border" Property="Background" Value="#1E595F" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -617,7 +617,7 @@
 
     <Style x:Key="TealColor" TargetType="Button">
         <Setter Property="Foreground" Value="White" />
-        <Setter Property="Background" Value="{StaticResource DarkTeal}" />
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
         <Setter Property="IsTabStop" Value="False" />
@@ -639,7 +639,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#1E595F" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
@@ -677,12 +677,12 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="#1E595F" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
                             <Setter TargetName="border" Property="Background" Value="#071818" />
-                            <Setter Property="Foreground" Value="#1E595F" />
+                            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.3" />

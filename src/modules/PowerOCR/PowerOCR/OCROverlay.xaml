@@ -83,7 +83,7 @@
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter Property="Foreground" Value="White" />
-                                <Setter TargetName="border" Property="Background" Value="#1E595F" />
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -113,12 +113,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="true">
-                                <Setter TargetName="border" Property="Background" Value="#1E595F" />
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
                                 <Setter Property="Foreground" Value="White" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="true">
                                 <Setter TargetName="border" Property="Background" Value="#071818" />
-                                <Setter Property="Foreground" Value="#1E595F" />
+                                <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.3" />
