@@ -20,99 +20,140 @@
         </ic:EventTriggerBehavior>
     </i:Interaction.Behaviors>
 
-    <Grid Margin="16">
-        <Grid.RowDefinitions>
-            <!--  Button  -->
-            <RowDefinition />
-            <!--  Profiles  -->
-            <RowDefinition />
-            <!--  Default sets  -->
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <!--  Left side  -->
-            <ColumnDefinition />
-            <!--  Applied values  -->
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <Button
-            x:Uid="NewProfileBtn"
-            Grid.Row="0"
-            Grid.Column="0" />
-        <TextBlock Grid.Row="1" Grid.Column="0">Placeholder for profiles</TextBlock>
-        <Grid Grid.Row="2" Grid.Column="0">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="16">
             <Grid.RowDefinitions>
+                <!--  Button  -->
                 <RowDefinition Height="32" />
+                <!--  Profile sets  -->
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <TextBlock x:Uid="DefaultVariablesLbl" />
-            <StackPanel Grid.Row="1" Orientation="Vertical">
-                <labs:SettingsExpander>
-                    <labs:SettingsExpander.Header>
-                        <!--  TODO(stefan): How to use HeaderIcon here instead of this stack panel????  -->
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Image
-                                Width="16"
-                                Height="16"
-                                Source="{x:Bind ViewModel.UserDefaultSet.IconPath}" />
-                            <TextBlock Text="{x:Bind ViewModel.UserDefaultSet.Name}" />
-                        </StackPanel>
-                    </labs:SettingsExpander.Header>
-                    <labs:SettingsExpander.Items>
-                        <ListView
-                            x:Name="UserDefaultSetVariablesList"
-                            x:Uid="UserDefaultSetVariablesList"
-                            ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="models:Variable">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="20" />
-                                            <ColumnDefinition Width="50" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="1"><Run Text="{x:Bind Name}" /></TextBlock>
-                                        <TextBlock Grid.Column="2"><Run Text="{x:Bind Values}" /></TextBlock>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </labs:SettingsExpander.Items>
-                </labs:SettingsExpander>
-                <labs:SettingsExpander>
-                    <labs:SettingsExpander.Header>
-                        <!--  TODO(stefan): How to use HeaderIcon here instead of this stack panel????  -->
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Image
-                                Width="16"
-                                Height="16"
-                                Source="{x:Bind ViewModel.SystemDefaultSet.IconPath}" />
-                            <TextBlock Text="{x:Bind ViewModel.SystemDefaultSet.Name}" />
-                        </StackPanel>
-                    </labs:SettingsExpander.Header>
-                    <labs:SettingsExpander.Items>
-                        <ListView
-                            x:Name="SystemDefaultSetVariablesList"
-                            x:Uid="SystemDefaultSetVariablesList"
-                            ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="models:Variable">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="20" />
-                                            <ColumnDefinition Width="50" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="1"><Run Text="{x:Bind Name}" /></TextBlock>
-                                        <TextBlock Grid.Column="2"><Run Text="{x:Bind Values}" /></TextBlock>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </labs:SettingsExpander.Items>
-                </labs:SettingsExpander>
+            <Grid.ColumnDefinitions>
+                <!--  Left side  -->
+                <ColumnDefinition />
+                <!--  Applied values  -->
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Uid="NewProfileBtn"
+                Grid.Row="0"
+                Grid.Column="0" />
 
+            <StackPanel Grid.Row="1" Grid.Column="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="32" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Vertical">
+                        <TextBlock x:Uid="ProfilesLbl" />
+                        <TextBlock x:Uid="ProfilesDescriptionLbl" Style="{StaticResource SecondaryTextStyle}" />
+                    </StackPanel>
+                    <ItemsControl Grid.Row="1" ItemsSource="{x:Bind ViewModel.Profiles}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:ProfileVariablesSet">
+                                <labs:SettingsExpander Header="{x:Bind Name}">
+                                    <labs:SettingsExpander.HeaderIcon>
+                                        <ImageIcon
+                                            Width="16"
+                                            Height="16"
+                                            Source="{x:Bind IconPath}" />
+                                    </labs:SettingsExpander.HeaderIcon>
+                                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=IsEnabled}" />
+                                    <labs:SettingsExpander.Items>
+                                        <ListView
+                                            x:Name="ProfileVariablesList"
+                                            x:Uid="ProfileVariablesList"
+                                            ItemsSource="{x:Bind Variables, Mode=OneWay}">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate x:DataType="models:Variable">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="20" />
+                                                            <ColumnDefinition Width="50" />
+                                                            <ColumnDefinition />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="1"><Run Text="{x:Bind Name}" /></TextBlock>
+                                                        <TextBlock Grid.Column="2"><Run Text="{x:Bind Values}" /></TextBlock>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </labs:SettingsExpander.Items>
+
+                                </labs:SettingsExpander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="32" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Uid="DefaultVariablesLbl" Grid.Row="0" />
+                    <StackPanel Grid.Row="1" Orientation="Vertical">
+                        <labs:SettingsExpander Header="{x:Bind ViewModel.UserDefaultSet.Name}">
+                            <labs:SettingsExpander.HeaderIcon>
+                                <ImageIcon
+                                    Width="16"
+                                    Height="16"
+                                    Source="{x:Bind ViewModel.UserDefaultSet.IconPath}" />
+                            </labs:SettingsExpander.HeaderIcon>
+                            <labs:SettingsExpander.Items>
+                                <ListView
+                                    x:Name="UserDefaultSetVariablesList"
+                                    x:Uid="UserDefaultSetVariablesList"
+                                    ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:Variable">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="20" />
+                                                    <ColumnDefinition Width="50" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="1"><Run Text="{x:Bind Name}" /></TextBlock>
+                                                <TextBlock Grid.Column="2"><Run Text="{x:Bind Values}" /></TextBlock>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </labs:SettingsExpander.Items>
+                        </labs:SettingsExpander>
+                        <labs:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}">
+                            <labs:SettingsExpander.HeaderIcon>
+                                <ImageIcon
+                                    Width="16"
+                                    Height="16"
+                                    Source="{x:Bind ViewModel.SystemDefaultSet.IconPath}" />
+                            </labs:SettingsExpander.HeaderIcon>
+                            <labs:SettingsExpander.Items>
+                                <ListView
+                                    x:Name="SystemDefaultSetVariablesList"
+                                    x:Uid="SystemDefaultSetVariablesList"
+                                    ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:Variable">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="20" />
+                                                    <ColumnDefinition Width="50" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="1"><Run Text="{x:Bind Name}" /></TextBlock>
+                                                <TextBlock Grid.Column="2"><Run Text="{x:Bind Values}" /></TextBlock>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </labs:SettingsExpander.Items>
+                        </labs:SettingsExpander>
+
+                    </StackPanel>
+                </Grid>
             </StackPanel>
         </Grid>
-    </Grid>
+    </ScrollViewer>
 </Page>

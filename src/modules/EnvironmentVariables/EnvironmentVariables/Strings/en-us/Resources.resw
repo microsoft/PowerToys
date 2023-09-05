@@ -126,6 +126,12 @@
   <data name="NewProfileBtn.Content" xml:space="preserve">
     <value>New</value>
   </data>
+  <data name="ProfilesDescriptionLbl.Text" xml:space="preserve">
+    <value>You can create profiles to quickly apply a set of preconfigured variables</value>
+  </data>
+  <data name="ProfilesLbl.Text" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>System</value>
   </data>

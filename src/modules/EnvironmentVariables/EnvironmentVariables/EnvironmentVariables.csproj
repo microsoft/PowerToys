@@ -25,6 +25,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Styles\**" />
+    <EmbeddedResource Remove="Styles\**" />
+    <None Remove="Styles\**" />
+    <Page Remove="Styles\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="EnvironmentVariablesXAML\Views\MainPage.xaml" />
   </ItemGroup>
 
@@ -68,5 +75,8 @@
     <Page Update="EnvironmentVariablesXAML\Views\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Remove="Styles\**" />
   </ItemGroup>
 </Project>

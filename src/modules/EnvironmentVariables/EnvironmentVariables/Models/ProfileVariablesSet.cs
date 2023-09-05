@@ -8,6 +8,8 @@ namespace EnvironmentVariables.Models
 {
     public class ProfileVariablesSet : VariablesSet
     {
+        public bool IsEnabled { get; set; }
+
         public ProfileVariablesSet(Guid id, string name)
             : base(id, name, VariablesSetType.Profile)
         {
