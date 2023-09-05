@@ -52,12 +52,13 @@ namespace Microsoft.Plugin.Shell
             {
                 Key = "ShellCommandExecution",
                 DisplayLabel = Resources.wox_shell_command_execution,
+                SelectionTypeValue = (int)PluginAdditionalOption.SelectionType.Combobox,
                 ComboBoxOptions = new List<string>
                 {
-                    "Run command in Command Prompt (cmd.exe)",
-                    "Run command in PowerShell (PowerShell.exe)",
-                    "Find executable file and run it",
-                    "Run command in Windows Terminal (wt.exe)",
+                    Resources.run_command_in_command_prompt,
+                    Resources.run_command_in_powershell,
+                    Resources.find_executable_file_and_run_it,
+                    Resources.run_command_in_windows_terminal,
                 },
                 Option = (int)_settings.Shell,
             },

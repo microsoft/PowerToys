@@ -5,7 +5,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -51,9 +50,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowComboBox => _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
+        public bool ShowComboBox => _additionalOption.SelectionTypeValue == (int)PluginAdditionalOption.SelectionType.Combobox && _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
 
-        public bool ShowCheckBox => ShowComboBox == false;
+        public bool ShowCheckBox => _additionalOption.SelectionTypeValue == (int)PluginAdditionalOption.SelectionType.Checkbox;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
