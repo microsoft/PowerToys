@@ -106,6 +106,7 @@
                         Margin="0,0,0,4"
                         Header="{x:Bind ViewModel.SystemDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE977;}"
+                        ItemTemplate="{StaticResource VariableTemplate}"
                         ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}" />
                 </StackPanel>
             </ScrollViewer>
