@@ -783,6 +783,7 @@ IFACEMETHODIMP
 IFile
 IFilter
 IGraphics
+IGT
 iid
 Iindex
 IIO
@@ -1495,6 +1496,7 @@ qit
 QITAB
 QITABENT
 qps
+Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC

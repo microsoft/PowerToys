@@ -330,14 +330,14 @@ public partial class OCROverlay : Window
 
     private void LanguagesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is not ComboBox languageCmbBox || !isComboBoxReady)
+        if (sender is not ComboBox languageComboBox || !isComboBoxReady)
         {
             return;
         }
 
         // TODO: Set the preferred language based upon what was chosen here
-        int selection = languageCmbBox.SelectedIndex;
-        selectedLanguage = languageCmbBox.SelectedItem as Language;
+        int selection = languageComboBox.SelectedIndex;
+        selectedLanguage = languageComboBox.SelectedItem as Language;
 
         Logger.LogError($"Changed language to {selectedLanguage?.LanguageTag}");
 
@@ -434,8 +434,6 @@ public partial class OCROverlay : Window
                 }
 
                 // Possibly save this in settings later and remember this preference
-                // Settings.Default.FSGMakeSingleLineToggle = SingleLineMenuItem.IsChecked;
-                // Settings.Default.Save();
                 break;
             case Key.T:
                 if (isActive is null)
