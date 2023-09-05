@@ -162,7 +162,7 @@ public:
     MouseJump()
     {
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mouseJumpLoggerName);
-        m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::MOUSEJUMP_SHOW_PREVIEW_EVENT);
+        m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::MOUSE_JUMP_SHOW_PREVIEW_EVENT);
         init_settings();
     };
 
