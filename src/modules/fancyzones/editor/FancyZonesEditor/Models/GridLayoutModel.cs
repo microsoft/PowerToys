@@ -280,6 +280,8 @@ namespace FancyZonesEditor.Models
 
         public void RestoreTo(GridLayoutModel layout)
         {
+            base.RestoreTo(layout);
+
             int rows = Rows;
             int cols = Columns;
 
@@ -315,7 +317,6 @@ namespace FancyZonesEditor.Models
 
             layout.ShowSpacing = ShowSpacing;
             layout.Spacing = Spacing;
-            layout.SensitivityRadius = SensitivityRadius;
 
             layout.FirePropertyChanged();
         }

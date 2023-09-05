@@ -212,7 +212,7 @@ configuration:
       - addLabel:
           label: Resolution-Helped User
       - addReply:
-          reply: This issue is now marked as resolved. If you have any follow-up questions, please don't hesitate to ask. You can find out more about PowerToys functionalities in our [end-user documentation](https://aka.ms/powertoy-docs].
+          reply: This issue is now marked as resolved. If you have any follow-up questions, please don't hesitate to ask. You can find out more about PowerToys functionalities in our [end-user documentation](https://aka.ms/powertoy-docs).
       - closeIssue
       description: 
     - if:

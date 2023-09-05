@@ -421,8 +421,8 @@
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
-                        Text="{Binding Comment, Mode=TwoWay}"
                         TextWrapping="Wrap" />
+                        Text="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <ToggleSwitch
                         x:Uid="Active"
                         IsOn="{Binding Active, Mode=TwoWay}"
