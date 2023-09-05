@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;
@@ -91,7 +92,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     IcoPath = $"Images\\sleep.{iconTheme}.png",
                     Action = c =>
                     {
-                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => NativeMethods.SetSuspendState(false, true, true));
+                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => Task.Run(() => _ = NativeMethods.SendMessage(0xFFFF, 0x112, 0xF170, 2)));
                     },
                 },
                 new Result

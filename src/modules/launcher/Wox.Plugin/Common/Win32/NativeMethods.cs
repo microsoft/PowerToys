@@ -107,6 +107,9 @@ namespace Wox.Plugin.Common.Win32
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
 
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);
+
         [DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
         public static extern uint SHEmptyRecycleBin(IntPtr hWnd, uint dwFlags);
 
