@@ -204,7 +204,7 @@ public
         }
 
         static String ^ MouseJumpShowPreviewEvent() {
-            return gcnew String(CommonSharedConstants::MOUSEJUMP_SHOW_PREVIEW_EVENT);
+            return gcnew String(CommonSharedConstants::MOUSE_JUMP_SHOW_PREVIEW_EVENT);
         }
 
         static String ^ AwakeExitEvent() {
