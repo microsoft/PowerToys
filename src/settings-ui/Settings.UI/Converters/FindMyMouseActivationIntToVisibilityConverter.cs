@@ -3,26 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class FindMyMouseActivationShakeMouseIntToVisibilityConverter : IValueConverter
+    public sealed class FindMyMouseActivationIntToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            var activationShake = (int)value;
+            var selectedActivation = (int)value;
+            var expectedActivation = int.Parse(parameter as string, CultureInfo.InvariantCulture);
 
-            // Assumes 1 is the index for the shake mouse option in the activation method combo box
-            if (activationShake == 1)
-            {
-                return Visibility.Visible;
-            }
-            else
-            {
-                return Visibility.Collapsed;
-            }
+            return selectedActivation == expectedActivation ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
