@@ -281,6 +281,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\logger_helper.h = src\common\utils\logger_helper.h
 		src\common\utils\modulesRegistry.h = src\common\utils\modulesRegistry.h
 		src\common\utils\MsiUtils.h = src\common\utils\MsiUtils.h
+		src\common\utils\MsWindowsSettings.h = src\common\utils\MsWindowsSettings.h
 		src\common\utils\os-detect.h = src\common\utils\os-detect.h
 		src\common\utils\package.h = src\common\utils\package.h
 		src\common\utils\ProcessWaiter.h = src\common\utils\ProcessWaiter.h
