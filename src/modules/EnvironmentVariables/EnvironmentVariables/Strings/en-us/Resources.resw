@@ -141,4 +141,19 @@
   <data name="WindowTitle" xml:space="preserve">
     <value>Environment Variables</value>
   </data>
+  <data name="EditDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="EditVariableDialog_Title" xml:space="preserve">
+    <value>Edit variable</value>
+  </data>
+  <data name="NameTxtBox.Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SaveBtn" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ValueTxtBox.Header" xml:space="preserve">
+    <value>Value</value>
+  </data>
 </root>
