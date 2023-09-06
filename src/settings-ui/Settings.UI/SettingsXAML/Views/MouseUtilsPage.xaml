@@ -71,9 +71,9 @@
                             </labs:SettingsCard>
                         </labs:SettingsExpander.Items>
                     </labs:SettingsExpander>
-  
+
                     <controls:SettingsExpander
-                    x:Uid="Appearance_Behavior"
+                        x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
                         IsExpanded="False">
