@@ -44,6 +44,7 @@ struct Enumerator
         wchar_t format[32];
         swprintf_s(format, sizeof(format) / sizeof(wchar_t), L"%%0%ud", padding);
 
+        //swprintf __fastfails when the buffer is too small, so we're checking the required buffer size ahead of printing to it and falling back to 0 padding in case it cannot fit. Note that we must use swprintf with nullptr buf, because the _s version panicks on it as well.
         const size_t requiredBufSize = swprintf(nullptr, 0, format, enumeratedIndex) + 1ull;
         const bool fitsBuf = requiredBufSize < bufSize;
         if (!fitsBuf)
