@@ -26,21 +26,23 @@ namespace EnvironmentVariables.ViewModels
         [RelayCommand]
         public void LoadEnvironmentVariables()
         {
-            UserDefaultSet.Variables.Add(new Variable("user1", "value1"));
-            UserDefaultSet.Variables.Add(new Variable("user2", "value2"));
-
-            SystemDefaultSet.Variables.Add(new Variable("system1", "svalue1"));
-            SystemDefaultSet.Variables.Add(new Variable("system2", "svalue2"));
+            EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.Machine, SystemDefaultSet);
+            EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.User, UserDefaultSet);
 
             var profile1 = new ProfileVariablesSet(Guid.NewGuid(), "profile1");
-            profile1.Variables.Add(new Variable("profile11", "pvalue1"));
-            profile1.Variables.Add(new Variable("profile12", "pvalue2"));
+            profile1.Variables.Add(new Variable("profile11", "pvalue1", VariablesSetType.Profile));
+            profile1.Variables.Add(new Variable("profile12", "pvalue2", VariablesSetType.Profile));
             var profile2 = new ProfileVariablesSet(Guid.NewGuid(), "profile2");
-            profile2.Variables.Add(new Variable("profile21", "pvalue11"));
-            profile2.Variables.Add(new Variable("profile22", "pvalue22"));
+            profile2.Variables.Add(new Variable("profile21", "pvalue11", VariablesSetType.Profile));
+            profile2.Variables.Add(new Variable("profile22", "pvalue22", VariablesSetType.Profile));
 
             Profiles.Add(profile1);
             Profiles.Add(profile2);
+        }
+
+        internal void EditVariable(Variable original, Variable edited)
+        {
+            original.Update(edited);
         }
     }
 }

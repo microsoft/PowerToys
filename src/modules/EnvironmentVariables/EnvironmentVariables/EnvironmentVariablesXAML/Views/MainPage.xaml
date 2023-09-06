@@ -14,12 +14,16 @@
     mc:Ignorable="d">
     <Page.Resources>
         <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
-            <labs:SettingsCard Header="{x:Bind Name}" IsClickEnabled="True">
+            <labs:SettingsCard
+                Click="EditVariable_Click"
+                CommandParameter="{x:Bind (models:Variable)}"
+                Header="{x:Bind Name, Mode=TwoWay}"
+                IsClickEnabled="True">
                 <!--  TO DO: The Click event or Command can be used to trigger an action, e.g. show Edit dailog?  -->
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     IsTextSelectionEnabled="True"
-                    Text="{x:Bind Values}" />
+                    Text="{x:Bind Values, Mode=TwoWay}" />
             </labs:SettingsCard>
         </DataTemplate>
     </Page.Resources>
@@ -80,6 +84,7 @@
                                 <labs:SettingsExpander
                                     Margin="0,0,0,4"
                                     Header="{x:Bind Name}"
+                                    HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}"
                                     ItemTemplate="{StaticResource VariableTemplate}"
                                     ItemsSource="{x:Bind Variables, Mode=OneWay}">
 
@@ -107,9 +112,40 @@
                         Header="{x:Bind ViewModel.SystemDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE977;}"
                         ItemTemplate="{StaticResource VariableTemplate}"
-                        ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}" />
+                        ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}" />
                 </StackPanel>
             </ScrollViewer>
         </Grid>
+
+        <ContentDialog
+            x:Name="EditDialog"
+            x:Uid="EditDialog"
+            IsPrimaryButtonEnabled="True"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:Variable />
+            </ContentDialog.DataContext>
+            <ScrollViewer>
+                <StackPanel
+                    MinWidth="320"
+                    HorizontalAlignment="Stretch"
+                    Spacing="12">
+                    <TextBox
+                        x:Uid="NameTxtBox"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox
+                        x:Uid="ValueTxtBox"
+                        AcceptsReturn="False"
+                        IsSpellCheckEnabled="False"
+                        ScrollViewer.IsVerticalRailEnabled="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.VerticalScrollMode="Enabled"
+                        Text="{Binding Values, Mode=TwoWay}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
     </Grid>
 </Page>
