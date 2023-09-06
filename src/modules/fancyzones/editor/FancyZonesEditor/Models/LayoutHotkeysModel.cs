@@ -68,6 +68,19 @@ namespace FancyZonesEditor.Models
             return true;
         }
 
+        public string Key(string uuid)
+        {
+            foreach (var pair in SelectedKeys)
+            {
+                if (pair.Value == uuid)
+                {
+                    return pair.Key;
+                }
+            }
+
+            return Properties.Resources.Quick_Key_None;
+        }
+
         public void CleanUp()
         {
             var keys = SelectedKeys.Keys.ToList();

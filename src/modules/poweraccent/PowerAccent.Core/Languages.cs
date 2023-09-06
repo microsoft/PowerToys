@@ -83,52 +83,37 @@ namespace PowerAccent.Core
         // All
         private static string[] GetDefaultLetterKeyALL(LetterKey letter)
         {
-            return letter switch
-            {
-                LetterKey.VK_0 => new[] { "₀", "⁰" },
-                LetterKey.VK_1 => new[] { "₁", "¹" },
-                LetterKey.VK_2 => new[] { "₂", "²" },
-                LetterKey.VK_3 => new[] { "₃", "³" },
-                LetterKey.VK_4 => new[] { "₄", "⁴" },
-                LetterKey.VK_5 => new[] { "₅", "⁵" },
-                LetterKey.VK_6 => new[] { "₆", "⁶" },
-                LetterKey.VK_7 => new[] { "₇", "⁷" },
-                LetterKey.VK_8 => new[] { "₈", "⁸" },
-                LetterKey.VK_9 => new[] { "₉", "⁹" },
-                LetterKey.VK_A => new[] { "á", "à", "ä", "â", "ă", "å", "α", "ā", "ą", "ȧ", "ã", "ǎ", "æ" },
-                LetterKey.VK_B => new[] { "ḃ", "β" },
-                LetterKey.VK_C => new[] { "ç", "ć", "ĉ", "č", "ċ", "¢", "χ", "°C", "©", "ℂ" },
-                LetterKey.VK_D => new[] { "ď", "ḍ", "ḋ", "đ", "δ", "ð" },
-                LetterKey.VK_E => new[] { "é", "è", "ê", "ë", "ě", "ē", "ę", "ė", "ε", "η", "€", "∈" },
-                LetterKey.VK_F => new[] { "ƒ", "ḟ", "°F" },
-                LetterKey.VK_G => new[] { "ğ", "ģ", "ǧ", "ġ", "ĝ", "ǥ", "γ" },
-                LetterKey.VK_H => new[] { "ḣ", "ĥ", "ħ" },
-                LetterKey.VK_I => new[] { "ï", "î", "í", "ì", "ī", "į", "ı", "İ", "ι", "ǐ" },
-                LetterKey.VK_J => new[] { "ĵ" },
-                LetterKey.VK_K => new[] { "ķ", "ǩ", "κ" },
-                LetterKey.VK_L => new[] { "ĺ", "ľ", "ļ", "ł", "₺", "λ" },
-                LetterKey.VK_M => new[] { "ṁ", "μ" },
-                LetterKey.VK_N => new[] { "ñ", "ń", "ŋ", "ň", "ņ", "ṅ", "ⁿ", "ν", "ℕ" },
-                LetterKey.VK_O => new[] { "ô", "ó", "ö", "ő", "ò", "ō", "ȯ", "ø", "õ", "œ", "ω", "ο", "ǒ" },
-                LetterKey.VK_P => new[] { "ṗ", "₽", "π", "φ", "ψ", "℗" },
-                LetterKey.VK_Q => new[] { "ℚ" },
-                LetterKey.VK_R => new[] { "ŕ", "ř", "ṙ", "₹", "ρ", "®", "ℝ" },
-                LetterKey.VK_S => new[] { "ś", "ş", "š", "ș", "ṡ", "ŝ", "ß", "σ", "$", "\u00A7" },
-                LetterKey.VK_T => new[] { "ţ", "ť", "ț", "ṫ", "ŧ", "θ", "τ", "þ", "™" },
-                LetterKey.VK_U => new[] { "û", "ú", "ü", "ŭ", "ű", "ù", "ů", "ū", "ų", "ǔ", "υ", "ǖ", "ǘ", "ǚ", "ǜ" },
-                LetterKey.VK_V => new[] { "V̇" },
-                LetterKey.VK_W => new[] { "ẇ", "ŵ", "₩" },
-                LetterKey.VK_X => new[] { "ẋ", "ξ", "×" },
-                LetterKey.VK_Y => new[] { "ÿ", "ŷ", "ý", "ẏ" },
-                LetterKey.VK_Z => new[] { "ź", "ž", "ż", "ʒ", "ǯ", "ζ", "ℤ" },
-                LetterKey.VK_COMMA => new[] { "¿", "¡", "∙", "₋", "⁻", "–", "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" },
-                LetterKey.VK_PERIOD => new[] { "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030C" },
-                LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "–", "—", "―", "⁓", "−", "⸺", "⸻" },
-                LetterKey.VK_SLASH_ => new[] { "÷" },
-                LetterKey.VK_DIVIDE_ => new[] { "÷" },
-                LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
-                _ => Array.Empty<string>(),
-            };
+            // would be even better to loop through Languages and call these functions dynamically, but I don't know how to do that!
+            return GetDefaultLetterKeyCA(letter)
+                .Union(GetDefaultLetterKeyCUR(letter))
+                .Union(GetDefaultLetterKeyCY(letter))
+                .Union(GetDefaultLetterKeyCZ(letter))
+                .Union(GetDefaultLetterKeyGA(letter))
+                .Union(GetDefaultLetterKeyGD(letter))
+                .Union(GetDefaultLetterKeyDE(letter))
+                .Union(GetDefaultLetterKeyEST(letter))
+                .Union(GetDefaultLetterKeyFR(letter))
+                .Union(GetDefaultLetterKeyHR(letter))
+                .Union(GetDefaultLetterKeyHE(letter))
+                .Union(GetDefaultLetterKeyHU(letter))
+                .Union(GetDefaultLetterKeyIS(letter))
+                .Union(GetDefaultLetterKeyIT(letter))
+                .Union(GetDefaultLetterKeyKU(letter))
+                .Union(GetDefaultLetterKeyLT(letter))
+                .Union(GetDefaultLetterKeyMK(letter))
+                .Union(GetDefaultLetterKeyMI(letter))
+                .Union(GetDefaultLetterKeyNL(letter))
+                .Union(GetDefaultLetterKeyNO(letter))
+                .Union(GetDefaultLetterKeyPI(letter))
+                .Union(GetDefaultLetterKeyPL(letter))
+                .Union(GetDefaultLetterKeyPT(letter))
+                .Union(GetDefaultLetterKeyRO(letter))
+                .Union(GetDefaultLetterKeySK(letter))
+                .Union(GetDefaultLetterKeySP(letter))
+                .Union(GetDefaultLetterKeySR(letter))
+                .Union(GetDefaultLetterKeySV(letter))
+                .Union(GetDefaultLetterKeyTK(letter))
+            .ToArray();
         }
 
         // Currencies (source: https://www.eurochange.co.uk/travel-money/world-currency-abbreviations-symbols-and-codes-travel-money)

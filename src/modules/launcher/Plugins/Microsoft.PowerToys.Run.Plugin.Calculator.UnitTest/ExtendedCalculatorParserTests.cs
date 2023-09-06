@@ -239,7 +239,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Act
             // Using en-us culture to have a fixed number style
-            var result = engine.Interpret(input, new CultureInfo("en-us"), out _);
+            var result = engine.Interpret(input, new CultureInfo("en-us", false), out _);
 
             // Assert
             Assert.IsNotNull(result);
