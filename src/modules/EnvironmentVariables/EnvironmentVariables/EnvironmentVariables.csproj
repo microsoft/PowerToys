@@ -18,8 +18,9 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <AssemblyName>PowerToys.EnvironmentVariables</AssemblyName>
-	  <ApplicationIcon>Assets/EnvironmentVariables/EnvironmentVariables.ico</ApplicationIcon>
-  	<SelfContained>true</SelfContained>
+    <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
+    <ApplicationIcon>Assets/EnvironmentVariables/EnvironmentVariables.ico</ApplicationIcon>
+    <SelfContained>true</SelfContained>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.EnvironmentVariables.pri</ProjectPriFileName>
   </PropertyGroup>
@@ -68,6 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
@@ -81,6 +83,7 @@
   <ItemGroup>
     <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
   </ItemGroup>
 	
   <!-- 
