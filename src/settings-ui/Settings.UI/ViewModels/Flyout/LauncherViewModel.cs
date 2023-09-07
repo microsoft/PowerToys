@@ -46,6 +46,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 });
             }
 
+            if (GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
+                {
+                    Label = resourceLoader.GetString("EnvironmentVariables/ModuleTitle"),
+                    Tag = "EnvironmentVariables",
+                    Visible = generalSettingsConfig.Enabled.EnvironmentVariables,
+                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsEnvironmentVariables.png",
+                });
+            }
+
             if (GPOWrapper.GetConfiguredFancyZonesEnabledValue() != GpoRuleConfigured.Disabled)
             {
                 FlyoutMenuItems.Add(new FlyoutMenuItem()

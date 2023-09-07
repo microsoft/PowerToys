@@ -112,6 +112,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCropAndLock.png}" />
 
                 <NavigationViewItem
+                    x:Uid="Shell_EnvironmentVariables"
+                    helpers:NavHelper.NavigateTo="views:EnvironmentVariablesPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsEnvironmentVariables.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_FancyZones"
                     helpers:NavHelper.NavigateTo="views:FancyZonesPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFancyZones.png}" />
@@ -146,8 +151,8 @@
 
                 <NavigationViewItem
                     x:Uid="Shell_MouseWithoutBorders"
-                        helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
-                        Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}" />
+                    helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_PastePlain"
