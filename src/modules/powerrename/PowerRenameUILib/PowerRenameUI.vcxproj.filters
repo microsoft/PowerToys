@@ -2,27 +2,27 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ApplicationDefinition Include="PowerRenameXAML\App.xaml">
-          <Filter>PowerRenameXAML</Filter>
+      <Filter>PowerRenameXAML</Filter>
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
     <Page Include="PowerRenameXAML\MainWindow.xaml">
-          <Filter>PowerRenameXAML</Filter>
+      <Filter>PowerRenameXAML</Filter>
     </Page>
     <Page Include="PowerRenameXAML\ExplorerItem.xaml">
-          <Filter>PowerRenameXAML</Filter>
+      <Filter>PowerRenameXAML</Filter>
     </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="PowerRenameXAML\App.idl">
-          <Filter>PowerRenameXAML</Filter>
+      <Filter>PowerRenameXAML</Filter>
     </Midl>
     <Midl Include="PowerRenameXAML\MainWindow.idl">
-          <Filter>PowerRenameXAML</Filter>
+      <Filter>PowerRenameXAML</Filter>
     </Midl>
     <Midl Include="PatternSnippet.idl" />
     <Midl Include="PowerRenameXAML\ExplorerItem.idl">
-          <Filter>PowerRenameXAML</Filter>
+      <Filter>PowerRenameXAML</Filter>
     </Midl>
     <Midl Include="ExplorerItemsSource.idl" />
     <Midl Include="ExplorerItemViewModel.idl" />
@@ -37,6 +37,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PatternSnippet.h" />
     <ClInclude Include="ExplorerItemsSource.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

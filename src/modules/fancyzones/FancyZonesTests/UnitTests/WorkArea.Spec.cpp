@@ -316,6 +316,28 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(expected == layoutWindows.GetZoneIndexSetFromWindow(window));
         }
 
+        TEST_METHOD(SnapEmptyZones)
+        {
+            const auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
+            const auto window = Mocks::WindowCreate(m_hInst);
+
+            Assert::IsFalse(workArea->Snap(window, {}));
+        }
+
+        TEST_METHOD(SnapToIncorrectZone)
+        {
+            const auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
+            const auto window = Mocks::WindowCreate(m_hInst);
+
+            const ZoneIndexSet zones = { 10 };
+            Assert::IsFalse(workArea->Snap(window, zones));
+
+            const auto processPath = get_process_path(window);
+            const auto history = AppZoneHistory::instance().GetZoneHistory(processPath, m_workAreaId);
+
+            Assert::IsFalse(history.has_value());
+        }
+
         TEST_METHOD (UnsnapPropertyTest)
         {
             const auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);

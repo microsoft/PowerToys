@@ -282,6 +282,7 @@ namespace winrt::PowerRenameUI::implementation
         }
 
         button_rename().IsEnabled(false);
+        toggleButton_enumItems().IsChecked(true);
         InitAutoComplete();
         SearchReplaceChanged();
         InvalidateItemListViewState();

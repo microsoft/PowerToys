@@ -124,6 +124,14 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
         return false;
     }
 
+    for (ZoneIndex zone : zones)
+    {
+        if (static_cast<size_t>(zone) >= m_layout->Zones().size())
+        {
+            return false;
+        }
+    }
+
     m_layoutWindows.Assign(window, zones);
     AppZoneHistory::instance().SetAppLastZones(window, m_uniqueId, m_layout->Id(), zones);
 

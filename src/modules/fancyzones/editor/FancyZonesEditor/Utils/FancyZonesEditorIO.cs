@@ -1019,6 +1019,45 @@ namespace FancyZonesEditor.Utils
                     continue;
                 }
 
+                LayoutType layoutType = JsonTagToLayoutType(layout.AppliedLayout.Type);
+                LayoutSettings settings = new LayoutSettings
+                {
+                    ZonesetUuid = layout.AppliedLayout.Uuid,
+                    ShowSpacing = layout.AppliedLayout.ShowSpacing,
+                    Spacing = layout.AppliedLayout.Spacing,
+                    Type = layoutType,
+                    ZoneCount = layout.AppliedLayout.ZoneCount,
+                    SensitivityRadius = layout.AppliedLayout.SensitivityRadius,
+                };
+
+                // check if the custom layout exists
+                bool existingLayout = layoutType != LayoutType.Custom;
+                if (layoutType == LayoutType.Custom)
+                {
+                    foreach (LayoutModel custom in MainWindowSettingsModel.CustomModels)
+                    {
+                        if (custom.Uuid == layout.AppliedLayout.Uuid)
+                        {
+                            existingLayout = true;
+                            break;
+                        }
+                    }
+                }
+
+                // replace deleted layout with the Blank layout
+                if (!existingLayout)
+                {
+                    LayoutModel blankLayout = MainWindowSettingsModel.TemplateModels[(int)LayoutType.Blank];
+                    settings.ZonesetUuid = blankLayout.Uuid;
+                    settings.Type = blankLayout.Type;
+                    settings.ZoneCount = blankLayout.TemplateZoneCount;
+                    settings.SensitivityRadius = blankLayout.SensitivityRadius;
+
+                    // grid layout settings, just resetting them
+                    settings.ShowSpacing = false;
+                    settings.Spacing = 0;
+                }
+
                 bool unused = true;
                 foreach (Monitor monitor in monitors)
                 {
@@ -1028,16 +1067,6 @@ namespace FancyZonesEditor.Utils
                         (monitor.Device.VirtualDesktopId == layout.Device.VirtualDesktop ||
                         layout.Device.VirtualDesktop == DefaultVirtualDesktopGuid))
                     {
-                        var settings = new LayoutSettings
-                        {
-                            ZonesetUuid = layout.AppliedLayout.Uuid,
-                            ShowSpacing = layout.AppliedLayout.ShowSpacing,
-                            Spacing = layout.AppliedLayout.Spacing,
-                            Type = JsonTagToLayoutType(layout.AppliedLayout.Type),
-                            ZoneCount = layout.AppliedLayout.ZoneCount,
-                            SensitivityRadius = layout.AppliedLayout.SensitivityRadius,
-                        };
-
                         monitor.Settings = settings;
                         unused = false;
                         break;

@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _frameEnabled = Settings.Properties.FrameEnabled.Value;
             _frameThickness = Settings.Properties.FrameThickness.Value;
             _frameColor = Settings.Properties.FrameColor.Value;
+            _frameOpacity = Settings.Properties.FrameOpacity.Value;
             _frameAccentColor = Settings.Properties.FrameAccentColor.Value;
             _soundEnabled = Settings.Properties.SoundEnabled.Value;
             _doNotActivateOnGameMode = Settings.Properties.DoNotActivateOnGameMode.Value;
@@ -188,6 +189,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int FrameOpacity
+        {
+            get => _frameOpacity;
+
+            set
+            {
+                if (value != _frameOpacity)
+                {
+                    _frameOpacity = value;
+                    Settings.Properties.FrameOpacity.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool SoundEnabled
         {
             get => _soundEnabled;
@@ -293,6 +309,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _frameThickness;
         private string _frameColor;
         private bool _frameAccentColor;
+        private int _frameOpacity;
         private bool _soundEnabled;
         private bool _doNotActivateOnGameMode;
         private bool _roundCornersEnabled;
