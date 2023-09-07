@@ -50,8 +50,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
-            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            Title = loader.GetString("SettingsWindow_Title");
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
 
             // send IPC Message
             ShellPage.SetDefaultSndMessageCallback(msg =>
