@@ -19,7 +19,6 @@
                 CommandParameter="{x:Bind (models:Variable)}"
                 Header="{x:Bind Name, Mode=TwoWay}"
                 IsClickEnabled="True">
-                <!--  TO DO: The Click event or Command can be used to trigger an action, e.g. show Edit dailog?  -->
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     IsTextSelectionEnabled="True"
