@@ -4,8 +4,11 @@
 
 using System;
 using EnvironmentVariables.ViewModels;
+using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 namespace EnvironmentVariables
@@ -41,6 +44,13 @@ namespace EnvironmentVariables
             {
                 services.AddTransient<MainViewModel>();
             }).Build();
+
+            UnhandledException += App_UnhandledException;
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         /// <summary>
@@ -49,6 +59,28 @@ namespace EnvironmentVariables
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            var cmdArgs = Environment.GetCommandLineArgs();
+            if (cmdArgs?.Length > 1)
+            {
+                if (int.TryParse(cmdArgs[cmdArgs.Length - 1], out int powerToysRunnerPid))
+                {
+                    Logger.LogInfo($"EnvironmentVariables started from the PowerToys Runner. Runner pid={powerToysRunnerPid}.");
+
+                    var dispatcher = DispatcherQueue.GetForCurrentThread();
+                    RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
+                    {
+                        Logger.LogInfo("PowerToys Runner exited. Exiting EnvironmentVariables");
+                        dispatcher.TryEnqueue(App.Current.Exit);
+                    });
+                }
+            }
+            else
+            {
+                Logger.LogInfo($"EnvironmentVariables started detached from PowerToys Runner.");
+            }
+
+            PowerToysTelemetry.Log.WriteEvent(new EnvironmentVariables.Telemetry.EnvironmentVariablesOpenedEvent());
+
             window = new MainWindow();
             window.Activate();
         }
