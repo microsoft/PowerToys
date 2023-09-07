@@ -144,4 +144,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowExperimentationValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredEnvironmentVariablesEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredEnvironmentVariablesEnabledValue());
+    }
 }
