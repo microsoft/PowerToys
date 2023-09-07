@@ -71,6 +71,7 @@
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
       <ComponentGroupRef Id="VideoConferenceComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
+      <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
         
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
