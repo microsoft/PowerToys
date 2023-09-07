@@ -3389,7 +3389,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more about Environment Variables</value>
   </data>
   <data name="Oobe_EnvironmentVariables.Description" xml:space="preserve">
-    <value>Environment Variables is a quick utility for managing evnironment variables.</value>
+    <value>Environment Variables is a quick utility for managing environment variables.</value>
   </data>
   <data name="Oobe_EnvironmentVariables.Title" xml:space="preserve">
     <value>Environment Variables</value>

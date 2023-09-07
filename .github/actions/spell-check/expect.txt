@@ -913,6 +913,7 @@ Lastdevice
 Laute
 laviusmotileng
 LAYOUTRTL
+Lbl
 LBUTTON
 LBUTTONDBLCLK
 LBUTTONDOWN
@@ -1484,6 +1485,7 @@ ptrun
 ptstr
 pui
 PULONG
+pvalue
 pwa
 pwcs
 pwsh
@@ -1927,6 +1929,7 @@ timedate
 timediff
 timeunion
 timeutil
+titlebar
 Titlecase
 TKey
 TLayout

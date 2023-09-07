@@ -253,7 +253,7 @@ public:
 
     virtual void disable()
     {
-        Logger::trace("EnvrionmentVariablesModuleInterface::disable()");
+        Logger::trace("EnvironmentVariablesModuleInterface::disable()");
         if (m_enabled)
         {
             if (m_hShowEvent)
