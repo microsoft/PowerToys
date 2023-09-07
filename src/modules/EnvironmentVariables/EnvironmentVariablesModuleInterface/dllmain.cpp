@@ -120,7 +120,7 @@ private:
 public:
     EnvironmentVariablesModuleInterface()
     {
-        app_name = GET_RESOURCE_STRING(IDS_ENVIRONMENTVARIABLES_NAME);
+        app_name = GET_RESOURCE_STRING(IDS_ENVIRONMENT_VARIABLES_NAME);
         app_key = ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::environmentVariablesLoggerName);
 
