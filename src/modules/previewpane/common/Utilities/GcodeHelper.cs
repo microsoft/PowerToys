@@ -72,6 +72,7 @@ namespace Common.Utilities
         public static GcodeThumbnail? GetBestThumbnail(TextReader reader)
         {
             return GetThumbnails(reader)
+                .Where(x => x.Format != GcodeThumbnailFormat.Unknown)
                 .OrderByDescending(x => (int)x.Format)
                 .ThenByDescending(x => x.Data.Length)
                 .FirstOrDefault();
