@@ -3,7 +3,7 @@
 #include <string>
 
 // Start the Tray Icon
-void start_tray_icon();
+void start_tray_icon(bool isProcessElevated);
 // Stop the Tray Icon
 void stop_tray_icon();
 // Open the Settings Window

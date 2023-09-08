@@ -126,4 +126,7 @@
     <value>A new PowerToys version has been installed. Please restart the computer when possible, to fully reload File Explorer extensions.</value>
     <comment>File Explorer refers to the Windows File Explorer application.</comment>
   </data>
+  <data name="TRAY_ICON_ADMIN_TOOLTIP" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
 </root>
