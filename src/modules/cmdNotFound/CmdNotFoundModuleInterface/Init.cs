@@ -5,6 +5,7 @@
 using System.Management.Automation;
 using System.Management.Automation.Subsystem;
 using System.Management.Automation.Subsystem.Feedback;
+using System.Management.Automation.Subsystem.Prediction;
 
 namespace WinGetCommandNotFound
 {
@@ -33,12 +34,14 @@ namespace WinGetCommandNotFound
                 }
             }
 
-            SubsystemManager.RegisterSubsystem<IFeedbackProvider, WinGetCommandNotFoundFeedbackPredictor>(WinGetCommandNotFoundFeedbackPredictor.Singleton);
+            SubsystemManager.RegisterSubsystem(SubsystemKind.FeedbackProvider, WinGetCommandNotFoundFeedbackPredictor.Singleton);
+            SubsystemManager.RegisterSubsystem(SubsystemKind.CommandPredictor, WinGetCommandNotFoundFeedbackPredictor.Singleton);
         }
 
         public void OnRemove(PSModuleInfo psModuleInfo)
         {
             SubsystemManager.UnregisterSubsystem<IFeedbackProvider>(new Guid(Id));
+            SubsystemManager.UnregisterSubsystem<ICommandPredictor>(new Guid(Id));
         }
     }
 }

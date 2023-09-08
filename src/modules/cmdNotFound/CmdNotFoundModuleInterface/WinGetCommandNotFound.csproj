@@ -9,6 +9,7 @@
 		<PublishDir>..\bin\WinGetCommandNotFound</PublishDir>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<RuntimeIdentifiers>win-arm64;win-x64</RuntimeIdentifiers>
+		<LangVersion>preview</LangVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
