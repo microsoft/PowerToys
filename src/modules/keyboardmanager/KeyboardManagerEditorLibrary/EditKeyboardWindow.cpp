@@ -15,7 +15,7 @@
 #include "EditKeyboardWindow.h"
 #include "SingleKeyRemapControl.h"
 #include "KeyDropDownControl.h"
-#include "XamlBridge.h"
+#include "XamlBridge2.h"
 #include "Styles.h"
 #include "Dialog.h"
 #include "LoadingAndSavingRemappingHelper.h"
@@ -41,7 +41,7 @@ HWND hwndEditKeyboardNativeWindow = nullptr;
 std::mutex editKeyboardWindowMutex;
 
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
-static XamlBridge* xamlBridgePtr = nullptr;
+static XamlBridge2* xamlBridgePtr = nullptr;
 
 // Theming
 static ThemeListener theme_listener{};
@@ -200,13 +200,10 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     theme_listener.AddChangedHandler(handleTheme);
 
     // Create the xaml bridge object
-    XamlBridge xamlBridge(_hWndEditKeyboardWindow);
-
-    // DesktopSource needs to be declared before the RelativePanel xamlContainer object to avoid errors
-    winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource;
+    XamlBridge2 xamlBridge(_hWndEditKeyboardWindow);
 
     // Create the desktop window xaml source object and set its content
-    hWndXamlIslandEditKeyboardWindow = xamlBridge.InitDesktopWindowsXamlSource(desktopSource);
+    hWndXamlIslandEditKeyboardWindow = xamlBridge.InitBridge();
 
     // Set the pointer to the xaml bridge object
     xamlBridgePtr = &xamlBridge;
@@ -381,7 +378,20 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     {
     }
 
-    desktopSource.Content(xamlContainer);
+    UserControl xamlContent;
+    xamlContent.Content(xamlContainer);
+    if (Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"Windows.UI.Composition.ICompositionSupportsSystemBackdrop"))
+    {
+        // Apply Mica
+        muxc::BackdropMaterial::SetApplyToRootOrPageBackground(xamlContent, true);
+    }
+    else
+    {
+        // Mica isn't available
+        xamlContainer.Background(Application::Current().Resources().Lookup(box_value(L"ApplicationPageBackgroundThemeBrush")).as<Media::SolidColorBrush>());
+    }
+    Window::Current().Content(xamlContent);
+
     ////End XAML Island section
     if (_hWndEditKeyboardWindow)
     {
@@ -400,9 +410,6 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     hwndEditKeyboardNativeWindow = nullptr;
     keyboardManagerState.ResetUIState();
     keyboardManagerState.ClearRegisteredKeyDelays();
-
-    // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
-    xamlBridge.ClearXamlIslands();
 }
 
 void CreateEditKeyboardWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)

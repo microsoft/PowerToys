@@ -13,7 +13,7 @@
 #include "ShortcutControl.h"
 #include "Styles.h"
 #include "UIHelpers.h"
-#include "XamlBridge.h"
+#include "XamlBridge2.h"
 #include "ShortcutErrorType.h"
 #include "EditorConstants.h"
 #include <common/Themes/theme_listener.h>
@@ -35,7 +35,7 @@ HWND hwndEditShortcutsNativeWindow = nullptr;
 std::mutex editShortcutsWindowMutex;
 
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
-static XamlBridge* xamlBridgePtr = nullptr;
+static XamlBridge2* xamlBridgePtr = nullptr;
 
 // Theming
 static ThemeListener theme_listener{};
@@ -151,13 +151,10 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     theme_listener.AddChangedHandler(handleTheme);
 
     // Create the xaml bridge object
-    XamlBridge xamlBridge(_hWndEditShortcutsWindow);
-    
-    // DesktopSource needs to be declared before the RelativePanel xamlContainer object to avoid errors
-    winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource;
+    XamlBridge2 xamlBridge(_hWndEditShortcutsWindow);
     
     // Create the desktop window xaml source object and set its content
-    hWndXamlIslandEditShortcutsWindow = xamlBridge.InitDesktopWindowsXamlSource(desktopSource);
+    hWndXamlIslandEditShortcutsWindow = xamlBridge.InitBridge();
 
     // Set the pointer to the xaml bridge object
     xamlBridgePtr = &xamlBridge;
@@ -352,7 +349,19 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     {
     }
 
-    desktopSource.Content(xamlContainer);
+    UserControl xamlContent;
+    xamlContent.Content(xamlContainer);
+    if (Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"Windows.UI.Composition.ICompositionSupportsSystemBackdrop"))
+    {
+        // Apply Mica
+        muxc::BackdropMaterial::SetApplyToRootOrPageBackground(xamlContent, true);
+    }
+    else
+    {
+        // Mica isn't available
+        xamlContainer.Background(Application::Current().Resources().Lookup(box_value(L"ApplicationPageBackgroundThemeBrush")).as<Media::SolidColorBrush>());
+    }
+    Window::Current().Content(xamlContent);
 
     ////End XAML Island section
     if (_hWndEditShortcutsWindow)
@@ -371,9 +380,6 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     hwndEditShortcutsNativeWindow = nullptr;
     keyboardManagerState.ResetUIState();
     keyboardManagerState.ClearRegisteredKeyDelays();
-
-    // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
-    xamlBridge.ClearXamlIslands();
 }
 
 void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
