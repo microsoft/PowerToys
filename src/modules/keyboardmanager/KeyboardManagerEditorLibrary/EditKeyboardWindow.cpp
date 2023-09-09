@@ -319,10 +319,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
-    FontIcon plusSymbol;
-    plusSymbol.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
-    plusSymbol.Glyph(L"\xE710");
-    addRemapKey.Content(plusSymbol);
+    addRemapKey.Content(SymbolIcon(Symbol::Add));
     addRemapKey.Margin({ 10, 10, 0, 25 });
     addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);

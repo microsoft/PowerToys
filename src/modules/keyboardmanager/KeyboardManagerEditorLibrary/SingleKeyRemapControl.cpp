@@ -98,9 +98,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     row.Children().Append(originalElement);
 
     // Arrow icon
-    FontIcon arrowIcon;
-    arrowIcon.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
-    arrowIcon.Glyph(L"\xE72A");
+    SymbolIcon arrowIcon(Symbol::Forward);
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
     auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, EditorConstants::TableArrowColWidth).as<StackPanel>();
@@ -135,10 +133,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteRemapKeys;
-    FontIcon deleteSymbol;
-    deleteSymbol.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
-    deleteSymbol.Glyph(L"\xE74D");
-    deleteRemapKeys.Content(deleteSymbol);
+    deleteRemapKeys.Content(SymbolIcon(Symbol::Delete));
     deleteRemapKeys.Background(Media::SolidColorBrush(Colors::Transparent()));
     deleteRemapKeys.HorizontalAlignment(HorizontalAlignment::Center);
     deleteRemapKeys.Click([&, parent, row, brush, deleteRemapKeys](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {

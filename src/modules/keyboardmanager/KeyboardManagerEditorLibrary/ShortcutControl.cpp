@@ -104,9 +104,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     row.Children().Append(origin);
 
     // Arrow icon
-    FontIcon arrowIcon;
-    arrowIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
-    arrowIcon.Glyph(L"\xE72A");
+    SymbolIcon arrowIcon(Symbol::Forward);
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
     auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, EditorConstants::ShortcutArrowColumnWidth).as<StackPanel>();
@@ -194,10 +192,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteShortcut;
-    FontIcon deleteSymbol;
-    deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
-    deleteSymbol.Glyph(L"\xE74D");
-    deleteShortcut.Content(deleteSymbol);
+    deleteShortcut.Content(SymbolIcon(Symbol::Delete));
     deleteShortcut.Background(Media::SolidColorBrush(Colors::Transparent()));
     deleteShortcut.HorizontalAlignment(HorizontalAlignment::Center);
     deleteShortcut.Click([&, parent, row, brush, deleteShortcut](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
