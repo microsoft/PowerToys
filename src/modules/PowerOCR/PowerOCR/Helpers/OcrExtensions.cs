@@ -94,11 +94,11 @@ namespace PowerOCR.Helpers
             bmp.Save(wrappingStream, ImageFormat.Bmp);
             wrappingStream.Position = 0;
 
-            await memoryStream.DisposeAsync();
-            await wrappingStream.DisposeAsync();
-
             BitmapDecoder bmpDecoder = await BitmapDecoder.CreateAsync(wrappingStream.AsRandomAccessStream());
             SoftwareBitmap softwareBmp = await bmpDecoder.GetSoftwareBitmapAsync();
+
+            await memoryStream.DisposeAsync();
+            await wrappingStream.DisposeAsync();
 
             OcrEngine ocrEngine = OcrEngine.TryCreateFromLanguage(language);
             return await ocrEngine.RecognizeAsync(softwareBmp);
