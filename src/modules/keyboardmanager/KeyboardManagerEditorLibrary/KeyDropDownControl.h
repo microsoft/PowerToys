@@ -3,7 +3,7 @@
 #include <keyboardmanager/common/Shortcut.h>
 
 // Enables the WinUI teaching tip to show as the new warning flyout
-#define USE_NEW_DROPDOWN_WARNINGTIP
+#define USE_NEW_DROPDOWN_WARNING_TIP
 
 namespace KBMEditor
 {
@@ -41,7 +41,7 @@ private:
     // Stores the previous layout
     HKL previousLayout = 0;
 
-#ifdef USE_NEW_DROPDOWN_WARNINGTIP
+#ifdef USE_NEW_DROPDOWN_WARNING_TIP
     // Stores the teaching tip attached to the current drop down
     muxc::TeachingTip warningTip;
 #else

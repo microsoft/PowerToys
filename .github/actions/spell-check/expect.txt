@@ -1024,6 +1024,7 @@ majortype
 MAJORVERSION
 makecab
 MAKEINTRESOURCE
+MAKEINTRESOURCEA
 MAKEINTRESOURCEW
 makepri
 manifestdependency
@@ -1154,6 +1155,7 @@ MTND
 Mul
 MULTIPLEUSE
 multizone
+muxc
 mvvm
 mwb
 MWBEx

@@ -51,7 +51,7 @@ std::vector<std::pair<DWORD, std::wstring>> KeyDropDownControl::GetKeyList(bool 
 void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisable)
 {
     dropDown = ComboBox();
-#ifndef USE_NEW_DROPDOWN_WARNINGTIP
+#ifndef USE_NEW_DROPDOWN_WARNING_TIP
     warningFlyout = Flyout();
     warningMessage = TextBlock();
 #endif
@@ -79,7 +79,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
         CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut, renderDisable);
     });
 
-#ifdef USE_NEW_DROPDOWN_WARNINGTIP
+#ifdef USE_NEW_DROPDOWN_WARNING_TIP
     // Attach the tip to the drop down
     warningTip.Target(dropDown.as<ComboBox>());
     dropDown.as<ComboBox>().Loaded([&](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
@@ -393,7 +393,7 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
 {
     currentDropDown.SelectedIndex(-1);
 
-#ifdef USE_NEW_DROPDOWN_WARNINGTIP
+#ifdef USE_NEW_DROPDOWN_WARNING_TIP
     warningTip.Title(message);
     warningTip.IsOpen(true);
 #else
