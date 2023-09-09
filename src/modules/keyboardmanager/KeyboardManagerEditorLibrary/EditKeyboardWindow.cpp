@@ -44,9 +44,9 @@ std::mutex editKeyboardWindowMutex;
 static XamlBridge* xamlBridgePtr = nullptr;
 
 // Theming
-ThemeListener theme_listener{};
+static ThemeListener theme_listener{};
 
-void handleTheme()
+static void handleTheme()
 {
     auto theme = theme_listener.AppTheme;
     auto isDark = theme == AppTheme::Dark;

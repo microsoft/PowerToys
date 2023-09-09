@@ -16,6 +16,7 @@
 #include "XamlBridge.h"
 #include "ShortcutErrorType.h"
 #include "EditorConstants.h"
+#include <common/Themes/theme_listener.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -35,6 +36,20 @@ std::mutex editShortcutsWindowMutex;
 
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
 static XamlBridge* xamlBridgePtr = nullptr;
+
+// Theming
+static ThemeListener theme_listener{};
+
+static void handleTheme()
+{
+    auto theme = theme_listener.AppTheme;
+    auto isDark = theme == AppTheme::Dark;
+    Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
+    if (hwndEditShortcutsNativeWindow != nullptr)
+    {
+        ThemeHelpers::SetImmersiveDarkMode(hwndEditShortcutsNativeWindow, isDark);
+    }
+}
 
 static IAsyncAction OnClickAccept(
     KBMEditor::KeyboardManagerState& keyboardManagerState,
@@ -131,6 +146,9 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     std::unique_lock<std::mutex> hwndLock(editShortcutsWindowMutex);
     hwndEditShortcutsNativeWindow = _hWndEditShortcutsWindow;
     hwndLock.unlock();
+
+    handleTheme();
+    theme_listener.AddChangedHandler(handleTheme);
 
     // Create the xaml bridge object
     XamlBridge xamlBridge(_hWndEditShortcutsWindow);
