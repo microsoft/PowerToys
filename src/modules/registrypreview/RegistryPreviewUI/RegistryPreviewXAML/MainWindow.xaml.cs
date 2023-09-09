@@ -98,8 +98,7 @@ namespace RegistryPreview
                 UpdateWindowTitle(resourceLoader.GetString("FileNotFound"));
             }
 
-            var handle = this.GetWindowHandle();
-            ManagedCommon.WindowHelpers.BringToForeground(handle);
+            ManagedCommon.WindowHelpers.BringToForeground(windowHandle);
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
