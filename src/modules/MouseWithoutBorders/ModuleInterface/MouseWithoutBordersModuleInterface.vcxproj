@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{2833C9C6-AB32-4048-A5C7-A70898337B57}</ProjectGuid>

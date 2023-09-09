@@ -1851,6 +1851,7 @@ subquery
 subresource
 Superbar
 sut
+svchost
 SVE
 SVGIn
 SVGIO
@@ -2225,7 +2226,6 @@ Wubi
 WVC
 Wwan
 Wwanpp
-XAttribute
 XAxis
 xbf
 Xbox

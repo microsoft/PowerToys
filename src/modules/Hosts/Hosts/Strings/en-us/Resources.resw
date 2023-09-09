@@ -216,8 +216,16 @@
     <value>Hosts file was modified externally.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
-  <data name="FileSaveError.Message" xml:space="preserve">
-    <value>Failed to save hosts file.</value>
+  <data name="FileSaveError_FileInUse" xml:space="preserve">
+    <value>The hosts file cannot be saved because it is being used by another process.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FileSaveError_Generic" xml:space="preserve">
+    <value>Unable to save the hosts file.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FileSaveError_NotElevated" xml:space="preserve">
+    <value>The hosts file cannot be saved because the program isn't running as administrator.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="FilterBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
