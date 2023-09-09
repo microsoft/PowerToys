@@ -687,6 +687,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "RegistryPreview";
     case ESettingsWindowNames::CropAndLock:
         return "CropAndLock";
+    case ESettingsWindowNames::EnvironmentVariables:
+        return "EnvironmentVariables";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -765,6 +767,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "CropAndLock")
     {
         return ESettingsWindowNames::CropAndLock;
+    }
+    else if (value == "EnvironmentVariables")
+    {
+        return ESettingsWindowNames::EnvironmentVariables;
     }
     else
     {

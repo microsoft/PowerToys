@@ -28,6 +28,7 @@ namespace Common.UI
             PowerOCR,
             RegistryPreview,
             CropAndLock,
+            EnvironmentVariables,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -68,6 +69,8 @@ namespace Common.UI
                     return "RegistryPreview";
                 case SettingsWindow.CropAndLock:
                     return "CropAndLock";
+                case SettingsWindow.EnvironmentVariables:
+                    return "EnvironmentVariables";
                 default:
                     {
                         return string.Empty;

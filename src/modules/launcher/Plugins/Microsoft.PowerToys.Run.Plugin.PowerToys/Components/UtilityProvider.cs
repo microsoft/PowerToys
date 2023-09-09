@@ -170,6 +170,20 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                     }));
             }
 
+            if (GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                _utilities.Add(new Utility(
+                    UtilityKey.EnvironmentVariables,
+                    Resources.Environment_Variables,
+                    generalSettings.Enabled.EnvironmentVariables,
+                    (_) =>
+                    {
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowEnvironmentVariablesSharedEvent());
+                        eventHandle.Set();
+                        return true;
+                    }));
+            }
+
             _watcher = new FileSystemWatcher
             {
                 Path = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath()),
@@ -214,6 +228,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                                 case UtilityKey.ShortcutGuide: u.Enable(generalSettings.Enabled.ShortcutGuide); break;
                                 case UtilityKey.RegistryPreview: u.Enable(generalSettings.Enabled.RegistryPreview); break;
                                 case UtilityKey.CropAndLock: u.Enable(generalSettings.Enabled.CropAndLock); break;
+                                case UtilityKey.EnvironmentVariables: u.Enable(generalSettings.Enabled.EnvironmentVariables); break;
                             }
                         }
 
