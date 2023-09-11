@@ -71,6 +71,11 @@ public:
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         })
     {
+        if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL))
+        {
+            Logger::warn("Failed to set main thread priority");
+        }
+
         this->disableModuleCallback = std::move(disableModuleCallbackFunction);
 
         FancyZonesSettings::instance().LoadSettings();
