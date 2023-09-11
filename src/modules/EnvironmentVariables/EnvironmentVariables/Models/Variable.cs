@@ -31,15 +31,10 @@ namespace EnvironmentVariables.Models
             Values = values;
             ParentType = parentType;
 
-            ValuesList = new List<string>();
-
             var splitValues = Values.Split(';');
             if (splitValues.Length > 0)
             {
-                foreach (var splitValue in splitValues)
-                {
-                    ValuesList.Add(splitValue);
-                }
+                ValuesList = new List<string>(splitValues);
             }
         }
 

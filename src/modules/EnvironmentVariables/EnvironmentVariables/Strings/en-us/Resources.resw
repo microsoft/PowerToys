@@ -156,4 +156,13 @@
   <data name="ValueTxtBox.Header" xml:space="preserve">
     <value>Value</value>
   </data>
+  <data name="AddBtn" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="AddNewProfileDialog_Title" xml:space="preserve">
+    <value>Add new profile</value>
+  </data>
+  <data name="Enabled.Header" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
 </root>

@@ -19,6 +19,10 @@ namespace EnvironmentVariables.Views
 
         public ICommand EditCommand => new RelayCommand<Variable>(EditVariable);
 
+        public ICommand NewProfileCommand => new AsyncRelayCommand(AddProfileAsync);
+
+        public ICommand AddProfileCommand => new RelayCommand(AddProfile);
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -30,15 +34,15 @@ namespace EnvironmentVariables.Views
         {
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
-            EditDialog.Title = resourceLoader.GetString("EditVariableDialog_Title");
-            EditDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
-            EditDialog.PrimaryButtonCommand = EditCommand;
-            EditDialog.PrimaryButtonCommandParameter = variable;
+            EditVariableDialog.Title = resourceLoader.GetString("EditVariableDialog_Title");
+            EditVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
+            EditVariableDialog.PrimaryButtonCommand = EditCommand;
+            EditVariableDialog.PrimaryButtonCommandParameter = variable;
 
             var clone = variable.Clone();
-            EditDialog.DataContext = clone;
+            EditVariableDialog.DataContext = clone;
 
-            await EditDialog.ShowAsync();
+            await EditVariableDialog.ShowAsync();
         }
 
         private async void EditVariable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -52,8 +56,24 @@ namespace EnvironmentVariables.Views
 
         private void EditVariable(Variable original)
         {
-            var edited = EditDialog.DataContext as Variable;
+            var edited = EditVariableDialog.DataContext as Variable;
             ViewModel.EditVariable(original, edited);
+        }
+
+        private async Task AddProfileAsync()
+        {
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            AddProfileDialog.Title = resourceLoader.GetString("AddNewProfileDialog_Title");
+            AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
+            AddProfileDialog.PrimaryButtonCommand = AddProfileCommand;
+            AddProfileDialog.DataContext = new ProfileVariablesSet(Guid.NewGuid(), string.Empty);
+            await AddProfileDialog.ShowAsync();
+        }
+
+        private void AddProfile()
+        {
+            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            ViewModel.AddProfile(profile);
         }
     }
 }

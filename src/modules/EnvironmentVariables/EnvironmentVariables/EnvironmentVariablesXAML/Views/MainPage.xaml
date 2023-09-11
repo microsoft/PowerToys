@@ -43,7 +43,7 @@
 
         <Grid>
             <!--  buttons  -->
-            <Button>
+            <Button Command="{x:Bind NewProfileCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon
                         x:Name="Icon"
@@ -117,8 +117,8 @@
         </Grid>
 
         <ContentDialog
-            x:Name="EditDialog"
-            x:Uid="EditDialog"
+            x:Name="EditVariableDialog"
+            x:Uid="EditVariableDialog"
             IsPrimaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
@@ -142,6 +142,32 @@
                         ScrollViewer.VerticalScrollMode="Enabled"
                         Text="{Binding Values, Mode=TwoWay}"
                         TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+        <ContentDialog
+            x:Name="AddProfileDialog"
+            x:Uid="AddProfileDialog"
+            IsPrimaryButtonEnabled="True"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:ProfileVariablesSet />
+            </ContentDialog.DataContext>
+            <ScrollViewer>
+                <StackPanel
+                    MinWidth="320"
+                    HorizontalAlignment="Stretch"
+                    Spacing="12">
+                    <TextBox
+                        x:Uid="NameTxtBox"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <ToggleSwitch
+                        x:Uid="Enabled"
+                        IsOn="{Binding IsEnabled, Mode=TwoWay}"
+                        OffContent=""
+                        OnContent="" />
                 </StackPanel>
             </ScrollViewer>
         </ContentDialog>
