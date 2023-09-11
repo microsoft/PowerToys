@@ -71,7 +71,7 @@ jobs:
       packageType: sdk
       version: '7.x'
 
-  - task: NuGetAuthenticate@0
+  - task: NuGetAuthenticate@1
       
   - task: NuGetToolInstaller@1
     displayName: Use NuGet Installer latest
@@ -82,14 +82,6 @@ jobs:
 # - Webcam report tool
 # - Installer
 # - Bootstrapper Installer
-  - task: NuGetCommand@2
-    displayName: NuGet restore solutions dependencies
-    inputs:
-      command: restore
-      restoreSolution: '**/*.sln'
-      selectOrConfig: config
-      nugetConfigPath: .pipelines/release-nuget.config
-
   - task: PowerShell@2
     displayName: Download and install WiX 3.14 development build
     inputs:
@@ -136,7 +128,7 @@ jobs:
     inputs:
       solution: '**\PowerToys.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -147,7 +139,7 @@ jobs:
     inputs:
       solution: '**/tools/BugReportTool/BugReportTool.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -158,7 +150,7 @@ jobs:
     inputs:
       solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -169,7 +161,7 @@ jobs:
     inputs:
       solution: '**/tools/StylesReportTool/StylesReportTool.sln'
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -271,22 +263,6 @@ jobs:
       maximumCpuCount: true
 
   - task: VSBuild@1
-    displayName: Publish Measure Tool UI for Packaging
-    inputs:
-      solution: 'src/modules/MeasureTool/MeasureToolUI/MeasureToolUI.csproj'
-      vsVersion: 17.0
-      # The arguments should be the same as the ones for Settings; make sure they are.
-      msbuildArgs: >-
-        /target:Publish
-        /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
-        /p:VCRTForwarders-IncludeDebugCRT=false
-        /p:PowerToysRoot=$(Build.SourcesDirectory)
-        /p:PublishProfile=InstallationPublishProfile.pubxml
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      maximumCpuCount: true
-
-  - task: VSBuild@1
     displayName: Publish File Locksmith UI for Packaging
     inputs:
       solution: 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
@@ -301,6 +277,29 @@ jobs:
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       maximumCpuCount: true
+
+  # Check if deps.json files don't reference different dll versions.
+  - task: PowerShell@2
+    displayName: Audit deps.json files for all applications
+    inputs:
+      filePath: '.pipelines/verifyDepsJsonLibraryVersions.ps1'
+      arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+      pwsh: true
+
+  # Check if asset files on the main application paths are playing nice and avoiding basic conflicts.
+  - task: PowerShell@2
+    displayName: Audit base applications path asset conflicts
+    inputs:
+      filePath: '.pipelines/verifyPossibleAssetConflicts.ps1'
+      arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+      pwsh: true
+
+  - task: PowerShell@2
+    displayName: Audit WinAppSDK applications path asset conflicts
+    inputs:
+      filePath: '.pipelines/verifyPossibleAssetConflicts.ps1'
+      arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
+      pwsh: true
 
 #### MAIN SIGNING AREA
 # reference https://dev.azure.com/microsoft/Dart/_git/AppDriver?path=/ESRPSigning.json&version=GBarm64-netcore&_a=contents for winappdriver
@@ -389,14 +388,6 @@ jobs:
       targetType: inline
       script: git clean -xfd  -e *exe -- .\installer\
       pwsh: true
-
-  - task: NuGetCommand@2
-    displayName: NuGet restore solutions dependencies
-    inputs:
-      command: restore
-      restoreSolution: 'installer/*.sln'
-      selectOrConfig: config
-      nugetConfigPath: .pipelines/release-nuget.config
 
   - template: installer-steps.yml
     parameters:

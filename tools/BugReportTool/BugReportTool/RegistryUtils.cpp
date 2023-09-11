@@ -23,7 +23,6 @@ namespace
     { HKEY_CLASSES_ROOT, L"CLSID\\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\\InprocServer32" },
     { HKEY_CLASSES_ROOT, L"CLSID\\{0440049F-D1DC-4E46-B27B-98393D79486B}" },
     { HKEY_CLASSES_ROOT, L"AllFileSystemObjects\\ShellEx\\ContextMenuHandlers\\PowerRenameExt" },
-    { HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\AppUserModelId\\PowerToysRun" },
     { HKEY_CLASSES_ROOT, L".svg\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
     { HKEY_CLASSES_ROOT, L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
     { HKEY_CLASSES_ROOT, L".md\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },

@@ -83,11 +83,11 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Platform)'!='Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>PowerToys.VideoConferenceProxyFilter_$(Platform)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
-    <OutDir>..\..\..\..\x86\$(Configuration)\modules\VideoConference\</OutDir>
+    <OutDir>..\..\..\..\x86\$(Configuration)\</OutDir>
     <TargetName>PowerToys.VideoConferenceProxyFilter_x86</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />

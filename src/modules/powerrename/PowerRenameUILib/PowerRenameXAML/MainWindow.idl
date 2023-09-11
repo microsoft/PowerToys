@@ -1,0 +1,22 @@
+import "PowerRenameXAML\ExplorerItem.idl";
+import "ExplorerItemsSource.idl";
+import "PatternSnippet.idl";
+
+namespace PowerRenameUI
+{
+    [default_interface] runtimeclass MainWindow : Microsoft.UI.Xaml.Window, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        MainWindow();
+
+        Windows.Foundation.Collections.IObservableVector<String> SearchMRU { get; };
+        Windows.Foundation.Collections.IObservableVector<String> ReplaceMRU { get; };
+
+        ExplorerItemsSource ExplorerItems { get; };
+        Windows.Foundation.Collections.IObservableVector<PatternSnippet> SearchRegExShortcuts { get; };
+        Windows.Foundation.Collections.IObservableVector<PatternSnippet> DateTimeShortcuts { get; };
+        Windows.Foundation.Collections.IObservableVector<PatternSnippet> CounterShortcuts { get; };
+
+        String OriginalCount;
+        String RenamedCount;
+    }
+}

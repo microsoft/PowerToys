@@ -78,8 +78,6 @@ namespace FancyZonesEditor
 
             _themeManager = new ThemeManager(this);
 
-            var parseResult = FancyZonesEditorIO.ParseParams();
-
             RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
             {
                 Logger.LogInfo("Runner exited");
@@ -87,27 +85,8 @@ namespace FancyZonesEditor
                 Application.Current.Dispatcher.Invoke(Application.Current.Shutdown);
             });
 
-            if (!parseResult.Result)
-            {
-                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
-                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
-            }
+            var parseResult = FancyZonesEditorIO.ParseParams();
 
-            parseResult = FancyZonesEditorIO.ParseAppliedLayouts();
-            if (!parseResult.Result)
-            {
-                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
-                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
-            }
-
-            parseResult = FancyZonesEditorIO.ParseCustomLayouts();
-            if (!parseResult.Result)
-            {
-                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
-                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
-            }
-
-            parseResult = FancyZonesEditorIO.ParseLayoutHotkeys();
             if (!parseResult.Result)
             {
                 Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
@@ -121,7 +100,28 @@ namespace FancyZonesEditor
                 MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
             }
 
+            parseResult = FancyZonesEditorIO.ParseCustomLayouts();
+            if (!parseResult.Result)
+            {
+                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
+            }
+
             parseResult = FancyZonesEditorIO.ParseDefaultLayouts();
+            if (!parseResult.Result)
+            {
+                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
+            }
+
+            parseResult = FancyZonesEditorIO.ParseLayoutHotkeys();
+            if (!parseResult.Result)
+            {
+                Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Data_Title, MessageBoxButton.OK);
+            }
+
+            parseResult = FancyZonesEditorIO.ParseAppliedLayouts();
             if (!parseResult.Result)
             {
                 Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);

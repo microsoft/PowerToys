@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.PowerOCR</AssemblyTitle>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerOCR</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
@@ -28,9 +28,10 @@
     <PackageIcon>PowerOCRLogo.png</PackageIcon>
     <RootNamespace>PowerOCR</RootNamespace>
     <AssemblyName>PowerToys.PowerOCR</AssemblyName>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectTypeGuids>{2150E333-8FDC-42A3-9474-1A3956D46DE8}</ProjectTypeGuids>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>

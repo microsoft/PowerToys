@@ -26,11 +26,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
                 foreach (JsonElement e in languageList.EnumerateArray())
                 {
-                    for (int j = 0; j < e.GetProperty("extensions").GetArrayLength(); j++)
+                    if (e.TryGetProperty("extensions", out var extensions))
                     {
-                        if (e.GetProperty("extensions")[j].ToString() == fileExtension)
+                        for (int j = 0; j < extensions.GetArrayLength(); j++)
                         {
-                            return e.GetProperty("id").ToString();
+                            if (extensions[j].ToString() == fileExtension)
+                            {
+                                return e.GetProperty("id").ToString();
+                            }
                         }
                     }
                 }

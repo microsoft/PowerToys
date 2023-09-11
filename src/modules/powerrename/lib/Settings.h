@@ -6,6 +6,9 @@
 class CSettings
 {
 public:
+    static constexpr inline int DEFAULT_WINDOW_WIDTH = 1400;
+    static constexpr inline int DEFAULT_WINDOW_HEIGHT = 800;
+
     CSettings();
 
     inline bool GetEnabled()
@@ -23,6 +26,17 @@ public:
     {
         settings.enabled = enabled;
         Save();
+    }
+
+    inline std::tuple<int, int> GetLastWindowSize() const
+    {
+        return std::make_tuple(settings.lastWindowWidth, settings.lastWindowHeight);
+    }
+
+    inline void UpdateLastWindowSize(const int width, const int height)
+    {
+        settings.lastWindowWidth = std::max(width, DEFAULT_WINDOW_WIDTH);
+        settings.lastWindowHeight = std::max(height, DEFAULT_WINDOW_HEIGHT);
     }
 
     inline bool GetShowIconOnMenu() const
@@ -134,6 +148,8 @@ private:
         unsigned int flags{ 0 };
         std::wstring searchText{};
         std::wstring replaceText{};
+        int lastWindowWidth{ DEFAULT_WINDOW_WIDTH };
+        int lastWindowHeight{ DEFAULT_WINDOW_HEIGHT };
     };
 
     void Reload();

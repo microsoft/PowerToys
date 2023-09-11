@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyTitle>PowerToys.ColorPickerUI</AssemblyTitle>
     <AssemblyDescription>PowerToys ColorPicker</AssemblyDescription>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ColorPicker</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
@@ -25,7 +25,9 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>ColorPicker</RootNamespace>
     <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -41,7 +43,7 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\ColorPicker\icon.ico</ApplicationIcon>
     <NeutralLanguage>en-US</NeutralLanguage>
     <ApplicationManifest>App.manifest</ApplicationManifest>
   </PropertyGroup>
@@ -61,10 +63,10 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Update="Resources\colorPicker.cur">
+    <None Update="Assets\ColorPicker\colorPicker.cur">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\icon.ico">
+    <None Update="Assets\ColorPicker\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

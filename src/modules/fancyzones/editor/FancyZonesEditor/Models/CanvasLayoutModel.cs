@@ -184,6 +184,8 @@ namespace FancyZonesEditor.Models
 
         public void RestoreTo(CanvasLayoutModel other)
         {
+            base.RestoreTo(other);
+
             other.Zones.Clear();
             foreach (Int32Rect zone in Zones)
             {
@@ -191,7 +193,6 @@ namespace FancyZonesEditor.Models
             }
 
             other._topLeft = _topLeft;
-            other.SensitivityRadius = SensitivityRadius;
             other.CanvasRect = CanvasRect;
             other.UpdateLayout();
         }

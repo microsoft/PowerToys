@@ -150,6 +150,24 @@
   <data name="ReplaceBox.PlaceholderText" xml:space="preserve">
     <value>Replace with</value>
   </data>
+  <data name="CounterCheatSheet_Title.Text" xml:space="preserve">
+    <value>Replace using advanced counter syntax.</value>
+  </data>
+  <data name="CounterCheatSheet_Simple" xml:space="preserve">
+    <value>A simple counter that you can use anywhere in a replace string.</value>
+  </data>
+  <data name="CounterCheatSheet_Start" xml:space="preserve">
+    <value>A counter with a customized start value.</value>
+  </data>
+  <data name="CounterCheatSheet_Increment" xml:space="preserve">
+    <value>A counter with a customized increment value.</value>
+  </data>
+  <data name="CounterCheatSheet_Padding" xml:space="preserve">
+    <value>A counter with a customized number of leading padding zeroes.</value>
+  </data>
+  <data name="CounterCheatSheet_Complex" xml:space="preserve">
+    <value>A counter showing multiple customized properties.</value>
+  </data>
   <data name="DateTimeCheatSheet_Title.Text" xml:space="preserve">
     <value>Replace using file creation date and time</value>
   </data>
@@ -336,6 +354,13 @@
   <data name="ErrorMessage_InvalidChar" xml:space="preserve">
     <value>File name contains invalid character(s):&#xD;&#xA; &gt; &lt; | " : ? * \ /</value>
   </data>
-
-
+  <data name="RenameParts_FilenameAndExtension.Content" xml:space="preserve">
+    <value>Filename + extension</value>
+  </data>
+  <data name="RenameParts_FilenameOnly.Content" xml:space="preserve">
+    <value>Filename only</value>
+  </data>
+  <data name="RenameParts_ExtensionOnly.Content" xml:space="preserve">
+    <value>Extension only</value>
+  </data>
 </root>

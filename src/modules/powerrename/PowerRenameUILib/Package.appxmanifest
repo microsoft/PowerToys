@@ -14,7 +14,7 @@
   <Properties>
     <DisplayName>PowerRenameUI</DisplayName>
     <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <Logo>Assets\PowerRename\StoreLogo.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -34,10 +34,10 @@
         DisplayName="PowerRenameUI"
         Description="PowerRenameUI"
         BackgroundColor="transparent"
-        Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        Square150x150Logo="Assets\PowerRename\Square150x150Logo.png"
+        Square44x44Logo="Assets\PowerRename\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\PowerRename\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Assets\PowerRename\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>

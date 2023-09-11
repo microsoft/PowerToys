@@ -16,7 +16,7 @@ namespace FancyZonesDataTypes
 {
     enum class ZoneSetLayoutType : int
     {
-        Blank = -1,
+        Blank,
         Focus,
         Columns,
         Rows,
@@ -144,9 +144,9 @@ namespace FancyZonesDataTypes
     {
         std::unordered_map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
-        std::wstring zoneSetUuid;
-        WorkAreaId workAreaId;
-        ZoneIndexSet zoneIndexSet;
+        GUID layoutId = {};
+        WorkAreaId workAreaId = {};
+        ZoneIndexSet zoneIndexSet = {};
     };
 
     struct DeviceInfoData

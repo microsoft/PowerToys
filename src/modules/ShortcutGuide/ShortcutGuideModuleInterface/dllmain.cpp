@@ -219,7 +219,7 @@ private:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\ShortcutGuide\\ShortcutGuide\\PowerToys.ShortcutGuide.exe";
+        sei.lpFile = L"PowerToys.ShortcutGuide.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei) == false)
@@ -342,7 +342,7 @@ private:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Press Time Windows Shortcuts value");
                 }
                 value = static_cast<int>(jsonPressTimeForTaskbarIconShortcutsObject.GetNamedNumber(L"value"));
                 if (value >= 0)
@@ -351,7 +351,7 @@ private:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Press Time Taskbar Shortcuts value");
                 }
             }
             catch (...)

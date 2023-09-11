@@ -9,8 +9,9 @@
 // disable warning 26492 - Don't use const_cast to cast away const on winrt
 // disable warning 26493 - Don't use C-style casts
 // Disable 26497 for winrt - This function function-name could be marked constexpr if compile-time evaluation is desired.
+// disable 26403 - Reset or explicitly delete an owner<T> pointer
 #pragma warning(push)
-#pragma warning(disable : 26471 26492 26493 26497)
+#pragma warning(disable : 26471 26492 26493 26497 26403)
 #include <wil/com.h>
 #pragma warning(pop)
 

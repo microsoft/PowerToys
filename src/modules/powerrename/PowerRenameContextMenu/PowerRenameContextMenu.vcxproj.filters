@@ -35,7 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Assets\**">
+    <None Include="Assets\PowerRename\**">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -45,28 +45,28 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\SmallTile.png">
+    <Image Include="Assets\PowerRename\SmallTile.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Assets\SplashScreen.png">
+    <Image Include="Assets\PowerRename\SplashScreen.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Assets\Square150x150Logo.png">
+    <Image Include="Assets\PowerRename\Square150x150Logo.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Assets\Square44x44Logo.png">
+    <Image Include="Assets\PowerRename\Square44x44Logo.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Assets\storelogo.png">
+    <Image Include="Assets\PowerRename\storelogo.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Assets\Wide310x150Logo.png">
+    <Image Include="Assets\PowerRename\Wide310x150Logo.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Assets\*.png">
+    <Image Include="Assets\PowerRename\*.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Assets\SplashScreen.png">
+    <Image Include="Assets\PowerRename\SplashScreen.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

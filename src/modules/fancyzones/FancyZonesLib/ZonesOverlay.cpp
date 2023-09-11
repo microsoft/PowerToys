@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <common/logger/logger.h>
+#include <common/utils/MsWindowsSettings.h>
 
 namespace
 {
@@ -123,6 +124,12 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
     if (animationAlpha <= 0.f)
     {
         return RenderResult::AnimationEnded;
+    }
+
+    BOOL isEnabledAnimations = GetAnimationsEnabled();
+    if (!isEnabledAnimations)
+    {
+        animationAlpha = 1.f;
     }
 
     m_renderTarget->BeginDraw();

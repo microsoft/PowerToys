@@ -3,11 +3,11 @@
 (?:^|/)(?i)LICEN[CS]E
 (?:^|/)3rdparty/
 (?:^|/)go\.sum$
-(?:^|/)FilePreviewCommon/customLanguages/
-(?:^|/)FilePreviewCommon/generateLanguagesJson.html
-(?:^|/)FilePreviewCommon/index.html
-(?:^|/)FilePreviewCommon/monaco_languages.json
-(?:^|/)FilePreviewCommon/monacoSpecialLanguages.js
+(?:^|/)FilePreviewCommon/Assets/Monaco/customLanguages/
+(?:^|/)FilePreviewCommon/Assets/Monaco/generateLanguagesJson.html
+(?:^|/)FilePreviewCommon/Assets/Monaco/index.html
+(?:^|/)FilePreviewCommon/Assets/Monaco/monaco_languages.json
+(?:^|/)FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js
 (?:^|/)monacoSRC/
 (?:^|/)package(?:-lock|)\.json$
 (?:^|/)timezones\.json$
@@ -98,7 +98,7 @@
 ^src/common/logger/logger\.vcxproj\.filters$
 ^src/common/notifications/BackgroundActivatorDLL/BackgroundActivator\.vcxproj\.filters$
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$
-^src/modules/colorPicker/ColorPickerUI/Resources/colorPicker\.cur$
+^src/modules/colorPicker/ColorPickerUI/Assets/ColorPicker/colorPicker\.cur$
 ^src/modules/fancyzones/lib/FancyZonesWinHookEventIDs\.h$
 ^src/modules/imageresizer/dll/ContextMenuHandler\.rgs$
 ^src/modules/imageresizer/dll/ImageResizerExt\.rgs$

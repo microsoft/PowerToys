@@ -68,12 +68,24 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// This method updates the environment of PT Run's process when called. It is called when we receive a special WindowMessage.
+        /// This method is used as a function wrapper to do the update twice. It is called when we receive a special WindowMessage.
         /// </summary>
         internal static void UpdateEnvironment()
         {
             Stopwatch.Normal("EnvironmentHelper.UpdateEnvironment - Duration cost", () =>
             {
+                // We have to do the update twice to get a correct variable set, if some variables reference other variables in their value (e.g. PATH contains %JAVA_HOME%). [https://github.com/microsoft/PowerToys/issues/26864]
+                // The cause of this is a bug in .Net which reads the variables from the Registry (HKLM/HKCU), but expands the REG_EXPAND_SZ values against the current process environment when reading the Registry value.
+                ExecuteEnvironmentUpdate();
+                ExecuteEnvironmentUpdate();
+            });
+        }
+
+        /// <summary>
+        /// This method updates the environment of PT Run's process when called.
+        /// </summary>
+        private static void ExecuteEnvironmentUpdate()
+        {
                 // Caching existing process environment and getting updated environment variables
                 IDictionary oldProcessEnvironment = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Process);
                 var newEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -151,7 +163,6 @@ namespace PowerLauncher.Helper
                         Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. Their name is null or empty. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
                     }
                 }
-            });
         }
 
         /// <summary>

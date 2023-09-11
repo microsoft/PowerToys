@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <IsPackable>false</IsPackable>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
     <Version>$(Version).0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\x64\Debug\SettingsTests\</OutputPath>
+    <OutputPath>..\..\..\x64\Debug\tests\SettingsTests\</OutputPath>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -22,7 +24,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\x64\Release\SettingsTest\</OutputPath>
+    <OutputPath>..\..\..\x64\Release\tests\SettingsTest\</OutputPath>
   </PropertyGroup>
 
   <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->

@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="PropertySheet.props" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="ThumbnailCropAndLockWindow.cpp" />
+    <ClCompile Include="OverlayWindow.cpp" />
+    <ClCompile Include="ReparentCropAndLockWindow.cpp" />
+    <ClCompile Include="ChildWindow.cpp" />
+    <ClCompile Include="trace.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="ThumbnailCropAndLockWindow.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="SettingsWindow.h" />
+    <ClInclude Include="OverlayWindow.h" />
+    <ClInclude Include="DisplaysUtil.h" />
+    <ClInclude Include="ThumbnailUtil.h" />
+    <ClInclude Include="WindowRectUtil.h" />
+    <ClInclude Include="CropAndLockWindow.h" />
+    <ClInclude Include="ReparentCropAndLockWindow.h" />
+    <ClInclude Include="ChildWindow.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="ModuleConstants.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CropAndLock.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
+</Project>

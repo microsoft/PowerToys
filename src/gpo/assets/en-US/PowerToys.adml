@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.2" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.3" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -13,6 +13,7 @@
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_69_0">PowerToys version 0.69.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_70_0">PowerToys version 0.70.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_73_0">PowerToys version 0.73.0 or later</string>
 
       <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
@@ -67,6 +68,7 @@ If this setting is disabled, experimentation is not allowed.
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityCropAndLock">Crop And Lock: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
