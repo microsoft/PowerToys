@@ -8,15 +8,10 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-
-HMODULE m_hModule;
-
-BOOL APIENTRY DllMain(HMODULE hModule,
+BOOL APIENTRY DllMain(HMODULE /*hModule*/,
                       DWORD ul_reason_for_call,
                       LPVOID /*lpReserved*/)
 {
-    m_hModule = hModule;
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -59,6 +54,8 @@ private:
 
     // Hotkey to invoke the module
 
+    HANDLE m_hProcess;
+
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
 
@@ -66,8 +63,6 @@ private:
 
     // Handle to event used to invoke PowerOCR
     HANDLE m_hInvokeEvent;
-
-    HANDLE m_hProcess;
 
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
@@ -152,11 +147,6 @@ private:
         }
     }
 
-    void terminate_process()
-    {
-        TerminateProcess(m_hProcess, 1);
-    }
-
 public:
     // Constructor
     MouseJump()
@@ -170,7 +160,6 @@ public:
     {
         if (m_enabled)
         {
-            disable();
         }
         m_enabled = false;
     }
@@ -255,7 +244,7 @@ public:
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
-            terminate_process();
+            TerminateProcess(m_hProcess, 1);
         }
 
         m_enabled = false;
@@ -273,9 +262,7 @@ public:
                 launch_process();
             }
 
-            Logger::trace(L"Setting event");
             SetEvent(m_hInvokeEvent);
-            Logger::trace(L"Event set");
             return true;
         }
 

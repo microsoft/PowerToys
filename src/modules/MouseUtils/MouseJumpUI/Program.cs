@@ -18,7 +18,12 @@ namespace MouseJumpUI;
 
 internal static class Program
 {
-    private static int runnerPid;
+    private static CancellationTokenSource CancellationTokenSource { get; }
+
+    static Program()
+    {
+        Program.CancellationTokenSource = new();
+    }
 
     /// <summary>
     /// The main entry point for the application.
@@ -47,7 +52,7 @@ internal static class Program
 
         // validate command line arguments - we're expecting
         // a single argument containing the runner pid
-        if ((args.Length != 1) || !int.TryParse(args[0], out Program.runnerPid))
+        if ((args.Length != 1) || !int.TryParse(args[0], out var runnerPid))
         {
             var message = string.Join("\r\n", new[]
             {
@@ -60,23 +65,23 @@ internal static class Program
             throw new InvalidOperationException(message);
         }
 
-        Logger.LogInfo($"Mouse Jump started from the PowerToys Runner. Runner pid={Program.runnerPid}");
+        Logger.LogInfo($"Mouse Jump started from the PowerToys Runner. Runner pid={runnerPid}");
 
-        RunnerHelper.WaitForPowerToysRunner(Program.runnerPid, () =>
+        RunnerHelper.WaitForPowerToysRunner(runnerPid, () =>
         {
             Logger.LogInfo("PowerToys Runner exited. Exiting Mouse Jump");
+            Program.CancellationTokenSource.Cancel();
             Application.Exit();
         });
 
         var settings = Program.ReadSettings();
         var mainForm = new MainForm(settings);
 
-        var cancellationToken = new CancellationToken(false);
         NativeEventWaiter.WaitForEventLoop(
             Constants.MouseJumpShowPreviewEvent(),
             mainForm.ShowPreview,
             Dispatcher.CurrentDispatcher,
-            cancellationToken);
+            Program.CancellationTokenSource.Token);
 
         Application.Run();
     }
