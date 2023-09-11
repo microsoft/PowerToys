@@ -61,18 +61,9 @@ HWND XamlBridge2::InitBridge()
     return coreWindowHwnd;
 }
 
-// Defined in XamlBridge.cpp
-extern std::wstring getMessageString(const UINT message);
-
 // Message Handler function for Xaml windows
 LRESULT XamlBridge2::MessageHandler(UINT const message, WPARAM const wParam, LPARAM const lParam) noexcept
 {
-    auto msg = getMessageString(message);
-    if (msg != L"")
-    {
-        Logger::trace(L"XamlBridge2::MessageHandler() message: {}", msg);
-    }
-
     switch (message)
     {
     case WM_ACTIVATE:
