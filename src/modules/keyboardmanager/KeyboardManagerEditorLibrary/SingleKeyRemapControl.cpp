@@ -84,13 +84,12 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     newrow.emplace_back(std::make_unique<SingleKeyRemapControl>(parent, row, 1));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
-    row.Padding({ 10, 10, 10, 10 });
+    row.Padding({ 10, 15, 10, 5 });
+    row.Margin({ 0, 0, 0, 2 });
     row.Orientation(Orientation::Horizontal);
-    auto brush = Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundListLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>();
-    if (keyboardRemapControlObjects.size() % 2)
-    {
-        row.Background(brush);
-    }
+    row.Background(Application::Current().Resources().Lookup(box_value(L"CardBackgroundFillColorDefaultBrush")).as<Media::Brush>());
+    row.BorderBrush(Application::Current().Resources().Lookup(box_value(L"CardStrokeColorDefaultBrush")).as<Media::Brush>());
+    row.BorderThickness({ 0, 1, 0, 1 });
 
     // SingleKeyRemapControl for the original key.
     auto originalElement = keyboardRemapControlObjects.back()[0]->getSingleKeyRemapControl();
@@ -104,6 +103,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, EditorConstants::TableArrowColWidth).as<StackPanel>();
     arrowIconContainer.Orientation(Orientation::Vertical);
     arrowIconContainer.VerticalAlignment(VerticalAlignment::Center);
+    arrowIconContainer.Margin({ 0, 0, 0, 10 });
     row.Children().Append(arrowIconContainer);
 
     // SingleKeyRemapControl for the new remap key
@@ -136,7 +136,8 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     deleteRemapKeys.Content(SymbolIcon(Symbol::Delete));
     deleteRemapKeys.Background(Media::SolidColorBrush(Colors::Transparent()));
     deleteRemapKeys.HorizontalAlignment(HorizontalAlignment::Center);
-    deleteRemapKeys.Click([&, parent, row, brush, deleteRemapKeys](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    deleteRemapKeys.Margin({ 0, 0, 0, 10 });
+    deleteRemapKeys.Click([&, parent, row, deleteRemapKeys](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         uint32_t rowIndex;
         // Get index of delete button
         UIElementCollection children = parent.Children();
@@ -152,7 +153,6 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         for (uint32_t i = rowIndex + 1; i < children.Size(); i++)
         {
             StackPanel row = children.GetAt(i).as<StackPanel>();
-            row.Background(i % 2 ? brush : Media::SolidColorBrush(Colors::Transparent()));
             StackPanel sourceCol = row.Children().GetAt(0).as<StackPanel>();
             StackPanel targetCol = row.Children().GetAt(2).as<StackPanel>();
             Button delButton = row.Children().GetAt(3).as<Button>();
