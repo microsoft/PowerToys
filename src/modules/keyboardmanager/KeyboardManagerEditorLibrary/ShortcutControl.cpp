@@ -290,8 +290,6 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     // ContentDialog requires manually setting the XamlRoot (https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectShortcutBox.XamlRoot(xamlRoot);
     detectShortcutBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPESHORTCUT_TITLE)));
-    detectShortcutBox.IsPrimaryButtonEnabled(false);
-    detectShortcutBox.IsSecondaryButtonEnabled(false);
 
     // Get the linked stack panel for the "Type shortcut" button that was clicked
     VariableSizedWrapGrid linkedShortcutVariableSizedWrapGrid = UIHelpers::GetSiblingElement(sender).as<VariableSizedWrapGrid>();
@@ -355,16 +353,13 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         onReleaseEnter();
     };
 
-    TextBlock primaryButtonText;
-    primaryButtonText.Text(GET_RESOURCE_STRING(IDS_OK_BUTTON));
-
-    Button primaryButton;
-    primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    primaryButton.Margin({ 2, 2, 2, 2 });
-    primaryButton.Content(primaryButtonText);
-
     // OK button
-    primaryButton.Click([onAccept](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    detectShortcutBox.DefaultButton(ContentDialogButton::Primary);
+    detectShortcutBox.PrimaryButtonText(GET_RESOURCE_STRING(IDS_OK_BUTTON));
+    detectShortcutBox.PrimaryButtonClick([onAccept](winrt::Windows::Foundation::IInspectable const& sender, ContentDialogButtonClickEventArgs const& args) {
+        // Cancel default dialog events
+        args.Cancel(true);
+
         onAccept();
     });
 
@@ -372,12 +367,10 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
         selectDetectedShortcutAndResetKeys,
-        [primaryButton, onPressEnter, detectShortcutBox](DWORD) {
+        [onPressEnter, detectShortcutBox](DWORD) {
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [primaryButton, onPressEnter] {
-                    // Use the base medium low brush to be consistent with the theme
-                    primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
+                [onPressEnter] {
                     onPressEnter();
                 });
         },
@@ -388,9 +381,6 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
                     onReleaseEnter();
                 });
         });
-
-    TextBlock cancelButtonText;
-    cancelButtonText.Text(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
 
     auto onCancel = [&keyboardManagerState,
                      detectShortcutBox,
@@ -414,12 +404,12 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         unregisterKeys();
     };
 
-    Button cancelButton;
-    cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    cancelButton.Margin({ 2, 2, 2, 2 });
-    cancelButton.Content(cancelButtonText);
     // Cancel button
-    cancelButton.Click([onCancel](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    detectShortcutBox.CloseButtonText(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
+    detectShortcutBox.CloseButtonClick([onCancel](winrt::Windows::Foundation::IInspectable const& sender, ContentDialogButtonClickEventArgs const& args) {
+        // Cancel default dialog events
+        args.Cancel(true);
+
         onCancel();
     });
 
@@ -470,21 +460,6 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);
 
-    ColumnDefinition primaryButtonColumn;
-    ColumnDefinition cancelButtonColumn;
-
-    Grid buttonPanel;
-    buttonPanel.Margin({ 0, 20, 0, 0 });
-    buttonPanel.HorizontalAlignment(HorizontalAlignment::Stretch);
-    buttonPanel.ColumnDefinitions().Append(primaryButtonColumn);
-    buttonPanel.ColumnDefinitions().Append(cancelButtonColumn);
-    buttonPanel.SetColumn(primaryButton, 0);
-    buttonPanel.SetColumn(cancelButton, 1);
-
-    buttonPanel.Children().Append(primaryButton);
-    buttonPanel.Children().Append(cancelButton);
-
-    stackPanel.Children().Append(buttonPanel);
     try
     {
         // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
