@@ -58,6 +58,11 @@
     <ApplicationDefinition Include="EnvironmentVariablesXAML\App.xaml" />
   </ItemGroup>
 
+  <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls and Needed for CommunityToolkit.Labs.WinUI.SegmentedControl. -->
+  <PropertyGroup>
+    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Include="Assets\EnvironmentVariables\SplashScreen.scale-200.png" />
     <Content Include="Assets\EnvironmentVariables\LockScreenLogo.scale-200.png" />
@@ -70,13 +75,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
-    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
     <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" />
-    <PackageReference Include="WinUIEx" />
+	<PackageReference Include="CommunityToolkit.Mvvm" />
+	<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" />
+	<PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

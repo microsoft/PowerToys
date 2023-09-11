@@ -3,16 +3,91 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using EnvironmentVariables.Helpers;
+using ManagedCommon;
 
 namespace EnvironmentVariables.Models
 {
-    public class ProfileVariablesSet : VariablesSet
+    public partial class ProfileVariablesSet : VariablesSet
     {
-        public bool IsEnabled { get; set; }
+        [ObservableProperty]
+        private bool _isEnabled;
+
+        public ProfileVariablesSet()
+            : base()
+        {
+        }
 
         public ProfileVariablesSet(Guid id, string name)
             : base(id, name, VariablesSetType.Profile)
         {
+        }
+
+        public void Apply()
+        {
+            Task.Run(() =>
+            {
+                foreach (var variable in Variables)
+                {
+                    // Get existing variable with the same name if it exist
+                    var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
+
+                    // It exists. Rename it to preserve it.
+                    if (variableToOverride != null)
+                    {
+                        variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, this.Name);
+
+                        // Backup the variable
+                        if (!EnvironmentVariablesHelper.SetVariable(variableToOverride))
+                        {
+                            Logger.LogError("Failed to set backup variable.");
+                        }
+                    }
+
+                    if (!EnvironmentVariablesHelper.SetVariable(variable))
+                    {
+                        Logger.LogError("Failed to set profile variable.");
+                    }
+                }
+            });
+        }
+
+        public void UnApply()
+        {
+            Task.Run(() =>
+            {
+                foreach (var variable in Variables)
+                {
+                    // Unset the variable
+                    if (!EnvironmentVariablesHelper.UnsetVariable(variable))
+                    {
+                        Logger.LogError("Failed to unset variable.");
+                    }
+
+                    var originalName = variable.Name;
+                    var backupName = EnvironmentVariablesHelper.GetBackupVariableName(variable, this.Name);
+
+                    // Get backup variable if it exist
+                    var backupVariable = EnvironmentVariablesHelper.GetExisting(backupName);
+
+                    if (backupVariable != null)
+                    {
+                        var variableToRestore = new Variable(originalName, backupVariable.Values, backupVariable.ParentType);
+
+                        if (!EnvironmentVariablesHelper.UnsetVariable(backupVariable))
+                        {
+                            Logger.LogError("Failed to unset backup variable.");
+                        }
+
+                        if (!EnvironmentVariablesHelper.SetVariable(variableToRestore))
+                        {
+                            Logger.LogError("Failed to restore backup variable.");
+                        }
+                    }
+                }
+            });
         }
     }
 }

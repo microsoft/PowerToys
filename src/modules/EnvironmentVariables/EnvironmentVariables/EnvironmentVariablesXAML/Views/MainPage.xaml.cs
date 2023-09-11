@@ -9,7 +9,9 @@ using CommunityToolkit.Labs.WinUI;
 using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Models;
 using EnvironmentVariables.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using static EnvironmentVariables.Models.Common;
 
 namespace EnvironmentVariables.Views
 {
@@ -18,6 +20,10 @@ namespace EnvironmentVariables.Views
         public MainViewModel ViewModel { get; private set; }
 
         public ICommand EditCommand => new RelayCommand<Variable>(EditVariable);
+
+        public ICommand NewProfileCommand => new AsyncRelayCommand(AddProfileAsync);
+
+        public ICommand AddProfileCommand => new RelayCommand(AddProfile);
 
         public MainPage()
         {
@@ -30,15 +36,15 @@ namespace EnvironmentVariables.Views
         {
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
-            EditDialog.Title = resourceLoader.GetString("EditVariableDialog_Title");
-            EditDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
-            EditDialog.PrimaryButtonCommand = EditCommand;
-            EditDialog.PrimaryButtonCommandParameter = variable;
+            EditVariableDialog.Title = resourceLoader.GetString("EditVariableDialog_Title");
+            EditVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
+            EditVariableDialog.PrimaryButtonCommand = EditCommand;
+            EditVariableDialog.PrimaryButtonCommandParameter = variable;
 
             var clone = variable.Clone();
-            EditDialog.DataContext = clone;
+            EditVariableDialog.DataContext = clone;
 
-            await EditDialog.ShowAsync();
+            await EditVariableDialog.ShowAsync();
         }
 
         private async void EditVariable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -52,8 +58,50 @@ namespace EnvironmentVariables.Views
 
         private void EditVariable(Variable original)
         {
-            var edited = EditDialog.DataContext as Variable;
+            var edited = EditVariableDialog.DataContext as Variable;
             ViewModel.EditVariable(original, edited);
+        }
+
+        private async Task AddProfileAsync()
+        {
+            SwitchViewsSegmentedView.SelectedIndex = 0;
+            ViewModel.CurrentAddVariablePage = AddVariablePageKind.AddNewVariable;
+            ViewModel.ShowAddNewVariablePage = Visibility.Visible;
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            AddProfileDialog.Title = resourceLoader.GetString("AddNewProfileDialog_Title");
+            AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
+            AddProfileDialog.PrimaryButtonCommand = AddProfileCommand;
+            AddProfileDialog.DataContext = new ProfileVariablesSet(Guid.NewGuid(), string.Empty);
+            await AddProfileDialog.ShowAsync();
+        }
+
+        private void AddProfile()
+        {
+            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            ViewModel.AddProfile(profile);
+        }
+
+        private void Segmented_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ViewModel.CurrentAddVariablePage == AddVariablePageKind.AddNewVariable)
+            {
+                ChangeToExistingVariablePage();
+            }
+            else
+            {
+                ChangeToNewVariablePage();
+            }
+        }
+
+        private void ChangeToNewVariablePage()
+        {
+            ViewModel.ChangeToNewVariablePage();
+        }
+
+        private void ChangeToExistingVariablePage()
+        {
+            ViewModel.ChangeToExistingVariablePage();
         }
     }
 }

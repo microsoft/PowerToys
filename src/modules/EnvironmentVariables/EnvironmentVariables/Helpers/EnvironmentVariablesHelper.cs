@@ -11,6 +11,30 @@ namespace EnvironmentVariables.Helpers
 {
     internal sealed class EnvironmentVariablesHelper
     {
+        internal static string GetBackupVariableName(Variable variable, string profileName)
+        {
+            return variable.Name + "_PowerToys_" + profileName;
+        }
+
+        internal static Variable GetExisting(string variableName)
+        {
+            var userVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
+
+            if (userVariables.Contains(variableName))
+            {
+                return new Variable(variableName, userVariables[variableName] as string, VariablesSetType.User);
+            }
+
+            var systemVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+
+            if (systemVariables.Contains(variableName))
+            {
+                return new Variable(variableName, userVariables[variableName] as string, VariablesSetType.System);
+            }
+
+            return null;
+        }
+
         internal static void GetVariables(EnvironmentVariableTarget target, VariablesSet set)
         {
             var variables = Environment.GetEnvironmentVariables(target);

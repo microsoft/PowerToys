@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace EnvironmentVariables.Models
 {
-    public class VariablesSet
+    public partial class VariablesSet : ObservableObject
     {
         public static readonly Guid UserGuid = new Guid("92F7AA9A-AE31-49CD-83C8-80A71E432AA5");
         public static readonly Guid SystemGuid = new Guid("F679C74D-DB00-4795-92E1-B1F6A4833279");
@@ -19,13 +19,18 @@ namespace EnvironmentVariables.Models
 
         public Guid Id { get; }
 
-        public string Name { get; }
+        [ObservableProperty]
+        private string _name;
 
         public VariablesSetType Type { get; }
 
         public string IconPath { get; }
 
         public List<Variable> Variables { get; }
+
+        public VariablesSet()
+        {
+        }
 
         public VariablesSet(Guid id, string name, VariablesSetType type)
         {

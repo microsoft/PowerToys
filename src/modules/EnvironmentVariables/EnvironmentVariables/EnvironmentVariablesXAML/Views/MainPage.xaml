@@ -43,10 +43,10 @@
 
         <Grid>
             <!--  buttons  -->
-            <Button>
+            <Button Command="{x:Bind NewProfileCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon
-                        x:Name="Icon"
+                        x:Name="NewProfileIcon"
                         FontSize="16"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xe710;" />
@@ -117,8 +117,8 @@
         </Grid>
 
         <ContentDialog
-            x:Name="EditDialog"
-            x:Uid="EditDialog"
+            x:Name="EditVariableDialog"
+            x:Uid="EditVariableDialog"
             IsPrimaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
@@ -146,5 +146,67 @@
             </ScrollViewer>
         </ContentDialog>
 
+        <ContentDialog
+            x:Name="AddProfileDialog"
+            x:Uid="AddProfileDialog"
+            IsPrimaryButtonEnabled="True"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:ProfileVariablesSet />
+            </ContentDialog.DataContext>
+            <ScrollViewer>
+                <StackPanel
+                    MinWidth="320"
+                    HorizontalAlignment="Stretch"
+                    Spacing="12">
+                    <TextBox
+                        x:Uid="NameTxtBox"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <ToggleSwitch
+                        x:Uid="Enabled"
+                        IsOn="{Binding IsEnabled, Mode=TwoWay}"
+                        OffContent=""
+                        OnContent="" />
+                    <Button>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                x:Name="AddVariableIcon"
+                                FontSize="16"
+                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                Glyph="&#xe710;" />
+                            <TextBlock x:Uid="AddVariableBtn" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel>
+                                    <labs:Segmented
+                                        x:Name="SwitchViewsSegmentedView"
+                                        MaxWidth="500"
+                                        HorizontalAlignment="Stretch"
+                                        SelectionChanged="Segmented_SelectionChanged"
+                                        SelectionMode="Single">
+                                        <labs:SegmentedItem x:Name="AddNewVariableSegmentedItem" x:Uid="NewVariableSegmentedButton" />
+                                        <labs:SegmentedItem x:Name="AddExistingVariableSegmentedItem" x:Uid="ExistingVariableSegmentedButton" />
+                                    </labs:Segmented>
+
+                                    <!--  Adding new variable  -->
+                                    <TextBox
+                                        x:Name="AddNewVariableName"
+                                        x:Uid="AddNewVariableName"
+                                        Margin="0,20,0,0"
+                                        Visibility="{x:Bind ViewModel.ShowAddNewVariablePage, Mode=TwoWay}" />
+                                    <TextBox
+                                        x:Name="AddNewVariableValue"
+                                        x:Uid="AddNewVariableValue"
+                                        Margin="0,20,0,0"
+                                        Visibility="{x:Bind ViewModel.ShowAddNewVariablePage, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
     </Grid>
 </Page>
