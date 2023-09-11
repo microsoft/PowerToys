@@ -18,13 +18,6 @@ namespace MouseJumpUI;
 
 internal static class Program
 {
-    private static CancellationTokenSource CancellationTokenSource { get; }
-
-    static Program()
-    {
-        Program.CancellationTokenSource = new();
-    }
-
     /// <summary>
     /// The main entry point for the application.
     /// </summary>
@@ -67,10 +60,12 @@ internal static class Program
 
         Logger.LogInfo($"Mouse Jump started from the PowerToys Runner. Runner pid={runnerPid}");
 
+        var cancellationTokenSource = new CancellationTokenSource();
+
         RunnerHelper.WaitForPowerToysRunner(runnerPid, () =>
         {
             Logger.LogInfo("PowerToys Runner exited. Exiting Mouse Jump");
-            Program.CancellationTokenSource.Cancel();
+            cancellationTokenSource.Cancel();
             Application.Exit();
         });
 
@@ -81,7 +76,7 @@ internal static class Program
             Constants.MouseJumpShowPreviewEvent(),
             mainForm.ShowPreview,
             Dispatcher.CurrentDispatcher,
-            Program.CancellationTokenSource.Token);
+            cancellationTokenSource.Token);
 
         Application.Run();
     }
