@@ -6,17 +6,18 @@
 #include "centralized_kb_hook.h"
 #include <Windows.h>
 
-#include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/version/version.h>
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
+#include "bug_report.h"
 
 namespace
 {
     HWND tray_icon_hwnd = NULL;
 
-    enum { 
+    enum
+    {
         wm_icon_notify = WM_APP,
         wm_run_on_main_ui_thread,
     };
@@ -43,8 +44,6 @@ struct run_on_main_ui_thread_msg
     main_loop_callback_function _callback;
     PVOID data;
 };
-
-std::atomic_bool isBugReportThreadRunning = false;
 
 bool dispatch_run_on_main_ui_thread(main_loop_callback_function _callback, PVOID data)
 {
@@ -74,11 +73,11 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     switch (command_id)
     {
     case ID_SETTINGS_MENU_COMMAND:
-        {
-            std::wstring settings_window{ winrt::to_hstring(ESettingsWindowNames_to_string(static_cast<ESettingsWindowNames>(lparam))) };
-            open_settings_window(settings_window, false);
-        }
-        break;
+    {
+        std::wstring settings_window{ winrt::to_hstring(ESettingsWindowNames_to_string(static_cast<ESettingsWindowNames>(lparam))) };
+        open_settings_window(settings_window, false);
+    }
+    break;
     case ID_EXIT_MENU_COMMAND:
         if (h_menu)
         {
@@ -97,29 +96,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         break;
     case ID_REPORT_BUG_COMMAND:
     {
-        std::wstring bug_report_path = get_module_folderpath();
-        bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
-        
-         bool expected_isBugReportThreadRunning = false;
-        if (isBugReportThreadRunning.compare_exchange_strong(expected_isBugReportThreadRunning, true))
-         {
-            std::thread([bug_report_path]() {
-                SHELLEXECUTEINFOW sei{ sizeof(sei) };
-                sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
-                sei.lpFile = bug_report_path.c_str();
-                sei.nShow = SW_HIDE;
-                if (ShellExecuteExW(&sei))
-                {
-                    WaitForSingleObject(sei.hProcess, INFINITE);
-                    CloseHandle(sei.hProcess);
-                    static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
-                    MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
-                }
-
-                isBugReportThreadRunning.store(false);
-            }).detach();
-        }
-
+        launch_bug_report();
         break;
     }
 
@@ -230,7 +207,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                     // start timer for detecting single or double click
                     double_click_timer_running = true;
                     double_clicked = false;
-                    
+
                     UINT doubleClickTime = GetDoubleClickTime();
                     std::thread([doubleClickTime]() {
                         std::this_thread::sleep_for(std::chrono::milliseconds(doubleClickTime));
