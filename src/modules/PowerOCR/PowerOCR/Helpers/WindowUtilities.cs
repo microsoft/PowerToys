@@ -2,11 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
-using PowerOCR.Helpers;
 
 namespace PowerOCR.Utilities;
 
@@ -20,33 +21,11 @@ public static class WindowUtilities
             return;
         }
 
+        Logger.LogInfo($"Adding Overlays for each screen");
         foreach (Screen screen in Screen.AllScreens)
         {
-            OCROverlay overlay = new OCROverlay()
-            {
-                WindowStartupLocation = WindowStartupLocation.Manual,
-                Width = 200,
-                Height = 200,
-                WindowState = WindowState.Normal,
-            };
-
-            if (screen.WorkingArea.Left >= 0)
-            {
-                overlay.Left = screen.WorkingArea.Left;
-            }
-            else
-            {
-                overlay.Left = screen.WorkingArea.Left + (screen.WorkingArea.Width / 2);
-            }
-
-            if (screen.WorkingArea.Top >= 0)
-            {
-                overlay.Top = screen.WorkingArea.Top;
-            }
-            else
-            {
-                overlay.Top = screen.WorkingArea.Top + (screen.WorkingArea.Height / 2);
-            }
+            Logger.LogInfo($"screen {screen}");
+            OCROverlay overlay = new(screen.Bounds);
 
             overlay.Show();
             ActivateWindow(overlay);
@@ -61,7 +40,7 @@ public static class WindowUtilities
 
         foreach (Window window in allWindows)
         {
-            if (window is OCROverlay overlay)
+            if (window is OCROverlay)
             {
                 return true;
             }
@@ -81,6 +60,8 @@ public static class WindowUtilities
                 overlay.Close();
             }
         }
+
+        GC.Collect();
 
         // TODO: Decide when to close the process
         // System.Windows.Application.Current.Shutdown();
@@ -103,6 +84,25 @@ public static class WindowUtilities
         else
         {
             OSInterop.SetForegroundWindow(handle);
+        }
+    }
+
+    internal static void OcrOverlayKeyDown(Key key, bool? isActive = null)
+    {
+        WindowCollection allWindows = System.Windows.Application.Current.Windows;
+
+        if (key == Key.Escape)
+        {
+            PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
+            CloseAllOCROverlays();
+        }
+
+        foreach (Window window in allWindows)
+        {
+            if (window is OCROverlay overlay)
+            {
+                overlay.KeyPressed(key, isActive);
+            }
         }
     }
 }
