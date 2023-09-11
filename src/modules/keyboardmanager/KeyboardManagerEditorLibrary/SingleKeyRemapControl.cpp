@@ -94,7 +94,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 
     // SingleKeyRemapControl for the original key.
     auto originalElement = keyboardRemapControlObjects.back()[0]->getSingleKeyRemapControl();
-    originalElement.Width(EditorConstants::RemapTableDropDownWidth + EditorConstants::ShortcutTableDropDownSpacing);
+    originalElement.Width(EditorConstants::RemapTableDropDownWidth + EditorConstants::RemapTableDropDownSpacing);
     row.Children().Append(originalElement);
 
     // Arrow icon
@@ -108,7 +108,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 
     // SingleKeyRemapControl for the new remap key
     auto targetElement = keyboardRemapControlObjects.back()[1]->getSingleKeyRemapControl();
-    targetElement.Width(EditorConstants::ShortcutTargetColumnWidth);
+    targetElement.Width(EditorConstants::RemapTargetColumnWidth);
     row.Children().Append(targetElement);
 
     // Set the key text if the two keys are not null (i.e. default args)

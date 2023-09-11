@@ -22,6 +22,8 @@ namespace EditorConstants
     inline const long RemapTableNewColIndex = 2;
     inline const long RemapTableRemoveColIndex = 3;
     inline const DWORD64 RemapTableDropDownWidth = 160;
+    inline const DWORD64 RemapTableDropDownSpacing = 10;
+    inline const long RemapTargetColumnWidth = 2 * RemapTableDropDownWidth + 3 * RemapTableDropDownSpacing + 65;
 
     // Shortcut table constants
     inline const long ShortcutTableColCount = 5;
