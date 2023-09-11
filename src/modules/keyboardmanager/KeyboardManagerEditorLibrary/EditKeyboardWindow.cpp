@@ -196,6 +196,11 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     hwndEditKeyboardNativeWindow = _hWndEditKeyboardWindow;
     hwndLock.unlock();
 
+    // Hide icon and caption from title bar
+    const DWORD windowThemeOptionsMask = WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON;
+    WTA_OPTIONS windowThemeOptions{ windowThemeOptionsMask, windowThemeOptionsMask };
+    SetWindowThemeAttribute(_hWndEditKeyboardWindow, WTA_NONCLIENT, &windowThemeOptions, sizeof(windowThemeOptions));
+
     handleTheme();
     theme_listener.AddChangedHandler(handleTheme);
 

@@ -147,6 +147,11 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     hwndEditShortcutsNativeWindow = _hWndEditShortcutsWindow;
     hwndLock.unlock();
 
+    // Hide icon and caption from title bar
+    const DWORD windowThemeOptionsMask = WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON;
+    WTA_OPTIONS windowThemeOptions{ windowThemeOptionsMask, windowThemeOptionsMask };
+    SetWindowThemeAttribute(_hWndEditShortcutsWindow, WTA_NONCLIENT, &windowThemeOptions, sizeof(windowThemeOptions));
+
     handleTheme();
     theme_listener.AddChangedHandler(handleTheme);
 
