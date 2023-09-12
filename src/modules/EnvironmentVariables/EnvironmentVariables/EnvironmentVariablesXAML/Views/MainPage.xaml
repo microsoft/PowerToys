@@ -46,7 +46,7 @@
             <Button Command="{x:Bind NewProfileCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon
-                        x:Name="NewProfileIcon"
+                        x:Name="Icon"
                         FontSize="16"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xe710;" />

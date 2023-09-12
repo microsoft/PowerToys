@@ -80,9 +80,9 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
     <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" />
-	<PackageReference Include="CommunityToolkit.Mvvm" />
-	<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" />
-	<PackageReference Include="WinUIEx" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" />
+    <PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

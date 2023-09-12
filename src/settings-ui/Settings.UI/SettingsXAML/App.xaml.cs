@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Common.UI;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -403,6 +402,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "PastePlain": return typeof(PastePlainPage);
                 case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
+                case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
                 default:
                     // Fallback to general
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

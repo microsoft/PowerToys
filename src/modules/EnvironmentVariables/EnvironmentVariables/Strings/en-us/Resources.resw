@@ -140,6 +140,7 @@
   </data>
   <data name="WindowTitle" xml:space="preserve">
     <value>Environment Variables</value>
+    <comment>Title of the window when running as user</comment>
   </data>
   <data name="EditDialog.CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
@@ -179,5 +180,9 @@
   </data>
   <data name="NewVariableSegmentedButton.Content" xml:space="preserve">
     <value>New</value>
+  </data>
+  <data name="WindowAdminTitle" xml:space="preserve">
+    <value>Administrator: Environment Variables</value>
+    <comment>Title of the window when running as administrator</comment>
   </data>
 </root>

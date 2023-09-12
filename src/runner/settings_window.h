@@ -21,6 +21,7 @@ enum class ESettingsWindowNames
     PowerOCR,
     RegistryPreview,
     CropAndLock,
+    EnvironmentVariables,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);
