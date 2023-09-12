@@ -1151,6 +1151,7 @@ msrc
 msstore
 mst
 msvc
+msvcp
 MTND
 Mul
 MULTIPLEUSE
@@ -1221,6 +1222,8 @@ NOCOPYBITS
 nodeca
 nodiscard
 nodoc
+NODRAWCAPTION
+NODRAWICON
 NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
@@ -2038,6 +2041,7 @@ VCINSTALLDIR
 vcm
 Vcpkg
 VCRT
+vcruntime
 vcvars
 VDesktop
 vdi
@@ -2217,6 +2221,8 @@ wsl
 wss
 wstr
 wsz
+WTA
+WTNCA
 wtoi
 WTS
 wtsapi
