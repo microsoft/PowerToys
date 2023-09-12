@@ -324,8 +324,8 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
-    addRemapKey.Content(SymbolIcon(Symbol::Add));
     addRemapKey.Margin({ 10, 10, 0, 25 });
+    addRemapKey.Style(AccentButtonStyle());
     addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
 
@@ -336,13 +336,18 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         UIHelpers::SetFocusOnTypeButtonInLastRow(keyRemapTable, EditorConstants::RemapTableColCount);
     });
 
+    // Remap key button content
+    StackPanel addRemapKeyContent;
+    addRemapKeyContent.Orientation(Orientation::Horizontal);
+    addRemapKeyContent.Spacing(10);
+    addRemapKeyContent.Children().Append(SymbolIcon(Symbol::Add));
+    TextBlock addRemapKeyText;
+    addRemapKeyText.Text(GET_RESOURCE_STRING(IDS_ADD_KEY_REMAP_BUTTON));
+    addRemapKeyContent.Children().Append(addRemapKeyText);
+    addRemapKey.Content(addRemapKeyContent);
+
     // Set accessible name for the addRemapKey button
     addRemapKey.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_ADD_KEY_REMAP_BUTTON)));
-
-    // Add tooltip for add button which would appear on hover
-    ToolTip addRemapKeytoolTip;
-    addRemapKeytoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_ADD_KEY_REMAP_BUTTON)));
-    ToolTipService::SetToolTip(addRemapKey, addRemapKeytoolTip);
 
     // Header and example text at the top of the window
     StackPanel helperText;

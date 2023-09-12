@@ -296,8 +296,8 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Add shortcut button
     Windows::UI::Xaml::Controls::Button addShortcut;
-    addShortcut.Content(SymbolIcon(Symbol::Add));
     addShortcut.Margin({ 10, 10, 0, 25 });
+    addShortcut.Style(AccentButtonStyle());
     addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
 
@@ -308,13 +308,18 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, EditorConstants::ShortcutTableColCount);
     });
 
+    // Remap shortcut button content
+    StackPanel addShortcutContent;
+    addShortcutContent.Orientation(Orientation::Horizontal);
+    addShortcutContent.Spacing(10);
+    addShortcutContent.Children().Append(SymbolIcon(Symbol::Add));
+    TextBlock addShortcutText;
+    addShortcutText.Text(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_BUTTON));
+    addShortcutContent.Children().Append(addShortcutText);
+    addShortcut.Content(addShortcutContent);
+
     // Set accessible name for the add shortcut button
     addShortcut.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_BUTTON)));
-
-    // Add tooltip for add button which would appear on hover
-    ToolTip addShortcuttoolTip;
-    addShortcuttoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_BUTTON)));
-    ToolTipService::SetToolTip(addShortcut, addShortcuttoolTip);
 
     // Header and example text at the top of the window
     StackPanel helperText;
