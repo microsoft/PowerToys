@@ -606,5 +606,39 @@ namespace PowerAccent.Core
                 _ => Array.Empty<string>(),
             };
         }
+        //TODO: =================================================================================================================
+
+        // Greek
+        private static string[] GetDefaultLetterKeyLT(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "\u0391", "\u03B1" }, //Alpha
+                LetterKey.VK_B => new[] { "\u0392", "\u03B2" }, //Beta
+                LetterKey.VK_G => new[] { "\u0393", "\u03B3" }, //Gamma
+                LetterKey.VK_D => new[] { "\u0394", "\u03B4" }, //Delta
+                LetterKey.VK_E => new[] { "\u0395", "\u03B5" }, //Epsilon
+                LetterKey.VK_Z => new[] { "\u0396", "\u03B6" }, //Zeta
+                LetterKey.VK_H => new[] { "\u0397", "\u03B7" }, //Eta
+                LetterKey.VK_0 => new[] { "\u0398", "\u03B8" }, //Theta
+                LetterKey.VK_I => new[] { "\u0399", "\u03B9" }, //Iota
+                LetterKey.VK_K => new[] { "\u039A", "\u039A" }, //Kappa
+                LetterKey.VK_1 => new[] { "\u039B", "\u03BB" }, //Lamda
+                LetterKey.VK_M => new[] { "\u039C", "\u03BC" }, //Mu
+                LetterKey.VK_N => new[] { "\u039D", "\u03BD" }, //Nu
+                LetterKey.VK_2 => new[] { "\u039E", "\u03BE" }, //Xi
+                LetterKey.VK_O => new[] { "\u039F", "\u03BF" }, //Omicron
+                LetterKey.VK_3 => new[] { "\u03A0", "\u03C0" }, //Pi
+                LetterKey.VK_P => new[] { "\u03A1", "\u03C1" }, //Rho
+                LetterKey.VK_S => new[] { "\u03A3", "\u03C3" }, //Sigma
+                LetterKey.VK_T => new[] { "\u03A4", "\u03C4" }, //Tau
+                LetterKey.VK_Y => new[] { "\u03C9", "\u03C5" }, //Upsilon
+                LetterKey.VK_4 => new[] { "\u03A6", "\u03C6" }, //Phi
+                LetterKey.VK_X => new[] { "\u03A7", "\u03C7" }, //Chi
+                LetterKey.VK_5 => new[] { "\u03A8", "\u03C8" }, //Psi
+                LetterKey.VK_W => new[] { "\u03A9", "\u03C9" }, //Omega
+                _ => Array.Empty<string>(),
+            };
+        }
     }
 }
