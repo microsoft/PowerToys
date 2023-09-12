@@ -254,6 +254,7 @@ FancyZones::Run() noexcept
         }
     });
 
+    VirtualDesktop::instance().UpdateVirtualDesktopId();
     SyncVirtualDesktops();
 
     // id format of applied-layouts and app-zone-history was changed in 0.60
@@ -727,6 +728,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         updateWindowsPositions = FancyZonesSettings::settings().displayChange_moveWindows;
         break;
     case DisplayChangeType::VirtualDesktop: // Switched virtual desktop
+        SyncVirtualDesktops();
         break;
     case DisplayChangeType::Initialization: // Initialization
         updateWindowsPositions = FancyZonesSettings::settings().zoneSetChange_moveWindows;
@@ -893,15 +895,17 @@ void FancyZones::CycleWindows(bool reverse) noexcept
 
 void FancyZones::SyncVirtualDesktops() noexcept
 {
+    // Explorer persists current virtual desktop identifier to registry on a per session basis,
+    // but only after first virtual desktop switch happens. If the user hasn't switched virtual
+    // desktops in this session value in registry will be empty and we will use default GUID in
+    // that case (00000000-0000-0000-0000-000000000000).
+
+    auto current = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
     auto guids = VirtualDesktop::instance().GetVirtualDesktopIdsFromRegistry();
-    if (guids.has_value())
-    {
         AppZoneHistory::instance().RemoveDeletedVirtualDesktops(*guids);
-        AppliedLayouts::instance().RemoveDeletedVirtualDesktops(*guids);
-    }
 
     AppZoneHistory::instance().SyncVirtualDesktops();
-    AppliedLayouts::instance().SyncVirtualDesktops();
+    AppliedLayouts::instance().SyncVirtualDesktops(current, guids);
 }
 
 void FancyZones::UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept

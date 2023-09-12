@@ -322,85 +322,52 @@ void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
     }
 }
 
-void AppliedLayouts::SyncVirtualDesktops()
+void AppliedLayouts::SyncVirtualDesktops(GUID currentVirtualDesktop, std::optional<std::vector<GUID>> desktops)
 {
-    // Explorer persists current virtual desktop identifier to registry on a per session basis,
-    // but only after first virtual desktop switch happens. If the user hasn't switched virtual
-    // desktops in this session value in registry will be empty and we will use default GUID in
-    // that case (00000000-0000-0000-0000-000000000000).
+    TAppliedLayoutsMap layouts;
 
-    auto savedInRegistryVirtualDesktopID = VirtualDesktop::instance().GetCurrentVirtualDesktopIdFromRegistry();
-    if (!savedInRegistryVirtualDesktopID.has_value() || savedInRegistryVirtualDesktopID.value() == GUID_NULL)
+    if (currentVirtualDesktop != GUID_NULL)
     {
-        return;
-    }
-
-    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(savedInRegistryVirtualDesktopID.value());
-    if (!currentVirtualDesktopStr.has_value())
-    {
-        Logger::error(L"Failed to convert virtual desktop GUID to string");
-        return;
-    }
-
-    Logger::info(L"AppliedLayouts Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
-
-    bool dirtyFlag = false;
-
-    std::vector<FancyZonesDataTypes::WorkAreaId> replaceWithCurrentId{};
-
-    for (const auto& [id, data] : m_layouts)
-    {
-        if (id.virtualDesktopId == GUID_NULL)
+        // copy layouts from the current virtual desktop with the GUID_NULL as a fallback value
+        for (const auto& [workAreaId, layout] : m_layouts)
         {
-            replaceWithCurrentId.push_back(id);
-            dirtyFlag = true;
-        }
-    }
-
-    for (const auto& id : replaceWithCurrentId)
-    {
-        auto mapEntry = m_layouts.extract(id);
-        mapEntry.key().virtualDesktopId = savedInRegistryVirtualDesktopID.value();
-        m_layouts.insert(std::move(mapEntry));
-    }
-
-    if (dirtyFlag)
-    {
-        Logger::info(L"Update Virtual Desktop id to {}", currentVirtualDesktopStr.value());
-        SaveData();
-    }
-}
-
-void AppliedLayouts::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops)
-{
-    std::unordered_set<GUID> active(std::begin(activeDesktops), std::end(activeDesktops));
-    bool dirtyFlag = false;
-
-    for (auto it = std::begin(m_layouts); it != std::end(m_layouts);)
-    {
-        GUID desktopId = it->first.virtualDesktopId;
-
-        if (desktopId != GUID_NULL)
-        {
-            auto foundId = active.find(desktopId);
-            if (foundId == std::end(active))
+            if (workAreaId.virtualDesktopId == currentVirtualDesktop)
             {
-                wil::unique_cotaskmem_string virtualDesktopIdStr;
-                if (SUCCEEDED(StringFromCLSID(desktopId, &virtualDesktopIdStr)))
-                {
-                    Logger::info(L"Remove Virtual Desktop id {}", virtualDesktopIdStr.get());
-                }
-
-                it = m_layouts.erase(it);
-                dirtyFlag = true;
-                continue;
+                FancyZonesDataTypes::WorkAreaId newId = workAreaId;
+                newId.virtualDesktopId = GUID_NULL;
+                layouts.insert({ newId, layout });
             }
         }
-        ++it;
     }
 
-    if (dirtyFlag)
+    if (!desktops.has_value())
     {
+        // no saved virtual desktops in registry
+        // keep only fallback values with GUID_NULL as a virtual desktop id
+        for (const auto& [workAreaId, layout] : m_layouts)
+        {
+            if (workAreaId.virtualDesktopId == GUID_NULL)
+            {
+                layouts.insert({ workAreaId, layout });
+            }
+        }
+    }
+    else
+    {
+        // keep only actual virtual desktop values
+        for (const auto& [workAreaId, layout] : m_layouts)
+        {
+            const auto iter = std::find(desktops.value().begin(), desktops.value().end(), workAreaId.virtualDesktopId);
+            if (iter != desktops.value().end())
+            {
+                layouts.insert({ workAreaId, layout });
+            }
+        }
+    }
+
+    if (layouts != m_layouts)
+    {
+        m_layouts = layouts;
         SaveData();
     }
 }

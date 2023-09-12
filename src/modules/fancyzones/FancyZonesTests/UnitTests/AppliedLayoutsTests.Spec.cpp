@@ -473,6 +473,145 @@ namespace FancyZonesUnitTests
         }
     };
 
+    TEST_CLASS (AppliedLayoutsSyncVirtualDesktops)
+    {
+        const GUID virtualDesktop1 = FancyZonesUtils::GuidFromString(L"{30387C86-BB15-476D-8683-AF93F6D73E99}").value();
+        const GUID virtualDesktop2 = FancyZonesUtils::GuidFromString(L"{65F6343A-868F-47EE-838E-55A178A7FB7A}").value();
+        const GUID deletedVirtualDesktop = FancyZonesUtils::GuidFromString(L"{2D9F3E2D-F61D-4618-B35D-85C9B8DFDFD8}").value();
+        
+        FancyZonesDataTypes::WorkAreaId GetWorkAreaID(int number, GUID virtualDesktop)
+        {
+            return FancyZonesDataTypes::WorkAreaId{
+                .monitorId = {
+                    .deviceId = { 
+                        .id = std::wstring(L"id-") + std::to_wstring(number), 
+                        .instanceId = std::wstring(L"id-") + std::to_wstring(number), 
+                        .number = number 
+                    },
+                    .serialNumber = std::wstring(L"serial-number-") + std::to_wstring(number) 
+                },
+                .virtualDesktopId = virtualDesktop
+            };
+        }
+        
+        TEST_METHOD_INITIALIZE(Init)
+        {
+            AppliedLayouts::instance().LoadData();
+        }
+
+        TEST_METHOD_CLEANUP(CleanUp)
+        {
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
+        }
+
+        TEST_METHOD (SyncVirtualDesktops_DeletedSavedVirtualDesktopFromRegistry)
+        {
+            LayoutData layout1{ .uuid = FancyZonesUtils::GuidFromString(L"{D7DBECFA-23FC-4F45-9B56-51CFA9F6ABA2}").value() };
+            LayoutData layout2{ .uuid = FancyZonesUtils::GuidFromString(L"{B9EDB48C-EC48-4E82-993F-A15DC1FF09D3}").value() };
+            LayoutData layout3{ .uuid = FancyZonesUtils::GuidFromString(L"{94CF0000-7814-4D72-9624-794060FA269C}").value() };
+            LayoutData layout4{ .uuid = FancyZonesUtils::GuidFromString(L"{13FA7ADF-1B6C-4FB6-8142-254B77C128E2}").value() };
+
+            AppliedLayouts::TAppliedLayoutsMap layouts{};
+            layouts.insert({ GetWorkAreaID(1, virtualDesktop1), layout1 });
+            layouts.insert({ GetWorkAreaID(2, virtualDesktop1), layout2 });
+            layouts.insert({ GetWorkAreaID(1, deletedVirtualDesktop), layout3 });
+            layouts.insert({ GetWorkAreaID(2, deletedVirtualDesktop), layout4 });
+            layouts.insert({ GetWorkAreaID(1, GUID_NULL), layout1 });
+            layouts.insert({ GetWorkAreaID(2, GUID_NULL), layout2 });
+
+            AppliedLayouts::instance().SetAppliedLayouts(layouts);
+
+            GUID currentVirtualDesktop = virtualDesktop1;
+            std::optional<std::vector<GUID>> virtualDesktopsInRegistry = { { virtualDesktop1 } };
+            AppliedLayouts::instance().SyncVirtualDesktops(currentVirtualDesktop, virtualDesktopsInRegistry);
+
+            Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, virtualDesktop1)));
+            Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, virtualDesktop1)));
+            Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, GUID_NULL)));
+            Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, GUID_NULL)));
+            Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, deletedVirtualDesktop)).has_value());
+            Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, deletedVirtualDesktop)).has_value());
+        }
+
+        TEST_METHOD (SyncVirtualDesktops_DeletedCurrentVirtualDesktopsFromRegistry)
+        {
+            LayoutData layout1{ .uuid = FancyZonesUtils::GuidFromString(L"{D7DBECFA-23FC-4F45-9B56-51CFA9F6ABA2}").value() };
+            LayoutData layout2{ .uuid = FancyZonesUtils::GuidFromString(L"{B9EDB48C-EC48-4E82-993F-A15DC1FF09D3}").value() };
+            LayoutData layout3{ .uuid = FancyZonesUtils::GuidFromString(L"{94CF0000-7814-4D72-9624-794060FA269C}").value() };
+            LayoutData layout4{ .uuid = FancyZonesUtils::GuidFromString(L"{13FA7ADF-1B6C-4FB6-8142-254B77C128E2}").value() };
+
+            AppliedLayouts::TAppliedLayoutsMap layouts{};
+            layouts.insert({ GetWorkAreaID(1, virtualDesktop1), layout1 });
+            layouts.insert({ GetWorkAreaID(2, virtualDesktop1), layout2 });
+            layouts.insert({ GetWorkAreaID(1, deletedVirtualDesktop), layout3 });
+            layouts.insert({ GetWorkAreaID(2, deletedVirtualDesktop), layout4 });
+            layouts.insert({ GetWorkAreaID(1, GUID_NULL), layout3 });
+            layouts.insert({ GetWorkAreaID(2, GUID_NULL), layout4 });
+
+            AppliedLayouts::instance().SetAppliedLayouts(layouts);
+
+            GUID currentVirtualDesktop = virtualDesktop1;
+            std::optional<std::vector<GUID>> virtualDesktopsInRegistry = { { virtualDesktop1 } };
+            AppliedLayouts::instance().SyncVirtualDesktops(currentVirtualDesktop, virtualDesktopsInRegistry);
+
+            Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, virtualDesktop1)));
+            Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, virtualDesktop1)));
+            Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, GUID_NULL)));
+            Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, GUID_NULL)));
+            Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, deletedVirtualDesktop)).has_value());
+            Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, deletedVirtualDesktop)).has_value());
+        }
+
+        TEST_METHOD (SyncVirtualDesktop_NoDesktopsInRegistry)
+        {
+            LayoutData layout1{ .uuid = FancyZonesUtils::GuidFromString(L"{94CF0000-7814-4D72-9624-794060FA269C}").value() };
+            LayoutData layout2{ .uuid = FancyZonesUtils::GuidFromString(L"{13FA7ADF-1B6C-4FB6-8142-254B77C128E2}").value() };
+
+            AppliedLayouts::TAppliedLayoutsMap layouts{};
+            layouts.insert({ GetWorkAreaID(1, deletedVirtualDesktop), layout1 });
+            layouts.insert({ GetWorkAreaID(2, deletedVirtualDesktop), layout2 });
+            layouts.insert({ GetWorkAreaID(1, GUID_NULL), layout1 });
+            layouts.insert({ GetWorkAreaID(2, GUID_NULL), layout2 });
+
+            AppliedLayouts::instance().SetAppliedLayouts(layouts);
+
+            GUID currentVirtualDesktop = GUID_NULL;
+            std::optional<std::vector<GUID>> virtualDesktopsInRegistry = std::nullopt;
+            AppliedLayouts::instance().SyncVirtualDesktops(currentVirtualDesktop, virtualDesktopsInRegistry);
+
+            Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, GUID_NULL)));
+            Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, GUID_NULL)));
+            Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, deletedVirtualDesktop)).has_value());
+            Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, deletedVirtualDesktop)).has_value());
+        }
+
+        TEST_METHOD (SyncVirtualDesktops_DisconnectedMonitor)
+        {
+            LayoutData layout1{ .uuid = FancyZonesUtils::GuidFromString(L"{D7DBECFA-23FC-4F45-9B56-51CFA9F6ABA2}").value() };
+            LayoutData layout2{ .uuid = FancyZonesUtils::GuidFromString(L"{B9EDB48C-EC48-4E82-993F-A15DC1FF09D3}").value() };
+            LayoutData layout3{ .uuid = FancyZonesUtils::GuidFromString(L"{94CF0000-7814-4D72-9624-794060FA269C}").value() };
+
+            AppliedLayouts::TAppliedLayoutsMap layouts{};
+            layouts.insert({ GetWorkAreaID(1, virtualDesktop1), layout1 });
+            layouts.insert({ GetWorkAreaID(2, virtualDesktop1), layout2 });
+            layouts.insert({ GetWorkAreaID(1, GUID_NULL), layout1 });
+            layouts.insert({ GetWorkAreaID(2, GUID_NULL), layout2 });
+            layouts.insert({ GetWorkAreaID(3, GUID_NULL), layout3 });
+
+            AppliedLayouts::instance().SetAppliedLayouts(layouts);
+
+            GUID currentVirtualDesktop = virtualDesktop1;
+            std::optional<std::vector<GUID>> virtualDesktopsInRegistry = { { virtualDesktop1 } };
+            AppliedLayouts::instance().SyncVirtualDesktops(currentVirtualDesktop, virtualDesktopsInRegistry);
+
+            Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, virtualDesktop1)));
+            Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, virtualDesktop1)));
+            Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, GUID_NULL)));
+            Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, GUID_NULL)));
+            Assert::IsTrue(layout3 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(3, GUID_NULL)));
+        }
+    };
+
     TEST_CLASS (AppliedLayoutsFromOutdatedFileMappingUnitTests)
     {
         FancyZonesData& m_fzData = FancyZonesDataInstance();
