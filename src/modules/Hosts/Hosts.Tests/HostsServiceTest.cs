@@ -238,5 +238,17 @@ namespace Hosts.Tests
             var result = fileSystem.GetFile(service.HostsFilePath);
             Assert.AreEqual(result.TextContents, contentResult);
         }
+
+        [TestMethod]
+        public async Task Save_NotRunningElevatedException()
+        {
+            var fileSystem = new CustomMockFileSystem();
+            var userSettings = new Mock<IUserSettings>();
+            var elevationHelper = new Mock<IElevationHelper>();
+            elevationHelper.Setup(m => m.IsElevated).Returns(false);
+
+            var service = new HostsService(fileSystem, userSettings.Object, elevationHelper.Object);
+            await Assert.ThrowsExceptionAsync<NotRunningElevatedException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
+        }
     }
 }

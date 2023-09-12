@@ -548,6 +548,7 @@ namespace PowerAccent.Core
             return letter switch
             {
                 LetterKey.VK_A => new[] { "å", "ä" },
+                LetterKey.VK_E => new[] { "é" },
                 LetterKey.VK_O => new[] { "ö" },
                 _ => Array.Empty<string>(),
             };
@@ -583,7 +584,7 @@ namespace PowerAccent.Core
             return letter switch
             {
                 LetterKey.VK_A => new[] { "å", "æ" },
-                LetterKey.VK_E => new[] { "€" },
+                LetterKey.VK_E => new[] { "€", "é" },
                 LetterKey.VK_O => new[] { "ø" },
                 LetterKey.VK_S => new[] { "$" },
                 _ => Array.Empty<string>(),

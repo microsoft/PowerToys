@@ -3,8 +3,8 @@ trigger: none
 pr: none
 
 pool: 
-  name: WinDevPool-L
-  demands: ImageOverride -equals WinDevVS17-latest
+  name: SHINE-INT-L
+  demands: ImageOverride -equals SHINE-VS17-Latest
 
 parameters:
   - name: buildConfigurations

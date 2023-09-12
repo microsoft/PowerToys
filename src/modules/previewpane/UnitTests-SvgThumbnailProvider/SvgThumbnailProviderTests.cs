@@ -28,7 +28,9 @@ namespace SvgThumbnailProviderUnitTests
             svgBuilder.AppendLine("</svg>");
 
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
+            svgThumbnailProvider.SvgContents = svgBuilder.ToString();
+            svgThumbnailProvider.SvgContentsReady.Set();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
 
             Assert.IsNotNull(thumbnail);
             Assert.IsTrue(thumbnail.Width > 0);
@@ -46,7 +48,73 @@ namespace SvgThumbnailProviderUnitTests
             svgBuilder.AppendLine("</svg>");
 
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
+            svgThumbnailProvider.SvgContents = svgBuilder.ToString();
+            svgThumbnailProvider.SvgContentsReady.Set();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Assert.IsTrue(thumbnail != null);
+        }
+
+        [TestMethod]
+        public void CheckThatWidthAndHeightAreParsedCorrectly1()
+        {
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
+            svgThumbnailProvider.SvgContents = @"
+<svg
+   xmlns:dc=""http://purl.org/dc/elements/1.1/""
+    xmlns:rdf=""http://www.w3.org/1999/02/22-rdf-syntax-ns#""
+   xmlns:svg=""http://www.w3.org/2000/svg""
+   xmlns=""http://www.w3.org/2000/svg""
+   xmlns:xlink=""http://www.w3.org/1999/xlink""
+   id=""svg8""
+   version=""1.1""
+   viewBox=""0 0 380.99999 304.79999"" width=""1px"" height=""20pt"" >
+";
+
+            svgThumbnailProvider.SvgContentsReady.Set();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Assert.IsTrue(thumbnail != null);
+        }
+
+        [TestMethod]
+        public void CheckThatWidthAndHeightAreParsedCorrectly2()
+        {
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
+            svgThumbnailProvider.SvgContents = @"
+
+<svg
+   xmlns:dc=""http://purl.org/dc/elements/1.1/""
+    xmlns:rdf=""http://www.w3.org/1999/02/22-rdf-syntax-ns#""
+   xmlns:svg=""http://www.w3.org/2000/svg""
+   xmlns=""http://www.w3.org/2000/svg""
+   xmlns:xlink=""http://www.w3.org/1999/xlink""
+   id=""svg8""
+   version=""1.1""
+   height=""1152"" width=""2000vh"" >
+";
+
+            svgThumbnailProvider.SvgContentsReady.Set();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+            Assert.IsTrue(thumbnail != null);
+        }
+
+        [TestMethod]
+        public void CheckThatWidthAndHeightAreParsedCorrectly3()
+        {
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
+            svgThumbnailProvider.SvgContents = @"
+
+<svg
+   xmlns:dc=""http://purl.org/dc/elements/1.1/""
+    xmlns:rdf=""http://www.w3.org/1999/02/22-rdf-syntax-ns#""
+   xmlns:svg=""http://www.w3.org/2000/svg""
+   xmlns=""http://www.w3.org/2000/svg""
+   xmlns:xlink=""http://www.w3.org/1999/xlink""
+   id=""svg8""
+   version=""1.1""
+   viewBox=""0 0 380.99999 304.79999"" width=""2000"" >
+";
+            svgThumbnailProvider.SvgContentsReady.Set();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail != null);
         }
 
@@ -57,7 +125,9 @@ namespace SvgThumbnailProviderUnitTests
             svgBuilder.AppendLine("<p>foo</p>");
 
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
+            svgThumbnailProvider.SvgContents = svgBuilder.ToString();
+            svgThumbnailProvider.SvgContentsReady.Set();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -65,7 +135,9 @@ namespace SvgThumbnailProviderUnitTests
         public void CheckNoSvgEmptyStringShouldReturnNullBitmap()
         {
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(string.Empty, 256);
+            svgThumbnailProvider.SvgContents = string.Empty;
+            svgThumbnailProvider.SvgContentsReady.Set();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -73,7 +145,10 @@ namespace SvgThumbnailProviderUnitTests
         public void CheckNoSvgNullStringShouldReturnNullBitmap()
         {
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(null, 256);
+            svgThumbnailProvider.SvgContents = string.Empty;
+            svgThumbnailProvider.SvgContentsReady.Set();
+
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -82,7 +157,9 @@ namespace SvgThumbnailProviderUnitTests
         {
             string content = "<svg></svg>";
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(content, 0);
+            svgThumbnailProvider.SvgContents = content;
+            svgThumbnailProvider.SvgContentsReady.Set();
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(0);
             Assert.IsTrue(thumbnail == null);
         }
 
@@ -104,7 +181,10 @@ namespace SvgThumbnailProviderUnitTests
             svgBuilder.AppendLine("</html>");
 
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
-            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
+            svgThumbnailProvider.SvgContents = svgBuilder.ToString();
+            svgThumbnailProvider.SvgContentsReady.Set();
+
+            Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
             Assert.IsTrue(thumbnail != null);
         }
 

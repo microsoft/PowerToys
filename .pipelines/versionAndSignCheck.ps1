@@ -14,6 +14,7 @@ $versionExceptions = @(
     "Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll",
     "Microsoft.Windows.AppLifecycle.Projection.dll",
     "Microsoft.Windows.System.Power.Projection.dll",
+    "Microsoft.Windows.Widgets.Providers.Projection.dll",
     "Microsoft.WindowsAppRuntime.Bootstrap.Net.dll",
     "Microsoft.Xaml.Interactions.dll",
     "Microsoft.Xaml.Interactivity.dll",

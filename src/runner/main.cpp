@@ -100,7 +100,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 //init_global_error_handlers();
 #endif
     Trace::RegisterProvider();
-    start_tray_icon();
+    start_tray_icon(isProcessElevated);
     CentralizedKeyboardHook::Start();
 
     int result = -1;

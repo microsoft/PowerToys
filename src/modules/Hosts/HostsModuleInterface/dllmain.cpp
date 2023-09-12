@@ -132,7 +132,7 @@ public:
         }
 
         m_hShowAdminEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
-        if (!m_hShowEvent)
+        if (!m_hShowAdminEvent)
         {
             Logger::error(L"Failed to create show hosts admin event");
             auto message = get_last_error_message(GetLastError());

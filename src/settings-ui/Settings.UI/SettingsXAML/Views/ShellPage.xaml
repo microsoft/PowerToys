@@ -49,7 +49,6 @@
                     Source="/Assets/Settings/icon.ico" />
                 <TextBlock
                     x:Name="AppTitleBarText"
-                    x:Uid="SettingsWindow_TitleTxt"
                     Margin="12,0,0,0"
                     VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"

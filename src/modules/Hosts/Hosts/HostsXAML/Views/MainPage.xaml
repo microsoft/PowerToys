@@ -45,7 +45,6 @@
             <RowDefinition Height="*" />
             <!--  content  -->
         </Grid.RowDefinitions>
-
         <Grid>
             <!--  buttons  -->
             <Button x:Uid="AddEntryBtn" Command="{x:Bind NewDialogCommand}">
@@ -170,9 +169,63 @@
                 GotFocus="Entries_GotFocus"
                 IsItemClickEnabled="True"
                 ItemClick="Entries_ItemClick"
+                RightTapped="Entries_RightTapped"
                 ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
                 KeyDown="Entries_KeyDown"
                 SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}">
+                <ListView.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            x:Uid="Edit"
+                            Click="Edit_Click"
+                            Icon="Edit">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Modifiers="Control"
+                                    Key="E"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="Ping"
+                            Click="Ping_Click"
+                            Icon="TwoBars">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Modifiers="Control"
+                                    Key="P"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="MoveUp"
+                            Click="ReorderButtonUp_Click"
+                            IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74A;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="MoveDown"
+                            Click="ReorderButtonDown_Click"
+                            IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74B;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem
+                            x:Uid="Delete"
+                            Click="Delete_Click"
+                            Icon="Delete">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="Delete"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </ListView.ContextFlyout>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Entry">
                         <Grid
@@ -182,16 +235,11 @@
                             IsRightTapEnabled="True"
                             RightTapped="Grid_RightTapped">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="256" />
-                                <!--  address  -->
-                                <ColumnDefinition Width="*" />
-                                <!--  comment  -->
-                                <ColumnDefinition Width="Auto" />
-                                <!--  status  -->
-                                <ColumnDefinition Width="Auto" />
-                                <!--  duplicate  -->
-                                <ColumnDefinition Width="Auto" />
-                                <!--  toggleswitch  -->
+                               <ColumnDefinition Width="256"/> <!-- Address -->
+                                <ColumnDefinition Width="*"/> <!-- Comment -->
+                                <ColumnDefinition Width="Auto"/> <!-- Status -->
+                                <ColumnDefinition Width="Auto"/> <!-- Duplicate -->
+                                <ColumnDefinition Width="Auto"/> <!-- ToggleSwitch -->
                             </Grid.ColumnDefinitions>
                             <FlyoutBase.AttachedFlyout>
                                 <MenuFlyout Opened="MenuFlyout_Opened">
@@ -365,10 +413,10 @@
                 <InfoBar
                     x:Uid="FileSaveError"
                     Margin="0,8,0,0"
-                    IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
                     Severity="Error"
+                    Message="{x:Bind ViewModel.ErrorMessage, Mode=TwoWay}"
+                    IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"    
                     Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-
                 <InfoBar
                     x:Uid="FileChanged"
                     Margin="0,8,0,0"

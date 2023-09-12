@@ -17,7 +17,7 @@ namespace Hosts.Helpers
 
         Task<HostsData> ReadAsync();
 
-        Task<bool> WriteAsync(string additionalLines, IEnumerable<Entry> entries);
+        Task WriteAsync(string additionalLines, IEnumerable<Entry> entries);
 
         Task<bool> PingAsync(string address);
 
