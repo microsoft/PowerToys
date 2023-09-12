@@ -4,9 +4,8 @@
 
 using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using QOI.Core;
+using PreviewHandlerCommon.Utilities;
 
 namespace Common.Utilities
 {
@@ -67,35 +66,7 @@ namespace Common.Utilities
         {
             var bitmapBytes = Convert.FromBase64String(Data);
 
-            var qoiDecoder = new QoiDecoder();
-            var qoiImage = qoiDecoder.Read(new MemoryStream(bitmapBytes));
-
-            var pixelFormat = qoiImage.HasAlpha ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb;
-            var bitmap = new Bitmap((int)qoiImage.Width, (int)qoiImage.Height, pixelFormat);
-
-            var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, pixelFormat);
-            var pixelSize = qoiImage.HasAlpha ? 4 : 3;
-
-            unsafe
-            {
-                for (int index = 0; index < qoiImage.Pixels.Length; index++)
-                {
-                    var qoiPixel = qoiImage.Pixels[index];
-                    var pixel = (byte*)bitmapData.Scan0 + (index * pixelSize);
-
-                    pixel[0] = qoiPixel.B;
-                    pixel[1] = qoiPixel.G;
-                    pixel[2] = qoiPixel.R;
-                    if (qoiImage.HasAlpha)
-                    {
-                        pixel[3] = qoiPixel.A;
-                    }
-                }
-            }
-
-            bitmap.UnlockBits(bitmapData);
-
-            return bitmap;
+            return QoiImage.FromStream(new MemoryStream(bitmapBytes));
         }
     }
 }
