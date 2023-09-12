@@ -388,13 +388,14 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (ApplyLayout)
         {
-            // prepare
-            FancyZonesDataTypes::WorkAreaId deviceId {
+            FancyZonesDataTypes::WorkAreaId workAreaId {
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
 
-            // test
+            FancyZonesDataTypes::WorkAreaId fallbackWorkAreaId = workAreaId;
+            fallbackWorkAreaId.virtualDesktopId = GUID_NULL;
+
             LayoutData expectedLayout {
                 .uuid = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502906}").value(),
                 .type = FancyZonesDataTypes::ZoneSetLayoutType::Focus,
@@ -404,47 +405,33 @@ namespace FancyZonesUnitTests
                 .sensitivityRadius = 30
             };
 
-            AppliedLayouts::instance().ApplyLayout(deviceId, expectedLayout);
+            AppliedLayouts::instance().ApplyLayout(workAreaId, expectedLayout);
 
-            Assert::IsFalse(AppliedLayouts::instance().GetAppliedLayoutMap().empty());
-            Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(deviceId).has_value());
-
-            auto actual = AppliedLayouts::instance().GetAppliedLayoutMap().find(deviceId)->second;
-            Assert::IsTrue(expectedLayout.type == actual.type);
-            Assert::AreEqual(expectedLayout.showSpacing, actual.showSpacing);
-            Assert::AreEqual(expectedLayout.spacing, actual.spacing);
-            Assert::AreEqual(expectedLayout.zoneCount, actual.zoneCount);
-            Assert::AreEqual(expectedLayout.sensitivityRadius, actual.sensitivityRadius);
+            Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(workAreaId).has_value());
+            Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(fallbackWorkAreaId).has_value());
+            Assert::IsTrue(expectedLayout == AppliedLayouts::instance().GetAppliedLayoutMap().find(workAreaId)->second);
+            Assert::IsTrue(expectedLayout == AppliedLayouts::instance().GetAppliedLayoutMap().find(fallbackWorkAreaId)->second);
         }
 
         TEST_METHOD (ApplyLayoutReplace)
         {
             // prepare
-            FancyZonesDataTypes::WorkAreaId deviceId{
+            FancyZonesDataTypes::WorkAreaId workAreaId{
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
+            FancyZonesDataTypes::WorkAreaId fallbackWorkAreaId = workAreaId;
 
-            json::JsonObject root{};
-            json::JsonArray layoutsArray{};
-            {
-                json::JsonObject layout{};
-                layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::UuidID, json::value(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}"));
-                layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::TypeID, json::value(FancyZonesDataTypes::TypeToString(FancyZonesDataTypes::ZoneSetLayoutType::Rows)));
-                layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::ShowSpacingID, json::value(true));
-                layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::SpacingID, json::value(3));
-                layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::ZoneCountID, json::value(4));
-                layout.SetNamedValue(NonLocalizable::AppliedLayoutsIds::SensitivityRadiusID, json::value(22));
+            LayoutData layout{
+                .uuid = FancyZonesUtils::GuidFromString(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}").value(),
+                .type = FancyZonesDataTypes::ZoneSetLayoutType::Rows,
+                .showSpacing = true,
+                .spacing = 3,
+                .zoneCount = 4,
+                .sensitivityRadius = 22
+            };
 
-                json::JsonObject obj{};
-                obj.SetNamedValue(NonLocalizable::AppliedLayoutsIds::DeviceIdID, json::value(L"DELA026#5&10a58c63&0&UID16777488_2194_1234_{61FA9FC0-26A6-4B37-A834-491C148DFC57}"));
-                obj.SetNamedValue(NonLocalizable::AppliedLayoutsIds::AppliedLayoutID, layout);
-
-                layoutsArray.Append(obj);
-            }
-            root.SetNamedValue(NonLocalizable::AppliedLayoutsIds::AppliedLayoutsArrayID, layoutsArray);
-            json::to_file(AppliedLayouts::AppliedLayoutsFileName(), root);
-            AppliedLayouts::instance().LoadData();
+            AppliedLayouts::instance().SetAppliedLayouts({ {workAreaId, layout} });
 
             // test
             LayoutData expectedLayout{
@@ -456,18 +443,11 @@ namespace FancyZonesUnitTests
                 .sensitivityRadius = 30
             };
 
-            AppliedLayouts::instance().ApplyLayout(deviceId, expectedLayout);
+            AppliedLayouts::instance().ApplyLayout(workAreaId, expectedLayout);
 
-            Assert::AreEqual((size_t)1, AppliedLayouts::instance().GetAppliedLayoutMap().size());
-            Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(deviceId).has_value());
-
-            auto actual = AppliedLayouts::instance().GetAppliedLayoutMap().find(deviceId)->second;
-            Assert::AreEqual(FancyZonesUtils::GuidToString(expectedLayout.uuid).value().c_str(), FancyZonesUtils::GuidToString(actual.uuid).value().c_str());
-            Assert::IsTrue(expectedLayout.type == actual.type);
-            Assert::AreEqual(expectedLayout.showSpacing, actual.showSpacing);
-            Assert::AreEqual(expectedLayout.spacing, actual.spacing);
-            Assert::AreEqual(expectedLayout.zoneCount, actual.zoneCount);
-            Assert::AreEqual(expectedLayout.sensitivityRadius, actual.sensitivityRadius);
+            Assert::AreEqual((size_t)2, AppliedLayouts::instance().GetAppliedLayoutMap().size());
+            Assert::IsTrue(expectedLayout == AppliedLayouts::instance().GetDeviceLayout(workAreaId));
+            Assert::IsTrue(expectedLayout == AppliedLayouts::instance().GetDeviceLayout(fallbackWorkAreaId));
         }
 
         TEST_METHOD (ApplyDefaultLayout)

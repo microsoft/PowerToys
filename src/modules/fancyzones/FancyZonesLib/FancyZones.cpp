@@ -1041,10 +1041,12 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
     auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
     if (workArea)
     {
-        AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value());
-        AppliedLayouts::instance().SaveData();
-        RefreshLayouts();
-        FlashZones();
+        if (AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value()))
+        {
+            RefreshLayouts();
+            FlashZones();
+            AppliedLayouts::instance().SaveData();
+        }
     }
 }
 

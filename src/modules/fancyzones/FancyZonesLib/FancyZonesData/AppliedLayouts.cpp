@@ -427,9 +427,16 @@ bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) 
     return iter != m_layouts.end();
 }
 
-bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, LayoutData layout)
+bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& workAreaId, LayoutData layout)
 {
-    m_layouts[deviceId] = std::move(layout);
+    // replace fallback layout
+    FancyZonesDataTypes::WorkAreaId fallbackWorkAreaId = workAreaId;
+    fallbackWorkAreaId.virtualDesktopId = GUID_NULL;
+    m_layouts[fallbackWorkAreaId] = layout;
+
+    // replace current work area layout
+    m_layouts[workAreaId] = layout;
+
     return true;
 }
 
