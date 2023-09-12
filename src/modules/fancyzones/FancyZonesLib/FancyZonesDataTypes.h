@@ -209,14 +209,12 @@ namespace FancyZonesDataTypes
 
     inline bool operator==(const WorkAreaId& lhs, const WorkAreaId& rhs)
     {
-        bool vdEqual = (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
-        return vdEqual && lhs.monitorId == rhs.monitorId;
+        return lhs.virtualDesktopId == rhs.virtualDesktopId && lhs.monitorId == rhs.monitorId;
     }
 
     inline bool operator!=(const WorkAreaId& lhs, const WorkAreaId& rhs)
     {
-        bool vdEqual = (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
-        return !vdEqual || lhs.monitorId != rhs.monitorId;
+        return lhs.virtualDesktopId != rhs.virtualDesktopId || lhs.monitorId != rhs.monitorId;
     }
 
     inline bool operator<(const WorkAreaId& lhs, const WorkAreaId& rhs)
