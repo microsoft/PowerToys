@@ -38,6 +38,7 @@ namespace PowerAccent.Core
         SR,
         SV,
         TK,
+        EL,
     }
 
     internal sealed class Languages
@@ -76,6 +77,7 @@ namespace PowerAccent.Core
                 Language.SR => GetDefaultLetterKeySR(letter), // Serbian
                 Language.SV => GetDefaultLetterKeySV(letter), // Swedish
                 Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
+                Language.EL => GetDefaultLetterKeyEL(letter), // Greek
                 _ => throw new ArgumentException("The language {0} is not know in this context", lang.ToString()),
             };
         }
@@ -113,6 +115,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeySR(letter))
                 .Union(GetDefaultLetterKeySV(letter))
                 .Union(GetDefaultLetterKeyTK(letter))
+                .Union(GetDefaultLetterKeyEL(letter))
             .ToArray();
         }
 
@@ -609,7 +612,7 @@ namespace PowerAccent.Core
         //TODO: =================================================================================================================
 
         // Greek
-        private static string[] GetDefaultLetterKeyLT(LetterKey letter)
+        private static string[] GetDefaultLetterKeyEL(LetterKey letter)
         {
             return letter switch
             {
