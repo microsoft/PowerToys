@@ -56,7 +56,7 @@ namespace PowerLauncher
             _settings = settings;
 
             InitializeComponent();
-
+            Wpf.Ui.Appearance.Watcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic);
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
             NativeEventWaiter.WaitForEventLoop(
