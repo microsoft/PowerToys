@@ -14,24 +14,14 @@ namespace FancyZonesUnitTests
 {
     TEST_CLASS (AppliedLayoutsUnitTests)
     {
-        FancyZonesData& m_fzData = FancyZonesDataInstance();
-        std::wstring m_testFolder = L"FancyZonesUnitTests";
-        std::wstring m_testFolderPath = PTSettingsHelper::get_module_save_folder_location(m_testFolder);
-
         TEST_METHOD_INITIALIZE(Init)
         {
-            m_fzData.SetSettingsModulePath(L"FancyZonesUnitTests");
+            AppliedLayouts::instance().LoadData();
         }
 
         TEST_METHOD_CLEANUP(CleanUp)
         {
-            // Move...FromZonesSettings creates all of these files, clean up
-            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
-            std::filesystem::remove(CustomLayouts::CustomLayoutsFileName());
-            std::filesystem::remove(LayoutHotkeys::LayoutHotkeysFileName());
-            std::filesystem::remove(LayoutTemplates::LayoutTemplatesFileName());
-            std::filesystem::remove_all(m_testFolderPath);
-            AppliedLayouts::instance().LoadData(); // clean data 
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());   
         }
 
         TEST_METHOD (AppliedLayoutsParse)
@@ -75,7 +65,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(AppliedLayouts::instance().IsLayoutApplied(id));
         }
 
-        TEST_METHOD(AppliedLayoutsParseDataWithResolution)
+        TEST_METHOD (AppliedLayoutsParseDataWithResolution)
         {
             // prepare
             json::JsonObject root{};
@@ -238,70 +228,6 @@ namespace FancyZonesUnitTests
         TEST_METHOD (AppliedLayoutsNoFile)
         {
             // test
-            AppliedLayouts::instance().LoadData();
-            Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().empty());
-        }
-
-        TEST_METHOD (MoveAppliedLayoutsFromZonesSettings)
-        {
-            // prepare
-            json::JsonObject root{};
-            json::JsonArray devicesArray{}, customLayoutsArray{}, templateLayoutsArray{}, quickLayoutKeysArray{};
-            
-            {
-                json::JsonObject activeZoneset{};
-                activeZoneset.SetNamedValue(L"uuid", json::value(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}"));
-                activeZoneset.SetNamedValue(L"type", json::value(FancyZonesDataTypes::TypeToString(FancyZonesDataTypes::ZoneSetLayoutType::Rows)));
-
-                json::JsonObject obj{};
-                obj.SetNamedValue(L"device-id", json::value(L"VSC9636#5&37ac4db&0&UID160005_3840_2160_{00000000-0000-0000-0000-000000000000}"));
-                obj.SetNamedValue(L"active-zoneset", activeZoneset);;
-                obj.SetNamedValue(L"editor-show-spacing", json::value(true));
-                obj.SetNamedValue(L"editor-spacing", json::value(3));
-                obj.SetNamedValue(L"editor-zone-count", json::value(4));
-                obj.SetNamedValue(L"editor-sensitivity-radius", json::value(22));
-
-                devicesArray.Append(obj);
-            }
-
-            root.SetNamedValue(L"devices", devicesArray);
-            root.SetNamedValue(L"custom-zone-sets", customLayoutsArray);
-            root.SetNamedValue(L"templates", templateLayoutsArray);
-            root.SetNamedValue(L"quick-layout-keys", quickLayoutKeysArray);
-            json::to_file(m_fzData.GetZoneSettingsPath(m_testFolder), root);
-
-            // test
-            m_fzData.ReplaceZoneSettingsFileFromOlderVersions();
-            AppliedLayouts::instance().LoadData();
-            Assert::AreEqual((size_t)1, AppliedLayouts::instance().GetAppliedLayoutMap().size());
-
-            FancyZonesDataTypes::WorkAreaId id{
-                .monitorId = { .deviceId = { .id = L"VSC9636", .instanceId = L"5&37ac4db&0&UID160005" }, .serialNumber = L"" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
-            };
-            Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(id).has_value());
-        }
-
-        TEST_METHOD (MoveAppliedLayoutsFromZonesSettingsNoAppliedLayoutsData)
-        {
-            // prepare
-            json::JsonObject root{};
-            json::JsonArray customLayoutsArray{}, templateLayoutsArray{}, quickLayoutKeysArray{};
-            root.SetNamedValue(L"custom-zone-sets", customLayoutsArray);
-            root.SetNamedValue(L"templates", templateLayoutsArray);
-            root.SetNamedValue(L"quick-layout-keys", quickLayoutKeysArray);
-            json::to_file(m_fzData.GetZoneSettingsPath(m_testFolder), root);
-
-            // test
-            m_fzData.ReplaceZoneSettingsFileFromOlderVersions();
-            AppliedLayouts::instance().LoadData();
-            Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().empty());
-        }
-
-        TEST_METHOD (MoveAppliedLayoutsFromZonesSettingsNoFile)
-        {
-            // test
-            m_fzData.ReplaceZoneSettingsFileFromOlderVersions();
             AppliedLayouts::instance().LoadData();
             Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().empty());
         }
@@ -551,6 +477,94 @@ namespace FancyZonesUnitTests
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{F21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
             };
             Assert::IsFalse(AppliedLayouts::instance().IsLayoutApplied(id2));
+        }
+    };
+
+    TEST_CLASS (AppliedLayoutsFromOutdatedFileMappingUnitTests)
+    {
+        FancyZonesData& m_fzData = FancyZonesDataInstance();
+        std::wstring m_testFolder = L"FancyZonesUnitTests";
+        std::wstring m_testFolderPath = PTSettingsHelper::get_module_save_folder_location(m_testFolder);
+
+        TEST_METHOD_INITIALIZE(Init)
+        {
+            m_fzData.SetSettingsModulePath(m_testFolder);
+        }
+
+        TEST_METHOD_CLEANUP(CleanUp)
+        {
+            // MoveAppliedLayoutsFromZonesSettings creates all of these files, clean up
+            std::filesystem::remove(AppliedLayouts::AppliedLayoutsFileName());
+            std::filesystem::remove(CustomLayouts::CustomLayoutsFileName());
+            std::filesystem::remove(LayoutHotkeys::LayoutHotkeysFileName());
+            std::filesystem::remove(LayoutTemplates::LayoutTemplatesFileName());
+            std::filesystem::remove_all(m_testFolderPath);
+            AppliedLayouts::instance().LoadData(); // clean data
+        }
+
+        TEST_METHOD (MoveAppliedLayoutsFromZonesSettings)
+        {
+            // prepare
+            json::JsonObject root{};
+            json::JsonArray devicesArray{}, customLayoutsArray{}, templateLayoutsArray{}, quickLayoutKeysArray{};
+
+            {
+                json::JsonObject activeZoneset{};
+                activeZoneset.SetNamedValue(L"uuid", json::value(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}"));
+                activeZoneset.SetNamedValue(L"type", json::value(FancyZonesDataTypes::TypeToString(FancyZonesDataTypes::ZoneSetLayoutType::Rows)));
+
+                json::JsonObject obj{};
+                obj.SetNamedValue(L"device-id", json::value(L"VSC9636#5&37ac4db&0&UID160005_3840_2160_{00000000-0000-0000-0000-000000000000}"));
+                obj.SetNamedValue(L"active-zoneset", activeZoneset);
+
+                obj.SetNamedValue(L"editor-show-spacing", json::value(true));
+                obj.SetNamedValue(L"editor-spacing", json::value(3));
+                obj.SetNamedValue(L"editor-zone-count", json::value(4));
+                obj.SetNamedValue(L"editor-sensitivity-radius", json::value(22));
+
+                devicesArray.Append(obj);
+            }
+
+            root.SetNamedValue(L"devices", devicesArray);
+            root.SetNamedValue(L"custom-zone-sets", customLayoutsArray);
+            root.SetNamedValue(L"templates", templateLayoutsArray);
+            root.SetNamedValue(L"quick-layout-keys", quickLayoutKeysArray);
+            json::to_file(m_fzData.GetZoneSettingsPath(m_testFolder), root);
+
+            // test
+            m_fzData.ReplaceZoneSettingsFileFromOlderVersions();
+            AppliedLayouts::instance().LoadData();
+            Assert::AreEqual((size_t)1, AppliedLayouts::instance().GetAppliedLayoutMap().size());
+
+            FancyZonesDataTypes::WorkAreaId id{
+                .monitorId = { .deviceId = { .id = L"VSC9636", .instanceId = L"5&37ac4db&0&UID160005" }, .serialNumber = L"" },
+                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
+            };
+            Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(id).has_value());
+        }
+
+        TEST_METHOD (MoveAppliedLayoutsFromZonesSettingsNoAppliedLayoutsData)
+        {
+            // prepare
+            json::JsonObject root{};
+            json::JsonArray customLayoutsArray{}, templateLayoutsArray{}, quickLayoutKeysArray{};
+            root.SetNamedValue(L"custom-zone-sets", customLayoutsArray);
+            root.SetNamedValue(L"templates", templateLayoutsArray);
+            root.SetNamedValue(L"quick-layout-keys", quickLayoutKeysArray);
+            json::to_file(m_fzData.GetZoneSettingsPath(m_testFolder), root);
+
+            // test
+            m_fzData.ReplaceZoneSettingsFileFromOlderVersions();
+            AppliedLayouts::instance().LoadData();
+            Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().empty());
+        }
+
+        TEST_METHOD (MoveAppliedLayoutsFromZonesSettingsNoFile)
+        {
+            // test
+            m_fzData.ReplaceZoneSettingsFileFromOlderVersions();
+            AppliedLayouts::instance().LoadData();
+            Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().empty());
         }
     };
 }
