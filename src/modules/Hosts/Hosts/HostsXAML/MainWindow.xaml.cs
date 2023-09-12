@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using Hosts.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
@@ -19,7 +18,11 @@ namespace Hosts
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
             AppWindow.SetIcon("Assets/Hosts/Hosts.ico");
-            Title = ResourceLoaderInstance.ResourceLoader.GetString("WindowTitle");
+
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
+            Title = title;
+            AppTitleTextBlock.Text = title;
 
             BringToForeground();
 

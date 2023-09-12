@@ -3,6 +3,7 @@
     x:Class="EnvironmentVariables.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:EnvironmentVariables.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
@@ -25,6 +26,8 @@
                     Text="{x:Bind Values, Mode=TwoWay}" />
             </labs:SettingsCard>
         </DataTemplate>
+
+        <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
     </Page.Resources>
     <i:Interaction.Behaviors>
         <ic:EventTriggerBehavior EventName="Loaded">
@@ -201,6 +204,43 @@
                                         x:Uid="AddNewVariableValue"
                                         Margin="0,20,0,0"
                                         Visibility="{x:Bind ViewModel.ShowAddNewVariablePage, Mode=TwoWay}" />
+
+                                    <!--  Adding existing variables  -->
+                                    <ListView
+                                        x:Name="ExistingVariablesListView"
+                                        Height="300"
+                                        Margin="0,12,0,12"
+                                        HorizontalAlignment="Stretch"
+                                        ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
+                                        SelectionMode="Multiple"
+                                        Visibility="{x:Bind ViewModel.ShowAddExistingVariablePage, Mode=TwoWay}">
+                                        <ListView.Header>
+                                            <TextBlock
+                                                x:Uid="ExistingVariablesListViewHeader"
+                                                Margin="0,0,0,8"
+                                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                        </ListView.Header>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="models:Variable">
+                                                <Grid ColumnSpacing="5">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="20" />
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+                                                    <FontIcon
+                                                        Grid.Column="0"
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                        Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
+                                                    <TextBlock Grid.Column="1" Text="{x:Bind Name}" />
+                                                    <TextBlock Grid.Column="2" Text="{x:Bind Values}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    <Button x:Uid="ConfirmAddVariableBtn" Style="{StaticResource AccentButtonStyle}" />
+                                    <Button x:Uid="CancelAddVariableBtn" />
                                 </StackPanel>
                             </Flyout>
                         </Button.Flyout>

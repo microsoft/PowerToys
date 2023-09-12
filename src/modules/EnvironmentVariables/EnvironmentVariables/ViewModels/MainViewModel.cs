@@ -20,6 +20,8 @@ namespace EnvironmentVariables.ViewModels
 
         public DefaultVariablesSet SystemDefaultSet { get; private set; } = new DefaultVariablesSet(VariablesSet.SystemGuid, ResourceLoaderInstance.ResourceLoader.GetString("System"), VariablesSetType.System);
 
+        public VariablesSet DefaultVariables { get; private set; } = new DefaultVariablesSet(Guid.NewGuid(), ResourceLoaderInstance.ResourceLoader.GetString("DefaultVariables"), VariablesSetType.User);
+
         public ObservableCollection<ProfileVariablesSet> Profiles { get; private set; } = new ObservableCollection<ProfileVariablesSet>();
 
         public ProfileVariablesSet AppliedProfile { get; set; }
@@ -54,6 +56,9 @@ namespace EnvironmentVariables.ViewModels
 
             Profiles.Add(profile1);
             Profiles.Add(profile2);
+
+            DefaultVariables.Variables.AddRange(UserDefaultSet.Variables);
+            DefaultVariables.Variables.AddRange(SystemDefaultSet.Variables);
         }
 
         internal void EditVariable(Variable original, Variable edited)

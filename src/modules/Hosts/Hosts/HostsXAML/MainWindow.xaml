@@ -37,8 +37,7 @@
                 x:Name="AppTitleTextBlock"
                 Grid.Column="2"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                VerticalAlignment="Center"
-                Text="Hosts File Editor" />
+                VerticalAlignment="Center" />
         </Grid>
         
         <views:MainPage Grid.Row="1" />

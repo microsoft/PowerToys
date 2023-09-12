@@ -112,4 +112,9 @@
   <ItemGroup>
     <ResourceCompile Include="Generated Files/runner.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

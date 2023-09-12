@@ -67,6 +67,7 @@ namespace EnvironmentVariables.Views
             SwitchViewsSegmentedView.SelectedIndex = 0;
             ViewModel.CurrentAddVariablePage = AddVariablePageKind.AddNewVariable;
             ViewModel.ShowAddNewVariablePage = Visibility.Visible;
+            ViewModel.ShowAddExistingVariablePage = Visibility.Collapsed;
 
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             AddProfileDialog.Title = resourceLoader.GetString("AddNewProfileDialog_Title");
