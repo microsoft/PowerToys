@@ -172,6 +172,7 @@ BTNFACE
 Bto
 buf
 bugreport
+BUILDARCH
 BUILDNUMBER
 buildtask
 buildtransitive
