@@ -26,7 +26,7 @@
             LightTintColor="#F3F3F3"
             LightTintOpacity="0" />
     </winuiex:WindowEx.Backdrop>
-    
+
     <Grid>
         <Grid.Resources>
             <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
@@ -249,67 +249,90 @@
 
         <StackPanel
             HorizontalAlignment="Center"
+            Loaded="StackPanel_Loaded"
             Orientation="Horizontal"
-            Spacing="8"
-            Loaded="StackPanel_Loaded">
+            Spacing="8">
             <ToggleButton
                 Name="btnBounds"
-                AutomationProperties.Name="{x:Bind p:Resources.Bounds}"
+                x:Uid="BtnBounds"
                 Click="BoundsTool_Click"
                 Content="&#xEF20;"
-                Style="{StaticResource ToggleButtonRadioButtonStyle}"
                 KeyboardAcceleratorPlacementMode="Auto"
-                ToolTipService.ToolTip="{x:Bind p:Resources.Bounds}">
+                Style="{StaticResource ToggleButtonRadioButtonStyle}">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="BtnBoundsTooltip" />
+                </ToolTipService.ToolTip>
                 <ToggleButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Number1" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
+                    <KeyboardAccelerator
+                        Key="Number1"
+                        Invoked="KeyboardAccelerator_Invoked"
+                        Modifiers="Control" />
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <ToggleButton
                 Name="btnSpacing"
-                AutomationProperties.Name="{x:Bind p:Resources.Spacing}"
+                x:Uid="BtnSpacing"
                 Click="MeasureTool_Click"
-                Style="{StaticResource ToggleButtonRadioButtonStyle}"
-                ToolTipService.ToolTip="{x:Bind p:Resources.Spacing}">
+                Style="{StaticResource ToggleButtonRadioButtonStyle}">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="BtnSpacingTooltip" />
+                </ToolTipService.ToolTip>
                 <FontIcon Glyph="&#xE948;" />
                 <ToggleButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Number2" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
+                    <KeyboardAccelerator
+                        Key="Number2"
+                        Invoked="KeyboardAccelerator_Invoked"
+                        Modifiers="Control" />
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
 
             <ToggleButton
                 Name="btnHorizontalSpacing"
-                AutomationProperties.Name="{x:Bind p:Resources.HorizontalSpacing}"
+                x:Uid="BtnHorizontalSpacing"
                 Click="HorizontalMeasureTool_Click"
-                Style="{StaticResource ToggleButtonRadioButtonStyle}"
-                ToolTipService.ToolTip="{x:Bind p:Resources.HorizontalSpacing}">
+                Style="{StaticResource ToggleButtonRadioButtonStyle}">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="BtnHorizontalSpacingTooltip" />
+                </ToolTipService.ToolTip>
                 <FontIcon Glyph="&#xE949;" />
                 <ToggleButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Number3" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
+                    <KeyboardAccelerator
+                        Key="Number3"
+                        Invoked="KeyboardAccelerator_Invoked"
+                        Modifiers="Control" />
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <ToggleButton
                 Name="btnVerticalSpacing"
-                AutomationProperties.Name="{x:Bind p:Resources.VerticalSpacing}"
+                x:Uid="BtnVerticalSpacing"
                 Click="VerticalMeasureTool_Click"
-                Style="{StaticResource ToggleButtonRadioButtonStyle}"
-                ToolTipService.ToolTip="{x:Bind p:Resources.VerticalSpacing}">
+                Style="{StaticResource ToggleButtonRadioButtonStyle}">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="BtnVerticalSpacingTooltip" />
+                </ToolTipService.ToolTip>
                 <FontIcon Glyph="&#xE949;" RenderTransformOrigin="0.5,0.5">
                     <FontIcon.RenderTransform>
                         <RotateTransform Angle="90" />
                     </FontIcon.RenderTransform>
                 </FontIcon>
                 <ToggleButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Number4" Modifiers="Control" Invoked="KeyboardAccelerator_Invoked"/>
+                    <KeyboardAccelerator
+                        Key="Number4"
+                        Invoked="KeyboardAccelerator_Invoked"
+                        Modifiers="Control" />
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
-            <AppBarSeparator/>
+            <AppBarSeparator />
             <Button
+                x:Uid="BtnClosePanel"
                 Click="ClosePanelTool_Click"
                 Content="&#xE8BB;"
-                ToolTipService.ToolTip="{x:Bind p:Resources.Close}"
                 Foreground="{StaticResource CloseButtonBackgroundPointerOver}">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="BtnClosePanelTooltip" />
+                </ToolTipService.ToolTip>
                 <Button.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Escape" Invoked="KeyboardAccelerator_Invoked"/>
+                    <KeyboardAccelerator Key="Escape" Invoked="KeyboardAccelerator_Invoked" />
                 </Button.KeyboardAccelerators>
             </Button>
         </StackPanel>

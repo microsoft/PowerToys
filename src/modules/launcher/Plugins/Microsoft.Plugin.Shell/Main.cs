@@ -13,6 +13,8 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using ManagedCommon;
+using Microsoft.Plugin.Shell.Properties;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Plugin.Common;
@@ -21,7 +23,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Microsoft.Plugin.Shell
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable
+    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu, ISavable
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
@@ -36,6 +38,31 @@ namespace Microsoft.Plugin.Shell
         public string Name => Properties.Resources.wox_plugin_cmd_plugin_name;
 
         public string Description => Properties.Resources.wox_plugin_cmd_plugin_description;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = "LeaveShellOpen",
+                DisplayLabel = Resources.wox_leave_shell_open,
+                Value = _settings.LeaveShellOpen,
+            },
+
+            new PluginAdditionalOption()
+            {
+                Key = "ShellCommandExecution",
+                DisplayLabel = Resources.wox_shell_command_execution,
+                SelectionTypeValue = (int)PluginAdditionalOption.SelectionType.Combobox,
+                ComboBoxOptions = new List<string>
+                {
+                    Resources.run_command_in_command_prompt,
+                    Resources.run_command_in_powershell,
+                    Resources.find_executable_file_and_run_it,
+                    Resources.run_command_in_windows_terminal,
+                },
+                Option = (int)_settings.Shell,
+            },
+        };
 
         private PluginInitContext _context;
 
@@ -220,16 +247,40 @@ namespace Microsoft.Plugin.Shell
                         if (ExistInPath(filename))
                         {
                             var arguments = parts[1];
-                            info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsVerbArg);
+                            if (_settings.LeaveShellOpen)
+                            {
+                                // Wrap the command in a cmd.exe process
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{filename} {arguments}\"", runAsVerbArg);
+                            }
+                            else
+                            {
+                                info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsVerbArg);
+                            }
+                        }
+                        else
+                        {
+                            if (_settings.LeaveShellOpen)
+                            {
+                                // Wrap the command in a cmd.exe process
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{command}\"", runAsVerbArg);
+                            }
+                            else
+                            {
+                                info = ShellCommand.SetProcessStartInfo(command, verb: runAsVerbArg);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (_settings.LeaveShellOpen)
+                        {
+                            // Wrap the command in a cmd.exe process
+                            info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{command}\"", runAsVerbArg);
                         }
                         else
                         {
                             info = ShellCommand.SetProcessStartInfo(command, verb: runAsVerbArg);
                         }
-                    }
-                    else
-                    {
-                        info = ShellCommand.SetProcessStartInfo(command, verb: runAsVerbArg);
                     }
                 }
             }
@@ -377,6 +428,25 @@ namespace Microsoft.Plugin.Shell
             };
 
             return resultlist;
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            var leaveShellOpen = false;
+            var shellOption = 2;
+
+            if (settings != null && settings.AdditionalOptions != null)
+            {
+                var optionLeaveShellOpen = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LeaveShellOpen");
+                leaveShellOpen = optionLeaveShellOpen?.Value ?? leaveShellOpen;
+                _settings.LeaveShellOpen = leaveShellOpen;
+
+                var optionShell = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ShellCommandExecution");
+                shellOption = optionShell?.Option ?? shellOption;
+                _settings.Shell = (ExecutionShell)shellOption;
+            }
+
+            Save();
         }
     }
 }

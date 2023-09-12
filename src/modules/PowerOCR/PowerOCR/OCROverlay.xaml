@@ -5,19 +5,40 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PowerOCR"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="TextExtractor"
-    Width="800"
-    Height="450"
-    ShowActivated="False"
-    ShowInTaskbar="False"
+    Width="200"
+    Height="200"
     AllowsTransparency="True"
     Background="Transparent"
     Loaded="Window_Loaded"
-    Unloaded="Window_Unloaded"
     ResizeMode="NoResize"
+    ShowActivated="False"
+    ShowInTaskbar="False"
     Topmost="True"
+    Unloaded="Window_Unloaded"
+    WindowStartupLocation="Manual"
+    WindowState="Normal"
     WindowStyle="None"
     mc:Ignorable="d">
+
+    <Window.Resources>
+        <Style x:Key="SymbolTextStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Margin" Value="4" />
+        </Style>
+        <Style TargetType="ToggleButton">
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Viewbox>
             <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
@@ -45,8 +66,115 @@
                     Color="Black" />
             </Canvas.Background>
             <Canvas.ContextMenu>
-                <ContextMenu x:Name="CanvasContextMenu" />
+                <ContextMenu x:Name="CanvasContextMenu">
+                    <MenuItem
+                        Name="SingleLineMenuItem"
+                        Click="SingleLineMenuItem_Click"
+                        Header="Make Result Text Single Line"
+                        IsCheckable="True" />
+                    <MenuItem
+                        Name="TableMenuItem"
+                        Click="TableToggleButton_Click"
+                        Header="OCR text as a table"
+                        IsCheckable="True" />
+                    <Separator />
+                    <MenuItem
+                        Name="SettingsMenuItem"
+                        Click="SettingsMenuItem_Click"
+                        Header="Settings" />
+                    <Separator />
+                    <MenuItem
+                        Name="CancelMenuItem"
+                        Click="CancelMenuItem_Click"
+                        Header="Cancel" />
+                </ContextMenu>
             </Canvas.ContextMenu>
         </Canvas>
+        <Border
+            x:Name="TopButtonsStackPanel"
+            Margin="12"
+            Padding="4,8,12,8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            d:Background="White"
+            d:Visibility="Visible"
+            Background="{DynamicResource ApplicationBackgroundBrush}"
+            CornerRadius="8"
+            Visibility="Collapsed">
+            <Border.Effect>
+                <DropShadowEffect
+                    BlurRadius="32"
+                    Direction="-90"
+                    Opacity="0.6"
+                    RenderingBias="Performance" />
+            </Border.Effect>
+            <StackPanel
+                Margin="2,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Orientation="Horizontal">
+                <ComboBox
+                    x:Name="LanguagesComboBox"
+                    Margin="2,0"
+                    Padding="4,2,0,2"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    SelectionChanged="LanguagesComboBox_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontFamily="Segoe UI"
+                                Style="{StaticResource SymbolTextStyle}"
+                                Text="{Binding NativeName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <ToggleButton
+                    x:Name="SingleLineToggleButton"
+                    Width="34"
+                    Height="34"
+                    Margin="2,0"
+                    d:IsChecked="True"
+                    Click="SingleLineMenuItem_Click"
+                    IsChecked="{Binding IsChecked, ElementName=SingleLineMenuItem, Mode=TwoWay}"
+                    Style="{StaticResource ToggleSymbolButton}"
+                    ToolTip="(S) Make result a single line">
+                    <TextBlock Style="{StaticResource SymbolTextStyle}" Text="" />
+                </ToggleButton>
+                <ToggleButton
+                    x:Name="TableToggleButton"
+                    Width="34"
+                    Height="34"
+                    Margin="2,0"
+                    d:IsChecked="True"
+                    Click="TableToggleButton_Click"
+                    IsChecked="{Binding IsChecked, ElementName=TableMenuItem, Mode=TwoWay}"
+                    Style="{StaticResource ToggleSymbolButton}"
+                    ToolTip="(T) OCR text as a table">
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="" />
+                </ToggleButton>
+                <Button
+                    x:Name="SettingsButton"
+                    Width="34"
+                    Height="34"
+                    Margin="2,0"
+                    Click="SettingsMenuItem_Click"
+                    Style="{StaticResource SymbolButton}"
+                    ToolTip="Settings">
+                    <TextBlock Style="{StaticResource SymbolTextStyle}" Text="" />
+                </Button>
+                <Button
+                    x:Name="CancelButton"
+                    Width="34"
+                    Height="34"
+                    Margin="2,0,0,0"
+                    Click="CancelMenuItem_Click"
+                    Style="{StaticResource SymbolButton}"
+                    ToolTip="(Esc) Cancel">
+                    <TextBlock Style="{StaticResource SymbolTextStyle}" Text="" />
+                </Button>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

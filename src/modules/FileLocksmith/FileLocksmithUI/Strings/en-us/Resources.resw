@@ -117,11 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppTitle.Title" xml:space="preserve">
+  <data name="AppTitle" xml:space="preserve">
     <value>File Locksmith</value>
-  </data>
-  <data name="AppTitleText.Text" xml:space="preserve">
-    <value>File Locksmith</value>
+    <comment>Title of the window when running as user.</comment>
   </data>
   <data name="EmptyListDescription.Text" xml:space="preserve">
     <value>No results</value>
@@ -161,5 +159,9 @@
   </data>
   <data name="User.Header" xml:space="preserve">
     <value>User</value>
+  </data>
+  <data name="AppAdminTitle" xml:space="preserve">
+    <value>Administrator: File Locksmith</value>
+    <comment>Title of the window when running as administrator.</comment>
   </data>
 </root>

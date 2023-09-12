@@ -1,44 +1,64 @@
-﻿<Window x:Class="ImageResizer.Views.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:ui="http://schemas.modernwpf.com/2019"
-        xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
-        xmlns:local="clr-namespace:ImageResizer.Views"
-        xmlns:p="clr-namespace:ImageResizer.Properties"
-        xmlns:vm="clr-namespace:ImageResizer.ViewModels"
-        Content="{Binding CurrentPage}"
-        Icon="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico"
-        Name="_this"
-        ResizeMode="NoResize"
-        SizeToContent="WidthAndHeight"
-        MinWidth="485"
-        Title="{x:Static p:Resources.ImageResizer}"
-        WindowStartupLocation="CenterScreen"
-        ui:WindowHelper.UseModernWindowStyle="True"
-        ui:TitleBar.IsIconVisible="True"
-        ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
-        AutomationProperties.Name="{x:Static p:Resources.ImageResizer}">
+﻿<ui:FluentWindow
+    x:Class="ImageResizer.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:local="clr-namespace:ImageResizer.Views"
+    xmlns:p="clr-namespace:ImageResizer.Properties"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:vm="clr-namespace:ImageResizer.ViewModels"
+    Name="_this"
+    Width="360"
+    Height="506"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    AutomationProperties.Name="{x:Static p:Resources.ImageResizer}"
+    ExtendsContentIntoTitleBar="True"
+    Icon="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico"
+    ResizeMode="NoResize"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Default"
+    WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:InputViewModel}">
-            <local:InputPage/>
+            <local:InputPage />
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:ProgressViewModel}">
-            <local:ProgressPage/>
+            <local:ProgressPage />
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:ResultsViewModel}">
-            <local:ResultsPage/>
+            <local:ResultsPage />
         </DataTemplate>
     </Window.Resources>
 
     <Window.TaskbarItemInfo>
-        <TaskbarItemInfo ProgressState="Normal" ProgressValue="{Binding Progress}"/>
+        <TaskbarItemInfo ProgressState="Normal" ProgressValue="{Binding Progress}" />
     </Window.TaskbarItemInfo>
 
     <behaviors:Interaction.Triggers>
         <behaviors:EventTrigger EventName="Loaded">
-            <behaviors:InvokeCommandAction Command="{Binding LoadCommand}" CommandParameter="{Binding ElementName=_this}"/>
+            <behaviors:InvokeCommandAction Command="{Binding LoadCommand}" CommandParameter="{Binding ElementName=_this}" />
         </behaviors:EventTrigger>
     </behaviors:Interaction.Triggers>
 
-</Window>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="{x:Static p:Resources.ImageResizer}"
+            Grid.Row="0"
+            Height="32"
+            Padding="16,0,16,0"
+            ShowMaximize="False"
+            ShowMinimize="False">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+        <ContentPresenter Grid.Row="1" Content="{Binding CurrentPage}" />
+    </Grid>
+</ui:FluentWindow>

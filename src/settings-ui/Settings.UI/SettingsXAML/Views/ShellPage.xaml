@@ -49,7 +49,6 @@
                     Source="/Assets/Settings/icon.ico" />
                 <TextBlock
                     x:Name="AppTitleBarText"
-                    x:Uid="SettingsWindow_TitleTxt"
                     Margin="12,0,0,0"
                     VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"
@@ -105,6 +104,11 @@
                     x:Uid="Shell_ColorPicker"
                     helpers:NavHelper.NavigateTo="views:ColorPickerPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_CropAndLock"
+                    helpers:NavHelper.NavigateTo="views:CropAndLockPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCropAndLock.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_FancyZones"

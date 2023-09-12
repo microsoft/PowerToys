@@ -154,7 +154,7 @@
     <comment>Date Modified label for the unsupported files view. {0} is the date.</comment>
   </data>
   <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} bytes</value>
+    <value>{0} byte</value>
     <comment>Abbreviation for the size unit byte.</comment>
   </data>
   <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">
@@ -232,5 +232,25 @@
   <data name="Archive_Size" xml:space="preserve">
     <value>{0} (extracted {1})</value>
     <comment>{0} is the size of the archive, {1} is the extracted size</comment>
+  </data>
+  <data name="ReadableString_BytesAbbreviationFormat" xml:space="preserve">
+    <value>{0} bytes</value>
+    <comment>Abbreviation for the size bytes</comment>
+  </data>
+  <data name="OpenUriDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Dialog showed when an URI is clicked. Button to close the dialog.</comment>
+  </data>
+  <data name="OpenUriDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Open</value>
+    <comment>Dialog showed when an URI is clicked. Button to open the URI.</comment>
+  </data>
+  <data name="OpenUriDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Dialog showed when an URI is clicked. Button to copy the URI.</comment>
+  </data>
+  <data name="OpenUriDialog.Title" xml:space="preserve">
+    <value>Do you want Peek to open the external application?</value>
+    <comment>Title of the dialog showed when an URI is clicked,"Peek" is the name of the utility. </comment>
   </data>
 </root>

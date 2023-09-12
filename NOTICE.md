@@ -308,7 +308,7 @@ SOFTWARE.
 - Microsoft.Windows.CsWinRT 2.0.3
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.755
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
-- Microsoft.WindowsAppSDK 1.3.230502000
+- Microsoft.WindowsAppSDK 1.4.230822000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
@@ -337,4 +337,5 @@ SOFTWARE.
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
+- WPF-UI 3.0.0-preview.4
 

@@ -73,6 +73,9 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
             return std::nullopt;
         }
 
+        // Cleanup old updates before downloading the latest
+        updating::cleanup_updates();
+
         auto downloaded_installer = download_new_version(std::get<new_version_download_info>(*new_version_info)).get();
         if (!downloaded_installer)
         {

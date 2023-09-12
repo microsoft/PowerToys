@@ -17,6 +17,7 @@ namespace
     const wchar_t JSON_KEY_HIGHLIGHT_RADIUS[] = L"highlight_radius";
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DELAY_MS[] = L"highlight_fade_delay_ms";
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DURATION_MS[] = L"highlight_fade_duration_ms";
+    const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -237,7 +238,7 @@ public:
                     }
                     else
                     {
-                        throw;
+                        throw std::runtime_error("Invalid Opacity value");
                     }
                 }
                 catch (...)
@@ -313,7 +314,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Radius value");
                 }
             }
             catch (...)
@@ -331,7 +332,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Fade Delay value");
                 }
             }
             catch (...)
@@ -349,12 +350,22 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Fade Duration value");
                 }
             }
             catch (...)
             {
                 Logger::warn("Failed to initialize Fade Duration from settings. Will use default value");
+            }
+            try
+            {
+                // Parse auto activate
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_AUTO_ACTIVATE);
+                highlightSettings.autoActivate = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize auto activate from settings. Will use default value");
             }
         }
         else

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.UI;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -208,17 +209,18 @@ namespace Microsoft.PowerToys.Settings.UI
             }
             else
             {
+#if DEBUG
                 // For debugging purposes
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow(isDark);
                 settingsWindow.ExtendsContentIntoTitleBar = true;
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
-
-#if !DEBUG
-                ShowMessageDialogAndExit("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
+                ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
 #else
-                ShowMessageDialog("The application cannot be run as a standalone process. Please start the application through the runner.", "Forbidden");
+                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the General page. */
+                SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Overview, true);
+                Exit();
 #endif
             }
         }
@@ -286,6 +288,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                    oobeWindow.SetTheme(isDark);
                     SetContentTheme(isDark, oobeWindow);
                 }
 
@@ -399,6 +402,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
                 case "PastePlain": return typeof(PastePlainPage);
                 case "Peek": return typeof(PeekPage);
+                case "CropAndLock": return typeof(CropAndLockPage);
                 default:
                     // Fallback to general
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

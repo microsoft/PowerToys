@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1148,7 +1148,7 @@
     <value>Use a shortcut or press the Windows key for some time to activate</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
-    <value>Customized shortcut</value>
+    <value>Custom shortcut</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" xml:space="preserve">
     <value>Hold down Windows key</value>
@@ -1853,10 +1853,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
     <value>Enable at least one plugin to get started</value>
   </data>
-  <data name="Run_PluginUseDescription.Header" xml:space="preserve">
+  <data name="Run_PluginUse.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>
-  <data name="Run_PluginUseDescription.Description" xml:space="preserve">
+  <data name="Run_PluginUseDescription.Text" xml:space="preserve">
     <value>Include or remove plugins from the global results, change the direct activation phrase and configure additional options</value>
   </data>
   <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
@@ -2152,6 +2152,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
+    <comment>Title of the settings window when running as user</comment>
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
@@ -2384,7 +2385,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Shake the mouse or press the left Ctrl key twice to focus the mouse pointer.</value>
+    <value>Focus the mouse pointer pressing the Ctrl key twice, using a custom shortcut or shaking the mouse.</value>
     <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
@@ -2466,10 +2467,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Cancel</value>
   </data>
   <data name="Activation_Shortcut_Description" xml:space="preserve">
-	<value>Press a combination of keys to change this shortcut</value>
+    <value>Press a combination of keys to change this shortcut</value>
   </data>
   <data name="Activation_Shortcut_With_Disable_Description" xml:space="preserve">
-	<value>Press a combination of keys to change this shortcut.
+    <value>Press a combination of keys to change this shortcut.
 Right-click to remove the key combination, thereby deactivating the shortcut.</value>
   </data>
   <data name="Activation_Shortcut_Reset" xml:space="preserve">
@@ -2512,7 +2513,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when shaking the mouse or pressing the left Ctrl key twice.</value>
+    <value>Find My Mouse highlights the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
@@ -2569,6 +2570,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Description" xml:space="preserve">
     <value>Time before the spotlight appears (ms)</value>
     <comment>ms = milliseconds</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Message" xml:space="preserve">
+    <value>Animations are disabled by OS. See Settings &gt; Accessibility &gt; Visual effects</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
     <value>Shake minimum distance</value>
@@ -2718,6 +2722,59 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ToggleSwitch.OnContent" xml:space="preserve">
     <value>On</value>
     <comment>The state of a ToggleSwitch when it's on</comment>
+  </data>
+  <data name="CropAndLock.ModuleDescription" xml:space="preserve">
+    <value>Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="CropAndLock.ModuleTitle" xml:space="preserve">
+    <value>Crop And Lock </value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="CropAndLock_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="CropAndLock_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Crop And Lock</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="Shell_CropAndLock.Content" xml:space="preserve">
+    <value>Crop And Lock</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_CropAndLock.Text" xml:space="preserve">
+    <value>Learn more about Crop And Lock</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="CropAndLock_ReparentActivation_Shortcut.Header" xml:space="preserve">
+    <value>Reparent shortcut</value>
+  </data>
+  <data name="CropAndLock_ReparentActivation_Shortcut.Description" xml:space="preserve">
+    <value>Shortcut to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
+  </data>
+  <data name="CropAndLock_ThumbnailActivation_Shortcut.Header" xml:space="preserve">
+    <value>Thumbnail shortcut</value>
+  </data>
+  <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
+    <value>Shortcut to crop and create a thumbnail of another window. The application isn't controllable through the thumbnail but it'll have less compatibility issues. </value>
+  </data>
+  <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
+  <data name="Oobe_CropAndLock.Title" xml:space="preserve">
+    <value>Crop And Lock</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_CropAndLock.Description" xml:space="preserve">
+    <value>Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.</value>
+    <comment>"Crop And Lock" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Thumbnail.Text" xml:space="preserve">
+    <value>to crop and create a thumbnail of another window. The application isn't controllable through the thumbnail but it'll have less compatibility issues.</value>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Reparent.Text" xml:space="preserve">
+    <value>to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
@@ -3556,9 +3613,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
   </data>
-  <data name="SettingsWindow_TitleTxt.Text" xml:space="preserve">
-    <value>PowerToys Settings</value>
-  </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
   </data>
@@ -3592,5 +3646,34 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide.Content" xml:space="preserve">
     <value>Automatically hide crosshairs when the mouse pointer is hidden</value>
+  </data>
+  <data name="MouseUtils_AutoActivate.Content" xml:space="preserve">
+    <value>Automatically activate on utility startup</value>
+  </data>
+  <data name="Run_FindMorePlugins.Text" xml:space="preserve">
+    <value>Find more plugins</value>
+  </data>
+  <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
+    <value>Find more plugins</value>
+  </data>
+  <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
+    <value>Opacity (%)</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationCustomizedShortcut.Content" xml:space="preserve">
+    <value>Custom shortcut</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationDoubleRightControlPress.Content" xml:space="preserve">
+    <value>Press Right Control twice</value>
+    <comment>Right control is the physical key on the keyboard.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to turn on or off this mode</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="SettingsWindow_AdminTitle" xml:space="preserve">
+    <value>Administrator: PowerToys Settings</value>
+    <comment>Title of the settings window when running as administrator</comment>
   </data>
 </root>

@@ -112,7 +112,7 @@ AUTHN
 AUTHZ
 AUTOHIDE
 AUTOMATIONPROPERTIES
-Autorun
+autorun
 AUTOUPDATE
 AValid
 awakeness
@@ -144,7 +144,7 @@ Blockquotes
 blogs
 Blt
 BLUEGRAY
-Bluetooth
+bluetooth
 BLURBEHIND
 BLURREGION
 bmi
@@ -155,6 +155,7 @@ BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
 Bopomofo
+bostrot
 BOTTOMALIGN
 BPBF
 bpmf
@@ -563,7 +564,6 @@ FARPROC
 fdw
 feimage
 fff
-fileapi
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
@@ -607,6 +607,7 @@ GAC
 gacutil
 Gaeilge
 Gaidhlig
+Galaxi
 GBarm
 Gbits
 Gbps
@@ -617,6 +618,8 @@ gcode
 gdi
 gdiplus
 GDISCALED
+GEmoji
+GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
@@ -671,6 +674,7 @@ hcblack
 HCERTSTORE
 HCRYPTHASH
 HCRYPTPROV
+hcursor
 hcwhite
 hdc
 hdrop
@@ -705,6 +709,7 @@ HKL
 HKLM
 HKPD
 HKU
+hlaueriksson
 HLOCAL
 HMD
 hmenu
@@ -738,7 +743,7 @@ hstring
 hsv
 htcfreek
 HTCLIENT
-HTHUMBNAIL
+hthumbnail
 HTOUCHINPUT
 HTTRANSPARENT
 HVal
@@ -779,6 +784,7 @@ IFACEMETHODIMP
 IFile
 IFilter
 IGraphics
+IGT
 iid
 Iindex
 IIO
@@ -925,6 +931,7 @@ LEFTSCROLLBAR
 LEFTUP
 lego
 len
+lepo
 LError
 Lessthan
 LEVELID
@@ -1474,6 +1481,7 @@ ptc
 ptd
 PTOKEN
 PToy
+ptrun
 ptstr
 pui
 PULONG
@@ -1489,6 +1497,7 @@ qit
 QITAB
 QITABENT
 qps
+Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
@@ -1518,10 +1527,12 @@ RCtrl
 READMODE
 READOBJECTS
 READWRITE
+recents
 RECTDESTINATION
 RECTL
 rectp
 rects
+RECTSOURCE
 redirectedfrom
 Redist
 redistributable
@@ -1559,6 +1570,8 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 Renamer
+reparent
+reparenting
 reparse
 reportbug
 requery
@@ -1748,6 +1761,7 @@ SIZENWSE
 sizeread
 SIZEWE
 SKIPOWNPROCESS
+skttl
 sku
 SLGP
 sln
@@ -1837,6 +1851,7 @@ subquery
 subresource
 Superbar
 sut
+svchost
 SVE
 SVGIn
 SVGIO
@@ -1869,7 +1884,6 @@ talynone
 TApp
 TApplication
 TApplied
-Taras
 targ
 TARGETAPPHEADER
 TARGETDIR
@@ -1881,6 +1895,7 @@ taskbar
 taskkill
 tasklist
 taskschd
+TBM
 tchar
 Tcollab
 tcp
@@ -1989,6 +2004,7 @@ unregistering
 unremapped
 unsubscribe
 unvirtualized
+unwide
 UOffset
 UOI
 Updatelayout
@@ -2181,6 +2197,7 @@ wox
 wparam
 wpf
 wpftmp
+wpfui
 wpr
 wprp
 wql
@@ -2209,7 +2226,6 @@ Wubi
 WVC
 Wwan
 Wwanpp
-XAttribute
 XAxis
 xbf
 Xbox
@@ -2234,12 +2250,14 @@ XStr
 XUP
 XVIRTUALSCREEN
 YAxis
+ycv
 Yeet
 YIncrement
 yinle
 yinwang
 yinyue
 YOffset
+Youdao
 YPels
 YResolution
 YStr
