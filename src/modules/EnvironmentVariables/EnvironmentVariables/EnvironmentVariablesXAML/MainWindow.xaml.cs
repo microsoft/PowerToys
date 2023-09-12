@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using EnvironmentVariables.Helpers;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
 using WinUIEx;
 
 namespace EnvironmentVariables
@@ -22,7 +20,10 @@ namespace EnvironmentVariables
             SetTitleBar(titleBar);
 
             AppWindow.SetIcon("Assets/EnvironmentVariables/EnvironmentVariables.ico");
-            Title = ResourceLoaderInstance.ResourceLoader.GetString("WindowTitle");
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
+            Title = title;
+            AppTitleTextBlock.Text = title;
         }
     }
 }

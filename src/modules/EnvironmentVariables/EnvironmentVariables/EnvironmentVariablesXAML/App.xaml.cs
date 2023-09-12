@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using EnvironmentVariables.Helpers;
 using EnvironmentVariables.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,7 @@ namespace EnvironmentVariables
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
+                services.AddSingleton<IElevationHelper, ElevationHelper>();
                 services.AddTransient<MainViewModel>();
             }).Build();
 

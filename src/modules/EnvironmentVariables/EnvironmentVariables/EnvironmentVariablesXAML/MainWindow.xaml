@@ -41,8 +41,7 @@
                 x:Name="AppTitleTextBlock"
                 Grid.Column="2"
                 VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="Environment Variables" />
+                Style="{StaticResource CaptionTextBlockStyle}" />
         </Grid>
 
         <views:MainPage Grid.Row="1" />
