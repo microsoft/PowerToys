@@ -118,6 +118,9 @@
   <ItemGroup>
     <Manifest Include="PowerToys.exe.manifest" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
