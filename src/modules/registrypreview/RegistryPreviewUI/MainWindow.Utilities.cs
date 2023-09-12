@@ -441,6 +441,7 @@ namespace RegistryPreview
                                 }
                                 catch
                                 {
+                                    registryValue.Type = "ERROR";
                                     value = resourceLoader.GetString("InvalidBinary");
                                 }
                             }
@@ -451,6 +452,7 @@ namespace RegistryPreview
                         case "REG_DWORD":
                             if (value.Length <= 0)
                             {
+                                registryValue.Type = "ERROR";
                                 value = resourceLoader.GetString("InvalidDword");
                             }
                             else
@@ -461,6 +463,7 @@ namespace RegistryPreview
                                 }
                                 else
                                 {
+                                    registryValue.Type = "ERROR";
                                     value = resourceLoader.GetString("InvalidDword");
                                 }
                             }
@@ -471,6 +474,7 @@ namespace RegistryPreview
                         case "REG_QWORD":
                             if (value.Length <= 0)
                             {
+                                registryValue.Type = "ERROR";
                                 value = resourceLoader.GetString("InvalidQword");
                             }
                             else
@@ -485,6 +489,7 @@ namespace RegistryPreview
                                 }
                                 catch
                                 {
+                                    registryValue.Type = "ERROR";
                                     value = resourceLoader.GetString("InvalidQword");
                                 }
                             }
@@ -515,6 +520,7 @@ namespace RegistryPreview
                             }
                             catch
                             {
+                                registryValue.Type = "ERROR";
                                 value = resourceLoader.GetString("InvalidString");
                             }
 
