@@ -287,75 +287,42 @@ namespace FancyZonesUnitTests
         {
             FancyZonesDataTypes::WorkAreaId deviceSrc{
                 .monitorId = { .deviceId = { .id = L"Device1", .instanceId = L"" }, .serialNumber = L"" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
+                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{EA6B6934-D55F-49F5-A9A5-CFADE21FFFB8}").value()
             };
             FancyZonesDataTypes::WorkAreaId deviceDst{
                 .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
+                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{EF1A8099-7D1E-4738-805A-571B31B02674}").value()
             };
+            FancyZonesDataTypes::WorkAreaId fallbackDevice = deviceDst;
+            fallbackDevice.virtualDesktopId = GUID_NULL;
 
-            Assert::IsTrue(AppliedLayouts::instance().ApplyDefaultLayout(deviceSrc));
-            Assert::IsTrue(AppliedLayouts::instance().ApplyDefaultLayout(deviceDst));
-
+            LayoutData layout { .uuid = FancyZonesUtils::GuidFromString(L"{361F96DD-FD10-4D01-ABAC-CC1C857294DD}").value() };
+            Assert::IsTrue(AppliedLayouts::instance().ApplyLayout(deviceSrc, layout));
+            
             AppliedLayouts::instance().CloneLayout(deviceSrc, deviceDst);
 
-            auto actualMap = AppliedLayouts::instance().GetAppliedLayoutMap();
-            Assert::IsFalse(actualMap.find(deviceSrc) == actualMap.end());
-            Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
-
-            auto expected = AppliedLayouts::instance().GetDeviceLayout(deviceSrc);
-            auto actual = AppliedLayouts::instance().GetDeviceLayout(deviceDst);
-
-            Assert::IsTrue(expected.has_value());
-            Assert::IsTrue(actual.has_value());
-            Assert::IsTrue(expected.value().uuid == actual.value().uuid);
-        }
-
-        TEST_METHOD (CloneDeviceInfoIntoUnknownDevice)
-        {
-            FancyZonesDataTypes::WorkAreaId deviceSrc{
-                .monitorId = { .deviceId = { .id = L"Device1", .instanceId = L"" }, .serialNumber = L"" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
-            };
-            FancyZonesDataTypes::WorkAreaId deviceDst{
-                .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
-            };
-
-            Assert::IsTrue(AppliedLayouts::instance().ApplyDefaultLayout(deviceSrc));
-
-            AppliedLayouts::instance().CloneLayout(deviceSrc, deviceDst);
-
-            auto actualMap = AppliedLayouts::instance().GetAppliedLayoutMap();
-            Assert::IsFalse(actualMap.find(deviceSrc) == actualMap.end());
-            Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
-
-            auto expected = AppliedLayouts::instance().GetDeviceLayout(deviceSrc);
-            auto actual = AppliedLayouts::instance().GetDeviceLayout(deviceDst);
-
-            Assert::IsTrue(expected.has_value());
-            Assert::IsTrue(actual.has_value());
-            Assert::IsTrue(expected.value().uuid == actual.value().uuid);
+            Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(deviceSrc));
+            Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(deviceDst));
+            Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(fallbackDevice));
         }
 
         TEST_METHOD (CloneDeviceInfoFromUnknownDevice)
         {
             FancyZonesDataTypes::WorkAreaId deviceSrc{
                 .monitorId = { .deviceId = { .id = L"Device1", .instanceId = L"" }, .serialNumber = L"" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
+                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{EA6B6934-D55F-49F5-A9A5-CFADE21FFFB8}").value()
             };
             FancyZonesDataTypes::WorkAreaId deviceDst{
                 .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
+                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{EF1A8099-7D1E-4738-805A-571B31B02674}").value()
             };
 
             AppliedLayouts::instance().LoadData();
-            Assert::IsTrue(AppliedLayouts::instance().ApplyDefaultLayout(deviceDst));
 
             Assert::IsFalse(AppliedLayouts::instance().CloneLayout(deviceSrc, deviceDst));
 
             Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(deviceSrc).has_value());
-            Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(deviceDst).has_value());
+            Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(deviceDst).has_value());
         }
 
         TEST_METHOD (CloneDeviceInfoNullVirtualDesktopId)
@@ -366,24 +333,19 @@ namespace FancyZonesUnitTests
             };
             FancyZonesDataTypes::WorkAreaId deviceDst{
                 .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000000}").value()
+                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{EF1A8099-7D1E-4738-805A-571B31B02674}").value()
             };
+            FancyZonesDataTypes::WorkAreaId fallbackDevice = deviceDst;
+            fallbackDevice.virtualDesktopId = GUID_NULL;
 
-            Assert::IsTrue(AppliedLayouts::instance().ApplyDefaultLayout(deviceSrc));
-            Assert::IsTrue(AppliedLayouts::instance().ApplyDefaultLayout(deviceDst));
-
+            LayoutData layout{ .uuid = FancyZonesUtils::GuidFromString(L"{361F96DD-FD10-4D01-ABAC-CC1C857294DD}").value() };
+            Assert::IsTrue(AppliedLayouts::instance().ApplyLayout(deviceSrc, layout));
+            
             AppliedLayouts::instance().CloneLayout(deviceSrc, deviceDst);
 
-            auto actualMap = AppliedLayouts::instance().GetAppliedLayoutMap();
-            Assert::IsFalse(actualMap.find(deviceSrc) == actualMap.end());
-            Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
-
-            auto expected = AppliedLayouts::instance().GetDeviceLayout(deviceSrc);
-            auto actual = AppliedLayouts::instance().GetDeviceLayout(deviceDst);
-
-            Assert::IsTrue(expected.has_value());
-            Assert::IsTrue(actual.has_value());
-            Assert::IsTrue(expected.value().uuid == actual.value().uuid);
+            Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(deviceSrc));
+            Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(deviceDst));
+            Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(fallbackDevice));
         }
 
         TEST_METHOD (ApplyLayout)

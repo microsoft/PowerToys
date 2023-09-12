@@ -246,7 +246,10 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
     {
         if (parentUniqueId.virtualDesktopId != GUID_NULL)
         {
-            AppliedLayouts::instance().CloneLayout(parentUniqueId, m_uniqueId);
+            if (AppliedLayouts::instance().CloneLayout(parentUniqueId, m_uniqueId))
+            {
+                AppliedLayouts::instance().SaveData();
+            }
         }
         else
         {

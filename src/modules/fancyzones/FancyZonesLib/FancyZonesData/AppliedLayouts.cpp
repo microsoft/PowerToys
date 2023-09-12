@@ -481,9 +481,5 @@ bool AppliedLayouts::CloneLayout(const FancyZonesDataTypes::WorkAreaId& srcId, c
     }
 
     Logger::info(L"Clone layout from {} to {}", dstId.toString(), srcId.toString());
-    m_layouts[dstId] = m_layouts[srcId];
-
-    SaveData();
-
-    return true;
+    return ApplyLayout(dstId, m_layouts[srcId]);
 }
