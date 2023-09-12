@@ -32,7 +32,7 @@ std::vector<EnumOptions> parseEnumOptions(const std::wstring& replaceWith);
 struct Enumerator
 {
     inline Enumerator(EnumOptions options) :
-        start{ options.start.value_or(0) }, increment{ options.increment.value_or(1) }, padding{ options.padding.value_or(0) }, replaceStrSpan{ options.replaceStrSpan }
+        start{ options.start.value_or(0) }, increment{ options.increment.value_or(1) }, padding{ options.padding.value_or(0) % MAX_PATH }, replaceStrSpan{ options.replaceStrSpan }
     {
     }
 
@@ -43,6 +43,15 @@ struct Enumerator
         const int32_t enumeratedIndex = enumerate(index);
         wchar_t format[32];
         swprintf_s(format, sizeof(format) / sizeof(wchar_t), L"%%0%ud", padding);
+
+        //swprintf panics when the buffer is too small, so we're checking the required buffer size ahead of printing to it and falling back to 0 padding in case it cannot fit. Note that we must use swprintf with nullptr buf, because the _s version panics on it as well.
+        const size_t requiredBufSize = swprintf(nullptr, 0, format, enumeratedIndex) + 1ull;
+        const bool fitsBuf = requiredBufSize < bufSize;
+        if (!fitsBuf)
+        {
+            swprintf_s(format, sizeof(format) / sizeof(wchar_t), L"%%%ud", 0);
+        }
+
         return swprintf_s(buf, bufSize, format, enumeratedIndex);
     }
 

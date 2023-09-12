@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="using:PowerToys.FileLocksmithUI.Views"
     xmlns:winuiex="using:WinUIEx"
-    x:Uid="AppTitle"
     Width="680"
     MinWidth="480"
     MinHeight="320"
@@ -39,7 +38,6 @@
                 Height="16"/>
             <TextBlock
                 x:Name="AppTitleTextBlock"
-                x:Uid="AppTitleText"
                 Grid.Column="2"
                 VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}" />

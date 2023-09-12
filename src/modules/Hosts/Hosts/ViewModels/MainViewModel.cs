@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -43,6 +44,9 @@ namespace Hosts.ViewModels
 
         [ObservableProperty]
         private bool _error;
+
+        [ObservableProperty]
+        private string _errorMessage;
 
         [ObservableProperty]
         private bool _fileChanged;
@@ -126,12 +130,7 @@ namespace Hosts.ViewModels
         public void UpdateAdditionalLines(string lines)
         {
             AdditionalLines = lines;
-
-            Task.Run(async () =>
-            {
-                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
-                await _dispatcherQueue.EnqueueAsync(() => Error = error);
-            });
+            _ = Task.Run(SaveAsync);
         }
 
         public void Move(int oldIndex, int newIndex)
@@ -287,20 +286,12 @@ namespace Hosts.ViewModels
                 return;
             }
 
-            Task.Run(async () =>
-            {
-                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
-                await _dispatcherQueue.EnqueueAsync(() => Error = error);
-            });
+            _ = Task.Run(SaveAsync);
         }
 
         private void Entries_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            Task.Run(async () =>
-            {
-                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
-                await _dispatcherQueue.EnqueueAsync(() => Error = error);
-            });
+            _ = Task.Run(SaveAsync);
         }
 
         private void FindDuplicates(CancellationToken cancellationToken)
@@ -376,6 +367,41 @@ namespace Hosts.ViewModels
             _dispatcherQueue.TryEnqueue(() =>
             {
                 entry.Duplicate = duplicate;
+            });
+        }
+
+        private async Task SaveAsync()
+        {
+            bool error = true;
+            string errorMessage = string.Empty;
+
+            try
+            {
+                await _hostsService.WriteAsync(AdditionalLines, _entries);
+                error = false;
+            }
+            catch (NotRunningElevatedException)
+            {
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                errorMessage = resourceLoader.GetString("FileSaveError_NotElevated");
+            }
+            catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 32)
+            {
+                // There are some edge cases where a big hosts file is being locked by svchost.exe https://github.com/microsoft/PowerToys/issues/28066
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                errorMessage = resourceLoader.GetString("FileSaveError_FileInUse");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to save hosts file", ex);
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                errorMessage = resourceLoader.GetString("FileSaveError_Generic");
+            }
+
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                Error = error;
+                ErrorMessage = errorMessage;
             });
         }
 

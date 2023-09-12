@@ -784,6 +784,7 @@ IFACEMETHODIMP
 IFile
 IFilter
 IGraphics
+IGT
 iid
 Iindex
 IIO
@@ -1497,6 +1498,7 @@ QITAB
 QITABENT
 qoi
 qps
+Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
@@ -1850,6 +1852,7 @@ subquery
 subresource
 Superbar
 sut
+svchost
 SVE
 SVGIn
 SVGIO
@@ -2224,7 +2227,6 @@ Wubi
 WVC
 Wwan
 Wwanpp
-XAttribute
 XAxis
 xbf
 Xbox

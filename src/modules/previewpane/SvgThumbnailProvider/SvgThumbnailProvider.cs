@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Common.Utilities;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -34,6 +35,13 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// Gets the stream object to access file.
         /// </summary>
         public Stream Stream { get; private set; }
+
+        /// <summary>
+        /// Gets or sets signalled when the main thread can use preprocessed svg contents.
+        /// </summary>
+        public ManualResetEventSlim SvgContentsReady { get; set; } = new ManualResetEventSlim(false);
+
+        public string SvgContents { get; set; } = string.Empty;
 
         /// <summary>
         ///  The maximum dimension (width or height) thumbnail we will generate.
@@ -87,20 +95,19 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// Render SVG using WebView2 control, capture the WebView2
         /// preview and create Bitmap out of it.
         /// </summary>
-        /// <param name="content">The content to render.</param>
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
-        public Bitmap GetThumbnail(string content, uint cx)
+        public Bitmap GetThumbnailImpl(uint cx)
         {
             CleanupWebView2UserDataFolder();
 
-            if (cx == 0 || cx > MaxThumbnailSize || string.IsNullOrEmpty(content) || !content.Contains("svg"))
+            if (cx == 0 || cx > MaxThumbnailSize)
             {
                 return null;
             }
 
             Bitmap thumbnail = null;
-            bool thumbnailDone = false;
-            string wrappedContent = WrapSVGInHTML(content);
+
+            var thumbnailDone = new ManualResetEventSlim(false);
 
             _browser = new WebView2();
             _browser.Dock = DockStyle.Fill;
@@ -132,7 +139,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     thumbnail = ResizeImage(thumbnail, scaleWidth, scaleHeight);
                 }
 
-                thumbnailDone = true;
+                thumbnailDone.Set();
             };
 
             var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
@@ -140,6 +147,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                webView2EnvironmentAwaiter = CoreWebView2Environment
                    .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
                    .ConfigureAwait(true).GetAwaiter();
+
             webView2EnvironmentAwaiter.OnCompleted(async () =>
             {
                 try
@@ -170,16 +178,23 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     // WebView2.NavigateToString() limitation
                     // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
                     // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
-                    if (wrappedContent.Length > 1_500_000)
+                    SvgContentsReady.Wait();
+                    if (string.IsNullOrEmpty(SvgContents) || !SvgContents.Contains("svg"))
+                    {
+                        thumbnailDone.Set();
+                        return;
+                    }
+
+                    if (SvgContents.Length > 1_500_000)
                     {
                         string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
-                        File.WriteAllText(filename, wrappedContent);
+                        File.WriteAllText(filename, SvgContents);
                         _localFileURI = new Uri(filename);
                         _browser.Source = _localFileURI;
                     }
                     else
                     {
-                        _browser.NavigateToString(wrappedContent);
+                        _browser.NavigateToString(SvgContents);
                     }
                 }
                 catch (Exception)
@@ -187,7 +202,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 }
             });
 
-            while (thumbnailDone == false)
+            while (!thumbnailDone.Wait(75))
             {
                 Application.DoEvents();
             }
@@ -276,31 +291,41 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 return null;
             }
 
-            string svgData = null;
-            using (var reader = new StreamReader(this.Stream))
+            if (Stream != null)
             {
-                svgData = reader.ReadToEnd();
-                try
+                new Thread(() =>
                 {
-                    // Fixes #17527 - Inkscape v1.1 swapped order of default and svg namespaces in svg file (default first, svg after).
-                    // That resulted in parser being unable to parse it correctly and instead of svg, text was previewed.
-                    // MS Edge and Firefox also couldn't preview svg files with mentioned order of namespaces definitions.
-                    svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
-                    svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
-                }
-                catch (Exception)
-                {
-                }
+                    string svgData = null;
+                    using (var reader = new StreamReader(Stream))
+                    {
+                        svgData = reader.ReadToEnd();
+                        try
+                        {
+                            // Fixes #17527 - Inkscape v1.1 swapped order of default and svg namespaces in svg file (default first, svg after).
+                            // That resulted in parser being unable to parse it correctly and instead of svg, text was previewed.
+                            // MS Edge and Firefox also couldn't preview svg files with mentioned order of namespaces definitions.
+                            svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
+                            svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
+                            SvgContents = WrapSVGInHTML(svgData);
+                            SvgContentsReady.Set();
+                        }
+                        catch (Exception)
+                        {
+                            SvgContentsReady.Set();
+                        }
+                    }
+                }).Start();
+            }
+            else
+            {
+                SvgContentsReady.Set();
             }
 
-            if (svgData != null)
+            using (Bitmap thumbnail = GetThumbnailImpl(cx))
             {
-                using (Bitmap thumbnail = GetThumbnail(svgData, cx))
+                if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
                 {
-                    if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
-                    {
-                        return (Bitmap)thumbnail.Clone();
-                    }
+                    return (Bitmap)thumbnail.Clone();
                 }
             }
 

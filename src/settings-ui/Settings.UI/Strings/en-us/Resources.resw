@@ -2152,6 +2152,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
+    <comment>Title of the settings window when running as user</comment>
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
@@ -3612,9 +3613,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
   </data>
-  <data name="SettingsWindow_TitleTxt.Text" xml:space="preserve">
-    <value>PowerToys Settings</value>
-  </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
   </data>
@@ -3673,5 +3671,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
+  </data>
+  <data name="SettingsWindow_AdminTitle" xml:space="preserve">
+    <value>Administrator: PowerToys Settings</value>
+    <comment>Title of the settings window when running as administrator</comment>
   </data>
 </root>

@@ -52,6 +52,7 @@
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="System.ComponentModel.Composition" />
     <PackageReference Include="System.Drawing.Common" />
+    <PackageReference Include="WPF-UI" />
   </ItemGroup>
 	
   <ItemGroup>

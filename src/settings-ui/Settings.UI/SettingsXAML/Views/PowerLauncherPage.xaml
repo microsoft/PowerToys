@@ -444,11 +444,21 @@
                                                                     BorderThickness="0,0,0,0"
                                                                     ContentAlignment="Left"
                                                                     CornerRadius="0">
-                                                                    <controls:CheckBoxWithDescriptionControl
-                                                                        Margin="56,0,0,0"
-                                                                        Description="{x:Bind Path=DisplayDescription}"
-                                                                        Header="{x:Bind Path=DisplayLabel}"
-                                                                        IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                    <StackPanel Orientation="Vertical">
+                                                                        <controls:CheckBoxWithDescriptionControl
+                                                                            Margin="56,0,0,0"
+                                                                            Description="{x:Bind Path=DisplayDescription}"
+                                                                            Header="{x:Bind Path=DisplayLabel}"
+                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
+                                                                            Visibility="{x:Bind Path=ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                                        <ComboBox
+                                                                            Margin="56,0,0,0"
+                                                                            Description="{x:Bind Path=DisplayDescription}"
+                                                                            Header="{x:Bind Path=DisplayLabel}"
+                                                                            ItemsSource="{x:Bind Path=ComboBoxOptions}"
+                                                                            SelectedIndex="{x:Bind Path=Option, Mode=TwoWay}"
+                                                                            Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                                    </StackPanel>
                                                                 </labs:SettingsCard>
                                                                 <Rectangle
                                                                     Height="1"

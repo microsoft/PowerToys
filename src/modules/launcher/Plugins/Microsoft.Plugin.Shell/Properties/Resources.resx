@@ -144,4 +144,19 @@
   <data name="wox_leave_shell_open" xml:space="preserve">
     <value>Keep shell open</value>
   </data>
+  <data name="wox_shell_command_execution" xml:space="preserve">
+    <value>Shell command execution</value>
+  </data>
+  <data name="run_command_in_command_prompt" xml:space="preserve">
+    <value>Run command in Command Prompt (cmd.exe)</value>
+  </data>
+  <data name="run_command_in_powershell" xml:space="preserve">
+    <value>Run command in PowerShell (PowerShell.exe)</value>
+  </data>
+  <data name="find_executable_file_and_run_it" xml:space="preserve">
+    <value>Find executable file and run it</value>
+  </data>
+  <data name="run_command_in_windows_terminal" xml:space="preserve">
+    <value>Run command in Windows Terminal (wt.exe)</value>
+  </data>
 </root>

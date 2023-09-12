@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
-        private void SetTheme(bool isDark)
+        public void SetTheme(bool isDark)
         {
             shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
