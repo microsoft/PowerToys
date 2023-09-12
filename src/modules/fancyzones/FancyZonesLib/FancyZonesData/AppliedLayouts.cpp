@@ -279,29 +279,7 @@ void AppliedLayouts::LoadData()
 
 void AppliedLayouts::SaveData()
 {
-    bool dirtyFlag = false;
-    TAppliedLayoutsMap updatedMap;
-    
-    for (const auto& [id, data] : m_layouts)
-    {
-        auto updatedId = id;
-        if (!VirtualDesktop::instance().IsVirtualDesktopIdSavedInRegistry(id.virtualDesktopId))
-        {
-            updatedId.virtualDesktopId = GUID_NULL;
-            dirtyFlag = true;
-        }
-
-        updatedMap.insert({ updatedId, data });
-    }
-
-    if (dirtyFlag)
-    {
-        json::to_file(AppliedLayoutsFileName(), JsonUtils::SerializeJson(updatedMap));
-    }
-    else
-    {
-        json::to_file(AppliedLayoutsFileName(), JsonUtils::SerializeJson(m_layouts));
-    }
+    json::to_file(AppliedLayoutsFileName(), JsonUtils::SerializeJson(m_layouts));
 }
 
 void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids)

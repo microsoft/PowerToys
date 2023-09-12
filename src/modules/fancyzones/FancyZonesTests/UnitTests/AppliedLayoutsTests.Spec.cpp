@@ -232,6 +232,57 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(AppliedLayouts::instance().GetAppliedLayoutMap().empty());
         }
 
+        TEST_METHOD (Save)
+        {
+            FancyZonesDataTypes::WorkAreaId workAreaId1{ 
+                .monitorId = {
+                    .deviceId = { .id = L"id-1", .instanceId = L"id-1", .number = 1 },
+                    .serialNumber = L"serial-number-1"
+                }, 
+                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{30387C86-BB15-476D-8683-AF93F6D73E99}").value() 
+            };
+            FancyZonesDataTypes::WorkAreaId workAreaId2{ 
+                .monitorId = {
+                    .deviceId = { .id = L"id-2", .instanceId = L"id-2", .number = 2 },
+                    .serialNumber = L"serial-number-2" },
+                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{30387C86-BB15-476D-8683-AF93F6D73E99}").value() 
+            };
+            FancyZonesDataTypes::WorkAreaId workAreaId3{
+                .monitorId = {
+                    .deviceId = { .id = L"id-1", .instanceId = L"id-1", .number = 1 },
+                    .serialNumber = L"serial-number-1" },
+                .virtualDesktopId = GUID_NULL
+            };
+            FancyZonesDataTypes::WorkAreaId workAreaId4{
+                .monitorId = {
+                    .deviceId = { .id = L"id-2", .instanceId = L"id-2", .number = 2 },
+                    .serialNumber = L"serial-number-2" },
+                .virtualDesktopId = GUID_NULL
+            };
+
+            LayoutData layout1{ .uuid = FancyZonesUtils::GuidFromString(L"{D7DBECFA-23FC-4F45-9B56-51CFA9F6ABA2}").value() };
+            LayoutData layout2{ .uuid = FancyZonesUtils::GuidFromString(L"{B9EDB48C-EC48-4E82-993F-A15DC1FF09D3}").value() };
+            LayoutData layout3{ .uuid = FancyZonesUtils::GuidFromString(L"{94CF0000-7814-4D72-9624-794060FA269C}").value() };
+            LayoutData layout4{ .uuid = FancyZonesUtils::GuidFromString(L"{13FA7ADF-1B6C-4FB6-8142-254B77C128E2}").value() };
+
+            AppliedLayouts::TAppliedLayoutsMap expected{};
+            expected.insert({ workAreaId1, layout1 });
+            expected.insert({ workAreaId2, layout2 });
+            expected.insert({ workAreaId3, layout3 });
+            expected.insert({ workAreaId4, layout4 });
+
+            AppliedLayouts::instance().SetAppliedLayouts(expected);
+            AppliedLayouts::instance().SaveData();
+
+            AppliedLayouts::instance().LoadData();
+            auto actual = AppliedLayouts::instance().GetAppliedLayoutMap();
+            Assert::AreEqual(expected.size(), actual.size());
+            Assert::IsTrue(expected.at(workAreaId1) == actual.at(workAreaId1));
+            Assert::IsTrue(expected.at(workAreaId2) == actual.at(workAreaId2));
+            Assert::IsTrue(expected.at(workAreaId3) == actual.at(workAreaId3));
+            Assert::IsTrue(expected.at(workAreaId4) == actual.at(workAreaId4));
+        }
+
         TEST_METHOD (CloneDeviceInfo)
         {
             FancyZonesDataTypes::WorkAreaId deviceSrc{

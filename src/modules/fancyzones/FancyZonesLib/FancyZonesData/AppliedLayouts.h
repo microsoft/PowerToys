@@ -49,6 +49,13 @@ public:
 #endif
     }
 
+#if defined(UNIT_TESTS)
+    inline void SetAppliedLayouts(TAppliedLayoutsMap layouts)
+    {
+        m_layouts = layouts;
+    }
+#endif
+
     void LoadData();
     void SaveData();
     void AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids);
