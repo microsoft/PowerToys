@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -14,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Common.UI;
 using interop;
+using Mages.Core.Runtime.Converters;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
@@ -79,7 +81,7 @@ namespace PowerLauncher.ViewModel
             Results = new ResultsViewModel(_settings, this);
             History = new ResultsViewModel(_settings, this);
             _selectedResults = Results;
-
+            Plugins = new ObservableCollection<PluginPair>(PluginManager.AllPlugins);
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
         }
@@ -1199,5 +1201,7 @@ namespace PowerLauncher.ViewModel
                 action.Invoke();
             }
         }
+
+        public ObservableCollection<PluginPair> Plugins { get; set; }
     }
 }

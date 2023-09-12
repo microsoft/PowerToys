@@ -15,7 +15,6 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-
         <ResourceDictionary>
             <converters:HighlightTextConverter x:Key="highlightTextConverter" />
 
@@ -35,88 +34,9 @@
                 </Setter>
             </Style>
 
-            <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
-                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-                <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="Focusable" Value="False" />
-                <Setter Property="HorizontalContentAlignment" Value="Center" />
-                <Setter Property="VerticalContentAlignment" Value="Center" />
-                <Setter Property="Padding" Value="1" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type Button}">
-                            <Border
-                                x:Name="border"
-                                Background="Transparent"
-                                BorderBrush="Transparent"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4"
-                                SnapsToDevicePixels="true">
-                                <ContentPresenter
-                                    x:Name="contentPresenter"
-                                    Margin="{TemplateBinding Padding}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    Focusable="False"
-                                    RecognizesAccessKey="True"
-                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsDefaulted" Value="true">
-                                    <Setter TargetName="border" Property="Background" Value="Transparent" />
-                                </Trigger>
-                                <Trigger Property="IsMouseOver" Value="true">
-                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="true">
-                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-                                </Trigger>
-                                <Trigger Property="IsEnabled" Value="false">
-                                    <!--<Setter  <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
-                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource Button.Disabled.Foreground}"/>-->
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
 
-            <Style x:Key="CommandButtonListViewItemContainerStyle" TargetType="ListViewItem">
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Padding" Value="0" />
-                <Setter Property="Margin" Value="1" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type ListViewItem}">
-                            <Border
-                                x:Name="border"
-                                Background="Transparent"
-                                BorderBrush="Transparent"
-                                CornerRadius="4"
-                                SnapsToDevicePixels="true">
-                                <ContentPresenter
-                                    x:Name="contentPresenter"
-                                    Margin="{TemplateBinding Padding}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    Focusable="False"
-                                    RecognizesAccessKey="True"
-                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="true">
-                                    <Setter TargetName="border" Property="Background" Value="Transparent" />
-                                    <Setter TargetName="border" Property="BorderBrush" Value="Transparent" />
-                                </Trigger>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
+
+     
             <Style
                 x:Key="CollapsableTextblock"
                 BasedOn="{StaticResource CaptionTextBlockStyle}"
@@ -129,159 +49,159 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-
-    <Grid VerticalAlignment="Top">
-        <ListView
-            x:Name="SuggestionsList"
-            MaxHeight="{Binding Results.MaxHeight}"
-            Margin="12,0,0,0"
-            Padding="0,0"
-            x:FieldModifier="public"
-            AutomationProperties.Name="{x:Static p:Resources.Results}"
-            Background="Transparent"
-            BorderThickness="0"
-            ItemsSource="{Binding Results.Results, Mode=OneWay}"
-            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-            ScrollViewer.VerticalScrollBarVisibility="Auto"
-            SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            SelectionChanged="SuggestionsListView_SelectionChanged"
-            SelectionMode="Single">
-
-            <!--
-                AllowFocusOnInteraction="False"
-                IsItemClickEnabled="True"
-            -->
-            <!--  Style="{StaticResource ListViewNoAnimations}"  -->
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Grid
-                        Height="48"
+    <ListView
+        x:Name="SuggestionsList"
+        Margin="0,12,0,0"
+        x:FieldModifier="public"
+        AutomationProperties.Name="{x:Static p:Resources.Results}"
+        ItemsSource="{Binding Results.Results, Mode=OneWay}"
+        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+        ScrollViewer.VerticalScrollBarVisibility="Auto"
+        SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
+        SelectionChanged="SuggestionsListView_SelectionChanged"
+        SelectionMode="Single">
+        <ListView.ItemsPanel>
+            <ItemsPanelTemplate>
+                <VirtualizingStackPanel
+                    Margin="12,6,0,0"
+                    IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}"
+                    VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
+            </ItemsPanelTemplate>
+        </ListView.ItemsPanel>
+        <!--
+            AllowFocusOnInteraction="False"
+            IsItemClickEnabled="True"
+        -->
+        <!--  Style="{StaticResource ListViewNoAnimations}"  -->
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <Grid
+                    Height="40"
+                    Background="Transparent"
+                    ToolTipService.BetweenShowDelay="0"
+                    ToolTipService.InitialShowDelay="1000">
+                    <Behaviors:Interaction.Triggers>
+                        <Behaviors:EventTrigger EventName="MouseEnter">
+                            <Behaviors:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}" />
+                        </Behaviors:EventTrigger>
+                        <Behaviors:EventTrigger EventName="MouseLeave">
+                            <Behaviors:InvokeCommandAction Command="{Binding DeactivateContextButtonsHoverCommand}" />
+                        </Behaviors:EventTrigger>
+                    </Behaviors:Interaction.Triggers>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ToolTip>
+                        <ToolTip Opened="ToolTip_Opened" Visibility="{Binding Result.ToolTipVisibility}">
+                            <StackPanel>
+                                <TextBlock
+                                    FontWeight="Bold"
+                                    Style="{DynamicResource CollapsableTextblock}"
+                                    Text="{Binding Result.ToolTipData.Title}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Style="{DynamicResource CollapsableTextblock}"
+                                    Text="{Binding Result.ToolTipData.Text}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </ToolTip>
+                    </Grid.ToolTip>
+                    <Image
+                        x:Name="AppIcon"
+                        Grid.RowSpan="2"
+                        Height="24"
+                        MaxWidth="56"
+                        Margin="-6,-2,0,0"
+                        HorizontalAlignment="Center"
+                        AutomationProperties.Name="{x:Static p:Resources.AppIcon}"
+                        Source="{Binding Image}" />
+                    <TextBlock
+                        x:Name="Title"
+                        Grid.Column="1"
+                        VerticalAlignment="Bottom"
+                        AutomationProperties.Name="{x:Static p:Resources.Title}"
+                        FontSize="14"
+                        IsHitTestVisible="False"
+                        TextTrimming="CharacterEllipsis">
+                        <viewmodel:ResultsViewModel.FormattedText>
+                            <MultiBinding Converter="{StaticResource highlightTextConverter}">
+                                <Binding Path="Result.Title" />
+                                <Binding Path="Result.TitleHighlightData" />
+                                <Binding Path="IsSelected" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}" />
+                            </MultiBinding>
+                        </viewmodel:ResultsViewModel.FormattedText>
+                    </TextBlock>
+                    <TextBlock
+                        x:Name="Path"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="0,0,0,0"
+                        VerticalAlignment="Top"
+                        AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
+                        Foreground="{DynamicResource SecondaryTextForeground}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{Binding Result.SubTitle}"
+                        TextTrimming="CharacterEllipsis" />
+                    <ListView
+                        Grid.RowSpan="2"
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemsCollection}"
                         Background="Transparent"
-                        ToolTipService.BetweenShowDelay="0"
-                        ToolTipService.InitialShowDelay="1000">
-                        <Behaviors:Interaction.Triggers>
-                            <Behaviors:EventTrigger EventName="MouseEnter">
-                                <Behaviors:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}" />
-                            </Behaviors:EventTrigger>
-                            <Behaviors:EventTrigger EventName="MouseLeave">
-                                <Behaviors:InvokeCommandAction Command="{Binding DeactivateContextButtonsHoverCommand}" />
-                            </Behaviors:EventTrigger>
-                        </Behaviors:Interaction.Triggers>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="48" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ToolTip>
-                            <ToolTip Opened="ToolTip_Opened" Visibility="{Binding Result.ToolTipVisibility}">
-                                <StackPanel>
-                                    <TextBlock
-                                        FontWeight="SemiBold"
-                                        Style="{DynamicResource CollapsableTextblock}"
-                                        Text="{Binding Result.ToolTipData.Title}"
-                                        TextWrapping="Wrap" />
-                                    <TextBlock
-                                        Margin="0,4,0,0"
-                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                        Style="{DynamicResource CollapsableTextblock}"
-                                        Text="{Binding Result.ToolTipData.Text}"
-                                        TextWrapping="Wrap" />
-                                </StackPanel>
-                            </ToolTip>
-                        </Grid.ToolTip>
-                        <Image
-                            x:Name="AppIcon"
-                            Grid.RowSpan="2"
-                            Height="24"
-                            MaxWidth="56"
-                            Margin="-6,-2,0,0"
-                            HorizontalAlignment="Center"
-                            AutomationProperties.Name="{x:Static p:Resources.AppIcon}"
-                            Source="{Binding Image}" />
-                        <TextBlock
-                            x:Name="Title"
-                            Grid.Column="1"
-                            VerticalAlignment="Bottom"
-                            AutomationProperties.Name="{x:Static p:Resources.Title}"
-                            FontSize="14"
-                                TextTrimming="CharacterEllipsis"
-                            IsHitTestVisible="False">
-                            <viewmodel:ResultsViewModel.FormattedText>
-                                <MultiBinding Converter="{StaticResource highlightTextConverter}">
-                                    <Binding Path="Result.Title" />
-                                    <Binding Path="Result.TitleHighlightData" />
-                                    <Binding Path="IsSelected" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}" />
-                                </MultiBinding>
-                            </viewmodel:ResultsViewModel.FormattedText>
-                        </TextBlock>
-                        <TextBlock
-                            x:Name="Path"
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            Margin="0,2,0,0"
-                            VerticalAlignment="Top"
-                            TextTrimming="CharacterEllipsis"
-                            AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
-                            Foreground="{DynamicResource SecondaryTextForeground}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{Binding Result.SubTitle}" />
-                        <ListView
-                            Grid.RowSpan="2"
-                            Grid.Column="2"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemsCollection}"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            ItemContainerStyle="{StaticResource CommandButtonListViewItemContainerStyle}"
-                            ItemsSource="{Binding ContextMenuItems}"
-                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                            SelectedIndex="{Binding ContextMenuSelectedIndex}"
-                            SelectionChanged="ContextMenuListView_SelectionChanged"
-                            SelectionMode="Single"
-                            Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <Button
-                                        Name="commandButton"
-                                        Width="42"
-                                        Height="42"
-                                        VerticalAlignment="Center"
-                                        AutomationProperties.Name="{x:Static p:Resources.ContextMenuItem}"
-                                        BorderThickness="1"
-                                        Command="{Binding Command}"
-                                        Style="{StaticResource IconButtonStyle}">
-                                        <ToolTipService.ToolTip>
-                                            <ToolTip Opened="ToolTip_Opened">
-                                                <TextBlock AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}" Text="{Binding Title}" />
-                                            </ToolTip>
-                                        </ToolTipService.ToolTip>
-                                        <Button.Content>
-                                            <ui:FontIcon
-                                                AutomationProperties.Name="{x:Static p:Resources.ContextMenuIcon}"
-                                                FontFamily="{DynamicResource SegoeFluentIcons}"
-                                                Glyph="{Binding Glyph}" />
-                                        </Button.Content>
-                                    </Button>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </Grid>
+                        BorderThickness="0"
+                        ItemContainerStyle="{StaticResource CommandButtonListViewItemContainerStyle}"
+                        ItemsSource="{Binding ContextMenuItems}"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        SelectedIndex="{Binding ContextMenuSelectedIndex}"
+                        SelectionChanged="ContextMenuListView_SelectionChanged"
+                        SelectionMode="Single"
+                        Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Name="commandButton"
+                                    Width="42"
+                                    Height="42"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="{x:Static p:Resources.ContextMenuItem}"
+                                    BorderThickness="1"
+                                    Command="{Binding Command}"
+                                    Style="{StaticResource SubtleButtonStyle}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Opened="ToolTip_Opened">
+                                            <TextBlock AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}" Text="{Binding Title}" />
+                                        </ToolTip>
+                                    </ToolTipService.ToolTip>
+                                    <Button.Content>
+                                        <ui:FontIcon
+                                            AutomationProperties.Name="{x:Static p:Resources.ContextMenuIcon}"
+                                            FontFamily="{DynamicResource SegoeFluentIcons}"
+                                            Glyph="{Binding Glyph}" />
+                                    </Button.Content>
+                                </Button>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
 </UserControl>

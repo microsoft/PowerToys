@@ -25,12 +25,12 @@
             <Setter Property="modernwpf:TextContextMenu.UsingTextContextMenu" Value="True" />
             <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
             <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
-            <Setter Property="Padding" Value="8,0,0,0" />
+            <Setter Property="Padding" Value="5,0,0,0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
                         <Grid>
-                            <TextBlock Margin="9,0,0,0" Text="{TemplateBinding Tag}">
+                            <TextBlock VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16" Text="{TemplateBinding Tag}">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
                                         <Setter Property="Foreground" Value="Transparent" />
@@ -64,17 +64,7 @@
                                 </ScrollViewer>
                             </Border>
                         </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsEnabled" Value="false">
-                                <Setter TargetName="border" Property="Opacity" Value="0.56" />
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource TextBox.MouseOver.Border}" />
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="true">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource TextBox.Focus.Border}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
+                       
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -116,7 +106,7 @@
         <TextBlock
             x:Name="AutoCompleteTextBlock"
             Grid.Column="1"
-            Margin="10,0,14,0"
+            Margin="7,0,14,0"
             VerticalAlignment="Center"
             x:FieldModifier="public"
             Canvas.ZIndex="-1"
