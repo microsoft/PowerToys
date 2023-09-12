@@ -1014,6 +1014,7 @@ lstrlen
 LTRB
 LTRREADING
 luid
+LUMA
 lusrmgr
 LVal
 LWA
@@ -2250,6 +2251,7 @@ xsi
 XStr
 XUP
 XVIRTUALSCREEN
+xxxxxx
 YAxis
 ycv
 Yeet
