@@ -2,13 +2,14 @@
     x:Class="PowerLauncher.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:PowerLauncher.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PowerLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:PowerLauncher.ViewModel"
     Title="PowerToys Run"
-    Width="720"
+    Width="640"
     d:DataContext="{d:DesignInstance vm:MainViewModel}"
     ui:ExtendsContentIntoTitleBar="True"
     AllowDrop="True"
@@ -28,33 +29,89 @@
     WindowStartupLocation="Manual"
     WindowStyle="None"
     mc:Ignorable="d">
+    <ui:FluentWindow.Resources>
+        <converters:ReverseVisibilityConverter x:Key="reverseVisibilityConverter" />
+    </ui:FluentWindow.Resources>
 
     <Grid Background="{DynamicResource ControlOnImageFillColorDefaultBrush}" MouseDown="OnMouseDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*" MaxHeight="{Binding Results.MaxHeight}" />
         </Grid.RowDefinitions>
-        <Grid
+        <Border
             x:Name="SearchBoxBorder"
             Grid.Row="0"
-            Margin="12">
-            <Rectangle
-                RadiusX="8"
-                RadiusY="8"
-                Stroke="{DynamicResource CardStrokeColorDefaultBrush}"
-                StrokeThickness="1">
-                <Rectangle.Fill>
-                    <SolidColorBrush Color="{DynamicResource ControlFillColorInputActive}" />
-                </Rectangle.Fill>
-            </Rectangle>
+            Margin="12,12,12,0"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <Border.Background>
+                <SolidColorBrush Color="{DynamicResource ControlFillColorInputActive}" />
+            </Border.Background>
             <local:LauncherControl x:Name="SearchBox" />
-        </Grid>
-
+        </Border>
         <local:ResultList
             x:Name="ListBox"
             Grid.Row="1"
+            VerticalAlignment="Stretch"
             PreviewMouseDown="ListBox_PreviewMouseDown"
             Visibility="{Binding Results.Visibility}" />
+
+        <!--  Have to use a Grid instead of a StackPanel for scrolling to work?  -->
+        <Grid
+            Grid.Row="1"
+            Margin="12,0,0,0"
+            Visibility="{Binding ElementName=ListBox, Path=Visibility, Converter={StaticResource reverseVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock
+                Margin="10,16,0,8"
+                FontWeight="SemiBold"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="Plugin keywords" />
+
+            <ListView
+                Grid.Row="1"
+                ItemContainerStyle="{StaticResource PluginsListViewItemStyle}"
+                ItemsSource="{Binding Plugins}"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                SelectionMode="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Height="36">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border
+                                Width="32"
+                                Height="32"
+                                Margin="4,0,10,0"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4">
+
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontWeight="SemiBold"
+                                    Text="{Binding Metadata.ActionKeyword}" />
+                            </Border>
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Plugin.Description}"
+                                TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
     </Grid>
     <ui:FluentWindow.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
