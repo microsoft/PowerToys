@@ -238,6 +238,11 @@ namespace FancyZonesDataTypes
 
         return lhs.monitorId.deviceId < rhs.monitorId.deviceId;
     }
+
+    inline bool operator==(const AppZoneHistoryData& lhs, const AppZoneHistoryData& rhs)
+    {
+        return lhs.layoutId == rhs.layoutId && lhs.workAreaId == rhs.workAreaId && lhs.zoneIndexSet == rhs.zoneIndexSet && lhs.processIdToHandleMap == rhs.processIdToHandleMap;
+    }
 }
 
 namespace std
