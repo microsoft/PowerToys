@@ -415,14 +415,53 @@ namespace RegistryPreview
                         value += registryLine;
                     }
 
-                    // Clean out any escaped characters in the value, only for the preview
-                    value = StripEscapedCharacters(value);
-
                     // update the ListViewItem with the loaded value, based off REG value type
                     switch (registryValue.Type)
                     {
                         case "ERROR":
                             // do nothing
+                            break;
+                        case "REG_SZ":
+                            if (value == "\"")
+                            {
+                                // Value is most likely missing an end quote
+                                registryValue.Type = "ERROR";
+                                value = resourceLoader.GetString("InvalidString");
+                            }
+                            else
+                            {
+                                for (int i = 1; i < value.Length; i++)
+                                {
+                                    if (value[i - 1] == '\\')
+                                    {
+                                        // Only allow these escape characters
+                                        if (value[i] != '"' && value[i] != '\\')
+                                        {
+                                            registryValue.Type = "ERROR";
+                                            value = resourceLoader.GetString("InvalidString");
+                                            break;
+                                        }
+
+                                        i++;
+                                    }
+
+                                    if (value[i - 1] != '\\' && value[i] == '"')
+                                    {
+                                        // Don't allow non-escaped quotes
+                                        registryValue.Type = "ERROR";
+                                        value = resourceLoader.GetString("InvalidString");
+                                        break;
+                                    }
+                                }
+
+                                if (registryValue.Type != "ERROR")
+                                {
+                                    // Clean out any escaped characters in the value, only for the preview
+                                    value = StripEscapedCharacters(value);
+                                }
+                            }
+
+                            registryValue.Value = value;
                             break;
                         case "REG_BINARY":
                         case "REG_NONE":
