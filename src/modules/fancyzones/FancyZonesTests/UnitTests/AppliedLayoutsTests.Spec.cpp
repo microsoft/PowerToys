@@ -591,7 +591,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, GUID_NULL)));
             Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, GUID_NULL)));
             Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, deletedVirtualDesktop)).has_value());
-            Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, deletedVirtualDesktop)).has_value());
+            Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, deletedVirtualDesktop)).has_value());
         }
     };
 
