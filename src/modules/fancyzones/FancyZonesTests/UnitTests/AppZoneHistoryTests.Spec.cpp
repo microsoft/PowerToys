@@ -473,6 +473,25 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(expected == AppZoneHistory::instance().GetZoneHistory(app, GetWorkAreaID(currentVirtualDesktop)).value());
             Assert::IsFalse(AppZoneHistory::instance().GetZoneHistory(app, GetWorkAreaID(deletedVirtualDesktop)).has_value());
         }
+
+        TEST_METHOD (SyncVirtualDesktop_SwithVirtualDesktopFirstTime)
+        {
+            AppZoneHistory::TAppZoneHistoryMap history{};
+            const std::wstring app = L"app";
+            history.insert({ app, std::vector<FancyZonesDataTypes::AppZoneHistoryData>{
+                GetAppZoneHistoryData(GUID_NULL, L"{147243D0-1111-4225-BCD3-31029FE384FC}", { 0 }),
+            } });
+            AppZoneHistory::instance().SetAppZoneHistory(history);
+
+            GUID currentVirtualDesktop = virtualDesktop1;
+            GUID lastUsedVirtualDesktop = GUID_NULL;
+            std::optional<std::vector<GUID>> virtualDesktopsInRegistry = { { virtualDesktop1, virtualDesktop2 } };
+            AppZoneHistory::instance().SyncVirtualDesktops(currentVirtualDesktop, lastUsedVirtualDesktop, virtualDesktopsInRegistry);
+
+            auto expected = history.at(app)[0];
+            expected.workAreaId.virtualDesktopId = currentVirtualDesktop;
+            Assert::IsTrue(expected == AppZoneHistory::instance().GetZoneHistory(app, GetWorkAreaID(currentVirtualDesktop)).value());
+        }
     };
 
 }

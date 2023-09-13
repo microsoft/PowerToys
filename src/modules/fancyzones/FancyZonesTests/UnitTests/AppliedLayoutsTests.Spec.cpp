@@ -559,7 +559,6 @@ namespace FancyZonesUnitTests
             AppliedLayouts::TAppliedLayoutsMap layouts{};
             layouts.insert({ GetWorkAreaID(1, deletedVirtualDesktop), layout1 });
             layouts.insert({ GetWorkAreaID(2, deletedVirtualDesktop), layout2 });
-
             AppliedLayouts::instance().SetAppliedLayouts(layouts);
 
             GUID currentVirtualDesktop = virtualDesktop1;
@@ -580,7 +579,6 @@ namespace FancyZonesUnitTests
             AppliedLayouts::TAppliedLayoutsMap layouts{};
             layouts.insert({ GetWorkAreaID(1, deletedVirtualDesktop), layout1 });
             layouts.insert({ GetWorkAreaID(2, deletedVirtualDesktop), layout2 });
-            
             AppliedLayouts::instance().SetAppliedLayouts(layouts);
 
             GUID currentVirtualDesktop = GUID_NULL;
@@ -592,6 +590,22 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, GUID_NULL)));
             Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, deletedVirtualDesktop)).has_value());
             Assert::IsFalse(AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, deletedVirtualDesktop)).has_value());
+        }
+
+        TEST_METHOD(SyncVirtualDesktops_SwithVirtualDesktopFirstTime)
+        {
+            AppliedLayouts::TAppliedLayoutsMap layouts{};
+            layouts.insert({ GetWorkAreaID(1, GUID_NULL), layout1 });
+            layouts.insert({ GetWorkAreaID(2, GUID_NULL), layout2 });
+            AppliedLayouts::instance().SetAppliedLayouts(layouts);
+
+            GUID currentVirtualDesktop = virtualDesktop2;
+            GUID lastUsedVirtualDesktop = GUID_NULL;
+            std::optional<std::vector<GUID>> virtualDesktopsInRegistry = { { virtualDesktop1, virtualDesktop2 } };
+            AppliedLayouts::instance().SyncVirtualDesktops(currentVirtualDesktop, lastUsedVirtualDesktop, virtualDesktopsInRegistry);
+
+            Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, virtualDesktop2)));
+            Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, virtualDesktop2)));
         }
     };
 
