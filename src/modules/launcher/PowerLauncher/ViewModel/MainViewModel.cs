@@ -347,6 +347,15 @@ namespace PowerLauncher.ViewModel
                 if (_queryText != value)
                 {
                     _queryText = value;
+                    if (string.IsNullOrEmpty(_queryText) || string.IsNullOrWhiteSpace(_queryText))
+                    {
+                        PluginsOverviewVisibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        PluginsOverviewVisibility = Visibility.Collapsed;
+                    }
+
                     OnPropertyChanged(nameof(QueryText));
                 }
             }
@@ -1203,5 +1212,21 @@ namespace PowerLauncher.ViewModel
         }
 
         public ObservableCollection<PluginPair> Plugins { get; set; }
+
+        private Visibility _pluginsOverviewVisibility = Visibility.Visible;
+
+        public Visibility PluginsOverviewVisibility
+        {
+            get => _pluginsOverviewVisibility;
+
+            set
+            {
+                if (_pluginsOverviewVisibility != value)
+                {
+                    _pluginsOverviewVisibility = value;
+                    OnPropertyChanged(nameof(PluginsOverviewVisibility));
+                }
+            }
+        }
     }
 }
