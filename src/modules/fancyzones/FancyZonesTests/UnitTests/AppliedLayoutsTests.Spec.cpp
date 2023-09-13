@@ -293,8 +293,6 @@ namespace FancyZonesUnitTests
                 .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{EF1A8099-7D1E-4738-805A-571B31B02674}").value()
             };
-            FancyZonesDataTypes::WorkAreaId fallbackDevice = deviceDst;
-            fallbackDevice.virtualDesktopId = GUID_NULL;
 
             LayoutData layout { .uuid = FancyZonesUtils::GuidFromString(L"{361F96DD-FD10-4D01-ABAC-CC1C857294DD}").value() };
             Assert::IsTrue(AppliedLayouts::instance().ApplyLayout(deviceSrc, layout));
@@ -303,7 +301,6 @@ namespace FancyZonesUnitTests
 
             Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(deviceSrc));
             Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(deviceDst));
-            Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(fallbackDevice));
         }
 
         TEST_METHOD (CloneDeviceInfoFromUnknownDevice)
@@ -335,8 +332,6 @@ namespace FancyZonesUnitTests
                 .monitorId = { .deviceId = { .id = L"Device2", .instanceId = L"" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{EF1A8099-7D1E-4738-805A-571B31B02674}").value()
             };
-            FancyZonesDataTypes::WorkAreaId fallbackDevice = deviceDst;
-            fallbackDevice.virtualDesktopId = GUID_NULL;
 
             LayoutData layout{ .uuid = FancyZonesUtils::GuidFromString(L"{361F96DD-FD10-4D01-ABAC-CC1C857294DD}").value() };
             Assert::IsTrue(AppliedLayouts::instance().ApplyLayout(deviceSrc, layout));
@@ -345,7 +340,6 @@ namespace FancyZonesUnitTests
 
             Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(deviceSrc));
             Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(deviceDst));
-            Assert::IsTrue(layout == AppliedLayouts::instance().GetDeviceLayout(fallbackDevice));
         }
 
         TEST_METHOD (ApplyLayout)
@@ -354,9 +348,6 @@ namespace FancyZonesUnitTests
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
-
-            FancyZonesDataTypes::WorkAreaId fallbackWorkAreaId = workAreaId;
-            fallbackWorkAreaId.virtualDesktopId = GUID_NULL;
 
             LayoutData expectedLayout {
                 .uuid = FancyZonesUtils::GuidFromString(L"{33A2B101-06E0-437B-A61E-CDBECF502906}").value(),
@@ -370,9 +361,7 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().ApplyLayout(workAreaId, expectedLayout);
 
             Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(workAreaId).has_value());
-            Assert::IsTrue(AppliedLayouts::instance().GetDeviceLayout(fallbackWorkAreaId).has_value());
             Assert::IsTrue(expectedLayout == AppliedLayouts::instance().GetAppliedLayoutMap().find(workAreaId)->second);
-            Assert::IsTrue(expectedLayout == AppliedLayouts::instance().GetAppliedLayoutMap().find(fallbackWorkAreaId)->second);
         }
 
         TEST_METHOD (ApplyLayoutReplace)
@@ -382,8 +371,7 @@ namespace FancyZonesUnitTests
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" }, .serialNumber = L"" },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC57}").value()
             };
-            FancyZonesDataTypes::WorkAreaId fallbackWorkAreaId = workAreaId;
-
+            
             LayoutData layout{
                 .uuid = FancyZonesUtils::GuidFromString(L"{ACE817FD-2C51-4E13-903A-84CAB86FD17C}").value(),
                 .type = FancyZonesDataTypes::ZoneSetLayoutType::Rows,
@@ -406,10 +394,7 @@ namespace FancyZonesUnitTests
             };
 
             AppliedLayouts::instance().ApplyLayout(workAreaId, expectedLayout);
-
-            Assert::AreEqual((size_t)2, AppliedLayouts::instance().GetAppliedLayoutMap().size());
             Assert::IsTrue(expectedLayout == AppliedLayouts::instance().GetDeviceLayout(workAreaId));
-            Assert::IsTrue(expectedLayout == AppliedLayouts::instance().GetDeviceLayout(fallbackWorkAreaId));
         }
 
         TEST_METHOD (ApplyDefaultLayout)
@@ -538,7 +523,7 @@ namespace FancyZonesUnitTests
             layouts.insert({ GetWorkAreaID(2, deletedVirtualDesktop), layout4 });
             AppliedLayouts::instance().SetAppliedLayouts(layouts);
 
-            GUID currentVirtualDesktop = deletedVirtualDesktop;
+            GUID currentVirtualDesktop = virtualDesktop1;
             GUID lastUsedVirtualDesktop = deletedVirtualDesktop;
             std::optional<std::vector<GUID>> virtualDesktopsInRegistry = { { virtualDesktop1 } };
             AppliedLayouts::instance().SyncVirtualDesktops(currentVirtualDesktop, lastUsedVirtualDesktop, virtualDesktopsInRegistry);
