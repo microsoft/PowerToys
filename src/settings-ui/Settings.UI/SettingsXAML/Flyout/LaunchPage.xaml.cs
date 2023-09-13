@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI.Flyout
 {
@@ -32,6 +33,10 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         {
             FlyoutMenuButton selectedModuleBtn = sender as FlyoutMenuButton;
             bool moduleRun = true;
+
+            // Closing manually the flyout to workaround focus gain problems
+            App.GetFlyoutWindow()?.Hide();
+
             switch ((string)selectedModuleBtn.Tag)
             {
                 case "ColorPicker": // Launch ColorPicker
