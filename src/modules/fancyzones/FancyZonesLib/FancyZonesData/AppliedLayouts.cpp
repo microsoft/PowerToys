@@ -322,46 +322,29 @@ void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
     }
 }
 
-void AppliedLayouts::SyncVirtualDesktops(GUID currentVirtualDesktop, std::optional<std::vector<GUID>> desktops)
+void AppliedLayouts::SyncVirtualDesktops(const GUID& currentVirtualDesktop, const GUID& lastUsedVirtualDesktop, std::optional<std::vector<GUID>> desktops)
 {
     TAppliedLayoutsMap layouts;
 
-    if (currentVirtualDesktop != GUID_NULL)
+    auto findCurrentVirtualDesktopInSavedLayouts = [&](const std::pair<FancyZonesDataTypes::WorkAreaId, LayoutData>& val) -> bool { return val.first.virtualDesktopId == currentVirtualDesktop; };
+    bool replaceLastUsedWithCurrent = !desktops.has_value() || currentVirtualDesktop == GUID_NULL || 
+        std::find_if(m_layouts.begin(), m_layouts.end(), findCurrentVirtualDesktopInSavedLayouts) == m_layouts.end();
+    
+    for (const auto& [workAreaId, layout] : m_layouts)
     {
-        // copy layouts from the current virtual desktop with the GUID_NULL as a fallback value
-        for (const auto& [workAreaId, layout] : m_layouts)
+        if (replaceLastUsedWithCurrent && workAreaId.virtualDesktopId == lastUsedVirtualDesktop)
         {
-            if (workAreaId.virtualDesktopId == currentVirtualDesktop)
-            {
-                FancyZonesDataTypes::WorkAreaId newId = workAreaId;
-                newId.virtualDesktopId = GUID_NULL;
-                layouts.insert({ newId, layout });
-            }
+            // replace "lastUsedVirtualDesktop" with "currentVirtualDesktop"
+            auto updatedWorkAreaId = workAreaId;
+            updatedWorkAreaId.virtualDesktopId = currentVirtualDesktop;
+            layouts.insert({ updatedWorkAreaId, layout });
         }
-    }
 
-    if (!desktops.has_value())
-    {
-        // no saved virtual desktops in registry
-        // keep only fallback values with GUID_NULL as a virtual desktop id
-        for (const auto& [workAreaId, layout] : m_layouts)
+        if (workAreaId.virtualDesktopId == currentVirtualDesktop || (desktops.has_value() && 
+            std::find(desktops.value().begin(), desktops.value().end(), workAreaId.virtualDesktopId) != desktops.value().end()))
         {
-            if (workAreaId.virtualDesktopId == GUID_NULL)
-            {
-                layouts.insert({ workAreaId, layout });
-            }
-        }
-    }
-    else
-    {
-        // keep only actual virtual desktop values
-        for (const auto& [workAreaId, layout] : m_layouts)
-        {
-            const auto iter = std::find(desktops.value().begin(), desktops.value().end(), workAreaId.virtualDesktopId);
-            if (iter != desktops.value().end())
-            {
-                layouts.insert({ workAreaId, layout });
-            }
+            // keep only actual virtual desktop values
+            layouts.insert({ workAreaId, layout });
         }
     }
 
@@ -396,14 +379,7 @@ bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) 
 
 bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& workAreaId, LayoutData layout)
 {
-    // replace fallback layout
-    FancyZonesDataTypes::WorkAreaId fallbackWorkAreaId = workAreaId;
-    fallbackWorkAreaId.virtualDesktopId = GUID_NULL;
-    m_layouts[fallbackWorkAreaId] = layout;
-
-    // replace current work area layout
     m_layouts[workAreaId] = layout;
-
     return true;
 }
 
