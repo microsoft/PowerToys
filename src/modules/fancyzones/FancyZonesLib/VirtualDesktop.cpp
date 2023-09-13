@@ -270,15 +270,8 @@ GUID VirtualDesktop::GetCurrentVirtualDesktopId() const noexcept
     return m_currentVirtualDesktopId;
 }
 
-GUID VirtualDesktop::GetPreviousVirtualDesktopId() const noexcept
-{
-    return m_previousDesktopId;
-}
-
 void VirtualDesktop::UpdateVirtualDesktopId() noexcept
 {
-    m_previousDesktopId = m_currentVirtualDesktopId;
-
     auto currentVirtualDesktopId = GetCurrentVirtualDesktopIdFromRegistry();
     if (!currentVirtualDesktopId.has_value())
     {

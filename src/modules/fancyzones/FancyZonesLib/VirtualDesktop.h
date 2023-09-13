@@ -7,7 +7,6 @@ public:
 
     // saved values
     GUID GetCurrentVirtualDesktopId() const noexcept;
-    GUID GetPreviousVirtualDesktopId() const noexcept;
     void UpdateVirtualDesktopId() noexcept;
 
     // IVirtualDesktopManager
@@ -29,7 +28,6 @@ private:
     IVirtualDesktopManager* m_vdManager{nullptr};
 
     GUID m_currentVirtualDesktopId{};
-    GUID m_previousDesktopId{};
 
     std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry(HKEY hKey) const;
 };
