@@ -35,6 +35,11 @@ namespace PreviewHandlerCommon.Utilities
         private const byte QOI_PADDING_LENGTH = 8;
 #pragma warning restore SA1310 // Field names should not contain underscore
 
+        private record struct QoiPixel(byte R, byte G, byte B, byte A)
+        {
+            public readonly int GetColorHash() => (R * 3) + (G * 5) + (B * 7) + (A * 11);
+        }
+
         /// <summary>
         /// Creates a <see cref="Bitmap"/> from the specified QOI data stream.
         /// </summary>
@@ -70,10 +75,10 @@ namespace PreviewHandlerCommon.Utilities
             }
 
             var pixelsCount = width * height;
-            var pixels = new Color[pixelsCount];
-            var index = new Color[64];
+            var pixels = new QoiPixel[pixelsCount];
+            var index = new QoiPixel[64];
 
-            var pixel = Color.FromArgb(255, 0, 0, 0);
+            var pixel = new QoiPixel(0, 0, 0, 255);
 
             var run = 0;
             var chunksLen = fileSize - QOI_PADDING_LENGTH;
@@ -90,18 +95,16 @@ namespace PreviewHandlerCommon.Utilities
 
                     if (b1 == QOI_OP_RGB)
                     {
-                        var r = reader.ReadByte();
-                        var g = reader.ReadByte();
-                        var b = reader.ReadByte();
-                        pixel = Color.FromArgb(pixel.A, r, g, b);
+                        pixel.R = reader.ReadByte();
+                        pixel.G = reader.ReadByte();
+                        pixel.B = reader.ReadByte();
                     }
                     else if (b1 == QOI_OP_RGBA)
                     {
-                        var r = reader.ReadByte();
-                        var g = reader.ReadByte();
-                        var b = reader.ReadByte();
-                        var a = reader.ReadByte();
-                        pixel = Color.FromArgb(a, r, g, b);
+                        pixel.R = reader.ReadByte();
+                        pixel.G = reader.ReadByte();
+                        pixel.B = reader.ReadByte();
+                        pixel.A = reader.ReadByte();
                     }
                     else if ((b1 & QOI_MASK_2) == QOI_OP_INDEX)
                     {
@@ -109,32 +112,24 @@ namespace PreviewHandlerCommon.Utilities
                     }
                     else if ((b1 & QOI_MASK_2) == QOI_OP_DIFF)
                     {
-                        var r = pixel.R;
-                        var g = pixel.G;
-                        var b = pixel.B;
-                        r += (byte)(((b1 >> 4) & 0x03) - 2);
-                        g += (byte)(((b1 >> 2) & 0x03) - 2);
-                        b += (byte)((b1 & 0x03) - 2);
-                        pixel = Color.FromArgb(pixel.A, r, g, b);
+                        pixel.R += (byte)(((b1 >> 4) & 0x03) - 2);
+                        pixel.G += (byte)(((b1 >> 2) & 0x03) - 2);
+                        pixel.B += (byte)((b1 & 0x03) - 2);
                     }
                     else if ((b1 & QOI_MASK_2) == QOI_OP_LUMA)
                     {
-                        var r = pixel.R;
-                        var g = pixel.G;
-                        var b = pixel.B;
                         var b2 = reader.ReadByte();
                         var vg = (b1 & 0x3f) - 32;
-                        r += (byte)(vg - 8 + ((b2 >> 4) & 0x0f));
-                        g += (byte)vg;
-                        b += (byte)(vg - 8 + (b2 & 0x0f));
-                        pixel = Color.FromArgb(pixel.A, r, g, b);
+                        pixel.R += (byte)(vg - 8 + ((b2 >> 4) & 0x0f));
+                        pixel.G += (byte)vg;
+                        pixel.B += (byte)(vg - 8 + (b2 & 0x0f));
                     }
                     else if ((b1 & QOI_MASK_2) == QOI_OP_RUN)
                     {
                         run = b1 & 0x3f;
                     }
 
-                    index[GetColorHash(pixel) % 64] = pixel;
+                    index[pixel.GetColorHash() % 64] = pixel;
                 }
 
                 pixels[pixelIndex] = pixel;
@@ -143,7 +138,7 @@ namespace PreviewHandlerCommon.Utilities
             return ConvertToBitmap(width, height, channels, pixels);
         }
 
-        private static Bitmap ConvertToBitmap(uint width, uint height, byte channels, Color[] pixels)
+        private static Bitmap ConvertToBitmap(uint width, uint height, byte channels, QoiPixel[] pixels)
         {
             var pixelFormat = channels == 4 ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb;
             var bitmap = new Bitmap((int)width, (int)height, pixelFormat);
@@ -178,7 +173,5 @@ namespace PreviewHandlerCommon.Utilities
 
             return BinaryPrimitives.ReadUInt32BigEndian(buffer);
         }
-
-        private static int GetColorHash(Color color) => (color.R * 3) + (color.G * 5) + (color.B * 7) + (color.A * 11);
     }
 }
