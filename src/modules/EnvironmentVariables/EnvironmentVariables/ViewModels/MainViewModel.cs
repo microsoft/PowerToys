@@ -7,50 +7,45 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Helpers;
 using EnvironmentVariables.Models;
+using ManagedCommon;
 
 namespace EnvironmentVariables.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
+        private readonly IEnvironmentVariablesService _environmentVariablesService;
+
         public DefaultVariablesSet UserDefaultSet { get; private set; } = new DefaultVariablesSet(VariablesSet.UserGuid, ResourceLoaderInstance.ResourceLoader.GetString("User"), VariablesSetType.User);
 
         public DefaultVariablesSet SystemDefaultSet { get; private set; } = new DefaultVariablesSet(VariablesSet.SystemGuid, ResourceLoaderInstance.ResourceLoader.GetString("System"), VariablesSetType.System);
 
         public VariablesSet DefaultVariables { get; private set; } = new DefaultVariablesSet(Guid.NewGuid(), ResourceLoaderInstance.ResourceLoader.GetString("DefaultVariables"), VariablesSetType.User);
 
-        public ObservableCollection<ProfileVariablesSet> Profiles { get; private set; } = new ObservableCollection<ProfileVariablesSet>();
-
-        public ProfileVariablesSet AppliedProfile { get; set; }
+        [ObservableProperty]
+        private ObservableCollection<ProfileVariablesSet> _profiles;
 
         [ObservableProperty]
         private ObservableCollection<Variable> _appliedVariables = new ObservableCollection<Variable>();
 
-        public MainViewModel()
+        public ProfileVariablesSet AppliedProfile { get; set; }
+
+        public MainViewModel(IEnvironmentVariablesService environmentVariablesService)
         {
+            _environmentVariablesService = environmentVariablesService;
         }
 
         [RelayCommand]
         public void LoadEnvironmentVariables()
         {
+            ReadAsync();
+
             EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.Machine, SystemDefaultSet);
             EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.User, UserDefaultSet);
-
-            var profile1 = new ProfileVariablesSet(Guid.NewGuid(), "profile1");
-            profile1.Variables.Add(new Variable("testvar1", "pvalue1", VariablesSetType.Profile));
-            profile1.Variables.Add(new Variable("p11", "pvalue2", VariablesSetType.Profile));
-            profile1.PropertyChanged += Profile_PropertyChanged;
-
-            var profile2 = new ProfileVariablesSet(Guid.NewGuid(), "profile2");
-            profile2.Variables.Add(new Variable("ppp22", "pvalue11", VariablesSetType.Profile));
-            profile2.Variables.Add(new Variable("pp22", "pvalue22", VariablesSetType.Profile));
-            profile2.PropertyChanged += Profile_PropertyChanged;
-
-            Profiles.Add(profile1);
-            Profiles.Add(profile2);
 
             foreach (var variable in UserDefaultSet.Variables)
             {
@@ -63,6 +58,20 @@ namespace EnvironmentVariables.ViewModels
             }
 
             PopulateAppliedVariables();
+        }
+
+        private async void ReadAsync()
+        {
+            try
+            {
+                var profiles = await _environmentVariablesService.ReadAsync();
+                Profiles = new ObservableCollection<ProfileVariablesSet>(profiles);
+            }
+            catch (Exception ex)
+            {
+                // Show some error
+                Logger.LogError("Failed to save to profiles.json file", ex);
+            }
         }
 
         private void PopulateAppliedVariables()
@@ -96,6 +105,21 @@ namespace EnvironmentVariables.ViewModels
             }
 
             Profiles.Add(profile);
+
+            _ = Task.Run(SaveAsync);
+        }
+
+        private async Task SaveAsync()
+        {
+            try
+            {
+                await _environmentVariablesService.WriteAsync(Profiles);
+            }
+            catch (Exception ex)
+            {
+                // Show some error
+                Logger.LogError("Failed to save to profiles.json file", ex);
+            }
         }
 
         private void Profile_PropertyChanged(object sender, PropertyChangedEventArgs e)

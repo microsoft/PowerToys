@@ -79,7 +79,7 @@
                         Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock x:Uid="ProfilesDescriptionLbl" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-                    <ItemsControl Margin="0,16,0,4" ItemsSource="{x:Bind ViewModel.Profiles}">
+                    <ItemsControl Margin="0,16,0,4" ItemsSource="{x:Bind ViewModel.Profiles, Mode=TwoWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ProfileVariablesSet">
                                 <labs:SettingsExpander

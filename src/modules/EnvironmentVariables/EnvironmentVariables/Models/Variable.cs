@@ -17,9 +17,9 @@ namespace EnvironmentVariables.Models
         [ObservableProperty]
         private string _values;
 
-        public VariablesSetType ParentType { get; private set; }
+        public VariablesSetType ParentType { get; set; }
 
-        public List<string> ValuesList { get; private set; }
+        public List<string> ValuesList { get; set; }
 
         public Variable()
         {
