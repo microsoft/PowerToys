@@ -132,7 +132,19 @@ bool EditorParameters::Save(const WorkAreaConfiguration& configuration, OnThread
             return false;
         }
 
+        RECT combinedWorkArea;
+        dpiUnawareThread.submit(OnThreadExecutor::task_t{
+            [&]() {
+                combinedWorkArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
+        } }).wait();
         RECT combinedMonitorArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcMonitor>();
+
+        // use dpi-unuware values
+        monitorJson.top = combinedWorkArea.top;
+        monitorJson.left = combinedWorkArea.left;
+        monitorJson.workAreaWidth = combinedWorkArea.right - combinedWorkArea.left;
+        monitorJson.workAreaHeight = combinedWorkArea.bottom - combinedWorkArea.top;
+
         monitorJson.monitorWidth = combinedMonitorArea.right - combinedMonitorArea.left;
         monitorJson.monitorHeight = combinedMonitorArea.bottom - combinedMonitorArea.top;
         monitorJson.isSelected = true;
@@ -194,6 +206,12 @@ bool EditorParameters::Save(const WorkAreaConfiguration& configuration, OnThread
 
             monitorJson.monitorWidth = static_cast<int>(std::roundf(width));
             monitorJson.monitorHeight = static_cast<int>(std::roundf(height));
+
+            // use dpi-unuware values
+            monitorJson.top = monitorInfo.rcWork.top;
+            monitorJson.left = monitorInfo.rcWork.left;
+            monitorJson.workAreaWidth = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
+            monitorJson.workAreaHeight = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
 
             argsJson.monitors.emplace_back(std::move(monitorJson));
         }
