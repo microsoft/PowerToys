@@ -43,6 +43,7 @@
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesDataTypes.h" />
     <ClInclude Include="FancyZonesData\DefaultLayouts.h" />
+    <ClInclude Include="FancyZonesData\LastUsedVirtualDesktop.h" />
     <ClInclude Include="FancyZonesData\LayoutData.h" />
     <ClInclude Include="FancyZonesData\LayoutDefaults.h" />
     <ClInclude Include="FancyZonesData\LayoutTemplates.h" />
@@ -99,6 +100,9 @@
     </ClCompile>
     <ClCompile Include="FancyZonesData\DefaultLayouts.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="FancyZonesData\LastUsedVirtualDesktop.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="FancyZonesData\LayoutTemplates.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>

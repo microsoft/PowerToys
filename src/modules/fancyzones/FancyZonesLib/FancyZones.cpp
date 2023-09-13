@@ -15,6 +15,7 @@
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
 #include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
+#include <FancyZonesLib/FancyZonesData/LastUsedVirtualDesktop.h>
 #include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
@@ -88,6 +89,7 @@ public:
         AppliedLayouts::instance().LoadData();
         AppZoneHistory::instance().LoadData();
         DefaultLayouts::instance().LoadData();
+        LastUsedVirtualDesktop::instance().LoadData();
     }
 
     // IFancyZones
@@ -900,9 +902,15 @@ void FancyZones::SyncVirtualDesktops() noexcept
     // desktops in this session value in registry will be empty and we will use default GUID in
     // that case (00000000-0000-0000-0000-000000000000).
 
+    auto lastUsed = LastUsedVirtualDesktop::instance().GetId();
     auto current = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
     auto guids = VirtualDesktop::instance().GetVirtualDesktopIdsFromRegistry();
-        AppZoneHistory::instance().RemoveDeletedVirtualDesktops(*guids);
+
+    if (current != GUID_NULL && current != lastUsed)
+    {
+        LastUsedVirtualDesktop::instance().SetId(current);
+        LastUsedVirtualDesktop::instance().SaveData();
+    }
 
     AppZoneHistory::instance().SyncVirtualDesktops();
     AppliedLayouts::instance().SyncVirtualDesktops(current, guids);
