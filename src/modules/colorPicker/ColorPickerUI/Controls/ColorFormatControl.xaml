@@ -143,7 +143,7 @@
         CornerRadius="{DynamicResource ControlCornerRadius}">
         <Grid Margin="12,0,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="56" />
+                <ColumnDefinition Width="48" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="36" />
             </Grid.ColumnDefinitions>
@@ -170,6 +170,7 @@
                 Grid.Column="2"
                 Width="36"
                 Height="36"
+                Margin="0,0,4,0"
                 Padding="0"
                 AutomationProperties.HelpText="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Controls.ColorFormatControl}}, Path=SelectedColorCopyHelperText}"
                 AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
