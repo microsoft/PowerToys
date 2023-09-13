@@ -29,9 +29,6 @@
     WindowStartupLocation="Manual"
     WindowStyle="None"
     mc:Ignorable="d">
-    <ui:FluentWindow.Resources>
-        <converters:ReverseVisibilityConverter x:Key="reverseVisibilityConverter" />
-    </ui:FluentWindow.Resources>
 
     <Grid Background="{DynamicResource ControlOnImageFillColorDefaultBrush}" MouseDown="OnMouseDown">
         <Grid.RowDefinitions>
@@ -59,9 +56,10 @@
 
         <!--  Have to use a Grid instead of a StackPanel for scrolling to work?  -->
         <Grid
+            x:Name="KeywordsOverviewGrid"
             Grid.Row="1"
             Margin="12,0,0,0"
-            Visibility="{Binding ElementName=ListBox, Path=Visibility, Converter={StaticResource reverseVisibilityConverter}}">
+            Visibility="{Binding PluginsOverviewVisibility}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
