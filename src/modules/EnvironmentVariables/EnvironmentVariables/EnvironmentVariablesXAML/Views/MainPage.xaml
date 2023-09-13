@@ -61,7 +61,7 @@
                 </Button.KeyboardAccelerators>
             </Button>
         </Grid>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" ColumnSpacing="32">
             <Grid.ColumnDefinitions>
                 <!--  Left side  -->
                 <ColumnDefinition />
@@ -116,18 +116,25 @@
                         ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}" />
                 </StackPanel>
             </ScrollViewer>
-            <StackPanel Grid.Column="1">
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
                 <TextBlock
                     x:Uid="AppliedVariablesLbl"
                     Margin="0,32,0,0"
                     Style="{StaticResource BodyStrongTextBlockStyle}" />
-                <TextBlock x:Uid="AppliedVariablesDescriptionLbl" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock
+                    x:Uid="AppliedVariablesDescriptionLbl"
+                    Grid.Row="1"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <ScrollViewer
                     x:Name="AppliedVariablesScrollViewer"
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    VerticalScrollBarVisibility="Auto">
-                    <ItemsControl Margin="0,16,0,4" ItemsSource="{x:Bind ViewModel.AppliedVariables, Mode=TwoWay}">
+                    Grid.Row="2"
+                    Margin="0,16,0,4">
+                    <ItemsControl Margin="-4,0,0,0" ItemsSource="{x:Bind ViewModel.AppliedVariables, Mode=TwoWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:Variable">
                                 <Grid Height="48" ColumnSpacing="8">
@@ -161,7 +168,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-            </StackPanel>
+            </Grid>
 
         </Grid>
 
@@ -199,6 +206,7 @@
             x:Name="AddProfileDialog"
             x:Uid="AddProfileDialog"
             IsPrimaryButtonEnabled="True"
+            IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
                 <models:ProfileVariablesSet />
@@ -310,16 +318,11 @@
                                             <ListView
                                                 x:Name="ExistingVariablesListView"
                                                 Grid.Row="1"
-                                                Margin="0,12,0,12"
+                                                Margin="-12,12,0,12"
                                                 HorizontalAlignment="Stretch"
                                                 ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
                                                 SelectionMode="Multiple">
-                                                <ListView.Header>
-                                                    <TextBlock
-                                                        x:Uid="ExistingVariablesListViewHeader"
-                                                        Margin="0,0,0,8"
-                                                        Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                                </ListView.Header>
+                                               
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="models:Variable">
                                                         <Grid Height="48" ColumnSpacing="8">

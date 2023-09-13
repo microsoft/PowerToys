@@ -158,10 +158,10 @@
     <value>Value</value>
   </data>
   <data name="AddBtn" xml:space="preserve">
-    <value>Add</value>
+    <value>Save</value>
   </data>
   <data name="AddNewProfileDialog_Title" xml:space="preserve">
-    <value>Add new profile</value>
+    <value>New profile</value>
   </data>
   <data name="NewProfileEnabled.Header" xml:space="preserve">
     <value>Enabled</value>
