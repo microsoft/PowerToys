@@ -730,7 +730,6 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         updateWindowsPositions = FancyZonesSettings::settings().displayChange_moveWindows;
         break;
     case DisplayChangeType::VirtualDesktop: // Switched virtual desktop
-        SyncVirtualDesktops();
         break;
     case DisplayChangeType::Initialization: // Initialization
         updateWindowsPositions = FancyZonesSettings::settings().zoneSetChange_moveWindows;
@@ -740,6 +739,11 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     }
 
     UpdateWorkAreas(updateWindowsPositions);
+    if (changeType == DisplayChangeType::VirtualDesktop)
+    {
+        // need to update work areas first, then sync
+        SyncVirtualDesktops();
+    }
 }
 
 bool FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id) noexcept
