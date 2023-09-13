@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace EnvironmentVariables.Models
@@ -26,7 +27,8 @@ namespace EnvironmentVariables.Models
 
         public string IconPath { get; }
 
-        public List<Variable> Variables { get; }
+        [ObservableProperty]
+        private ObservableCollection<Variable> _variables;
 
         public VariablesSet()
         {
@@ -37,7 +39,7 @@ namespace EnvironmentVariables.Models
             Id = id;
             Name = name;
             Type = type;
-            Variables = new List<Variable>();
+            Variables = new ObservableCollection<Variable>();
 
             IconPath = Type switch
             {

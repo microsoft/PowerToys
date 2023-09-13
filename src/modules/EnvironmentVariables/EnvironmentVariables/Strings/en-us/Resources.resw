@@ -148,7 +148,7 @@
   <data name="EditVariableDialog_Title" xml:space="preserve">
     <value>Edit variable</value>
   </data>
-  <data name="NameTxtBox.Header" xml:space="preserve">
+  <data name="NewProfileNameTxtBox.Header" xml:space="preserve">
     <value>Name</value>
   </data>
   <data name="SaveBtn" xml:space="preserve">
@@ -163,7 +163,7 @@
   <data name="AddNewProfileDialog_Title" xml:space="preserve">
     <value>Add new profile</value>
   </data>
-  <data name="Enabled.Header" xml:space="preserve">
+  <data name="NewProfileEnabled.Header" xml:space="preserve">
     <value>Enabled</value>
   </data>
   <data name="AddVariableBtn.Text" xml:space="preserve">
@@ -196,5 +196,8 @@
   </data>
   <data name="ConfirmAddVariableBtn.Content" xml:space="preserve">
     <value>Add</value>
+  </data>
+  <data name="NewProfileVariablesListViewHeader.Text" xml:space="preserve">
+    <value>Variables</value>
   </data>
 </root>

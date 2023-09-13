@@ -3,6 +3,7 @@
     x:Class="EnvironmentVariables.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:converters="using:EnvironmentVariables.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
@@ -163,14 +164,48 @@
                     HorizontalAlignment="Stretch"
                     Spacing="12">
                     <TextBox
-                        x:Uid="NameTxtBox"
+                        x:Uid="NewProfileNameTxtBox"
                         IsSpellCheckEnabled="False"
                         Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <ToggleSwitch
-                        x:Uid="Enabled"
+                        x:Uid="NewProfileEnabled"
                         IsOn="{Binding IsEnabled, Mode=TwoWay}"
                         OffContent=""
                         OnContent="" />
+                    <ListView
+                        x:Name="NewProfileVariablesListView"
+                        Margin="0,12,0,12"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding Variables, Mode=TwoWay}"
+                        SelectionMode="None">
+                        <ListView.Header>
+                            <TextBlock
+                                x:Uid="NewProfileVariablesListViewHeader"
+                                Margin="0,0,0,8"
+                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                        </ListView.Header>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Variable">
+                                <Grid Height="48" ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center" Orientation="Vertical">
+                                        <TextBlock
+                                            Text="{x:Bind Name}"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind Values}"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
 
 
                     <Button>
@@ -183,7 +218,7 @@
                             <TextBlock x:Uid="AddVariableBtn" />
                         </StackPanel>
                         <Button.Flyout>
-                            <Flyout>
+                            <Flyout x:Name="AddVariableFlyout">
                                 <Grid Width="320" Height="480">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -195,80 +230,91 @@
                                         x:Name="SwitchViewsSegmentedView"
                                         MaxWidth="500"
                                         HorizontalAlignment="Stretch"
-                                        SelectionChanged="Segmented_SelectionChanged"
                                         SelectionMode="Single">
-                                        <labs:SegmentedItem x:Name="AddNewVariableSegmentedItem" x:Uid="NewVariableSegmentedButton" />
-                                        <labs:SegmentedItem x:Name="AddExistingVariableSegmentedItem" x:Uid="ExistingVariableSegmentedButton" />
+                                        <labs:SegmentedItem
+                                            x:Name="AddNewVariableSegmentedItem"
+                                            x:Uid="NewVariableSegmentedButton"
+                                            Tag="NewVariable" />
+                                        <labs:SegmentedItem
+                                            x:Name="AddExistingVariableSegmentedItem"
+                                            x:Uid="ExistingVariableSegmentedButton"
+                                            Tag="ExistingVariable" />
                                     </labs:Segmented>
 
-                                    <StackPanel
+                                    <controls:SwitchPresenter
+                                        x:Name="AddVariableSwitchPresenter"
                                         Grid.Row="1"
-                                        Orientation="Vertical"
-                                        Visibility="{x:Bind ViewModel.ShowAddNewVariablePage, Mode=TwoWay}">
+                                        Value="{Binding SelectedItem.Tag, ElementName=SwitchViewsSegmentedView}">
+                                        <controls:Case Value="NewVariable">
+                                            <StackPanel Grid.Row="1" Orientation="Vertical">
 
-                                        <!--  Adding new variable  -->
-                                        <TextBox
-                                            x:Name="AddNewVariableName"
-                                            x:Uid="AddNewVariableName"
-                                            Margin="0,16,0,0" />
+                                                <!--  Adding new variable  -->
+                                                <TextBox
+                                                    x:Name="AddNewVariableName"
+                                                    x:Uid="AddNewVariableName"
+                                                    Margin="0,16,0,0" />
 
-                                        <TextBox
-                                            x:Name="AddNewVariableValue"
-                                            x:Uid="AddNewVariableValue"
-                                            Margin="0,16,0,0" />
-                                    </StackPanel>
+                                                <TextBox
+                                                    x:Name="AddNewVariableValue"
+                                                    x:Uid="AddNewVariableValue"
+                                                    Margin="0,16,0,0" />
+                                            </StackPanel>
+                                        </controls:Case>
+                                        <controls:Case Value="ExistingVariable">
+                                            <!--  Adding existing variables  -->
+                                            <ListView
+                                                x:Name="ExistingVariablesListView"
+                                                Grid.Row="1"
+                                                Margin="0,12,0,12"
+                                                HorizontalAlignment="Stretch"
+                                                ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
+                                                SelectionMode="Multiple">
+                                                <ListView.Header>
+                                                    <TextBlock
+                                                        x:Uid="ExistingVariablesListViewHeader"
+                                                        Margin="0,0,0,8"
+                                                        Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                                </ListView.Header>
+                                                <ListView.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:Variable">
+                                                        <Grid Height="48" ColumnSpacing="8">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="20" />
+                                                                <ColumnDefinition />
+                                                            </Grid.ColumnDefinitions>
+                                                            <FontIcon
+                                                                Grid.Column="0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="14"
+                                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                                Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
+                                                            <StackPanel
+                                                                Grid.Column="1"
+                                                                VerticalAlignment="Center"
+                                                                Orientation="Vertical">
+                                                                <TextBlock
+                                                                    Text="{x:Bind Name}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    TextWrapping="NoWrap" />
+                                                                <TextBlock
+                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                                    Text="{x:Bind Values}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    TextWrapping="NoWrap" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListView.ItemTemplate>
+                                            </ListView>
 
-                                    <!--  Adding existing variables  -->
-                                    <ListView
-                                        x:Name="ExistingVariablesListView"
-                                        Grid.Row="1"
-                                        Margin="0,12,0,12"
-                                        HorizontalAlignment="Stretch"
-                                        ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
-                                        SelectionMode="Multiple"
-                                        Visibility="{x:Bind ViewModel.ShowAddExistingVariablePage, Mode=TwoWay}">
-                                        <ListView.Header>
-                                            <TextBlock
-                                                x:Uid="ExistingVariablesListViewHeader"
-                                                Margin="0,0,0,8"
-                                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                        </ListView.Header>
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="models:Variable">
-                                                <Grid Height="48" ColumnSpacing="8">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="20" />
-                                                        <ColumnDefinition />
-                                                    </Grid.ColumnDefinitions>
-                                                    <FontIcon
-                                                        Grid.Column="0"
-                                                        VerticalAlignment="Center"
-                                                        FontSize="14"
-                                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                                        Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
-                                                    <StackPanel
-                                                        Grid.Column="1"
-                                                        VerticalAlignment="Center"
-                                                        Orientation="Vertical">
-                                                        <TextBlock
-                                                            Text="{x:Bind Name}"
-                                                            TextTrimming="CharacterEllipsis"
-                                                            TextWrapping="NoWrap" />
-                                                        <TextBlock
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                                            Text="{x:Bind Values}"
-                                                            TextTrimming="CharacterEllipsis"
-                                                            TextWrapping="NoWrap" />
-                                                    </StackPanel>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
+                                        </controls:Case>
+                                    </controls:SwitchPresenter>
                                     <Button
                                         x:Uid="ConfirmAddVariableBtn"
                                         Grid.Row="2"
                                         HorizontalAlignment="Stretch"
+                                        Command="{x:Bind AddVariableCommand}"
                                         Style="{StaticResource AccentButtonStyle}" />
                                 </Grid>
 

@@ -9,8 +9,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Helpers;
 using EnvironmentVariables.Models;
-using Microsoft.UI.Xaml;
-using static EnvironmentVariables.Models.Common;
 
 namespace EnvironmentVariables.ViewModels
 {
@@ -25,14 +23,6 @@ namespace EnvironmentVariables.ViewModels
         public ObservableCollection<ProfileVariablesSet> Profiles { get; private set; } = new ObservableCollection<ProfileVariablesSet>();
 
         public ProfileVariablesSet AppliedProfile { get; set; }
-
-        internal AddVariablePageKind CurrentAddVariablePage { get; set; }
-
-        [ObservableProperty]
-        private Visibility _showAddNewVariablePage;
-
-        [ObservableProperty]
-        private Visibility _showAddExistingVariablePage;
 
         public MainViewModel()
         {
@@ -57,8 +47,15 @@ namespace EnvironmentVariables.ViewModels
             Profiles.Add(profile1);
             Profiles.Add(profile2);
 
-            DefaultVariables.Variables.AddRange(UserDefaultSet.Variables);
-            DefaultVariables.Variables.AddRange(SystemDefaultSet.Variables);
+            foreach (var variable in UserDefaultSet.Variables)
+            {
+                DefaultVariables.Variables.Add(variable);
+            }
+
+            foreach (var variable in SystemDefaultSet.Variables)
+            {
+                DefaultVariables.Variables.Add(variable);
+            }
         }
 
         internal void EditVariable(Variable original, Variable edited)
@@ -116,20 +113,6 @@ namespace EnvironmentVariables.ViewModels
                 AppliedProfile = null;
                 appliedProfile.PropertyChanged += Profile_PropertyChanged;
             }
-        }
-
-        internal void ChangeToNewVariablePage()
-        {
-            ShowAddExistingVariablePage = Visibility.Collapsed;
-            ShowAddNewVariablePage = Visibility.Visible;
-            CurrentAddVariablePage = AddVariablePageKind.AddNewVariable;
-        }
-
-        internal void ChangeToExistingVariablePage()
-        {
-            ShowAddNewVariablePage = Visibility.Collapsed;
-            ShowAddExistingVariablePage = Visibility.Visible;
-            CurrentAddVariablePage = AddVariablePageKind.AddExistingVariable;
         }
     }
 }

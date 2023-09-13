@@ -9,9 +9,7 @@ using CommunityToolkit.Labs.WinUI;
 using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Models;
 using EnvironmentVariables.ViewModels;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using static EnvironmentVariables.Models.Common;
 
 namespace EnvironmentVariables.Views
 {
@@ -24,6 +22,8 @@ namespace EnvironmentVariables.Views
         public ICommand NewProfileCommand => new AsyncRelayCommand(AddProfileAsync);
 
         public ICommand AddProfileCommand => new RelayCommand(AddProfile);
+
+        public ICommand AddVariableCommand => new RelayCommand(AddVariable);
 
         public MainPage()
         {
@@ -65,9 +65,6 @@ namespace EnvironmentVariables.Views
         private async Task AddProfileAsync()
         {
             SwitchViewsSegmentedView.SelectedIndex = 0;
-            ViewModel.CurrentAddVariablePage = AddVariablePageKind.AddNewVariable;
-            ViewModel.ShowAddNewVariablePage = Visibility.Visible;
-            ViewModel.ShowAddExistingVariablePage = Visibility.Collapsed;
 
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             AddProfileDialog.Title = resourceLoader.GetString("AddNewProfileDialog_Title");
@@ -83,26 +80,29 @@ namespace EnvironmentVariables.Views
             ViewModel.AddProfile(profile);
         }
 
-        private void Segmented_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void AddVariable()
         {
-            if (ViewModel.CurrentAddVariablePage == AddVariablePageKind.AddNewVariable)
+            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            if (profile != null)
             {
-                ChangeToExistingVariablePage();
+                if (AddVariableSwitchPresenter.Value as string == "NewVariable")
+                {
+                    profile.Variables.Add(new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile));
+                }
+                else
+                {
+                    foreach (Variable variable in ExistingVariablesListView.SelectedItems)
+                    {
+                        var clone = variable.Clone(true);
+                        profile.Variables.Add(clone);
+                    }
+                }
             }
-            else
-            {
-                ChangeToNewVariablePage();
-            }
-        }
 
-        private void ChangeToNewVariablePage()
-        {
-            ViewModel.ChangeToNewVariablePage();
-        }
-
-        private void ChangeToExistingVariablePage()
-        {
-            ViewModel.ChangeToExistingVariablePage();
+            AddNewVariableName.Text = string.Empty;
+            AddNewVariableValue.Text = string.Empty;
+            ExistingVariablesListView.SelectedItems.Clear();
+            AddVariableFlyout.Hide();
         }
     }
 }

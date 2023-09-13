@@ -78,13 +78,13 @@ namespace EnvironmentVariables.Models
             }
         }
 
-        internal object Clone()
+        internal Variable Clone(bool profile = false)
         {
             return new Variable
             {
                 Name = Name,
                 Values = Values,
-                ParentType = ParentType,
+                ParentType = profile ? VariablesSetType.Profile : ParentType,
                 ValuesList = new List<string>(ValuesList),
             };
         }

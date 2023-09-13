@@ -81,8 +81,9 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
     <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" />
-    <PackageReference Include="WinUIEx" />
+	<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" />
+	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" />
+	<PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
