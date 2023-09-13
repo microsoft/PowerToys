@@ -190,6 +190,7 @@
                 BorderBrush="Transparent"
                 Command="{Binding OpenSettingsCommand}"
                 TabIndex="2"
+                Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}">
                 <Button.Content>
                     <ui:SymbolIcon FontSize="18" Symbol="Settings24" />
@@ -204,12 +205,12 @@
             </Grid.ColumnDefinitions>
             <Border
                 Grid.ColumnSpan="2"
-                Background="{DynamicResource LayerFillColorDefaultBrush}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
 
             <controls:ColorPickerControl
-                Margin="16,0,16,0"
+                Margin="16,0,12,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsTabStop="True"

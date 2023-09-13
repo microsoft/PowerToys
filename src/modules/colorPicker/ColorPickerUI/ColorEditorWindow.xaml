@@ -11,7 +11,7 @@
     Title="Color Picker"
     Width="440"
     Height="380"
-    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
     ExtendsContentIntoTitleBar="True"
@@ -38,9 +38,12 @@
             ShowMaximize="False"
             ShowMinimize="False">
             <!--<ui:TitleBar.Icon>
-                <ui:ImageIcon Source="/Resources/icon.ico" />
+                <ui:ImageIcon Source="/PowerToys.ColorPicker;component/Assets/ColorPicker/icon.ico" />
             </ui:TitleBar.Icon>-->
         </ui:TitleBar>
-        <ContentPresenter x:Name="Presenterrr"  Grid.Row="1" Content="{Binding Content}" />
+        <ContentPresenter
+            x:Name="Presenterrr"
+            Grid.Row="1"
+            Content="{Binding Content}" />
     </Grid>
 </ui:FluentWindow>

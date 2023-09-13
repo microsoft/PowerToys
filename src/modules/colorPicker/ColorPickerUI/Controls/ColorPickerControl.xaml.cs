@@ -13,7 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
 using ManagedCommon;
-using Wpf.Ui.Controls.NumberBoxControl;
+using Wpf.Ui.Controls;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace ColorPicker.Controls
@@ -199,8 +199,8 @@ namespace ColorPicker.Controls
                 var moveColor = new ThicknessAnimation(new Thickness(0), new Duration(TimeSpan.FromMilliseconds(250)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                CurrentColorButton.BeginAnimation(Button.HeightProperty, resizeColor);
-                CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
+                CurrentColorButton.BeginAnimation(System.Windows.Controls.Button.HeightProperty, resizeColor);
+                CurrentColorButton.BeginAnimation(System.Windows.Controls.Button.MarginProperty, moveColor);
                 CurrentColorButton.IsEnabled = false;
                 SessionEventHelper.Event.EditorAdjustColorOpened = true;
                 DetailsFlyout.IsOpen = true;
@@ -216,11 +216,11 @@ namespace ColorPicker.Controls
                 var resizeColor = new DoubleAnimation(165, new Duration(TimeSpan.FromMilliseconds(150)));
                 resizeColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                var moveColor = new ThicknessAnimation(new Thickness(92, 0, 0, 0), new Duration(TimeSpan.FromMilliseconds(150)));
+                var moveColor = new ThicknessAnimation(new Thickness(0, 92, 0, 0), new Duration(TimeSpan.FromMilliseconds(150)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                CurrentColorButton.BeginAnimation(Button.HeightProperty, resizeColor);
-                CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
+                CurrentColorButton.BeginAnimation(System.Windows.Controls.Button.HeightProperty, resizeColor);
+                CurrentColorButton.BeginAnimation(System.Windows.Controls.Button.MarginProperty, moveColor);
                 CurrentColorButton.IsEnabled = true;
             }
         }
@@ -252,7 +252,7 @@ namespace ColorPicker.Controls
 
         private void ColorVariationButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedColor = ((SolidColorBrush)((Button)sender).Background).Color;
+            var selectedColor = ((SolidColorBrush)((System.Windows.Controls.Button)sender).Background).Color;
             SelectedColorChangedCommand.Execute(selectedColor);
             SessionEventHelper.Event.EditorSimilarColorPicked = true;
         }
@@ -283,7 +283,7 @@ namespace ColorPicker.Controls
 
         private void HexCode_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var newValue = (sender as TextBox).Text;
+            var newValue = (sender as System.Windows.Controls.TextBox).Text;
 
             // support hex with 3 and 6 characters and optional with hashtag
             var reg = new Regex("^#?([0-9A-Fa-f]{3}){1,2}$");

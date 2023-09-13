@@ -134,6 +134,7 @@
     </UserControl.Resources>
     <Border
         x:Name="MainBorder"
+        Height="48"
         Margin="0,0,0,8"
         HorizontalAlignment="Stretch"
         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -149,8 +150,8 @@
             <TextBlock
                 x:Name="FormatNameTextBlock"
                 VerticalAlignment="Center"
-             Style="{StaticResource CaptionTextBlockStyle}"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}" />
 
             <TextBox
                 x:Name="ColorTextRepresentationTextBlock"
@@ -174,10 +175,10 @@
                 AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
                 Background="Transparent"
                 BorderBrush="Transparent"
-                Style="{StaticResource DefaultButtonStyle}"
+                Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
-                    <ui:SymbolIcon FontSize="18" Symbol="Copy20" />
+                    <ui:SymbolIcon FontSize="20" Symbol="Copy20" />
                 </Button.Content>
             </Button>
         </Grid>

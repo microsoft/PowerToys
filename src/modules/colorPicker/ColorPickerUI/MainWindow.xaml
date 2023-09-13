@@ -7,7 +7,7 @@
     xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+   ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="Color Picker"
     Background="Transparent"
@@ -22,7 +22,7 @@
     SizeToContent="WidthAndHeight"
     SourceInitialized="MainWindowSourceInitialized"
     Topmost="True"
-    WindowBackdropType="Acrylic"
+    WindowBackdropType="Mica"
     WindowCornerPreference="Default"
     mc:Ignorable="d">
     <e:Interaction.Behaviors>

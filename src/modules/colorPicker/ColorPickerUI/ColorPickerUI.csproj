@@ -48,6 +48,12 @@
     <ApplicationManifest>App.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\ColorPicker\icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\ColorPicker\icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Shaders\GridShader.cso" />
   </ItemGroup>
   <ItemGroup>
@@ -64,9 +70,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Update="Assets\ColorPicker\colorPicker.cur">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\ColorPicker\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

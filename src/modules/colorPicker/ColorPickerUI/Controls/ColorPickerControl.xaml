@@ -1,13 +1,12 @@
 ﻿<UserControl
     x:Class="ColorPicker.Controls.ColorPickerControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:helpers="clr-namespace:ColorPicker.Helpers"
-    xmlns:local="clr-namespace:ColorPicker.Controls"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:p="clr-namespace:ColorPicker.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helpers="clr-namespace:ColorPicker.Helpers"
+    xmlns:p="clr-namespace:ColorPicker.Properties"
     AutomationProperties.Name="{x:Static p:Resources.Color_Palette}"
     FocusManager.IsFocusScope="True"
     KeyboardNavigation.TabNavigation="Once"
@@ -239,12 +238,12 @@
                 Click="CurrentColorButton_Click"
                 Style="{DynamicResource ColorShadeButtonStyle}"
                 ToolTipService.ToolTip="{x:Static p:Resources.Selected_color_tooltip}">
-                <!--
+
+                <ui:Flyout
+                    x:Name="DetailsFlyout"
                     Closed="DetailsFlyout_Closed"
                     Opened="DetailsFlyout_Opened"
-                -->
-
-                <ui:Flyout x:Name="DetailsFlyout" Placement="Top">
+                    Placement="Top">
                     <Grid x:Name="detailsGrid" KeyboardNavigation.TabNavigation="Contained">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="44" />
