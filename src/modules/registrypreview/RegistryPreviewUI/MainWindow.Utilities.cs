@@ -1113,7 +1113,7 @@ namespace RegistryPreview
                 value = value.Remove(indexOf, value.Length - indexOf);
             }
 
-            return value;
+            return value.TrimEnd();
         }
 
         /// <summary>
