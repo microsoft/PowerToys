@@ -248,14 +248,14 @@ namespace PowerLauncher
             var defaultPlugins = GetDefaultPluginsSettings().ToDictionary(x => x.Id);
             foreach (PowerLauncherPluginSettings plugin in settings.Plugins)
             {
-                if (defaultPlugins.ContainsKey(plugin.Id))
+                if (defaultPlugins.TryGetValue(plugin.Id, out PowerLauncherPluginSettings value))
                 {
-                    var additionalOptions = CombineAdditionalOptions(defaultPlugins[plugin.Id].AdditionalOptions, plugin.AdditionalOptions);
-                    plugin.Name = defaultPlugins[plugin.Id].Name;
-                    plugin.Description = defaultPlugins[plugin.Id].Description;
-                    plugin.Author = defaultPlugins[plugin.Id].Author;
-                    plugin.IconPathDark = defaultPlugins[plugin.Id].IconPathDark;
-                    plugin.IconPathLight = defaultPlugins[plugin.Id].IconPathLight;
+                    var additionalOptions = CombineAdditionalOptions(value.AdditionalOptions, plugin.AdditionalOptions);
+                    plugin.Name = value.Name;
+                    plugin.Description = value.Description;
+                    plugin.Author = value.Author;
+                    plugin.IconPathDark = value.IconPathDark;
+                    plugin.IconPathLight = value.IconPathLight;
                     defaultPlugins[plugin.Id] = plugin;
                     defaultPlugins[plugin.Id].AdditionalOptions = additionalOptions;
                 }
