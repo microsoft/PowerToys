@@ -10,6 +10,10 @@ namespace ManagedCommon
     {
         public static void BringToForeground(IntPtr handle)
         {
+            NativeMethods.INPUT input = new NativeMethods.INPUT { type = NativeMethods.INPUTTYPE.INPUT_MOUSE, data = { } };
+            NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[] { input };
+            _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
+
             var fgHandle = NativeMethods.GetForegroundWindow();
 
             var threadId1 = NativeMethods.GetWindowThreadProcessId(handle, System.IntPtr.Zero);
