@@ -912,7 +912,7 @@ void FancyZones::SyncVirtualDesktops() noexcept
     auto current = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
     auto guids = VirtualDesktop::instance().GetVirtualDesktopIdsFromRegistry();
 
-    if (current != GUID_NULL && current != lastUsed)
+    if (current != lastUsed)
     {
         LastUsedVirtualDesktop::instance().SetId(current);
         LastUsedVirtualDesktop::instance().SaveData();
