@@ -759,8 +759,11 @@ bool FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAr
     {
         rect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
     }
-        
-    auto workArea = WorkArea::Create(m_hinstance, id, m_workAreaConfiguration.GetParent(monitor), rect);
+
+    auto parentWorkAreaId = id;
+    parentWorkAreaId.virtualDesktopId = LastUsedVirtualDesktop::instance().GetId();
+
+    auto workArea = WorkArea::Create(m_hinstance, id, parentWorkAreaId, rect);
     if (!workArea)
     {
         Logger::error(L"Failed to create work area {}", id.toString());
@@ -789,7 +792,6 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
 {
     Logger::debug(L"Update work areas, update windows positions: {}", updateWindowPositions);
 
-    m_workAreaConfiguration.SaveParentIds();
     m_workAreaConfiguration.Clear();
 
     if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
