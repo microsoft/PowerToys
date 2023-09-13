@@ -111,12 +111,6 @@ namespace Wox.Infrastructure.Image
                     throw Marshal.GetExceptionForHR(retCode);
                 }
 
-                if (width <= 0 || height <= 0)
-                {
-                    Log.Error($"Invalid dimensions specified for native size. width:{width}, height:{height}", MethodBase.GetCurrentMethod().DeclaringType);
-                    throw new ArgumentException("Invalid dimensions specified for native size.");
-                }
-
                 NativeSize nativeSize = new NativeSize
                 {
                     Width = width,
