@@ -251,7 +251,6 @@
                                                         VerticalAlignment="Center"
                                                         Orientation="Vertical">
                                                         <TextBlock
-                                                            Style="{StaticResource CaptionTextBlockStyle}"
                                                             Text="{x:Bind Name}"
                                                             TextTrimming="CharacterEllipsis"
                                                             TextWrapping="NoWrap" />
