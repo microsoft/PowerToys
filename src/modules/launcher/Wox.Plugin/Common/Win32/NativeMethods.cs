@@ -62,6 +62,9 @@ namespace Wox.Plugin.Common.Win32
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr OpenProcess(ProcessAccessFlags dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
 
+        [DllImport("kernel32.dll", SetLastError = true, BestFitMapping = false, CharSet = CharSet.Unicode)]
+        public static extern bool QueryFullProcessImageName([In] IntPtr hProcess, [In] int dwFlags, [Out] StringBuilder lpExeName, ref uint lpdwSize);
+
         [DllImport("dwmapi.dll", EntryPoint = "#113", CallingConvention = CallingConvention.StdCall)]
         public static extern int DwmpActivateLivePreview([MarshalAs(UnmanagedType.Bool)] bool fActivate, IntPtr hWndExclude, IntPtr hWndInsertBefore, LivePreviewTrigger lpt, IntPtr prcFinalRect);
 
@@ -74,12 +77,18 @@ namespace Wox.Plugin.Common.Win32
         [DllImport("user32.dll", BestFitMapping = false, CharSet = CharSet.Unicode)]
         public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
+        [DllImport("user32.dll", EntryPoint = "GetClassLongPtr")]
+        public static extern IntPtr GetClassLongPtr(IntPtr hWnd, int nIndex);
+
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
 
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int msg, int wParam);
+
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
 
         [DllImport("kernel32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -156,6 +165,37 @@ namespace Wox.Plugin.Common.Win32
         /// The UUID is guaranteed to be unique to this computer only.
         /// </summary>
         public const int RPC_S_UUID_LOCAL_ONLY = 0x720;
+
+        /// <summary>
+        /// Retrieves a handle to the small icon associated with the class.
+        /// </summary>
+        public const int GCL_HICONSM = -34;
+
+        /// <summary>
+        /// Retrieves a handle to the icon associated with the class.
+        /// </summary>
+        public const int GCL_HICON = -14;
+
+        /// <summary>
+        /// Sent to a window to retrieve a handle to the large or small icon associated with a window.
+        /// </summary>
+        public const int WM_GETICON = 0x7f;
+
+        /// <summary>
+        /// Retrieve the small icon for the window.
+        /// </summary>
+        public const int ICON_SMALL = 0;
+
+        /// <summary>
+        /// Retrieve the large icon for the window.
+        /// </summary>
+        public const int ICON_BIG = 1;
+
+        /// <summary>
+        /// Retrieves the small icon provided by the application. If the application does not provide one,
+        /// the system uses the system-generated icon for that window.
+        /// </summary>
+        public const int ICON_SMALL2 = 2;
     }
 
     public static class ShellItemTypeConstants

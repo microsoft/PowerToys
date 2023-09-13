@@ -2,9 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Wox.Infrastructure;
 using Wox.Plugin.Common.Win32;
 
@@ -105,6 +111,47 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
+        /// A static cache for process icons
+        /// </summary>
+        private static readonly Dictionary<uint, ImageSource> _processIdsToIconsCache = new();
+
+        /// <summary>
+        /// A static instance of the fallback icon used for a process if an icon could not be retrieved
+        /// </summary>
+        private static readonly ImageSource FallbackIcon = Imaging.CreateBitmapSourceFromHIcon(
+            SystemIcons.Application.Handle,
+            Int32Rect.Empty,
+            BitmapSizeOptions.FromEmptyOptions());
+
+        internal ImageSource ProcessIcon
+        {
+            get
+            {
+                lock (_processIdsToIconsCache)
+                {
+                    if (!_processIdsToIconsCache.ContainsKey(ProcessID))
+                    {
+                        try
+                        {
+                            var processFileName = GetProcessFileNameFromID(ProcessID);
+                            var tmpIcon = Icon.ExtractAssociatedIcon(processFileName);
+                            _processIdsToIconsCache.Add(ProcessID, Imaging.CreateBitmapSourceFromHIcon(
+                                 tmpIcon.Handle,
+                                 Int32Rect.Empty,
+                                 BitmapSizeOptions.FromEmptyOptions()));
+                        }
+                        catch
+                        {
+                            _processIdsToIconsCache.Add(ProcessID, FallbackIcon);
+                        }
+                    }
+
+                    return _processIdsToIconsCache[ProcessID];
+                }
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WindowProcess"/> class.
         /// </summary>
         /// <param name="pid">New process id.</param>
@@ -169,6 +216,28 @@ namespace Microsoft.Plugin.WindowWalker.Components
             {
                 _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
                 return processName.ToString().Split('\\').Reverse().ToArray()[0];
+            }
+            else
+            {
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the process file name for the process ID
+        /// </summary>
+        /// <param name="pid">The id of the process</param>
+        /// <returns>A string representing the file name or an empty string if the function fails</returns>
+        internal static string GetProcessFileNameFromID(uint pid)
+        {
+            IntPtr processHandle = NativeMethods.OpenProcess(ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
+            StringBuilder fileName = new StringBuilder(MaximumFileNameLength);
+            uint capacity = MaximumFileNameLength;
+            if (NativeMethods.QueryFullProcessImageName(processHandle, 0, fileName, ref capacity))
+            {
+                _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
+                return fileName.ToString(0, (int)capacity);
             }
             else
             {

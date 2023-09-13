@@ -9,6 +9,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Wox.Plugin.Common.VirtualDesktop.Helper;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
@@ -29,7 +33,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// A static cache for the process data of all known windows
         /// that we don't have to query the data every time
         /// </summary>
-        private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new Dictionary<IntPtr, WindowProcess>();
+        private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new();
+
+        /// <summary>
+        /// A static cache for the window icons
+        /// </summary>
+        private static readonly Dictionary<IntPtr, ImageSource> _windowHandlesToIconsCache = new();
 
         /// <summary>
         /// An instance of <see cref="WindowProcess"/> that contains the process information for the window
@@ -99,6 +108,34 @@ namespace Microsoft.Plugin.WindowWalker.Components
             get
             {
                 return GetWindowClassName(Hwnd);
+            }
+        }
+
+        internal ImageSource WindowIcon
+        {
+            get
+            {
+                lock (_windowHandlesToIconsCache)
+                {
+                    if (!_windowHandlesToIconsCache.ContainsKey(hwnd))
+                    {
+                        var iconHandle = GetWindowIcon(hwnd);
+
+                        if (iconHandle != IntPtr.Zero)
+                        {
+                            _windowHandlesToIconsCache.Add(hwnd, Imaging.CreateBitmapSourceFromHIcon(
+                                 iconHandle,
+                                 Int32Rect.Empty,
+                                 BitmapSizeOptions.FromEmptyOptions()));
+                        }
+                        else
+                        {
+                            _windowHandlesToIconsCache.Add(hwnd, null);
+                        }
+                    }
+
+                    return _windowHandlesToIconsCache[hwnd];
+                }
             }
         }
 
@@ -339,6 +376,38 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
 
             return windowClassName.ToString();
+        }
+
+        /// <summary>
+        /// Returns the icon associated with a window.
+        /// </summary>
+        /// <param name="hwnd">Handle to the window.</param>
+        /// <returns>Icon handle or IntPtr.Zero if no icon could be retrieved</returns>
+        private static IntPtr GetWindowIcon(IntPtr hwnd)
+        {
+            IntPtr iconHandle = NativeMethods.SendMessage(hwnd, Win32Constants.WM_GETICON, Win32Constants.ICON_BIG, 0);
+
+            if (iconHandle == IntPtr.Zero)
+            {
+                iconHandle = NativeMethods.SendMessage(hwnd, Win32Constants.WM_GETICON, Win32Constants.ICON_SMALL, 0);
+            }
+
+            if (iconHandle == IntPtr.Zero)
+            {
+                iconHandle = NativeMethods.SendMessage(hwnd, Win32Constants.WM_GETICON, Win32Constants.ICON_SMALL2, 0);
+            }
+
+            if (iconHandle == IntPtr.Zero)
+            {
+                iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCL_HICON);
+            }
+
+            if (iconHandle == IntPtr.Zero)
+            {
+                iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCL_HICONSM);
+            }
+
+            return iconHandle;
         }
 
         /// <summary>

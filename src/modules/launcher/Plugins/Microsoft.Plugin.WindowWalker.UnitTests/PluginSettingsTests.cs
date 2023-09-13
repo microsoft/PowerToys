@@ -22,7 +22,7 @@ namespace Microsoft.Plugin.WindowWalker.UnitTests
             var result = settings?.Length;
 
             // Assert
-            Assert.AreEqual(8, result);
+            Assert.AreEqual(9, result);
         }
 
         [DataTestMethod]
@@ -34,6 +34,7 @@ namespace Microsoft.Plugin.WindowWalker.UnitTests
         [DataRow("OpenAfterKillAndClose")]
         [DataRow("HideKillProcessOnElevatedProcesses")]
         [DataRow("HideExplorerSettingInfo")]
+        [DataRow("UseWindowIconInResults")]
         public void DoesSettingExist(string name)
         {
             // Setup
@@ -55,6 +56,7 @@ namespace Microsoft.Plugin.WindowWalker.UnitTests
         [DataRow("OpenAfterKillAndClose", false)]
         [DataRow("HideKillProcessOnElevatedProcesses", false)]
         [DataRow("HideExplorerSettingInfo", false)]
+        [DataRow("UseWindowIconInResults", true)]
         public void DefaultValues(string name, bool valueExpected)
         {
             // Setup
