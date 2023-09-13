@@ -95,3 +95,12 @@ dotnet_diagnostic.IDE0065.severity = none
 
 # IDE0009: Add this or Me qualification
 dotnet_diagnostic.IDE0009.severity = none
+
+# CA1859: Change type for improved performance
+dotnet_diagnostic.CA1859.severity = none
+
+# CA1716: Identifiers should not match keywords
+dotnet_diagnostic.CA1716.severity = none
+
+# SYSLIB1096: Convert to 'GeneratedComInterface'
+dotnet_diagnostic.SYSLIB1096.severity = silent
