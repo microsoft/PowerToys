@@ -1,0 +1,6 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="DarkBackground" Color="{DynamicResource ApplicationBackgroundColor}" />
+    <SolidColorBrush x:Key="DarkControlBackground" Color="{DynamicResource SolidBackgroundFillColorQuarternaryBrushColor}" />
+    <SolidColorBrush x:Key="DarkTeal" Color="{DynamicResource SystemAccentColorSecondary}" />
+    <SolidColorBrush x:Key="Teal" Color="{DynamicResource SystemAccentColor}" />
+</ResourceDictionary>

@@ -1,5 +1,7 @@
 [*.cs]
 
+file_header_template = Copyright (c) Microsoft Corporation\r\nThe Microsoft Corporation licenses this file to you under the MIT license.\r\nSee the LICENSE file in the project root for more information.
+
 # SA1201: Elements should appear in the correct order
 dotnet_diagnostic.SA1201.severity = none
 

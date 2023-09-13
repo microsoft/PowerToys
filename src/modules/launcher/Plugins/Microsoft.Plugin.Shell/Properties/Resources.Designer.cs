@@ -61,6 +61,42 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Find executable file and run it.
+        /// </summary>
+        public static string find_executable_file_and_run_it {
+            get {
+                return ResourceManager.GetString("find_executable_file_and_run_it", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run command in Command Prompt (cmd.exe).
+        /// </summary>
+        public static string run_command_in_command_prompt {
+            get {
+                return ResourceManager.GetString("run_command_in_command_prompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run command in PowerShell (PowerShell.exe).
+        /// </summary>
+        public static string run_command_in_powershell {
+            get {
+                return ResourceManager.GetString("run_command_in_powershell", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run command in Windows Terminal (wt.exe).
+        /// </summary>
+        public static string run_command_in_windows_terminal {
+            get {
+                return ResourceManager.GetString("run_command_in_windows_terminal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Keep shell open.
         /// </summary>
         public static string wox_leave_shell_open {
@@ -138,6 +174,15 @@ namespace Microsoft.Plugin.Shell.Properties {
         public static string wox_plugin_cmd_run_as_user {
             get {
                 return ResourceManager.GetString("wox_plugin_cmd_run_as_user", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shell command execution.
+        /// </summary>
+        public static string wox_shell_command_execution {
+            get {
+                return ResourceManager.GetString("wox_shell_command_execution", resourceCulture);
             }
         }
     }

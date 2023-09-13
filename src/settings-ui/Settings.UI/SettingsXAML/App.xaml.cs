@@ -288,6 +288,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                    oobeWindow.SetTheme(isDark);
                     SetContentTheme(isDark, oobeWindow);
                 }
 
