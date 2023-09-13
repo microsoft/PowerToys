@@ -361,12 +361,12 @@
                                                                     ContentAlignment="Left"
                                                                     CornerRadius="0">
                                                                     <StackPanel Orientation="Vertical">
-                                                                        <controls:CheckBoxWithDescriptionControl
+                                                                        <custom:CheckBoxWithDescriptionControl
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
                                                                             IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
-                                                                            Visibility="{x:Bind Path=ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                                            Visibility="{x:Bind Path=ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                                         <ComboBox
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
@@ -375,7 +375,7 @@
                                                                             SelectedIndex="{x:Bind Path=Option, Mode=TwoWay}"
                                                                             Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                                     </StackPanel>
-                                                                </labs:SettingsCard>
+                                                                </controls:SettingsCard>
                                                                 <Rectangle
                                                                     Height="1"
                                                                     HorizontalAlignment="Stretch"
