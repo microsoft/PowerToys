@@ -19,7 +19,7 @@
                     <x:Type Type="{x:Type m:ResizeFit}"/>
                 </ObjectDataProvider.MethodParameters>
             </ObjectDataProvider>
-
+            
             <ObjectDataProvider x:Key="ResizeUnitValues"
                             MethodName="GetValues"
                             ObjectType="sys:Enum">
