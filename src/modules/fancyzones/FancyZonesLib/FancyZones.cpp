@@ -521,7 +521,7 @@ void FancyZones::ToggleEditor() noexcept
 
     m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
 
-    if (!EditorParameters::Save())
+    if (!EditorParameters::Save(m_workAreaConfiguration, m_dpiUnawareThread))
     {
         Logger::error(L"Failed to save editor startup parameters");
         return;
