@@ -197,6 +197,12 @@
   <data name="ConfirmAddVariableBtn.Content" xml:space="preserve">
     <value>Add</value>
   </data>
+  <data name="AppliedVariablesDescriptionLbl.Text" xml:space="preserve">
+    <value>List of applied variables</value>
+  </data>
+  <data name="AppliedVariablesLbl.Text" xml:space="preserve">
+    <value>Applied variables</value>
+  </data>
   <data name="NewProfileVariablesListViewHeader.Text" xml:space="preserve">
     <value>Variables</value>
   </data>

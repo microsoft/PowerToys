@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Helpers;
@@ -23,6 +25,9 @@ namespace EnvironmentVariables.ViewModels
         public ObservableCollection<ProfileVariablesSet> Profiles { get; private set; } = new ObservableCollection<ProfileVariablesSet>();
 
         public ProfileVariablesSet AppliedProfile { get; set; }
+
+        [ObservableProperty]
+        private ObservableCollection<Variable> _appliedVariables = new ObservableCollection<Variable>();
 
         public MainViewModel()
         {
@@ -55,6 +60,24 @@ namespace EnvironmentVariables.ViewModels
             foreach (var variable in SystemDefaultSet.Variables)
             {
                 DefaultVariables.Variables.Add(variable);
+            }
+
+            PopulateAppliedVariables();
+        }
+
+        private void PopulateAppliedVariables()
+        {
+            var variables = new List<Variable>();
+            if (AppliedProfile != null)
+            {
+                variables = variables.Concat(AppliedProfile.Variables).ToList();
+            }
+
+            variables = variables.Concat(UserDefaultSet.Variables).Concat(SystemDefaultSet.Variables).ToList();
+            variables = variables.GroupBy(x => x.Name).Select(y => y.First()).ToList();
+            foreach (var variable in variables)
+            {
+                AppliedVariables.Add(variable);
             }
         }
 

@@ -68,20 +68,18 @@
                 <!--  Applied values  -->
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-
-
-                <StackPanel Grid.Row="1" Grid.Column="0">
+            <ScrollViewer
+                Grid.Row="1"
+                Grid.Column="0"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel>
                     <TextBlock
                         x:Uid="ProfilesLbl"
                         Margin="0,32,0,0"
                         Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock x:Uid="ProfilesDescriptionLbl" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-                    <ItemsControl
-                        Grid.Row="1"
-                        Margin="0,16,0,4"
-                        ItemsSource="{x:Bind ViewModel.Profiles}">
+                    <ItemsControl Margin="0,16,0,4" ItemsSource="{x:Bind ViewModel.Profiles}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ProfileVariablesSet">
                                 <labs:SettingsExpander
@@ -118,6 +116,53 @@
                         ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}" />
                 </StackPanel>
             </ScrollViewer>
+            <StackPanel Grid.Column="1">
+                <TextBlock
+                    x:Uid="AppliedVariablesLbl"
+                    Margin="0,32,0,0"
+                    Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <TextBlock x:Uid="AppliedVariablesDescriptionLbl" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <ScrollViewer
+                    x:Name="AppliedVariablesScrollViewer"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Margin="0,16,0,4" ItemsSource="{x:Bind ViewModel.AppliedVariables, Mode=TwoWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:Variable">
+                                <Grid Height="48" ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="20" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                        Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Orientation="Vertical">
+                                        <TextBlock
+                                            Text="{x:Bind Name}"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind Values}"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+
         </Grid>
 
         <ContentDialog
