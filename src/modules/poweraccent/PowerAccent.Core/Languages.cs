@@ -619,26 +619,21 @@ namespace PowerAccent.Core
                 LetterKey.VK_B => new[] { "\u03B2" }, // Beta
                 LetterKey.VK_G => new[] { "\u03B3" }, // Gamma
                 LetterKey.VK_D => new[] { "\u03B4" }, // Delta
-                LetterKey.VK_E => new[] { "\u03B5", "\u03AD" }, // Epsilon
+                LetterKey.VK_E => new[] { "\u03B5", "\u03AD", "\u03B7", "\u03AE" }, // Epsilon/Eta
                 LetterKey.VK_Z => new[] { "\u03B6" }, // Zeta
-                LetterKey.VK_H => new[] { "\u03B7", "\u03AE" }, // Eta
-                LetterKey.VK_0 => new[] { "\u03B8" }, // Theta
+                LetterKey.VK_T => new[] { "\u03B8", "\u03C4" }, // Theta/Tau
                 LetterKey.VK_I => new[] { "\u03B9", "\u0390", "\u03CA", "\u03AF" }, // Iota
                 LetterKey.VK_K => new[] { "\u039A" }, // Kappa
-                LetterKey.VK_1 => new[] { "\u03BB" }, // Lamda
+                LetterKey.VK_L => new[] { "\u03BB" }, // Lamda
                 LetterKey.VK_M => new[] { "\u03BC" }, // Mu
                 LetterKey.VK_N => new[] { "\u03BD" }, // Nu
-                LetterKey.VK_2 => new[] { "\u03BE" }, // Xi
-                LetterKey.VK_O => new[] { "\u03BF", "\u03CC" }, // Omicron
-                LetterKey.VK_3 => new[] { "\u03C0" }, // Pi
-                LetterKey.VK_P => new[] { "\u03C1" }, // Rho
+                LetterKey.VK_X => new[] { "\u03BE" }, // Xi
+                LetterKey.VK_O => new[] { "\u03BF", "\u03CC", "\u03C9", "\u03CE" }, // Omicron/Omega
+                LetterKey.VK_P => new[] { "\u03C0", "\u03C6", "\u03C8" }, // Pi/Phi/Psi
+                LetterKey.VK_R => new[] { "\u03C1" }, // Rho
                 LetterKey.VK_S => new[] { "\u03C3", "\u03C2" }, // Sigma
-                LetterKey.VK_T => new[] { "\u03C4" }, // Tau
-                LetterKey.VK_Y => new[] { "\u03C5", "\u03B0", "\u03CB", "\u03CD" }, // Upsilon
-                LetterKey.VK_4 => new[] { "\u03C6" }, // Phi
-                LetterKey.VK_X => new[] { "\u03C7" }, // Chi
-                LetterKey.VK_5 => new[] { "\u03C8" }, // Psi
-                LetterKey.VK_W => new[] { "\u03C9", "\u03CE" }, // Omega
+                LetterKey.VK_U => new[] { "\u03C5", "\u03B0", "\u03CB", "\u03CD" }, // Upsilon
+                LetterKey.VK_C => new[] { "\u03C7" }, // Chi
                 _ => Array.Empty<string>(),
             };
         }
