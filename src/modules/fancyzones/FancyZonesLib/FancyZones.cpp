@@ -918,8 +918,8 @@ void FancyZones::SyncVirtualDesktops() noexcept
         LastUsedVirtualDesktop::instance().SaveData();
     }
 
-    AppZoneHistory::instance().SyncVirtualDesktops();
-    AppliedLayouts::instance().SyncVirtualDesktops(current, guids);
+    AppliedLayouts::instance().SyncVirtualDesktops(current, lastUsed, guids);
+    AppZoneHistory::instance().SyncVirtualDesktops(current, lastUsed, guids);
 }
 
 void FancyZones::UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept
