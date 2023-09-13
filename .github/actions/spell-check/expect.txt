@@ -693,6 +693,7 @@ Hiber
 Hiberboot
 HIBYTE
 hicon
+HICONSM
 HIDEWINDOW
 hif
 highlighter
