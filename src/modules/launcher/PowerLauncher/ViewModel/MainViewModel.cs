@@ -81,7 +81,7 @@ namespace PowerLauncher.ViewModel
             Results = new ResultsViewModel(_settings, this);
             History = new ResultsViewModel(_settings, this);
             _selectedResults = Results;
-            Plugins = new ObservableCollection<PluginPair>(PluginManager.AllPlugins);
+            Plugins = new ObservableCollection<PluginPair>(PluginManager.AllPlugins.Where(a => !a.Metadata.Disabled && a.Metadata.ActionKeyword != string.Empty));
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
         }
