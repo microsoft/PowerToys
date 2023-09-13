@@ -64,14 +64,9 @@ namespace PreviewHandlerCommon.Utilities
             var channels = reader.ReadByte();
             var colorSpace = reader.ReadByte();
 
-            if (width == 0 || height == 0 || channels < 3 || channels > 4 || height >= QOI_PIXELS_MAX / width)
+            if (width == 0 || height == 0 || channels < 3 || channels > 4 || colorSpace > 1 || height >= QOI_PIXELS_MAX / width)
             {
                 throw new ArgumentException("Invalid QOI file data");
-            }
-
-            if (channels == 0)
-            {
-                channels = 4;
             }
 
             var pixelsCount = width * height;
@@ -145,6 +140,11 @@ namespace PreviewHandlerCommon.Utilities
                 pixels[pixelIndex] = pixel;
             }
 
+            return ConvertToBitmap(width, height, channels, pixels);
+        }
+
+        private static Bitmap ConvertToBitmap(uint width, uint height, byte channels, Color[] pixels)
+        {
             var pixelFormat = channels == 4 ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb;
             var bitmap = new Bitmap((int)width, (int)height, pixelFormat);
 
@@ -154,8 +154,7 @@ namespace PreviewHandlerCommon.Utilities
             {
                 for (var pixelIndex = 0; pixelIndex < pixels.Length; pixelIndex++)
                 {
-                    pixel = pixels[pixelIndex];
-
+                    var pixel = pixels[pixelIndex];
                     var bitmapPixel = (byte*)bitmapData.Scan0 + (pixelIndex * channels);
 
                     bitmapPixel[0] = pixel.B;
