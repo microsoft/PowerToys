@@ -286,7 +286,6 @@ SOFTWARE.
 - CommunityToolkit.WinUI.Controls.Primitives 8.0.230907
 - CommunityToolkit.WinUI.Controls.SettingsControls 8.0.230907
 - CommunityToolkit.WinUI.Controls.Sizers 8.0.230907
-- CommunityToolkit.WinUI.Collections 8.0.230907
 - CommunityToolkit.WinUI.Converters 8.0.230907
 - CommunityToolkit.WinUI.Extensions 8.0.230907
 - CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
