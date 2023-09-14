@@ -97,6 +97,8 @@ namespace RegistryPreview
                 UpdateToolBarAndUI(false);
                 UpdateWindowTitle(resourceLoader.GetString("FileNotFound"));
             }
+
+            ManagedCommon.WindowHelpers.BringToForeground(windowHandle);
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
