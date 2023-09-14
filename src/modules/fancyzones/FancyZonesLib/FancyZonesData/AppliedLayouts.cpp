@@ -354,9 +354,9 @@ void AppliedLayouts::SyncVirtualDesktops(const GUID& currentVirtualDesktop, cons
                 {
                     if (id != currentVirtualDesktop)
                     {
-                        auto copydWorkAreaId = workAreaId;
-                        copydWorkAreaId.virtualDesktopId = id;
-                        layouts.insert({ copydWorkAreaId, layout });
+                        auto copyWorkAreaId = workAreaId;
+                        copyWorkAreaId.virtualDesktopId = id;
+                        layouts.insert({ copyWorkAreaId, layout });
                     }
                 }
             }

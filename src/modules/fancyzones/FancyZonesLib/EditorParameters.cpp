@@ -139,7 +139,7 @@ bool EditorParameters::Save(const WorkAreaConfiguration& configuration, OnThread
         } }).wait();
         RECT combinedMonitorArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcMonitor>();
 
-        // use dpi-unuware values
+        // use dpi-unaware values
         monitorJson.top = combinedWorkArea.top;
         monitorJson.left = combinedWorkArea.left;
         monitorJson.workAreaWidth = combinedWorkArea.right - combinedWorkArea.left;
@@ -207,7 +207,7 @@ bool EditorParameters::Save(const WorkAreaConfiguration& configuration, OnThread
             monitorJson.monitorWidth = static_cast<int>(std::roundf(width));
             monitorJson.monitorHeight = static_cast<int>(std::roundf(height));
 
-            // use dpi-unuware values
+            // use dpi-unaware values
             monitorJson.top = monitorInfo.rcWork.top;
             monitorJson.left = monitorInfo.rcWork.left;
             monitorJson.workAreaWidth = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
