@@ -327,9 +327,10 @@ void AppliedLayouts::SyncVirtualDesktops(const GUID& currentVirtualDesktop, cons
     TAppliedLayoutsMap layouts;
 
     auto findCurrentVirtualDesktopInSavedLayouts = [&](const std::pair<FancyZonesDataTypes::WorkAreaId, LayoutData>& val) -> bool { return val.first.virtualDesktopId == currentVirtualDesktop; };
-    bool replaceLastUsedWithCurrent = !desktops.has_value() || currentVirtualDesktop == GUID_NULL || 
+    bool replaceLastUsedWithCurrent = !desktops.has_value() || currentVirtualDesktop == GUID_NULL ||
         std::find_if(m_layouts.begin(), m_layouts.end(), findCurrentVirtualDesktopInSavedLayouts) == m_layouts.end();
-    
+    bool copyToOtherVirtualDesktops = lastUsedVirtualDesktop == GUID_NULL && currentVirtualDesktop != GUID_NULL && desktops.has_value();
+
     for (const auto& [workAreaId, layout] : m_layouts)
     {
         if (replaceLastUsedWithCurrent && workAreaId.virtualDesktopId == lastUsedVirtualDesktop)
@@ -338,6 +339,27 @@ void AppliedLayouts::SyncVirtualDesktops(const GUID& currentVirtualDesktop, cons
             auto updatedWorkAreaId = workAreaId;
             updatedWorkAreaId.virtualDesktopId = currentVirtualDesktop;
             layouts.insert({ updatedWorkAreaId, layout });
+
+            if (copyToOtherVirtualDesktops)
+            {
+                // Copy to other virtual desktops on the 1st VD creation.
+                // If we just replace the id, we'll lose the layout on the other desktops.
+                // Usage scenario: 
+                // apply the layout to the single virtual desktop with id = GUID_NULL, 
+                // create the 2nd virtual desktop and switch to it, 
+                // so virtual desktop id changes from GUID_NULL to a valid value of the 2nd VD.
+                // Then change the layout on the 2nd VD and switch back to the 1st VD. 
+                // Layout on the initial VD will be changed too without initializing it beforehand.
+                for (const auto& id : desktops.value())
+                {
+                    if (id != currentVirtualDesktop)
+                    {
+                        auto copydWorkAreaId = workAreaId;
+                        copydWorkAreaId.virtualDesktopId = id;
+                        layouts.insert({ copydWorkAreaId, layout });
+                    }
+                }
+            }
         }
 
         if (workAreaId.virtualDesktopId == currentVirtualDesktop || (desktops.has_value() && 

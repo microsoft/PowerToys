@@ -604,6 +604,8 @@ namespace FancyZonesUnitTests
             std::optional<std::vector<GUID>> virtualDesktopsInRegistry = { { virtualDesktop1, virtualDesktop2 } };
             AppliedLayouts::instance().SyncVirtualDesktops(currentVirtualDesktop, lastUsedVirtualDesktop, virtualDesktopsInRegistry);
 
+            Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, virtualDesktop1)));
+            Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, virtualDesktop1)));
             Assert::IsTrue(layout1 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(1, virtualDesktop2)));
             Assert::IsTrue(layout2 == AppliedLayouts::instance().GetDeviceLayout(GetWorkAreaID(2, virtualDesktop2)));
         }
