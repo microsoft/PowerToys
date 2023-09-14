@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,6 +21,8 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Peek.UI.Telemetry.Events;
+
+using Logger = Peek.Common.Helpers.Logger;
 
 namespace Peek.FilePreviewer
 {
@@ -247,6 +250,16 @@ namespace Peek.FilePreviewer
             {
                 BrowserPreviewer.State = PreviewState.Loaded;
             }
+
+            // JavaScript code to check the color of the body element and change it based on theme
+            string jsCommand = @"
+                var currentColor = window.getComputedStyle(document.body, null).getPropertyValue('color');
+                if (currentColor === 'rgb(0, 0, 0)' || currentColor === '') { 
+                    document.body.style.color = '" + (ThemeHelpers.GetAppTheme() == AppTheme.Light ? "black" : "white") + @"'; 
+                }";
+
+            // Inject JavaScript to change text color in the WebView
+            _ = sender.ExecuteScriptAsync(jsCommand);
         }
 
         private void PreviewBrowser_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
