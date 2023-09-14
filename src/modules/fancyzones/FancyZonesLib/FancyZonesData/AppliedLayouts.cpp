@@ -374,6 +374,23 @@ void AppliedLayouts::SyncVirtualDesktops(const GUID& currentVirtualDesktop, cons
     {
         m_layouts = layouts;
         SaveData();
+
+        std::wstring currentStr = FancyZonesUtils::GuidToString(currentVirtualDesktop).value_or(L"incorrect guid");
+        std::wstring lastUsedStr = FancyZonesUtils::GuidToString(lastUsedVirtualDesktop).value_or(L"incorrect guid");
+        std::wstring registryStr{};
+        if (desktops.has_value())
+        {
+            for (const auto& id : desktops.value())
+            {
+                registryStr += FancyZonesUtils::GuidToString(id).value_or(L"incorrect guid") + L" ";
+            }
+        }
+        else
+        {
+            registryStr = L"empty";
+        }
+
+        Logger::info(L"Synced virtual desktops. Current: {}, last used: {}, registry: {}", currentStr, lastUsedStr, registryStr);
     }
 }
 
