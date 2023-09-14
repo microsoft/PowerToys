@@ -2,13 +2,13 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
@@ -145,8 +145,8 @@
 
                 <NavigationViewItem
                     x:Uid="Shell_MouseWithoutBorders"
-                        helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
-                        Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}" />
+                    helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_PastePlain"
@@ -202,13 +202,11 @@
                 <StackPanel Orientation="Vertical">
                     <NavigationViewItem
                         x:Uid="OOBE_NavViewItem"
-                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                           Glyph=&#xF133;}"
+                        Icon="{ui:FontIcon Glyph=&#xF133;}"
                         Tapped="OOBEItem_Tapped" />
                     <NavigationViewItem
                         x:Uid="Feedback_NavViewItem"
-                        Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                           Glyph=&#xED15;}"
+                        Icon="{ui:FontIcon Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />
                 </StackPanel>
             </NavigationView.PaneFooter>

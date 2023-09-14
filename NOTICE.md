@@ -281,11 +281,16 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
-- CommunityToolkit.Labs.WinUI.SettingsControls 0.0.18
 - CommunityToolkit.Mvvm 8.2.0
-- CommunityToolkit.WinUI.UI 7.1.2
-- CommunityToolkit.WinUI.UI.Animations 7.1.2
-- CommunityToolkit.WinUI.UI.Controls 7.1.2
+- CommunityToolkit.WinUI.Animations 8.0.230907
+- CommunityToolkit.WinUI.Collections 8.0.230907
+- CommunityToolkit.WinUI.Controls.Primitives 8.0.230907
+- CommunityToolkit.WinUI.Controls.SettingsControls 8.0.230907
+- CommunityToolkit.WinUI.Controls.Sizers 8.0.230907
+- CommunityToolkit.WinUI.Converters 8.0.230907
+- CommunityToolkit.WinUI.Extensions 8.0.230907
+- CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
+- CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
 - ControlzEx 6.0.0
 - HelixToolkit 2.20.2
 - HelixToolkit.Core.Wpf 2.20.2
@@ -306,7 +311,7 @@ SOFTWARE.
 - Microsoft.Windows.Compatibility 7.0.3
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.3
-- Microsoft.Windows.SDK.BuildTools 10.0.22621.755
+- Microsoft.Windows.SDK.BuildTools 10.0.22621.756
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
 - Microsoft.WindowsAppSDK 1.4.230822000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9

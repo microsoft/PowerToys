@@ -2,33 +2,33 @@
     x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeVideoConference"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl
+    <custom:OOBEPageControl
         x:Uid="Oobe_VideoConference"
         HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/VideoConferenceMute.png">
 
-        <controls:OOBEPageControl.PageContent>
+        <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
                 <TextBlock
                     x:Uid="Oobe_HowToLaunch"
                     Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutWithTextLabelControl
+                <custom:ShortcutWithTextLabelControl
                     x:Name="HotkeyMicVidControl"
                     x:Uid="Oobe_VideoConference_ToggleMicVid" />
-                <controls:ShortcutWithTextLabelControl
+                <custom:ShortcutWithTextLabelControl
                     x:Name="HotkeyMicControl"
                     x:Uid="Oobe_VideoConference_ToggleMic" />
-                <controls:ShortcutWithTextLabelControl
+                <custom:ShortcutWithTextLabelControl
                     x:Name="HotkeyPushToTalkControl"
                     x:Uid="Oobe_VideoConference_PushToTalkMic" />
-                <controls:ShortcutWithTextLabelControl
+                <custom:ShortcutWithTextLabelControl
                     x:Name="HotkeyVidControl"
                     x:Uid="Oobe_VideoConference_ToggleVid" />
 
@@ -52,6 +52,6 @@
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>
-        </controls:OOBEPageControl.PageContent>
-    </controls:OOBEPageControl>
+        </custom:OOBEPageControl.PageContent>
+    </custom:OOBEPageControl>
 </Page>
