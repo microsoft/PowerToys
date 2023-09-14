@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:converters="using:EnvironmentVariables.Converters"
+    xmlns:converters1="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
@@ -20,7 +21,7 @@
                 Click="EditVariable_Click"
                 CommandParameter="{x:Bind (models:Variable)}"
                 Header="{x:Bind Name, Mode=TwoWay}"
-                IsClickEnabled="True">
+                IsClickEnabled="{x:Bind Editable, Mode=OneWay}">
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     IsTextSelectionEnabled="True"
@@ -29,6 +30,11 @@
         </DataTemplate>
 
         <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
+        <converters1:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+        <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
     </Page.Resources>
     <i:Interaction.Behaviors>
         <ic:EventTriggerBehavior EventName="Loaded">
@@ -110,6 +116,12 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}"
                         ItemTemplate="{StaticResource VariableTemplate}"
                         ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}" />
+                    <InfoBar
+                        x:Uid="EditSystemDefaultSetInfoBar"
+                        Margin="0,8,0,0"
+                        IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                        Severity="Informational"
+                        Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                     <labs:SettingsExpander
                         Margin="0,0,0,4"
                         Header="{x:Bind ViewModel.SystemDefaultSet.Name}"

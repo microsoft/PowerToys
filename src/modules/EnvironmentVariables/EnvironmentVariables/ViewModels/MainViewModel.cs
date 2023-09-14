@@ -32,11 +32,16 @@ namespace EnvironmentVariables.ViewModels
         [ObservableProperty]
         private ObservableCollection<Variable> _appliedVariables = new ObservableCollection<Variable>();
 
+        [ObservableProperty]
+        private bool _isElevated;
+
         public ProfileVariablesSet AppliedProfile { get; set; }
 
         public MainViewModel(IEnvironmentVariablesService environmentVariablesService)
         {
             _environmentVariablesService = environmentVariablesService;
+            var isElevated = App.GetService<IElevationHelper>().IsElevated;
+            IsElevated = isElevated;
         }
 
         [RelayCommand]

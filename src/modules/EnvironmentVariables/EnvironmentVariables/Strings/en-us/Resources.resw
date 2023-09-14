@@ -203,4 +203,7 @@
   <data name="NewProfileVariablesListViewHeader.Text" xml:space="preserve">
     <value>Variables</value>
   </data>
+  <data name="EditSystemDefaultSetInfoBar.Title" xml:space="preserve">
+    <value>You need to run as administrator to edit System environment variables</value>
+  </data>
 </root>
