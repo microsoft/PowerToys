@@ -16,22 +16,22 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 - **Follow the pattern of what you already see in the code.**
 - [Coding style](style.md).
 - Try to package new functionality/components into libraries that have nicely defined interfaces.
-- Package new functionality into classes or refactor existing functionality into a class as you extend.
-- When adding new classes/methods/changing existing code: add new unit tests or update the existing tests.
+- Package new functionality into classes or refactor existing functionality into a class as you extend the code.
+- When adding new classes/methods/changing existing code, add new unit tests or update the existing tests.
 
 ## GitHub Workflow
 
 - Before starting to work on a fix/feature, make sure there is an open issue to track the work.
-- Add the `In progress` label to the issue, if not already present also add a `Cost-Small/Medium/Large` estimate and make sure all appropriate labels are set.
-- If you are a community contributor, you will not be able to add labels to the issue, in that case just add a comment saying that you started to work on the issue and try to give an estimate for the delivery date.
+- Add the `In progress` label to the issue, if not already present. Also add a `Cost-Small/Medium/Large` estimate and make sure all appropriate labels are set.
+- If you are a community contributor, you will not be able to add labels to the issue; in that case just add a comment saying that you have started work on the issue and try to give an estimate for the delivery date.
 - If the work item has a medium/large cost, using the markdown task list, list each sub item and update the list with a check mark after completing each sub item.
 - When opening a PR, follow the PR template.
 - When you'd like the team to take a look (even if the work is not yet fully complete) mark the PR as 'Ready For Review' so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
-- When the PR is approved, let the owner of the PR merge it. For community contributions the reviewer that approved the PR can also merge it.
-- Use the `Squash and merge` option to merge a PR, if you don't want to squash it because there are logically different commits, use `Rebase and merge`.
+- When the PR is approved, let the owner of the PR merge it. For community contributions, the reviewer who approved the PR can also merge it.
+- Use the `Squash and merge` option to merge a PR. If you don't want to squash it because there are logically different commits, use `Rebase and merge`.
 - We don't close issues automatically when referenced in a PR, so after the PR is merged:
-  - mark the issue(s), that the PR solved, with the `Resolution-Fix-Committed` label, remove the `In progress` label and if the issue is assigned to a project, move the item to the `Done` status.
-  - don't close the issue if it's a bug in the current released version since users tend to not search for closed issues, we will close the resolved issues when a new version is released.
+  - mark the issue(s) that the PR solved with the `Resolution-Fix-Committed` label, remove the `In progress` label and if the issue is assigned to a project, move the item to the `Done` status.
+  - don't close the issue if it's a bug in the current released version; since users tend to not search for closed issues, we will close the resolved issues when a new version is released.
   - if it's not a code fix that effects the end user, the issue can be closed (for example a fix in the build or a code refactoring and so on).
 
 ## Compiling PowerToys
@@ -49,7 +49,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 
 ### Get Submodules to compile
 
-We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one time step.
+We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one-time step.
 
 1. Open a terminal
 1. Navigate to the folder you cloned PowerToys to.
@@ -69,7 +69,7 @@ Our installer is two parts, an EXE and an MSI.  The EXE (Bootstrapper) contains 
 - The EXE installs all prerequisites and installs PowerToys via the MSI. It has additional features such as the installation flags (see below).
 - The MSI installs the PowerToys binaries.
 
-The installer can only be compiled in `Release` mode, step 1 and 2 must be done before the MSI will be able to be compiled.
+The installer can only be compiled in `Release` mode; steps 1 and 2 must be performed before the MSI can be compiled.
 
 1. Compile `PowerToys.sln`. Instructions are listed above.
 1. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
@@ -132,7 +132,7 @@ Head over to the wiki to see the [full list of supported installer arguments][in
 
 To debug the PowerToys application in Visual Studio, set the `runner` project as your start-up project, then start the debugger.
 
-Some PowerToys modules require being run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
+Some PowerToys modules must be run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
 
 - The `FancyZones` module will not be able to move an elevated window to a zone.
 - The `Shortcut Guide` module will not appear if the foreground window belongs to an elevated application.
@@ -160,7 +160,7 @@ It's responsible for:
 
 ### [`Interface`](modules/interface.md)
 
-Definition of the interface used by the [`runner`](/src/runner) to manage the PowerToys. All PowerToys must implement this interface.
+The definition of the interface used by the [`runner`](/src/runner) to manage the PowerToys. All PowerToys must implement this interface.
 
 ### [`Common`](common.md)
 
@@ -168,4 +168,4 @@ The common lib, as the name suggests, contains code shared by multiple PowerToys
 
 ### [`Settings`](settingsv2/)
 
-Settings v2 is our current settings implementation.  Please head over to the dev docs that goes into the current settings system.
+Settings v2 is our current settings implementation.  Please head over to the dev docs that describe the current settings system.
