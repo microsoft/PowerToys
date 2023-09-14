@@ -612,7 +612,7 @@ void AppZoneHistory::SyncVirtualDesktops(const GUID& currentVirtualDesktop, cons
         }
         return false;
     };
-    bool replaceLastUsedWithCurrent = !desktops.has_value() || currentVirtualDesktop == GUID_NULL || std::find_if(m_history.begin(), m_history.end(), findCurrentVirtualDesktopInSavedHistory) == m_history.end();
+    bool replaceLastUsedWithCurrent = !desktops.has_value() || currentVirtualDesktop == GUID_NULL || lastUsedVirtualDesktop == GUID_NULL || std::find_if(m_history.begin(), m_history.end(), findCurrentVirtualDesktopInSavedHistory) == m_history.end();
 
     bool dirtyFlag = false;
     for (auto it = std::begin(m_history); it != std::end(m_history);)
