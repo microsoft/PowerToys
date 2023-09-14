@@ -53,6 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "SV",
             "TK",
             "CY",
+            "EL",
         };
 
         private readonly string[] _toolbarOptions =
