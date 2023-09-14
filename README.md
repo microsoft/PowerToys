@@ -103,7 +103,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 **Highlights**
 
- - Keyboard manager now supports Numpad. Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
+ - Keyboard manager now allows Numpad keys to be bound separately from the main keyboard. If using a previous configuration, only the main keyboard (not numpad) keys will be mapped. To restore the previous behavior, manually add separate bindings for numpad keys.
  - New utility: Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.
  - FancyZones code improvements and refactor.
  - Modernized ImageResizer UX.
@@ -148,11 +148,11 @@ In this release, we focused on releasing new features, stability and improvement
 ### Keyboard Manager
 
  - Rephrased labels to enhance clarity. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
- - Keyboard manager now supports Numpad. Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
+ - Keyboard manager now allows Numpad keys to be bound separately from the main keyboard. If using a previous configuration, only the main keyboard (not numpad) keys will be mapped. To restore the previous behavior, manually add separate bindings for numpad keys.
 
 ### Mouse Highlighter
 
- - Fixed highlighter being invisible issue for Always on Top windows.
+ - The highlighter is now visible in "Always on Top" windows.
  - Added settings for automatic activation on startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Mouse Pointer Crosshairs
