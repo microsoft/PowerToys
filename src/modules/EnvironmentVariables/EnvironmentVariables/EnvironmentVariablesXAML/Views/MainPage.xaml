@@ -65,6 +65,8 @@
             <Grid.ColumnDefinitions>
                 <!--  Left side  -->
                 <ColumnDefinition />
+                <!--  Separator  -->
+                <ColumnDefinition Width="10" />
                 <!--  Applied values  -->
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
@@ -116,7 +118,8 @@
                         ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}" />
                 </StackPanel>
             </ScrollViewer>
-            <Grid Grid.Column="1">
+            <AppBarSeparator Grid.Column="1" />
+            <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -322,7 +325,7 @@
                                                 HorizontalAlignment="Stretch"
                                                 ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
                                                 SelectionMode="Multiple">
-                                               
+
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="models:Variable">
                                                         <Grid Height="48" ColumnSpacing="8">

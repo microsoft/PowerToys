@@ -42,8 +42,6 @@ namespace EnvironmentVariables.ViewModels
         [RelayCommand]
         public void LoadEnvironmentVariables()
         {
-            ReadAsync();
-
             EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.Machine, SystemDefaultSet);
             EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.User, UserDefaultSet);
 
@@ -57,7 +55,7 @@ namespace EnvironmentVariables.ViewModels
                 DefaultVariables.Variables.Add(variable);
             }
 
-            PopulateAppliedVariables();
+            ReadAsync();
         }
 
         private async void ReadAsync()
@@ -65,7 +63,17 @@ namespace EnvironmentVariables.ViewModels
             try
             {
                 var profiles = await _environmentVariablesService.ReadAsync();
+                foreach (var profile in profiles)
+                {
+                    profile.PropertyChanged += Profile_PropertyChanged;
+                }
+
+                var applied = profiles.Where(x => x.IsEnabled).ToList();
+                AppliedProfile = applied.Count > 0 ? applied.First() : null;
+
                 Profiles = new ObservableCollection<ProfileVariablesSet>(profiles);
+
+                PopulateAppliedVariables();
             }
             catch (Exception ex)
             {
@@ -84,10 +92,7 @@ namespace EnvironmentVariables.ViewModels
 
             variables = variables.Concat(UserDefaultSet.Variables).Concat(SystemDefaultSet.Variables).ToList();
             variables = variables.GroupBy(x => x.Name).Select(y => y.First()).ToList();
-            foreach (var variable in variables)
-            {
-                AppliedVariables.Add(variable);
-            }
+            AppliedVariables = new ObservableCollection<Variable>(variables);
         }
 
         internal void EditVariable(Variable original, Variable edited)
@@ -141,12 +146,15 @@ namespace EnvironmentVariables.ViewModels
                     }
                 }
             }
+
+            _ = Task.Run(SaveAsync);
         }
 
         private void SetAppliedProfile(ProfileVariablesSet profile)
         {
             profile.Apply();
             AppliedProfile = profile;
+            PopulateAppliedVariables();
         }
 
         private void UnsetAppliedProfile()
@@ -159,6 +167,7 @@ namespace EnvironmentVariables.ViewModels
                 AppliedProfile.IsEnabled = false;
                 AppliedProfile = null;
                 appliedProfile.PropertyChanged += Profile_PropertyChanged;
+                PopulateAppliedVariables();
             }
         }
     }

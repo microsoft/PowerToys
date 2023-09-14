@@ -188,9 +188,6 @@
   <data name="DefaultVariables" xml:space="preserve">
     <value>DefaultVariables</value>
   </data>
-  <data name="ExistingVariablesListViewHeader.Text" xml:space="preserve">
-    <value>Variables</value>
-  </data>
   <data name="CancelAddVariableBtn.Content" xml:space="preserve">
     <value>Cancel</value>
   </data>
