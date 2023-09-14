@@ -232,7 +232,7 @@
                             Background="Transparent"
                             ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                               <ColumnDefinition Width="256"/> <!-- Address -->
+                                <ColumnDefinition Width="256"/> <!-- Address -->
                                 <ColumnDefinition Width="*"/> <!-- Comment -->
                                 <ColumnDefinition Width="Auto"/> <!-- Status -->
                                 <ColumnDefinition Width="Auto"/> <!-- Duplicate -->
@@ -373,7 +373,7 @@
                     Margin="0,8,0,0"
                     Severity="Error"
                     Message="{x:Bind ViewModel.ErrorMessage, Mode=TwoWay}"
-                    IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"    
+                    IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
                     Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <InfoBar
                     x:Uid="FileChanged"
