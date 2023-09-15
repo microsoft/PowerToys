@@ -15,14 +15,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <TargetName>PowerToys.$(ProjectName)</TargetName>
     <OutDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\Tools\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <TargetName>PowerToys.$(ProjectName)</TargetName>
-    <OutDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
   </PropertyGroup>
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
