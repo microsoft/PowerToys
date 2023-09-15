@@ -111,6 +111,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
         }
 
+        /// <summary>
+        /// Gets the icon associated with the window or null if no icon could be retrieved
+        /// </summary>
         internal ImageSource WindowIcon
         {
             get

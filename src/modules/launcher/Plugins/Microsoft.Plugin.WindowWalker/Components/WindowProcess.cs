@@ -123,6 +123,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
             Int32Rect.Empty,
             BitmapSizeOptions.FromEmptyOptions());
 
+        /// <summary>
+        /// Gets the icon associated with the process
+        /// </summary>
         internal ImageSource ProcessIcon
         {
             get
@@ -133,7 +136,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     {
                         try
                         {
-                            var processFileName = GetProcessFileNameFromID(ProcessID);
+                            var processFileName = GetProcessFilePathFromID(ProcessID);
                             var tmpIcon = Icon.ExtractAssociatedIcon(processFileName);
                             _processIdsToIconsCache.Add(ProcessID, Imaging.CreateBitmapSourceFromHIcon(
                                  tmpIcon.Handle,
@@ -229,7 +232,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="pid">The id of the process</param>
         /// <returns>A string representing the file name or an empty string if the function fails</returns>
-        internal static string GetProcessFileNameFromID(uint pid)
+        internal static string GetProcessFilePathFromID(uint pid)
         {
             IntPtr processHandle = NativeMethods.OpenProcess(ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
             StringBuilder fileName = new StringBuilder(MaximumFileNameLength);
