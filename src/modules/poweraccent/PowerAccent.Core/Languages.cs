@@ -16,6 +16,7 @@ namespace PowerAccent.Core
         GA,
         GD,
         DE,
+        EL,
         EST,
         FR,
         HR,
@@ -38,7 +39,6 @@ namespace PowerAccent.Core
         SR,
         SV,
         TK,
-        EL,
     }
 
     internal sealed class Languages
@@ -55,6 +55,7 @@ namespace PowerAccent.Core
                 Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish)
                 Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
+                Language.EL => GetDefaultLetterKeyEL(letter), // Greek
                 Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
                 Language.FR => GetDefaultLetterKeyFR(letter), // French
                 Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
@@ -77,7 +78,6 @@ namespace PowerAccent.Core
                 Language.SR => GetDefaultLetterKeySR(letter), // Serbian
                 Language.SV => GetDefaultLetterKeySV(letter), // Swedish
                 Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
-                Language.EL => GetDefaultLetterKeyEL(letter), // Greek
                 _ => throw new ArgumentException("The language {0} is not know in this context", lang.ToString()),
             };
         }
@@ -93,6 +93,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyGA(letter))
                 .Union(GetDefaultLetterKeyGD(letter))
                 .Union(GetDefaultLetterKeyDE(letter))
+                .Union(GetDefaultLetterKeyEL(letter))
                 .Union(GetDefaultLetterKeyEST(letter))
                 .Union(GetDefaultLetterKeyFR(letter))
                 .Union(GetDefaultLetterKeyHR(letter))
@@ -115,7 +116,6 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeySR(letter))
                 .Union(GetDefaultLetterKeySV(letter))
                 .Union(GetDefaultLetterKeyTK(letter))
-                .Union(GetDefaultLetterKeyEL(letter))
             .ToArray();
         }
 
