@@ -4,7 +4,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -56,11 +55,18 @@ namespace Wox.Plugin
             return;
         }
 
-        public void Update(PowerLauncherPluginSettings setting, IPublicAPI api)
+        public void Update(PowerLauncherPluginSettings setting, IPublicAPI api, Action refreshPluginsOverviewCallback)
         {
             if (setting == null || api == null)
             {
                 return;
+            }
+
+            bool refreshOverview = false;
+            if (Metadata.Disabled != setting.Disabled
+                || Metadata.ActionKeyword != setting.ActionKeyword)
+            {
+                refreshOverview = true;
             }
 
             if (Metadata.Disabled && !setting.Disabled)
@@ -89,6 +95,11 @@ namespace Wox.Plugin
             if (IsPluginInitialized && !Metadata.Disabled)
             {
                 (Plugin as IReloadable)?.ReloadData();
+            }
+
+            if (refreshOverview)
+            {
+                refreshPluginsOverviewCallback?.Invoke();
             }
         }
 
