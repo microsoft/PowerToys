@@ -81,7 +81,6 @@ namespace PowerLauncher.ViewModel
             Results = new ResultsViewModel(_settings, this);
             History = new ResultsViewModel(_settings, this);
             _selectedResults = Results;
-            Plugins = new ObservableCollection<PluginPair>(PluginManager.AllPlugins.Where(a => !a.Metadata.Disabled && a.Metadata.ActionKeyword != string.Empty));
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
         }
@@ -1211,7 +1210,7 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        public ObservableCollection<PluginPair> Plugins { get; set; }
+        public ObservableCollection<PluginPair> Plugins { get; } = new();
 
         private Visibility _pluginsOverviewVisibility = Visibility.Visible;
 
@@ -1227,6 +1226,21 @@ namespace PowerLauncher.ViewModel
                     OnPropertyChanged(nameof(PluginsOverviewVisibility));
                 }
             }
+        }
+
+        public void RefreshPluginsOverview()
+        {
+            Log.Info("Refresh plugins overview", GetType());
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Plugins.Clear();
+
+                foreach (var p in PluginManager.AllPlugins.Where(a => a.IsPluginInitialized && !a.Metadata.Disabled && a.Metadata.ActionKeyword != string.Empty))
+                {
+                    Plugins.Add(p);
+                }
+            });
         }
     }
 }
