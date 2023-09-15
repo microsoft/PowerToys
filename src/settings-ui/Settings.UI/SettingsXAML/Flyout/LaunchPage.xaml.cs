@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI.Flyout
 {
@@ -141,6 +142,9 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         private void ReportBugBtn_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.StartBugReport();
+
+            // Closing manually the flyout since no window will steal the focus
+            App.GetFlyoutWindow()?.Hide();
         }
     }
 }
