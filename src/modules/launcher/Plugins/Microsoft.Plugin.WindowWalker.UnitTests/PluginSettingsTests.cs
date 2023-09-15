@@ -27,6 +27,7 @@ namespace Microsoft.Plugin.WindowWalker.UnitTests
 
         [DataTestMethod]
         [DataRow("ResultsFromVisibleDesktopOnly")]
+        [DataRow("UseWindowIconInResults")]
         [DataRow("SubtitleShowPid")]
         [DataRow("SubtitleShowDesktopName")]
         [DataRow("ConfirmKillProcess")]
@@ -34,7 +35,6 @@ namespace Microsoft.Plugin.WindowWalker.UnitTests
         [DataRow("OpenAfterKillAndClose")]
         [DataRow("HideKillProcessOnElevatedProcesses")]
         [DataRow("HideExplorerSettingInfo")]
-        [DataRow("UseWindowIconInResults")]
         public void DoesSettingExist(string name)
         {
             // Setup
@@ -49,6 +49,7 @@ namespace Microsoft.Plugin.WindowWalker.UnitTests
 
         [DataTestMethod]
         [DataRow("ResultsFromVisibleDesktopOnly", false)]
+        [DataRow("UseWindowIconInResults", false)]
         [DataRow("SubtitleShowPid", false)]
         [DataRow("SubtitleShowDesktopName", true)]
         [DataRow("ConfirmKillProcess", true)]
@@ -56,7 +57,6 @@ namespace Microsoft.Plugin.WindowWalker.UnitTests
         [DataRow("OpenAfterKillAndClose", false)]
         [DataRow("HideKillProcessOnElevatedProcesses", false)]
         [DataRow("HideExplorerSettingInfo", false)]
-        [DataRow("UseWindowIconInResults", true)]
         public void DefaultValues(string name, bool valueExpected)
         {
             // Setup

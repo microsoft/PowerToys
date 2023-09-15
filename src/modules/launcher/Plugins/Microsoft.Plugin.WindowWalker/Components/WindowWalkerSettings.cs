@@ -121,6 +121,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
+                    Key = nameof(UseWindowIconInResults),
+                    DisplayLabel = Resources.wox_plugin_windowwalker_SettingUseWindowIconInResults,
+                    Value = false,
+                },
+                new PluginAdditionalOption
+                {
                     Key = nameof(SubtitleShowPid),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingSubtitlePid,
                     Value = false,
@@ -164,12 +170,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo,
                     DisplayDescription = Resources.wox_plugin_windowwalker_SettingExplorerSettingInfo_Description,
                     Value = false,
-                },
-                new PluginAdditionalOption
-                {
-                    Key = nameof(UseWindowIconInResults),
-                    DisplayLabel = Resources.wox_plugin_windowwalker_SettingUseWindowIconInResults,
-                    Value = true,
                 },
             };
 
