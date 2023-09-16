@@ -311,5 +311,14 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
                 return ResourceManager.GetString("wox_plugin_windowwalker_SettingUseWindowIconInResults", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Showing window icons can slow down search results.
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingUseWindowIconInResults_Description {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingUseWindowIconInResults_Description", resourceCulture);
+            }
+        }
     }
 }

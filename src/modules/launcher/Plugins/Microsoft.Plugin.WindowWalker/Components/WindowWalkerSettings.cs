@@ -123,6 +123,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     Key = nameof(UseWindowIconInResults),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingUseWindowIconInResults,
+                    DisplayDescription = Resources.wox_plugin_windowwalker_SettingUseWindowIconInResults_Description,
                     Value = false,
                 },
                 new PluginAdditionalOption
