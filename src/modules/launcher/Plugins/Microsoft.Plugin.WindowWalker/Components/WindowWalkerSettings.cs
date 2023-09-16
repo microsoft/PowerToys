@@ -34,6 +34,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal bool ResultsFromVisibleDesktopOnly { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether we show the window icon in the search results or not.
+        /// </summary>
+        internal bool UseWindowIconInResults { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether the process id is shown in the subtitle.
         /// </summary>
         internal bool SubtitleShowPid { get; private set; }
@@ -68,11 +73,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Gets a value indicating whether we show the explorer settings info or not.
         /// </summary>
         internal bool HideExplorerSettingInfo { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether we show the window icon in the search results or not.
-        /// </summary>
-        internal bool UseWindowIconInResults { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowWalkerSettings"/> class.
@@ -189,6 +189,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
 
             ResultsFromVisibleDesktopOnly = GetSettingOrDefault(settings, nameof(ResultsFromVisibleDesktopOnly));
+            UseWindowIconInResults = GetSettingOrDefault(settings, nameof(UseWindowIconInResults));
             SubtitleShowPid = GetSettingOrDefault(settings, nameof(SubtitleShowPid));
             SubtitleShowDesktopName = GetSettingOrDefault(settings, nameof(SubtitleShowDesktopName));
             ConfirmKillProcess = GetSettingOrDefault(settings, nameof(ConfirmKillProcess));
@@ -196,7 +197,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
             OpenAfterKillAndClose = GetSettingOrDefault(settings, nameof(OpenAfterKillAndClose));
             HideKillProcessOnElevatedProcesses = GetSettingOrDefault(settings, nameof(HideKillProcessOnElevatedProcesses));
             HideExplorerSettingInfo = GetSettingOrDefault(settings, nameof(HideExplorerSettingInfo));
-            UseWindowIconInResults = GetSettingOrDefault(settings, nameof(UseWindowIconInResults));
         }
 
         /// <summary>
