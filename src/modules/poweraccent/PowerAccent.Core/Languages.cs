@@ -616,24 +616,25 @@ namespace PowerAccent.Core
             return letter switch
             {
                 LetterKey.VK_A => new[] { "\u03B1", "\u03AC" },
-                LetterKey.VK_B => new[] { "\u03B2" }, 
-                LetterKey.VK_G => new[] { "\u03B3" }, 
+                LetterKey.VK_B => new[] { "\u03B2" },
+                LetterKey.VK_C => new[] { "\u03C7" },
                 LetterKey.VK_D => new[] { "\u03B4" }, 
                 LetterKey.VK_E => new[] { "\u03B5", "\u03AD", "\u03B7", "\u03AE" },
-                LetterKey.VK_Z => new[] { "\u03B6" }, 
-                LetterKey.VK_T => new[] { "\u03B8", "\u03C4" },
+                LetterKey.VK_G => new[] { "\u03B3" }, 
                 LetterKey.VK_I => new[] { "\u03B9", "\u0390", "\u03CA", "\u03AF" },
                 LetterKey.VK_K => new[] { "\u039A" }, 
                 LetterKey.VK_L => new[] { "\u03BB" }, 
                 LetterKey.VK_M => new[] { "\u03BC" }, 
                 LetterKey.VK_N => new[] { "\u03BD" },
-                LetterKey.VK_X => new[] { "\u03BE" }, 
                 LetterKey.VK_O => new[] { "\u03BF", "\u03CC", "\u03C9", "\u03CE" },
                 LetterKey.VK_P => new[] { "\u03C0", "\u03C6", "\u03C8" },
                 LetterKey.VK_R => new[] { "\u03C1" },
-                LetterKey.VK_S => new[] { "\u03C3", "\u03C2" }, /
+                LetterKey.VK_S => new[] { "\u03C3", "\u03C2" },
+                LetterKey.VK_T => new[] { "\u03B8", "\u03C4" },
                 LetterKey.VK_U => new[] { "\u03C5", "\u03B0", "\u03CB", "\u03CD" },
-                LetterKey.VK_C => new[] { "\u03C7" }, 
+                LetterKey.VK_X => new[] { "\u03BE" }, 
+                LetterKey.VK_Z => new[] { "\u03B6" }, 
+                LetterKey.VK_COMMA => new[] { "\u037A", "\u0384", "\u0385" }, 
                 _ => Array.Empty<string>(),
             };
         }
