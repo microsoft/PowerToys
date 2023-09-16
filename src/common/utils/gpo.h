@@ -126,6 +126,11 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_AWAKE);
     }
 
+    inline gpo_rule_configured_t getConfiguredCmdNotFoundEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_CMD_NOT_FOUND);
+    }
+
     inline gpo_rule_configured_t getConfiguredColorPickerEnabledValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_ENABLED_COLOR_PICKER);

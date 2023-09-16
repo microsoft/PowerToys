@@ -77,6 +77,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Cake.Powershell" />
     <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />

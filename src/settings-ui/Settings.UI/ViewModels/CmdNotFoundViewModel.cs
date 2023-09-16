@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Text.Json;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
@@ -117,6 +118,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public void InstallModule()
+        {
+            // Install module
+            var iss = System.Management.Automation.Runspaces.InitialSessionState.CreateDefault2();
+            var ps = System.Management.Automation.PowerShell.Create(iss);
+            ps.AddCommand("Install-Module")
+                .AddParameter("Name", string.Empty /*TODO CARLOS: Path to module*/)
+                .AddParameter("Scope", "CurrentUser")
+                .AddParameter("Confirm", "True")
+                .Invoke();
+
+            // Append Import-Module to PowerShell profile
+            var pwshProfilePath = ps.Runspace.SessionStateProxy.GetVariable("PROFILE").ToString();
+            using (StreamWriter w = File.AppendText(pwshProfilePath))
+            {
+                w.WriteLine("Import-Module \"\";" /*TODO CARLOS: Name of module*/);
+            }
+
+            return;
         }
 
         private void ScheduleSavingOfSettings()
