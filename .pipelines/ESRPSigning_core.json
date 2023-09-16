@@ -14,7 +14,7 @@
                 "PowerToys.exe",
                 "PowerToys.FilePreviewCommon.dll",
                 "PowerToys.Interop.dll",
-                "BugReportTool\\PowerToys.BugReportTool.exe",
+                "Tools\\PowerToys.BugReportTool.exe",
                 "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
                 "StylesReportTool\\PowerToys.StylesReportTool.exe",
                 "Telemetry.dll",

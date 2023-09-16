@@ -48,6 +48,7 @@
   <ItemGroup>
     <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="auto_start_helper.cpp" />
+    <ClCompile Include="bug_report.cpp" />
     <ClCompile Include="centralized_hotkeys.cpp" />
     <ClCompile Include="general_settings.cpp" />
     <ClCompile Include="pch.cpp">
@@ -67,6 +68,7 @@
   <ItemGroup>
     <ClInclude Include="ActionRunnerUtils.h" />
     <ClInclude Include="auto_start_helper.h" />
+    <ClInclude Include="bug_report.h" />
     <ClInclude Include="centralized_hotkeys.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="pch.h" />
