@@ -122,6 +122,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     if (!_windowHandlesToIconsCache.ContainsKey(hwnd))
                     {
+                        if (_windowHandlesToIconsCache.Count > 7000)
+                        {
+                            Debug.Print("Clearing Window Icon Cache because it's size is " + _windowHandlesToIconsCache.Count);
+                            _windowHandlesToIconsCache.Clear();
+                        }
+
                         var iconHandle = GetWindowIcon(hwnd);
 
                         if (iconHandle != IntPtr.Zero)

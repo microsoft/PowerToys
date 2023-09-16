@@ -134,6 +134,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     if (!_processIdsToIconsCache.ContainsKey(ProcessID))
                     {
+                        if (_processIdsToIconsCache.Count > 7000)
+                        {
+                            Debug.Print("Clearing Process Icon Cache because it's size is " + _processIdsToIconsCache.Count);
+                            _processIdsToIconsCache.Clear();
+                        }
+
                         try
                         {
                             var processFileName = GetProcessFilePathFromID(ProcessID);
