@@ -372,7 +372,7 @@
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
                                                                             ItemsSource="{x:Bind Path=ComboBoxOptions}"
-                                                                            SelectedIndex="{x:Bind Path=Option, Mode=TwoWay}"
+                                                                            SelectedIndex="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
                                                                             Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                                     </StackPanel>
                                                                 </controls:SettingsCard>

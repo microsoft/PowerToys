@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PluginAdditionalOption
     {
-        public enum SelectionType
+        public enum AdditionalOptionType
         {
             Checkbox = 0,
             Combobox = 1,
@@ -27,8 +27,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public List<string> ComboBoxOptions { get; set; }
 
-        public int Option { get; set; }
+        public int ComboBoxValue { get; set; }
 
-        public int SelectionTypeValue { get; set; }
+        /// <summary>
+        /// Gets or sets the layout type of the option in settings ui (e.g. checkbox or checkbox and text input
+        /// </summary>
+        public AdditionalOptionType PluginOptionType { get; set; }
     }
 }

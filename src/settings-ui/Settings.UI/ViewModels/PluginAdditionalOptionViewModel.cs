@@ -37,22 +37,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<string> ComboBoxOptions => _additionalOption.ComboBoxOptions;
 
-        public int Option
+        public int ComboBoxValue
         {
-            get => _additionalOption.Option;
+            get => _additionalOption.ComboBoxValue;
             set
             {
-                if (value != _additionalOption.Option)
+                if (value != _additionalOption.ComboBoxValue)
                 {
-                    _additionalOption.Option = value;
+                    _additionalOption.ComboBoxValue = value;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        public bool ShowComboBox => _additionalOption.SelectionTypeValue == (int)PluginAdditionalOption.SelectionType.Combobox && _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
+        public bool ShowComboBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox && _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
 
-        public bool ShowCheckBox => _additionalOption.SelectionTypeValue == (int)PluginAdditionalOption.SelectionType.Checkbox;
+        public bool ShowCheckBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Checkbox;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
