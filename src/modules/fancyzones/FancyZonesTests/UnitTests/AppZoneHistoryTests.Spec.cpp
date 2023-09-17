@@ -207,22 +207,22 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (AppLastZoneInvalidWindow)
         {
-            const std::wstring zoneSetId = L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}";
+            const auto layoutId = FancyZonesUtils::GuidFromString(L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaId{ 
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" } },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value()
             };
             const auto window = Mocks::Window();
 
-            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, zoneSetId));
+            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, layoutId));
 
             const int expectedZoneIndex = 1;
-            Assert::IsFalse(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, zoneSetId, { expectedZoneIndex }));
+            Assert::IsFalse(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, layoutId, { expectedZoneIndex }));
         }
 
         TEST_METHOD (AppLastZoneNullWindow)
         {
-            const std::wstring zoneSetId = L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}";
+            const auto layoutId = FancyZonesUtils::GuidFromString(L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaId{
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" } },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value()
@@ -230,12 +230,12 @@ namespace FancyZonesUnitTests
             const auto window = nullptr;
 
             const int expectedZoneIndex = 1;
-            Assert::IsFalse(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, zoneSetId, { expectedZoneIndex }));
+            Assert::IsFalse(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, layoutId, { expectedZoneIndex }));
         }
 
         TEST_METHOD (AppLastdeviceIdTest)
         {
-            const std::wstring zoneSetId = L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}";
+            const auto layoutId = FancyZonesUtils::GuidFromString(L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaId1{
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" } },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value()
@@ -247,15 +247,15 @@ namespace FancyZonesUnitTests
             const auto window = Mocks::WindowCreate(m_hInst);
 
             const int expectedZoneIndex = 10;
-            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaId1, zoneSetId, { expectedZoneIndex }));
-            Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId1, zoneSetId));
-            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId2, zoneSetId));
+            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaId1, layoutId, { expectedZoneIndex }));
+            Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId1, layoutId));
+            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId2, layoutId));
         }
 
         TEST_METHOD (AppLastZoneSetIdTest)
         {
-            const std::wstring zoneSetId1 = L"{B7A1F5A9-9DC2-4505-84AB-993253839093}";
-            const std::wstring zoneSetId2 = L"{B7A1F5A9-9DC2-4505-84AB-993253839094}";
+            const auto layoutId1 = FancyZonesUtils::GuidFromString(L"{B7A1F5A9-9DC2-4505-84AB-993253839093}").value();
+            const auto layoutId2 = FancyZonesUtils::GuidFromString(L"{B7A1F5A9-9DC2-4505-84AB-993253839094}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaId{
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" } },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value()
@@ -263,56 +263,56 @@ namespace FancyZonesUnitTests
             const auto window = Mocks::WindowCreate(m_hInst);
 
             const int expectedZoneIndex = 10;
-            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, zoneSetId1, { expectedZoneIndex }));
-            Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, zoneSetId1));
-            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, zoneSetId2));
+            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, layoutId1, { expectedZoneIndex }));
+            Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, layoutId1));
+            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, layoutId2));
         }
 
         TEST_METHOD (AppLastZoneRemoveWindow)
         {
-            const std::wstring zoneSetId = L"{B7A1F5A9-9DC2-4505-84AB-993253839093}";
+            const auto layoutId = FancyZonesUtils::GuidFromString(L"{B7A1F5A9-9DC2-4505-84AB-993253839093}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaId{
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" } },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value()
             };
             const auto window = Mocks::WindowCreate(m_hInst);
 
-            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, zoneSetId, { 1 }));
-            Assert::IsTrue(AppZoneHistory::instance().RemoveAppLastZone(window, workAreaId, zoneSetId));
-            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, zoneSetId));
+            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, layoutId, { 1 }));
+            Assert::IsTrue(AppZoneHistory::instance().RemoveAppLastZone(window, workAreaId, layoutId));
+            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, layoutId));
         }
 
         TEST_METHOD (AppLastZoneRemoveUnknownWindow)
         {
-            const std::wstring zoneSetId = L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}";
+            const auto layoutId = FancyZonesUtils::GuidFromString(L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaId{
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" } },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value()
             };
             const auto window = Mocks::WindowCreate(m_hInst);
 
-            Assert::IsFalse(AppZoneHistory::instance().RemoveAppLastZone(window, workAreaId, zoneSetId));
-            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, zoneSetId));
+            Assert::IsFalse(AppZoneHistory::instance().RemoveAppLastZone(window, workAreaId, layoutId));
+            Assert::IsTrue(std::vector<ZoneIndex>{} == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, layoutId));
         }
 
         TEST_METHOD (AppLastZoneRemoveUnknownZoneSetId)
         {
-            const std::wstring zoneSetIdToInsert = L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}";
-            const std::wstring zoneSetIdToRemove = L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F1}";
+            const auto layoutIdToInsert = FancyZonesUtils::GuidFromString(L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}").value();
+            const auto layoutIdToRemove = FancyZonesUtils::GuidFromString(L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F1}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaId{
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" } },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value()
             };
             const auto window = Mocks::WindowCreate(m_hInst);
 
-            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, zoneSetIdToInsert, { 1 }));
-            Assert::IsFalse(AppZoneHistory::instance().RemoveAppLastZone(window, workAreaId, zoneSetIdToRemove));
-            Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, zoneSetIdToInsert));
+            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, layoutIdToInsert, { 1 }));
+            Assert::IsFalse(AppZoneHistory::instance().RemoveAppLastZone(window, workAreaId, layoutIdToRemove));
+            Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaId, layoutIdToInsert));
         }
 
         TEST_METHOD (AppLastZoneRemoveUnknownWindowId)
         {
-            const std::wstring zoneSetId = L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}";
+            const auto layoutId = FancyZonesUtils::GuidFromString(L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaIdToInsert{
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" } },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value()
@@ -323,20 +323,20 @@ namespace FancyZonesUnitTests
             };
             const auto window = Mocks::WindowCreate(m_hInst);
 
-            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaIdToInsert, zoneSetId, { 1 }));
-            Assert::IsFalse(AppZoneHistory::instance().RemoveAppLastZone(window, workAreaIdToRemove, zoneSetId));
-            Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaIdToInsert, zoneSetId));
+            Assert::IsTrue(AppZoneHistory::instance().SetAppLastZones(window, workAreaIdToInsert, layoutId, { 1 }));
+            Assert::IsFalse(AppZoneHistory::instance().RemoveAppLastZone(window, workAreaIdToRemove, layoutId));
+            Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workAreaIdToInsert, layoutId));
         }
 
         TEST_METHOD (AppLastZoneRemoveNullWindow)
         {
-            const std::wstring zoneSetId = L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}";
+            const auto layoutId = FancyZonesUtils::GuidFromString(L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaId{
                 .monitorId = { .deviceId = { .id = L"DELA026", .instanceId = L"5&10a58c63&0&UID16777488" } },
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}").value()
             };
 
-            Assert::IsFalse(AppZoneHistory::instance().RemoveAppLastZone(nullptr, workAreaId, zoneSetId));
+            Assert::IsFalse(AppZoneHistory::instance().RemoveAppLastZone(nullptr, workAreaId, layoutId));
         }
     };
 }

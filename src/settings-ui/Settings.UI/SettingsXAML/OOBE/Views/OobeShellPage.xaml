@@ -2,10 +2,10 @@
     x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
     mc:Ignorable="d">
@@ -171,7 +171,7 @@
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem
                     x:Uid="Shell_WhatsNew"
-                    Icon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                    Icon="{ui:FontIcon 
                                        Glyph=&#xF133;}"
                     Tag="WhatsNew" />
             </NavigationView.FooterMenuItems>

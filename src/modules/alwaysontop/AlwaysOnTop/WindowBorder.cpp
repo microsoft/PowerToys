@@ -33,7 +33,7 @@ std::optional<RECT> GetFrameRect(HWND window)
 }
 
 WindowBorder::WindowBorder(HWND window) :
-    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor, SettingId::RoundCornersEnabled }),
+    SettingsObserver({ SettingId::FrameColor, SettingId::FrameThickness, SettingId::FrameAccentColor, SettingId::FrameOpacity, SettingId::RoundCornersEnabled }),
     m_window(nullptr),
     m_trackingWindow(window),
     m_frameDrawer(nullptr)
@@ -111,6 +111,14 @@ bool WindowBorder::Init(HINSTANCE hinstance)
     if (!m_window)
     {
         return false;
+    }
+
+    // make window transparent
+    int const pos = -GetSystemMetrics(SM_CXVIRTUALSCREEN) - 8;
+    if (wil::unique_hrgn hrgn{ CreateRectRgn(pos, 0, (pos + 1), 1) })
+    {
+        DWM_BLURBEHIND bh = { DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, hrgn.get(), FALSE };
+        DwmEnableBlurBehindWindow(m_window, &bh);
     }
 
     if (!SetLayeredWindowAttributes(m_window, RGB(0, 0, 0), 0, LWA_COLORKEY))
@@ -193,6 +201,7 @@ void WindowBorder::UpdateBorderProperties() const
         color = AlwaysOnTopSettings::settings().frameColor;
     }
 
+    float opacity = AlwaysOnTopSettings::settings().frameOpacity / 100.0f;
     float scalingFactor = ScalingUtils::ScalingFactor(m_trackingWindow);
     float thickness = AlwaysOnTopSettings::settings().frameThickness * scalingFactor;
     float cornerRadius = 0.0;
@@ -201,7 +210,7 @@ void WindowBorder::UpdateBorderProperties() const
         cornerRadius = WindowCornerUtils::CornersRadius(m_trackingWindow) * scalingFactor;
     }
     
-    m_frameDrawer->SetBorderRect(frameRect, color, static_cast<int>(thickness), cornerRadius);
+    m_frameDrawer->SetBorderRect(frameRect, color, opacity, static_cast<int>(thickness), cornerRadius);
 }
 
 LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
@@ -267,22 +276,14 @@ void WindowBorder::SettingsUpdate(SettingId id)
     break;
 
     case SettingId::FrameColor:
-    {
-        UpdateBorderProperties();
-    }
-    break;
-
     case SettingId::FrameAccentColor:
-    {
-        UpdateBorderProperties();
-    }
-    break;
-
+    case SettingId::FrameOpacity:
     case SettingId::RoundCornersEnabled:
     {
         UpdateBorderProperties();
     }
     break;
+
     default:
         break;
     }

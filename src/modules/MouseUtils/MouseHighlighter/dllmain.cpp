@@ -238,7 +238,7 @@ public:
                     }
                     else
                     {
-                        throw;
+                        throw std::runtime_error("Invalid Opacity value");
                     }
                 }
                 catch (...)
@@ -314,7 +314,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Radius value");
                 }
             }
             catch (...)
@@ -332,7 +332,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Fade Delay value");
                 }
             }
             catch (...)
@@ -350,7 +350,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Fade Duration value");
                 }
             }
             catch (...)

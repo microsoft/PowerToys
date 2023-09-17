@@ -288,6 +288,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
+                    oobeWindow.SetTheme(isDark);
                     SetContentTheme(isDark, oobeWindow);
                 }
 
@@ -401,6 +402,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
                 case "PastePlain": return typeof(PastePlainPage);
                 case "Peek": return typeof(PeekPage);
+                case "CropAndLock": return typeof(CropAndLockPage);
                 default:
                     // Fallback to general
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

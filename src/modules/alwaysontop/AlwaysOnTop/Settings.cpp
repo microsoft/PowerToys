@@ -17,6 +17,7 @@ namespace NonLocalizable
     const static wchar_t* FrameEnabledID = L"frame-enabled";
     const static wchar_t* FrameThicknessID = L"frame-thickness";
     const static wchar_t* FrameColorID = L"frame-color";
+    const static wchar_t* FrameOpacityID = L"frame-opacity";
     const static wchar_t* BlockInGameModeID = L"do-not-activate-on-game-mode";
     const static wchar_t* ExcludedAppsID = L"excluded-apps";
     const static wchar_t* FrameAccentColor = L"frame-accent-color";
@@ -131,6 +132,16 @@ void AlwaysOnTopSettings::LoadSettings()
             {
                 m_settings.frameColor = val;
                 NotifyObservers(SettingId::FrameColor);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(NonLocalizable::FrameOpacityID))
+        {
+            auto val = *jsonVal;
+            if (m_settings.frameOpacity != val)
+            {
+                m_settings.frameOpacity = val;
+                NotifyObservers(SettingId::FrameOpacity);
             }
         }
 

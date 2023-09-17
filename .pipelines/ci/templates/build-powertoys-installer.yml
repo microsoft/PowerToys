@@ -10,7 +10,7 @@ jobs:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
   pool:
-      name: WinDevPool-L
+      name: SHINE-INT-L
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10

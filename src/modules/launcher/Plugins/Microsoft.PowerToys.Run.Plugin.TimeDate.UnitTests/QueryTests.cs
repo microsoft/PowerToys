@@ -25,9 +25,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Set culture to 'en-us'
             originalCulture = CultureInfo.CurrentCulture;
-            CultureInfo.CurrentCulture = new CultureInfo("en-us");
+            CultureInfo.CurrentCulture = new CultureInfo("en-us", false);
             originalUiCulture = CultureInfo.CurrentUICulture;
-            CultureInfo.CurrentUICulture = new CultureInfo("en-us");
+            CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
         }
 
         [DataTestMethod]
