@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string DisplayDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets a value to show a lable for the second setting if two combined settings are shown
+        /// Gets or sets a value to show a label for the second setting if two combined settings are shown
         /// </summary>
         public string SecondDisplayLabel { get; set; }
 

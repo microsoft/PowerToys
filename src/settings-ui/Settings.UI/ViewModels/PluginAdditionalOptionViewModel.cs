@@ -18,12 +18,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _additionalOption = additionalOption;
         }
 
-        // Lables main setting
+        // Labels of main (checkbox) setting
         public string DisplayLabel => _additionalOption.DisplayLabel;
 
         public string DisplayDescription => _additionalOption.DisplayDescription;
 
-        // Lables second setting (ComboBox, TextBox, NumberBox) - If only non-checkbox setting is shown we use the normal display lables.
+        // Labels of second setting (ComboBox, TextBox, NumberBox) - If only non-checkbox setting is shown we use the normal display labels.
         public string SecondDisplayLabel => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.SecondDisplayLabel : _additionalOption.DisplayLabel;
 
         public string SecondDisplayDescription => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.SecondDisplayDescription : _additionalOption.DisplayDescription;
