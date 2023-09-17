@@ -373,8 +373,8 @@
                                                                     Background="Transparent"
                                                                     BorderThickness="0,0,0,0"
                                                                     CornerRadius="0"
-                                                                    Header="{x:Bind Path=DisplayLabel}"
-                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                    Description="{x:Bind Path=SecondDisplayDescription}"
                                                                     Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}">
                                                                     <ComboBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -387,8 +387,8 @@
                                                                     Background="Transparent"
                                                                     BorderThickness="0,0,0,0"
                                                                     CornerRadius="0"
-                                                                    Header="{x:Bind Path=DisplayLabel}"
-                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                    Description="{x:Bind Path=SecondDisplayDescription}"
                                                                     Visibility="{x:Bind Path=ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
                                                                     <TextBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -400,8 +400,8 @@
                                                                     Background="Transparent"
                                                                     BorderThickness="0,0,0,0"
                                                                     CornerRadius="0"
-                                                                    Header="{x:Bind Path=DisplayLabel}"
-                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                    Description="{x:Bind Path=SecondDisplayDescription}"
                                                                     Visibility="{x:Bind Path=ShowNumberBox, Converter={StaticResource BoolToVisibilityConverter}}">
                                                                     <NumberBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"

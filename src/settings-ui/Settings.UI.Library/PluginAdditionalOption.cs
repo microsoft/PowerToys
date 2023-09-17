@@ -14,6 +14,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Combobox = 1,
             Textbox = 2,
             Numberbox = 3,
+            CheckboxAndCombobox = 11,
+            CheckboxAndTextbox = 12,
+            CheckboxAndNumberbox = 13,
         }
 
         /// <summary>
@@ -30,6 +33,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public string DisplayDescription { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value to show a lable for the second setting if two combined settings are shown
+        /// </summary>
+        public string SecondDisplayLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to show a description for the second setting in the settings ui if two combined settings are shown. (Optional)
+        /// </summary>
+        public string SecondDisplayDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the checkbox is set or not set
+        /// </summary>
         public bool Value { get; set; }
 
         public List<string> ComboBoxOptions { get; set; }

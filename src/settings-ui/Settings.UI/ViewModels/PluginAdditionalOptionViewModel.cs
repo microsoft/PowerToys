@@ -23,8 +23,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string DisplayDescription => _additionalOption.DisplayDescription;
 
+        // Lables second setting (ComboBox, TextBox, NumberBox) - If only non-checkbox setting is shown we use the normal display lables.
+        public string SecondDisplayLabel => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.SecondDisplayLabel : _additionalOption.DisplayLabel;
+
+        public string SecondDisplayDescription => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.SecondDisplayDescription : _additionalOption.DisplayDescription;
+
         // Bool checkbox setting
-        public bool ShowCheckBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Checkbox;
+        public bool ShowCheckBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Checkbox || (int)_additionalOption.PluginOptionType > 10;
 
         public bool Value
         {
@@ -40,7 +45,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // ComboBox setting
-        public bool ShowComboBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox && _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
+        public bool ShowComboBox => (_additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox || _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndCombobox) &&
+            _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
 
         public List<string> ComboBoxOptions => _additionalOption.ComboBoxOptions;
 
@@ -58,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // TextBox setting
-        public bool ShowTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Textbox;
+        public bool ShowTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Textbox || _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndTextbox;
 
         public string TextValue
         {
@@ -74,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // NumberBox setting
-        public bool ShowNumberBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Numberbox;
+        public bool ShowNumberBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Numberbox || _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndNumberbox;
 
         public double NumberBoxMin => (_additionalOption.NumberBoxMin == null) ? double.MinValue : _additionalOption.NumberBoxMin.Value;
 
