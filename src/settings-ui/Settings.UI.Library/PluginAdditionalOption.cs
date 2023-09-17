@@ -12,6 +12,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             Checkbox = 0,
             Combobox = 1,
+            Textbox = 2,
+            Numberbox = 3,
         }
 
         /// <summary>
@@ -33,5 +35,29 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public List<string> ComboBoxOptions { get; set; }
 
         public int ComboBoxValue { get; set; }
+
+        public string TextValue { get; set; }
+
+        public double NumberValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a minimal value for the number box. (Optional; Default is Double.MinValue)
+        /// </summary>
+        public double? NumberBoxMin { get; set; }
+
+        /// <summary>
+        /// Gets or sets a maximal value for the number box. (Optional; Default is Double.MaxValue)
+        /// </summary>
+        public double? NumberBoxMax { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value for small changes of the number box. (Optional; Default is 1)
+        /// </summary>
+        public double? NumberBoxSmallChange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value for large changes of the number box. (Optional; Default is 10)
+        /// </summary>
+        public double? NumberBoxLargeChange { get; set; }
     }
 }

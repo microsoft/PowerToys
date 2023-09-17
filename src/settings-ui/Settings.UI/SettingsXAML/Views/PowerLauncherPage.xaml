@@ -381,6 +381,37 @@
                                                                             ItemsSource="{x:Bind Path=ComboBoxOptions}"
                                                                             SelectedIndex="{x:Bind Path=ComboBoxValue, Mode=TwoWay}" />
                                                                 </controls:SettingsCard>
+                                                                <controls:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="56,8,45,8"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    CornerRadius="0"
+                                                                    Header="{x:Bind Path=DisplayLabel}"
+                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Visibility="{x:Bind Path=ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <TextBox
+                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
+                                                                </controls:SettingsCard>
+                                                                <controls:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="56,8,45,8"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    CornerRadius="0"
+                                                                    Header="{x:Bind Path=DisplayLabel}"
+                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Visibility="{x:Bind Path=ShowNumberBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <NumberBox
+                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            SpinButtonPlacementMode="Compact"
+                                                                            Minimum="{x:Bind Path=NumberBoxMin, Mode=OneWay}"
+                                                                            Maximum="{x:Bind Path=NumberBoxMax, Mode=OneWay}"
+                                                                            SmallChange="{x:Bind Path=NumberBoxSmallChange, Mode=OneWay}"
+                                                                            LargeChange="{x:Bind Path=NumberBoxLargeChange, Mode=OneWay}"
+                                                                            Value="{x:Bind Path=NumberValue, Mode=TwoWay}" />
+                                                                </controls:SettingsCard>
                                                                 <Rectangle
                                                                     Height="1"
                                                                     HorizontalAlignment="Stretch"

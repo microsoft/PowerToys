@@ -18,9 +18,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _additionalOption = additionalOption;
         }
 
+        // Lables main setting
         public string DisplayLabel => _additionalOption.DisplayLabel;
 
         public string DisplayDescription => _additionalOption.DisplayDescription;
+
+        // Bool checkbox setting
+        public bool ShowCheckBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Checkbox;
 
         public bool Value
         {
@@ -34,6 +38,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        // ComboBox setting
+        public bool ShowComboBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox && _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
 
         public List<string> ComboBoxOptions => _additionalOption.ComboBoxOptions;
 
@@ -50,10 +57,47 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowComboBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox && _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
+        // TextBox setting
+        public bool ShowTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Textbox;
 
-        public bool ShowCheckBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Checkbox;
+        public string TextValue
+        {
+            get => _additionalOption.TextValue;
+            set
+            {
+                if (value != _additionalOption.TextValue)
+                {
+                    _additionalOption.TextValue = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
 
+        // NumberBox setting
+        public bool ShowNumberBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Numberbox;
+
+        public double NumberBoxMin => (_additionalOption.NumberBoxMin == null) ? double.MinValue : _additionalOption.NumberBoxMin.Value;
+
+        public double NumberBoxMax => (_additionalOption.NumberBoxMax == null) ? double.MaxValue : _additionalOption.NumberBoxMax.Value;
+
+        public double NumberBoxSmallChange => (_additionalOption.NumberBoxSmallChange == null) ? 1 : _additionalOption.NumberBoxSmallChange.Value;
+
+        public double NumberBoxLargeChange => (_additionalOption.NumberBoxLargeChange == null) ? 10 : _additionalOption.NumberBoxLargeChange.Value;
+
+        public double NumberValue
+        {
+            get => _additionalOption.NumberValue;
+            set
+            {
+                if (value != _additionalOption.NumberValue)
+                {
+                    _additionalOption.NumberValue = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        // Handle property changes
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
