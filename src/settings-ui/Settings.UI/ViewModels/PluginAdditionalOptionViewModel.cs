@@ -40,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _additionalOption.Value = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(SecondSettingIsEnabled));
                 }
             }
         }
@@ -102,6 +103,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        // Enabled state of ComboBox, TextBox, NumberBox (If combined with checkbox then checkbox value decides it.)
+        public bool SecondSettingIsEnabled => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.Value : true;
 
         // Handle property changes
         public event PropertyChangedEventHandler PropertyChanged;

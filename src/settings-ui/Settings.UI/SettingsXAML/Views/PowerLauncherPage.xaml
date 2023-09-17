@@ -375,7 +375,8 @@
                                                                     CornerRadius="0"
                                                                     Header="{x:Bind Path=SecondDisplayLabel}"
                                                                     Description="{x:Bind Path=SecondDisplayDescription}"
-                                                                    Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                    IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
                                                                     <ComboBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                             ItemsSource="{x:Bind Path=ComboBoxOptions}"
@@ -389,7 +390,8 @@
                                                                     CornerRadius="0"
                                                                     Header="{x:Bind Path=SecondDisplayLabel}"
                                                                     Description="{x:Bind Path=SecondDisplayDescription}"
-                                                                    Visibility="{x:Bind Path=ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    Visibility="{x:Bind Path=ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                    IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
                                                                     <TextBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                             Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
@@ -402,7 +404,8 @@
                                                                     CornerRadius="0"
                                                                     Header="{x:Bind Path=SecondDisplayLabel}"
                                                                     Description="{x:Bind Path=SecondDisplayDescription}"
-                                                                    Visibility="{x:Bind Path=ShowNumberBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    Visibility="{x:Bind Path=ShowNumberBox, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                    IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
                                                                     <NumberBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                             SpinButtonPlacementMode="Compact"
