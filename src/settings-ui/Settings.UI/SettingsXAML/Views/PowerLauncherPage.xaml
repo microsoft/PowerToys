@@ -359,21 +359,19 @@
                                                                     Background="Transparent"
                                                                     BorderThickness="0,0,0,0"
                                                                     ContentAlignment="Left"
-                                                                    CornerRadius="0">
+                                                                    CornerRadius="0"
+                                                                    Visibility="{x:Bind Path=ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}" >
                                                                     <custom:CheckBoxWithDescriptionControl
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
-                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
-                                                                            Visibility="{x:Bind Path=ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
                                                                 </controls:SettingsCard>
                                                                 <controls:SettingsCard
                                                                     MinHeight="0"
-                                                                    Margin="1"
-                                                                    Padding="0,6,0,12"
+                                                                    Margin="56,8,45,8"
                                                                     Background="Transparent"
                                                                     BorderThickness="0,0,0,0"
-                                                                    ContentAlignment="Left"
                                                                     CornerRadius="0"
                                                                     Header="{x:Bind Path=DisplayLabel}"
                                                                     Description="{x:Bind Path=DisplayDescription}"
