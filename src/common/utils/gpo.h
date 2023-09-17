@@ -65,13 +65,14 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
 
 
-    inline std::optional<std::wstring> ReadRegistryStringValue(HKEY hKey, const std::wstring& registry_value_name)
+    inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name)
     {
         DWORD reg_value_type = REG_SZ;
+        DWORD reg_flags = RRF_RT_REG_SZ;
 
         DWORD string_buffer_capacity;
         // Request required buffer capacity / string length
-        if (RegQueryValueExW(hKey, registry_value_name.c_str(), 0, nullptr, nullptr, &string_buffer_capacity) != ERROR_SUCCESS)
+        if (RegGetValueW(hRootKey, subKey.c_str(), value_name.c_str(), reg_flags, &reg_value_type, NULL, &string_buffer_capacity) != ERROR_SUCCESS)
         {
             return std::nullopt;
         }
@@ -80,12 +81,9 @@ namespace powertoys_gpo {
             return std::nullopt;
         }
 
-        // int b_size = string_buffer_capacity / sizeof(WCHAR);
-        string_buffer_capacity = 1024;
-        wchar_t string_value[1024]{};
-
+        std::wstring string_value(string_buffer_capacity / sizeof(wchar_t) + 1, L' ');
         // Read string
-        if (RegQueryValueExW(hKey, registry_value_name.c_str(), NULL, &reg_value_type, reinterpret_cast<LPBYTE>(&string_value), &string_buffer_capacity) != ERROR_SUCCESS)
+        if (RegGetValueW(hRootKey, subKey.c_str(), value_name.c_str(), reg_flags, &reg_value_type, &string_value[0], &string_buffer_capacity) != ERROR_SUCCESS)
         {
             return std::nullopt;
         }
@@ -150,7 +148,7 @@ namespace powertoys_gpo {
 
     inline std::optional<std::wstring> getPolicyListValue(const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
     {
-        // This function returns the value of an entry of an policy list. The user scope is only checked, if the list is not enabled for the machine to not mix the lists. If there is no value or no list is found in the registry we return an empty string.
+        // This function returns the value of an entry of an policy list. The user scope is only checked, if the list is not enabled for the machine to not mix the lists.
 
         HKEY key{};
 
@@ -159,10 +157,10 @@ namespace powertoys_gpo {
         if (RegOpenKeyExW(POLICIES_SCOPE_MACHINE, registry_list_path.c_str(), 0, KEY_READ, &key) == ERROR_SUCCESS)
         {
             machine_list_found = true;
+            RegCloseKey(key);
 
             // If the path exists in the machine registry, we try to read the value.
-            auto regValueData = ReadRegistryStringValue(key, registry_list_value_name);
-            RegCloseKey(key);
+            auto regValueData = readRegistryStringValue(POLICIES_SCOPE_MACHINE, registry_list_path, registry_list_value_name);
 
             if (regValueData.has_value())
             {
@@ -176,9 +174,10 @@ namespace powertoys_gpo {
         {
             if (RegOpenKeyExW(POLICIES_SCOPE_USER, registry_list_path.c_str(), 0, KEY_READ, &key) == ERROR_SUCCESS)
             {
-                // If the path exists in the user registry, we try to read the value.
-                auto regValueData = ReadRegistryStringValue(key, registry_list_value_name);
                 RegCloseKey(key);
+
+                // If the path exists in the user registry, we try to read the value.
+                auto regValueData = readRegistryStringValue(POLICIES_SCOPE_USER, registry_list_path, registry_list_value_name);
 
                 if (regValueData.has_value())
                 {
@@ -382,7 +381,7 @@ namespace powertoys_gpo {
     }
 
     inline gpo_rule_configured_t getRunPluginEnabledValue(std::string pluginID)
-    {
+    {     
         if (pluginID == "" || pluginID == " ")
         {
             // this plugin id can't exist in the registry
@@ -394,19 +393,26 @@ namespace powertoys_gpo {
         
         if (individual_plugin_setting.has_value())
         {
-            if (*individual_plugin_setting == L"0")
+            string setting(individual_plugin_setting.value().begin(), individual_plugin_setting.value().end());
+            std::wstring force_disabled = L"0\0";
+            std::wstring force_enabled = L"1\0";
+            std::wstring user_takes_control = L"2\0";
+
+            auto var = (setting == L"0");
+
+            if (var)
             {
                 // force disabled
                 return gpo_rule_configured_disabled;
             }
-            else if (*individual_plugin_setting == L"1")
+            else if (setting.compare(force_enabled) == 0)
             {
                 // force enabled
                 return gpo_rule_configured_enabled;
             }
-            else if (*individual_plugin_setting == L"2")
+            else if (setting.compare(user_takes_control) == 0)
             {
-                // force user takes control
+                // user takes control
                 return gpo_rule_configured_not_configured;
             }
             else
