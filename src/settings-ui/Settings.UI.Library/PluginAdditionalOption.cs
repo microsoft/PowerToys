@@ -14,6 +14,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Combobox = 1,
         }
 
+        /// <summary>
+        /// Gets or sets the layout type of the option in settings ui (Optional; Default is checkbox)
+        /// </summary>
+        public AdditionalOptionType PluginOptionType { get; set; }
+
         public string Key { get; set; }
 
         public string DisplayLabel { get; set; }
@@ -28,10 +33,5 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public List<string> ComboBoxOptions { get; set; }
 
         public int ComboBoxValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the layout type of the option in settings ui (e.g. checkbox or checkbox and text input
-        /// </summary>
-        public AdditionalOptionType PluginOptionType { get; set; }
     }
 }

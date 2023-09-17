@@ -442,7 +442,7 @@ namespace Microsoft.Plugin.Shell
                 _settings.LeaveShellOpen = leaveShellOpen;
 
                 var optionShell = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ShellCommandExecution");
-                shellOption = optionShell?.Option ?? shellOption;
+                shellOption = optionShell?.ComboBoxValue ?? shellOption;
                 _settings.Shell = (ExecutionShell)shellOption;
             }
 
