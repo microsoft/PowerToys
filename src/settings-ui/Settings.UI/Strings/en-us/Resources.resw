@@ -736,6 +736,12 @@
   <data name="PowerLauncher_SearchResultPreference.Header" xml:space="preserve">
     <value>Search result preference</value>
   </data>
+  <data name="PowerLauncher_UsePinyin.Header" xml:space="preserve">
+    <value>Use Pinyin</value>
+  </data>
+  <data name="PowerLauncher_UsePinyin.Description" xml:space="preserve">
+    <value>Experimental: Use Pinyin on the search query. May not work for every plugin.</value>
+  </data>
   <data name="PowerLauncher_SearchResultPreference_MostRecentlyUsed" xml:space="preserve">
     <value>Most recently used</value>
   </data>
@@ -3569,9 +3575,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_AutoDownloadUpdatesIsDisabled.Title" xml:space="preserve">
     <value>The system administrator has disabled the automatic download of updates.</value>
-  </data>
-  <data name="PowerLauncher_UsePinyin.Header" xml:space="preserve">
-    <value>Use pinyin</value>
   </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
