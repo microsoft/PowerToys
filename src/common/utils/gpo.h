@@ -393,24 +393,17 @@ namespace powertoys_gpo {
         
         if (individual_plugin_setting.has_value())
         {
-            string setting(individual_plugin_setting.value().begin(), individual_plugin_setting.value().end());
-            std::wstring force_disabled = L"0\0";
-            std::wstring force_enabled = L"1\0";
-            std::wstring user_takes_control = L"2\0";
-
-            auto var = (setting == L"0");
-
-            if (var)
+            if (*individual_plugin_setting == L"0")
             {
                 // force disabled
                 return gpo_rule_configured_disabled;
             }
-            else if (setting.compare(force_enabled) == 0)
+            else if (*individual_plugin_setting == L"1")
             {
                 // force enabled
                 return gpo_rule_configured_enabled;
             }
-            else if (setting.compare(user_takes_control) == 0)
+            else if (*individual_plugin_setting == L"2")
             {
                 // user takes control
                 return gpo_rule_configured_not_configured;
