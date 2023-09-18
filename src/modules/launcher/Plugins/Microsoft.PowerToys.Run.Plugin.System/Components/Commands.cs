@@ -24,6 +24,10 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         internal const int EWXFORCE = 0x00000004;
         internal const int EWXPOWEROFF = 0x00000008;
         internal const int EWXFORCEIFHUNG = 0x00000010;
+        internal const int HWNDBROADCAST = 0xFFFF;
+        internal const int WMSYSCOMMAND = 0x112;
+        internal const int SCMONITORPOWER = 0xF170;
+        internal const int POWEROFF = 2;
 
         // Cache for network interface information to save query time
         private const int UpdateCacheIntervalSeconds = 5;
@@ -92,7 +96,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     IcoPath = $"Images\\sleep.{iconTheme}.png",
                     Action = c =>
                     {
-                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => Task.Run(() => _ = NativeMethods.SendMessage(0xFFFF, 0x112, 0xF170, 2)));
+                        // the following broadcast message turns all mointors off forcing the system to enter the modern standby state (sleep)
+                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => Task.Run(() => _ = NativeMethods.SendMessage(HWNDBROADCAST, WMSYSCOMMAND, SCMONITORPOWER, POWEROFF)));
                     },
                 },
                 new Result
