@@ -96,7 +96,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     IcoPath = $"Images\\sleep.{iconTheme}.png",
                     Action = c =>
                     {
-                        // the following broadcast message turns all mointors off forcing the system to enter the modern standby state (sleep)
+                        // the following broadcast message turns all monitors off forcing the system to enter the modern standby state (sleep)
                         return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => Task.Run(() => _ = NativeMethods.SendMessage(HWNDBROADCAST, WMSYSCOMMAND, SCMONITORPOWER, POWEROFF)));
                     },
                 },
