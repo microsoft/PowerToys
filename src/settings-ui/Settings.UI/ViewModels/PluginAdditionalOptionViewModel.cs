@@ -67,6 +67,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // TextBox setting
         public bool ShowTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Textbox || _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndTextbox;
 
+        public int TextBoxMaxLength => (_additionalOption.TextBoxMaxLength == null) ? 0 : _additionalOption.TextBoxMaxLength.Value; // 0 ist the default and means no limit.
+
         public string TextValue
         {
             get => _additionalOption.TextValue;

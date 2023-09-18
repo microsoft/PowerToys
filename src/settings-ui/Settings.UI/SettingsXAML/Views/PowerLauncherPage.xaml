@@ -394,6 +394,8 @@
                                                                     IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
                                                                     <TextBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            MaxWidth="450"
+                                                                            MaxLength="{x:Bind Path=TextBoxMaxLength, Mode=OneWay}"
                                                                             Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
                                                                 </controls:SettingsCard>
                                                                 <controls:SettingsCard

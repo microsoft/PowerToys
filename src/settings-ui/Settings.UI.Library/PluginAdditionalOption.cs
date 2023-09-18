@@ -52,13 +52,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public bool Value { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<string> ComboBoxOptions { get; set; }
-
         public int ComboBoxValue { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<string> ComboBoxOptions { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string TextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value that specifies the maximum number of characters allowed for user input in the text box. (Optional; Default is no limit)
+        /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? TextBoxMaxLength { get; set; }
 
         public double NumberValue { get; set; }
 
