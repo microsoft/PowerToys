@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string TextValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the value that specifies the maximum number of characters allowed for user input in the text box. (Optional; Default is no limit)
+        /// Gets or sets the value that specifies the maximum number of characters allowed for user input in the text box. (Optional; Default is 0 which means no limit.)
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? TextBoxMaxLength { get; set; }
