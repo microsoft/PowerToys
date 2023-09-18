@@ -10,10 +10,10 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
-    xmlns:local="using:EnvironmentVariables.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EnvironmentVariables.Models"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    x:Name="RootPage"
     mc:Ignorable="d">
     <Page.Resources>
         <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
@@ -21,11 +21,22 @@
                 Click="EditVariable_Click"
                 CommandParameter="{x:Bind (models:Variable)}"
                 Header="{x:Bind Name, Mode=TwoWay}"
-                IsClickEnabled="{x:Bind Editable, Mode=OneWay}">
+                IsClickEnabled="{x:Bind IsEditable, Mode=OneWay}">
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     IsTextSelectionEnabled="True"
                     Text="{x:Bind Values, Mode=TwoWay}" />
+                <labs:SettingsCard.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            x:Uid="DeleteMenuItem"
+                            Click="Delete_Variable_Click"
+                            CommandParameter="{x:Bind (models:Variable)}"
+                            Icon="Delete"
+                            IsEnabled="{x:Bind IsEditable, Mode=OneWay}" />
+                    </MenuFlyout>
+                </labs:SettingsCard.ContextFlyout>
+
             </labs:SettingsCard>
         </DataTemplate>
 
@@ -98,7 +109,19 @@
                                     ItemTemplate="{StaticResource VariableTemplate}"
                                     ItemsSource="{x:Bind Variables, Mode=OneWay}">
 
-                                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=IsEnabled}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=IsEnabled}" />
+                                        <Button
+                                            x:Name="RemoveProfileBtn"
+                                            x:Uid="RemoveProfileBtn"
+                                            Width="40"
+                                            Height="36"
+                                            Click="RemoveProfileBtn_Click"
+                                            CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
+                                            Content="&#xE74D;"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Style="{StaticResource SubtleButtonStyle}" />
+                                    </StackPanel>
                                 </labs:SettingsExpander>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

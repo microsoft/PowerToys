@@ -8,12 +8,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Helpers;
 using EnvironmentVariables.Models;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using Windows.Foundation.Collections;
 
 namespace EnvironmentVariables.ViewModels
 {
@@ -111,9 +113,25 @@ namespace EnvironmentVariables.ViewModels
             AppliedVariables = new ObservableCollection<Variable>(variables);
         }
 
-        internal void EditVariable(Variable original, Variable edited)
+        internal void EditVariable(Variable original, Variable edited, ProfileVariablesSet variablesSet)
         {
-            original.Update(edited);
+            bool propagateChange = variablesSet == null /* not a profile */ || variablesSet.Id.Equals(AppliedProfile?.Id);
+            bool changed = original.Name != edited.Name || original.Values != edited.Values;
+            if (changed)
+            {
+                ApplyingChanges = true;
+                var task = original.Update(edited, propagateChange);
+                PopulateAppliedVariables();
+                task.ContinueWith(x =>
+                {
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        ApplyingChanges = false;
+                    });
+                });
+
+                _ = Task.Run(SaveAsync);
+            }
         }
 
         internal void AddProfile(ProfileVariablesSet profile)
@@ -201,6 +219,63 @@ namespace EnvironmentVariables.ViewModels
                 appliedProfile.PropertyChanged += Profile_PropertyChanged;
                 PopulateAppliedVariables();
             }
+        }
+
+        internal void RemoveProfile(ProfileVariablesSet profile)
+        {
+            if (profile.IsEnabled)
+            {
+                UnsetAppliedProfile();
+            }
+
+            Profiles.Remove(profile);
+
+            _ = Task.Run(SaveAsync);
+        }
+
+        internal void DeleteVariable(Variable variable, ProfileVariablesSet profile)
+        {
+            bool propagateChange = true;
+
+            if (profile != null)
+            {
+                // Profile variable
+                profile.Variables.Remove(variable);
+
+                if (!profile.IsEnabled)
+                {
+                    propagateChange = false;
+                }
+            }
+            else
+            {
+                if (variable.ParentType == VariablesSetType.User)
+                {
+                    UserDefaultSet.Variables.Remove(variable);
+                }
+                else if (variable.ParentType == VariablesSetType.System)
+                {
+                    SystemDefaultSet.Variables.Remove(variable);
+                }
+            }
+
+            if (propagateChange)
+            {
+                ApplyingChanges = true;
+                var task = Task.Run(() =>
+                {
+                    EnvironmentVariablesHelper.UnsetVariable(variable);
+                });
+                task.ContinueWith((a) =>
+                {
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        ApplyingChanges = false;
+                    });
+                });
+            }
+
+            PopulateAppliedVariables();
         }
     }
 }

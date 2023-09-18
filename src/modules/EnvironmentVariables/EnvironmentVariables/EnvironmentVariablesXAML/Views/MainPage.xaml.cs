@@ -17,7 +17,7 @@ namespace EnvironmentVariables.Views
     {
         public MainViewModel ViewModel { get; private set; }
 
-        public ICommand EditCommand => new RelayCommand<Variable>(EditVariable);
+        public ICommand EditCommand => new RelayCommand<SettingsCard>(EditVariable);
 
         public ICommand NewProfileCommand => new AsyncRelayCommand(AddProfileAsync);
 
@@ -32,15 +32,16 @@ namespace EnvironmentVariables.Views
             DataContext = ViewModel;
         }
 
-        private async Task ShowEditDialogAsync(Variable variable)
+        private async Task ShowEditDialogAsync(SettingsCard card)
         {
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             EditVariableDialog.Title = resourceLoader.GetString("EditVariableDialog_Title");
             EditVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
             EditVariableDialog.PrimaryButtonCommand = EditCommand;
-            EditVariableDialog.PrimaryButtonCommandParameter = variable;
+            EditVariableDialog.PrimaryButtonCommandParameter = card;
 
+            var variable = card.CommandParameter as Variable;
             var clone = variable.Clone();
             EditVariableDialog.DataContext = clone;
 
@@ -52,14 +53,16 @@ namespace EnvironmentVariables.Views
             SettingsCard card = sender as SettingsCard;
             if (card != null)
             {
-                await ShowEditDialogAsync(card.CommandParameter as Variable);
+                await ShowEditDialogAsync(card);
             }
         }
 
-        private void EditVariable(Variable original)
+        private void EditVariable(SettingsCard card)
         {
+            var variableSet = card.DataContext as ProfileVariablesSet;
+            var original = card.CommandParameter as Variable;
             var edited = EditVariableDialog.DataContext as Variable;
-            ViewModel.EditVariable(original, edited);
+            ViewModel.EditVariable(original, edited, variableSet);
         }
 
         private async Task AddProfileAsync()
@@ -78,6 +81,30 @@ namespace EnvironmentVariables.Views
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
             ViewModel.AddProfile(profile);
+        }
+
+        private async void RemoveProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var profile = button.CommandParameter as ProfileVariablesSet;
+
+            if (profile != null)
+            {
+                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                ContentDialog dialog = new ContentDialog();
+                dialog.XamlRoot = RootPage.XamlRoot;
+                dialog.Title = profile.Name;
+                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
+                dialog.CloseButtonText = resourceLoader.GetString("No");
+                dialog.DefaultButton = ContentDialogButton.Primary;
+                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+                dialog.PrimaryButtonClick += (s, args) =>
+                {
+                    ViewModel.RemoveProfile(profile);
+                };
+
+                var result = await dialog.ShowAsync();
+            }
         }
 
         private void AddVariable()
@@ -103,6 +130,18 @@ namespace EnvironmentVariables.Views
             AddNewVariableValue.Text = string.Empty;
             ExistingVariablesListView.SelectedItems.Clear();
             AddVariableFlyout.Hide();
+        }
+
+        private void Delete_Variable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            MenuFlyoutItem menuItem = sender as MenuFlyoutItem;
+            var variableSet = menuItem.DataContext as ProfileVariablesSet;
+            var variable = menuItem.CommandParameter as Variable;
+
+            if (variable != null)
+            {
+                ViewModel.DeleteVariable(variable, variableSet);
+            }
         }
     }
 }

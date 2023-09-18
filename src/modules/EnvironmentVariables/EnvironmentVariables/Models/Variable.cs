@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EnvironmentVariables.Helpers;
 
@@ -19,7 +19,7 @@ namespace EnvironmentVariables.Models
         private string _values;
 
         [JsonIgnore]
-        public bool Editable
+        public bool IsEditable
         {
             get
             {
@@ -49,44 +49,37 @@ namespace EnvironmentVariables.Models
             }
         }
 
-        internal void Update(Variable edited)
+        internal Task Update(Variable edited, bool propagateChange)
         {
-            bool changed = Name != edited.Name || Values != edited.Values;
             bool nameChanged = Name != edited.Name;
-            bool success = false;
+            bool success = true;
 
-            if (changed)
+            var clone = this.Clone();
+
+            // Update state
+            Name = edited.Name;
+            Values = edited.Values;
+
+            ValuesList = new List<string>(Values.Split(';'));
+
+            return Task.Run(() =>
             {
                 // Apply changes
-                if (nameChanged)
+                if (propagateChange)
                 {
-                    success = EnvironmentVariablesHelper.UnsetVariable(this);
-                }
-
-                success = EnvironmentVariablesHelper.SetVariable(edited);
-
-                // Update state
-                if (success)
-                {
-                    Name = edited.Name;
-                    Values = edited.Values;
-
-                    ValuesList = new List<string>();
-
-                    var splitValues = Values.Split(';');
-                    if (splitValues.Length > 0)
+                    if (nameChanged)
                     {
-                        foreach (var splitValue in splitValues)
-                        {
-                            ValuesList.Add(splitValue);
-                        }
+                        success = EnvironmentVariablesHelper.UnsetVariable(clone);
                     }
+
+                    success = EnvironmentVariablesHelper.SetVariable(this);
                 }
-                else
+
+                if (!success)
                 {
-                    // show error
+                    // Show error
                 }
-            }
+            });
         }
 
         internal Variable Clone(bool profile = false)

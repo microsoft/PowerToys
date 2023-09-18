@@ -18,7 +18,7 @@ namespace EnvironmentVariables.Models
         private static readonly string SystemIconPath = "/Assets/EnvironmentVariables/SystemIcon.png";
         protected static readonly string ProfileIconPath = "/Assets/EnvironmentVariables/ProfileIcon.png";
 
-        public Guid Id { get; }
+        public Guid Id { get; set; }
 
         [ObservableProperty]
         private string _name;
