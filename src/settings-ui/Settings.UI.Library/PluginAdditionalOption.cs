@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -31,16 +32,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Gets or sets a value to show a description of this setting in the settings ui. (Optional)
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string DisplayDescription { get; set; }
 
         /// <summary>
         /// Gets or sets a value to show a label for the second setting if two combined settings are shown
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string SecondDisplayLabel { get; set; }
 
         /// <summary>
         /// Gets or sets a value to show a description for the second setting in the settings ui if two combined settings are shown. (Optional)
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string SecondDisplayDescription { get; set; }
 
         /// <summary>
@@ -48,10 +52,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public bool Value { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<string> ComboBoxOptions { get; set; }
 
         public int ComboBoxValue { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string TextValue { get; set; }
 
         public double NumberValue { get; set; }
@@ -59,21 +65,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Gets or sets a minimal value for the number box. (Optional; Default is Double.MinValue)
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? NumberBoxMin { get; set; }
 
         /// <summary>
         /// Gets or sets a maximal value for the number box. (Optional; Default is Double.MaxValue)
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? NumberBoxMax { get; set; }
 
         /// <summary>
         /// Gets or sets the value for small changes of the number box. (Optional; Default is 1)
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? NumberBoxSmallChange { get; set; }
 
         /// <summary>
         /// Gets or sets the value for large changes of the number box. (Optional; Default is 10)
         /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? NumberBoxLargeChange { get; set; }
     }
 }
