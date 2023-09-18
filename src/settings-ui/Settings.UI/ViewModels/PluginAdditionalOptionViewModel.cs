@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _additionalOption = additionalOption;
         }
 
-        // Labels of singel and first setting of combined types
+        // Labels of single and first setting of combined types
         public string DisplayLabel => _additionalOption.DisplayLabel;
 
         public string DisplayDescription => _additionalOption.DisplayDescription;
