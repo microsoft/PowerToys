@@ -18,18 +18,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _additionalOption = additionalOption;
         }
 
-        // Labels of main (checkbox) setting
+        // Labels of singel and first setting of combined types
         public string DisplayLabel => _additionalOption.DisplayLabel;
 
         public string DisplayDescription => _additionalOption.DisplayDescription;
 
-        // Labels of second setting (ComboBox, TextBox, NumberBox) - If only non-checkbox setting is shown we use the normal display labels.
-        public string SecondDisplayLabel => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.SecondDisplayLabel : _additionalOption.DisplayLabel;
+        // Labels of second setting of combined types
+        public string SecondDisplayLabel => _additionalOption.SecondDisplayLabel;
 
-        public string SecondDisplayDescription => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.SecondDisplayDescription : _additionalOption.DisplayDescription;
+        public string SecondDisplayDescription => _additionalOption.SecondDisplayDescription;
 
         // Bool checkbox setting
-        public bool ShowCheckBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Checkbox || (int)_additionalOption.PluginOptionType > 10;
+        public bool ShowCheckBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Checkbox;
 
         public bool Value
         {
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // ComboBox setting
-        public bool ShowComboBox => (_additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox || _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndCombobox) &&
+        public bool ShowComboBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox &&
             _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
 
         public List<string> ComboBoxOptions => _additionalOption.ComboBoxOptions;
@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // TextBox setting
-        public bool ShowTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Textbox || _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndTextbox;
+        public bool ShowTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Textbox;
 
         public int TextBoxMaxLength => (_additionalOption.TextBoxMaxLength == null) ? 0 : _additionalOption.TextBoxMaxLength.Value; // 0 ist the default and means no limit.
 
@@ -83,7 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // NumberBox setting
-        public bool ShowNumberBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Numberbox || _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndNumberbox;
+        public bool ShowNumberBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Numberbox;
 
         public double NumberBoxMin => (_additionalOption.NumberBoxMin == null) ? double.MinValue : _additionalOption.NumberBoxMin.Value;
 
@@ -105,6 +105,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        // Show combined settings cards
+        public bool ShowCheckboxAndCombobox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndCombobox;
+
+        public bool ShowCheckboxAndTextbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndTextbox;
+
+        public bool ShowCheckboxAndNumberbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndNumberbox;
 
         // Enabled state of ComboBox, TextBox, NumberBox (If combined with checkbox then checkbox value decides it.)
         public bool SecondSettingIsEnabled => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.Value : true;
