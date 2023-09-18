@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EnvironmentVariables.Helpers;
+using EnvironmentVariables.ViewModels;
 using ManagedCommon;
 
 namespace EnvironmentVariables.Models
@@ -18,16 +19,19 @@ namespace EnvironmentVariables.Models
         public ProfileVariablesSet()
             : base()
         {
+            Type = VariablesSetType.Profile;
+            IconPath = ProfileIconPath;
         }
 
         public ProfileVariablesSet(Guid id, string name)
             : base(id, name, VariablesSetType.Profile)
         {
+            IconPath = ProfileIconPath;
         }
 
-        public void Apply()
+        public Task Apply()
         {
-            Task.Run(() =>
+            return Task.Run(() =>
             {
                 foreach (var variable in Variables)
                 {
@@ -51,13 +55,17 @@ namespace EnvironmentVariables.Models
                         Logger.LogError("Failed to set profile variable.");
                     }
                 }
+
+                // viewModel.ApplyingChanges = false;
             });
         }
 
-        public void UnApply()
+        public Task UnApply()
         {
-            Task.Run(() =>
+            return Task.Run(() =>
             {
+                var viewModel = App.GetService<MainViewModel>();
+                viewModel.ApplyingChanges = true;
                 foreach (var variable in Variables)
                 {
                     // Unset the variable
@@ -87,6 +95,8 @@ namespace EnvironmentVariables.Models
                         }
                     }
                 }
+
+                viewModel.ApplyingChanges = false;
             });
         }
     }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EnvironmentVariables.Helpers;
 
@@ -17,8 +18,16 @@ namespace EnvironmentVariables.Models
         [ObservableProperty]
         private string _values;
 
-        public bool Editable { get; private set; }
+        [JsonIgnore]
+        public bool Editable
+        {
+            get
+            {
+                return ParentType != VariablesSetType.System || App.GetService<IElevationHelper>().IsElevated;
+            }
+        }
 
+        [JsonIgnore]
         public VariablesSetType ParentType { get; set; }
 
         public List<string> ValuesList { get; set; }
@@ -32,7 +41,6 @@ namespace EnvironmentVariables.Models
             Name = name;
             Values = values;
             ParentType = parentType;
-            Editable = ParentType == VariablesSetType.User || (ParentType == VariablesSetType.System && App.GetService<IElevationHelper>().IsElevated);
 
             var splitValues = Values.Split(';');
             if (splitValues.Length > 0)

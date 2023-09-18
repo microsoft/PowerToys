@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace EnvironmentVariables.Models
@@ -16,16 +16,18 @@ namespace EnvironmentVariables.Models
 
         private static readonly string UserIconPath = "/Assets/EnvironmentVariables/UserIcon.png";
         private static readonly string SystemIconPath = "/Assets/EnvironmentVariables/SystemIcon.png";
-        private static readonly string ProfileIconPath = "/Assets/EnvironmentVariables/ProfileIcon.png";
+        protected static readonly string ProfileIconPath = "/Assets/EnvironmentVariables/ProfileIcon.png";
 
         public Guid Id { get; }
 
         [ObservableProperty]
         private string _name;
 
-        public VariablesSetType Type { get; }
+        [JsonIgnore]
+        public VariablesSetType Type { get; set; }
 
-        public string IconPath { get; }
+        [JsonIgnore]
+        public string IconPath { get; set; }
 
         [ObservableProperty]
         private ObservableCollection<Variable> _variables;

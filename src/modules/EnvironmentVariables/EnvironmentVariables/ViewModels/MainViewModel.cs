@@ -13,12 +13,15 @@ using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Helpers;
 using EnvironmentVariables.Models;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 
 namespace EnvironmentVariables.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         private readonly IEnvironmentVariablesService _environmentVariablesService;
+
+        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         public DefaultVariablesSet UserDefaultSet { get; private set; } = new DefaultVariablesSet(VariablesSet.UserGuid, ResourceLoaderInstance.ResourceLoader.GetString("User"), VariablesSetType.User);
 
@@ -34,6 +37,9 @@ namespace EnvironmentVariables.ViewModels
 
         [ObservableProperty]
         private bool _isElevated;
+
+        [ObservableProperty]
+        private bool _applyingChanges;
 
         public ProfileVariablesSet AppliedProfile { get; set; }
 
@@ -71,6 +77,11 @@ namespace EnvironmentVariables.ViewModels
                 foreach (var profile in profiles)
                 {
                     profile.PropertyChanged += Profile_PropertyChanged;
+
+                    foreach (var variable in profile.Variables)
+                    {
+                        variable.ParentType = VariablesSetType.Profile;
+                    }
                 }
 
                 var applied = profiles.Where(x => x.IsEnabled).ToList();
@@ -157,7 +168,15 @@ namespace EnvironmentVariables.ViewModels
 
         private void SetAppliedProfile(ProfileVariablesSet profile)
         {
-            profile.Apply();
+            ApplyingChanges = true;
+            var task = profile.Apply();
+            task.ContinueWith((a) =>
+            {
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    ApplyingChanges = false;
+                });
+            });
             AppliedProfile = profile;
             PopulateAppliedVariables();
         }
@@ -168,7 +187,15 @@ namespace EnvironmentVariables.ViewModels
             {
                 var appliedProfile = AppliedProfile;
                 appliedProfile.PropertyChanged -= Profile_PropertyChanged;
-                AppliedProfile.UnApply();
+                ApplyingChanges = true;
+                var task = AppliedProfile.UnApply();
+                task.ContinueWith((a) =>
+                {
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        ApplyingChanges = false;
+                    });
+                });
                 AppliedProfile.IsEnabled = false;
                 AppliedProfile = null;
                 appliedProfile.PropertyChanged += Profile_PropertyChanged;

@@ -66,6 +66,7 @@
                     <KeyboardAccelerator Key="N" Modifiers="Control" />
                 </Button.KeyboardAccelerators>
             </Button>
+            <ProgressRing IsActive="{x:Bind ViewModel.ApplyingChanges, Mode=TwoWay}" />
         </Grid>
         <Grid Grid.Row="1" ColumnSpacing="32">
             <Grid.ColumnDefinitions>
