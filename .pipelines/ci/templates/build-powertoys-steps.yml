@@ -8,14 +8,14 @@ steps:
   clean: true
 
 - task: PowerShell@2
-  displayName: Verifying XAML formatting
+  displayName: Verify XAML formatting
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\applyXamlStyling.ps1'
-    arguments: -Passive'
+    arguments: -Passive
     pwsh: true
 
 - task: PowerShell@2
-  displayName: Verifying Nuget package versions for PowerToys.sln
+  displayName: Verify Nuget package versions for PowerToys.sln
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
     arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
@@ -247,7 +247,7 @@ steps:
       dotnet list $(build.sourcesdirectory)\src\common\Common.UI\Common.UI.csproj package
 
 - task: PowerShell@2
-  displayName: Verifying Notice.md and Nuget packages match
+  displayName: Verify Notice.md and Nuget packages match
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
     arguments: -path '$(build.sourcesdirectory)\'
