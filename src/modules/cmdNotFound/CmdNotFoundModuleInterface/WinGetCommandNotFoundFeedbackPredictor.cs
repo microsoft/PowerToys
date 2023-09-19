@@ -13,15 +13,20 @@ namespace WinGetCommandNotFound
     {
         private readonly Guid _guid;
 
-        private const int _maxSuggestions = 5;
+        private const int _maxSuggestions = 20;
 
         private List<string>? _candidates;
+
+        private PowerShell _ps;
 
         public static WinGetCommandNotFoundFeedbackPredictor Singleton { get; } = new WinGetCommandNotFoundFeedbackPredictor(Init.Id);
 
         private WinGetCommandNotFoundFeedbackPredictor(string guid)
         {
             _guid = new Guid(guid);
+            var iss = System.Management.Automation.Runspaces.InitialSessionState.CreateDefault2();
+            iss.ImportPSModule(new[] { "Microsoft.WinGet.Client" });
+            _ps = PowerShell.Create(iss);
         }
 
         public Guid Id => _guid;
@@ -72,18 +77,14 @@ namespace WinGetCommandNotFound
 
         private System.Collections.ObjectModel.Collection<PSObject> FindPackages(string query, ref bool tooManySuggestions, ref string packageMatchFilterField)
         {
-            var iss = System.Management.Automation.Runspaces.InitialSessionState.CreateDefault2();
-            iss.ImportPSModule(new[] { "Microsoft.WinGet.Client" });
-            var ps = PowerShell.Create(iss);
-
             var common = new Hashtable()
             {
-                ["Count"] = _maxSuggestions,
                 ["Source"] = "winget",
             };
 
             // 1) Search by command
-            var pkgList = ps.AddCommand("Find-WinGetPackage")
+            _ps.Commands.Clear();
+            var pkgList = _ps.AddCommand("Find-WinGetPackage")
                 .AddParameter("Command", query)
                 .AddParameter("MatchOption", "StartsWithCaseInsensitive")
                 .AddParameters(common)
@@ -97,8 +98,8 @@ namespace WinGetCommandNotFound
 
             // 2) No matches found,
             //    search by name
-            ps.Commands.Clear();
-            pkgList = ps.AddCommand("Find-WinGetPackage")
+            _ps.Commands.Clear();
+            pkgList = _ps.AddCommand("Find-WinGetPackage")
                 .AddParameter("Name", query)
                 .AddParameter("MatchOption", "ContainsCaseInsensitive")
                 .AddParameters(common)
@@ -112,8 +113,8 @@ namespace WinGetCommandNotFound
 
             // 3) No matches found,
             //    search by moniker
-            ps.Commands.Clear();
-            pkgList = ps.AddCommand("Find-WinGetPackage")
+            _ps.Commands.Clear();
+            pkgList = _ps.AddCommand("Find-WinGetPackage")
                 .AddParameter("Moniker", query)
                 .AddParameter("MatchOption", "ContainsCaseInsensitive")
                 .AddParameters(common)

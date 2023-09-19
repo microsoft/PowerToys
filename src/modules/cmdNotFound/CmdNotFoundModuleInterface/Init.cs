@@ -15,11 +15,28 @@ namespace WinGetCommandNotFound
 
         public void OnImport()
         {
-            if (!Platform.IsWindows)
+            if (!Platform.IsWindows || !IsWinGetInstalled())
             {
                 return;
             }
 
+            SubsystemManager.RegisterSubsystem(SubsystemKind.FeedbackProvider, WinGetCommandNotFoundFeedbackPredictor.Singleton);
+            SubsystemManager.RegisterSubsystem(SubsystemKind.CommandPredictor, WinGetCommandNotFoundFeedbackPredictor.Singleton);
+        }
+
+        public void OnRemove(PSModuleInfo psModuleInfo)
+        {
+            if (!IsWinGetInstalled())
+            {
+                return;
+            }
+
+            SubsystemManager.UnregisterSubsystem<IFeedbackProvider>(new Guid(Id));
+            SubsystemManager.UnregisterSubsystem<ICommandPredictor>(new Guid(Id));
+        }
+
+        private bool IsWinGetInstalled()
+        {
             // Ensure WinGet is installed
             using (var pwsh = PowerShell.Create(RunspaceMode.CurrentRunspace))
             {
@@ -30,18 +47,11 @@ namespace WinGetCommandNotFound
 
                 if (results.Count is 0)
                 {
-                    return;
+                    return false;
                 }
             }
 
-            SubsystemManager.RegisterSubsystem(SubsystemKind.FeedbackProvider, WinGetCommandNotFoundFeedbackPredictor.Singleton);
-            SubsystemManager.RegisterSubsystem(SubsystemKind.CommandPredictor, WinGetCommandNotFoundFeedbackPredictor.Singleton);
-        }
-
-        public void OnRemove(PSModuleInfo psModuleInfo)
-        {
-            SubsystemManager.UnregisterSubsystem<IFeedbackProvider>(new Guid(Id));
-            SubsystemManager.UnregisterSubsystem<ICommandPredictor>(new Guid(Id));
+            return true;
         }
     }
 }

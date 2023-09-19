@@ -21,7 +21,7 @@
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsCmdNotFound.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <Button
-                        x:Uid="CmdNotFoundInstallButton"
+                        x:Uid="CmdNotFound_InstallButton"
                         Click="{x:Bind ViewModel.InstallModule, Mode=OneWay}" />
                 </labs:SettingsCard>
                 <InfoBar
