@@ -69,9 +69,9 @@ SOFTWARE.
 
 ### The Quite OK Image Format reference decoder
 
-[@pedrolamas](https://github.com/pedrolamas) translated and adapted the reference decoder C++ code to C#.
-
 **Source**: https://github.com/phoboslab/qoi
+
+**Note**: [@pedrolamas](https://github.com/pedrolamas) translated and adapted the reference decoder code to C# that is in PowerToys from the original C++ implementation.
 
 MIT License
 
