@@ -3,21 +3,20 @@
     x:Class="EnvironmentVariables.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:EnvironmentVariables.Converters"
-    xmlns:converters1="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:converters1="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EnvironmentVariables.Models"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     mc:Ignorable="d">
     <Page.Resources>
         <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
-            <labs:SettingsCard
+            <controls:SettingsCard
                 Click="EditVariable_Click"
                 CommandParameter="{x:Bind (models:Variable)}"
                 Header="{x:Bind Name, Mode=TwoWay}"
@@ -26,7 +25,7 @@
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     IsTextSelectionEnabled="True"
                     Text="{x:Bind Values, Mode=TwoWay}" />
-                <labs:SettingsCard.ContextFlyout>
+                <controls:SettingsCard.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem
                             x:Uid="DeleteMenuItem"
@@ -35,9 +34,9 @@
                             Icon="Delete"
                             IsEnabled="{x:Bind IsEditable, Mode=OneWay}" />
                     </MenuFlyout>
-                </labs:SettingsCard.ContextFlyout>
+                </controls:SettingsCard.ContextFlyout>
 
-            </labs:SettingsCard>
+            </controls:SettingsCard>
         </DataTemplate>
 
         <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
@@ -102,7 +101,7 @@
                     <ItemsControl Margin="0,16,0,4" ItemsSource="{x:Bind ViewModel.Profiles, Mode=TwoWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ProfileVariablesSet">
-                                <labs:SettingsExpander
+                                <controls:SettingsExpander
                                     Margin="0,0,0,4"
                                     Header="{x:Bind Name}"
                                     HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}"
@@ -122,7 +121,7 @@
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             Style="{StaticResource SubtleButtonStyle}" />
                                     </StackPanel>
-                                </labs:SettingsExpander>
+                                </controls:SettingsExpander>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -134,7 +133,7 @@
                         Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock x:Uid="ProfilesDescriptionLbl" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         Margin="0,16,0,4"
                         Header="{x:Bind ViewModel.UserDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}"
@@ -146,7 +145,7 @@
                         IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                         Severity="Informational"
                         Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         Margin="0,0,0,4"
                         Header="{x:Bind ViewModel.SystemDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE977;}"
@@ -318,20 +317,20 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <labs:Segmented
+                                    <controls:Segmented
                                         x:Name="SwitchViewsSegmentedView"
                                         MaxWidth="500"
                                         HorizontalAlignment="Stretch"
                                         SelectionMode="Single">
-                                        <labs:SegmentedItem
+                                        <controls:SegmentedItem
                                             x:Name="AddNewVariableSegmentedItem"
                                             x:Uid="NewVariableSegmentedButton"
                                             Tag="NewVariable" />
-                                        <labs:SegmentedItem
+                                        <controls:SegmentedItem
                                             x:Name="AddExistingVariableSegmentedItem"
                                             x:Uid="ExistingVariableSegmentedButton"
                                             Tag="ExistingVariable" />
-                                    </labs:Segmented>
+                                    </controls:Segmented>
 
                                     <controls:SwitchPresenter
                                         x:Name="AddVariableSwitchPresenter"

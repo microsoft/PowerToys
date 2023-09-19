@@ -5,8 +5,8 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using CommunityToolkit.Labs.WinUI;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI.Controls;
 using EnvironmentVariables.Models;
 using EnvironmentVariables.ViewModels;
 using Microsoft.UI.Xaml.Controls;

@@ -60,7 +60,7 @@
 
   <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls and Needed for CommunityToolkit.Labs.WinUI.SegmentedControl. -->
   <PropertyGroup>
-    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
+	<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -79,10 +79,11 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
-    <PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-	<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" />
-	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+	<PackageReference Include="CommunityToolkit.WinUI.Converters" />
 	<PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>

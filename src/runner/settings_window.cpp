@@ -26,6 +26,7 @@
 #include <common/updating/updateState.h>
 #include <common/themes/windows_colors.h>
 #include "settings_window.h"
+#include "bug_report.h"
 
 #define BUFSIZE 1024
 
@@ -108,7 +109,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 else if (action == L"check_for_updates")
                 {
                     bool expected_isUpdateCheckThreadRunning = false;
-                    if (isUpdateCheckThreadRunning.compare_exchange_strong(expected_isUpdateCheckThreadRunning,true))
+                    if (isUpdateCheckThreadRunning.compare_exchange_strong(expected_isUpdateCheckThreadRunning, true))
                     {
                         std::thread([]() {
                             CheckForUpdatesCallback();
@@ -222,19 +223,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         }
         else if (name == L"bugreport")
         {
-             std::wstring bug_report_path = get_module_folderpath();
-             bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
-             SHELLEXECUTEINFOW sei{ sizeof(sei) };
-             sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
-             sei.lpFile = bug_report_path.c_str();
-             sei.nShow = SW_HIDE;
-             if (ShellExecuteExW(&sei))
-             {
-                WaitForSingleObject(sei.hProcess, INFINITE);
-                CloseHandle(sei.hProcess);
-                static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
-                MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
-             }
+            launch_bug_report();
         }
         else if (name == L"killrunner")
         {
@@ -410,18 +399,18 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
     std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {}",
-                                                   executable_path,
-                                                   powertoys_pipe_name,
-                                                   settings_pipe_name,
-                                                   std::to_wstring(powertoys_pid),
-                                                   settings_theme,
-                                                   settings_elevatedStatus,
-                                                   settings_isUserAnAdmin,
-                                                   settings_showOobe,
-                                                   settings_showScoobe,
-                                                   settings_showFlyout,
-                                                   settings_containsSettingsWindow,
-                                                   settings_containsFlyoutPosition);
+                                               executable_path,
+                                               powertoys_pipe_name,
+                                               settings_pipe_name,
+                                               std::to_wstring(powertoys_pid),
+                                               settings_theme,
+                                               settings_elevatedStatus,
+                                               settings_isUserAnAdmin,
+                                               settings_showOobe,
+                                               settings_showScoobe,
+                                               settings_showFlyout,
+                                               settings_containsSettingsWindow,
+                                               settings_containsFlyoutPosition);
 
     if (settings_window.has_value())
     {
