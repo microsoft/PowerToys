@@ -143,7 +143,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             }
             catch (Exception ex)
             {
-                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
 
             try
@@ -160,7 +166,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                 AddWebViewControl(svgData);
                 Resize += FormResized;
                 base.DoPreview(dataSource);
-                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
             catch (Exception ex)
             {
@@ -288,7 +300,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="dataSource">Stream reference to access source file.</param>
         private void PreviewError<T>(Exception exception, T dataSource)
         {
-            PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
+            try
+            {
+                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
+            }
+            catch
+            { // Should not crash if sending telemetry is failing. Ignore the exception.
+            }
+
             Controls.Clear();
             _infoBarAdded = true;
             AddTextBoxControl(Properties.Resource.SvgNotPreviewedError);
