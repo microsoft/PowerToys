@@ -53,14 +53,6 @@ namespace FancyZonesWindowProcessing
             return false;
         }
 
-        // For windows that FancyZones shouldn't process (start menu, tray, popup menus) 
-        // VirtualDesktopManager is unable to retrieve virtual desktop id and returns an error.
-        auto desktopId = VirtualDesktop::instance().GetDesktopId(window);
-        if (!desktopId.has_value())
-        {
-            return false;
-        }
-
         return true;
     }
 }
