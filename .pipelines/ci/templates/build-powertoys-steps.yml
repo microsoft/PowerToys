@@ -8,6 +8,13 @@ steps:
   clean: true
 
 - task: PowerShell@2
+  displayName: Verifying XAML formatting
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\applyXamlStyling.ps1'
+    arguments: -Passive'
+    pwsh: true
+
+- task: PowerShell@2
   displayName: Verifying Nuget package versions for PowerToys.sln
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
