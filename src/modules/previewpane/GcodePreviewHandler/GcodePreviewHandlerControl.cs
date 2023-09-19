@@ -2,14 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Windows.Forms;
 using Common;
 using Common.Utilities;
 using Microsoft.PowerToys.PreviewHandler.Gcode.Telemetry.Events;
@@ -67,7 +59,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
 
                 using (var reader = new StreamReader(fs))
                 {
-                    thumbnail = GetThumbnail(reader);
+                    var gcodeThumbnail = GcodeHelper.GetBestThumbnail(reader);
+
+                    thumbnail = gcodeThumbnail?.GetBitmap();
                 }
 
                 _infoBarAdded = false;
@@ -89,66 +83,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
             catch (Exception ex)
             {
                 PreviewError(ex, dataSource);
-            }
-        }
-
-        /// <summary>
-        /// Reads the G-code content searching for thumbnails and returns the largest.
-        /// </summary>
-        /// <param name="reader">The TextReader instance for the G-code content.</param>
-        /// <returns>A thumbnail extracted from the G-code content.</returns>
-        public static Bitmap GetThumbnail(TextReader reader)
-        {
-            if (reader == null)
-            {
-                return null;
-            }
-
-            Bitmap thumbnail = null;
-
-            var bitmapBase64 = GetBase64Thumbnails(reader)
-                .OrderByDescending(x => x.Length)
-                .FirstOrDefault();
-
-            if (!string.IsNullOrEmpty(bitmapBase64))
-            {
-                var bitmapBytes = Convert.FromBase64String(bitmapBase64);
-
-                thumbnail = new Bitmap(new MemoryStream(bitmapBytes));
-            }
-
-            return thumbnail;
-        }
-
-        /// <summary>
-        /// Gets all thumbnails in base64 format found on the G-code data.
-        /// </summary>
-        /// <param name="reader">The TextReader instance for the G-code content.</param>
-        /// <returns>An enumeration of thumbnails in base64 format found on the G-code.</returns>
-        private static IEnumerable<string> GetBase64Thumbnails(TextReader reader)
-        {
-            string line;
-            StringBuilder capturedText = null;
-
-            while ((line = reader.ReadLine()) != null)
-            {
-                if (line.StartsWith("; thumbnail begin", StringComparison.InvariantCulture))
-                {
-                    capturedText = new StringBuilder();
-                }
-                else if (line == "; thumbnail end")
-                {
-                    if (capturedText != null)
-                    {
-                        yield return capturedText.ToString();
-
-                        capturedText = null;
-                    }
-                }
-                else if (capturedText != null)
-                {
-                    capturedText.Append(line[2..]);
-                }
             }
         }
 
