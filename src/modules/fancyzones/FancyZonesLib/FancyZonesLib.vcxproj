@@ -103,6 +103,7 @@
     <ClCompile Include="FancyZonesData\LayoutTemplates.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="FancyZonesWindowProcessing.cpp" />
     <ClCompile Include="FancyZonesWindowProperties.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="FancyZonesData.cpp" />
