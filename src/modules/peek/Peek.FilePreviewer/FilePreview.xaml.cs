@@ -49,6 +49,7 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(VideoPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
+        [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
 
         private IPreviewer? previewer;
@@ -95,6 +96,8 @@ namespace Peek.FilePreviewer
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
         public IArchivePreviewer? ArchivePreviewer => Previewer as IArchivePreviewer;
+
+        public IShellPreviewHandlerPreviewer? ShellPreviewHandlerPreviewer => Previewer as IShellPreviewHandlerPreviewer;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
@@ -219,6 +222,9 @@ namespace Peek.FilePreviewer
             ImagePreview.Source = null;
             ArchivePreview.Source = null;
             BrowserPreview.Source = null;
+
+            ShellPreviewHandlerPreviewer?.Clear();
+            ShellPreviewHandlerPreview.Source = null;
 
             if (Previewer != null)
             {

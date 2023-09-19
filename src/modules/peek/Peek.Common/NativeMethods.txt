@@ -3,3 +3,7 @@ _SHCONTF
 SIGDN
 SHGDNF
 SIATTRIBFLAGS
+IInitializeWithFile
+IInitializeWithStream
+IPreviewHandler
+IPreviewHandlerVisuals

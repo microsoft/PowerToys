@@ -1,0 +1,7 @@
+﻿CreateWindowEx
+DefWindowProc
+InvalidateRect
+RegisterClass
+SetLayeredWindowAttributes
+SetWindowPos
+ShowWindow
