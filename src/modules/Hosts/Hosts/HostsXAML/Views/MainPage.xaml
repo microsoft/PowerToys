@@ -230,15 +230,15 @@
                             Background="Transparent"
                             ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="256" /> 
+                                <ColumnDefinition Width="256" />
                                 <!--  Address  -->
-                                <ColumnDefinition Width="*" /> 
+                                <ColumnDefinition Width="*" />
                                 <!--  Comment  -->
-                                <ColumnDefinition Width="Auto" /> 
+                                <ColumnDefinition Width="Auto" />
                                 <!--  Status  -->
-                                <ColumnDefinition Width="Auto" /> 
+                                <ColumnDefinition Width="Auto" />
                                 <!--  Duplicate  -->
-                                <ColumnDefinition Width="Auto" /> 
+                                <ColumnDefinition Width="Auto" />
                                 <!--  ToggleSwitch  -->
                             </Grid.ColumnDefinitions>
                             <TextBlock

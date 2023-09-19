@@ -1,4 +1,4 @@
-<#
+﻿<#
     .SYNOPSIS
     Modify XAML files to adhere to XAML Styler settings.
 
@@ -107,7 +107,7 @@ if (-not $Passive)
 else 
 {
     Write-Output "Checking all files (passively)"
-    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\launcher\\PowerLauncher\\)|(\\launcher\\Wox.Plugin\\)|(\\colorPicker\\ColorPickerUI\\)|(\\editor\\FancyZonesEditor\\)" }
+    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\launcher\\PowerLauncher\\)|(\\launcher\\Wox.Plugin\\)|(\\colorPicker\\ColorPickerUI\\)|(\\editor\\FancyZonesEditor\\)|(\\settings-ui\\Settings.UI\\)" }
 
     if ($files.count -gt 0)
     {
