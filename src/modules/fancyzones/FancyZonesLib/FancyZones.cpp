@@ -392,12 +392,6 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    const bool isCandidateForLastKnownZone = FancyZonesWindowUtils::IsCandidateForZoning(window);
-    if (!isCandidateForLastKnownZone)
-    {
-        return;
-    }
-
     HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
     HMONITOR active = primary;
 
@@ -989,7 +983,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
         return false;
     }
 
-    if (FancyZonesSettings::settings().overrideSnapHotkeys && FancyZonesWindowUtils::IsCandidateForZoning(window))
+    if (FancyZonesSettings::settings().overrideSnapHotkeys)
     {
         HMONITOR monitor = WorkAreaKeyFromWindow(window);
 
