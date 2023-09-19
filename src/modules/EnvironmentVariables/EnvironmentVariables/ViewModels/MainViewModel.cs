@@ -52,9 +52,12 @@ namespace EnvironmentVariables.ViewModels
             IsElevated = isElevated;
         }
 
-        [RelayCommand]
-        public void LoadEnvironmentVariables()
+        private void LoadDefaultVariables()
         {
+            UserDefaultSet.Variables.Clear();
+            SystemDefaultSet.Variables.Clear();
+            DefaultVariables.Variables.Clear();
+
             EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.Machine, SystemDefaultSet);
             EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.User, UserDefaultSet);
 
@@ -67,15 +70,21 @@ namespace EnvironmentVariables.ViewModels
             {
                 DefaultVariables.Variables.Add(variable);
             }
-
-            ReadAsync();
         }
 
-        private async void ReadAsync()
+        [RelayCommand]
+        public void LoadEnvironmentVariables()
+        {
+            LoadDefaultVariables();
+            LoadProfiles();
+            PopulateAppliedVariables();
+        }
+
+        private void LoadProfiles()
         {
             try
             {
-                var profiles = await _environmentVariablesService.ReadAsync();
+                var profiles = _environmentVariablesService.ReadProfiles();
                 foreach (var profile in profiles)
                 {
                     profile.PropertyChanged += Profile_PropertyChanged;
@@ -90,18 +99,18 @@ namespace EnvironmentVariables.ViewModels
                 AppliedProfile = applied.Count > 0 ? applied.First() : null;
 
                 Profiles = new ObservableCollection<ProfileVariablesSet>(profiles);
-
-                PopulateAppliedVariables();
             }
             catch (Exception ex)
             {
                 // Show some error
-                Logger.LogError("Failed to save to profiles.json file", ex);
+                Logger.LogError("Failed to load profiles.json file", ex);
             }
         }
 
         private void PopulateAppliedVariables()
         {
+            LoadDefaultVariables();
+
             var variables = new List<Variable>();
             if (AppliedProfile != null)
             {
@@ -121,12 +130,12 @@ namespace EnvironmentVariables.ViewModels
             {
                 ApplyingChanges = true;
                 var task = original.Update(edited, propagateChange);
-                PopulateAppliedVariables();
                 task.ContinueWith(x =>
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
                         ApplyingChanges = false;
+                        PopulateAppliedVariables();
                     });
                 });
 
@@ -193,10 +202,10 @@ namespace EnvironmentVariables.ViewModels
                 _dispatcherQueue.TryEnqueue(() =>
                 {
                     ApplyingChanges = false;
+                    PopulateAppliedVariables();
                 });
             });
             AppliedProfile = profile;
-            PopulateAppliedVariables();
         }
 
         private void UnsetAppliedProfile()
@@ -212,12 +221,12 @@ namespace EnvironmentVariables.ViewModels
                     _dispatcherQueue.TryEnqueue(() =>
                     {
                         ApplyingChanges = false;
+                        PopulateAppliedVariables();
                     });
                 });
                 AppliedProfile.IsEnabled = false;
                 AppliedProfile = null;
                 appliedProfile.PropertyChanged += Profile_PropertyChanged;
-                PopulateAppliedVariables();
             }
         }
 
@@ -271,11 +280,10 @@ namespace EnvironmentVariables.ViewModels
                     _dispatcherQueue.TryEnqueue(() =>
                     {
                         ApplyingChanges = false;
+                        PopulateAppliedVariables();
                     });
                 });
             }
-
-            PopulateAppliedVariables();
         }
     }
 }

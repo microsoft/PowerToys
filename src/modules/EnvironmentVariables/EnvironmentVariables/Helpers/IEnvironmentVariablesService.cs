@@ -13,7 +13,7 @@ namespace EnvironmentVariables.Helpers
     {
         string ProfilesJsonFilePath { get; }
 
-        Task<List<ProfileVariablesSet>> ReadAsync();
+        List<ProfileVariablesSet> ReadProfiles();
 
         Task WriteAsync(IEnumerable<ProfileVariablesSet> profiles);
     }

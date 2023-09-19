@@ -38,14 +38,14 @@ namespace EnvironmentVariables.Helpers
         {
         }
 
-        public async Task<List<ProfileVariablesSet>> ReadAsync()
+        public List<ProfileVariablesSet> ReadProfiles()
         {
             if (!_fileSystem.File.Exists(ProfilesJsonFilePath))
             {
                 return new List<ProfileVariablesSet>();
             }
 
-            var fileContent = await _fileSystem.File.ReadAllTextAsync(ProfilesJsonFilePath);
+            var fileContent = _fileSystem.File.ReadAllText(ProfilesJsonFilePath);
             var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
 
             return profiles;
