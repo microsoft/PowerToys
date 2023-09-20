@@ -561,6 +561,9 @@
   <data name="VideoConference_ToolbarHideUnmuted.Content" xml:space="preserve">
     <value>When both camera and microphone are unmuted</value>
   </data>
+  <data name="VideoConference_ToolbarHideTimeout.Content" xml:space="preserve">
+    <value>After timeout</value>
+  </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference Mute</value>
   </data>

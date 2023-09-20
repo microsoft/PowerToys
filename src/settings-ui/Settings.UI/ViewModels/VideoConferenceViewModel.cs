@@ -147,6 +147,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case "When both camera and microphone are muted":
                     _toolbarHideIndex = 2;
                     break;
+                case "After timeout":
+                    _toolbarHideIndex = 3;
+                    break;
             }
 
             if (shouldSaveSettings)
@@ -496,6 +499,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             break;
                         case 2:
                             Settings.Properties.ToolbarHide.Value = "When both camera and microphone are muted";
+                            break;
+                        case 3:
+                            Settings.Properties.ToolbarHide.Value = "After timeout";
                             break;
                     }
 
