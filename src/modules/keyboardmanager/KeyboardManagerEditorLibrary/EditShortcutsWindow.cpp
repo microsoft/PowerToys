@@ -90,7 +90,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         windowClass.lpfnWndProc = EditShortcutsWindowProc;
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
-        windowClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW);
+        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == AppTheme::Dark) ? 0x00000000 : 0x00FFFFFF);
         windowClass.hIcon = static_cast<HICON>(LoadImageW(
             windowClass.hInstance,
             MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
