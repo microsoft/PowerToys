@@ -46,8 +46,8 @@ class PowerAccent : public PowertoyModuleIface
 
 private:
     bool m_enabled = false;
-    HANDLE m_hInvokeEvent;
-    PROCESS_INFORMATION p_info;
+    HANDLE m_hInvokeEvent{};
+    PROCESS_INFORMATION p_info{};
 
     bool is_process_running()
     {

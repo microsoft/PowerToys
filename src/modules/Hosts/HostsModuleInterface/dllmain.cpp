@@ -49,11 +49,11 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    HANDLE m_hProcess;
+    HANDLE m_hProcess{};
 
-    HANDLE m_hShowEvent;
+    HANDLE m_hShowEvent{};
 
-    HANDLE m_hShowAdminEvent;
+    HANDLE m_hShowAdminEvent{};
 
     bool is_process_running()
     {
