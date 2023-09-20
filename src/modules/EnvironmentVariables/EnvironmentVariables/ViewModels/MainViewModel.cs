@@ -114,10 +114,10 @@ namespace EnvironmentVariables.ViewModels
             var variables = new List<Variable>();
             if (AppliedProfile != null)
             {
-                variables = variables.Concat(AppliedProfile.Variables).ToList();
+                variables = variables.Concat(AppliedProfile.Variables.OrderBy(x => x.Name)).ToList();
             }
 
-            variables = variables.Concat(UserDefaultSet.Variables).Concat(SystemDefaultSet.Variables).ToList();
+            variables = variables.Concat(UserDefaultSet.Variables.OrderBy(x => x.Name)).Concat(SystemDefaultSet.Variables.OrderBy(x => x.Name)).ToList();
             variables = variables.GroupBy(x => x.Name).Select(y => y.First()).ToList();
             AppliedVariables = new ObservableCollection<Variable>(variables);
         }
