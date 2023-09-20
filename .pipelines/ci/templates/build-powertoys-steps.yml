@@ -54,6 +54,7 @@ steps:
   inputs:
     packageType: sdk
     version: '8.x'
+    includePreviewVersions: true
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
