@@ -122,10 +122,11 @@ namespace Peek.FilePreviewer.Controls
             {
                 await PreviewBrowser.EnsureCoreWebView2Async();
 
-                // Save the original background color
+                // Storing the original background color so it can be reset later for specific file types like HTML.
                 originalBackgroundColor = PreviewBrowser.DefaultBackgroundColor;
 
-                // transparent background when loading the page
+                // Setting the background color to transparent when initially loading the WebView2 component.
+                // This ensures that non-HTML files are displayed with a transparent background.
                 PreviewBrowser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
 
                 PreviewBrowser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
@@ -155,6 +156,8 @@ namespace Peek.FilePreviewer.Controls
 
         private void CoreWebView2_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
         {
+            // If the file being previewed is HTML or HTM, reset the background color to its original state.
+            // This is done to ensure that HTML and HTM files are displayed as intended, with their own background settings.
             if (Source?.ToString().EndsWith(".html", StringComparison.OrdinalIgnoreCase) == true ||
                 Source?.ToString().EndsWith(".htm", StringComparison.OrdinalIgnoreCase) == true)
             {
