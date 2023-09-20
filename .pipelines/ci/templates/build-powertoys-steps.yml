@@ -50,10 +50,10 @@ steps:
     pwsh: true
 
 - task: UseDotNet@2
-  displayName: 'Use .NET 7 SDK'
+  displayName: 'Use .NET 8 SDK'
   inputs:
     packageType: sdk
-    version: '7.x'
+    version: '8.x'
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
