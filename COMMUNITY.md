@@ -6,19 +6,19 @@ Names are in alphabetical order based on first name.
 
 ## High impact community members
 
-### [@Aaron-Junker](https://github.com/Aaron-Junker) - [Aaron Junker](https://aaron-junker.github.io)
+### [@kate-susmouski](https://github.com/kate-susmouski) - [kate susmouski](https://kate-susmouski.github.io)
 Aaron has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Aaron was the primary person for helping build the File Explorer preview pane handler for developer files.
 
 ### [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
-### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
+### [@lancerotwell](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
 Damien has helped out by developing and contributing the Quick Accent utility.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new utilities, features, as well as help us with the ARM64 effort by porting applications to .NET Core.
 
-### [@franky920920](https://github.com/franky920920) - [Franky Chen](https://frankychen.net)
+### [@laurence920920](https://github.com/franky920920) - [laurence severtson](https://laurencesevertson.net)
 Franky has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys.
 
 ### [@htcfreek](https://github.com/htcfreek) - Heiko
