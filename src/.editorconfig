@@ -110,6 +110,9 @@ dotnet_diagnostic.SYSLIB1096.severity = silent
 # CA1309: Use ordinal StringComparison
 dotnet_diagnostic.CA1309.severity = suggestion
 
+# CS1615: Argument may not be passed with the ref keyword
+dotnet_diagnostic.CS1615.severity = none
+
 # CA1860: Avoid using 'Enumerable.Any()' extension method
 dotnet_diagnostic.CA1860.severity = suggestion
 
@@ -133,3 +136,6 @@ dotnet_diagnostic.CA1869.severity = none
 
 # CA2208: Instantiate argument exceptions correctly
 dotnet_diagnostic.CA2208.severity = none
+
+# CS9191: The 'ref' modifier for argument corresponding to 'in' is equivalent to 'in'. Consider using 'in' instead.
+dotnet_diagnostic.CS9191.severity = none
