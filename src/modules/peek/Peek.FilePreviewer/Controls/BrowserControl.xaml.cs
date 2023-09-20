@@ -24,6 +24,8 @@ namespace Peek.FilePreviewer.Controls
         /// </summary>
         private Uri? _navigatedUri;
 
+        private Color originalBackgroundColor;
+
         public delegate void NavigationCompletedHandler(WebView2? sender, CoreWebView2NavigationCompletedEventArgs? args);
 
         public delegate void DOMContentLoadedHandler(CoreWebView2? sender, CoreWebView2DOMContentLoadedEventArgs? args);
@@ -120,6 +122,9 @@ namespace Peek.FilePreviewer.Controls
             {
                 await PreviewBrowser.EnsureCoreWebView2Async();
 
+                // Save the original background color
+                originalBackgroundColor = PreviewBrowser.DefaultBackgroundColor;
+
                 // transparent background when loading the page
                 PreviewBrowser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
 
@@ -150,6 +155,13 @@ namespace Peek.FilePreviewer.Controls
 
         private void CoreWebView2_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
         {
+            if (Source?.ToString().EndsWith(".html", StringComparison.OrdinalIgnoreCase) == true ||
+                Source?.ToString().EndsWith(".htm", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                // Reset to default behavior for HTML files
+                PreviewBrowser.DefaultBackgroundColor = originalBackgroundColor;
+            }
+
             DOMContentLoaded?.Invoke(sender, args);
         }
 
