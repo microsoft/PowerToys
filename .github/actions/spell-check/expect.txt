@@ -1015,6 +1015,7 @@ lstrlen
 LTRB
 LTRREADING
 luid
+LUMA
 lusrmgr
 LVal
 LWA
@@ -1498,6 +1499,7 @@ qianlifeng
 qit
 QITAB
 QITABENT
+qoi
 qps
 Quarternary
 QUERYENDSESSION
@@ -2253,6 +2255,7 @@ xsi
 XStr
 XUP
 XVIRTUALSCREEN
+xxxxxx
 YAxis
 ycv
 Yeet
