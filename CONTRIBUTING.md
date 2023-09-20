@@ -1,72 +1,13 @@
-# PowerToys Contributor's Guide
+# RSS Builder by B!Soft MarkBook RSS Feed
 
-Below is our guidance for how to report issues, propose new features, and submit contributions via Pull Requests (PRs). Our philosophy is heavily based around understanding the problem and scenarios first, this is why we follow this pattern before work has started.
-
-1. There is an issue
-2. There has been a conversation
-3. There is agreement on the problem, the fit for PowerToys, and the solution to the problem (implementation)
-
-## Filing an issue
-
-Please follow this simple rule to help us eliminate any unnecessary wasted effort & frustration, and ensure an efficient and effective use of everyone's time - yours, ours, and other community members':
-
-> 👉 If you have a question, think you've discovered an issue, would like to propose a new feature, etc., then find/file an issue **BEFORE** starting work to fix/implement it.
-
-When requesting new features / enhancements, understanding problem and scenario around it is extremely important. Having additional evidence, data, tweets, blog posts, research, ... anything is extremely helpful.  This information provides context to the scenario that may otherwise be lost.
-
-* Don't know whether you're reporting an issue or requesting a feature? File an issue
-* Have a question that you don't see answered in docs, videos, etc.? File an issue
-* Want to know if we're planning on building a particular feature? File an issue
-* Got a great idea for a new utility or feature? File an issue/request/idea
-* Don't understand how to do something? File an issue/Community Guidance Request
-* Found an existing issue that describes yours? Great - upvote and add additional commentary / info / repro-steps / etc.
-
-A quick search before filing an issue also could be helpful. It is likely someone else has found the problem you're seeing, and someone may be working on or have already contributed a fix!
-
-### How to tell the PowerToys team this is an interesting thing to focus on
-
-Upvote the original issue by clicking its [+😊] button and hitting 👍 (+1) icon or a different one. This way allows us to measure how impactful different issues are compared to others. The issue with comments like "+1", "me too", or similar is they actually make it harder to have a conversation and harder to quickly determine trending important requests.
-
----
-
-## Contributing fixes / features
-
-Please comment on an issue to let us know you're interested in working on something before you start the work. Not only does this avoid multiple people unexpectedly working on the same thing at the same time but it enables us to make sure everyone is clear on what should be done to implement any new functionality. It's less work for everyone, in the long run, to establish this up front.
-
-### Localization issues
-
-Please file localization issues, so our internal localization team can identify and fix them. However we currently don't accept community Pull Requests fixing localization issues. Localization is handled by the internal Microsoft team only.
-
-### To Spec or not to Spec
-
-A key point is for everyone to understand the approach that will be taken. We want to be sure if anyone does work, we will accept it in. Items that are larger in scope we'll want some type of spec to understand what is being planned and have a discussion. Specs help collaborators discuss different approaches to solve a problem, describe how the feature will behave, how the feature will impact the user, what happens if something goes wrong, etc. Driving towards agreement in a spec, before any code is written, often results in simpler code, and less wasted effort in the long run.
-
-For such scenarios, once a team member has agreed with your approach, skip ahead to the section headed "Development" section below.
-
-Team members will be happy to help review specs and guide them to completion.
-
-### Help Wanted
-
-Once the team has approved an issue/spec approach to solving, development can proceed. If no developers are immediately available, the spec can be parked ready for a developer to get started. Parked specs' issues will be labeled "Help Wanted". To find a list of development opportunities waiting for developer involvement, visit the Issues and filter on [the Help-Wanted label](https://github.com/microsoft/PowerToys/labels/Help%20Wanted).
-
----
-
-## Development
-
-Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/readme.md).
-
-### Naming of features and functionality
-
-Naming should be descriptive and straight forward. We want names to be clear about functionality and usefulness moving forward. 
-
-### How can I become a collaborator on the PowerToys team
-
-Be a great community member. Just help out a lot and make useful additions, filing bugs/suggestions, help develop fixes and features, code reviews, and always, docs. Lets continue to make the PowerToys repository a great spot to learn and make a great set of utilities.
-
-When the time comes, Microsoft will reach out and help make you a formal team member. Just make sure they can reach out to you :)
-
----
-
-## Thank you
-
-Thank you in advance for your contribution! 
+https://www.markbook.com MarkBook RSS Feed. Keep up to date on the latest news. en-us mrichardson@acadiemgroup.com The Acadiem Group 2020 NEW MarkBook HTML5 is Here! 10 Oct 2020 10:00:00 -0400 
+https://www.markbook.com mrichardson@acadiemgroup.com News Our ALL NEW MarkBook HTML5 Web Application is Here! Flash or Flex is no longer required. Many added features in a clean new look. Now you can use MarkBook on your Chromebook, Android or iPadOS tablet as well as Windows, macOS or Linux devices. (Select tablets only) A new version of the app, 1.1.0 22 Dec 2020 16:30:00 -0400 
+https://www.markbook.com mrichardson@acadiemgroup.com News A new version of the app, 1.1.0, has been launched. It contains a major security update. Please see the Release Notes for the details. A new version of the app, 1.2.0 26 Jan 2021 17:30:00 -0400 
+https://www.markbook.com mrichardson@acadiemgroup.com News A new version of the app, 1.2.0, has been launched. You can now Copy Comments to many students at once and easily input entries on tablets using Numeric Keypad. Please see the Release Notes for the details. A new version of the app, 1.3.0 25 Mar 2021 17:30:00 -0400 
+https://www.markbook.com mrichardson@acadiemgroup.com News A new version of the app, 1.3.0, has been launched. Please see the Release Notes for the details. A new version of the app, 1.4.0 30 Apr 2021 08:00:00 -0400 
+https://www.markbook.com mrichardson@acadiemgroup.com News A new version of the app, 1.4.0, has been launched. Please see the Release Notes for the details. For TDSB users 6 Aug 2021 08:00:00 -0400 http://tdsb.on.ca/ mrichardson@acadiemgroup.com News TDSB users: In preparation for Single Sign On service in September, all usernames now use your Toronto District School Board email address. TDSB-logo.png Attention TDSB Users 18 Sep 2021 01:00:00 -0400 
+https://www.markbook.com mrichardson@acadiemgroup.com News On Saturday September 18th, Single Sign On (SSO) will be implemented for TDSB MarkBook (Cloud) users. After the implementation is completed, teachers will be required to sign onto MarkBook using their TDSB e- mail address and password. Teachers that are already signing onto MarkBook with their TDSB email address will have their existing class data maintained. Teachers that are currently using personal email accounts will need to contact 
+support@markbookapp.com to request existing class data transfers, if required. TDSB-logo.png For TVDSB Users 09 Sep 2022 01:00:00 -0400 
+https://www.markbook.com News On Tuesday, September 6th, Single Sign On (SSO) was implemented for TVDSB MarkBook (Cloud) users. Teachers are now required to sign onto MarkBook using their TVDSB e-mail address and password in the Microsoft 365 Apps environment. Please follow the Information Guidesheet for "Transfer from Individual to Corporate Domain using SSO in MarkBook®”. Teachers that are already signing onto MarkBook with their TVDSB email address will have their existing class data maintained. Teachers that are currently using personal email accounts will need to contact 
+support@markbookapp.com to request existing class data transfers, if required. TVDSB-logo.webp WECDSB 31 Oct 2022 01:00:00 -0400 
+https://www.markbook.com News WECDSB users, please ensure that you have updated ALL of your courses with the most recent Aspen extract that has your first initial and last name in the file name (i.e. see below). Furthermore, please ensure you have submitted a copy (screenshots) of your updated courses to your school-issued Google form. WECDSB-logo.png
