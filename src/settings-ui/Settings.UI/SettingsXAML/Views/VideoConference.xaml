@@ -152,6 +152,16 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
                 </custom:SettingsGroup>
+
+                <custom:SettingsGroup x:Uid="VideoConference_Behavior" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+                    <controls:SettingsCard x:Uid="VideoConference_StartupAction">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{Binding Mode=TwoWay, Path=StartupActionIndex}">
+                            <ComboBoxItem x:Uid="VideoConference_StartupActionNothing" />
+                            <ComboBoxItem x:Uid="VideoConference_StartupActionUnmute" />
+                            <ComboBoxItem x:Uid="VideoConference_StartupActionMute" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>
 

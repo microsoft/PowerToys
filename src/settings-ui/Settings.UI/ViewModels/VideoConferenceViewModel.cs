@@ -152,6 +152,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     break;
             }
 
+            switch (Settings.Properties.StartupAction.Value)
+            {
+                case "Nothing":
+                    _startupActionIndex = 0;
+                    break;
+                case "Unmute":
+                    _startupActionIndex = 1;
+                    break;
+                case "Mute":
+                    _startupActionIndex = 2;
+                    break;
+            }
+
             if (shouldSaveSettings)
             {
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
@@ -179,6 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _toolbarPositionIndex;
         private int _toolbarMonitorIndex;
         private int _toolbarHideIndex;
+        private int _startupActionIndex;
         private HotkeySettings _cameraAndMicrophoneMuteHotkey;
         private HotkeySettings _microphoneMuteHotkey;
         private HotkeySettings _microphonePushToTalkHotkey;
@@ -506,6 +520,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     RaisePropertyChanged(nameof(ToolbarHideIndex));
+                }
+            }
+        }
+
+        public int StartupActionIndex
+        {
+            get
+            {
+                return _startupActionIndex;
+            }
+
+            set
+            {
+                if (value != _startupActionIndex)
+                {
+                    _startupActionIndex = value;
+                    switch (_startupActionIndex)
+                    {
+                        case 0:
+                            Settings.Properties.StartupAction.Value = "Nothing";
+                            break;
+                        case 1:
+                            Settings.Properties.StartupAction.Value = "Unmute";
+                            break;
+                        case 2:
+                            Settings.Properties.StartupAction.Value = "Mute";
+                            break;
+                    }
+
+                    RaisePropertyChanged(nameof(_startupActionIndex));
                 }
             }
         }
