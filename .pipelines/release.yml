@@ -4,7 +4,7 @@ pr: none
 
 pool: 
   name: SHINE-INT-L
-  demands: ImageOverride -equals SHINE-VS17-Latest
+  demands: ImageOverride -equals SHINE-VS17-Preview
 
 parameters:
   - name: buildConfigurations
@@ -66,10 +66,11 @@ jobs:
       version: '2.1.x'
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 7 SDK'
+    displayName: 'Use .NET 8 SDK'
     inputs:
       packageType: sdk
-      version: '7.x'
+      version: '8.x'
+      includePreviewVersions: true
 
   - task: NuGetAuthenticate@1
       
