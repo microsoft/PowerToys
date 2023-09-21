@@ -294,7 +294,7 @@
                                                     Visibility="{x:Bind ShowBadgeOnPluginSettingError}" />
                                             </Grid>
 
-                                            <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle" IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}" />
+                                            <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle" IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}" IsEnabled="{x:Bind Path=EnabledGpoRuleIsConfigured, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
 
                                         </StackPanel>
                                         <controls:SettingsExpander.Items>
