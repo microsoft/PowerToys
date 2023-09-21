@@ -224,4 +224,7 @@
   <data name="StateNotUpToDateInfoBar.Message" xml:space="preserve">
     <value>Variables have been modified. Reload to get the latest changes.</value>
   </data>
+  <data name="CancelBtn" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

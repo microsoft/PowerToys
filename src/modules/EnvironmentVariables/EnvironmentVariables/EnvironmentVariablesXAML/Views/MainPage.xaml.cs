@@ -38,6 +38,7 @@ namespace EnvironmentVariables.Views
 
             EditVariableDialog.Title = resourceLoader.GetString("EditVariableDialog_Title");
             EditVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
+            EditVariableDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
             EditVariableDialog.PrimaryButtonCommand = EditCommand;
             EditVariableDialog.PrimaryButtonCommandParameter = card;
 
@@ -72,6 +73,7 @@ namespace EnvironmentVariables.Views
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             AddProfileDialog.Title = resourceLoader.GetString("AddNewProfileDialog_Title");
             AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
+            AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
             AddProfileDialog.PrimaryButtonCommand = AddProfileCommand;
             AddProfileDialog.DataContext = new ProfileVariablesSet(Guid.NewGuid(), string.Empty);
             await AddProfileDialog.ShowAsync();

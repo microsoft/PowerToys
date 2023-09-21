@@ -68,11 +68,13 @@
             <RowDefinition Height="Auto" />
             <!--  content  -->
         </Grid.RowDefinitions>
-        <InfoBar
-            x:Uid="StateNotUpToDateInfoBar"
-            Grid.Row="1"
-            IsOpen="True"
-            Severity="Warning" />
+        <Grid Grid.Row="1">
+            <InfoBar
+                x:Uid="StateNotUpToDateInfoBar"
+                IsOpen="{x:Bind ViewModel.IsStateModified, Mode=TwoWay}"
+                Severity="Warning"
+                Visibility="{x:Bind ViewModel.IsStateModified, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+        </Grid>
 
         <!--  buttons  -->
         <StackPanel Orientation="Horizontal">
@@ -268,6 +270,7 @@
             x:Name="EditVariableDialog"
             x:Uid="EditVariableDialog"
             IsPrimaryButtonEnabled="True"
+            IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
                 <models:Variable />
