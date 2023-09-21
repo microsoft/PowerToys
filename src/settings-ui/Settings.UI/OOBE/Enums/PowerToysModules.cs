@@ -6,7 +6,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
 {
     public enum PowerToysModules
     {
-        Overview = 0,
+        Dashboard = 0,
+        Overview,
         AlwaysOnTop,
         Awake,
         ColorPicker,

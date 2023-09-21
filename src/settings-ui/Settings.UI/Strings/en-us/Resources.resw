@@ -2973,6 +2973,12 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
   </data>
+  <data name="Dashboard.Latest" xml:space="preserve">
+    <value>latest</value>
+  </data>
+  <data name="Dashboard.Outdated" xml:space="preserve">
+    <value>outdated</value>
+  </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
     <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
   </data>

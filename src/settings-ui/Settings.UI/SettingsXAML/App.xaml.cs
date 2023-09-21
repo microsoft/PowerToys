@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public bool ShowScoobe { get; set; }
 
-        public Type StartupPage { get; set; } = typeof(Views.GeneralPage);
+        public Type StartupPage { get; set; } = typeof(Views.DashboardPage);
 
         public static Action<string> IPCMessageReceivedCallback { get; set; }
 
