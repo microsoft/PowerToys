@@ -84,6 +84,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
 	<PackageReference Include="CommunityToolkit.WinUI.Converters" />
+	<PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
 	<PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>

@@ -17,14 +17,15 @@
     <Page.Resources>
         <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
             <controls:SettingsCard
+                ActionIcon="{ui:FontIcon Glyph=&#xE70F;}"
                 Click="EditVariable_Click"
                 CommandParameter="{x:Bind (models:Variable)}"
                 Header="{x:Bind Name, Mode=TwoWay}"
                 IsClickEnabled="{x:Bind IsEditable, Mode=OneWay}">
-                <TextBlock
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    IsTextSelectionEnabled="True"
-                    Text="{x:Bind Values, Mode=TwoWay}" />
+                <controls:SettingsCard.Description>
+                    <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind Values, Mode=TwoWay}" />
+                </controls:SettingsCard.Description>
+
                 <controls:SettingsCard.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem
@@ -40,6 +41,7 @@
         </DataTemplate>
 
         <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
+
         <converters1:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
@@ -55,59 +57,68 @@
 
     <Grid Margin="16" RowSpacing="8">
         <Grid.RowDefinitions>
+
             <RowDefinition Height="Auto" />
             <!--  buttons  -->
+            <RowDefinition Height="Auto" />
+            <!--  Warning messages  -->
             <RowDefinition Height="*" />
             <!--  content  -->
+            <RowDefinition Height="Auto" />
+            <!--  content  -->
         </Grid.RowDefinitions>
+        <InfoBar
+            x:Uid="StateNotUpToDateInfoBar"
+            Grid.Row="1"
+            IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+            Severity="Warning" />
 
-        <Grid>
-            <!--  buttons  -->
-            <StackPanel>
-
-                <Button Command="{x:Bind NewProfileCommand}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon
-                            x:Name="Icon"
-                            FontSize="16"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                            Glyph="&#xe710;" />
-                        <TextBlock x:Uid="NewProfileBtn" />
-                    </StackPanel>
-                    <Button.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="N" Modifiers="Control" />
-                    </Button.KeyboardAccelerators>
-                </Button>
-                <ProgressRing IsActive="{x:Bind ViewModel.ApplyingChanges, Mode=TwoWay}" />
-                <InfoBar
-                    x:Uid="StateNotUpToDateInfoBar"
-                    Margin="0,8,0,0"
-                    IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                    Severity="Informational"
-                    Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
-            </StackPanel>
-        </Grid>
-        <Grid Grid.Row="1" ColumnSpacing="32">
+        <!--  buttons  -->
+        <StackPanel Orientation="Horizontal">
+            <Button Command="{x:Bind NewProfileCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon
+                        x:Name="Icon"
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Glyph="&#xe710;" />
+                    <TextBlock x:Uid="NewProfileBtn" />
+                </StackPanel>
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="N" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+            </Button>
+            <ProgressRing IsActive="{x:Bind ViewModel.ApplyingChanges, Mode=TwoWay}" />
+        </StackPanel>
+        <Grid
+            Grid.Row="2"
+            Margin="0,24,0,0"
+            ColumnSpacing="12">
             <Grid.ColumnDefinitions>
                 <!--  Left side  -->
-                <ColumnDefinition />
-                <!--  Separator  -->
-                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+                <!--  GridSplitter  -->
+                <ColumnDefinition Width="Auto" />
                 <!--  Applied values  -->
-                <ColumnDefinition />
+                <ColumnDefinition Width="480" />
             </Grid.ColumnDefinitions>
             <ScrollViewer
                 Grid.Row="1"
                 Grid.Column="0"
                 VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <TextBlock
-                        x:Uid="ProfilesLbl"
-                        Margin="0,32,0,0"
-                        Style="{StaticResource BodyStrongTextBlockStyle}" />
-                    <TextBlock x:Uid="ProfilesDescriptionLbl" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-
-                    <ItemsControl Margin="0,16,0,4" ItemsSource="{x:Bind ViewModel.Profiles, Mode=TwoWay}">
+                <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock x:Uid="ProfilesLbl" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <FontIcon
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE946;">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Uid="ProfilesDescriptionLbl" TextWrapping="Wrap" />
+                            </ToolTipService.ToolTip>
+                        </FontIcon>
+                    </StackPanel>
+                    <ItemsControl Margin="0,4,0,0" ItemsSource="{x:Bind ViewModel.Profiles, Mode=TwoWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ProfileVariablesSet">
                                 <controls:SettingsExpander
@@ -136,87 +147,120 @@
                     </ItemsControl>
 
 
-                    <TextBlock
-                        x:Uid="DefaultVariablesLbl"
-                        Margin="0,32,0,0"
-                        Style="{StaticResource BodyStrongTextBlockStyle}" />
-                    <TextBlock x:Uid="ProfilesDescriptionLbl" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <StackPanel
+                        Margin="0,24,0,0"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <TextBlock x:Uid="DefaultVariablesLbl" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <FontIcon
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE946;">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Uid="ProfilesDescriptionLbl" TextWrapping="Wrap" />
+                            </ToolTipService.ToolTip>
+                        </FontIcon>
+                    </StackPanel>
 
                     <controls:SettingsExpander
-                        Margin="0,16,0,4"
+                        Margin="0,4,0,0"
                         Header="{x:Bind ViewModel.UserDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}"
                         ItemTemplate="{StaticResource VariableTemplate}"
                         ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}" />
-                    <InfoBar
-                        x:Uid="EditSystemDefaultSetInfoBar"
-                        Margin="0,8,0,0"
-                        IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                        Severity="Informational"
-                        Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+
                     <controls:SettingsExpander
-                        Margin="0,0,0,4"
                         Header="{x:Bind ViewModel.SystemDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE977;}"
                         ItemTemplate="{StaticResource VariableTemplate}"
-                        ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}" />
+                        ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}">
+                        <controls:SettingsExpander.Description>
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <!--
+                                    This crashes the app:
+                                    Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
+                                -->
+                                <!--  TO DO: Glyph not showing, known WinUI issue - need to follow up with team  -->
+                                <InfoBadge IconSource="{ui:FontIconSource Glyph=&#xEA1F;}" Style="{StaticResource AttentionIconInfoBadgeStyle}" />
+                                <TextBlock x:Uid="EditSystemDefaultSetInfoBar" />
+                            </StackPanel>
+                        </controls:SettingsExpander.Description>
+                    </controls:SettingsExpander>
                 </StackPanel>
             </ScrollViewer>
-            <AppBarSeparator Grid.Column="1" />
-            <Grid Grid.Column="2">
+            <controls:GridSplitter
+                x:Name="Splitter"
+                Grid.Row="2"
+                Grid.Column="1"
+                Width="8"
+                Foreground="Transparent"
+                ResizeBehavior="BasedOnAlignment"
+                ResizeDirection="Auto" />
+
+            <Grid
+                x:Name="AppliedValuesPanel"
+                Grid.Row="2"
+                Grid.Column="2">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <TextBlock
-                    x:Uid="AppliedVariablesLbl"
-                    Margin="0,32,0,0"
-                    Style="{StaticResource BodyStrongTextBlockStyle}" />
-                <TextBlock
-                    x:Uid="AppliedVariablesDescriptionLbl"
-                    Grid.Row="1"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <ScrollViewer
-                    x:Name="AppliedVariablesScrollViewer"
-                    Grid.Row="2"
-                    Margin="0,16,0,4">
-                    <ItemsControl Margin="-4,0,0,0" ItemsSource="{x:Bind ViewModel.AppliedVariables, Mode=TwoWay}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="models:Variable">
-                                <Grid Height="48" ColumnSpacing="8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <FontIcon
-                                        Grid.Column="0"
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                        Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        VerticalAlignment="Center"
-                                        Orientation="Vertical">
-                                        <TextBlock
-                                            Text="{x:Bind Name}"
-                                            TextTrimming="CharacterEllipsis"
-                                            TextWrapping="NoWrap" />
-                                        <TextBlock
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                            Text="{x:Bind Values}"
-                                            TextTrimming="CharacterEllipsis"
-                                            TextWrapping="NoWrap" />
-                                    </StackPanel>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </Grid>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock x:Uid="AppliedVariablesLbl" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Glyph="&#xE946;">
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="AppliedVariablesDescriptionLbl" TextWrapping="Wrap" />
+                        </ToolTipService.ToolTip>
+                    </FontIcon>
+                </StackPanel>
 
+                <Grid
+                    Grid.Row="1"
+                    Margin="0,8,0,0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{ThemeResource ControlCornerRadius}">
+                    <ScrollViewer x:Name="AppliedVariablesScrollViewer">
+                        <ItemsControl Margin="12,8,12,0" ItemsSource="{x:Bind ViewModel.AppliedVariables, Mode=TwoWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:Variable">
+                                    <Grid Height="56" ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="24" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <FontIcon
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                            Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Orientation="Vertical">
+                                            <TextBlock
+                                                Text="{x:Bind Name}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind Values}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
         </Grid>
 
         <ContentDialog
@@ -260,30 +304,40 @@
             </ContentDialog.DataContext>
             <ScrollViewer>
                 <StackPanel
-                    MinWidth="320"
+                    MinWidth="360"
                     HorizontalAlignment="Stretch"
                     Spacing="12">
-                    <TextBox
-                        x:Uid="NewProfileNameTxtBox"
-                        IsSpellCheckEnabled="False"
-                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <ToggleSwitch
-                        x:Uid="NewProfileEnabled"
-                        IsOn="{Binding IsEnabled, Mode=TwoWay}"
-                        OffContent=""
-                        OnContent="" />
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            x:Uid="NewProfileNameTxtBox"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            IsSpellCheckEnabled="False"
+                            Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ToggleSwitch
+                            x:Uid="NewProfileEnabled"
+                            Grid.Column="1"
+                            MinWidth="0"
+                            Margin="0,0,0,0"
+                            VerticalAlignment="Center"
+                            IsOn="{Binding IsEnabled, Mode=TwoWay}"
+                            OffContent=""
+                            OnContent="" />
+                    </Grid>
+
+                    <TextBlock x:Uid="NewProfileVariablesListViewHeader" Margin="0,12,0,0" />
+
                     <ListView
                         x:Name="NewProfileVariablesListView"
-                        Margin="0,12,0,12"
+                        Margin="-16,-8,0,12"
                         HorizontalAlignment="Stretch"
                         ItemsSource="{Binding Variables, Mode=TwoWay}"
                         SelectionMode="None">
-                        <ListView.Header>
-                            <TextBlock
-                                x:Uid="NewProfileVariablesListViewHeader"
-                                Margin="0,0,0,8"
-                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                        </ListView.Header>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="models:Variable">
                                 <Grid Height="48" ColumnSpacing="8">
