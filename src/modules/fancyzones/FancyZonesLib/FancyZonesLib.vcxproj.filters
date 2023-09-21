@@ -272,6 +272,9 @@
     <ClCompile Include="WindowKeyboardSnap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FancyZonesWindowProcessing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -26,6 +26,7 @@
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
 #include <FancyZonesLib/trace.h>
+#include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowKeyboardSnap.h>
 #include <FancyZonesLib/WindowMouseSnap.h>
 #include <FancyZonesLib/WorkArea.h>
@@ -393,12 +394,6 @@ void FancyZones::WindowCreated(HWND window) noexcept
     // Avoid already stamped (zoned) windows
     const bool isZoned = !FancyZonesWindowProperties::RetrieveZoneIndexProperty(window).empty();
     if (isZoned)
-    {
-        return;
-    }
-
-    const bool isCandidateForLastKnownZone = FancyZonesWindowUtils::IsCandidateForZoning(window);
-    if (!isCandidateForLastKnownZone)
     {
         return;
     }
@@ -994,7 +989,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
         return false;
     }
 
-    if (FancyZonesSettings::settings().overrideSnapHotkeys && FancyZonesWindowUtils::IsCandidateForZoning(window))
+    if (FancyZonesSettings::settings().overrideSnapHotkeys)
     {
         HMONITOR monitor = WorkAreaKeyFromWindow(window);
 
