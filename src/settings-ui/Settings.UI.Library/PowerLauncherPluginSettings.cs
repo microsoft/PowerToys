@@ -18,6 +18,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public bool Disabled { get; set; }
 
+        // Use to communicate the state to settings UI (Using int type because we can't reference GPOWrapper.)
+        public int EnabledPolicyState { get; set; }
+
         public bool IsGlobal { get; set; }
 
         public string ActionKeyword { get; set; }
