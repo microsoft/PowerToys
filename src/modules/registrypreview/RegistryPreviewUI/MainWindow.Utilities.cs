@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -413,20 +415,74 @@ namespace RegistryPreview
                         value += registryLine;
                     }
 
-                    // Clean out any escaped characters in the value, only for the preview
-                    value = StripEscapedCharacters(value);
-
                     // update the ListViewItem with the loaded value, based off REG value type
                     switch (registryValue.Type)
                     {
                         case "ERROR":
                             // do nothing
                             break;
+                        case "REG_SZ":
+                            if (value == "\"")
+                            {
+                                // Value is most likely missing an end quote
+                                registryValue.Type = "ERROR";
+                                value = resourceLoader.GetString("InvalidString");
+                            }
+                            else
+                            {
+                                for (int i = 1; i < value.Length; i++)
+                                {
+                                    if (value[i - 1] == '\\')
+                                    {
+                                        // Only allow these escape characters
+                                        if (value[i] != '"' && value[i] != '\\')
+                                        {
+                                            registryValue.Type = "ERROR";
+                                            value = resourceLoader.GetString("InvalidString");
+                                            break;
+                                        }
+
+                                        i++;
+                                    }
+
+                                    if (value[i - 1] != '\\' && value[i] == '"')
+                                    {
+                                        // Don't allow non-escaped quotes
+                                        registryValue.Type = "ERROR";
+                                        value = resourceLoader.GetString("InvalidString");
+                                        break;
+                                    }
+                                }
+
+                                if (registryValue.Type != "ERROR")
+                                {
+                                    // Clean out any escaped characters in the value, only for the preview
+                                    value = StripEscapedCharacters(value);
+                                }
+                            }
+
+                            registryValue.Value = value;
+                            break;
                         case "REG_BINARY":
                         case "REG_NONE":
                             if (value.Length <= 0)
                             {
                                 value = resourceLoader.GetString("ZeroLength");
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    // Hexes are usually two characters (00), it's invalid if less or more than 2
+                                    var bytes = value.Split(',').Select(
+                                        c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null);
+                                    value = string.Join(' ', bytes.Select(b => b.ToString("x2", CultureInfo.CurrentCulture)));
+                                }
+                                catch
+                                {
+                                    registryValue.Type = "ERROR";
+                                    value = resourceLoader.GetString("InvalidBinary");
+                                }
                             }
 
                             registryValue.Value = value;
@@ -436,6 +492,19 @@ namespace RegistryPreview
                             if (value.Length <= 0)
                             {
                                 registryValue.Type = "ERROR";
+                                value = resourceLoader.GetString("InvalidDword");
+                            }
+                            else
+                            {
+                                if (uint.TryParse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint dword))
+                                {
+                                    value = $"0x{dword:x8} ({dword})";
+                                }
+                                else
+                                {
+                                    registryValue.Type = "ERROR";
+                                    value = resourceLoader.GetString("InvalidDword");
+                                }
                             }
 
                             registryValue.Value = value;
@@ -444,7 +513,54 @@ namespace RegistryPreview
                         case "REG_QWORD":
                             if (value.Length <= 0)
                             {
+                                registryValue.Type = "ERROR";
                                 value = resourceLoader.GetString("InvalidQword");
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    // Hexes are usually two characters (00), it's invalid if less or more than 2
+                                    var bytes = value.Split(',').Select(
+                                        c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null).ToArray();
+                                    ulong qword = BitConverter.ToUInt64(bytes);
+                                    value = $"0x{qword:x8} ({qword})";
+                                }
+                                catch
+                                {
+                                    registryValue.Type = "ERROR";
+                                    value = resourceLoader.GetString("InvalidQword");
+                                }
+                            }
+
+                            registryValue.Value = value;
+                            break;
+                        case "REG_EXPAND_SZ":
+                        case "REG_MULTI_SZ":
+                            try
+                            {
+                                // Hexes are usually two characters (00), it's invalid if less or more than 2
+                                var bytes = value.Split(',').Select(
+                                    c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null).ToArray();
+
+                                if (registryValue.Type == "REG_MULTI_SZ")
+                                {
+                                    // Replace zeros (00,00) with spaces
+                                    for (int i = 0; i < bytes.Length; i += 2)
+                                    {
+                                        if (bytes[i] == 0 && bytes[i + 1] == 0)
+                                        {
+                                            bytes[i] = 0x20;
+                                        }
+                                    }
+                                }
+
+                                value = Encoding.Unicode.GetString(bytes);
+                            }
+                            catch
+                            {
+                                registryValue.Type = "ERROR";
+                                value = resourceLoader.GetString("InvalidString");
                             }
 
                             registryValue.Value = value;
@@ -1036,7 +1152,7 @@ namespace RegistryPreview
                 value = value.Remove(indexOf, value.Length - indexOf);
             }
 
-            return value;
+            return value.TrimEnd();
         }
 
         /// <summary>
