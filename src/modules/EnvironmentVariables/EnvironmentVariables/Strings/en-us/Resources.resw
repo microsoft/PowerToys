@@ -218,4 +218,7 @@
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
+  <data name="StateNotUpToDateInfoBar.Title" xml:space="preserve">
+    <value>Environment variables are update by third-party app, state is inconsistent. Please review changes.</value>
+  </data>
 </root>
