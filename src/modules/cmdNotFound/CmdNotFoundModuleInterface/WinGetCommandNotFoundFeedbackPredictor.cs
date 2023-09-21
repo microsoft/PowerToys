@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Management.Automation.Subsystem.Feedback;
 using System.Management.Automation.Subsystem.Prediction;
+using Microsoft.Extensions.ObjectPool;
 
 namespace WinGetCommandNotFound
 {
@@ -13,20 +15,20 @@ namespace WinGetCommandNotFound
     {
         private readonly Guid _guid;
 
+        private readonly ObjectPool<PowerShell> _pool;
+
         private const int _maxSuggestions = 20;
 
         private List<string>? _candidates;
-
-        private PowerShell _ps;
 
         public static WinGetCommandNotFoundFeedbackPredictor Singleton { get; } = new WinGetCommandNotFoundFeedbackPredictor(Init.Id);
 
         private WinGetCommandNotFoundFeedbackPredictor(string guid)
         {
             _guid = new Guid(guid);
-            var iss = System.Management.Automation.Runspaces.InitialSessionState.CreateDefault2();
-            iss.ImportPSModule(new[] { "Microsoft.WinGet.Client" });
-            _ps = PowerShell.Create(iss);
+
+            var provider = new DefaultObjectPoolProvider();
+            _pool = provider.Create(new PooledPowerShellObjectPolicy());
         }
 
         public Guid Id => _guid;
@@ -75,53 +77,65 @@ namespace WinGetCommandNotFound
             return null;
         }
 
-        private System.Collections.ObjectModel.Collection<PSObject> FindPackages(string query, ref bool tooManySuggestions, ref string packageMatchFilterField)
+        private Collection<PSObject> FindPackages(string query, ref bool tooManySuggestions, ref string packageMatchFilterField)
         {
-            var common = new Hashtable()
+            var ps = _pool.Get();
+            try
             {
-                ["Source"] = "winget",
-            };
+                if (ps is null)
+                {
+                    return new Collection<PSObject>();
+                }
 
-            // 1) Search by command
-            _ps.Commands.Clear();
-            var pkgList = _ps.AddCommand("Find-WinGetPackage")
-                .AddParameter("Command", query)
-                .AddParameter("MatchOption", "StartsWithCaseInsensitive")
-                .AddParameters(common)
-                .Invoke();
-            if (pkgList.Count > 0)
-            {
+                var common = new Hashtable()
+                {
+                    ["Source"] = "winget",
+                };
+
+                // 1) Search by command
+                var pkgList = ps.AddCommand("Find-WinGetPackage")
+                    .AddParameter("Command", query)
+                    .AddParameter("MatchOption", "StartsWithCaseInsensitive")
+                    .AddParameters(common)
+                    .Invoke();
+                if (pkgList.Count > 0)
+                {
+                    tooManySuggestions = pkgList.Count > _maxSuggestions;
+                    packageMatchFilterField = "command";
+                    return pkgList;
+                }
+
+                // 2) No matches found,
+                //    search by name
+                ps.Commands.Clear();
+                pkgList = ps.AddCommand("Find-WinGetPackage")
+                    .AddParameter("Name", query)
+                    .AddParameter("MatchOption", "ContainsCaseInsensitive")
+                    .AddParameters(common)
+                    .Invoke();
+                if (pkgList.Count > 0)
+                {
+                    tooManySuggestions = pkgList.Count > _maxSuggestions;
+                    packageMatchFilterField = "name";
+                    return pkgList;
+                }
+
+                // 3) No matches found,
+                //    search by moniker
+                ps.Commands.Clear();
+                pkgList = ps.AddCommand("Find-WinGetPackage")
+                    .AddParameter("Moniker", query)
+                    .AddParameter("MatchOption", "ContainsCaseInsensitive")
+                    .AddParameters(common)
+                    .Invoke();
                 tooManySuggestions = pkgList.Count > _maxSuggestions;
-                packageMatchFilterField = "command";
+                packageMatchFilterField = "moniker";
                 return pkgList;
             }
-
-            // 2) No matches found,
-            //    search by name
-            _ps.Commands.Clear();
-            pkgList = _ps.AddCommand("Find-WinGetPackage")
-                .AddParameter("Name", query)
-                .AddParameter("MatchOption", "ContainsCaseInsensitive")
-                .AddParameters(common)
-                .Invoke();
-            if (pkgList.Count > 0)
+            finally
             {
-                tooManySuggestions = pkgList.Count > _maxSuggestions;
-                packageMatchFilterField = "name";
-                return pkgList;
+                _pool.Return(ps);
             }
-
-            // 3) No matches found,
-            //    search by moniker
-            _ps.Commands.Clear();
-            pkgList = _ps.AddCommand("Find-WinGetPackage")
-                .AddParameter("Moniker", query)
-                .AddParameter("MatchOption", "ContainsCaseInsensitive")
-                .AddParameters(common)
-                .Invoke();
-            tooManySuggestions = pkgList.Count > _maxSuggestions;
-            packageMatchFilterField = "moniker";
-            return pkgList;
         }
 
         public bool CanAcceptFeedback(PredictionClient client, PredictorFeedbackKind feedback)
