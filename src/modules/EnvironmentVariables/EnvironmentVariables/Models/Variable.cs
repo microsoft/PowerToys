@@ -13,6 +13,7 @@ namespace EnvironmentVariables.Models
     public partial class Variable : ObservableObject
     {
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Valid))]
         private string _name;
 
         [ObservableProperty]
@@ -31,6 +32,8 @@ namespace EnvironmentVariables.Models
         public VariablesSetType ParentType { get; set; }
 
         public List<string> ValuesList { get; set; }
+
+        public bool Valid => Validate();
 
         public Variable()
         {
@@ -91,6 +94,16 @@ namespace EnvironmentVariables.Models
                 ParentType = profile ? VariablesSetType.Profile : ParentType,
                 ValuesList = new List<string>(ValuesList),
             };
+        }
+
+        private bool Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

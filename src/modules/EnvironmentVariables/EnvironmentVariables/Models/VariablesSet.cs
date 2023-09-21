@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using EnvironmentVariables.ViewModels;
 
 namespace EnvironmentVariables.Models
 {
@@ -21,6 +23,7 @@ namespace EnvironmentVariables.Models
         public Guid Id { get; set; }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Valid))]
         private string _name;
 
         [JsonIgnore]
@@ -31,6 +34,8 @@ namespace EnvironmentVariables.Models
 
         [ObservableProperty]
         private ObservableCollection<Variable> _variables;
+
+        public bool Valid => Validate();
 
         public VariablesSet()
         {
@@ -50,6 +55,16 @@ namespace EnvironmentVariables.Models
                 VariablesSetType.Profile => ProfileIconPath,
                 _ => throw new NotImplementedException(),
             };
+        }
+
+        private bool Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -269,7 +269,7 @@
         <ContentDialog
             x:Name="EditVariableDialog"
             x:Uid="EditVariableDialog"
-            IsPrimaryButtonEnabled="True"
+            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
@@ -300,7 +300,7 @@
         <ContentDialog
             x:Name="AddProfileDialog"
             x:Uid="AddProfileDialog"
-            IsPrimaryButtonEnabled="True"
+            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
@@ -410,7 +410,8 @@
                                                 <TextBox
                                                     x:Name="AddNewVariableName"
                                                     x:Uid="AddNewVariableName"
-                                                    Margin="0,16,0,0" />
+                                                    Margin="0,16,0,0"
+                                                    TextChanged="AddNewVariableName_TextChanged" />
 
                                                 <TextBox
                                                     x:Name="AddNewVariableValue"
@@ -464,10 +465,12 @@
                                         </controls:Case>
                                     </controls:SwitchPresenter>
                                     <Button
+                                        x:Name="ConfirmAddVariableBtn"
                                         x:Uid="ConfirmAddVariableBtn"
                                         Grid.Row="2"
                                         HorizontalAlignment="Stretch"
                                         Command="{x:Bind AddVariableCommand}"
+                                        IsEnabled="False"
                                         Style="{StaticResource AccentButtonStyle}" />
                                 </Grid>
 

@@ -145,5 +145,21 @@ namespace EnvironmentVariables.Views
                 ViewModel.DeleteVariable(variable, variableSet);
             }
         }
+
+        private void AddNewVariableName_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox nameTxtBox = sender as TextBox;
+            if (nameTxtBox != null)
+            {
+                if (nameTxtBox.Text.Length > 0)
+                {
+                    ConfirmAddVariableBtn.IsEnabled = true;
+                }
+                else
+                {
+                    ConfirmAddVariableBtn.IsEnabled = false;
+                }
+            }
+        }
     }
 }
