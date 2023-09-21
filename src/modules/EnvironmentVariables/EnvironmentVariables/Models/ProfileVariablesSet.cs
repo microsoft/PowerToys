@@ -112,12 +112,7 @@ namespace EnvironmentVariables.Models
                 var applied = EnvironmentVariablesHelper.GetExisting(variable.Name);
                 if (applied != null && applied.Values == variable.Values && applied.ParentType == VariablesSetType.User)
                 {
-                    var backupName = EnvironmentVariablesHelper.GetBackupVariableName(variable, Name);
-                    var backup = EnvironmentVariablesHelper.GetExisting(backupName);
-                    if (backup != null && backup.ParentType == VariablesSetType.User)
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
                 return false;

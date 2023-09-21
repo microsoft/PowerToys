@@ -41,6 +41,9 @@ namespace EnvironmentVariables.ViewModels
         private bool _isElevated;
 
         [ObservableProperty]
+        private bool _isStateModified;
+
+        [ObservableProperty]
         private bool _applyingChanges;
 
         public ProfileVariablesSet AppliedProfile { get; set; }
@@ -95,8 +98,21 @@ namespace EnvironmentVariables.ViewModels
                     }
                 }
 
-                var applied = profiles.Where(x => x.IsEnabled).ToList();
-                AppliedProfile = applied.Count > 0 ? applied.First() : null;
+                var appliedProfiles = profiles.Where(x => x.IsEnabled).ToList();
+                if (appliedProfiles.Count > 0)
+                {
+                    var appliedProfile = appliedProfiles.First();
+                    if (appliedProfile.IsCorrectlyApplied())
+                    {
+                        AppliedProfile = appliedProfile;
+                        IsStateModified = false;
+                    }
+                    else
+                    {
+                        IsStateModified = true;
+                        appliedProfile.IsEnabled = false;
+                    }
+                }
 
                 Profiles = new ObservableCollection<ProfileVariablesSet>(profiles);
             }

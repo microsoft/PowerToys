@@ -46,6 +46,7 @@
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
             TrueValue="Collapsed" />
+        <converters1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
     </Page.Resources>
     <i:Interaction.Behaviors>
@@ -70,7 +71,7 @@
         <InfoBar
             x:Uid="StateNotUpToDateInfoBar"
             Grid.Row="1"
-            IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+            IsOpen="True"
             Severity="Warning" />
 
         <!--  buttons  -->
