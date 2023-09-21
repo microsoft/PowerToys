@@ -82,12 +82,18 @@ namespace powertoys_gpo {
             return std::nullopt;
         }
 
-        std::wstring string_value(string_buffer_capacity / sizeof(wchar_t) + 1, L' ');
+        // RegGetValueW overshoots sometimes. Use a buffer first to not have characters past the string end.
+        wchar_t* temp_buffer = new wchar_t[string_buffer_capacity / sizeof(wchar_t) + 1];
         // Read string
-        if (RegGetValueW(hRootKey, subKey.c_str(), value_name.c_str(), reg_flags, &reg_value_type, &string_value[0], &string_buffer_capacity) != ERROR_SUCCESS)
+        if (RegGetValueW(hRootKey, subKey.c_str(), value_name.c_str(), reg_flags, &reg_value_type, temp_buffer, &string_buffer_capacity) != ERROR_SUCCESS)
         {
+            delete temp_buffer;
             return std::nullopt;
         }
+
+        std::wstring string_value = temp_buffer;
+
+        delete temp_buffer;
 
         // Return string value
         return string_value;
