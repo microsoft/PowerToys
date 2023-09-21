@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -15,10 +16,11 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Peek.FilePreviewer.Controls
 {
+    [INotifyPropertyChanged]
     public unsafe sealed partial class ShellPreviewHandlerControl : UserControl
     {
-        // Making this into a DependencyProperty causes a InvalidCastException
-        private IPreviewHandler? _source;
+        [ObservableProperty]
+        private IPreviewHandler? source;
 
         private HWND containerHwnd;
         private WNDPROC containerWndProc;
@@ -36,16 +38,6 @@ namespace Peek.FilePreviewer.Controls
             set { SetValue(LoadingStateProperty, value); }
         }
 
-        public IPreviewHandler? Source
-        {
-            get => _source;
-            set
-            {
-                _source = value;
-                SourcePropertyChanged();
-            }
-        }
-
         public ShellPreviewHandlerControl()
         {
             InitializeComponent();
@@ -53,7 +45,7 @@ namespace Peek.FilePreviewer.Controls
             containerWndProc = ContainerWndProc;
         }
 
-        private void SourcePropertyChanged()
+        partial void OnSourceChanged(IPreviewHandler? value)
         {
             if (Source != null)
             {
