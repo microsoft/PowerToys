@@ -1,5 +1,6 @@
 ﻿CreateWindowEx
 DefWindowProc
+GetDpiForWindow
 InvalidateRect
 RegisterClass
 SetLayeredWindowAttributes

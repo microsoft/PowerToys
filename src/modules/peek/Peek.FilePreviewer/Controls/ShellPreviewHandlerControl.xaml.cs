@@ -142,19 +142,21 @@ namespace Peek.FilePreviewer.Controls
 
         private void UserControl_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
         {
+            var dpi = (float)PInvoke.GetDpiForWindow(containerHwnd) / 96;
+
             // Resize the container window
             PInvoke.SetWindowPos(
                 containerHwnd,
                 (HWND)0, // HWND_TOP
-                (int)Math.Abs(args.EffectiveViewport.X),
-                (int)Math.Abs(args.EffectiveViewport.Y),
-                (int)ActualWidth,
-                (int)ActualHeight,
+                (int)(Math.Abs(args.EffectiveViewport.X) * dpi),
+                (int)(Math.Abs(args.EffectiveViewport.Y) * dpi),
+                (int)(ActualWidth * dpi),
+                (int)(ActualHeight * dpi),
                 SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
 
             // Resize the preview handler window
-            controlRect.right = (int)ActualWidth;
-            controlRect.bottom = (int)ActualHeight;
+            controlRect.right = (int)(ActualWidth * dpi);
+            controlRect.bottom = (int)(ActualHeight * dpi);
             try
             {
                 Source?.SetRect((RECT*)Unsafe.AsPointer(ref controlRect));
@@ -162,6 +164,9 @@ namespace Peek.FilePreviewer.Controls
             catch
             {
             }
+
+            // Resizing the previewer might not always redraw itself
+            PInvoke.InvalidateRect(containerHwnd, (RECT*)null, false);
         }
 
         private void UserControl_GotFocus(object sender, RoutedEventArgs e)
