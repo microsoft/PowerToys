@@ -1,15 +1,14 @@
 #pragma once
 
-#include "GuidUtils.h"
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 
 class WorkArea;
 
-class MonitorWorkAreaMap
+class WorkAreaConfiguration
 {
 public:
     /**
-     * Get work area based on virtual desktop id and monitor handle.
+     * Get work area based on monitor handle.
      *
      * @param[in]  monitor   Monitor handle.
      *
@@ -19,7 +18,7 @@ public:
     WorkArea* const GetWorkArea(HMONITOR monitor) const;
 
     /**
-     * Get work area based on virtual desktop id and the current cursor position.
+     * Get work area based on the current cursor position.
      *
      * @returns    Object representing single work area, interface to all actions available on work area
      *             (e.g. moving windows through zone layout specified for that work area).
@@ -49,13 +48,6 @@ public:
      */
     void AddWorkArea(HMONITOR monitor, std::unique_ptr<WorkArea> workArea);
 
-    FancyZonesDataTypes::WorkAreaId GetParent(HMONITOR monitor) const;
-
-    /**
-    * Saving current work area IDs as parents for later use.
-    */
-    void SaveParentIds();
-
     /**
      * Clear all persisted work area related data.
      */
@@ -63,5 +55,4 @@ public:
     
 private:
     std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>> m_workAreaMap;
-    std::unordered_map<HMONITOR, FancyZonesDataTypes::WorkAreaId> m_workAreaParents{};
 };

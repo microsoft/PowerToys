@@ -41,6 +41,13 @@ public:
 #endif
     }
 
+#if defined(UNIT_TESTS)
+    inline void SetAppZoneHistory(const TAppZoneHistoryMap& history)
+    {
+        m_history = history;
+    }
+#endif
+
     void LoadData();
     void SaveData();
     void AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids);
@@ -56,9 +63,8 @@ public:
     bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept;
     ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const GUID& layoutId) const;
 
-    void SyncVirtualDesktops();
-    void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
-
+    void SyncVirtualDesktops(const GUID& currentVirtualDesktop, const GUID& lastUsedVirtualDesktop, std::optional<std::vector<GUID>> desktops);
+    
 private:
     AppZoneHistory();
     ~AppZoneHistory() = default;
