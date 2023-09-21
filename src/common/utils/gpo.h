@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <optional>
 
 namespace powertoys_gpo {
     enum gpo_rule_configured_t {
