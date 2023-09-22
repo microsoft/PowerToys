@@ -360,6 +360,7 @@
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
                                                             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
+                                                                <!--  Checkbox setting  -->
                                                                 <controls:SettingsCard
                                                                     MinHeight="0"
                                                                     Margin="1"
@@ -367,23 +368,172 @@
                                                                     Background="Transparent"
                                                                     BorderThickness="0,0,0,0"
                                                                     ContentAlignment="Left"
-                                                                    CornerRadius="0">
-                                                                    <StackPanel Orientation="Vertical">
+                                                                    CornerRadius="0"
+                                                                    Visibility="{x:Bind Path=ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <custom:CheckBoxWithDescriptionControl
+                                                                        Margin="56,0,0,0"
+                                                                        Description="{x:Bind Path=DisplayDescription}"
+                                                                        Header="{x:Bind Path=DisplayLabel}"
+                                                                        IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                </controls:SettingsCard>
+                                                                <!--  ComboBox setting  -->
+                                                                <controls:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="56,8,45,8"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    CornerRadius="0"
+                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=DisplayLabel}"
+                                                                    Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <ComboBox
+                                                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                        ItemsSource="{x:Bind Path=ComboBoxOptions}"
+                                                                        SelectedIndex="{x:Bind Path=ComboBoxValue, Mode=TwoWay}" />
+                                                                </controls:SettingsCard>
+                                                                <!--  TextBox setting  -->
+                                                                <controls:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="56,8,45,8"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    CornerRadius="0"
+                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=DisplayLabel}"
+                                                                    Visibility="{x:Bind Path=ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <TextBox
+                                                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                        MaxWidth="450"
+                                                                        MaxLength="{x:Bind Path=TextBoxMaxLength, Mode=OneWay}"
+                                                                        Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
+                                                                </controls:SettingsCard>
+                                                                <!--  NumberBox setting  -->
+                                                                <controls:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="56,8,45,8"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    CornerRadius="0"
+                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=DisplayLabel}"
+                                                                    Visibility="{x:Bind Path=ShowNumberBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <NumberBox
+                                                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                        LargeChange="{x:Bind Path=NumberBoxLargeChange, Mode=OneWay}"
+                                                                        Maximum="{x:Bind Path=NumberBoxMax, Mode=OneWay}"
+                                                                        Minimum="{x:Bind Path=NumberBoxMin, Mode=OneWay}"
+                                                                        SmallChange="{x:Bind Path=NumberBoxSmallChange, Mode=OneWay}"
+                                                                        SpinButtonPlacementMode="Compact"
+                                                                        Value="{x:Bind Path=NumberValue, Mode=TwoWay}" />
+                                                                </controls:SettingsCard>
+                                                                <!--  Checkbox And ComboBox setting  -->
+                                                                <StackPanel
+                                                                    HorizontalAlignment="Stretch"
+                                                                    Orientation="Vertical"
+                                                                    Visibility="{x:Bind Path=ShowCheckboxAndCombobox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="1"
+                                                                        Padding="0,6,0,4"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        ContentAlignment="Left"
+                                                                        CornerRadius="0">
                                                                         <custom:CheckBoxWithDescriptionControl
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
-                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
-                                                                            Visibility="{x:Bind Path=ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="84,0,45,8"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        CornerRadius="0"
+                                                                        Description="{x:Bind Path=SecondDisplayDescription}"
+                                                                        Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                        IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
                                                                         <ComboBox
+                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            ItemsSource="{x:Bind Path=ComboBoxOptions}"
+                                                                            SelectedIndex="{x:Bind Path=ComboBoxValue, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                </StackPanel>
+                                                                <!--  Checkbox And TextBox setting  -->
+                                                                <StackPanel
+                                                                    HorizontalAlignment="Stretch"
+                                                                    Orientation="Vertical"
+                                                                    Visibility="{x:Bind Path=ShowCheckboxAndTextbox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="1"
+                                                                        Padding="0,6,0,4"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        ContentAlignment="Left"
+                                                                        CornerRadius="0">
+                                                                        <custom:CheckBoxWithDescriptionControl
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
-                                                                            ItemsSource="{x:Bind Path=ComboBoxOptions}"
-                                                                            SelectedIndex="{x:Bind Path=Option, Mode=TwoWay}"
-                                                                            Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                                    </StackPanel>
-                                                                </controls:SettingsCard>
+                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="84,0,45,8"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        CornerRadius="0"
+                                                                        Description="{x:Bind Path=SecondDisplayDescription}"
+                                                                        Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                        IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
+                                                                        <TextBox
+                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            MaxWidth="450"
+                                                                            MaxLength="{x:Bind Path=TextBoxMaxLength, Mode=OneWay}"
+                                                                            Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                </StackPanel>
+                                                                <!--  Checkbox And NumberBox setting  -->
+                                                                <StackPanel
+                                                                    HorizontalAlignment="Stretch"
+                                                                    Orientation="Vertical"
+                                                                    Visibility="{x:Bind Path=ShowCheckboxAndNumberbox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="1"
+                                                                        Padding="0,6,0,4"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        ContentAlignment="Left"
+                                                                        CornerRadius="0">
+                                                                        <custom:CheckBoxWithDescriptionControl
+                                                                            Margin="56,0,0,0"
+                                                                            Description="{x:Bind Path=DisplayDescription}"
+                                                                            Header="{x:Bind Path=DisplayLabel}"
+                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="84,0,45,8"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        CornerRadius="0"
+                                                                        Description="{x:Bind Path=SecondDisplayDescription}"
+                                                                        Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                        IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
+                                                                        <NumberBox
+                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            LargeChange="{x:Bind Path=NumberBoxLargeChange, Mode=OneWay}"
+                                                                            Maximum="{x:Bind Path=NumberBoxMax, Mode=OneWay}"
+                                                                            Minimum="{x:Bind Path=NumberBoxMin, Mode=OneWay}"
+                                                                            SmallChange="{x:Bind Path=NumberBoxSmallChange, Mode=OneWay}"
+                                                                            SpinButtonPlacementMode="Compact"
+                                                                            Value="{x:Bind Path=NumberValue, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                </StackPanel>
+                                                                <!--  Separator line  -->
                                                                 <Rectangle
                                                                     Height="1"
                                                                     HorizontalAlignment="Stretch"
