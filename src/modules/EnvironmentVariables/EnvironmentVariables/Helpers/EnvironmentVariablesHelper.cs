@@ -4,8 +4,13 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security;
+using EnvironmentVariables.Helpers.Win32;
 using EnvironmentVariables.Models;
+using Microsoft.Win32;
 
 namespace EnvironmentVariables.Helpers
 {
@@ -35,6 +40,55 @@ namespace EnvironmentVariables.Helpers
             return null;
         }
 
+        private static RegistryKey OpenEnvironmentKeyIfExists(bool fromMachine, bool writable)
+        {
+            RegistryKey baseKey;
+            string keyName;
+
+            if (fromMachine)
+            {
+                baseKey = Registry.LocalMachine;
+                keyName = @"System\CurrentControlSet\Control\Session Manager\Environment";
+            }
+            else
+            {
+                baseKey = Registry.CurrentUser;
+                keyName = "Environment";
+            }
+
+            return baseKey.OpenSubKey(keyName, writable: writable);
+        }
+
+        private static void SetEnvironmentVariableFromRegistryWithoutNotify(string variable, string value, bool fromMachine)
+        {
+            using (RegistryKey environmentKey = OpenEnvironmentKeyIfExists(fromMachine, writable: true))
+            {
+                if (environmentKey != null)
+                {
+                    if (value == null)
+                    {
+                        environmentKey.DeleteValue(variable, throwOnMissingValue: false);
+                    }
+                    else
+                    {
+                        environmentKey.SetValue(variable, value);
+                    }
+                }
+            }
+        }
+
+        private static void NotifyEnvironmentChange()
+        {
+            unsafe
+            {
+                // send a WM_SETTINGCHANGE message to all windows
+                fixed (char* lParam = "Environment")
+                {
+                    _ = NativeMethods.SendNotifyMessage(new IntPtr(NativeMethods.HWND_BROADCAST), NativeMethods.WM_SETTINGCHANGE, IntPtr.Zero, (IntPtr)lParam);
+                }
+            }
+        }
+
         internal static void GetVariables(EnvironmentVariableTarget target, VariablesSet set)
         {
             var variables = Environment.GetEnvironmentVariables(target);
@@ -56,58 +110,72 @@ namespace EnvironmentVariables.Helpers
 
         internal static bool SetVariable(Variable variable)
         {
-            EnvironmentVariableTarget target = variable.ParentType switch
+            bool fromMachine = variable.ParentType switch
             {
-                VariablesSetType.Profile => EnvironmentVariableTarget.User,
-                VariablesSetType.User => EnvironmentVariableTarget.User,
-                VariablesSetType.System => EnvironmentVariableTarget.Machine,
+                VariablesSetType.Profile => false,
+                VariablesSetType.User => false,
+                VariablesSetType.System => true,
                 _ => throw new NotImplementedException(),
             };
 
-            try
+            SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
+            NotifyEnvironmentChange();
+
+            return true;
+        }
+
+        internal static bool SetVariables(List<Variable> variables, VariablesSetType type)
+        {
+            bool fromMachine = type switch
             {
-                Environment.SetEnvironmentVariable(variable.Name, variable.Values, target);
-            }
-            catch (SecurityException)
+                VariablesSetType.Profile => false,
+                VariablesSetType.User => false,
+                VariablesSetType.System => true,
+                _ => throw new NotImplementedException(),
+            };
+
+            foreach (Variable variable in variables)
             {
-                // Permission denied (e.g. trying to change System variable while running non-elevated)
-                // Show specific error message
-                return false;
+                SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
             }
-            catch (Exception)
-            {
-                // Something else went wrong
-                return false;
-            }
+
+            NotifyEnvironmentChange();
 
             return true;
         }
 
         internal static bool UnsetVariable(Variable variable)
         {
-            EnvironmentVariableTarget target = variable.ParentType switch
+            bool fromMachine = variable.ParentType switch
             {
-                VariablesSetType.Profile => EnvironmentVariableTarget.User,
-                VariablesSetType.User => EnvironmentVariableTarget.User,
-                VariablesSetType.System => EnvironmentVariableTarget.Machine,
+                VariablesSetType.Profile => false,
+                VariablesSetType.User => false,
+                VariablesSetType.System => true,
                 _ => throw new NotImplementedException(),
             };
 
-            try
+            SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine);
+            NotifyEnvironmentChange();
+
+            return true;
+        }
+
+        internal static bool UnsetVariables(List<Variable> variables, VariablesSetType type)
+        {
+            bool fromMachine = type switch
             {
-                Environment.SetEnvironmentVariable(variable.Name, string.Empty, target);
-            }
-            catch (SecurityException)
+                VariablesSetType.Profile => false,
+                VariablesSetType.User => false,
+                VariablesSetType.System => true,
+                _ => throw new NotImplementedException(),
+            };
+
+            foreach (Variable variable in variables)
             {
-                // Permission denied (e.g. trying to change System variable while running non-elevated)
-                // Show specific error message
-                return false;
+                SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine);
             }
-            catch (Exception)
-            {
-                // Something else went wrong
-                return false;
-            }
+
+            NotifyEnvironmentChange();
 
             return true;
         }
