@@ -114,7 +114,7 @@ dotnet_diagnostic.CA1309.severity = suggestion
 dotnet_diagnostic.CS1615.severity = none
 
 # CA1854: Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup
-dotnet_diagnostic.CS1854.severity = suggestion
+dotnet_diagnostic.CA1854.severity = suggestion
 
 # CA1860: Avoid using 'Enumerable.Any()' extension method
 dotnet_diagnostic.CA1860.severity = suggestion
