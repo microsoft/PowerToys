@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using Microsoft.Extensions.ObjectPool;
 
 namespace WinGetCommandNotFound
@@ -11,7 +12,7 @@ namespace WinGetCommandNotFound
     {
         public override PowerShell Create()
         {
-            var iss = System.Management.Automation.Runspaces.InitialSessionState.CreateDefault2();
+            var iss = InitialSessionState.CreateDefault2();
             iss.ImportPSModule(new[] { "Microsoft.WinGet.Client" });
             return PowerShell.Create(iss);
         }
@@ -22,9 +23,10 @@ namespace WinGetCommandNotFound
             {
                 ps.Commands.Clear();
                 ps.Streams.ClearStreams();
+                return true;
             }
 
-            return true;
+            return false;
         }
     }
 }

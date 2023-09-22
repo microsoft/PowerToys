@@ -29,6 +29,7 @@ namespace WinGetCommandNotFound
 
             var provider = new DefaultObjectPoolProvider();
             _pool = provider.Create(new PooledPowerShellObjectPolicy());
+            _pool.Return(_pool.Get());
         }
 
         public Guid Id => _guid;
@@ -82,11 +83,6 @@ namespace WinGetCommandNotFound
             var ps = _pool.Get();
             try
             {
-                if (ps is null)
-                {
-                    return new Collection<PSObject>();
-                }
-
                 var common = new Hashtable()
                 {
                     ["Source"] = "winget",
