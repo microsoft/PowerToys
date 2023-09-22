@@ -227,7 +227,7 @@
   <data name="CancelBtn" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="StateNotUpToDateEnvironmentMessageRecievedMsg" xml:space="preserve">
+  <data name="StateNotUpToDateEnvironmentMessageReceivedMsg" xml:space="preserve">
     <value>Variables have been modified. Reload to get the latest changes.</value>
   </data>
 </root>

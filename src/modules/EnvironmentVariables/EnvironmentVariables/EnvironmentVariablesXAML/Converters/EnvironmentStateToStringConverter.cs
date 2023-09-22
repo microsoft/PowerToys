@@ -19,7 +19,7 @@ public class EnvironmentStateToStringConverter : IValueConverter
         {
             EnvironmentState.Unchanged => string.Empty,
             EnvironmentState.ChangedOnStartup => resourceLoader.GetString("StateNotUpToDateOnStartupMsg"),
-            EnvironmentState.EnvironmentMessageReceived => resourceLoader.GetString("StateNotUpToDateEnvironmentMessageRecievedMsg"),
+            EnvironmentState.EnvironmentMessageReceived => resourceLoader.GetString("StateNotUpToDateEnvironmentMessageReceivedMsg"),
             _ => throw new NotImplementedException(),
         };
     }
