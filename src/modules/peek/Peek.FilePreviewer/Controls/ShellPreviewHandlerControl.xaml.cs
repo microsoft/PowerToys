@@ -32,10 +32,23 @@ namespace Peek.FilePreviewer.Controls
             typeof(ShellPreviewHandlerControl),
             new PropertyMetadata(PreviewState.Uninitialized));
 
+        public static readonly DependencyProperty HandlerVisibilityProperty = DependencyProperty.Register(
+            nameof(HandlerVisibility),
+            typeof(Visibility),
+            typeof(ShellPreviewHandlerControl),
+            new PropertyMetadata(Visibility.Collapsed, new PropertyChangedCallback((d, e) => ((ShellPreviewHandlerControl)d).OnHandlerVisibilityChanged())));
+
         public PreviewState? LoadingState
         {
             get { return (PreviewState)GetValue(LoadingStateProperty); }
             set { SetValue(LoadingStateProperty, value); }
+        }
+
+        // Must have its own visibility property so resize events can still fire
+        public Visibility HandlerVisibility
+        {
+            get { return (Visibility)GetValue(HandlerVisibilityProperty); }
+            set { SetValue(HandlerVisibilityProperty, value); }
         }
 
         public ShellPreviewHandlerControl()
@@ -56,16 +69,24 @@ namespace Peek.FilePreviewer.Controls
                     // Attach the preview handler to the container window
                     Source.SetWindow(containerHwnd, (RECT*)Unsafe.AsPointer(ref controlRect));
                     Source.DoPreview();
-
-                    PInvoke.ShowWindow(containerHwnd, SHOW_WINDOW_CMD.SW_SHOW);
                 }
                 catch
                 {
                 }
             }
+        }
+
+        private void OnHandlerVisibilityChanged()
+        {
+            if (HandlerVisibility == Visibility.Visible)
+            {
+                PInvoke.ShowWindow(containerHwnd, SHOW_WINDOW_CMD.SW_SHOW);
+                IsEnabled = true;
+            }
             else
             {
                 PInvoke.ShowWindow(containerHwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                IsEnabled = false;
             }
         }
 

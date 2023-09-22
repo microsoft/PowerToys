@@ -11,7 +11,7 @@
     mc:Ignorable="d"
     Loaded="UserControl_Loaded"
     EffectiveViewportChanged="UserControl_EffectiveViewportChanged"
-    IsTabStop="True" GotFocus="UserControl_GotFocus"
+    IsEnabled="False" IsTabStop="True" GotFocus="UserControl_GotFocus"
     ActualThemeChanged="{x:Bind UpdatePreviewerTheme}">
 
 </UserControl>
