@@ -270,30 +270,16 @@ GUID VirtualDesktop::GetCurrentVirtualDesktopId() const noexcept
     return m_currentVirtualDesktopId;
 }
 
-GUID VirtualDesktop::GetPreviousVirtualDesktopId() const noexcept
-{
-    return m_previousDesktopId;
-}
-
 void VirtualDesktop::UpdateVirtualDesktopId() noexcept
 {
-    m_previousDesktopId = m_currentVirtualDesktopId;
-
     auto currentVirtualDesktopId = GetCurrentVirtualDesktopIdFromRegistry();
-    if (!currentVirtualDesktopId.has_value())
-    {
-        Logger::info("No Virtual Desktop Id found in registry");
-        currentVirtualDesktopId = VirtualDesktop::instance().GetDesktopIdByTopLevelWindows();
-    }
-
     if (currentVirtualDesktopId.has_value())
     {
-        m_currentVirtualDesktopId = *currentVirtualDesktopId;
-
-        if (m_currentVirtualDesktopId == GUID_NULL)
-        {
-            Logger::warn("Couldn't retrieve virtual desktop id");
-        }
+        m_currentVirtualDesktopId = currentVirtualDesktopId.value();
+    }
+    else
+    {
+        m_currentVirtualDesktopId = GUID_NULL;
     }
 
     Trace::VirtualDesktopChanged();
