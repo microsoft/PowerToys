@@ -5,6 +5,9 @@
 using System;
 using System.Runtime.InteropServices;
 using EnvironmentVariables.Helpers;
+using EnvironmentVariables.Helpers.Win32;
+using EnvironmentVariables.ViewModels;
+using Microsoft.UI.Dispatching;
 using WinUIEx;
 
 namespace EnvironmentVariables
@@ -30,40 +33,36 @@ namespace EnvironmentVariables
             RegisterWindow();
         }
 
-        private static WinProc newWndProc;
+        private static readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private static NativeMethods.WinProc newWndProc;
         private static IntPtr oldWndProc = IntPtr.Zero;
-
-        private delegate IntPtr WinProc(IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("User32.dll")]
-        internal static extern int GetDpiForWindow(IntPtr hwnd);
-
-        [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
-        private static extern int SetWindowLong32(IntPtr hWnd, WindowLongIndexFlags nIndex, WinProc newProc);
-
-        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
-        private static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, WindowLongIndexFlags nIndex, WinProc newProc);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam);
 
         private void RegisterWindow()
         {
-            newWndProc = new WinProc(WndProc);
+            newWndProc = new NativeMethods.WinProc(WndProc);
 
             var handle = this.GetWindowHandle();
 
-            oldWndProc = SetWindowLongPtr(handle, WindowLongIndexFlags.GWL_WNDPROC, newWndProc);
+            oldWndProc = NativeMethods.SetWindowLongPtr(handle, NativeMethods.WindowLongIndexFlags.GWL_WNDPROC, newWndProc);
         }
 
-        private static IntPtr WndProc(IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
+        private static IntPtr WndProc(IntPtr hWnd, NativeMethods.WindowMessage msg, IntPtr wParam, IntPtr lParam)
         {
             switch (msg)
             {
-                case WindowMessage.WM_SETTINGSCHANGED:
+                case NativeMethods.WindowMessage.WM_SETTINGSCHANGED:
                     {
-                        var asd = Marshal.PtrToStringUTF8(lParam);
-                        _ = asd.Substring(0, asd.Length - 1);
+                        var lParamStr = Marshal.PtrToStringUTF8(lParam);
+                        if (lParamStr == "Environment")
+                        {
+                            // Do not react on self - not nice, re-check this
+                            if (wParam != (IntPtr)0x12345)
+                            {
+                                var viewModel = App.GetService<MainViewModel>();
+                                viewModel.IsStateModified = Models.EnvironmentState.EnvironmentMessageRecieved;
+                            }
+                        }
+
                         break;
                     }
 
@@ -71,30 +70,7 @@ namespace EnvironmentVariables
                     break;
             }
 
-            return CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
-        }
-
-        [Flags]
-        private enum WindowLongIndexFlags : int
-        {
-            GWL_WNDPROC = -4,
-        }
-
-        private static IntPtr SetWindowLongPtr(IntPtr hWnd, WindowLongIndexFlags nIndex, WinProc newProc)
-        {
-            if (IntPtr.Size == 8)
-            {
-                return SetWindowLongPtr64(hWnd, nIndex, newProc);
-            }
-            else
-            {
-                return new IntPtr(SetWindowLong32(hWnd, nIndex, newProc));
-            }
-        }
-
-        private enum WindowMessage : int
-        {
-            WM_SETTINGSCHANGED = 0x001A,
+            return NativeMethods.CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
         }
     }
 }

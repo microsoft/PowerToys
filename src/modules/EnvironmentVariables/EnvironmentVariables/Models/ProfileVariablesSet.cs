@@ -44,19 +44,19 @@ namespace EnvironmentVariables.Models
                         variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, this.Name);
 
                         // Backup the variable
-                        if (!EnvironmentVariablesHelper.SetVariable(variableToOverride))
+                        if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
                         {
                             Logger.LogError("Failed to set backup variable.");
                         }
                     }
 
-                    if (!EnvironmentVariablesHelper.SetVariable(variable))
+                    if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variable))
                     {
                         Logger.LogError("Failed to set profile variable.");
                     }
                 }
 
-                // viewModel.ApplyingChanges = false;
+                EnvironmentVariablesHelper.NotifyEnvironmentChange();
             });
         }
 
@@ -64,12 +64,10 @@ namespace EnvironmentVariables.Models
         {
             return Task.Run(() =>
             {
-                var viewModel = App.GetService<MainViewModel>();
-                viewModel.ApplyingChanges = true;
                 foreach (var variable in Variables)
                 {
                     // Unset the variable
-                    if (!EnvironmentVariablesHelper.UnsetVariable(variable))
+                    if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(variable))
                     {
                         Logger.LogError("Failed to unset variable.");
                     }
@@ -84,19 +82,19 @@ namespace EnvironmentVariables.Models
                     {
                         var variableToRestore = new Variable(originalName, backupVariable.Values, backupVariable.ParentType);
 
-                        if (!EnvironmentVariablesHelper.UnsetVariable(backupVariable))
+                        if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(backupVariable))
                         {
                             Logger.LogError("Failed to unset backup variable.");
                         }
 
-                        if (!EnvironmentVariablesHelper.SetVariable(variableToRestore))
+                        if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
                         {
                             Logger.LogError("Failed to restore backup variable.");
                         }
                     }
                 }
 
-                viewModel.ApplyingChanges = false;
+                EnvironmentVariablesHelper.NotifyEnvironmentChange();
             });
         }
 

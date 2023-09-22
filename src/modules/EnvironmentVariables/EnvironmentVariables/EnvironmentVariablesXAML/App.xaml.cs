@@ -48,7 +48,7 @@ namespace EnvironmentVariables
                 services.AddSingleton<IElevationHelper, ElevationHelper>();
                 services.AddSingleton<IEnvironmentVariablesService, EnvironmentVariablesService>();
 
-                services.AddTransient<MainViewModel>();
+                services.AddSingleton<MainViewModel>();
             }).Build();
 
             UnhandledException += App_UnhandledException;

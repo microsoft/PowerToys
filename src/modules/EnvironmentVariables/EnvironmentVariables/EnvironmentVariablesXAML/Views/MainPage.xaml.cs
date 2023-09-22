@@ -161,5 +161,11 @@ namespace EnvironmentVariables.Views
                 }
             }
         }
+
+        private void ReloadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.LoadEnvironmentVariables();
+            ViewModel.IsStateModified = EnvironmentState.Unchanged;
+        }
     }
 }

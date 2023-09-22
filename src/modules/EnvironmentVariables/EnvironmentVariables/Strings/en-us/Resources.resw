@@ -221,10 +221,13 @@
   <data name="StateNotUpToDateInfoBar.Title" xml:space="preserve">
     <value>Changes were made outside of this app.</value>
   </data>
-  <data name="StateNotUpToDateInfoBar.Message" xml:space="preserve">
+  <data name="StateNotUpToDateOnStartupMsg" xml:space="preserve">
     <value>Variables included in applied profile have been modified. Review the latest changes before applying the profile again.</value>
   </data>
   <data name="CancelBtn" xml:space="preserve">
     <value>Cancel</value>
+  </data>
+  <data name="StateNotUpToDateEnvironmentMessageRecievedMsg" xml:space="preserve">
+    <value>Variables have been modified. Reload to get the latest changes.</value>
   </data>
 </root>

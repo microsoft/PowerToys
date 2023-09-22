@@ -4,10 +4,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Security;
 using EnvironmentVariables.Helpers.Win32;
 using EnvironmentVariables.Models;
 using Microsoft.Win32;
@@ -77,14 +73,14 @@ namespace EnvironmentVariables.Helpers
             }
         }
 
-        private static void NotifyEnvironmentChange()
+        internal static void NotifyEnvironmentChange()
         {
             unsafe
             {
                 // send a WM_SETTINGCHANGE message to all windows
                 fixed (char* lParam = "Environment")
                 {
-                    _ = NativeMethods.SendNotifyMessage(new IntPtr(NativeMethods.HWND_BROADCAST), NativeMethods.WM_SETTINGCHANGE, IntPtr.Zero, (IntPtr)lParam);
+                    _ = NativeMethods.SendNotifyMessage(new IntPtr(NativeMethods.HWND_BROADCAST), NativeMethods.WindowMessage.WM_SETTINGSCHANGED, (IntPtr)0x12345, (IntPtr)lParam);
                 }
             }
         }
@@ -108,6 +104,21 @@ namespace EnvironmentVariables.Helpers
             }
         }
 
+        internal static bool SetVariableWithoutNotify(Variable variable)
+        {
+            bool fromMachine = variable.ParentType switch
+            {
+                VariablesSetType.Profile => false,
+                VariablesSetType.User => false,
+                VariablesSetType.System => true,
+                _ => throw new NotImplementedException(),
+            };
+
+            SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
+
+            return true;
+        }
+
         internal static bool SetVariable(Variable variable)
         {
             bool fromMachine = variable.ParentType switch
@@ -124,9 +135,9 @@ namespace EnvironmentVariables.Helpers
             return true;
         }
 
-        internal static bool SetVariables(List<Variable> variables, VariablesSetType type)
+        internal static bool UnsetVariableWithoutNotify(Variable variable)
         {
-            bool fromMachine = type switch
+            bool fromMachine = variable.ParentType switch
             {
                 VariablesSetType.Profile => false,
                 VariablesSetType.User => false,
@@ -134,12 +145,7 @@ namespace EnvironmentVariables.Helpers
                 _ => throw new NotImplementedException(),
             };
 
-            foreach (Variable variable in variables)
-            {
-                SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
-            }
-
-            NotifyEnvironmentChange();
+            SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine);
 
             return true;
         }
@@ -155,26 +161,6 @@ namespace EnvironmentVariables.Helpers
             };
 
             SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine);
-            NotifyEnvironmentChange();
-
-            return true;
-        }
-
-        internal static bool UnsetVariables(List<Variable> variables, VariablesSetType type)
-        {
-            bool fromMachine = type switch
-            {
-                VariablesSetType.Profile => false,
-                VariablesSetType.User => false,
-                VariablesSetType.System => true,
-                _ => throw new NotImplementedException(),
-            };
-
-            foreach (Variable variable in variables)
-            {
-                SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine);
-            }
-
             NotifyEnvironmentChange();
 
             return true;

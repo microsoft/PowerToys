@@ -8,14 +8,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Helpers;
 using EnvironmentVariables.Models;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using Windows.Foundation.Collections;
 
 namespace EnvironmentVariables.ViewModels
 {
@@ -41,10 +39,10 @@ namespace EnvironmentVariables.ViewModels
         private bool _isElevated;
 
         [ObservableProperty]
-        private bool _isStateModified;
+        [NotifyPropertyChangedFor(nameof(IsInfoBarButtonVisible))]
+        private EnvironmentState _isStateModified;
 
-        [ObservableProperty]
-        private bool _applyingChanges;
+        public bool IsInfoBarButtonVisible => IsStateModified == EnvironmentState.EnvironmentMessageRecieved;
 
         public ProfileVariablesSet AppliedProfile { get; set; }
 
@@ -105,11 +103,11 @@ namespace EnvironmentVariables.ViewModels
                     if (appliedProfile.IsCorrectlyApplied())
                     {
                         AppliedProfile = appliedProfile;
-                        IsStateModified = false;
+                        IsStateModified = EnvironmentState.Unchanged;
                     }
                     else
                     {
-                        IsStateModified = true;
+                        IsStateModified = EnvironmentState.ChangedOnStartup;
                         appliedProfile.IsEnabled = false;
                     }
                 }
@@ -144,13 +142,11 @@ namespace EnvironmentVariables.ViewModels
             bool changed = original.Name != edited.Name || original.Values != edited.Values;
             if (changed)
             {
-                ApplyingChanges = true;
                 var task = original.Update(edited, propagateChange);
                 task.ContinueWith(x =>
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        ApplyingChanges = false;
                         PopulateAppliedVariables();
                     });
                 });
@@ -211,13 +207,11 @@ namespace EnvironmentVariables.ViewModels
 
         private void SetAppliedProfile(ProfileVariablesSet profile)
         {
-            ApplyingChanges = true;
             var task = profile.Apply();
             task.ContinueWith((a) =>
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    ApplyingChanges = false;
                     PopulateAppliedVariables();
                 });
             });
@@ -230,13 +224,11 @@ namespace EnvironmentVariables.ViewModels
             {
                 var appliedProfile = AppliedProfile;
                 appliedProfile.PropertyChanged -= Profile_PropertyChanged;
-                ApplyingChanges = true;
                 var task = AppliedProfile.UnApply();
                 task.ContinueWith((a) =>
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        ApplyingChanges = false;
                         PopulateAppliedVariables();
                     });
                 });
@@ -286,7 +278,6 @@ namespace EnvironmentVariables.ViewModels
 
             if (propagateChange)
             {
-                ApplyingChanges = true;
                 var task = Task.Run(() =>
                 {
                     EnvironmentVariablesHelper.UnsetVariable(variable);
@@ -295,7 +286,6 @@ namespace EnvironmentVariables.ViewModels
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        ApplyingChanges = false;
                         PopulateAppliedVariables();
                     });
                 });
