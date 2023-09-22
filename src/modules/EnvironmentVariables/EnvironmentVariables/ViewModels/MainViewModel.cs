@@ -42,7 +42,7 @@ namespace EnvironmentVariables.ViewModels
         [NotifyPropertyChangedFor(nameof(IsInfoBarButtonVisible))]
         private EnvironmentState _isStateModified;
 
-        public bool IsInfoBarButtonVisible => IsStateModified == EnvironmentState.EnvironmentMessageRecieved;
+        public bool IsInfoBarButtonVisible => IsStateModified == EnvironmentState.EnvironmentMessageReceived;
 
         public ProfileVariablesSet AppliedProfile { get; set; }
 

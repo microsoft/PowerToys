@@ -8,6 +8,6 @@ namespace EnvironmentVariables.Models
     {
         Unchanged = 0,
         ChangedOnStartup,
-        EnvironmentMessageRecieved,
+        EnvironmentMessageReceived,
     }
 }

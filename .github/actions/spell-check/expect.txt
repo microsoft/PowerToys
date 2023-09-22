@@ -505,7 +505,6 @@ endregion
 ENDSESSION
 ENTERSIZEMOVE
 ENU
-ENVIRONMENTVARIABLES
 EOAC
 epicgames
 epu
@@ -1488,7 +1487,6 @@ ptrun
 ptstr
 pui
 PULONG
-pvalue
 pwa
 pwcs
 pwsh
@@ -1693,6 +1691,7 @@ setlocal
 SETREDRAW
 SETTEXT
 SETTINGCHANGE
+SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
 SETWORKAREA
