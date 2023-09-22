@@ -192,11 +192,10 @@
                         ItemTemplate="{StaticResource VariableTemplate}"
                         ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}">
                         <controls:SettingsExpander.Description>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <!--
-                                    This crashes the app:
-                                    Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
-                                -->
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="4"
+                                Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                 <!--  TO DO: Glyph not showing, known WinUI issue - need to follow up with team  -->
                                 <InfoBadge IconSource="{ui:FontIconSource Glyph=&#xEA1F;}" Style="{StaticResource AttentionIconInfoBadgeStyle}" />
                                 <TextBlock x:Uid="EditSystemDefaultSetInfoBar" />
