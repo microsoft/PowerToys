@@ -14,8 +14,20 @@
       <string id="SUPPORTED_POWERTOYS_0_69_0">PowerToys version 0.69.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_70_0">PowerToys version 0.70.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_73_0">PowerToys version 0.73.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_74_0">PowerToys version 0.74.0 or later</string>
 
-      <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
+            <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
+
+If you enable this setting, all utilities will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, all utilities will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to disable or enable the utilities.
+
+Note: The individual enabled state policies for the utilities will override this policy.
+</string>
+
+	  <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
 If you enable this setting, the utility will be always enabled and the user won't be able to disable it.
 
@@ -65,6 +77,7 @@ If this setting is not configured or enabled, the user can control experimentati
 
 If this setting is disabled, experimentation is not allowed.
 </string>
+      <string id="ConfigureGlobalUtilityEnabledState">All Utilities: Configure global enabled state</string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
