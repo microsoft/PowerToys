@@ -117,7 +117,7 @@ namespace powertoys_gpo {
         }
     }
 
-    inline gpo_rule_configured_t getUtilityEnabledGpo(const std::wstring& utility_name)
+    inline gpo_rule_configured_t getUtilityEnabledValue(const std::wstring& utility_name)
     {
         auto individual_value = getConfiguredValue(utility_name);
 
@@ -132,167 +132,167 @@ namespace powertoys_gpo {
     }
 
     inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue() {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP);
     }
 
     inline gpo_rule_configured_t getConfiguredAwakeEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_AWAKE);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_AWAKE);
     }
 
     inline gpo_rule_configured_t getConfiguredColorPickerEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_COLOR_PICKER);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_COLOR_PICKER);
     }
 
     inline gpo_rule_configured_t getConfiguredCropAndLockEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK);
     }
 
     inline gpo_rule_configured_t getConfiguredFancyZonesEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_FANCYZONES);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_FANCYZONES);
     }
 
     inline gpo_rule_configured_t getConfiguredFileLocksmithEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_FILE_LOCKSMITH);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_FILE_LOCKSMITH);
     }
 
     inline gpo_rule_configured_t getConfiguredSvgPreviewEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_SVG_PREVIEW);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SVG_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredMarkdownPreviewEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredMonacoPreviewEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredPdfPreviewEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_PDF_PREVIEW);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PDF_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredGcodePreviewEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredSvgThumbnailsEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredPdfThumbnailsEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredGcodeThumbnailsEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredStlThumbnailsEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredHostsFileEditorEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_HOSTS_FILE_EDITOR);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_HOSTS_FILE_EDITOR);
     }
 
     inline gpo_rule_configured_t getConfiguredImageResizerEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_IMAGE_RESIZER);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_IMAGE_RESIZER);
     }
 
     inline gpo_rule_configured_t getConfiguredKeyboardManagerEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_KEYBOARD_MANAGER);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_KEYBOARD_MANAGER);
     }
 
     inline gpo_rule_configured_t getConfiguredFindMyMouseEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_FIND_MY_MOUSE);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_FIND_MY_MOUSE);
     }
 
     inline gpo_rule_configured_t getConfiguredMouseHighlighterEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER);
     }
 
     inline gpo_rule_configured_t getConfiguredMouseJumpEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_MOUSE_JUMP);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MOUSE_JUMP);
     }
 
     inline gpo_rule_configured_t getConfiguredMousePointerCrosshairsEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS);
     }
 
     inline gpo_rule_configured_t getConfiguredPowerRenameEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_POWER_RENAME);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_POWER_RENAME);
     }
 
     inline gpo_rule_configured_t getConfiguredPowerLauncherEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER);
     }
 
     inline gpo_rule_configured_t getConfiguredQuickAccentEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_QUICK_ACCENT);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QUICK_ACCENT);
     }
 
     inline gpo_rule_configured_t getConfiguredScreenRulerEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_SCREEN_RULER);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SCREEN_RULER);
     }
 
     inline gpo_rule_configured_t getConfiguredShortcutGuideEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE);
     }
 
     inline gpo_rule_configured_t getConfiguredTextExtractorEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR);
     }
 
     inline gpo_rule_configured_t getConfiguredPastePlainEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_PASTE_PLAIN);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PASTE_PLAIN);
     }
 
     inline gpo_rule_configured_t getConfiguredVideoConferenceMuteEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
     }
 
     inline gpo_rule_configured_t getConfiguredMouseWithoutBordersEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_MOUSE_WITHOUT_BORDERS);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MOUSE_WITHOUT_BORDERS);
     }
     
     inline gpo_rule_configured_t getConfiguredPeekEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_PEEK);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PEEK);
     }
 
     inline gpo_rule_configured_t getConfiguredRegistryPreviewEnabledValue()
     {
-        return getUtilityEnabledGpo(POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW);
     }
 
     inline gpo_rule_configured_t getDisablePerUserInstallationValue()
