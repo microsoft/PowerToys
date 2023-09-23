@@ -127,11 +127,12 @@ namespace powertoys_gpo {
         }
         else
         {
-            getConfiguredValue(POLICY_CONFIGURE_ENABLED_GLOBAL_ALL_UTILITIES);
+            return getConfiguredValue(POLICY_CONFIGURE_ENABLED_GLOBAL_ALL_UTILITIES);
         }
     }
 
-    inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue() {
+    inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue()
+    {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP);
     }
 
