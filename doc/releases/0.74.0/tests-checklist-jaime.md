@@ -302,7 +302,7 @@ Mouse Jump:
     - [x] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
 
 ## Always on Top
  - [ ] Pin/unpin a window, verify it's topmost/not topmost.
