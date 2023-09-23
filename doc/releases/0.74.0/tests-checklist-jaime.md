@@ -317,30 +317,30 @@ Mouse Jump:
 
 ## Screen Ruler
  * Enable Screen Ruler. Then:
-   - [ ] Press the activation shortcut and verify the toolbar appears.
-   - [ ] Press the activation shortcut again and verify the toolbar disappears.
-   - [ ] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
-   - [ ] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
-   - [ ] Select the close button in the toolbar and verify it closes the utility.
+   - [x] Press the activation shortcut and verify the toolbar appears.
+   - [x] Press the activation shortcut again and verify the toolbar disappears.
+   - [x] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
+   - [x] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
+   - [x] Select the close button in the toolbar and verify it closes the utility.
  * With Screen Ruler enabled and activated:
-   - [ ] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
-   - [ ] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
-   - [ ] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
+   - [x] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
+   - [x] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [x] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [x] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [x] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
+   - [x] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
  * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify that the utilities work well on each monitor, with continuous mode on and off.
-   - [ ] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
-   - [ ] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
+   - [x] Verify that the utilities work well on each monitor, with continuous mode on and off.
+   - [x] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
+   - [x] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
    
  * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] Continous mode
-   - [ ] Per color channel edge detection
-   - [ ] Pixel tolerance for edge detection
-   - [ ] Draw feet on cross
-   - [ ] Line color
+   - [x] Activation shortcut
+   - [x] Continous mode
+   - [x] Per color channel edge detection
+   - [x] Pixel tolerance for edge detection
+   - [x] Draw feet on cross
+   - [x] Line color
 
 ## Paste As Plain Text
  * Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.). Then:
