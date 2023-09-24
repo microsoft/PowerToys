@@ -55,36 +55,36 @@ Disable FZ and clear `app-zone-history.json` before starting. FancyZones should 
     - [x] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
 
 ### Snapped window behavior
-- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
-- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
-- [ ] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
+- [x] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
+- [x] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
+- [x] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
 
 Enable `During zone layout changes, windows assigned to a zone will match new size/positions` and prepare layouts with 1 and 3 zones where zone size/positions are different.
-- [ ] Snap a window to zone 1, change the layout, verify window changed its size/position.
-- [ ] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
-- [ ] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
-- [ ] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
-- [ ] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
+- [x] Snap a window to zone 1, change the layout, verify window changed its size/position.
+- [x] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
+- [x] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
+- [x] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
+- [x] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
 
 Enable `Move newly created windows to their last known zone`.
-- [ ] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
-- [ ] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
-- [ ] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
-- [ ] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
-- [ ] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
-- [ ] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
+- [x] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
+- [x] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
+- [x] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
+- [x] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
+- [x] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
+- [x] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
 
 Enable `Move newly created windows to the current active monitor`.
-- [ ] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
-- [ ] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
-- [ ] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
-- [ ] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
+- [x] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
+- [x] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
+- [x] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
+- [x] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
 
-- [ ] Enable `Allow popup windows snapping` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
-- [ ] Enable `Allow popup windows snapping`, snap Teams, verify a popup window appears in its usual position.
-- [ ] Enable `Allow popup windows snapping`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
-- [ ] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
-- [ ] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
+- [x] Enable `Allow popup windows snapping` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
+- [x] Enable `Allow popup windows snapping`, snap Teams, verify a popup window appears in its usual position.
+- [x] Enable `Allow popup windows snapping`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
+- [x] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
+- [x] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
 
 ### Switch between windows in the current zone
 Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
