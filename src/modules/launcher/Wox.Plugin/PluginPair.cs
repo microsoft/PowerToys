@@ -63,20 +63,24 @@ namespace Wox.Plugin
                 return;
             }
 
-            if (Metadata.Disabled && !setting.Disabled)
+            // If the enabled state is policy managed then we skipp the update of the disabled state as it must be a manual settings.json manipulation.
+            if (!Metadata.IsEnabledPolicyConfigured)
             {
-                Metadata.Disabled = false;
-                InitializePlugin(api);
-
-                if (!IsPluginInitialized)
+                if (Metadata.Disabled && !setting.Disabled)
                 {
-                    string description = $"{Resources.FailedToLoadPluginDescription} {Metadata.Name}\n\n{Resources.FailedToLoadPluginDescriptionPartTwo}";
-                    api.ShowMsg(Resources.FailedToLoadPluginTitle, description, string.Empty, false);
+                    Metadata.Disabled = false;
+                    InitializePlugin(api);
+
+                    if (!IsPluginInitialized)
+                    {
+                        string description = $"{Resources.FailedToLoadPluginDescription} {Metadata.Name}\n\n{Resources.FailedToLoadPluginDescriptionPartTwo}";
+                        api.ShowMsg(Resources.FailedToLoadPluginTitle, description, string.Empty, false);
+                    }
                 }
-            }
-            else
-            {
-                Metadata.Disabled = setting.Disabled;
+                else
+                {
+                    Metadata.Disabled = setting.Disabled;
+                }
             }
 
             Metadata.ActionKeyword = setting.ActionKeyword;

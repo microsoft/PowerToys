@@ -11,6 +11,8 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using PowerLauncher.Properties;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -140,6 +142,25 @@ namespace PowerLauncher.Plugin
             var failedPlugins = new ConcurrentQueue<PluginPair>();
             Parallel.ForEach(AllPlugins, pair =>
             {
+                // Check policy state for the plugin and update metadata
+                var enabledPolicyState = GPOWrapper.GetRunPluginEnabledValue(pair.Metadata.ID);
+                if (enabledPolicyState == GpoRuleConfigured.Enabled)
+                {
+                    pair.Metadata.Disabled = false;
+                    pair.Metadata.IsEnabledPolicyConfigured = true;
+                    Logger.LogInfo($"The plugin {pair.Metadata.Name} is enabled by policy.");
+                }
+                else if (enabledPolicyState == GpoRuleConfigured.Disabled)
+                {
+                    pair.Metadata.Disabled = true;
+                    pair.Metadata.IsEnabledPolicyConfigured = true;
+                    Logger.LogInfo($"The plugin {pair.Metadata.Name} is disabled by policy.");
+                }
+                else if (enabledPolicyState == GpoRuleConfigured.WrongValue)
+                {
+                    Logger.LogWarning($"Wrong policy value for enabled policy for plugin {pair.Metadata.Name}.");
+                }
+
                 if (pair.Metadata.Disabled)
                 {
                     return;
