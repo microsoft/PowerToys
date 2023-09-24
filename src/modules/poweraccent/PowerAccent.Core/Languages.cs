@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
 using PowerToys.PowerAccentKeyboardService;
 
 namespace PowerAccent.Core
@@ -80,11 +81,15 @@ namespace PowerAccent.Core
             };
         }
 
+        // Store the computed letters for each key, so that subsequent calls don't take as long.
+        private static ConcurrentDictionary<LetterKey, string[]> _allLanguagesCache = new ConcurrentDictionary<LetterKey, string[]>();
+
         // All
         private static string[] GetDefaultLetterKeyALL(LetterKey letter)
         {
-            // would be even better to loop through Languages and call these functions dynamically, but I don't know how to do that!
-            return GetDefaultLetterKeyCA(letter)
+            if (!_allLanguagesCache.ContainsKey(letter))
+            {
+                _allLanguagesCache[letter] = GetDefaultLetterKeyCA(letter)
                 .Union(GetDefaultLetterKeyCUR(letter))
                 .Union(GetDefaultLetterKeyCY(letter))
                 .Union(GetDefaultLetterKeyCZ(letter))
@@ -113,7 +118,10 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeySR(letter))
                 .Union(GetDefaultLetterKeySV(letter))
                 .Union(GetDefaultLetterKeyTK(letter))
-            .ToArray();
+                .ToArray();
+            }
+
+            return _allLanguagesCache[letter];
         }
 
         // Currencies (source: https://www.eurochange.co.uk/travel-money/world-currency-abbreviations-symbols-and-codes-travel-money)

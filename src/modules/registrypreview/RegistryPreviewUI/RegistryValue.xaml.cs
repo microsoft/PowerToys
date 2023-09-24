@@ -33,7 +33,7 @@ namespace RegistryPreview
                 switch (Type)
                 {
                     case "REG_SZ":
-                    case "REG_EXAND_SZ":
+                    case "REG_EXPAND_SZ":
                     case "REG_MULTI_SZ":
                         return uriStringValue;
                     case "ERROR":

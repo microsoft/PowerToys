@@ -161,11 +161,23 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                     }
                 }
 
-                PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewed());
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewed());
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
             catch (Exception ex)
             {
-                PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewError { Message = ex.Message });
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewError { Message = ex.Message });
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
 
                 Controls.Clear();
                 _infoBar = GetTextBoxControl(Resources.PdfNotPreviewedError);

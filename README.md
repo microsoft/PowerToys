@@ -36,7 +36,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Via GitHub with EXE [Recommended]
 
-Go to [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
+Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F47
@@ -79,15 +79,15 @@ There are [community driven install methods](./doc/unofficialInstallMethods.md) 
 
 ## Third-Party Run Plugins
 
-Collection of [third-party plugins](./doc/thirdPartyRunPlugins.md) created by the community that aren't distributed with PowerToys.
+There is a collection of [third-party plugins](./doc/thirdPartyRunPlugins.md) created by the community that aren't distributed with PowerToys.
 
 ## Contributing
 
-This project welcomes contributions of all types. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
+This project welcomes contributions of all types.  Besides  coding features / bug fixes,  other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
 
-We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
+We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
 
-Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution.
+Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you grant us the rights to use your contribution and that you have permission to do so.
 
 For guidance on developing for PowerToys, please read the [developer docs](/doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile.
 
@@ -103,7 +103,7 @@ In this release, we focused on releasing new features, stability and improvement
 
 **Highlights**
 
- - Keyboard manager now supports Numpad. Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
+ - Keyboard manager now allows Numpad keys to be bound separately from the main keyboard. If using a previous configuration, only the main keyboard (not numpad) keys will be mapped. To restore the previous behavior, manually add separate bindings for numpad keys.
  - New utility: Crop And Lock allows you to crop a current application into a smaller window or just create a thumbnail. Focus the target window and press the shortcut to start cropping.
  - FancyZones code improvements and refactor.
  - Modernized ImageResizer UX.
@@ -122,10 +122,10 @@ In this release, we focused on releasing new features, stability and improvement
 
 ### FancyZones
 
- - Fixed issue causing canvas zones being drawn only when dragging in zone area.
+ - Fixed issue causing canvas zones being drawn only when dragging in the zone area.
  - Fixed user-defined default layout highlighting issue.
  - Refactored and improved code quality.
- - Fixed issue causing wrong layout to be applied when duplicating non-selected layout.
+ - Fixed issue causing the wrong layout to be applied when duplicating a non-selected layout.
 
 ### File Locksmith
 
@@ -148,11 +148,11 @@ In this release, we focused on releasing new features, stability and improvement
 ### Keyboard Manager
 
  - Rephrased labels to enhance clarity. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
- - Keyboard manager now supports Numpad. Note, with previously bound hotkeys stored in settings.json would only react to non-Numpad keys now. If a user wishes to restore the previous behavior, it could be done by manually adding another binding for the Numpad variant.
+ - Keyboard manager now allows Numpad keys to be bound separately from the main keyboard. If using a previous configuration, only the main keyboard (not numpad) keys will be mapped. To restore the previous behavior, manually add separate bindings for numpad keys.
 
 ### Mouse Highlighter
 
- - Fixed highlighter being invisible issue for Always on Top windows.
+ - The highlighter is now visible in "Always on Top" windows.
  - Added settings for automatic activation on startup. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Mouse Pointer Crosshairs
@@ -162,26 +162,26 @@ In this release, we focused on releasing new features, stability and improvement
 ### Peek
 
  - Show correct file type for shortcuts. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed issue causing wrong file size to be displayed. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed issue causing the wrong file size to be displayed. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Show 1 byte instead of 1 bytes file size. Thanks [@Deepak-Sangle](https://github.com/Deepak-Sangle)!
- - Open URIs from developer files in default browser. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Show thumbnail and fallback to icon for unsupported files. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+ - Open URIs from developer files in the default browser. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Show a thumbnail and fallback to an icon for unsupported files. Thanks [@pedrolamas](https://github.com/pedrolamas)!
 
 ### PowerRename
 
- - Updated OOBE gif. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden)!
- - Localized renamed parts combo box.
+ - Updated the OOBE gif. Thanks [@ChaseKnowlden](https://github.com/ChaseKnowlden)!
+ - Localized the renamed parts combo box.
  - Introduced advanced counter functionality.
- - Added remember last window size logic and optimized items sorting.
+ - Added remember last window size logic and optimized sorting of items.
  - Enable "Enumerate items" option by default.
 
 ### PowerToys Run
 
- - Fixed issue causing original search to be abandoned when cycling through results.
+ - Fixed an issue causing original search to be abandoned when cycling through results.
  - Updated device and bluetooth results for Settings plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fixed InvalidOperationException exception thrown. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Add Base64 Decoding function to the Value Generator plugin. Thanks [@LeagueOfPoro](https://github.com/LeagueOfPoro)!
- - Added Keep shell open option for Shell plugin.
+ - Added a Keep shell open option for Shell plugin.
  - Added Crop And Lock to PowerToys plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Registry Preview
@@ -223,16 +223,16 @@ In this release, we focused on releasing new features, stability and improvement
 
 #### What is being planned for version 0.74
 
-For [v0.74][github-next-release-work], we'll work on below:
+For [v0.74][github-next-release-work], we'll work on the items below:
 
  - Language selection
- - Modernize and refresh UX of PowerToys based on WPF
+ - Modernize and refresh the UX of PowerToys based on WPF
  - Stability / bug fixes
  - Peek: UI improvements
 
 ## PowerToys Community
 
-The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month over month, you directly help make PowerToys a better piece of software.
+The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month by month, you directly help make PowerToys a better piece of software.
 
 ## Code of Conduct
 
