@@ -148,17 +148,17 @@ namespace PowerLauncher.Plugin
                 {
                     pair.Metadata.Disabled = false;
                     pair.Metadata.IsEnabledPolicyConfigured = true;
-                    Logger.LogInfo($"The plugin {pair.Metadata.Name} is enabled by policy.");
+                    Log.Info($"The plugin <{pair.Metadata.Name}> is enabled by policy.", typeof(PluginManager));
                 }
                 else if (enabledPolicyState == GpoRuleConfigured.Disabled)
                 {
                     pair.Metadata.Disabled = true;
                     pair.Metadata.IsEnabledPolicyConfigured = true;
-                    Logger.LogInfo($"The plugin {pair.Metadata.Name} is disabled by policy.");
+                    Log.Info($"The plugin <{pair.Metadata.Name}> is disabled by policy.", typeof(PluginManager));
                 }
                 else if (enabledPolicyState == GpoRuleConfigured.WrongValue)
                 {
-                    Logger.LogWarning($"Wrong policy value for enabled policy for plugin {pair.Metadata.Name}.");
+                    Log.Warn($"Wrong policy value for enabled policy for plugin <{pair.Metadata.Name}>.", typeof(PluginManager));
                 }
 
                 if (pair.Metadata.Disabled)
