@@ -130,15 +130,15 @@ Select Move windows based on `Relative position`.
 
 ### Layout apply
 Enable `Enable quick layout switch`, assign numbers to custom layouts.
-- [ ] Switch with `Win` + `Ctrl` + `Alt` + `key`.
-- [ ] Switch with just a key while dragging a window.
-- [ ] Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
-- [ ] Disable `Enable quick layout switch`, verify shortcuts don't work.
-- [ ] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
-- [ ] Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
-- [ ] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
-- [ ] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
-- [ ] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
+- [x] Switch with `Win` + `Ctrl` + `Alt` + `key`.
+- [x] Switch with just a key while dragging a window.
+- [x] Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
+- [x] Disable `Enable quick layout switch`, verify shortcuts don't work.
+- [x] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
+- [x] Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
+- [x] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
+- [x] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
+- [x] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
 
 ### Layout reset
 * Test layout resetting.
