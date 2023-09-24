@@ -63,7 +63,7 @@ namespace Wox.Plugin
                 return;
             }
 
-            // If the enabled state is policy managed then we skipp the update of the disabled state as it must be a manual settings.json manipulation.
+            // If the enabled state is policy managed then we skip the update of the disabled state as it must be a manual settings.json manipulation.
             if (!Metadata.IsEnabledPolicyConfigured)
             {
                 if (Metadata.Disabled && !setting.Disabled)
