@@ -163,16 +163,16 @@ Before testing
    * Verify that selected default layout is applied according to configuration
 
 ### Span zones across monitors
-- [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
+- [x] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
 
 Repeat the previous subsections steps after enabling `Allow zones to span across monitors`
-- [ ] Dragging
-- [ ] Snapping
-- [ ] Snapped window behavior
-- [ ] Switch between windows in the current zone
-- [ ] Override Windows Snap
-- [ ] Layout apply
-- [ ] Layout reset
+- [x] Dragging
+- [x] Snapping
+- [x] Snapped window behavior
+- [x] Switch between windows in the current zone
+- [x] Override Windows Snap
+- [x] Layout apply
+- [x] Layout reset
 
 ## PowerToys Run
 
