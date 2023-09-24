@@ -13,7 +13,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_69_0" displayName="$(string.SUPPORTED_POWERTOYS_0_69_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_70_0" displayName="$(string.SUPPORTED_POWERTOYS_0_70_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_73_0" displayName="$(string.SUPPORTED_POWERTOYS_0_73_0)"/>
-      <definition name="SUPPORTED_POWERTOYS_DEV" displayName="$(string.SUPPORTED_POWERTOYS_DEV)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_75_0" displayName="$(string.SUPPORTED_POWERTOYS_0_75_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -410,7 +410,7 @@
     </policy>
 	<policy name="PowerToysRunAllPluginsEnabledState" class="Both" displayName="$(string.PowerToysRunAllPluginsEnabledState)" explainText="$(string.PowerToysRunAllPluginsEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PowerLauncherAllPluginsEnabledState">
       <parentCategory ref="PowerToysRun" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_DEV" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
@@ -420,7 +420,7 @@
     </policy>
 	<policy name="PowerToysRunIndividualPluginEnabledState" class="Both" displayName="$(string.PowerToysRunIndividualPluginEnabledState)" explainText="$(string.PowerToysRunIndividualPluginEnabledStateDescription)" presentation="$(presentation.PowerToysRunIndividualPluginEnabledState)" key="Software\Policies\PowerToys\PowerLauncherIndividualPluginEnabledList">
       <parentCategory ref="PowerToysRun" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_DEV"/>
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0"/>
 	  <elements>
 		<list id="PowerToysRunIndividualPluginEnabledList" explicitValue="true" />
 	  </elements>

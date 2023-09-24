@@ -243,7 +243,7 @@ namespace PowerLauncher
                 IconPathDark = GetIcon(x.Metadata, x.Metadata.IcoPathDark),
                 IconPathLight = GetIcon(x.Metadata, x.Metadata.IcoPathLight),
                 AdditionalOptions = x.Plugin is ISettingProvider ? (x.Plugin as ISettingProvider).AdditionalOptions : new List<PluginAdditionalOption>(),
-                EnabledPolicyState = (int)GpoRuleConfigured.NotConfigured,
+                EnabledPolicyUiState = (int)GpoRuleConfigured.NotConfigured,
             });
         }
 
@@ -264,7 +264,7 @@ namespace PowerLauncher
                     plugin.Author = defaultPlugins[plugin.Id].Author;
                     plugin.IconPathDark = defaultPlugins[plugin.Id].IconPathDark;
                     plugin.IconPathLight = defaultPlugins[plugin.Id].IconPathLight;
-                    plugin.EnabledPolicyState = (int)enabledPolicyState;
+                    plugin.EnabledPolicyUiState = (int)enabledPolicyState;
                     defaultPlugins[plugin.Id] = plugin;
                     defaultPlugins[plugin.Id].AdditionalOptions = additionalOptions;
                 }

@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 };
             }
 
-            _enabledGpoRuleConfiguration = (GpoRuleConfigured)settings.EnabledPolicyState;
+            _enabledGpoRuleConfiguration = (GpoRuleConfigured)settings.EnabledPolicyUiState;
             _enabledGpoRuleIsConfigured = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
         }
 

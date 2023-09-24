@@ -91,11 +91,9 @@ namespace powertoys_gpo {
             return std::nullopt;
         }
 
+        // Convert buffer to std::wstring, delete buffer and return REG_SZ value
         std::wstring string_value = temp_buffer;
-
         delete temp_buffer;
-
-        // Return string value
         return string_value;
     }
 

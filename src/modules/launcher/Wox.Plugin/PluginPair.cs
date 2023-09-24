@@ -171,7 +171,7 @@ namespace Wox.Plugin
             string pluginID = (string)type.GetProperty("PluginID", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
             if (pluginID == null)
             {
-                Log.Error($"Can't validate plugin ID of plugin <{Metadata.Name}> in {Metadata.ExecuteFilePath}: Property <Main.PluginID> not found.", MethodBase.GetCurrentMethod().DeclaringType);
+                Log.Error($"Can't validate plugin ID of plugin <{Metadata.Name}> in {Metadata.ExecuteFilePath}: The static property <Main.PluginID> was not found.", MethodBase.GetCurrentMethod().DeclaringType);
                 return false;
             }
             else if (pluginID != Metadata.ID)
