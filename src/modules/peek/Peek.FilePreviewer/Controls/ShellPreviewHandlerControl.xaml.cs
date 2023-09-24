@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Peek.FilePreviewer.Previewers;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -26,23 +25,15 @@ namespace Peek.FilePreviewer.Controls
         private WNDPROC containerWndProc;
         private RECT controlRect;
 
-        public static readonly DependencyProperty LoadingStateProperty = DependencyProperty.Register(
-            nameof(LoadingState),
-            typeof(PreviewState),
-            typeof(ShellPreviewHandlerControl),
-            new PropertyMetadata(PreviewState.Uninitialized));
+        public event EventHandler? HandlerLoaded;
+
+        public event EventHandler? HandlerError;
 
         public static readonly DependencyProperty HandlerVisibilityProperty = DependencyProperty.Register(
             nameof(HandlerVisibility),
             typeof(Visibility),
             typeof(ShellPreviewHandlerControl),
             new PropertyMetadata(Visibility.Collapsed, new PropertyChangedCallback((d, e) => ((ShellPreviewHandlerControl)d).OnHandlerVisibilityChanged())));
-
-        public PreviewState? LoadingState
-        {
-            get { return (PreviewState)GetValue(LoadingStateProperty); }
-            set { SetValue(LoadingStateProperty, value); }
-        }
 
         // Must have its own visibility property so resize events can still fire
         public Visibility HandlerVisibility
@@ -69,9 +60,12 @@ namespace Peek.FilePreviewer.Controls
                     // Attach the preview handler to the container window
                     Source.SetWindow(containerHwnd, (RECT*)Unsafe.AsPointer(ref controlRect));
                     Source.DoPreview();
+
+                    HandlerLoaded?.Invoke(this, EventArgs.Empty);
                 }
                 catch
                 {
+                    HandlerError?.Invoke(this, EventArgs.Empty);
                 }
             }
         }

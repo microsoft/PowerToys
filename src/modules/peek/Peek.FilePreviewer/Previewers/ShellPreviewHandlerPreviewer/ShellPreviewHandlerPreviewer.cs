@@ -127,7 +127,6 @@ namespace Peek.FilePreviewer.Previewers
 
             // Preview.SetWindow() needs to be set in the control
             Preview = previewHandler;
-            State = PreviewState.Loaded;
         }
 
         public void Clear()

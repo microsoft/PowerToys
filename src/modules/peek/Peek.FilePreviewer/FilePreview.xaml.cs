@@ -274,6 +274,22 @@ namespace Peek.FilePreviewer
             }
         }
 
+        private void ShellPreviewHandlerPreview_HandlerLoaded(object sender, EventArgs e)
+        {
+            if (ShellPreviewHandlerPreviewer != null)
+            {
+                ShellPreviewHandlerPreviewer.State = PreviewState.Loaded;
+            }
+        }
+
+        private void ShellPreviewHandlerPreview_HandlerError(object sender, EventArgs e)
+        {
+            if (ShellPreviewHandlerPreviewer != null)
+            {
+                ShellPreviewHandlerPreviewer.State = PreviewState.Error;
+            }
+        }
+
         private async void KeyboardAccelerator_CtrlC_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             if (Previewer != null)
