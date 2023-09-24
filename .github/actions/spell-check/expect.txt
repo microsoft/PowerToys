@@ -533,11 +533,11 @@ EWXLOGOFF
 EWXPOWEROFF
 EWXREBOOT
 EWXSHUTDOWN
-Exa
 exabyte
 examplehandler
 examplepowertoy
 EXAND
+Exbi
 EXCLUDEFROMCAPTURE
 exdisp
 executionpolicy
@@ -632,6 +632,7 @@ GETSTATE
 GETTEXT
 GETTEXTLENGTH
 GHND
+Gibi
 GMEM
 GNumber
 google
@@ -900,6 +901,7 @@ keynum
 keyremaps
 Keytool
 keyup
+Kibi
 KILLFOCUS
 killrunner
 Knownfolders
@@ -1053,10 +1055,10 @@ MDL
 mdtext
 mdtxt
 mdwn
+Mebi
 MEDIASUBTYPE
 mediatype
 mef
-Mega
 Melman
 MENUBREAK
 MENUITEMINFO
@@ -1362,6 +1364,7 @@ pdto
 pdtobj
 pdw
 PDWORD
+Pebi
 pedrolamas
 pef
 PElems
@@ -1902,6 +1905,7 @@ TCustom
 tdbuild
 TDefault
 TDevice
+Tebi
 telem
 telephon
 Templated
