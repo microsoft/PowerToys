@@ -39,20 +39,20 @@
 ### Snapping
 Disable FZ and clear `app-zone-history.json` before starting. FancyZones should be disabled, otherwise, it'll save cashed values back to the file.
 
-- [ ] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [ ] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [ ] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
-- [ ] Snap a window to several zones, verify zone numbers in the json file are correct.
-- [ ] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
-- [ ] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
-- [ ] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
-- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
-- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
-- [ ] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
-- [ ] Launch PT in administrator mode, assign a window with administrator privileges.
+- [x] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
+- [x] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
+- [x] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
+- [x] Snap a window to several zones, verify zone numbers in the json file are correct.
+- [x] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
+- [x] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
+- [x] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
+- [x] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
+- [x] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
+- [x] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
+- [x] Launch PT in administrator mode, assign a window with administrator privileges.
 * Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
-    - [ ] Turn Show this window on all desktops on, verify you can snap this window to a zone.
-    - [ ] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
+    - [x] Turn Show this window on all desktops on, verify you can snap this window to a zone.
+    - [x] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
 
 ### Snapped window behavior
 - [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
