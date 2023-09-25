@@ -210,7 +210,7 @@ namespace Common.Utilities
 
             // max-width and max-height not supported. Extra CSS is needed for it to work.
             string scaling = $"max-width: {width} ; max-height: {height} ;";
-            scaling += $"  _height:expression(this.scrollHeight > {heightR} ? \" {height}\" : \"auto\"); _width:expression(this.scrollWidth > {widthR} ? \"{width}\" : \"auto\");";
+            scaling += $"  _height:expression(this.scrollHeight &gt; {heightR} ? &quot; {height}&quot; : &quot;auto&quot;); _width:expression(this.scrollWidth &gt; {widthR} ? &quot;{width}&quot; : &quot;auto&quot;);";
 
             string newStyle = $"style=\"{scaling}{centering}{oldStyle}\"";
             int insertAt = stringSvgData.IndexOf(">", StringComparison.InvariantCultureIgnoreCase);
