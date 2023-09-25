@@ -21,6 +21,8 @@ namespace WinGetCommandNotFound
 
         private List<string>? _candidates;
 
+        private bool _warmedUp = false;
+
         public static WinGetCommandNotFoundFeedbackPredictor Singleton { get; } = new WinGetCommandNotFoundFeedbackPredictor(Init.Id);
 
         private WinGetCommandNotFoundFeedbackPredictor(string guid)
@@ -30,6 +32,7 @@ namespace WinGetCommandNotFound
             var provider = new DefaultObjectPoolProvider();
             _pool = provider.Create(new PooledPowerShellObjectPolicy());
             _pool.Return(_pool.Get());
+            Task.Run(() => WarmUp());
         }
 
         public Guid Id => _guid;
@@ -39,6 +42,22 @@ namespace WinGetCommandNotFound
         public string Description => "Finds missing commands that can be installed via WinGet.";
 
         public Dictionary<string, string>? FunctionsToDefine => null;
+
+        private void WarmUp()
+        {
+            var ps = _pool.Get();
+            try
+            {
+                ps.AddCommand("Find-WinGetPackage")
+                    .AddParameter("Count", 1)
+                    .Invoke();
+            }
+            finally
+            {
+                _pool.Return(ps);
+                _warmedUp = true;
+            }
+        }
 
         /// <summary>
         /// Gets feedback based on the given commandline and error record.
@@ -80,6 +99,11 @@ namespace WinGetCommandNotFound
 
         private Collection<PSObject> FindPackages(string query, ref bool tooManySuggestions, ref string packageMatchFilterField)
         {
+            if (!_warmedUp)
+            {
+                return new Collection<PSObject>();
+            }
+
             var ps = _pool.Get();
             try
             {

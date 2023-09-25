@@ -8,16 +8,16 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace WinGetCommandNotFound
 {
-    public sealed class PooledPowerShellObjectPolicy : PooledObjectPolicy<PowerShell>
+    public sealed class PooledPowerShellObjectPolicy : IPooledObjectPolicy<PowerShell>
     {
-        public override PowerShell Create()
+        public PowerShell Create()
         {
             var iss = InitialSessionState.CreateDefault2();
             iss.ImportPSModule(new[] { "Microsoft.WinGet.Client" });
             return PowerShell.Create(iss);
         }
 
-        public override bool Return(PowerShell ps)
+        public bool Return(PowerShell ps)
         {
             if (ps != null)
             {
