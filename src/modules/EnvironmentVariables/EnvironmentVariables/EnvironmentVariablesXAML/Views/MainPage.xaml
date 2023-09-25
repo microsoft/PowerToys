@@ -440,6 +440,7 @@
                                                 Margin="-12,12,0,12"
                                                 HorizontalAlignment="Stretch"
                                                 ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
+                                                SelectionChanged="ExistingVariablesListView_SelectionChanged"
                                                 SelectionMode="Multiple">
 
                                                 <ListView.ItemTemplate>

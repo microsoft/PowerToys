@@ -10,6 +10,7 @@ using CommunityToolkit.WinUI.Controls;
 using EnvironmentVariables.Models;
 using EnvironmentVariables.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EnvironmentVariables.Views
 {
@@ -134,7 +135,7 @@ namespace EnvironmentVariables.Views
             AddVariableFlyout.Hide();
         }
 
-        private void Delete_Variable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void Delete_Variable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             MenuFlyoutItem menuItem = sender as MenuFlyoutItem;
             var variableSet = menuItem.DataContext as ProfileVariablesSet;
@@ -142,7 +143,19 @@ namespace EnvironmentVariables.Views
 
             if (variable != null)
             {
-                ViewModel.DeleteVariable(variable, variableSet);
+                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                ContentDialog dialog = new ContentDialog();
+                dialog.XamlRoot = RootPage.XamlRoot;
+                dialog.Title = variable.Name;
+                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
+                dialog.CloseButtonText = resourceLoader.GetString("No");
+                dialog.DefaultButton = ContentDialogButton.Primary;
+                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+                dialog.PrimaryButtonClick += (s, args) =>
+                {
+                    ViewModel.DeleteVariable(variable, variableSet);
+                };
+                var result = await dialog.ShowAsync();
             }
         }
 
@@ -166,6 +179,18 @@ namespace EnvironmentVariables.Views
         {
             ViewModel.LoadEnvironmentVariables();
             ViewModel.IsStateModified = EnvironmentState.Unchanged;
+        }
+
+        private void ExistingVariablesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ExistingVariablesListView.SelectedItems.Count == 0)
+            {
+                ConfirmAddVariableBtn.IsEnabled = false;
+            }
+            else
+            {
+                ConfirmAddVariableBtn.IsEnabled = true;
+            }
         }
     }
 }
