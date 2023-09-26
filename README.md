@@ -234,7 +234,7 @@ For [v0.75][github-next-release-work], we'll work on the items below:
  - New Settings homepage. Here's a Work in Progress preview:
 ![PowerToys Settings Dashboard WIP](https://github.com/microsoft/PowerToys/assets/26118718/938a5715-0a9b-4fe9-9e15-adfec92da694)
 
- - Modernize and refresh the UX of PowerToys based on WPF. Here's Work in Progress previews for PowerToys Run and Color Picker:
+ - Modernize and refresh the UX of PowerToys based on WPF. Here's Work in Progress previews for the modules "PowerToys Run" and "Color Picker":
 ![PowerToys Run UI refresh WIP](https://github.com/microsoft/PowerToys/assets/9866362/16903bcb-c18e-49fb-93ca-738b81957055)
 ![ColorPicker UI refresh WIP](https://github.com/microsoft/PowerToys/assets/9866362/ceebe54b-de63-4ce7-afcb-2cd4280bf4d1)
 
