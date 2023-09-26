@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EnvironmentVariables.Helpers;
-using EnvironmentVariables.ViewModels;
 using ManagedCommon;
 
 namespace EnvironmentVariables.Models
@@ -117,6 +117,15 @@ namespace EnvironmentVariables.Models
             }
 
             return true;
+        }
+
+        public ProfileVariablesSet Clone()
+        {
+            var clone = new ProfileVariablesSet(this.Id, this.Name);
+            clone.Variables = new ObservableCollection<Variable>(this.Variables);
+            clone.IsEnabled = this.IsEnabled;
+
+            return clone;
         }
     }
 }

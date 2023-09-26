@@ -24,6 +24,8 @@ namespace EnvironmentVariables.Views
 
         public ICommand AddProfileCommand => new RelayCommand(AddProfile);
 
+        public ICommand UpdateProfileCommand => new RelayCommand(UpdateProfile);
+
         public ICommand AddVariableCommand => new RelayCommand(AddVariable);
 
         public MainPage()
@@ -84,6 +86,12 @@ namespace EnvironmentVariables.Views
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
             ViewModel.AddProfile(profile);
+        }
+
+        private void UpdateProfile()
+        {
+            var updatedProfile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            ViewModel.UpdateProfile(updatedProfile);
         }
 
         private async void RemoveProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -190,6 +198,25 @@ namespace EnvironmentVariables.Views
             else
             {
                 ConfirmAddVariableBtn.IsEnabled = true;
+            }
+        }
+
+        private async void EditProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            SwitchViewsSegmentedView.SelectedIndex = 0;
+
+            var button = sender as Button;
+            var profile = button.CommandParameter as ProfileVariablesSet;
+
+            if (profile != null)
+            {
+                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                AddProfileDialog.Title = resourceLoader.GetString("AddNewProfileDialog_Title");
+                AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
+                AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
+                AddProfileDialog.PrimaryButtonCommand = UpdateProfileCommand;
+                AddProfileDialog.DataContext = profile.Clone();
+                await AddProfileDialog.ShowAsync();
             }
         }
     }

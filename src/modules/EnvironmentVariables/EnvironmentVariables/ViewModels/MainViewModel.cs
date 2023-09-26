@@ -169,6 +169,14 @@ namespace EnvironmentVariables.ViewModels
             _ = Task.Run(SaveAsync);
         }
 
+        internal void UpdateProfile(ProfileVariablesSet updatedProfile)
+        {
+            var existingProfile = Profiles.Where(x => x.Id == updatedProfile.Id).FirstOrDefault();
+            existingProfile.Name = updatedProfile.Name;
+            existingProfile.IsEnabled = updatedProfile.IsEnabled;
+            existingProfile.Variables = updatedProfile.Variables;
+        }
+
         private async Task SaveAsync()
         {
             try

@@ -9,6 +9,8 @@
     xmlns:views="using:EnvironmentVariables.Views"
     xmlns:winuiex="using:WinUIEx"
     x:Uid="Window"
+    MinWidth="700"
+    MinHeight="480"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />

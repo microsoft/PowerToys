@@ -233,4 +233,7 @@
   <data name="Delete_Variable_Description" xml:space="preserve">
     <value>Are you sure you want to delete this variable?</value>
   </data>
+  <data name="EditProfileDialog_Title" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
 </root>

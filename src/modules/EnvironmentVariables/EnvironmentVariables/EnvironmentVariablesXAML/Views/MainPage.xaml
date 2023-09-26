@@ -140,13 +140,23 @@
                             <DataTemplate x:DataType="models:ProfileVariablesSet">
                                 <controls:SettingsExpander
                                     Margin="0,0,0,4"
-                                    Header="{x:Bind Name}"
+                                    Header="{x:Bind Name, Mode=TwoWay}"
                                     HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}"
                                     ItemTemplate="{StaticResource VariableTemplate}"
                                     ItemsSource="{x:Bind Variables, Mode=OneWay}">
 
                                     <StackPanel Orientation="Horizontal">
                                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=IsEnabled}" />
+                                        <Button
+                                            x:Name="EditProfileBtn"
+                                            x:Uid="EditProfileBtn"
+                                            Width="40"
+                                            Height="36"
+                                            Click="EditProfileBtn_Click"
+                                            CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
+                                            Content="&#xE70F;"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Style="{StaticResource SubtleButtonStyle}" />
                                         <Button
                                             x:Name="RemoveProfileBtn"
                                             x:Uid="RemoveProfileBtn"
@@ -198,7 +208,7 @@
                                 Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                 <!--  TO DO: Glyph not showing, known WinUI issue - need to follow up with team  -->
                                 <InfoBadge IconSource="{ui:FontIconSource Glyph=&#xEA1F;}" Style="{StaticResource AttentionIconInfoBadgeStyle}" />
-                                <TextBlock x:Uid="EditSystemDefaultSetInfoBar" />
+                                <TextBlock x:Uid="EditSystemDefaultSetInfoBar" /> 
                             </StackPanel>
                         </controls:SettingsExpander.Description>
                     </controls:SettingsExpander>
