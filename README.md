@@ -230,7 +230,7 @@ For [v0.75][github-next-release-work], we'll work on the items below:
  - New utility: Environment Variables Editor. Here's a Work in Progress preview:
 ![Environment Variables Editor WIP](https://github.com/microsoft/PowerToys/assets/26118718/f99532a8-5aae-481b-a662-19a95f4aa03d)
 
- - New Settings home page. Here's a Work in Progress preview:
+ - New Settings homepage. Here's a Work in Progress preview:
 ![PowerToys Settings Dashboard WIP](https://github.com/microsoft/PowerToys/assets/26118718/938a5715-0a9b-4fe9-9e15-adfec92da694)
 
  - Modernize and refresh the UX of PowerToys based on WPF. Here's Work in Progress previews for PowerToys Run and Color Picker:
