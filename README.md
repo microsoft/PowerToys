@@ -107,7 +107,6 @@ In this release, we focused on stability and improvements.
  - Text Extractor was upgraded to its version 2.0, with a new overlay, table mode and more Quality of Life improvements. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
  - Improved FancyZones stability, fixing some layout resets and improving handling of newly created windows on Windows 11.
  - Fixed many silent crashes that were reported to Watson and the user's event viewer.
- - Fixes and improvements for PowerToys Run plugins. Thanks [@htcfreek](https://github.com/htcfreek) for the new PowerToys Run plugin settings types! *Attention*: A breaking change is planned for 0.75, in which each plugin has to declare its identifier programmatically so that it can be controlled through GPO. For third-party plugin developers, please check https://github.com/microsoft/PowerToys/pull/27468 for more details.
 
 ### General
 
