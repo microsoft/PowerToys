@@ -121,7 +121,7 @@ In this release, we focused on stability and improvements.
 
 ### Color Picker
 
- - After selecting a new color in the editor, the history will scroll to the top. Thanks [@peerpalo](https://github.com/peerpalo)!
+ - After adding a new color in the editor, the history will scroll the new color into view. Thanks [@peerpalo](https://github.com/peerpalo)!
 
 ### Crop and Lock
  - Fixed a Crop and Lock crash that would occur when trying to reparent a window crashes the target application. An error message is shown instead.
