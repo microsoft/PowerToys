@@ -227,9 +227,10 @@ For [v0.75][github-next-release-work], we'll work on the items below:
 
  - Language selection
  - .NET 8 upgrade
- - .NET 8 upgrade
  - Policy support for managing PowerToys Run plugins.
 *Attention*: A breaking change is planned (for 0.75), in which each plugin has to declare its identifier programmatically so that it can be controlled through GPO. For third-party plugin developers, please check https://github.com/microsoft/PowerToys/pull/27468 for more details.
+
+ - New utility: Environment Variables Editor. Here's a Work in Progress preview:
 ![Environment Variables Editor WIP](https://github.com/microsoft/PowerToys/assets/26118718/f99532a8-5aae-481b-a662-19a95f4aa03d)
 
  - New Settings homepage. Here's a Work in Progress preview:
