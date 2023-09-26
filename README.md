@@ -105,7 +105,7 @@ In this release, we focused on stability and improvements.
 
  - Upgraded to Windows App SDK 1.4.1, increasing stability of WinUI3 utilities. Thanks [@dongle-the-gadget](https://github.com/dongle-the-gadget) for kickstarting the upgrade!
  - Text Extractor was upgraded to its version 2.0, with a new overlay, table mode and more Quality of Life improvements. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
- - Improved FancyZones stability, fixing some layout resets and improving handlign of newly created windows on Windows 11.
+ - Improved FancyZones stability, fixing some layout resets and improving handling of newly created windows on Windows 11.
  - Fixed many silent crashes that were reported to Watson and the user's event viewer.
 
 ### General
