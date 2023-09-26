@@ -227,6 +227,7 @@ In this release, we focused on stability and improvements.
 For [v0.75][github-next-release-work], we'll work on the items below:
 
  - Language selection
+ - .NET 8 upgrade
  - New utility: Environment Variables Editor. Here's a Work in Progress preview:
 ![Environment Variables Editor WIP](https://github.com/microsoft/PowerToys/assets/26118718/f99532a8-5aae-481b-a662-19a95f4aa03d)
 
