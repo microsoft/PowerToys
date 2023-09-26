@@ -155,7 +155,6 @@ In this release, we focused on stability and improvements.
  - Corrected a check for an error when signaling the application to start as administrator.
  - Refactored the context menu. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed dialogs overlapping the title bar after the upgrade to Windows App SDK 1.4. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - The move up and move down buttons in the context menu are disabled when filtering. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Keyboard Manager
 
