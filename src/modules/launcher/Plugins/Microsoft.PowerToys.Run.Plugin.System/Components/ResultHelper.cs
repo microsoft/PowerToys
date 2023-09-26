@@ -79,7 +79,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 {
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     Title = Resources.Microsoft_plugin_sys_CopyDetails,
                     Action = _ => CopyToClipBoard(contextData.Data),
@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                 {
                     AcceleratorKey = Key.Delete,
                     AcceleratorModifiers = ModifierKeys.Shift, // Shift+Delete is the common key for deleting without recycle bin
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE74D",                       // E74D => Symbol: Delete
                     Title = Resources.Microsoft_plugin_sys_RecycleBin_contextMenu,
                     Action = _ =>
