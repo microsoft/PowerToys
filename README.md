@@ -231,13 +231,17 @@ For [v0.75][github-next-release-work], we'll work on the items below:
 *Attention*: A breaking change is planned (for 0.75), in which each plugin has to declare its identifier programmatically so that it can be controlled through GPO. For third-party plugin developers, please check https://github.com/microsoft/PowerToys/pull/27468 for more details.
 
  - New utility: Environment Variables Editor. Here's a Work in Progress preview:
+
 ![Environment Variables Editor WIP](https://github.com/microsoft/PowerToys/assets/26118718/f99532a8-5aae-481b-a662-19a95f4aa03d)
 
  - New Settings homepage. Here's a Work in Progress preview:
+
 ![PowerToys Settings Dashboard WIP](https://github.com/microsoft/PowerToys/assets/26118718/938a5715-0a9b-4fe9-9e15-adfec92da694)
 
  - Modernize and refresh the UX of PowerToys based on WPF. Here's Work in Progress previews for the modules "PowerToys Run" and "Color Picker":
+
 ![PowerToys Run UI refresh WIP](https://github.com/microsoft/PowerToys/assets/9866362/16903bcb-c18e-49fb-93ca-738b81957055)
+
 ![ColorPicker UI refresh WIP](https://github.com/microsoft/PowerToys/assets/9866362/ceebe54b-de63-4ce7-afcb-2cd4280bf4d1)
 
  - Stability / bug fixes
