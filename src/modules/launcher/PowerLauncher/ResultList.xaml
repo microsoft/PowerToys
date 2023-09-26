@@ -193,7 +193,7 @@
                                     <Button.Content>
                                         <ui:FontIcon
                                             AutomationProperties.Name="{x:Static p:Resources.ContextMenuIcon}"
-                                            FontFamily="{DynamicResource SegoeFluentIcons}"
+                                            FontFamily="{Binding FontFamily}"
                                             Glyph="{Binding Glyph}" />
                                     </Button.Content>
                                 </Button>
