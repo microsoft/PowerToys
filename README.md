@@ -192,7 +192,7 @@ In this release, we focused on stability and improvements.
 
 ### Registry Preview
 
- - Improved focusing issues at startup.
+ - Fixed focusing issues at startup.
  - Improved the data visualization to show data in a similar way to the Windows Registry Editor. Thanks [@dillydylann](https://github.com/dillydylann)!
 
 ### Runner
