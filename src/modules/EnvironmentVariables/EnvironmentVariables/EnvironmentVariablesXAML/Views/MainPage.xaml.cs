@@ -199,6 +199,28 @@ namespace EnvironmentVariables.Views
             {
                 ConfirmAddVariableBtn.IsEnabled = true;
             }
+
+            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+
+            int toRemove = -1;
+
+            if (e.RemovedItems.Count > 0)
+            {
+                Variable removedVariable = e.RemovedItems[0] as Variable;
+                for (int i = 0; i < profile.Variables.Count; i++)
+                {
+                    if (profile.Variables[i].Name == removedVariable.Name)
+                    {
+                        toRemove = i;
+                        break;
+                    }
+                }
+
+                if (toRemove != -1)
+                {
+                    profile.Variables.RemoveAt(toRemove);
+                }
+            }
         }
 
         private async void EditProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -217,6 +239,25 @@ namespace EnvironmentVariables.Views
                 AddProfileDialog.PrimaryButtonCommand = UpdateProfileCommand;
                 AddProfileDialog.DataContext = profile.Clone();
                 await AddProfileDialog.ShowAsync();
+            }
+        }
+
+        private void ExistingVariablesListView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+
+            foreach (Variable item in ExistingVariablesListView.Items)
+            {
+                if (item != null)
+                {
+                    foreach (var profileItem in profile.Variables)
+                    {
+                        if (profileItem.Name == item.Name)
+                        {
+                            ExistingVariablesListView.SelectedItems.Add(item);
+                        }
+                    }
+                }
             }
         }
     }

@@ -208,7 +208,7 @@
                                 Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                 <!--  TO DO: Glyph not showing, known WinUI issue - need to follow up with team  -->
                                 <InfoBadge IconSource="{ui:FontIconSource Glyph=&#xEA1F;}" Style="{StaticResource AttentionIconInfoBadgeStyle}" />
-                                <TextBlock x:Uid="EditSystemDefaultSetInfoBar" /> 
+                                <TextBlock x:Uid="EditSystemDefaultSetInfoBar" />
                             </StackPanel>
                         </controls:SettingsExpander.Description>
                     </controls:SettingsExpander>
@@ -450,6 +450,7 @@
                                                 Margin="-12,12,0,12"
                                                 HorizontalAlignment="Stretch"
                                                 ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
+                                                Loaded="ExistingVariablesListView_Loaded"
                                                 SelectionChanged="ExistingVariablesListView_SelectionChanged"
                                                 SelectionMode="Multiple">
 
