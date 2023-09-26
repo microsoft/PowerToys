@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -18,11 +19,19 @@ namespace Peek.FilePreviewer.Controls
     [INotifyPropertyChanged]
     public unsafe sealed partial class ShellPreviewHandlerControl : UserControl
     {
+        // Mica fallback colors
+        private static readonly COLORREF LightThemeBgColor = new(0x00f3f3f3);
+        private static readonly COLORREF DarkThemeBgColor = new(0x00202020);
+
+        private static readonly HBRUSH LightThemeBgBrush = PInvoke.CreateSolidBrush(LightThemeBgColor);
+        private static readonly HBRUSH DarkThemeBgBrush = PInvoke.CreateSolidBrush(DarkThemeBgColor);
+
         [ObservableProperty]
         private IPreviewHandler? source;
 
         private HWND containerHwnd;
         private WNDPROC containerWndProc;
+        private HBRUSH containerBgBrush;
         private RECT controlRect;
 
         public event EventHandler? HandlerLoaded;
@@ -76,6 +85,13 @@ namespace Peek.FilePreviewer.Controls
             {
                 PInvoke.ShowWindow(containerHwnd, SHOW_WINDOW_CMD.SW_SHOW);
                 IsEnabled = true;
+
+                // Clears the background from the last previewer
+                // The brush can only be drawn here because flashes will occur during resize
+                PInvoke.SetClassLongPtr(containerHwnd, GET_CLASS_LONG_INDEX.GCLP_HBRBACKGROUND, containerBgBrush);
+                PInvoke.UpdateWindow(containerHwnd);
+                PInvoke.SetClassLongPtr(containerHwnd, GET_CLASS_LONG_INDEX.GCLP_HBRBACKGROUND, IntPtr.Zero);
+                PInvoke.InvalidateRect(containerHwnd, (RECT*)null, true);
             }
             else
             {
@@ -86,29 +102,32 @@ namespace Peek.FilePreviewer.Controls
 
         private void UpdatePreviewerTheme()
         {
+            COLORREF bgColor, fgColor;
+            switch (ActualTheme)
+            {
+                case ElementTheme.Light:
+                    bgColor = LightThemeBgColor;
+                    fgColor = new COLORREF(0x00000000); // Black
+
+                    containerBgBrush = LightThemeBgBrush;
+                    break;
+
+                case ElementTheme.Dark:
+                default:
+                    bgColor = DarkThemeBgColor;
+                    fgColor = new COLORREF(0x00FFFFFF); // White
+
+                    containerBgBrush = DarkThemeBgBrush;
+                    break;
+            }
+
             if (Source is IPreviewHandlerVisuals visuals)
             {
-                try
-                {
-                    switch (ActualTheme)
-                    {
-                        case ElementTheme.Light:
-                            visuals.SetBackgroundColor(new COLORREF(0x00f3f3f3));
-                            visuals.SetTextColor(new COLORREF(0x00000000));
-                            break;
+                visuals.SetBackgroundColor(bgColor);
+                visuals.SetTextColor(fgColor);
 
-                        case ElementTheme.Dark:
-                            visuals.SetBackgroundColor(new COLORREF(0x00202020));
-                            visuals.SetTextColor(new COLORREF(0x00FFFFFF));
-                            break;
-                    }
-
-                    // Changing the previewer colors might not always redraw itself
-                    PInvoke.InvalidateRect(containerHwnd, (RECT*)null, true);
-                }
-                catch
-                {
-                }
+                // Changing the previewer colors might not always redraw itself
+                PInvoke.InvalidateRect(containerHwnd, (RECT*)null, true);
             }
         }
 
