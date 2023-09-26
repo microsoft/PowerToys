@@ -112,7 +112,7 @@ AUTHN
 AUTHZ
 AUTOHIDE
 AUTOMATIONPROPERTIES
-autorun
+Autorun
 AUTOUPDATE
 AValid
 awakeness
@@ -144,7 +144,7 @@ Blockquotes
 blogs
 Blt
 BLUEGRAY
-bluetooth
+Bluetooth
 BLURBEHIND
 BLURREGION
 bmi
