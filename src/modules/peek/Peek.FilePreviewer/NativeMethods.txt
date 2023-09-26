@@ -1,4 +1,6 @@
-﻿CreateWindowEx
+﻿IClassFactory
+CoGetClassObject
+CreateWindowEx
 DefWindowProc
 GetDpiForWindow
 InvalidateRect

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -15,6 +16,8 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
+using Windows.Win32;
+using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.Shell.PropertiesSystem;
 using IShellItem = Windows.Win32.UI.Shell.IShellItem;
@@ -23,6 +26,8 @@ namespace Peek.FilePreviewer.Previewers
 {
     public partial class ShellPreviewHandlerPreviewer : ObservableObject, IShellPreviewHandlerPreviewer, IDisposable
     {
+        private static readonly ConcurrentDictionary<Guid, IClassFactory> HandlerFactories = new();
+
         [ObservableProperty]
         private IPreviewHandler? preview;
 
@@ -74,12 +79,52 @@ namespace Peek.FilePreviewer.Previewers
                 var previewHandlerGuid = GetPreviewHandlerGuid(FileItem.Extension);
                 if (!string.IsNullOrEmpty(previewHandlerGuid))
                 {
-                    return Activator.CreateInstance(Type.GetTypeFromCLSID(Guid.Parse(previewHandlerGuid))!) as IPreviewHandler;
+                    var clsid = Guid.Parse(previewHandlerGuid);
+
+                    bool retry = false;
+                    do
+                    {
+                        unsafe
+                        {
+                            // This runs the preview handler in a separate process (prevhost.exe)
+                            // TODO: Figure out how to get it to run in a low integrity level
+                            if (!HandlerFactories.TryGetValue(clsid, out var factory))
+                            {
+                                var hr = PInvoke.CoGetClassObject(clsid, CLSCTX.CLSCTX_LOCAL_SERVER, null, typeof(IClassFactory).GUID, out var pFactory);
+                                Marshal.ThrowExceptionForHR(hr);
+
+                                // Storing the factory in memory helps makes the handlers load faster
+                                // TODO: Maybe free them after some inactivity or when Peek quits?
+                                factory = (IClassFactory)Marshal.GetObjectForIUnknown((IntPtr)pFactory);
+                                factory.LockServer(true);
+                                HandlerFactories.AddOrUpdate(clsid, factory, (_, _) => factory);
+                            }
+
+                            try
+                            {
+                                var iid = typeof(IPreviewHandler).GUID;
+                                factory.CreateInstance(null, &iid, out var instance);
+                                return instance as IPreviewHandler;
+                            }
+                            catch
+                            {
+                                if (!retry)
+                                {
+                                    // Process is probably dead, attempt to get the factory again (once)
+                                    HandlerFactories.TryRemove(new(clsid, factory));
+                                    retry = true;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    while (retry);
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             });
 
             if (previewHandler == null)
