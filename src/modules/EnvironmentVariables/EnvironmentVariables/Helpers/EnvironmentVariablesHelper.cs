@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using EnvironmentVariables.Helpers.Win32;
 using EnvironmentVariables.Models;
 using Microsoft.Win32;
@@ -88,6 +89,7 @@ namespace EnvironmentVariables.Helpers
         internal static void GetVariables(EnvironmentVariableTarget target, VariablesSet set)
         {
             var variables = Environment.GetEnvironmentVariables(target);
+            var sortedList = new SortedList<string, Variable>();
 
             foreach (DictionaryEntry variable in variables)
             {
@@ -100,8 +102,10 @@ namespace EnvironmentVariables.Helpers
                 }
 
                 Variable entry = new Variable(key, value, set.Type);
-                set.Variables.Add(entry);
+                sortedList.Add(key, entry);
             }
+
+            set.Variables = new System.Collections.ObjectModel.ObservableCollection<Variable>(sortedList.Values);
         }
 
         internal static bool SetVariableWithoutNotify(Variable variable)
