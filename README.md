@@ -176,7 +176,7 @@ In this release, we focused on stability and improvements.
 
 ### PowerToys Run
 
- - It's now possible to select whic shell is used by the Shell plugin.
+ - It's now possible to select which shell is used by the Shell plugin.
  - A combobox option type was added to the plugin options.
  - Fixed a bug in the Calculator plugin that was causing decimal numbers to be misinterpreted on locales where the dot (`.`) character isn't used as a decimal or digit separator.
  - Improved the Program plugin stability when it fails to load a program's thumbnail at startup.
