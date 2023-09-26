@@ -17,6 +17,7 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.Shell.PropertiesSystem;
+using IShellItem = Windows.Win32.UI.Shell.IShellItem;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -97,6 +98,13 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     fileStream = File.OpenRead(FileItem.Path);
                     initWithStream.Initialize(new IStreamWrapper(fileStream), STGM_READ);
+                }
+                else if (previewHandler is IInitializeWithItem initWithItem)
+                {
+                    var hr = PInvoke.SHCreateItemFromParsingName(FileItem.Path, null, typeof(IShellItem).GUID, out var item);
+                    Marshal.ThrowExceptionForHR(hr);
+
+                    initWithItem.Initialize((IShellItem)item, STGM_READ);
                 }
                 else if (previewHandler is IInitializeWithFile initWithFile)
                 {

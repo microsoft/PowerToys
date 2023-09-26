@@ -6,3 +6,4 @@ RegisterClass
 SetLayeredWindowAttributes
 SetWindowPos
 ShowWindow
+SHCreateItemFromParsingName
