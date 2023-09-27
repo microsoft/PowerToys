@@ -194,7 +194,20 @@
                         Header="{x:Bind ViewModel.UserDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}"
                         ItemTemplate="{StaticResource VariableTemplate}"
-                        ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}" />
+                        ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal">
+                            <Button
+                                x:Name="AddDefaultVariableUserBtn"
+                                x:Uid="AddDefaultVariableUserBtn"
+                                Width="40"
+                                Height="36"
+                                Click="AddDefaultVariableBtn_Click"
+                                CommandParameter="{x:Bind ViewModel.UserDefaultSet}"
+                                Content="&#xe710;"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                Style="{StaticResource SubtleButtonStyle}" />
+                        </StackPanel>
+                    </controls:SettingsExpander>
 
                     <controls:SettingsExpander
                         Header="{x:Bind ViewModel.SystemDefaultSet.Name}"
@@ -211,6 +224,19 @@
                                 <TextBlock x:Uid="EditSystemDefaultSetInfoBar" />
                             </StackPanel>
                         </controls:SettingsExpander.Description>
+                        <StackPanel Orientation="Horizontal">
+                            <Button
+                                x:Name="AddDefaultVariableSystemBtn"
+                                x:Uid="AddDefaultVariableSystemBtn"
+                                Width="40"
+                                Height="36"
+                                Click="AddDefaultVariableBtn_Click"
+                                CommandParameter="{x:Bind ViewModel.SystemDefaultSet}"
+                                Content="&#xe710;"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                IsEnabled="{x:Bind ViewModel.IsElevated}"
+                                Style="{StaticResource SubtleButtonStyle}" />
+                        </StackPanel>
                     </controls:SettingsExpander>
                 </StackPanel>
             </ScrollViewer>
@@ -289,6 +315,39 @@
             </Grid>
         </Grid>
 
+
+        <ContentDialog
+            x:Name="AddDefaultVariableDialog"
+            x:Uid="AddDefaultVariableDialog"
+            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
+            IsSecondaryButtonEnabled="True"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:Variable />
+            </ContentDialog.DataContext>
+            <ScrollViewer>
+                <StackPanel
+                    MinWidth="320"
+                    HorizontalAlignment="Stretch"
+                    Spacing="12">
+                    <TextBox
+                        x:Uid="AddDefaultVariableNameTxtBox"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox
+                        x:Uid="AddDefaultVariableValueTxtBox"
+                        AcceptsReturn="False"
+                        IsSpellCheckEnabled="False"
+                        ScrollViewer.IsVerticalRailEnabled="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.VerticalScrollMode="Enabled"
+                        Text="{Binding Values, Mode=TwoWay}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+
         <ContentDialog
             x:Name="EditVariableDialog"
             x:Uid="EditVariableDialog"
@@ -304,9 +363,11 @@
                     HorizontalAlignment="Stretch"
                     Spacing="12">
                     <TextBox
+                        x:Name="EditVariableDialogNameTxtBox"
                         x:Uid="NameTxtBox"
                         IsSpellCheckEnabled="False"
-                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextChanged="EditVariableDialogNameTxtBox_TextChanged" />
                     <TextBox
                         x:Uid="ValueTxtBox"
                         AcceptsReturn="False"

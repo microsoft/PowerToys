@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
@@ -27,6 +28,8 @@ namespace EnvironmentVariables.Views
         public ICommand UpdateProfileCommand => new RelayCommand(UpdateProfile);
 
         public ICommand AddVariableCommand => new RelayCommand(AddVariable);
+
+        public ICommand AddDefaultVariableCommand => new RelayCommand<DefaultVariablesSet>(AddDefaultVariable);
 
         public MainPage()
         {
@@ -131,8 +134,11 @@ namespace EnvironmentVariables.Views
                 {
                     foreach (Variable variable in ExistingVariablesListView.SelectedItems)
                     {
-                        var clone = variable.Clone(true);
-                        profile.Variables.Add(clone);
+                        if (!profile.Variables.Where(x => x.Name == variable.Name).Any())
+                        {
+                            var clone = variable.Clone(true);
+                            profile.Variables.Add(clone);
+                        }
                     }
                 }
             }
@@ -141,6 +147,14 @@ namespace EnvironmentVariables.Views
             AddNewVariableValue.Text = string.Empty;
             ExistingVariablesListView.SelectedItems.Clear();
             AddVariableFlyout.Hide();
+        }
+
+        private void AddDefaultVariable(DefaultVariablesSet set)
+        {
+            var variable = AddDefaultVariableDialog.DataContext as Variable;
+            var type = set.Type;
+
+            ViewModel.AddDefaultVariable(variable, type);
         }
 
         private async void Delete_Variable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -170,15 +184,17 @@ namespace EnvironmentVariables.Views
         private void AddNewVariableName_TextChanged(object sender, TextChangedEventArgs e)
         {
             TextBox nameTxtBox = sender as TextBox;
+            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+
             if (nameTxtBox != null)
             {
-                if (nameTxtBox.Text.Length > 0)
+                if (nameTxtBox.Text.Length == 0 || profile.Variables.Where(x => x.Name == nameTxtBox.Text).Any())
                 {
-                    ConfirmAddVariableBtn.IsEnabled = true;
+                    ConfirmAddVariableBtn.IsEnabled = false;
                 }
                 else
                 {
-                    ConfirmAddVariableBtn.IsEnabled = false;
+                    ConfirmAddVariableBtn.IsEnabled = true;
                 }
             }
         }
@@ -257,6 +273,58 @@ namespace EnvironmentVariables.Views
                             ExistingVariablesListView.SelectedItems.Add(item);
                         }
                     }
+                }
+            }
+        }
+
+        private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)
+        {
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+            AddDefaultVariableDialog.Title = resourceLoader.GetString("AddVariable_Title");
+            AddDefaultVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
+            AddDefaultVariableDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
+            AddDefaultVariableDialog.PrimaryButtonCommand = AddDefaultVariableCommand;
+            AddDefaultVariableDialog.PrimaryButtonCommandParameter = set;
+
+            var variableType = set.Id == VariablesSet.SystemGuid ? VariablesSetType.System : VariablesSetType.User;
+            AddDefaultVariableDialog.DataContext = new Variable(string.Empty, string.Empty, variableType);
+
+            await AddDefaultVariableDialog.ShowAsync();
+        }
+
+        private async void AddDefaultVariableBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var defaultVariableSet = button.CommandParameter as DefaultVariablesSet;
+
+            if (defaultVariableSet != null)
+            {
+                await ShowAddDefaultVariableDialogAsync(defaultVariableSet);
+            }
+        }
+
+        private void EditVariableDialogNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var variable = EditVariableDialog.DataContext as Variable;
+            var settingsCard = EditVariableDialog.PrimaryButtonCommandParameter as SettingsCard;
+            var variableSet = settingsCard.DataContext as VariablesSet;
+
+            if (variableSet == null)
+            {
+                // default set
+                variableSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
+            }
+
+            if (variableSet != null)
+            {
+                if (variableSet.Variables.Where(x => x.Name == EditVariableDialogNameTxtBox.Text).Any() || !variable.Valid)
+                {
+                    EditVariableDialog.IsPrimaryButtonEnabled = false;
+                }
+                else
+                {
+                    EditVariableDialog.IsPrimaryButtonEnabled = true;
                 }
             }
         }

@@ -230,6 +230,9 @@
   <data name="StateNotUpToDateEnvironmentMessageReceivedMsg" xml:space="preserve">
     <value>Variables have been modified. Reload to get the latest changes.</value>
   </data>
+  <data name="AddVariable_Title" xml:space="preserve">
+    <value>Add variable</value>
+  </data>
   <data name="Delete_Variable_Description" xml:space="preserve">
     <value>Are you sure you want to delete this variable?</value>
   </data>

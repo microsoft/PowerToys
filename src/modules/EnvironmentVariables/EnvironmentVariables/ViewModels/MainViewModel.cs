@@ -136,6 +136,22 @@ namespace EnvironmentVariables.ViewModels
             AppliedVariables = new ObservableCollection<Variable>(variables);
         }
 
+        internal void AddDefaultVariable(Variable variable, VariablesSetType type)
+        {
+            if (type == VariablesSetType.User)
+            {
+                UserDefaultSet.Variables.Add(variable);
+                UserDefaultSet.Variables = new ObservableCollection<Variable>(UserDefaultSet.Variables.OrderBy(x => x.Name).ToList());
+            }
+            else if (type == VariablesSetType.System)
+            {
+                SystemDefaultSet.Variables.Add(variable);
+                SystemDefaultSet.Variables = new ObservableCollection<Variable>(SystemDefaultSet.Variables.OrderBy(x => x.Name).ToList());
+            }
+
+            EnvironmentVariablesHelper.SetVariable(variable);
+        }
+
         internal void EditVariable(Variable original, Variable edited, ProfileVariablesSet variablesSet)
         {
             bool propagateChange = variablesSet == null /* not a profile */ || variablesSet.Id.Equals(AppliedProfile?.Id);
