@@ -118,10 +118,53 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeySR(letter))
                 .Union(GetDefaultLetterKeySV(letter))
                 .Union(GetDefaultLetterKeyTK(letter))
+                .Union(GetDefaultLetterKeyAllLanguagesOnly(letter))
                 .ToArray();
             }
 
             return _allLanguagesCache[letter];
+        }
+
+        // Contains all characters that should be shown in all languages but currently don't belong to any of the single languages available for that letter.
+        // These characters can be removed from this list after they've been added to one of the other languages for that specific letter.
+        private static string[] GetDefaultLetterKeyAllLanguagesOnly(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "α", "ȧ" },
+                LetterKey.VK_B => new[] { "ḃ", "β" },
+                LetterKey.VK_C => new[] { "ċ", "χ", "°C", "©", "ℂ" },
+                LetterKey.VK_D => new[] { "ḍ", "ḋ", "δ" },
+                LetterKey.VK_E => new[] { "ε", "η", "∈" },
+                LetterKey.VK_F => new[] { "ḟ", "°F" },
+                LetterKey.VK_G => new[] { "ģ", "ǧ", "ġ", "ĝ", "ǥ", "γ" },
+                LetterKey.VK_H => new[] { "ḣ", "ĥ", "ħ" },
+                LetterKey.VK_I => new[] { "ι" },
+                LetterKey.VK_J => new[] { "ĵ" },
+                LetterKey.VK_K => new[] { "ķ", "ǩ", "κ" },
+                LetterKey.VK_L => new[] { "ļ", "₺", "λ" }, // ₺ is in VK_T for other languages, but not VK_L, so we add it here.
+                LetterKey.VK_M => new[] { "ṁ", "μ" },
+                LetterKey.VK_N => new[] { "ņ", "ṅ", "ⁿ", "ν", "ℕ" },
+                LetterKey.VK_O => new[] { "ȯ", "ω", "ο" },
+                LetterKey.VK_P => new[] { "ṗ", "φ", "ψ", "℗" },
+                LetterKey.VK_Q => new[] { "ℚ" },
+                LetterKey.VK_R => new[] { "ṙ", "ρ", "®", "ℝ" },
+                LetterKey.VK_S => new[] { "ṡ", "σ", "\u00A7" },
+                LetterKey.VK_T => new[] { "ţ", "ṫ", "ŧ", "θ", "τ", "™" },
+                LetterKey.VK_U => new[] { "ŭ", "υ" },
+                LetterKey.VK_V => new[] { "V̇" },
+                LetterKey.VK_W => new[] { "ẇ" },
+                LetterKey.VK_X => new[] { "ẋ", "ξ", "×" },
+                LetterKey.VK_Y => new[] { "ẏ" },
+                LetterKey.VK_Z => new[] { "ʒ", "ǯ", "ζ", "ℤ" },
+                LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–" }, // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
+                LetterKey.VK_PERIOD => new[] { "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030C" },
+                LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "—", "―", "⁓", "−", "⸺", "⸻" },
+                LetterKey.VK_SLASH_ => new[] { "÷" },
+                LetterKey.VK_DIVIDE_ => new[] { "÷" },
+                LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
+                _ => Array.Empty<string>(),
+            };
         }
 
         // Currencies (source: https://www.eurochange.co.uk/travel-money/world-currency-abbreviations-symbols-and-codes-travel-money)
