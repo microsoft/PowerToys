@@ -8,15 +8,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkitConverters="using:CommunityToolkit.WinUI.UI.Converters"
-    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
-    mc:Ignorable="d"
-    DataContext="DashboardViewModel">
+    DataContext="DashboardViewModel"
+    mc:Ignorable="d">
 
     <Page.Resources>
         <localConverters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
-        <localConverters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
         <toolkitConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <toolkitConverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
@@ -47,32 +45,23 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
         <TextBlock
+            x:Uid="DashboardTitle"
             VerticalAlignment="Center"
-            Style="{StaticResource TitleTextBlockStyle}"
-            Text="Dashboard" />
-        <Button 
-            VerticalAlignment="Center"
-            Click="SWVersionButtonClicked"
+            Style="{StaticResource TitleTextBlockStyle}" />
+        <InfoBar
+            x:Uid="UpdateAvailable"
             Margin="0,0,16,0"
-            Padding="0"
-            HorizontalAlignment="Right">
-            <Border
-                VerticalAlignment="Center"
-                CornerRadius="5"
-                Padding="15,10,15,10"
-                Background="{Binding SWVersionBackgroundColor}">
-                    <StackPanel 
-                        Orientation="Horizontal">
-                        <FontIcon Glyph="{Binding IsUptoDateIconGlyph}"/>
-                        <TextBlock 
-                            Text="{Binding SWVersionText}" 
-                            Margin="10,0,10,0"
-                            VerticalAlignment="Center"/>
-                    </StackPanel>
-            </Border>
-        </Button>
-        <ScrollViewer Grid.Row="1">
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"
+            Severity="Success">
+            <InfoBar.ActionButton>
+                <Button x:Uid="LearnMore" Click="SWVersionButtonClicked" />
+            </InfoBar.ActionButton>
+        </InfoBar>
 
+        <ScrollViewer Grid.Row="1">
             <Grid
                 Margin="0,0,16,0"
                 ColumnSpacing="16"
@@ -149,13 +138,13 @@
                         <toolkit:StaggeredLayout
                             x:Name="Layoutttt"
                             ColumnSpacing="8"
-                            DesiredColumnWidth="380"/>
+                            DesiredColumnWidth="380" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:DashboardListItem">
                             <Grid
-                                Padding="16"
                                 Margin="0,0,0,12"
+                                Padding="16"
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
@@ -184,12 +173,6 @@
                                         FontWeight="SemiBold"
                                         Text="{x:Bind Label, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis" />
-                                    <!--<ToggleSwitch
-                                Grid.Column="2"
-                                Margin="0,0,0,0"
-                                HorizontalAlignment="Right"
-                                IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                                Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />-->
                                 </Grid>
                                 <ItemsRepeater Grid.Row="1" ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                                     <ItemsRepeater.Layout>
@@ -197,29 +180,48 @@
                                     </ItemsRepeater.Layout>
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="viewmodels:DashboardModuleItem">
-                                            <Grid Padding="0,0,0,0">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition />
-                                                    <RowDefinition />
-                                                    <RowDefinition />
-                                                </Grid.RowDefinitions>
-                                                <!--<TextBlock
-                                            VerticalAlignment="Center"
-                                            Text=""
-                                            TextTrimming="CharacterEllipsis"
-                                            Visibility="{x:Bind IsLabelVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=TwoWay}" />-->
-
-                                                <controls:ShortcutWithTextLabelControl
-                                                    x:Name="HotkeyControl"
-                                                    Grid.Row="1"
-                                                    Keys="{x:Bind Path=Shortcut, Mode=TwoWay}"
-                                                    Text="{x:Bind Label, Mode=OneWay}" />
+                                            <StackPanel Orientation="Vertical" Spacing="4">
+                                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind IsButtonVisible, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
+                                                    <Border
+                                                        Margin="0,0,8,0"
+                                                        Padding="8"
+                                                        VerticalAlignment="Center"
+                                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource ControlCornerRadius}"
+                                                        Visibility="{x:Bind IsShortcutVisible, Mode=OneWay}">
+                                                        <ItemsControl
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            IsTabStop="False"
+                                                            ItemsSource="{x:Bind Path=Shortcut, Mode=TwoWay}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="12" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <controls:KeyVisual
+                                                                        VerticalAlignment="Center"
+                                                                        AutomationProperties.AccessibilityView="Raw"
+                                                                        Content="{Binding}"
+                                                                        IsTabStop="False"
+                                                                        VisualType="TextOnly" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Border>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="{x:Bind Label, Mode=OneWay}" />
+                                                </StackPanel>
                                                 <Button
-                                                    Grid.Row="2"
                                                     HorizontalAlignment="Stretch"
                                                     Content="{x:Bind ButtonTitle, Mode=OneWay}"
-                                                    Visibility="{x:Bind IsButtonVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=TwoWay}" />
-                                            </Grid>
+                                                    Visibility="{x:Bind IsButtonVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                            </StackPanel>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>

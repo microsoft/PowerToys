@@ -2698,6 +2698,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="VideoConference_DeprecationWarningButton.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
+  <data name="LearnMore.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
   </data>
@@ -3687,5 +3690,11 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="SettingsWindow_AdminTitle" xml:space="preserve">
     <value>Administrator: PowerToys Settings</value>
     <comment>Title of the settings window when running as administrator</comment>
+  </data>
+  <data name="DashboardTitle.Text" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Shell_Dashboard.Content" xml:space="preserve">
+    <value>Dashboard</value>
   </data>
 </root>

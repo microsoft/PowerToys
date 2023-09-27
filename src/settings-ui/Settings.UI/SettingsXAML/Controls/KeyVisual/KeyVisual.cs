@@ -143,6 +143,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 return (Style)App.Current.Resources["SmallOutline" + styleName];
             }
+            else if (VisualType == VisualType.TextOnly)
+            {
+                return (Style)App.Current.Resources["Only" + styleName];
+            }
             else
             {
                 return (Style)App.Current.Resources["Default" + styleName];
@@ -181,6 +185,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     {
         Small,
         SmallOutline,
+        TextOnly,
         Large,
     }
 }
