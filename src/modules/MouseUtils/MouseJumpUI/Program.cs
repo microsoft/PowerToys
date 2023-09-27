@@ -13,6 +13,7 @@ using Common.UI;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using MouseJumpUI.Helpers;
 
 namespace MouseJumpUI;
 
@@ -69,8 +70,8 @@ internal static class Program
             Application.Exit();
         });
 
-        var settings = Program.ReadSettings();
-        var mainForm = new MainForm(settings);
+        var settingsHelper = new SettingsHelper();
+        var mainForm = new MainForm(settingsHelper);
 
         NativeEventWaiter.WaitForEventLoop(
             Constants.MouseJumpShowPreviewEvent(),

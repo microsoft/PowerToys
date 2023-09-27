@@ -19,13 +19,13 @@ namespace MouseJumpUI;
 
 internal partial class MainForm : Form
 {
-    public MainForm(MouseJumpSettings settings)
+    public MainForm(SettingsHelper settingsHelper)
     {
         this.InitializeComponent();
-        this.Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        this.SettingsHelper = settingsHelper ?? throw new ArgumentNullException(nameof(settingsHelper));
     }
 
-    public MouseJumpSettings Settings
+    public SettingsHelper SettingsHelper
     {
         get;
     }
@@ -171,6 +171,9 @@ internal partial class MainForm : Form
             .Single(item => item.Screen.Handle == activatedScreenHandle.Value)
             .Index;
 
+        // avoid a race condition - cache the current settings in case they change
+        var currentSettings = form.SettingsHelper.CurrentSettings;
+
         var layoutConfig = new LayoutConfig(
             virtualScreenBounds: ScreenHelper.GetVirtualScreen(),
             screens: screens.Select(item => item.Screen).ToList(),
@@ -178,8 +181,8 @@ internal partial class MainForm : Form
             activatedScreenIndex: activatedScreenIndex,
             activatedScreenNumber: activatedScreenIndex + 1,
             maximumFormSize: new(
-                form.Settings.Properties.ThumbnailSize.Width,
-                form.Settings.Properties.ThumbnailSize.Height),
+                currentSettings.Properties.ThumbnailSize.Width,
+                currentSettings.Properties.ThumbnailSize.Height),
             /*
               don't read the panel padding values because they are affected by dpi scaling
               and can give wrong values when moving between monitors with different dpi scaling
