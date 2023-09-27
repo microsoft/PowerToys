@@ -132,7 +132,24 @@ namespace EnvironmentVariables.ViewModels
             }
 
             variables = variables.Concat(UserDefaultSet.Variables.OrderBy(x => x.Name)).Concat(SystemDefaultSet.Variables.OrderBy(x => x.Name)).ToList();
+
+            // Handle PATH variable - add USER value to the end of the SYSTEM value
+            var userPath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.User).FirstOrDefault();
+            var systemPath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.System).FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(userPath.Name) && !string.IsNullOrEmpty(systemPath.Name))
+            {
+                var clone = systemPath.Clone();
+                clone.Values += ";" + userPath.Values;
+                variables.Remove(userPath);
+                variables.Insert(variables.IndexOf(systemPath), clone);
+                variables.Remove(systemPath);
+            }
+
+            // Handle variables with the same name but different casing in USER and SYSTEM variables
+            // TODO: (stefan)
             variables = variables.GroupBy(x => x.Name).Select(y => y.First()).ToList();
+
             AppliedVariables = new ObservableCollection<Variable>(variables);
         }
 
