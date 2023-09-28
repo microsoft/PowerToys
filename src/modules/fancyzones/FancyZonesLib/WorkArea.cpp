@@ -244,14 +244,12 @@ void WorkArea::InitLayout(const FancyZonesDataTypes::WorkAreaId& parentUniqueId)
     const bool isLayoutAlreadyApplied = AppliedLayouts::instance().IsLayoutApplied(m_uniqueId);
     if (!isLayoutAlreadyApplied)
     {
-        if (parentUniqueId.virtualDesktopId != GUID_NULL)
-        {
-            AppliedLayouts::instance().CloneLayout(parentUniqueId, m_uniqueId);
-        }
-        else
+        if (!AppliedLayouts::instance().CloneLayout(parentUniqueId, m_uniqueId))
         {
             AppliedLayouts::instance().ApplyDefaultLayout(m_uniqueId);
         }
+
+        AppliedLayouts::instance().SaveData();
     }
 
     CalculateZoneSet();
