@@ -297,12 +297,17 @@ namespace winrt::PowerRenameUI::implementation
             Microsoft::UI::Windowing::AppWindow::GetFromWindowId(Microsoft::UI::GetWindowIdFromWindow(m_window));
         const auto [width, height] = appWindow.Size();
 
-        CSettingsInstance().UpdateLastWindowSize(static_cast<int>(width), static_cast<int>(height));
+        m_updatedWindowSize.emplace(std::make_pair(width, height));
     }
 
     void MainWindow::OnClosed(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::WindowEventArgs const&)
     {
-        CSettingsInstance().Save();
+        if (m_updatedWindowSize)
+        {
+            CSettingsInstance().Load();
+            CSettingsInstance().UpdateLastWindowSize(m_updatedWindowSize->first, m_updatedWindowSize->second);
+            CSettingsInstance().Save();
+        }
     }
 
     void MainWindow::InvalidateItemListViewState()
