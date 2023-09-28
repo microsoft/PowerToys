@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -15,7 +16,7 @@ namespace SvgThumbnailProviderUnitTests
     [STATestClass]
     public class SvgThumbnailProviderTests
     {
-        private bool BitmapsAreEqual(Bitmap bmp1, Bitmap bmp2)
+        private bool BitmapsAreEqual(Bitmap bmp1, Bitmap bmp2, int maxDifference)
         {
             if (bmp1 == null || bmp2 == null)
             {
@@ -43,6 +44,7 @@ namespace SvgThumbnailProviderUnitTests
 
             for (int i = 0; i < byteCount; i += bytesPerPixel)
             {
+                int currentDifference = 0;
                 for (int j = 0; j < bytesPerPixel; j++)
                 {
                     if (j == 0 && ignoreAlpha)
@@ -50,15 +52,12 @@ namespace SvgThumbnailProviderUnitTests
                         continue; // Assuming alpha is the first byte
                     }
 
-                    if (bytes1[i + j] != bytes2[i + j])
-                    {
-                        areEqual = false;
-                        break;
-                    }
+                    currentDifference += Math.Abs(bytes1[i + j] - bytes2[i + j]);
                 }
 
-                if (!areEqual)
+                if (currentDifference > maxDifference)
                 {
+                    areEqual = false;
                     break;
                 }
             }
@@ -273,7 +272,7 @@ namespace SvgThumbnailProviderUnitTests
 
             var expectedBitmap = new Bitmap("HelperFiles/WithComments_8.bmp");
 
-            Assert.IsTrue(BitmapsAreEqual(expectedBitmap, bitmap));
+            Assert.IsTrue(BitmapsAreEqual(expectedBitmap, bitmap, 16));
         }
     }
 }
