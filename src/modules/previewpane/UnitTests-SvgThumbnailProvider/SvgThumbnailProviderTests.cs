@@ -2,22 +2,72 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using Common.ComInterlop;
 using Microsoft.PowerToys.STATestExtension;
 using Microsoft.PowerToys.ThumbnailHandler.Svg;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace SvgThumbnailProviderUnitTests
 {
     [STATestClass]
     public class SvgThumbnailProviderTests
     {
+        private bool BitmapsAreEqual(Bitmap bmp1, Bitmap bmp2)
+        {
+            if (bmp1 == null || bmp2 == null)
+            {
+                return false;
+            }
+
+            bool ignoreAlpha = Image.IsAlphaPixelFormat(bmp1.PixelFormat) != Image.IsAlphaPixelFormat(bmp2.PixelFormat);
+
+            if (bmp1.Size != bmp2.Size)
+            {
+                return false;
+            }
+
+            BitmapData data1 = bmp1.LockBits(new Rectangle(0, 0, bmp1.Width, bmp1.Height), ImageLockMode.ReadOnly, bmp1.PixelFormat);
+            BitmapData data2 = bmp2.LockBits(new Rectangle(0, 0, bmp2.Width, bmp2.Height), ImageLockMode.ReadOnly, bmp2.PixelFormat);
+
+            int bytesPerPixel = Image.GetPixelFormatSize(bmp1.PixelFormat) / 8;
+            bool areEqual = true;
+            int byteCount = data1.Stride * bmp1.Height;
+            byte[] bytes1 = new byte[byteCount];
+            byte[] bytes2 = new byte[byteCount];
+
+            Marshal.Copy(data1.Scan0, bytes1, 0, byteCount);
+            Marshal.Copy(data2.Scan0, bytes2, 0, byteCount);
+
+            for (int i = 0; i < byteCount; i += bytesPerPixel)
+            {
+                for (int j = 0; j < bytesPerPixel; j++)
+                {
+                    if (j == 0 && ignoreAlpha)
+                    {
+                        continue; // Assuming alpha is the first byte
+                    }
+
+                    if (bytes1[i + j] != bytes2[i + j])
+                    {
+                        areEqual = false;
+                        break;
+                    }
+                }
+
+                if (!areEqual)
+                {
+                    break;
+                }
+            }
+
+            bmp1.UnlockBits(data1);
+            bmp2.UnlockBits(data2);
+            return areEqual;
+        }
+
         [TestMethod]
         public void LoadSimpleSVGShouldReturnNonNullBitmap()
         {
@@ -210,6 +260,20 @@ namespace SvgThumbnailProviderUnitTests
             Bitmap bitmap = svgThumbnailProvider.GetThumbnail(256);
 
             Assert.IsTrue(bitmap != null);
+        }
+
+        [TestMethod]
+        public void SvgCommentsAreHandledCorrectly()
+        {
+            var filePath = "HelperFiles/WithComments.svg";
+
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(filePath);
+
+            Bitmap bitmap = svgThumbnailProvider.GetThumbnail(8);
+
+            var expectedBitmap = new Bitmap("HelperFiles/WithComments_8.bmp");
+
+            Assert.IsTrue(BitmapsAreEqual(expectedBitmap, bitmap));
         }
     }
 }
