@@ -238,6 +238,8 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_NONCONVERT] = L"IME Non-Convert";
     keyboardLayoutMap[VK_ACCEPT] = L"IME Kana";
     keyboardLayoutMap[VK_MODECHANGE] = L"IME Mode Change";
+    keyboardLayoutMap[VK_DECIMAL] = L". (Decimal)";
+    keyboardLayoutMap[VK_OEM_PERIOD] = L". (Period)";
     keyboardLayoutMap[CommonSharedConstants::VK_DISABLED] = L"Disable";
 }
 
