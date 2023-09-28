@@ -445,7 +445,7 @@ namespace RegistryPreview
                                         i++;
                                     }
 
-                                    if (value[i - 1] != '\\' && value[i] == '"')
+                                    if (i < value.Length && value[i - 1] != '\\' && value[i] == '"')
                                     {
                                         // Don't allow non-escaped quotes
                                         registryValue.Type = "ERROR";

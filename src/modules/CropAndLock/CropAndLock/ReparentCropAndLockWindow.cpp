@@ -131,7 +131,10 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);
     auto x = -cropRect.left;
     auto y = -cropRect.top;
-    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER));
+    if (0 == SetWindowPos(m_currentTarget, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER))
+    {
+        MessageBoxW(nullptr, L"CropAndLock couldn't properly reparent the target window. It might not handle reparenting well.", L"CropAndLock", MB_ICONERROR);
+    }
 }
 
 void ReparentCropAndLockWindow::Hide()
