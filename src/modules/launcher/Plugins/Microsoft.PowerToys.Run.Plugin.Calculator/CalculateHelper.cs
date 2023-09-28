@@ -51,13 +51,21 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public static string FixHumanMultiplicationExpressions(string input)
         {
-            var output = CheckNumberOrConstantThenParenthesisExpr(input);
+            var output = CheckScientificNotation(input);
+            output = CheckNumberOrConstantThenParenthesisExpr(output);
             output = CheckNumberOrConstantThenFunc(output);
             output = CheckParenthesisExprThenFunc(output);
             output = CheckParenthesisExprThenParenthesisExpr(output);
             output = CheckNumberThenConstant(output);
             output = CheckConstantThenConstant(output);
             return output;
+        }
+
+        private static string CheckScientificNotation(string input)
+        {
+            var p = @"(\d+\.*\d*)[eE](-*\d+)";
+            var r = "($1 * 10^($2))";
+            return Regex.Replace(input, p, r);
         }
 
         /*
