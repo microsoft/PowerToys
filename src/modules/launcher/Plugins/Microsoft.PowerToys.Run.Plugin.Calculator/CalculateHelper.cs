@@ -63,8 +63,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private static string CheckScientificNotation(string input)
         {
-            var p = @"(\d+\.*\d*)[eE](-*\d+)";
-            var r = "($1 * 10^($2))";
+            var p = @"(-?[\d+[\.\d*]?]|-?[\.\d+])[eE](-?\d+\.*\d*)";
+            var r = "($1 * 10^($5))";
             return Regex.Replace(input, p, r);
         }
 
