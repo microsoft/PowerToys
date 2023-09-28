@@ -107,6 +107,10 @@ namespace Wox.Plugin.Common.Win32
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
 
+        [DllImport("Powrprof.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetPwrCapabilities(out SystemPowerCapabilities powerCapabilities);
+
         [DllImport("user32.dll")]
         public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);
 
@@ -642,6 +646,88 @@ namespace Wox.Plugin.Common.Win32
         public short Data3;
         [System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.ByValArray, SizeConst = 8)]
         public byte[] Data4;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SystemPowerCapabilities
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public bool PowerButtonPresent;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool SleepButtonPresent;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool LidPresent;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool SystemS1;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool SystemS2;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool SystemS3;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool SystemS4;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool SystemS5;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HiberFilePresent;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool FullWake;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool VideoDimPresent;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool ApmPresent;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool UpsPresent;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool ThermalControl;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool ProcessorThrottle;
+        public byte ProcessorMinThrottle;
+        public byte ProcessorMaxThrottle;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool FastSystemS4;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool Hiberboot;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool WakeAlarmPresent;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool AoAc;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool DiskSpinDown;
+        public byte HiberFileType;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool AoAcConnectivitySupported;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+        private readonly byte[] spare3;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool SystemBatteriesPresent;
+        [MarshalAs(UnmanagedType.U1)]
+        public bool BatteriesAreShortTerm;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public BatteryReportingScale[] BatteryScale;
+        public SystemPowerState AcOnLineWake;
+        public SystemPowerState SoftLidWake;
+        public SystemPowerState RtcWake;
+        public SystemPowerState MinDeviceWakeState;
+        public SystemPowerState DefaultLowLatencyWake;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct BatteryReportingScale
+    {
+        public uint Granularity;
+        public uint Capacity;
+    }
+
+    public enum SystemPowerState
+    {
+        PowerSystemUnspecified = 0,
+        PowerSystemWorking = 1,
+        PowerSystemSleeping1 = 2,
+        PowerSystemSleeping2 = 3,
+        PowerSystemSleeping3 = 4,
+        PowerSystemHibernate = 5,
+        PowerSystemShutdown = 6,
+        PowerSystemMaximum = 7,
     }
 
     /// <summary>

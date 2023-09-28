@@ -96,11 +96,19 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
                     IcoPath = $"Images\\sleep.{iconTheme}.png",
                     Action = c =>
                     {
-                        // the following broadcast message turns all monitors off forcing the system to enter the modern standby state (sleep)
-                        // this article describes how to trigger entering the Modern Standby mode (which is the sleep mode on the latest Windows systems)
-                        // https://learn.microsoft.com/en-us/answers/questions/809840/how-to-programatically-trigger-modern-standby-(des
-                        // the description of the sent message and parameters: https://learn.microsoft.com/en-gb/windows/win32/menurc/wm-syscommand
-                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => Task.Run(() => _ = NativeMethods.SendMessage(HWNDBROADCAST, WMSYSCOMMAND, SCMONITORPOWER, POWEROFF)));
+                        // We have to distinguish older and newer power capabilities. First we have to get the supported power modes.
+                        NativeMethods.GetPwrCapabilities(out SystemPowerCapabilities powerCapabilities);
+                        if (powerCapabilities.AoAc)
+                        {
+                            // the following broadcast message turns all monitors off forcing the system to enter the modern standby state (sleep)
+                            // this article describes how to trigger entering the Modern Standby mode (which is the sleep mode on the latest Windows systems)
+                            // https://learn.microsoft.com/en-us/answers/questions/809840/how-to-programatically-trigger-modern-standby-(des
+                            // the description of the sent message and parameters: https://learn.microsoft.com/en-gb/windows/win32/menurc/wm-syscommand
+                            return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => Task.Run(() => _ = NativeMethods.SendMessage(HWNDBROADCAST, WMSYSCOMMAND, SCMONITORPOWER, POWEROFF)));
+                        }
+
+                        // triggering the sleep mode in the 'old' way.
+                        return ResultHelper.ExecuteCommand(confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => NativeMethods.SetSuspendState(false, true, true));
                     },
                 },
                 new Result
