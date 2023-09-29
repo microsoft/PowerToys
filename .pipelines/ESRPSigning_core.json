@@ -1,6 +1,6 @@
 {
-    "Version": "1.0.0",
-    "UseMinimatch": false,
+    "Version": "1.1.0",
+    "UseMinimatch": true,
     "SignBatches": [
         {
             "MatchedPath": [
@@ -14,9 +14,9 @@
                 "PowerToys.exe",
                 "PowerToys.FilePreviewCommon.dll",
                 "PowerToys.Interop.dll",
-                "Tools\\PowerToys.BugReportTool.exe",
-                "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
-                "StylesReportTool\\PowerToys.StylesReportTool.exe",
+                "Tools/PowerToys.BugReportTool.exe",
+                "WebcamReportTool//PowerToys.WebcamReportTool.exe",
+                "StylesReportTool//PowerToys.StylesReportTool.exe",
                 "Telemetry.dll",
                 "PowerToys.ManagedTelemetry.dll",
                 "PowerToys.ManagedCommon.dll",
@@ -83,20 +83,20 @@
                 "PowerToys.SvgThumbnailProvider.exe",
                 "PowerToys.SvgThumbnailProviderCpp.dll",
 
-                "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
-                "WinUI3Apps\\PowerToys.Hosts.dll",
-                "WinUI3Apps\\PowerToys.Hosts.exe",
+                "WinUI3Apps//PowerToys.HostsModuleInterface.dll",
+                "WinUI3Apps//PowerToys.Hosts.dll",
+                "WinUI3Apps//PowerToys.Hosts.exe",
 
-                "WinUI3Apps\\PowerToys.FileLocksmithLib.Interop.dll",
-                "WinUI3Apps\\PowerToys.FileLocksmithExt.dll",
-                "WinUI3Apps\\PowerToys.FileLocksmithUI.exe",
-                "WinUI3Apps\\PowerToys.FileLocksmithUI.dll",
+                "WinUI3Apps//PowerToys.FileLocksmithLib.Interop.dll",
+                "WinUI3Apps//PowerToys.FileLocksmithExt.dll",
+                "WinUI3Apps//PowerToys.FileLocksmithUI.exe",
+                "WinUI3Apps//PowerToys.FileLocksmithUI.dll",
 
-                "WinUI3Apps\\Peek.Common.dll",
-                "WinUI3Apps\\Peek.FilePreviewer.dll",
-                "WinUI3Apps\\Powertoys.Peek.UI.dll",
-                "WinUI3Apps\\Powertoys.Peek.UI.exe",
-                "WinUI3Apps\\Powertoys.Peek.dll",
+                "WinUI3Apps//Peek.Common.dll",
+                "WinUI3Apps//Peek.FilePreviewer.dll",
+                "WinUI3Apps//Powertoys.Peek.UI.dll",
+                "WinUI3Apps//Powertoys.Peek.UI.exe",
+                "WinUI3Apps//Powertoys.Peek.dll",
 
                 "PowerToys.ImageResizer.exe",
                 "PowerToys.ImageResizer.dll",
@@ -105,8 +105,8 @@
                 "ImageResizerContextMenuPackage.msix",
 
                 "PowerToys.KeyboardManager.dll",
-                "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
-                "KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
+                "KeyboardManagerEditor//PowerToys.KeyboardManagerEditor.exe",
+                "KeyboardManagerEngine//PowerToys.KeyboardManagerEngine.exe",
 
                 "PowerToys.Launcher.dll",
                 "PowerToys.PowerLauncher.dll",
@@ -115,31 +115,31 @@
                 "Wox.dll",
                 "Wox.Infrastructure.dll",
                 "Wox.Plugin.dll",
-                "RunPlugins\\Calculator\\Microsoft.PowerToys.Run.Plugin.Calculator.dll",
-                "RunPlugins\\Folder\\Microsoft.Plugin.Folder.dll",
-                "RunPlugins\\Indexer\\Microsoft.Plugin.Indexer.dll",
-                "RunPlugins\\OneNote\\Microsoft.PowerToys.Run.Plugin.OneNote.dll",
-                "RunPlugins\\History\\Microsoft.PowerToys.Run.Plugin.History.dll",
-                "RunPlugins\\PowerToys\\Microsoft.PowerToys.Run.Plugin.PowerToys.dll",
-                "RunPlugins\\Program\\Microsoft.Plugin.Program.dll",
-                "RunPlugins\\Registry\\Microsoft.PowerToys.Run.Plugin.Registry.dll",
-                "RunPlugins\\WindowsSettings\\Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll",
-                "RunPlugins\\Shell\\Microsoft.Plugin.Shell.dll",
-                "RunPlugins\\Uri\\Microsoft.Plugin.Uri.dll",
-                "RunPlugins\\WindowWalker\\Microsoft.Plugin.WindowWalker.dll",
-                "RunPlugins\\UnitConverter\\Community.PowerToys.Run.Plugin.UnitConverter.dll",
-                "RunPlugins\\VSCodeWorkspaces\\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll",
-                "RunPlugins\\Service\\Microsoft.PowerToys.Run.Plugin.Service.dll",
-                "RunPlugins\\System\\Microsoft.PowerToys.Run.Plugin.System.dll",
-                "RunPlugins\\TimeDate\\Microsoft.PowerToys.Run.Plugin.TimeDate.dll",
-                "RunPlugins\\ValueGenerator\\Community.PowerToys.Run.Plugin.ValueGenerator.dll",
-                "RunPlugins\\WebSearch\\Community.PowerToys.Run.Plugin.WebSearch.dll",
-                "RunPlugins\\WindowsTerminal\\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll",
+                "RunPlugins//Calculator//Microsoft.PowerToys.Run.Plugin.Calculator.dll"
+                "RunPlugins//Folder//Microsoft.Plugin.Folder.dll",
+                "RunPlugins//Indexe//Microsoft.Plugin.Indexer.dll",
+                "RunPlugins//OneNote//Microsoft.PowerToys.Run.Plugin.OneNote.dll",
+                "RunPlugins//History//Microsoft.PowerToys.Run.Plugin.History.dll",
+                "RunPlugins//PowerToys//Microsoft.PowerToys.Run.Plugin.PowerToys.dll",
+                "RunPlugins//Program//Microsoft.Plugin.Program.dll",
+                "RunPlugins//Registry//Microsoft.PowerToys.Run.Plugin.Registry.dll",
+                "RunPlugins//WindowsSettings//Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll",
+                "RunPlugins//Shell//Microsoft.Plugin.Shell.dll",
+                "RunPlugins//Uri//Microsoft.Plugin.Uri.dll",
+                "RunPlugins//WindowWalker//Microsoft.Plugin.WindowWalker.dll",
+                "RunPlugins//UnitConverter//Community.PowerToys.Run.Plugin.UnitConverter.dll",
+                "RunPlugins//VSCodeWorkspaces//Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll",
+                "RunPlugins//Service//Microsoft.PowerToys.Run.Plugin.Service.dll",
+                "RunPlugins//System//Microsoft.PowerToys.Run.Plugin.System.dll",
+                "RunPlugins//TimeDate//Microsoft.PowerToys.Run.Plugin.TimeDate.dll",
+                "RunPlugins//ValueGenerator//Community.PowerToys.Run.Plugin.ValueGenerator.dll",
+                "RunPlugins//WebSearch//Community.PowerToys.Run.Plugin.WebSearch.dll",
+                "RunPlugins//WindowsTerminal//Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll",
                 
-                "WinUI3Apps\\PowerToys.MeasureToolModuleInterface.dll",
-                "WinUI3Apps\\PowerToys.MeasureToolCore.dll",
-                "WinUI3Apps\\PowerToys.MeasureToolUI.dll",
-                "WinUI3Apps\\PowerToys.MeasureToolUI.exe",
+                "WinUI3Apps//PowerToys.MeasureToolModuleInterface.dll",
+                "WinUI3Apps//PowerToys.MeasureToolCore.dll",
+                "WinUI3Apps//PowerToys.MeasureToolUI.dll",
+                "WinUI3Apps//PowerToys.MeasureToolUI.exe",
 
                 "PowerToys.FindMyMouse.dll",
                 "PowerToys.MouseHighlighter.dll",
@@ -162,14 +162,14 @@
                 "PowerToys.PowerAccentModuleInterface.dll",
                 "PowerToys.PowerAccentKeyboardService.dll",
 
-                "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
-                "WinUI3Apps\\PowerToys.PowerRename.exe",
-                "WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll",
-                "WinUI3Apps\\PowerRenameContextMenuPackage.msix",
+                "WinUI3Apps//PowerToys.PowerRenameExt.dll",
+                "WinUI3Apps//PowerToys.PowerRename.exe",
+                "WinUI3Apps//PowerToys.PowerRenameContextMenu.dll",
+                "WinUI3Apps//PowerRenameContextMenuPackage.msix",
 
-                "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
-                "WinUI3Apps\\PowerToys.RegistryPreview.dll",
-                "WinUI3Apps\\PowerToys.RegistryPreview.exe",
+                "WinUI3Apps//PowerToys.RegistryPreviewExt.dll",
+                "WinUI3Apps//PowerToys.RegistryPreview.dll",
+                "WinUI3Apps//PowerToys.RegistryPreview.exe",
 
                 "PowerToys.ShortcutGuide.exe",
                 "PowerToys.ShortcutGuideModuleInterface.dll",
@@ -179,8 +179,8 @@
                 "PowerToys.VideoConferenceProxyFilter_x64.dll",
                 "PowerToys.VideoConferenceProxyFilter_arm64.dll",
 
-                "WinUI3Apps\\PowerToys.Settings.dll",
-                "WinUI3Apps\\PowerToys.Settings.exe"
+                "WinUI3Apps//PowerToys.Settings.dll",
+                "WinUI3Apps//PowerToys.Settings.exe"
             ],
             "SigningInfo": {
                 "Operations": [
@@ -210,14 +210,14 @@
                             }
                         ],
                         "ToolName": "sign",
-                        "ToolVersion": "1.0"
+                        "ToolVersion": "1.1.0"
                     },
                     {
                         "KeyCode": "CP-230012",
                         "OperationSetCode": "SigntoolVerify",
                         "Parameters": [],
                         "ToolName": "sign",
-                        "ToolVersion": "1.0"
+                        "ToolVersion": "1.1.0"
                     }
                 ]
             }
@@ -250,7 +250,7 @@
                 "vcomp140_app.dll",
                 "vcruntime140_1_app.dll",
                 "vcruntime140_app.dll",
-                "WinUI3Apps\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
+                "WinUI3Apps//CommunityToolkit.Labs.WinUI.SettingsControls.dll",
                 "UnicodeInformation.dll",
                 "Vanara.Core.dll",
                 "Vanara.PInvoke.ComCtl32.dll",
@@ -264,8 +264,8 @@
                 "Vanara.PInvoke.Shell32.dll",
                 "Vanara.PInvoke.ShlwApi.dll",
                 "Vanara.PInvoke.User32.dll",
-                "WinUI3Apps\\clrcompression.dll",
-                "WinUI3Apps\\Microsoft.Graphics.Canvas.Interop.dll",
+                "WinUI3Apps//clrcompression.dll",
+                "WinUI3Apps//Microsoft.Graphics.Canvas.Interop.dll",
                 "Microsoft.Web.WebView2.Core.dll",
                 "Microsoft.Web.WebView2.WinForms.dll",
                 "Microsoft.Web.WebView2.Wpf.dll",
@@ -281,7 +281,7 @@
                 "MessagePack.Annotations.dll",
                 "MessagePack.dll",
                 "Nerdbank.Streams.dll",
-                "WinUI3Apps\\SharpCompress.dll",
+                "WinUI3Apps//SharpCompress.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",
@@ -315,11 +315,11 @@
                             },
                             {
                                 "parameterName": "TimeStamp",
-                                "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                                "parameterValue": "/tr /"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer/" /td sha256"
                             }
                         ],
                         "ToolName": "sign",
-                        "ToolVersion": "1.0"
+                        "ToolVersion": "1.1.0"
                     },
                     {
                         "KeyCode": "CP-231522",
