@@ -56,7 +56,7 @@ extends:
             displayName: Publish Pipeline Artifact
             targetPath: $(Build.ArtifactStagingDirectory)
         displayName: Build
-        timeoutInMinutes: 120 # Some of the loc stuff adds quite a bit of time.
+        timeoutInMinutes: 240 # Some of the 1ES Pipeline stuff and Loc take a very long time
         cancelTimeoutInMinutes: 1
         variables:
           NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
