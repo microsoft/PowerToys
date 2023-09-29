@@ -59,7 +59,8 @@
       <BuildStlModules>false</BuildStlModules>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <!-- CLR + CFG are not compatible >:{ -->
+      <ControlFlowGuard Condition="'%(CLRSupport)' == ''">Guard</ControlFlowGuard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
