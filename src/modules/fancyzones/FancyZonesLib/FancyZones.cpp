@@ -398,8 +398,8 @@ void FancyZones::WindowCreated(HWND window) noexcept
     // Hotfix
     // Avoid automatically moving popup windows, as they can be just popup menus.
     bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
-    bool hasThickframe = FancyZonesWindowUtils::HasThickFrame(window);
-    if (isPopup && !hasThickframe)
+    bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
+    if (isPopup && !hasThickFrame)
     {
         return;
     }
