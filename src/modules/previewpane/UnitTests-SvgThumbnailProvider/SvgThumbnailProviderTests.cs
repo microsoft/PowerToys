@@ -4,14 +4,12 @@
 
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using Common.ComInterlop;
 using Microsoft.PowerToys.STATestExtension;
 using Microsoft.PowerToys.ThumbnailHandler.Svg;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace SvgThumbnailProviderUnitTests
 {
@@ -208,6 +206,18 @@ namespace SvgThumbnailProviderUnitTests
             SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(filePath);
 
             Bitmap bitmap = svgThumbnailProvider.GetThumbnail(256);
+
+            Assert.IsTrue(bitmap != null);
+        }
+
+        [TestMethod]
+        public void SvgCommentsAreHandledCorrectly()
+        {
+            var filePath = "HelperFiles/WithComments.svg";
+
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(filePath);
+
+            Bitmap bitmap = svgThumbnailProvider.GetThumbnail(8);
 
             Assert.IsTrue(bitmap != null);
         }
