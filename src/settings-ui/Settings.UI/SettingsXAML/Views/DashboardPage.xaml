@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkitConverters="using:CommunityToolkit.WinUI.UI.Converters"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels" xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
     mc:Ignorable="d">
@@ -136,21 +136,20 @@
                 <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
                         <toolkit:StaggeredLayout
-                            x:Name="Layoutttt"
                             ColumnSpacing="8"
-                            DesiredColumnWidth="380" />
+                            DesiredColumnWidth="380"
+                            RowSpacing="8" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:DashboardListItem">
                             <Grid
-                                Margin="0,0,0,12"
                                 Padding="16"
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
                                 CornerRadius="{StaticResource OverlayCornerRadius}"
                                 RowSpacing="12"
-                                Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=TwoWay}">
+                                Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
                                     <RowDefinition />
