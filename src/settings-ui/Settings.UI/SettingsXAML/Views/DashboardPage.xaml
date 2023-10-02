@@ -8,7 +8,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkitConverters="using:CommunityToolkit.WinUI.UI.Converters"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels" xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
     mc:Ignorable="d">
@@ -154,7 +155,7 @@
                                     <RowDefinition />
                                     <RowDefinition />
                                 </Grid.RowDefinitions>
-                                <Grid Height="20" ColumnSpacing="12">
+                                <Grid ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
@@ -172,6 +173,15 @@
                                         FontWeight="SemiBold"
                                         Text="{x:Bind Label, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis" />
+                                    <Button
+                                        Grid.Column="2"
+                                        Height="24"
+                                        Margin="0,0,-12,0"
+                                        Padding="0"
+                                        Content="{ui:FontIcon FontSize=14,
+                                                              Glyph=&#xE713;}"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{StaticResource SubtleButtonStyle}" />
                                 </Grid>
                                 <ItemsRepeater Grid.Row="1" ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                                     <ItemsRepeater.Layout>
