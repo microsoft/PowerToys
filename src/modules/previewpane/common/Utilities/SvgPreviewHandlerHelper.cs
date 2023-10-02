@@ -187,8 +187,6 @@ namespace Common.Utilities
                 heightIndex -= numRemoved;
             }
 
-            firstXmlCloseTagIndex -= numRemoved;
-
             if (styleIndex != -1 && styleIndex > widthIndex)
             {
                 styleIndex -= numRemoved;
