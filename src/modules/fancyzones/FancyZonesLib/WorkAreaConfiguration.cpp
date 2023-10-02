@@ -1,9 +1,9 @@
 #include "pch.h"
-#include "MonitorWorkAreaMap.h"
+#include "WorkAreaConfiguration.h"
 
 #include <FancyZonesLib/WorkArea.h>
 
-WorkArea* const MonitorWorkAreaMap::GetWorkArea(HMONITOR monitor) const
+WorkArea* const WorkAreaConfiguration::GetWorkArea(HMONITOR monitor) const
 {
     auto iter = m_workAreaMap.find(monitor);
     if (iter != m_workAreaMap.end())
@@ -14,7 +14,7 @@ WorkArea* const MonitorWorkAreaMap::GetWorkArea(HMONITOR monitor) const
     return nullptr;
 }
 
-WorkArea* const MonitorWorkAreaMap::GetWorkAreaFromCursor() const
+WorkArea* const WorkAreaConfiguration::GetWorkAreaFromCursor() const
 {
     const auto allMonitorsWorkArea = GetWorkArea(nullptr);
     if (allMonitorsWorkArea)
@@ -35,7 +35,7 @@ WorkArea* const MonitorWorkAreaMap::GetWorkAreaFromCursor() const
     }
 }
 
-WorkArea* const MonitorWorkAreaMap::GetWorkAreaFromWindow(HWND window) const
+WorkArea* const WorkAreaConfiguration::GetWorkAreaFromWindow(HWND window) const
 {
     const auto allMonitorsWorkArea = GetWorkArea(nullptr);
     if (allMonitorsWorkArea)
@@ -51,39 +51,17 @@ WorkArea* const MonitorWorkAreaMap::GetWorkAreaFromWindow(HWND window) const
     }
 }
 
-const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& MonitorWorkAreaMap::GetAllWorkAreas() const noexcept
+const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& WorkAreaConfiguration::GetAllWorkAreas() const noexcept
 {
     return m_workAreaMap;
 }
 
-void MonitorWorkAreaMap::AddWorkArea(HMONITOR monitor, std::unique_ptr<WorkArea> workArea)
+void WorkAreaConfiguration::AddWorkArea(HMONITOR monitor, std::unique_ptr<WorkArea> workArea)
 {
     m_workAreaMap.insert({ monitor, std::move(workArea) });
 }
 
-FancyZonesDataTypes::WorkAreaId MonitorWorkAreaMap::GetParent(HMONITOR monitor) const
-{
-    if (m_workAreaParents.contains(monitor))
-    {
-        return m_workAreaParents.at(monitor);
-    }
-    
-    return FancyZonesDataTypes::WorkAreaId{};
-}
-
-void MonitorWorkAreaMap::SaveParentIds()
-{
-    m_workAreaParents.clear();
-    for (const auto& [monitor, workArea] : m_workAreaMap)
-    {
-        if (workArea)
-        {
-            m_workAreaParents.insert({ monitor, workArea->UniqueId() });
-        }
-    }
-}
-
-void MonitorWorkAreaMap::Clear() noexcept
+void WorkAreaConfiguration::Clear() noexcept
 {
     m_workAreaMap.clear();
 }

@@ -199,7 +199,7 @@
                         <MenuFlyoutItem
                             x:Uid="MoveUp"
                             Click="ReorderButtonUp_Click"
-                            IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                             <MenuFlyoutItem.Icon>
                                 <FontIcon Glyph="&#xE74A;" />
                             </MenuFlyoutItem.Icon>
@@ -207,7 +207,7 @@
                         <MenuFlyoutItem
                             x:Uid="MoveDown"
                             Click="ReorderButtonDown_Click"
-                            IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                             <MenuFlyoutItem.Icon>
                                 <FontIcon Glyph="&#xE74B;" />
                             </MenuFlyoutItem.Icon>

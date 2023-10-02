@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Shell
             {
                 Key = "ShellCommandExecution",
                 DisplayLabel = Resources.wox_shell_command_execution,
-                SelectionTypeValue = (int)PluginAdditionalOption.SelectionType.Combobox,
+                PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
                 ComboBoxOptions = new List<string>
                 {
                     Resources.run_command_in_command_prompt,
@@ -60,7 +60,7 @@ namespace Microsoft.Plugin.Shell
                     Resources.find_executable_file_and_run_it,
                     Resources.run_command_in_windows_terminal,
                 },
-                Option = (int)_settings.Shell,
+                ComboBoxValue = (int)_settings.Shell,
             },
         };
 
@@ -442,7 +442,7 @@ namespace Microsoft.Plugin.Shell
                 _settings.LeaveShellOpen = leaveShellOpen;
 
                 var optionShell = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ShellCommandExecution");
-                shellOption = optionShell?.Option ?? shellOption;
+                shellOption = optionShell?.ComboBoxValue ?? shellOption;
                 _settings.Shell = (ExecutionShell)shellOption;
             }
 

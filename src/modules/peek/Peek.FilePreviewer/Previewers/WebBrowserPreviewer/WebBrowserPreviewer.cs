@@ -118,6 +118,8 @@ namespace Peek.FilePreviewer.Previewers
                     }
                     else
                     {
+                        // Simple html file to preview. Shouldn't do things like enabling scripts or using a virtual mapped directory.
+                        IsDevFilePreview = false;
                         Preview = new Uri(File.Path);
                     }
                 });
