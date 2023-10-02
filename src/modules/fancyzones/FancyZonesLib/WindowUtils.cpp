@@ -178,7 +178,8 @@ bool FancyZonesWindowUtils::IsStandardWindow(HWND window)
 
     bool isToolWindow = (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW;
     bool isVisible = (style & WS_VISIBLE) == WS_VISIBLE;
-    if (isToolWindow || !isVisible)
+    bool isTabstop = (style & WS_TABSTOP) == WS_TABSTOP;
+    if (isToolWindow || !isVisible || !isTabstop)
     {
         return false;
     }
