@@ -43,13 +43,6 @@ namespace Microsoft.Plugin.Shell
         {
             new PluginAdditionalOption()
             {
-                Key = "LeaveShellOpen",
-                DisplayLabel = Resources.wox_leave_shell_open,
-                Value = _settings.LeaveShellOpen,
-            },
-
-            new PluginAdditionalOption()
-            {
                 Key = "ShellCommandExecution",
                 DisplayLabel = Resources.wox_shell_command_execution,
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
@@ -58,9 +51,19 @@ namespace Microsoft.Plugin.Shell
                     new KeyValuePair<string, string>(Resources.find_executable_file_and_run_it, "2"),
                     new KeyValuePair<string, string>(Resources.run_command_in_command_prompt, "0"),
                     new KeyValuePair<string, string>(Resources.run_command_in_powershell, "1"),
-                    new KeyValuePair<string, string>(Resources.run_command_in_windows_terminal, "3"),
+                    new KeyValuePair<string, string>(Resources.run_command_in_powershell_seven, "6"),
+                    new KeyValuePair<string, string>(Resources.run_command_in_windows_terminal_cmd, "5"),
+                    new KeyValuePair<string, string>(Resources.run_command_in_windows_terminal_powershell, "3"),
+                    new KeyValuePair<string, string>(Resources.run_command_in_windows_terminal_powershell_seven, "4"),
                 },
                 ComboBoxValue = (int)_settings.Shell,
+            },
+
+            new PluginAdditionalOption()
+            {
+                Key = "LeaveShellOpen",
+                DisplayLabel = Resources.wox_leave_shell_open,
+                Value = _settings.LeaveShellOpen,
             },
         };
 
@@ -217,7 +220,7 @@ namespace Microsoft.Plugin.Shell
 
                 info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsVerbArg);
             }
-            else if (_settings.Shell == ExecutionShell.WindowsTerminal)
+            else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShell)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
