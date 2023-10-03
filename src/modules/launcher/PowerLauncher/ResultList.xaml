@@ -5,7 +5,6 @@
     xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:converters="clr-namespace:PowerLauncher.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:helper="clr-namespace:PowerLauncher.Helper"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:PowerLauncher.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"

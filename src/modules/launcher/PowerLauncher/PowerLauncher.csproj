@@ -118,27 +118,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Themes\HighContrastBlack.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Themes\HighContrastWhite.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Themes\HighContrast2.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Themes\HighContrast1.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Themes\Dark.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Themes\Light.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\PowerLauncher\RunResource.ico" />
   </ItemGroup>
