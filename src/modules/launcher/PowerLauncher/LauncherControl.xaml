@@ -30,7 +30,11 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
                         <Grid>
-                            <TextBlock VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16" Text="{TemplateBinding Tag}">
+                            <TextBlock
+                                Margin="6,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                Text="{TemplateBinding Tag}">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
                                         <Setter Property="Foreground" Value="Transparent" />
@@ -64,7 +68,7 @@
                                 </ScrollViewer>
                             </Border>
                         </Grid>
-                       
+
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -113,6 +117,7 @@
             FontSize="18"
             Foreground="{DynamicResource TextPlaceholderColorBrush}" />
         <ui:SymbolIcon
+            AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
             FontSize="18"
             Foreground="{DynamicResource TextPlaceholderColorBrush}"
             Symbol="Search12" />
