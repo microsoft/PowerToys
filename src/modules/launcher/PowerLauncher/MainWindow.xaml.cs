@@ -396,7 +396,6 @@ namespace PowerLauncher
         {
             if (_settings.HideWhenDeactivated)
             {
-                // (this.FindResource("OutroStoryboard") as Storyboard).Begin();
                 _viewModel.Hide();
             }
         }
@@ -725,11 +724,6 @@ namespace PowerLauncher
                     _firstDeleteTimer.Stop();
                 }
             }
-        }
-
-        private void OutroStoryboard_Completed(object sender, EventArgs e)
-        {
-            Hide();
         }
 
         private void SearchBox_UpdateFlowDirection()
