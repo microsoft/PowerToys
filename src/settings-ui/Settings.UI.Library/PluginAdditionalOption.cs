@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Gets or sets the list of dropdown items for the ComboBox. Please use the item name as Key and an integer as Value.
         /// The value gets converted in settings UI to an integer and will be saved in <see cref="ComboBoxValue"/>.
-        /// You can sort the visibility order in settings ui by aranging the list items.
+        /// You can define the visibility order in settings ui by arranging the list items.
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("ComboBoxItems")]

@@ -154,7 +154,7 @@
     <value>Run in PowerShell (PowerShell.exe)</value>
   </data>
   <data name="find_executable_file_and_run_it" xml:space="preserve">
-    <value>Find executable file and run it</value>
+    <value>Find and run executable file</value>
   </data>
   <data name="run_command_in_powershell_seven" xml:space="preserve">
     <value>Run in PowerShell 7 (pwsh.exe)</value>
@@ -168,7 +168,11 @@
   <data name="run_command_in_windows_terminal_powershell_seven" xml:space="preserve">
     <value>Run in PowerShell 7 (pwsh.exe) using Windows Terminal</value>
   </data>
+  <data name="run_plugin_cmd_wait_message" xml:space="preserve">
+    <value>Press Enter to continue</value>
+    <comment>"Enter" means the Enter key on the keyboard.</comment>
+  </data>
   <data name="wox_shell_command_execution_description" xml:space="preserve">
-    <value>All entries that using the Windows Terminal forcing the Windows Terminal as console host regardles of the system setting</value>
+    <value>All entries that using the Windows Terminal forcing the Windows Terminal as console host regardless of the system setting</value>
   </data>
 </root>

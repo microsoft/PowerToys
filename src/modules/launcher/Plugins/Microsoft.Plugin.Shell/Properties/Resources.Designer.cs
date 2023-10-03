@@ -61,7 +61,7 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Find executable file and run it.
+        ///   Looks up a localized string similar to Find and run executable file.
         /// </summary>
         public static string find_executable_file_and_run_it {
             get {
@@ -120,6 +120,15 @@ namespace Microsoft.Plugin.Shell.Properties {
         public static string run_command_in_windows_terminal_powershell_seven {
             get {
                 return ResourceManager.GetString("run_command_in_windows_terminal_powershell_seven", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press Enter to continue.
+        /// </summary>
+        public static string run_plugin_cmd_wait_message {
+            get {
+                return ResourceManager.GetString("run_plugin_cmd_wait_message", resourceCulture);
             }
         }
         
@@ -214,7 +223,7 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to All entries that using the Windows Terminal forcing the Windows Terminal as console host regardles of the system setting.
+        ///   Looks up a localized string similar to All entries that using the Windows Terminal forcing the Windows Terminal as console host regardless of the system setting.
         /// </summary>
         public static string wox_shell_command_execution_description {
             get {

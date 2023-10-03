@@ -216,21 +216,63 @@ namespace Microsoft.Plugin.Shell
                 }
                 else
                 {
-                    arguments = $"\"{command} ; Read-Host -Prompt \\\"Press Enter to continue\\\"\"";
+                    arguments = $"\"{command} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsVerbArg);
+            }
+            else if (_settings.Shell == ExecutionShell.PowerShellSeven)
+            {
+                string arguments;
+                if (_settings.LeaveShellOpen)
+                {
+                    arguments = $"-NoExit -C \"{command}\"";
+                }
+                else
+                {
+                    arguments = $"-C \"{command} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
+                }
+
+                info = ShellCommand.SetProcessStartInfo("pwsh.exe", workingDirectory, arguments, runAsVerbArg);
+            }
+            else if (_settings.Shell == ExecutionShell.WindowsTerminalCmd)
+            {
+                string arguments;
+                if (_settings.LeaveShellOpen)
+                {
+                    arguments = $"cmd.exe /k \"{command}\"";
+                }
+                else
+                {
+                    arguments = $"cmd.exe /c \"{command}\" & pause";
+                }
+
+                info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShell)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"powershell -NoExit \"{command}\"";
+                    arguments = $"powershell -NoExit -C \"{command}\"";
                 }
                 else
                 {
-                    arguments = $"powershell \"{command}\"";
+                    arguments = $"powershell -C \"{command}\"";
+                }
+
+                info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
+            }
+            else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShellSeven)
+            {
+                string arguments;
+                if (_settings.LeaveShellOpen)
+                {
+                    arguments = $"pwsh.exe -NoExit -C \"{command}\"";
+                }
+                else
+                {
+                    arguments = $"pwsh.exe -C \"{command}\"";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
