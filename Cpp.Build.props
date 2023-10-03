@@ -60,7 +60,7 @@
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- CLR + CFG are not compatible >:{ -->
-      <ControlFlowGuard Condition="'%(CLRSupport)' == ''">Guard</ControlFlowGuard>
+      <ControlFlowGuard Condition="'$(CLRSupport)' == ''">Guard</ControlFlowGuard>
       <DebugInformationFormat Condition="'%(ControlFlowGuard)' == 'Guard'">ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
