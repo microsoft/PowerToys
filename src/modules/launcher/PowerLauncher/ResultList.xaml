@@ -26,16 +26,13 @@
                             <Rectangle
                                 Margin="2"
                                 SnapsToDevicePixels="true"
-                                Stroke="Green"
+                                Stroke="{DynamicResource FocusStrokeColorOuterBrush}"
                                 StrokeDashArray="1 2"
                                 StrokeThickness="1" />
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
-
-
-
 
             <Style
                 x:Key="CollapsableTextblock"
