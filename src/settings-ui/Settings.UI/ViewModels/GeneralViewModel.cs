@@ -703,7 +703,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Method <c>SelectSettingBackupDir</c> opens folder browser to select a backup and retore location.
+        /// Method <c>SelectSettingBackupDir</c> opens folder browser to select a backup and restore location.
         /// </summary>
         private async void SelectSettingBackupDir()
         {
