@@ -53,12 +53,12 @@ namespace Microsoft.Plugin.Shell
                 Key = "ShellCommandExecution",
                 DisplayLabel = Resources.wox_shell_command_execution,
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
-                ComboBoxOptions = new List<string>
+                ComboBoxOptions = new List<KeyValuePair<string, string>>
                 {
-                    Resources.run_command_in_command_prompt,
-                    Resources.run_command_in_powershell,
-                    Resources.find_executable_file_and_run_it,
-                    Resources.run_command_in_windows_terminal,
+                    new KeyValuePair<string, string>(Resources.find_executable_file_and_run_it, "2"),
+                    new KeyValuePair<string, string>(Resources.run_command_in_command_prompt, "0"),
+                    new KeyValuePair<string, string>(Resources.run_command_in_powershell, "1"),
+                    new KeyValuePair<string, string>(Resources.run_command_in_windows_terminal, "3"),
                 },
                 ComboBoxValue = (int)_settings.Shell,
             },

@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library;
 
@@ -49,16 +50,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowComboBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox &&
             _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
 
-        public List<string> ComboBoxOptions => _additionalOption.ComboBoxOptions;
+        public List<KeyValuePair<string, string>> ComboBoxOptions => _additionalOption.ComboBoxOptions;
 
-        public int ComboBoxValue
+        public string ComboBoxValue
         {
-            get => _additionalOption.ComboBoxValue;
+            get => _additionalOption.ComboBoxValue.ToString(CultureInfo.InvariantCulture);
             set
             {
-                if (value != _additionalOption.ComboBoxValue)
+                if (int.Parse(value, CultureInfo.InvariantCulture) != _additionalOption.ComboBoxValue)
                 {
-                    _additionalOption.ComboBoxValue = value;
+                    _additionalOption.ComboBoxValue = int.Parse(value, CultureInfo.InvariantCulture);
                     NotifyPropertyChanged();
                 }
             }
