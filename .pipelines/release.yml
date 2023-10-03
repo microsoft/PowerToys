@@ -52,8 +52,7 @@ extends:
         templateContext:
           outputs:
           - output: pipelineArtifact
-            name: setup-$(BuildPlatform)
-            displayName: Publish Pipeline Artifact
+            artifactName: setup-$(BuildPlatform)
             targetPath: $(Build.ArtifactStagingDirectory)
           sdl:
             baseline:
