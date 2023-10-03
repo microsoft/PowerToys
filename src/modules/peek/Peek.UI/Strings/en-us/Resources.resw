@@ -259,6 +259,6 @@
   </data>
   <data name="ReadableString_ByteString" xml:space="preserve">
     <value> ({1:N0} byte)</value>
-    <comment>Displays unit byte</comment>
+    <comment>Displays unit byte. Don't localize the "{1:N0}" part.</comment>
   </data>
 </root>
