@@ -255,7 +255,7 @@
   </data>
   <data name="ReadableString_BytesString" xml:space="preserve">
     <value> ({1:N0} bytes)</value>
-    <comment>Displays total number of bytes</comment>
+    <comment>Displays total number of bytes. Don't localize the "{1:N0}" part.</comment>
   </data>
   <data name="ReadableString_ByteString" xml:space="preserve">
     <value> ({1:N0} byte)</value>
