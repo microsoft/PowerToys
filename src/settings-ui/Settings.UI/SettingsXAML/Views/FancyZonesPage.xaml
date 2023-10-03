@@ -189,24 +189,9 @@
                             <controls:SettingsCard x:Uid="FancyZones_MoveWindow" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}">
                                 <ComboBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    MinHeight="56"
                                     SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition, Converter={StaticResource BoolToComboBoxIndexConverter}}">
-                                    <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible">
-                                        <StackPanel Orientation="Vertical" Spacing="4">
-                                            <custom:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex" />
-                                            <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
-                                                <Run x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description" />
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </ComboBoxItem>
-                                    <ComboBoxItem x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Accessible">
-                                        <StackPanel Orientation="Vertical" Spacing="4">
-                                            <custom:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition" />
-                                            <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
-                                                <Run x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Description" />
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </ComboBoxItem>
+                                    <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible" />
+                                    <ComboBoxItem x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Accessible" />
                                 </ComboBox>
                             </controls:SettingsCard>
                             <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}">

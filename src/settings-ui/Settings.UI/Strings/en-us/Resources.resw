@@ -1781,28 +1781,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Small</value>
     <comment>The size of the image</comment>
   </data>
-  <data name="FancyZones_MoveWindowBasedOnRelativePosition_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Windows key + Up, down, left or right arrow key to move windows based on relative position</value>
+  <data name="FancyZones_MoveWindowBasedOnRelativePosition_Accessible.Content" xml:space="preserve">
+    <value>Windows key + Up, down, left or right based on relative position</value>
   </data>
-  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Windows key + Left or right arrow keys to move windows based on zone index</value>
-  </data>
-  <data name="FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" xml:space="preserve">
-    <value>Windows key +    or </value>
-    <comment>Do not loc the icons (hex numbers)</comment>
-  </data>
-  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description.Text" xml:space="preserve">
-    <value>Windows key +  or </value>
-    <comment>Do not loc the icons (hex numbers)</comment>
-  </data>
-  <data name="FancyZones_MoveWindowBasedOnRelativePosition.Text" xml:space="preserve">
-    <value>Relative position</value>
+  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.Content" xml:space="preserve">
+    <value>Windows key + Left or right based on zone index</value>
   </data>
   <data name="FancyZones_MoveWindow.Header" xml:space="preserve">
     <value>Move windows based on</value>
-  </data>
-  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Text" xml:space="preserve">
-    <value>Zone index</value>
   </data>
   <data name="ColorPicker_Editor.Header" xml:space="preserve">
     <value>Color formats</value>
