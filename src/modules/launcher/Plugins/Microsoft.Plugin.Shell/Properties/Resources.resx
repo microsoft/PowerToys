@@ -168,4 +168,7 @@
   <data name="run_command_in_windows_terminal_powershell_seven" xml:space="preserve">
     <value>Run in PowerShell 7 (pwsh.exe) using Windows Terminal</value>
   </data>
+  <data name="wox_shell_command_execution_description" xml:space="preserve">
+    <value>All entries that using the Windows Terminal forcing the Windows Terminal as console host regardles of the system setting</value>
+  </data>
 </root>

@@ -45,6 +45,7 @@ namespace Microsoft.Plugin.Shell
             {
                 Key = "ShellCommandExecution",
                 DisplayLabel = Resources.wox_shell_command_execution,
+                DisplayDescription = Resources.wox_shell_command_execution_description,
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
                 ComboBoxOptions = new List<KeyValuePair<string, string>>
                 {

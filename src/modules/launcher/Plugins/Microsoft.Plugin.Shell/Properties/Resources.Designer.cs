@@ -212,5 +212,14 @@ namespace Microsoft.Plugin.Shell.Properties {
                 return ResourceManager.GetString("wox_shell_command_execution", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All entries that using the Windows Terminal forcing the Windows Terminal as console host regardles of the system setting.
+        /// </summary>
+        public static string wox_shell_command_execution_description {
+            get {
+                return ResourceManager.GetString("wox_shell_command_execution_description", resourceCulture);
+            }
+        }
     }
 }
