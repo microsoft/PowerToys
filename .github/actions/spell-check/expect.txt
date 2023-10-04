@@ -1677,7 +1677,6 @@ Sekan
 SENDCHANGE
 sendinput
 sendvirtualinput
-Seperate
 Seraphima
 serverside
 SETCONTEXT
