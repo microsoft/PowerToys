@@ -332,10 +332,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsFindMyMouse()
         {
-            var list = new List<DashboardModuleItem>
+            var settingsUtils = new SettingsUtils();
+            ISettingsRepository<FindMyMouseSettings> moduleSettingsRepository = SettingsRepository<FindMyMouseSettings>.GetInstance(settingsUtils);
+            string shortDescription = resourceLoader.GetString("FindMyMouse_ShortDescription");
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var activationMethod = settings.Properties.ActivationMethod.Value;
+            var list = new List<DashboardModuleItem>();
+            if (activationMethod == 3)
             {
-                new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("FindMyMouse_ShortDescription") },
-            };
+                var hotkey = settings.Properties.ActivationShortcut;
+                list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = shortDescription, IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            }
+            else
+            {
+                switch (activationMethod)
+                {
+                    case 2: shortDescription += $". {resourceLoader.GetString("Dashboard_Activation")}: {resourceLoader.GetString("MouseUtils_FindMyMouse_ActivationShakeMouse/Content")}"; break;
+                    case 1: shortDescription += $". {resourceLoader.GetString("Dashboard_Activation")}: {resourceLoader.GetString("MouseUtils_FindMyMouse_ActivationDoubleRightControlPress/Content")}"; break;
+                    case 0:
+                    default: shortDescription += $". {resourceLoader.GetString("Dashboard_Activation")}: {resourceLoader.GetString("MouseUtils_FindMyMouse_ActivationDoubleControlPress/Content")}"; break;
+                }
+
+                list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = shortDescription });
+            }
+
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -453,8 +473,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerAccent()
         {
+            string shortDescription = resourceLoader.GetString("PowerAccent_ShortDescription");
+            var settingsUtils = new SettingsUtils();
+            PowerAccentSettings moduleSettings = settingsUtils.GetSettingsOrDefault<PowerAccentSettings>(PowerAccentSettings.ModuleName);
+            var activationMethod = moduleSettings.Properties.ActivationKey;
+            switch (activationMethod)
+            {
+                case Library.Enumerations.PowerAccentActivationKey.LeftRightArrow: shortDescription += $". {resourceLoader.GetString("Dashboard_Activation")}: {resourceLoader.GetString("QuickAccent_Activation_Key_Arrows/Content")}"; break;
+                case Library.Enumerations.PowerAccentActivationKey.Space: shortDescription += $". {resourceLoader.GetString("Dashboard_Activation")}: {resourceLoader.GetString("QuickAccent_Activation_Key_Space/Content")}"; break;
+                case Library.Enumerations.PowerAccentActivationKey.Both: shortDescription += $". {resourceLoader.GetString("Dashboard_Activation")}: {resourceLoader.GetString("QuickAccent_Activation_Key_Either/Content")}"; break;
+            }
+
             var list = new List<DashboardModuleItem>();
-            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("PowerAccent_ShortDescription") });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = shortDescription });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -463,6 +494,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("RegistryPreview_ShortDescription") },
+                new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = resourceLoader.GetString("RegistryPreview_Launch"), ButtonClickHandler = RegistryPreviewLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -531,6 +563,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var settingsUtils = new SettingsUtils();
             var kbmViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, KeyboardManagerPage.FilterRemapKeysList);
             kbmViewModel.OnEditShortcut();
+        }
+
+        private void RegistryPreviewLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var actionName = "Launch";
+            SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
     }
 }
