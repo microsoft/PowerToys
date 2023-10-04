@@ -112,7 +112,7 @@ AUTHN
 AUTHZ
 AUTOHIDE
 AUTOMATIONPROPERTIES
-autorun
+Autorun
 AUTOUPDATE
 AValid
 awakeness
@@ -136,6 +136,7 @@ BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
+Bitmaps
 bitmask
 BITSPIXEL
 bla
@@ -144,7 +145,7 @@ Blockquotes
 blogs
 Blt
 BLUEGRAY
-bluetooth
+Bluetooth
 BLURBEHIND
 BLURREGION
 bmi
@@ -1369,7 +1370,6 @@ pef
 PElems
 Pels
 PERCEIVEDFLAG
-Percision
 perfmon
 pesi
 petabyte

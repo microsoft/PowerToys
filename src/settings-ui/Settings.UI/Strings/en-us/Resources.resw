@@ -3635,7 +3635,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Security key</value>
   </data>
   <data name="Hosts_Encoding.Description" xml:space="preserve">
-    <value>Chose the encoding of the hosts file</value>
+    <value>Choose the encoding of the hosts file</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_Encoding.Header" xml:space="preserve">
