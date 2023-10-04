@@ -29,6 +29,7 @@
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowKeyboardSnap.h>
 #include <FancyZonesLib/WindowMouseSnap.h>
+#include <FancyZonesLib/WindowUtils.h>
 #include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/WorkAreaConfiguration.h>
 
@@ -390,6 +391,15 @@ void FancyZones::WindowCreated(HWND window) noexcept
     }
 
     if (!FancyZonesWindowProcessing::IsProcessable(window))
+    {
+        return;
+    }
+
+    // Hotfix
+    // Avoid automatically moving popup windows, as they can be just popup menus.
+    bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
+    bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
+    if (isPopup && !hasThickFrame)
     {
         return;
     }
