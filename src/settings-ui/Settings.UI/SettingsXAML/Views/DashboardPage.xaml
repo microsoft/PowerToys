@@ -149,8 +149,7 @@
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
                                 CornerRadius="{StaticResource OverlayCornerRadius}"
-                                RowSpacing="12"
-                                Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                RowSpacing="12">
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
                                     <RowDefinition />
