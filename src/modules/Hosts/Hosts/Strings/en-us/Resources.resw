@@ -239,7 +239,7 @@
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Seperate multiple hosts by space (e.g. server server.local). Maximum 9 hosts per entry.</value>
+    <value>Separate multiple hosts by space (e.g. server server.local). Maximum 9 hosts per entry.</value>
     <comment>Do not localize "server" and "server.local"</comment>
   </data>
   <data name="HostsFilter.Header" xml:space="preserve">

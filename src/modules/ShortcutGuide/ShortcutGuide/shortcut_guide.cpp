@@ -73,7 +73,7 @@ namespace
         result.hwnd = active_window;
         // In reality, Windows Snap works if even one of those styles is set
         // for a window, it is just limited. If there is no WS_MAXIMIZEBOX using
-        // WinKey + Up just won't maximize the window. Similary, without
+        // WinKey + Up just won't maximize the window. Similarly, without
         // WS_MINIMIZEBOX the window will not get minimized. A "Save As..." dialog
         // is a example of such window - it can be snapped to both sides and to
         // all screen corners, but will not get maximized nor minimized.
