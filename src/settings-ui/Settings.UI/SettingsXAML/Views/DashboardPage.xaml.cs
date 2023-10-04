@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var settingsUtils = new SettingsUtils();
 
             ViewModel = new DashboardViewModel(
-               SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
+               SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
 
@@ -48,6 +48,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void SWVersionButtonClicked(object sender, RoutedEventArgs e)
         {
             ViewModel.SWVersionButtonClicked();
+        }
+
+        private void SettingsButtonClicked(object sender, RoutedEventArgs e)
+        {
+            ViewModel.SettingsButtonClicked(sender);
         }
     }
 }

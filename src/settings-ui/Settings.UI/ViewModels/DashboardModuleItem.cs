@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -58,6 +59,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public List<object> Shortcut { get; set; }
 
         public string ButtonTitle { get; set; }
+
+        public RoutedEventHandler ButtonClickHandler { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

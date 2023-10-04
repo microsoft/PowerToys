@@ -220,12 +220,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
-        private void OnRemapKeyboard()
+        public void OnRemapKeyboard()
         {
             OpenEditor((int)KeyboardManagerEditorType.KeyEditor);
         }
 
-        private void OnEditShortcut()
+        public void OnEditShortcut()
         {
             OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
         }

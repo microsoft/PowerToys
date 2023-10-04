@@ -2982,6 +2982,90 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Dashboard.Outdated" xml:space="preserve">
     <value>outdated</value>
   </data>
+  <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
+    <value>Pinning a window</value>
+  </data>
+  <data name="Awake_ShortDescription" xml:space="preserve">
+    <value>Keep your PC awake</value>
+  </data>
+  <data name="ColorPicker_ShortDescription" xml:space="preserve">
+    <value>Pick a color</value>
+  </data>
+  <data name="CropAndLock_Thumbnail" xml:space="preserve">
+    <value>Thumbnail</value>
+  </data>
+  <data name="CropAndLock_Reparent" xml:space="preserve">
+    <value>Reparent</value>
+  </data>
+  <data name="FancyZones_OpenEditor" xml:space="preserve">
+    <value>Open editor</value>
+  </data>
+  <data name="FancyZones_PreviousLayout" xml:space="preserve">
+    <value>Previous Layout</value>
+  </data>
+  <data name="FancyZones_NextLayout" xml:space="preserve">
+    <value>Next Layout</value>
+  </data>
+  <data name="FancyZones_Launch" xml:space="preserve">
+    <value>Launch</value>
+  </data>
+  <data name="FileLocksmith_ShortDescription" xml:space="preserve">
+    <value>Shows which processes are using the selected files</value>
+  </data>
+  <data name="FindMyMouse_ShortDescription" xml:space="preserve">
+    <value>Finds the mouse</value>
+  </data>
+  <data name="Hosts_Launch" xml:space="preserve">
+    <value>Launch</value>
+  </data>
+  <data name="ImageResizer_ShortDescription" xml:space="preserve">
+    <value>Select Image Resizer in the right-click context menu</value>
+  </data>
+  <data name="KeyboardManager_RemapAKey" xml:space="preserve">
+    <value>Remap a key</value>
+  </data>
+  <data name="KeyboardManager_RemapAShortcut" xml:space="preserve">
+    <value>Remap a shortcut</value>
+  </data>
+  <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
+    <value>Highlights clicks</value>
+  </data>
+  <data name="MouseJump_ShortDescription" xml:space="preserve">
+    <value>Quickly move the mouse pointer</value>
+  </data>
+  <data name="MouseCrosshairs_ShortDescription" xml:space="preserve">
+    <value>Draw crosshairs centered on the mouse pointer</value>
+  </data>
+  <data name="MouseWithoutBorders_ShortDescription" xml:space="preserve">
+    <value>Move your cursor across multiple devices</value>
+  </data>
+  <data name="PastePlain_ShortDescription" xml:space="preserve">
+    <value>Paste clipboard content without formatting</value>
+  </data>
+  <data name="Peek_ShortDescription" xml:space="preserve">
+    <value>Quick and easy previewer</value>
+  </data>
+  <data name="PowerRename_ShortDescription" xml:space="preserve">
+    <value>Select Power Rename in right-click context menu</value>
+  </data>
+  <data name="Run_ShortDescription" xml:space="preserve">
+    <value>A quick launcher</value>
+  </data>
+  <data name="PowerAccent_ShortDescription" xml:space="preserve">
+    <value>An alternative way to type accented characters</value>
+  </data>
+  <data name="RegistryPreview_ShortDescription" xml:space="preserve">
+    <value>Visualize and edit Windows Registry files</value>
+  </data>
+  <data name="ScreenRuler_ShortDescription" xml:space="preserve">
+    <value>Measure pixels on your screen</value>
+  </data>
+  <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
+    <value>Shows a help overlay with Windows shortcuts</value>
+  </data>
+  <data name="PowerOcr_ShortDescription" xml:space="preserve">
+    <value>Shows a help overlay with Windows shortcuts</value>
+  </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
     <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
   </data>

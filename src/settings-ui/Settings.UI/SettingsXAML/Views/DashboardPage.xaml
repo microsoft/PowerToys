@@ -178,10 +178,12 @@
                                         Height="24"
                                         Margin="0,0,-12,0"
                                         Padding="0"
+                                        Tag="{x:Bind Tag, Mode=OneWay}"
                                         Content="{ui:FontIcon FontSize=14,
                                                               Glyph=&#xE713;}"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Style="{StaticResource SubtleButtonStyle}" />
+                                        Style="{StaticResource SubtleButtonStyle}"
+                                        Click="SettingsButtonClicked"/>
                                 </Grid>
                                 <ItemsRepeater Grid.Row="1" ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                                     <ItemsRepeater.Layout>
@@ -223,12 +225,14 @@
                                                     </Border>
                                                     <TextBlock
                                                         VerticalAlignment="Center"
+                                                        TextWrapping="WrapWholeWords"
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                         Text="{x:Bind Label, Mode=OneWay}" />
                                                 </StackPanel>
                                                 <Button
                                                     HorizontalAlignment="Stretch"
                                                     Content="{x:Bind ButtonTitle, Mode=OneWay}"
+                                                    Click="{x:Bind ButtonClickHandler, Mode=OneWay}"
                                                     Visibility="{x:Bind IsButtonVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                                             </StackPanel>
                                         </DataTemplate>

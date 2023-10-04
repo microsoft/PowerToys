@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,11 +12,15 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class DashboardViewModel : Observable
     {
+        public Func<string, int> SendConfigMSG { get; }
+
         public ObservableCollection<DashboardListItem> ActiveModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
@@ -26,16 +31,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ISettingsRepository<GeneralSettings> _settingsRepository;
         private GeneralSettings generalSettingsConfig;
+        private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
-        public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository)
+        public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
 
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+
             _allModules = new List<DashboardListItem>();
 
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             GpoRuleConfigured gpo;
             if ((gpo = GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue()) != GpoRuleConfigured.Disabled && gpo != GpoRuleConfigured.Enabled)
             {
@@ -159,6 +167,52 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
         }
 
+        internal void SettingsButtonClicked(object sender)
+        {
+            Button button = sender as Button;
+            if (button == null)
+            {
+                return;
+            }
+
+            string tag = button.Tag as string;
+            if (tag == null)
+            {
+                return;
+            }
+
+            Type type = null;
+            switch (tag)
+            {
+                case "AlwaysOnTop": type = typeof(AlwaysOnTopPage); break;
+                case "Awake": type = typeof(AwakePage); break;
+                case "ColorPicker": type = typeof(ColorPickerPage); break;
+                case "CropAndLock": type = typeof(CropAndLockPage); break;
+                case "FancyZones": type = typeof(FancyZonesPage); break;
+                case "FileLocksmith": type = typeof(FileLocksmithPage); break;
+                case "FindMyMouse": type = typeof(MouseUtilsPage); break;
+                case "Hosts": type = typeof(HostsPage); break;
+                case "ImageResizer": type = typeof(ImageResizerPage); break;
+                case "KeyboardManager": type = typeof(KeyboardManagerPage); break;
+                case "MouseHighlighter": type = typeof(MouseUtilsPage); break;
+                case "MouseJump": type = typeof(MouseUtilsPage); break;
+                case "MousePointerCrosshairs": type = typeof(MouseUtilsPage); break;
+                case "MouseWithoutBorders": type = typeof(MouseWithoutBordersPage); break;
+                case "PastePlain": type = typeof(PastePlainPage); break;
+                case "Peek": type = typeof(PeekPage); break;
+                case "PowerRename": type = typeof(PowerRenamePage); break;
+                case "PowerLauncher": type = typeof(PowerLauncherPage); break;
+                case "PowerAccent": type = typeof(PowerAccentPage); break;
+                case "RegistryPreview": type = typeof(RegistryPreviewPage); break;
+                case "MeasureTool": type = typeof(MeasureToolPage); break;
+                case "ShortcutGuide": type = typeof(ShortcutGuidePage); break;
+                case "PowerOCR": type = typeof(PowerOcrPage); break;
+                case "VideoConference": type = typeof(VideoConferencePage); break;
+            }
+
+            NavigationService.Navigate(type);
+        }
+
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
             Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
@@ -209,7 +263,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository = SettingsRepository<AlwaysOnTopSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.Hotkey.Value;
-            list.Add(new DashboardModuleItem() { Label = "Pinning a window", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { Label = resourceLoader.GetString("AlwaysOnTop_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -217,7 +271,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleItem() { IsLabelVisible = true, Label = "Keep your PC awake" },
+                new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("Awake_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -229,7 +283,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<ColorPickerSettings> moduleSettingsRepository = SettingsRepository<ColorPickerSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
-            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = "Pick a color", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("ColorPicker_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -241,8 +295,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkeyThumbnail = settings.Properties.ThumbnailHotkey.Value;
             var hotkeyReparent = settings.Properties.ReparentHotkey.Value;
-            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = "Thumbnail", IsShortcutVisible = true, Shortcut = hotkeyThumbnail.GetKeysList() });
-            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = "Reparent", IsShortcutVisible = true, Shortcut = hotkeyReparent.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("CropAndLock_Thumbnail"), IsShortcutVisible = true, Shortcut = hotkeyThumbnail.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("CropAndLock_Reparent"), IsShortcutVisible = true, Shortcut = hotkeyReparent.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -255,9 +309,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var hotkey = settings.Properties.FancyzonesEditorHotkey.Value;
             var hotkeyPrev = settings.Properties.FancyzonesPrevTabHotkey.Value;
             var hotkeyNext = settings.Properties.FancyzonesNextTabHotkey.Value;
-            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = "Open editor", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
-            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = "Previous Layout", IsShortcutVisible = true, Shortcut = hotkeyPrev.GetKeysList() });
-            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = "Next Layout", IsShortcutVisible = true, Shortcut = hotkeyNext.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("FancyZones_OpenEditor"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("FancyZones_PreviousLayout"), IsShortcutVisible = true, Shortcut = hotkeyPrev.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("FancyZones_NextLayout"), IsShortcutVisible = true, Shortcut = hotkeyNext.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = resourceLoader.GetString("FancyZones_Launch"), ButtonClickHandler = FancyZoneLaunchClicked });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -265,7 +320,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleItem() { IsLabelVisible = true, Label = "Shows which processes are using the selected files" },
+                new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("FileLocksmith_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -274,7 +329,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleItem() { IsLabelVisible = true, Label = "Finds the mouse" },
+                new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("FindMyMouse_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -283,7 +338,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = "Launch" },
+                new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = resourceLoader.GetString("Hosts_Launch"), ButtonClickHandler = HostLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -292,7 +347,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleItem() { IsLabelVisible = true, Label = "Select Image Resizer in the right-click context menu" },
+                new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("ImageResizer_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -301,8 +356,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = "Remap a key" },
-                new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = "Remap a shortcut" },
+                new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = resourceLoader.GetString("KeyboardManager_RemapAKey"), ButtonClickHandler = KbmKeyLaunchClicked },
+                new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = resourceLoader.GetString("KeyboardManager_RemapAShortcut"), ButtonClickHandler = KbmShortcutLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -314,7 +369,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<MouseHighlighterSettings> moduleSettingsRepository = SettingsRepository<MouseHighlighterSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
-            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = "Highlights clicks", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("MouseHighlighter_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -325,7 +380,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<MouseJumpSettings> moduleSettingsRepository = SettingsRepository<MouseJumpSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
-            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = "Quickly move the mouse pointer", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("MouseJump_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -336,7 +391,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<MousePointerCrosshairsSettings> moduleSettingsRepository = SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
-            list.Add(new DashboardModuleItem() { Label = "Draw crosshairs centered on the mouse pointer", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("MouseCrosshairs_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -344,7 +399,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleItem() { Label = "Move your cursor across multiple devices" },
+                new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("MouseWithoutBorders_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -356,7 +411,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<PastePlainSettings> moduleSettingsRepository = SettingsRepository<PastePlainSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
-            list.Add(new DashboardModuleItem() { Label = "Paste clipboard content without formatting", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("PastePlain_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -367,7 +422,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<PeekSettings> moduleSettingsRepository = SettingsRepository<PeekSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
-            list.Add(new DashboardModuleItem() { Label = "Quick and easy previewer", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("Peek_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -375,7 +430,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleItem() { Label = "Select Power Rename in right-click context menu" },
+                new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("PowerRename_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -387,14 +442,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<PowerLauncherSettings> moduleSettingsRepository = SettingsRepository<PowerLauncherSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.OpenPowerLauncher;
-            list.Add(new DashboardModuleItem() { Label = "A quick launcher", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("Run_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerAccent()
         {
             var list = new List<DashboardModuleItem>();
-            list.Add(new DashboardModuleItem() { Label = "An alternative way to type accented characters" });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("PowerAccent_ShortDescription") });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -402,7 +457,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleItem() { Label = "Visualize and edit Windows Registry files" },
+                new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("RegistryPreview_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -414,7 +469,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<MeasureToolSettings> moduleSettingsRepository = SettingsRepository<MeasureToolSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
-            list.Add(new DashboardModuleItem() { Label = "Measure pixels on your screen", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("ScreenRuler_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -425,7 +480,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.OpenShortcutGuide;
-            list.Add(new DashboardModuleItem() { Label = "Shows a help overlay with Windows shortcuts", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("ShortcutGuide_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -436,7 +491,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<PowerOcrSettings> moduleSettingsRepository = SettingsRepository<PowerOcrSettings>.GetInstance(settingsUtils);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
-            list.Add(new DashboardModuleItem() { Label = "Copy text from anywhere on screen", IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
+            list.Add(new DashboardModuleItem() { IsLabelVisible = true, Label = resourceLoader.GetString("PowerOcr_ShortDescription"), IsShortcutVisible = true, Shortcut = hotkey.GetKeysList() });
 
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -444,6 +499,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         internal void SWVersionButtonClicked()
         {
             NavigationService.Navigate(typeof(GeneralPage));
+        }
+
+        private void HostLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var settingsUtils = new SettingsUtils();
+            var hostsViewModel = new HostsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<HostsSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
+            hostsViewModel.Launch();
+        }
+
+        private void FancyZoneLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            // send message to launch the zones editor;
+            SendConfigMSG("{\"action\":{\"FancyZones\":{\"action_name\":\"ToggledFZEditor\", \"value\":\"\"}}}");
+        }
+
+        private void KbmKeyLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var settingsUtils = new SettingsUtils();
+            var kbmViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, KeyboardManagerPage.FilterRemapKeysList);
+            kbmViewModel.OnRemapKeyboard();
+        }
+
+        private void KbmShortcutLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var settingsUtils = new SettingsUtils();
+            var kbmViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, KeyboardManagerPage.FilterRemapKeysList);
+            kbmViewModel.OnEditShortcut();
         }
     }
 }
