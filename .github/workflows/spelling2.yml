@@ -71,21 +71,22 @@ jobs:
       uses: check-spelling/check-spelling@v0.0.22
       with:
         config: .github/actions/spell-check
-        suppress_push_for_open_pull_request: 1
+        suppress_push_for_open_pull_request: ${{ github.actor != 'dependabot[bot]' && 1 }}
         checkout: true
         check_file_names: 1
         spell_check_this: check-spelling/spell-check-this@prerelease
         post_comment: 0
         use_magic_file: 1
         extra_dictionary_limit: 10
+        dictionary_source_prefixes: {"cspell": "https://raw.githubusercontent.com/check-spelling/cspell-dicts/v20220816/dictionaries/", "cspell_old": "https://raw.githubusercontent.com/check-spelling/cspell-dicts/v20220427/dictionaries/"}
         extra_dictionaries:
-          cspell:software-terms/src/software-terms.txt
-          cspell:cpp/src/stdlib-cpp.txt
-          cspell:filetypes/filetypes.txt
-          cspell:cpp/src/stdlib-c.txt
-          cspell:fullstack/fullstack.txt
-          cspell:html/html.txt
-          cspell:css/css.txt
+          cspell_old:software-terms/src/software-terms.txt
+          cspell_old:cpp/src/stdlib-cpp.txt
+          cspell_old:filetypes/filetypes.txt
+          cspell_old:cpp/src/stdlib-c.txt
+          cspell_old:fullstack/fullstack.txt
+          cspell_old:html/html.txt
+          cspell_old:css/css.txt
 
   comment-push:
     name: Report (Push)
