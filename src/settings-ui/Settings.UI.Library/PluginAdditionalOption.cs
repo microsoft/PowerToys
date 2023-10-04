@@ -97,12 +97,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? NumberBoxLargeChange { get; set; }
 
-        // Outdated properties kept for backward compatibility with third-party plugins. They are only required to not have old thrid-party plugins crashing.
+        // Outdated properties kept for backward compatibility with third-party plugins. They are only required to not have old third-party plugins crashing.
+#pragma warning disable SA1623 // Property summary documentation should match accessors
 
         /// <summary>
-        /// Gets or sets the list of combobox item in the past. PLEASE DON'T USE ANYMORE!! It is only for backward compatibility with old third-party plugins and has no function.
+        /// PLEASE DON'T USE ANYMORE!! (The property was used for the list of combobox items in the past and is not functional anymore.)
         /// </summary>
         [JsonIgnore]
         public List<string> ComboBoxOptions { get; set; }
+#pragma warning restore SA1623 // Property summary documentation should match accessors
     }
 }
