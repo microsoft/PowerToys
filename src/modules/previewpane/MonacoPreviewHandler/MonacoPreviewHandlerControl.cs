@@ -165,7 +165,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             }
                             catch (NullReferenceException e)
                             {
-                                Logger.LogError("NullReferenceException catched. Skipping exception.", e);
+                                Logger.LogError("NullReferenceException caught. Skipping exception.", e);
                             }
                         }
                         catch (WebView2RuntimeNotFoundException e)

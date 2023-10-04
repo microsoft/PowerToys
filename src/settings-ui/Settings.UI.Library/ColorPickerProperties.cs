@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("activationaction")]
         public ColorPickerActivationAction ActivationAction { get; set; }
 
-        // Property ColorHistory is not used, the color history is saved separatedly in the colorHistory.json file
+        // Property ColorHistory is not used, the color history is saved separately in the colorHistory.json file
         [JsonPropertyName("colorhistory")]
         public List<string> ColorHistory { get; set; }
 

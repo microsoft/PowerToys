@@ -24,7 +24,7 @@ namespace Peek.FilePreviewer.Controls
         /// </summary>
         private Uri? _navigatedUri;
 
-        private Color originalBackgroundColor;
+        private Color? _originalBackgroundColor;
 
         public delegate void NavigationCompletedHandler(WebView2? sender, CoreWebView2NavigationCompletedEventArgs? args);
 
@@ -52,6 +52,7 @@ namespace Peek.FilePreviewer.Controls
             typeof(BrowserControl),
             new PropertyMetadata(null, new PropertyChangedCallback((d, e) => ((BrowserControl)d).OnIsDevFilePreviewChanged())));
 
+        // Will actually be true for Markdown files as well.
         public bool IsDevFilePreview
         {
             get
@@ -101,6 +102,11 @@ namespace Peek.FilePreviewer.Controls
         private void SourcePropertyChanged()
         {
             OpenUriDialog.Hide();
+
+            // Setting the background color to transparent.
+            // This ensures that non-HTML files are displayed with a transparent background.
+            PreviewBrowser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
+
             Navigate();
         }
 
@@ -113,6 +119,10 @@ namespace Peek.FilePreviewer.Controls
                 {
                     PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
                 }
+                else
+                {
+                    PreviewBrowser.CoreWebView2.ClearVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName);
+                }
             }
         }
 
@@ -123,7 +133,10 @@ namespace Peek.FilePreviewer.Controls
                 await PreviewBrowser.EnsureCoreWebView2Async();
 
                 // Storing the original background color so it can be reset later for specific file types like HTML.
-                originalBackgroundColor = PreviewBrowser.DefaultBackgroundColor;
+                if (!_originalBackgroundColor.HasValue)
+                {
+                    _originalBackgroundColor = PreviewBrowser.DefaultBackgroundColor;
+                }
 
                 // Setting the background color to transparent when initially loading the WebView2 component.
                 // This ensures that non-HTML files are displayed with a transparent background.
@@ -142,6 +155,10 @@ namespace Peek.FilePreviewer.Controls
                 {
                     PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
                 }
+                else
+                {
+                    PreviewBrowser.CoreWebView2.ClearVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName);
+                }
 
                 PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
                 PreviewBrowser.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
@@ -158,11 +175,16 @@ namespace Peek.FilePreviewer.Controls
         {
             // If the file being previewed is HTML or HTM, reset the background color to its original state.
             // This is done to ensure that HTML and HTM files are displayed as intended, with their own background settings.
-            if (Source?.ToString().EndsWith(".html", StringComparison.OrdinalIgnoreCase) == true ||
-                Source?.ToString().EndsWith(".htm", StringComparison.OrdinalIgnoreCase) == true)
+            // This shouldn't be done for dev file previewer.
+            if (!IsDevFilePreview &&
+                (Source?.ToString().EndsWith(".html", StringComparison.OrdinalIgnoreCase) == true ||
+                Source?.ToString().EndsWith(".htm", StringComparison.OrdinalIgnoreCase) == true))
             {
                 // Reset to default behavior for HTML files
-                PreviewBrowser.DefaultBackgroundColor = originalBackgroundColor;
+                if (_originalBackgroundColor.HasValue)
+                {
+                    PreviewBrowser.DefaultBackgroundColor = _originalBackgroundColor.Value;
+                }
             }
 
             DOMContentLoaded?.Invoke(sender, args);
