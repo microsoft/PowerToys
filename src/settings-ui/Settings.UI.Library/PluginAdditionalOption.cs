@@ -60,8 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// You can define the visibility order in settings ui by arranging the list items.
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("ComboBoxItems")]
-        public List<KeyValuePair<string, string>> ComboBoxOptions { get; set; }
+        public List<KeyValuePair<string, string>> ComboBoxItems { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string TextValue { get; set; }

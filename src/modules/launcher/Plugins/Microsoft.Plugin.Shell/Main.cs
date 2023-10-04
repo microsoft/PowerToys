@@ -47,7 +47,7 @@ namespace Microsoft.Plugin.Shell
                 DisplayLabel = Resources.wox_shell_command_execution,
                 DisplayDescription = Resources.wox_shell_command_execution_description,
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
-                ComboBoxOptions = new List<KeyValuePair<string, string>>
+                ComboBoxItems = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>(Resources.find_executable_file_and_run_it, "2"),
                     new KeyValuePair<string, string>(Resources.run_command_in_command_prompt, "0"),

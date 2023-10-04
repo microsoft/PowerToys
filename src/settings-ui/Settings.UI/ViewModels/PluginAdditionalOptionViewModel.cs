@@ -49,9 +49,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // ComboBox setting
         public bool ShowComboBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox &&
-            _additionalOption.ComboBoxOptions != null && _additionalOption.ComboBoxOptions.Count > 0;
+            _additionalOption.ComboBoxItems != null && _additionalOption.ComboBoxItems.Count > 0;
 
-        public List<KeyValuePair<string, string>> ComboBoxOptions => _additionalOption.ComboBoxOptions;
+        public List<KeyValuePair<string, string>> ComboBoxItems => _additionalOption.ComboBoxItems;
 
         public string ComboBoxValue
         {

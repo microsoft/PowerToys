@@ -385,7 +385,7 @@
                                                                     <ComboBox
                                                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                         DisplayMemberPath="Key"
-                                                                        ItemsSource="{x:Bind Path=ComboBoxOptions}"
+                                                                        ItemsSource="{x:Bind Path=ComboBoxItems}"
                                                                         SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
                                                                         SelectedValuePath="Value" />
                                                                 </controls:SettingsCard>
@@ -455,7 +455,7 @@
                                                                         <ComboBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                             DisplayMemberPath="Key"
-                                                                            ItemsSource="{x:Bind Path=ComboBoxOptions}"
+                                                                            ItemsSource="{x:Bind Path=ComboBoxItems}"
                                                                             SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
                                                                             SelectedValuePath="Value" />
                                                                     </controls:SettingsCard>
