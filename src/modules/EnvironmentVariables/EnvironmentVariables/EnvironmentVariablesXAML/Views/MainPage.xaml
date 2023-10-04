@@ -292,7 +292,7 @@
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="{ThemeResource ControlCornerRadius}">
-                    <ScrollViewer x:Name="AppliedVariablesScrollViewer">
+                    <ScrollViewer x:Name="AppliedVariablesScrollViewer" HorizontalScrollBarVisibility="Auto">
                         <ItemsControl Margin="12,8,12,0" ItemsSource="{x:Bind ViewModel.AppliedVariables, Mode=TwoWay}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="models:Variable">
