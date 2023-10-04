@@ -134,7 +134,7 @@
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
                 </Grid>
-                <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}">
+                <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
                         <toolkit:StaggeredLayout
                             ColumnSpacing="8"

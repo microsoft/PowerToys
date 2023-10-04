@@ -220,6 +220,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void ModuleEnabledChangedOnSettingsPage()
         {
+            ActiveModules.Clear();
             generalSettingsConfig = _settingsRepository.SettingsConfig;
             foreach (DashboardListItem item in _allModules)
             {
@@ -250,9 +251,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     case "PowerOCR": item.IsEnabled = generalSettingsConfig.Enabled.PowerOCR; break;
                     case "VideoConference": item.IsEnabled = generalSettingsConfig.Enabled.VideoConference; break;
                 }
+
+                if (item.IsEnabled)
+                {
+                    ActiveModules.Add(item);
+                }
             }
 
-            ActiveModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => x.IsEnabled));
             OnPropertyChanged(nameof(ActiveModules));
         }
 
