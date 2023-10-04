@@ -183,6 +183,3 @@ http://tes/
 
 # ignore long runs of a single character:
 \b([A-Za-z])\g{-1}{3,}\b
-
-# suggested by spellcheck bot
-(?:ssh-\S+|-nistp256) [-a-zA-Z=;:/0-9+]{12,}
