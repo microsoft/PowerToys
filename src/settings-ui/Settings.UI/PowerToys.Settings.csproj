@@ -22,7 +22,6 @@
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="SettingsXAML\Controls\SoftwareVersionControl\SoftwareVersionControl.xaml" />
     <None Remove="SettingsXAML\Views\DashboardPage.xaml" />
   </ItemGroup>
 
@@ -127,15 +126,9 @@
     <None Update="Assets\Settings\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Page Update="SettingsXAML\Controls\SoftwareVersionControl\SoftwareVersionControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="SettingsXAML\Views\DashboardPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
     <Page Update="SettingsXAML\Views\DashboardPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
