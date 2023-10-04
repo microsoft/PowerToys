@@ -162,7 +162,7 @@
                     x:Uid="ColorFormatDialog"
                     IsPrimaryButtonEnabled="{Binding IsValid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
-                    SecondaryButtonClick="ColorFormatDialog_CancelButtonClick">
+                    Closed="ColorFormatDialog_Closed">
                     <ContentDialog.DataContext>
                         <models:ColorFormatModel />
                     </ContentDialog.DataContext>

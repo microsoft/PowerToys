@@ -1240,7 +1240,15 @@
       "Name": "WindowsUpdateCheckForUpdates",
       "Areas": [ "AreaUpdateAndSecurity" ],
       "Type": "AppSettingsApp",
-      "Command": "ms-settings:windowsupdate-action"
+      "Command": "ms-settings:windowsupdate-action",
+      "DeprecatedInBuild": 22000
+    },
+    {
+      "Name": "WindowsUpdateCheckForUpdates",
+      "Areas": [ "AreaUpdateAndSecurity" ],
+      "Type": "AppSettingsApp",
+      "Command": "ms-settings:windowsupdate",
+      "IntroducedInBuild": 22000
     },
     {
       "Name": "WindowsUpdateAdvancedOptions",

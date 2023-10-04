@@ -15,7 +15,7 @@ using Microsoft.PowerToys.Run.Plugin.System.Properties;
 namespace Microsoft.PowerToys.Run.Plugin.System.Components
 {
     /// <summary>
-    /// This class represents the informations for a network connection/interface
+    /// This class represents the information for a network connection/interface
     /// </summary>
     internal sealed class NetworkConnectionProperties
     {
