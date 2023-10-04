@@ -1077,7 +1077,7 @@ namespace Wox.Plugin.Common.Win32
         /// <summary>
         /// The window itself contains child windows that should take part in dialog box, navigation. If this
         /// style is specified, the dialog manager recurses into children of this window when performing
-        /// navigation operations such as handling tha TAB key, an arrow key, or a keyboard mnemonic.
+        /// navigation operations such as handling the TAB key, an arrow key, or a keyboard mnemonic.
         /// </summary>
         WS_EX_CONTROLPARENT = 0x10000,
 
