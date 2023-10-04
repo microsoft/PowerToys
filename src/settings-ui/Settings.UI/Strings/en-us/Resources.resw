@@ -3010,7 +3010,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Launch</value>
   </data>
   <data name="FileLocksmith_ShortDescription" xml:space="preserve">
-    <value>Right-click on files or directies to show running processes</value>
+    <value>Right-click on files or directories to show running processes</value>
   </data>
   <data name="FindMyMouse_ShortDescription" xml:space="preserve">
     <value>Finds the mouse</value>
