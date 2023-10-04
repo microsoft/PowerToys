@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? NumberBoxLargeChange { get; set; }
 
-        // Outdated properties kept for backward compatibility with third-party plugins. They are only required to not have old third-party plugins crashing.
+        // Outdated properties kept for backward compatibility with third-party plugins. (They are only required to not have old third-party plugins crashing when propagating their plugin options.)
 #pragma warning disable SA1623 // Property summary documentation should match accessors
 
         /// <summary>
