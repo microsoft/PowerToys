@@ -136,6 +136,7 @@ BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
+Bitmaps
 bitmask
 BITSPIXEL
 bla
@@ -1370,7 +1371,6 @@ pef
 PElems
 Pels
 PERCEIVEDFLAG
-Percision
 perfmon
 pesi
 petabyte
