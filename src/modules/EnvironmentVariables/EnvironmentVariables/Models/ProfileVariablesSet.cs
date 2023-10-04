@@ -39,7 +39,7 @@ namespace EnvironmentVariables.Models
                     var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
 
                     // It exists. Rename it to preserve it.
-                    if (variableToOverride != null)
+                    if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User)
                     {
                         variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, this.Name);
 

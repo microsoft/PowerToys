@@ -140,6 +140,7 @@ namespace EnvironmentVariables.ViewModels
             if (!string.IsNullOrEmpty(userPath.Name) && !string.IsNullOrEmpty(systemPath.Name))
             {
                 var clone = systemPath.Clone();
+                clone.ParentType = VariablesSetType.Path;
                 clone.Values += ";" + userPath.Values;
                 variables.Remove(userPath);
                 variables.Insert(variables.IndexOf(systemPath), clone);
@@ -155,13 +156,15 @@ namespace EnvironmentVariables.ViewModels
                 var userVar = duplicate.ElementAt(0);
                 var systemVar = duplicate.ElementAt(1);
 
-                var clone = systemVar.Clone();
-                clone.Values = userVar.Values;
+                var clone = userVar.Clone();
+                clone.ParentType = VariablesSetType.Duplicate;
+                clone.Name = systemVar.Name;
+                variables.Insert(variables.IndexOf(userVar), clone);
                 variables.Remove(userVar);
-                variables.Insert(variables.IndexOf(systemVar), clone);
                 variables.Remove(systemVar);
             }
 
+            variables = variables.OrderBy(x => x.ParentType).ToList();
             AppliedVariables = new ObservableCollection<Variable>(variables);
         }
 
@@ -179,6 +182,7 @@ namespace EnvironmentVariables.ViewModels
             }
 
             EnvironmentVariablesHelper.SetVariable(variable);
+            PopulateAppliedVariables();
         }
 
         internal void EditVariable(Variable original, Variable edited, ProfileVariablesSet variablesSet)

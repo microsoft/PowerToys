@@ -27,7 +27,7 @@ namespace EnvironmentVariables.Helpers
                 var key = variable.Key as string;
                 if (key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new Variable(variableName, userVariables[key] as string, VariablesSetType.User);
+                    return new Variable(key, userVariables[key] as string, VariablesSetType.User);
                 }
             }
 
@@ -38,7 +38,7 @@ namespace EnvironmentVariables.Helpers
                 var key = variable.Key as string;
                 if (key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new Variable(variableName, userVariables[key] as string, VariablesSetType.System);
+                    return new Variable(key, systemVariables[key] as string, VariablesSetType.System);
                 }
             }
 

@@ -18,6 +18,8 @@ public class VariableTypeToGlyphConverter : IValueConverter
             VariablesSetType.User => "\uE77B",
             VariablesSetType.System => "\uE977",
             VariablesSetType.Profile => "\uEDE3",
+            VariablesSetType.Path => "\uE8AC",
+            VariablesSetType.Duplicate => "\uE8C8",
             _ => throw new NotImplementedException(),
         };
     }

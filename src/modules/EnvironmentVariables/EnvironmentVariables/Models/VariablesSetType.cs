@@ -6,7 +6,9 @@ namespace EnvironmentVariables.Models
 {
     public enum VariablesSetType
     {
-        User = 0,
+        Path = 0,
+        Duplicate,
+        User,
         System,
         Profile,
     }
