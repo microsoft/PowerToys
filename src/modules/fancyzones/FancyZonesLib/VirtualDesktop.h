@@ -10,7 +10,7 @@ public:
     std::vector<HWND> GetWindowsFromCurrentDesktop() const;
 
     // registry
-    std::optional<GUID> GetCurrentVirtualDesktopIdFromRegistry() const;
+    GUID GetCurrentVirtualDesktopIdFromRegistry() const;
     std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry() const;
     
 private:

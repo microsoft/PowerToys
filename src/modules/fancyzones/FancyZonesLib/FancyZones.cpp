@@ -156,9 +156,9 @@ private:
     void SyncVirtualDesktops() noexcept;
 
     void UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept;
-
-    bool MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept;
     
+    bool MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept;
+
     void RefreshLayouts() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
@@ -257,7 +257,6 @@ FancyZones::Run() noexcept
         }
     });
 
-    VirtualDesktop::instance().UpdateVirtualDesktopId();
     SyncVirtualDesktops();
 
     // id format of applied-layouts and app-zone-history was changed in 0.60
@@ -650,12 +649,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_INIT)
         {
-            VirtualDesktop::instance().UpdateVirtualDesktopId();
             OnDisplayChange(DisplayChangeType::Initialization);
         }
         else if (message == WM_PRIV_VD_SWITCH)
         {
-            VirtualDesktop::instance().UpdateVirtualDesktopId();
             OnDisplayChange(DisplayChangeType::VirtualDesktop);
         }
         else if (message == WM_PRIV_EDITOR)
@@ -754,10 +751,10 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
 bool FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id) noexcept
 {
-    wil::unique_cotaskmem_string virtualDesktopIdStr;
-    if (!SUCCEEDED(StringFromCLSID(VirtualDesktop::instance().GetCurrentVirtualDesktopId(), &virtualDesktopIdStr)))
+    auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(id.virtualDesktopId);
+    if (virtualDesktopIdStr)
     {
-        Logger::debug(L"Add new work area on virtual desktop {}", virtualDesktopIdStr.get());
+        Logger::debug(L"Add new work area on virtual desktop {}", virtualDesktopIdStr.value());
     }
 
     FancyZonesUtils::Rect rect{};
@@ -803,11 +800,12 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
     Logger::debug(L"Update work areas, update windows positions: {}", updateWindowPositions);
 
     m_workAreaConfiguration.Clear();
+    auto currentVirtualDesktop = VirtualDesktop::instance().GetCurrentVirtualDesktopIdFromRegistry();
 
     if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
     {
         FancyZonesDataTypes::WorkAreaId workAreaId;
-        workAreaId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+        workAreaId.virtualDesktopId = currentVirtualDesktop;
         workAreaId.monitorId = { .deviceId = { .id = ZonedWindowProperties::MultiMonitorName, .instanceId = ZonedWindowProperties::MultiMonitorInstance } };
 
         AddWorkArea(nullptr, workAreaId);
@@ -818,7 +816,7 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
         for (const auto& monitor : monitors)
         {
             FancyZonesDataTypes::WorkAreaId workAreaId;
-            workAreaId.virtualDesktopId = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+            workAreaId.virtualDesktopId = currentVirtualDesktop;
             workAreaId.monitorId = monitor;
 
             AddWorkArea(monitor.monitor, workAreaId);
@@ -915,7 +913,7 @@ void FancyZones::SyncVirtualDesktops() noexcept
     // that case (00000000-0000-0000-0000-000000000000).
 
     auto lastUsed = LastUsedVirtualDesktop::instance().GetId();
-    auto current = VirtualDesktop::instance().GetCurrentVirtualDesktopId();
+    auto current = VirtualDesktop::instance().GetCurrentVirtualDesktopIdFromRegistry();
     auto guids = VirtualDesktop::instance().GetVirtualDesktopIdsFromRegistry();
 
     if (current != lastUsed)

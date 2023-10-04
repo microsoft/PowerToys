@@ -96,14 +96,14 @@ VirtualDesktop& VirtualDesktop::instance()
     return self;
 }
 
-std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() const
+GUID VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() const
 {
     // On newer Windows builds, the current virtual desktop is persisted to
     // a totally different reg key. Look there first.
     std::optional<GUID> desktopId = NewGetCurrentDesktopId();
     if (desktopId.has_value())
     {
-        return desktopId;
+        return desktopId.value();
     }
 
     // Explorer persists current virtual desktop identifier to registry on a per session basis, but only
@@ -112,7 +112,7 @@ std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() con
     desktopId = GetDesktopIdFromCurrentSession();
     if (desktopId.has_value())
     {
-        return desktopId;
+        return desktopId.value();
     }
 
     // Fallback scenario is to get array of virtual desktops stored in registry, but not kept per session.
@@ -128,7 +128,7 @@ std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() con
         }
     }
 
-    return std::nullopt;
+    return GUID_NULL;
 }
 
 std::optional<std::vector<GUID>> VirtualDesktop::GetVirtualDesktopIdsFromRegistry(HKEY hKey) const
