@@ -156,7 +156,11 @@
                                             CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
                                             Content="&#xE70F;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}" />
+                                            Style="{StaticResource SubtleButtonStyle}">
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="EditProfileTooltip" TextWrapping="Wrap" />
+                                            </ToolTipService.ToolTip>
+                                        </Button>
                                         <Button
                                             x:Name="RemoveProfileBtn"
                                             x:Uid="RemoveProfileBtn"
@@ -166,7 +170,11 @@
                                             CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
                                             Content="&#xE74D;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}" />
+                                            Style="{StaticResource SubtleButtonStyle}">
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="RemoveProfileTooltip" TextWrapping="Wrap" />
+                                            </ToolTipService.ToolTip>
+                                        </Button>
                                     </StackPanel>
                                 </controls:SettingsExpander>
                             </DataTemplate>
@@ -205,7 +213,11 @@
                                 CommandParameter="{x:Bind ViewModel.UserDefaultSet}"
                                 Content="&#xe710;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Style="{StaticResource SubtleButtonStyle}" />
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="AddVariableTooltip" TextWrapping="Wrap" />
+                                </ToolTipService.ToolTip>
+                            </Button>
                         </StackPanel>
                     </controls:SettingsExpander>
 
@@ -235,7 +247,11 @@
                                 Content="&#xe710;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 IsEnabled="{x:Bind ViewModel.IsElevated}"
-                                Style="{StaticResource SubtleButtonStyle}" />
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="AddVariableTooltip" TextWrapping="Wrap" />
+                                </ToolTipService.ToolTip>
+                            </Button>
                         </StackPanel>
                     </controls:SettingsExpander>
                 </StackPanel>
@@ -304,7 +320,11 @@
                                                 Style="{StaticResource CaptionTextBlockStyle}"
                                                 Text="{x:Bind Values}"
                                                 TextTrimming="CharacterEllipsis"
-                                                TextWrapping="NoWrap" />
+                                                TextWrapping="NoWrap">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="{x:Bind Values}" TextWrapping="WrapWholeWords" />
+                                                </ToolTipService.ToolTip>
+                                            </TextBlock>
                                         </StackPanel>
                                     </Grid>
                                 </DataTemplate>

@@ -111,7 +111,7 @@ namespace EnvironmentVariables.Views
                 dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
                 dialog.CloseButtonText = resourceLoader.GetString("No");
                 dialog.DefaultButton = ContentDialogButton.Primary;
-                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
                 dialog.PrimaryButtonClick += (s, args) =>
                 {
                     ViewModel.RemoveProfile(profile);
@@ -174,7 +174,7 @@ namespace EnvironmentVariables.Views
                 dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
                 dialog.CloseButtonText = resourceLoader.GetString("No");
                 dialog.DefaultButton = ContentDialogButton.Primary;
-                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Variable_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
                 dialog.PrimaryButtonClick += (s, args) =>
                 {
                     ViewModel.DeleteVariable(variable, variableSet);
