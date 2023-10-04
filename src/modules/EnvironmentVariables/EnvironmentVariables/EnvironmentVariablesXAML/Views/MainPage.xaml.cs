@@ -190,7 +190,7 @@ namespace EnvironmentVariables.Views
 
             if (nameTxtBox != null)
             {
-                if (nameTxtBox.Text.Length == 0 || profile.Variables.Where(x => x.Name == nameTxtBox.Text).Any())
+                if (nameTxtBox.Text.Length == 0 || profile.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
                 {
                     ConfirmAddVariableBtn.IsEnabled = false;
                 }
@@ -320,7 +320,7 @@ namespace EnvironmentVariables.Views
 
             if (variableSet != null)
             {
-                if (variableSet.Variables.Where(x => x.Name == EditVariableDialogNameTxtBox.Text).Any() || !variable.Valid)
+                if (variableSet.Variables.Where(x => x.Name.Equals(EditVariableDialogNameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any() || !variable.Valid)
                 {
                     EditVariableDialog.IsPrimaryButtonEnabled = false;
                 }
@@ -328,6 +328,39 @@ namespace EnvironmentVariables.Views
                 {
                     EditVariableDialog.IsPrimaryButtonEnabled = true;
                 }
+            }
+        }
+
+        private void AddDefaultVariableNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox nameTxtBox = sender as TextBox;
+            var defaultSet = AddDefaultVariableDialog.PrimaryButtonCommandParameter as DefaultVariablesSet;
+
+            if (nameTxtBox != null)
+            {
+                if (nameTxtBox.Text.Length == 0 || defaultSet.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
+                {
+                    AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
+                }
+                else
+                {
+                    AddDefaultVariableDialog.IsPrimaryButtonEnabled = true;
+                }
+            }
+        }
+
+        private void EditVariableDialogValueTxtBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var valueTxtBox = sender as TextBox;
+            var variable = EditVariableDialog.DataContext as Variable;
+
+            if (valueTxtBox.Text == variable.Values)
+            {
+                EditVariableDialog.IsPrimaryButtonEnabled = false;
+            }
+            else
+            {
+                EditVariableDialog.IsPrimaryButtonEnabled = true;
             }
         }
     }

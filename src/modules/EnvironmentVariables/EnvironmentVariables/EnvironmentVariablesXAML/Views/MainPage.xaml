@@ -353,7 +353,8 @@
                     <TextBox
                         x:Uid="AddDefaultVariableNameTxtBox"
                         IsSpellCheckEnabled="False"
-                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextChanged="AddDefaultVariableNameTxtBox_TextChanged" />
                     <TextBox
                         x:Uid="AddDefaultVariableValueTxtBox"
                         AcceptsReturn="False"
@@ -396,6 +397,7 @@
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
                         Text="{Binding Values, Mode=TwoWay}"
+                        TextChanged="EditVariableDialogValueTxtBox_TextChanged"
                         TextWrapping="Wrap" />
                 </StackPanel>
             </ScrollViewer>

@@ -146,9 +146,21 @@ namespace EnvironmentVariables.ViewModels
                 variables.Remove(systemPath);
             }
 
-            // Handle variables with the same name but different casing in USER and SYSTEM variables
-            // TODO: (stefan)
             variables = variables.GroupBy(x => x.Name).Select(y => y.First()).ToList();
+
+            // Find duplicates
+            var duplicates = variables.GroupBy(x => x.Name.ToLower(System.Globalization.CultureInfo.InvariantCulture)).Where(g => g.Count() > 1);
+            foreach (var duplicate in duplicates)
+            {
+                var userVar = duplicate.ElementAt(0);
+                var systemVar = duplicate.ElementAt(1);
+
+                var clone = systemVar.Clone();
+                clone.Values = userVar.Values;
+                variables.Remove(userVar);
+                variables.Insert(variables.IndexOf(systemVar), clone);
+                variables.Remove(systemVar);
+            }
 
             AppliedVariables = new ObservableCollection<Variable>(variables);
         }

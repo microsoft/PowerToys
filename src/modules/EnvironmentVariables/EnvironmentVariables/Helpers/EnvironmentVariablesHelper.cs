@@ -22,16 +22,24 @@ namespace EnvironmentVariables.Helpers
         {
             var userVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
 
-            if (userVariables.Contains(variableName))
+            foreach (DictionaryEntry variable in userVariables)
             {
-                return new Variable(variableName, userVariables[variableName] as string, VariablesSetType.User);
+                var key = variable.Key as string;
+                if (key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Variable(variableName, userVariables[key] as string, VariablesSetType.User);
+                }
             }
 
             var systemVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
 
-            if (systemVariables.Contains(variableName))
+            foreach (DictionaryEntry variable in systemVariables)
             {
-                return new Variable(variableName, userVariables[variableName] as string, VariablesSetType.System);
+                var key = variable.Key as string;
+                if (key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Variable(variableName, userVariables[key] as string, VariablesSetType.System);
+                }
             }
 
             return null;
