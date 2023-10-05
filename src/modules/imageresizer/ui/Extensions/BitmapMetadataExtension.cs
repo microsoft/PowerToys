@@ -183,7 +183,7 @@ namespace ImageResizer.Extensions
         /// Prints all metadata to debug console
         /// </summary>
         /// <remarks>
-        /// Intented for debug only!!!
+        /// Intended for debug only!!!
         /// </remarks>
         public static void PrintsAllMetadataToDebugOutput(this BitmapMetadata metadata)
         {
@@ -205,7 +205,7 @@ namespace ImageResizer.Extensions
         /// Iterates recursively through all metadata
         /// </summary>
         /// <remarks>
-        /// Intented for debug only!!!
+        /// Intended for debug only!!!
         /// </remarks>
         public static List<(string MetadataPath, object Value)> GetListOfMetadataForDebug(this BitmapMetadata metadata)
         {
