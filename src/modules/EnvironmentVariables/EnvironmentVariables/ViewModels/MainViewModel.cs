@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -150,7 +151,7 @@ namespace EnvironmentVariables.ViewModels
             variables = variables.GroupBy(x => x.Name).Select(y => y.First()).ToList();
 
             // Find duplicates
-            var duplicates = variables.GroupBy(x => x.Name.ToLower(System.Globalization.CultureInfo.InvariantCulture)).Where(g => g.Count() > 1);
+            var duplicates = variables.Where(x => !x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase)).GroupBy(x => x.Name.ToLower(CultureInfo.InvariantCulture)).Where(g => g.Count() > 1);
             foreach (var duplicate in duplicates)
             {
                 var userVar = duplicate.ElementAt(0);
