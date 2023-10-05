@@ -24,7 +24,7 @@ steps:
       clean: true
       maximumCpuCount: true
 
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
     displayName: Sign PowerToysSetupCustomActions DLL
     inputs:
       ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
@@ -74,7 +74,7 @@ steps:
       scriptName: .pipelines/versionAndSignCheck.ps1
       arguments: -targetDir '$(build.sourcesdirectory)\extractedMsi\Binary'
 
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
     displayName: Sign MSI
     inputs:
       ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
@@ -101,7 +101,7 @@ steps:
     inputs:
       script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ib installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\engine.exe'
 
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
     displayName: "ESRP CodeSigning (Engine)"
     inputs:
       ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
@@ -137,7 +137,7 @@ steps:
     inputs:
       script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ab installer\engine.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe'
 
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
     displayName: Sign Bootstrapper
     inputs:
       ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
