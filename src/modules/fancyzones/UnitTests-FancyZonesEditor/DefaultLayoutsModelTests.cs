@@ -51,6 +51,7 @@ public class DefaultLayoutsModelTests
     {
         var defaultLayoutsModel = new DefaultLayoutsModel();
         GridLayoutModel firstLayout = new GridLayoutModel();
+        defaultLayoutsModel.Set(firstLayout, MonitorConfigurationType.Horizontal);
         defaultLayoutsModel.Set(firstLayout, MonitorConfigurationType.Vertical);
 
         Assert.AreEqual(defaultLayoutsModel.Layouts[(int)MonitorConfigurationType.Vertical], firstLayout);
