@@ -42,6 +42,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void OobeOpeningCallback();
 
         /// <summary>
+        /// Declaration for the opening whats new window callback function.
+        /// </summary>
+        public delegate void WhatsNewsOpeningCallback();
+
+        /// <summary>
         /// Declaration for the opening flyout window callback function.
         /// </summary>
         public delegate void FlyoutOpeningCallback(POINT? point);
@@ -85,6 +90,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets callback function for opening oobe window
         /// </summary>
         public static OobeOpeningCallback OpenOobeWindowCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for opening oobe window
+        /// </summary>
+        public static WhatsNewsOpeningCallback OpenWhatsNewWindowCallback { get; set; }
 
         /// <summary>
         /// Gets or sets callback function for opening flyout window
@@ -202,6 +212,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
+        /// Set whats new opening callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetOpenWhatsNewCallback(WhatsNewsOpeningCallback implementation)
+        {
+            OpenWhatsNewWindowCallback = implementation;
+        }
+
+        /// <summary>
         /// Set flyout opening callback function
         /// </summary>
         /// <param name="implementation">delegate function implementation.</param>
@@ -314,6 +333,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void FeedbackItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             await Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
+        }
+
+        private void AboutItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            OpenWhatsNewWindowCallback();
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

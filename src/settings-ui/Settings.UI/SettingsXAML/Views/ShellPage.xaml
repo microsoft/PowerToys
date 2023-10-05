@@ -205,6 +205,10 @@
                         Icon="{ui:FontIcon Glyph=&#xF133;}"
                         Tapped="OOBEItem_Tapped" />
                     <NavigationViewItem
+                        x:Uid="AboutApp_NavViewItem"
+                        Icon="{ui:FontIcon Glyph=&#xF133;}"
+                        Tapped="AboutItem_Tapped" />
+                    <NavigationViewItem
                         x:Uid="Feedback_NavViewItem"
                         Icon="{ui:FontIcon Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />

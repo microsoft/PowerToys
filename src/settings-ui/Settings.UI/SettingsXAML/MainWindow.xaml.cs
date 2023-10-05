@@ -186,6 +186,17 @@ namespace Microsoft.PowerToys.Settings.UI
                 App.GetOobeWindow().Activate();
             });
 
+            // open whats new window
+            ShellPage.SetOpenWhatsNewCallback(() =>
+            {
+                if (App.GetOobeWindow() == null)
+                {
+                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.WhatsNew, App.IsDarkTheme()));
+                }
+
+                App.GetOobeWindow().Activate();
+            });
+
             // open flyout
             ShellPage.SetOpenFlyoutCallback((POINT? p) =>
             {
