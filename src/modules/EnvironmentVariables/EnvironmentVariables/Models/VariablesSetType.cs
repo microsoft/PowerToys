@@ -8,8 +8,8 @@ namespace EnvironmentVariables.Models
     {
         Path = 0,
         Duplicate,
+        Profile,
         User,
         System,
-        Profile,
     }
 }

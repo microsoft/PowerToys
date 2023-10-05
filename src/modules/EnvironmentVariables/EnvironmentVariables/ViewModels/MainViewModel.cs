@@ -135,15 +135,26 @@ namespace EnvironmentVariables.ViewModels
             variables = variables.Concat(UserDefaultSet.Variables.OrderBy(x => x.Name)).Concat(SystemDefaultSet.Variables.OrderBy(x => x.Name)).ToList();
 
             // Handle PATH variable - add USER value to the end of the SYSTEM value
+            var profilePath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.Profile).FirstOrDefault();
             var userPath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.User).FirstOrDefault();
             var systemPath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.System).FirstOrDefault();
 
-            if (!string.IsNullOrEmpty(userPath.Name) && !string.IsNullOrEmpty(systemPath.Name))
+            if (systemPath != null)
             {
                 var clone = systemPath.Clone();
                 clone.ParentType = VariablesSetType.Path;
-                clone.Values += ";" + userPath.Values;
-                variables.Remove(userPath);
+
+                if (userPath != null)
+                {
+                    clone.Values += ";" + userPath.Values;
+                    variables.Remove(userPath);
+                }
+
+                if (profilePath != null)
+                {
+                    variables.Remove(profilePath);
+                }
+
                 variables.Insert(variables.IndexOf(systemPath), clone);
                 variables.Remove(systemPath);
             }
@@ -338,7 +349,14 @@ namespace EnvironmentVariables.ViewModels
             {
                 var task = Task.Run(() =>
                 {
-                    EnvironmentVariablesHelper.UnsetVariable(variable);
+                    if (profile == null)
+                    {
+                        EnvironmentVariablesHelper.UnsetVariable(variable);
+                    }
+                    else
+                    {
+                        profile.UnapplyVariable(variable);
+                    }
                 });
                 task.ContinueWith((a) =>
                 {

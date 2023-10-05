@@ -66,36 +66,41 @@ namespace EnvironmentVariables.Models
             {
                 foreach (var variable in Variables)
                 {
-                    // Unset the variable
-                    if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(variable))
-                    {
-                        Logger.LogError("Failed to unset variable.");
-                    }
-
-                    var originalName = variable.Name;
-                    var backupName = EnvironmentVariablesHelper.GetBackupVariableName(variable, this.Name);
-
-                    // Get backup variable if it exist
-                    var backupVariable = EnvironmentVariablesHelper.GetExisting(backupName);
-
-                    if (backupVariable != null)
-                    {
-                        var variableToRestore = new Variable(originalName, backupVariable.Values, backupVariable.ParentType);
-
-                        if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(backupVariable))
-                        {
-                            Logger.LogError("Failed to unset backup variable.");
-                        }
-
-                        if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
-                        {
-                            Logger.LogError("Failed to restore backup variable.");
-                        }
-                    }
+                    UnapplyVariable(variable);
                 }
 
                 EnvironmentVariablesHelper.NotifyEnvironmentChange();
             });
+        }
+
+        public void UnapplyVariable(Variable variable)
+        {
+            // Unset the variable
+            if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(variable))
+            {
+                Logger.LogError("Failed to unset variable.");
+            }
+
+            var originalName = variable.Name;
+            var backupName = EnvironmentVariablesHelper.GetBackupVariableName(variable, this.Name);
+
+            // Get backup variable if it exist
+            var backupVariable = EnvironmentVariablesHelper.GetExisting(backupName);
+
+            if (backupVariable != null)
+            {
+                var variableToRestore = new Variable(originalName, backupVariable.Values, backupVariable.ParentType);
+
+                if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(backupVariable))
+                {
+                    Logger.LogError("Failed to unset backup variable.");
+                }
+
+                if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
+                {
+                    Logger.LogError("Failed to restore backup variable.");
+                }
+            }
         }
 
         public bool IsCorrectlyApplied()
