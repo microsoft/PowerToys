@@ -1,8 +1,11 @@
+cloudai
 bkmeneguello
 FWest
+gdnbaselines
 github
 https
 obairka
+sdl
 ssh
 ubuntu
 unuing
