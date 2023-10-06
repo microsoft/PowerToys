@@ -133,7 +133,7 @@
                     <controls:SettingsExpander x:Uid="FancyZones_WindowBehavior_GroupSettings" IsExpanded="True">
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}" />
+                                <CheckBox x:Uid="FancyZones_DisplayOrWorkAreaChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayOrWorkAreaChangeMoveWindows}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}" />
