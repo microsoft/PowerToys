@@ -2,7 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -31,7 +35,8 @@ namespace EnvironmentVariables.Models
         [JsonIgnore]
         public VariablesSetType ParentType { get; set; }
 
-        public List<string> ValuesList { get; set; }
+        [ObservableProperty]
+        private ObservableCollection<string> _valuesList;
 
         public bool Valid => Validate();
 
@@ -45,10 +50,10 @@ namespace EnvironmentVariables.Models
             Values = values;
             ParentType = parentType;
 
-            var splitValues = Values.Split(';');
+            var splitValues = Values.Split(';').Where(x => x.Length > 0).ToArray();
             if (splitValues.Length > 0)
             {
-                ValuesList = new List<string>(splitValues);
+                ValuesList = new ObservableCollection<string>(splitValues);
             }
         }
 
@@ -63,7 +68,7 @@ namespace EnvironmentVariables.Models
             Name = edited.Name;
             Values = edited.Values;
 
-            ValuesList = new List<string>(Values.Split(';'));
+            ValuesList = new ObservableCollection<string>(Values.Split(';').Where(x => x.Length > 0).ToArray());
 
             return Task.Run(() =>
             {
@@ -92,7 +97,7 @@ namespace EnvironmentVariables.Models
                 Name = Name,
                 Values = Values,
                 ParentType = profile ? VariablesSetType.Profile : ParentType,
-                ValuesList = new List<string>(ValuesList),
+                ValuesList = new ObservableCollection<string>(ValuesList),
             };
         }
 

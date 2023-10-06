@@ -23,7 +23,13 @@
                 Header="{x:Bind Name, Mode=TwoWay}"
                 IsClickEnabled="{x:Bind IsEditable, Mode=OneWay}">
                 <controls:SettingsCard.Description>
-                    <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind Values, Mode=TwoWay}" />
+                    <StackPanel>
+                        <ListView
+                            x:Name="VariableValuesList"
+                            HorizontalAlignment="Stretch"
+                            ItemsSource="{x:Bind ValuesList, Mode=TwoWay}"
+                            SelectionMode="None" />
+                    </StackPanel>
                 </controls:SettingsCard.Description>
 
                 <controls:SettingsCard.ContextFlyout>
@@ -390,7 +396,8 @@
                         Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         TextChanged="EditVariableDialogNameTxtBox_TextChanged" />
                     <TextBox
-                        x:Uid="ValueTxtBox"
+                        x:Name="EditVariableDialogValueTxtBox"
+                        x:Uid="EditVariableDialogValueTxtBox"
                         AcceptsReturn="False"
                         IsSpellCheckEnabled="False"
                         ScrollViewer.IsVerticalRailEnabled="True"
@@ -399,6 +406,16 @@
                         Text="{Binding Values, Mode=TwoWay}"
                         TextChanged="EditVariableDialogValueTxtBox_TextChanged"
                         TextWrapping="Wrap" />
+                    <ListView
+                        x:Name="EditVariableValuesList"
+                        Margin="-16,-8,0,12"
+                        HorizontalAlignment="Stretch"
+                        AllowDrop="True"
+                        CanDragItems="True"
+                        CanReorderItems="True"
+                        DragItemsCompleted="EditVariableValuesList_DragItemsCompleted"
+                        ItemsSource="{Binding ValuesList, Mode=TwoWay}"
+                        SelectionMode="None" />
                 </StackPanel>
             </ScrollViewer>
         </ContentDialog>
