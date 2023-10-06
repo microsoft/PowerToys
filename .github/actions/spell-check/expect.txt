@@ -1080,7 +1080,6 @@ microsoft
 MIDDLEDOWN
 MIDDLEUP
 midl
-midl
 mii
 MIIM
 millis
