@@ -136,7 +136,6 @@ BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
-Bitmaps
 bitmask
 BITSPIXEL
 bla
@@ -1344,6 +1343,7 @@ PARTIALCONFIRMATIONDIALOGTITLE
 pasteplain
 PATCOPY
 pathcch
+PATHEXT
 Pathto
 PATINVERT
 PATPAINT
@@ -1470,6 +1470,7 @@ pscid
 PSECURITY
 psfgao
 psfi
+PSMODULEPATH
 Psr
 psrm
 psrree
@@ -1678,7 +1679,6 @@ Sekan
 SENDCHANGE
 sendinput
 sendvirtualinput
-Seperate
 Seraphima
 serverside
 SETCONTEXT
@@ -1784,7 +1784,6 @@ spam
 spdisp
 spdlog
 spdo
-spec'ing
 spesi
 splitwstring
 spsi
@@ -1838,7 +1837,6 @@ stringtable
 stringval
 Strm
 Strmiids
-Stroe
 Strret
 strsafe
 strutil
