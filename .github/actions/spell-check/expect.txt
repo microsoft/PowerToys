@@ -1081,6 +1081,7 @@ microsoft
 MIDDLEDOWN
 MIDDLEUP
 Midl
+midl
 mii
 MIIM
 millis

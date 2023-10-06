@@ -1,4 +1,4 @@
-// IVectorView and IObservableVector define memebers with the same name, and we must support both interfaces
+// IVectorView and IObservableVector define members with the same name, and we must support both interfaces
 midl_pragma warning(disable : 4066)
 
 namespace PowerRenameUI
