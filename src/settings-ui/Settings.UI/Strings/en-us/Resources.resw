@@ -561,6 +561,9 @@
   <data name="VideoConference_ToolbarHideUnmuted.Content" xml:space="preserve">
     <value>When both camera and microphone are unmuted</value>
   </data>
+  <data name="VideoConference_ToolbarHideTimeout.Content" xml:space="preserve">
+    <value>After timeout</value>
+  </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference Mute</value>
   </data>
@@ -575,6 +578,21 @@
   </data>
   <data name="VideoConference_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
+  </data>
+  <data name="VideoConference_Behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="VideoConference_StartupAction.Header" xml:space="preserve">
+    <value>Startup action</value>
+  </data>
+  <data name="VideoConference_StartupActionNothing.Content" xml:space="preserve">
+    <value>Nothing</value>
+  </data>
+  <data name="VideoConference_StartupActionUnmute.Content" xml:space="preserve">
+    <value>Unmute</value>
+  </data>
+  <data name="VideoConference_StartupActionMute.Content" xml:space="preserve">
+    <value>Mute</value>
   </data>
   <data name="VideoConference_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>

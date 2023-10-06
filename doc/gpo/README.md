@@ -22,7 +22,19 @@ You will find the policies under "Administrative Templates/Microsoft PowerToys" 
 
 ## Policies
 
-### Configure enabled state
+### Configure global utility enabled state
+
+This policy configures the enabled state for all PowerToys utilities.
+
+If you enable this setting, all utilities will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, all utilities will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to disable or enable the utilities.
+
+The individual enabled state policies for the utilities will override this policy.
+
+### Configure enabled state for individual utilities
 
 For each utility shipped with PowerToys, there's a "Configure enabled state" policy, which forces and Enabled state for the utility.
 
@@ -31,6 +43,8 @@ If you enable this setting, the utility will be always enabled and the user won'
 If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
 
 If you don't configure this setting, users are able to disable or enable the utility.
+
+This policy has a higher priority than the policy "Configure global utility enabled state" and overrides it.
 
 ### Allow experimentation
 

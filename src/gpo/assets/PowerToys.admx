@@ -26,6 +26,18 @@
     </category>
   </categories>
   <policies>
+  
+  <policy name="ConfigureGlobalUtilityEnabledState" class="Both" displayName="$(string.ConfigureGlobalUtilityEnabledState)" explainText="$(string.ConfigureGlobalUtilityEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="ConfigureGlobalUtilityEnabledState">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+  
     <policy name="ConfigureEnabledUtilityAlwaysOnTop" class="Both" displayName="$(string.ConfigureEnabledUtilityAlwaysOnTop)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityAlwaysOnTop">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
