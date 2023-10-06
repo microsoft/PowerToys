@@ -30,6 +30,8 @@ struct VideoConferenceSettings
     std::wstring imageOverlayPath;
     std::wstring selectedMicrophone;
 
+    std::wstring startupAction;
+
     bool pushToReverseEnabled = false;
 };
 
@@ -71,6 +73,7 @@ public:
 
 private:
 
+    void setMuteChangedCallback();
     void init_settings();
     void updateControlledMicrophones(const std::wstring_view new_mic);
     MicrophoneDevice* controlledDefaultMic();
