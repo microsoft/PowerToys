@@ -136,7 +136,6 @@ BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
 BITMAPINFOHEADER
-Bitmaps
 bitmask
 BITSPIXEL
 bla
@@ -1080,7 +1079,7 @@ mic
 microsoft
 MIDDLEDOWN
 MIDDLEUP
-Midl
+midl
 midl
 mii
 MIIM
@@ -1678,7 +1677,6 @@ Sekan
 SENDCHANGE
 sendinput
 sendvirtualinput
-Seperate
 Seraphima
 serverside
 SETCONTEXT
@@ -1783,7 +1781,6 @@ spam
 spdisp
 spdlog
 spdo
-spec'ing
 spesi
 splitwstring
 spsi
@@ -1837,7 +1834,6 @@ stringtable
 stringval
 Strm
 Strmiids
-Stroe
 Strret
 strsafe
 strutil
