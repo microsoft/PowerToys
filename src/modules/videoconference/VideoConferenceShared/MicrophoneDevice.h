@@ -54,7 +54,6 @@ public:
     bool active() const noexcept;
     void set_muted(const bool muted) noexcept;
     bool muted() const noexcept;
-    void toggle_muted() noexcept;
 
     std::wstring_view id() const noexcept;
     std::wstring_view name() const noexcept;
