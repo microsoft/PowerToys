@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ using CommunityToolkit.WinUI.Controls;
 using EnvironmentVariables.Models;
 using EnvironmentVariables.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Foundation.Collections;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EnvironmentVariables.Views
@@ -351,7 +353,14 @@ namespace EnvironmentVariables.Views
 
         private void EditVariableDialogValueTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            var txtBox = sender as TextBox;
+            var variable = EditVariableDialog.DataContext as Variable;
             EditVariableDialog.IsPrimaryButtonEnabled = true;
+
+            if (txtBox.Text.Contains(';'))
+            {
+                variable.ValuesList = new ObservableCollection<string>(txtBox.Text.Split(';').Where(x => x.Length > 0).ToArray());
+            }
         }
 
         private void EditVariableValuesList_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)

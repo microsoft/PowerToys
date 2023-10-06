@@ -28,7 +28,12 @@
                             x:Name="VariableValuesList"
                             HorizontalAlignment="Stretch"
                             ItemsSource="{x:Bind ValuesList, Mode=TwoWay}"
-                            SelectionMode="None" />
+                            SelectionMode="None"
+                            Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <TextBlock
+                            IsTextSelectionEnabled="True"
+                            Text="{x:Bind Values, Mode=TwoWay}"
+                            Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                     </StackPanel>
                 </controls:SettingsCard.Description>
 
@@ -415,7 +420,8 @@
                         CanReorderItems="True"
                         DragItemsCompleted="EditVariableValuesList_DragItemsCompleted"
                         ItemsSource="{Binding ValuesList, Mode=TwoWay}"
-                        SelectionMode="None" />
+                        SelectionMode="None"
+                        Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
             </ScrollViewer>
         </ContentDialog>

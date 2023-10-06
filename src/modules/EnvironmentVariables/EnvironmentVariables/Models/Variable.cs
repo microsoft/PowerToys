@@ -18,6 +18,7 @@ namespace EnvironmentVariables.Models
     {
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
+        [NotifyPropertyChangedFor(nameof(ShowAsList))]
         private string _name;
 
         [ObservableProperty]
@@ -39,6 +40,23 @@ namespace EnvironmentVariables.Models
         private ObservableCollection<string> _valuesList;
 
         public bool Valid => Validate();
+
+        public bool ShowAsList => IsList();
+
+        private bool IsList()
+        {
+            List<string> listVariables = new() { "PATH", "PATHEXT", "PSMODULEPATH" };
+
+            foreach (var name in listVariables)
+            {
+                if (Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         public Variable()
         {
