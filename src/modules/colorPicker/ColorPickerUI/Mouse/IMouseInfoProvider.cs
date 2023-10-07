@@ -18,6 +18,8 @@ namespace ColorPicker.Mouse
 
         event MouseUpEventHandler OnMouseDown;
 
+        event RMouseUpEventHandler OnRMouseDown;
+
         System.Windows.Point CurrentPosition { get; }
 
         Color CurrentColor { get; }
