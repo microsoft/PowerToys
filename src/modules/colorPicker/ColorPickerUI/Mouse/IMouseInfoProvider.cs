@@ -18,7 +18,7 @@ namespace ColorPicker.Mouse
 
         event MouseUpEventHandler OnMouseDown;
 
-        event SecondaryMouseUpEventHandler OnRMouseDown;
+        event SecondaryMouseUpEventHandler OnSecondaryMouseDown;
 
         System.Windows.Point CurrentPosition { get; }
 
