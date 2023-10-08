@@ -14,7 +14,7 @@ namespace ColorPicker.Mouse
 {
     public delegate void MouseUpEventHandler(object sender, System.Drawing.Point p);
 
-    public delegate void RMouseUpEventHandler(object sender, IntPtr wParam);
+    public delegate void SecondaryMouseUpEventHandler(object sender, IntPtr wParam);
 
     internal class MouseHook
     {
@@ -47,19 +47,19 @@ namespace ColorPicker.Mouse
             }
         }
 
-        private event RMouseUpEventHandler RMouseDown;
+        private event SecondaryMouseUpEventHandler SecondaryMouseDown;
 
-        public event RMouseUpEventHandler OnRMouseDown
+        public event SecondaryMouseUpEventHandler OnSecondaryMouseDown
         {
             add
             {
                 Subscribe();
-                RMouseDown += value;
+                SecondaryMouseDown += value;
             }
 
             remove
             {
-                RMouseDown -= value;
+                SecondaryMouseDown -= value;
                 Unsubscribe();
             }
         }
@@ -132,9 +132,9 @@ namespace ColorPicker.Mouse
 
                 if (wParam.ToInt32() == WM_RBUTTONDOWN)
                 {
-                    if (RMouseDown != null)
+                    if (SecondaryMouseDown != null)
                     {
-                        RMouseDown.Invoke(null, wParam);
+                        SecondaryMouseDown.Invoke(null, wParam);
                     }
 
                     return new IntPtr(-1);
