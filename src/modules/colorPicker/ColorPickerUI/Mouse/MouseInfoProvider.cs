@@ -146,7 +146,7 @@ namespace ColorPicker.Mouse
 
             _mouseHook.OnMouseDown += MouseHook_OnMouseDown;
             _mouseHook.OnMouseWheel += MouseHook_OnMouseWheel;
-            _mouseHook.OnRMouseDown += MouseHook_OnRMouseDown;
+            _mouseHook.OnSecondaryMouseDown += MouseHook_OnSecondaryMouseDown;
 
             if (_userSettings.ChangeCursor.Value)
             {
@@ -171,10 +171,10 @@ namespace ColorPicker.Mouse
             OnMouseDown?.Invoke(this, p);
         }
 
-        private void MouseHook_OnRMouseDown(object sender, IntPtr wParam)
+        private void MouseHook_OnSecondaryMouseDown(object sender, IntPtr wParam)
         {
             DisposeHook();
-            OnRMouseDown?.Invoke(this, wParam);
+            OnSecondaryMouseDown?.Invoke(this, wParam);
         }
 
         private void CopiedColorRepresentation_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -192,7 +192,7 @@ namespace ColorPicker.Mouse
             _previousMousePosition = new System.Windows.Point(-1, 1);
             _mouseHook.OnMouseDown -= MouseHook_OnMouseDown;
             _mouseHook.OnMouseWheel -= MouseHook_OnMouseWheel;
-            _mouseHook.OnRMouseDown -= MouseHook_OnRMouseDown;
+            _mouseHook.OnSecondaryMouseDown -= MouseHook_OnSecondaryMouseDown;
 
             if (_userSettings.ChangeCursor.Value)
             {
