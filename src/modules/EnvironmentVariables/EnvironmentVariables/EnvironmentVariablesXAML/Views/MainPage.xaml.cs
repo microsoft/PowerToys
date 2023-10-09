@@ -19,9 +19,22 @@ namespace EnvironmentVariables.Views
 {
     public sealed partial class MainPage : Page
     {
+        private sealed class RelayCommandParameter
+        {
+            public RelayCommandParameter(Variable variable, VariablesSet set)
+            {
+                Variable = variable;
+                this.Set = set;
+            }
+
+            public Variable Variable { get; set; }
+
+            public VariablesSet Set { get; set; }
+        }
+
         public MainViewModel ViewModel { get; private set; }
 
-        public ICommand EditCommand => new RelayCommand<Button>(EditVariable);
+        public ICommand EditCommand => new RelayCommand<RelayCommandParameter>(EditVariable);
 
         public ICommand NewProfileCommand => new AsyncRelayCommand(AddProfileAsync);
 
@@ -40,7 +53,7 @@ namespace EnvironmentVariables.Views
             DataContext = ViewModel;
         }
 
-        private async Task ShowEditDialogAsync(Button btn)
+        private async Task ShowEditDialogAsync(Variable variable, VariablesSet parentSet)
         {
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
@@ -48,9 +61,8 @@ namespace EnvironmentVariables.Views
             EditVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
             EditVariableDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
             EditVariableDialog.PrimaryButtonCommand = EditCommand;
-            EditVariableDialog.PrimaryButtonCommandParameter = btn;
+            EditVariableDialog.PrimaryButtonCommandParameter = new RelayCommandParameter(variable, parentSet);
 
-            var variable = btn.CommandParameter as Variable;
             var clone = variable.Clone();
             EditVariableDialog.DataContext = clone;
 
@@ -60,16 +72,19 @@ namespace EnvironmentVariables.Views
         private async void EditVariable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var btn = sender as Button;
-            if (btn != null)
+            var variablesSet = btn.DataContext as VariablesSet;
+            var variable = btn.CommandParameter as Variable;
+
+            if (variable != null)
             {
-                await ShowEditDialogAsync(btn);
+                await ShowEditDialogAsync(variable, variablesSet);
             }
         }
 
-        private void EditVariable(Button btn)
+        private void EditVariable(RelayCommandParameter param)
         {
-            var variableSet = btn.DataContext as ProfileVariablesSet;
-            var original = btn.CommandParameter as Variable;
+            var variableSet = param.Set as ProfileVariablesSet;
+            var original = param.Variable;
             var edited = EditVariableDialog.DataContext as Variable;
             ViewModel.EditVariable(original, edited, variableSet);
         }
@@ -311,8 +326,8 @@ namespace EnvironmentVariables.Views
         private void EditVariableDialogNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var variable = EditVariableDialog.DataContext as Variable;
-            var btn = EditVariableDialog.PrimaryButtonCommandParameter as Button;
-            var variableSet = btn.DataContext as VariablesSet;
+            var param = EditVariableDialog.PrimaryButtonCommandParameter as RelayCommandParameter;
+            var variableSet = param.Set;
 
             if (variableSet == null)
             {
@@ -336,7 +351,8 @@ namespace EnvironmentVariables.Views
         private void AddDefaultVariableNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             TextBox nameTxtBox = sender as TextBox;
-            var defaultSet = AddDefaultVariableDialog.PrimaryButtonCommandParameter as DefaultVariablesSet;
+            var param = EditVariableDialog.PrimaryButtonCommandParameter as RelayCommandParameter;
+            var defaultSet = param.Set;
 
             if (nameTxtBox != null)
             {
@@ -372,7 +388,6 @@ namespace EnvironmentVariables.Views
             }
 
             var variable = EditVariableDialog.DataContext as Variable;
-            var btn = EditVariableDialog.PrimaryButtonCommandParameter as Button;
 
             var index = variable.ValuesList.IndexOf(listItem);
             if (index > 0)

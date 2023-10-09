@@ -82,7 +82,6 @@ namespace EnvironmentVariables.Models
         internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)
         {
             bool nameChanged = Name != edited.Name;
-            bool success = true;
 
             var clone = this.Clone();
 
@@ -99,6 +98,11 @@ namespace EnvironmentVariables.Models
                 {
                     if (nameChanged)
                     {
+                        if (!EnvironmentVariablesHelper.UnsetVariable(clone))
+                        {
+                            Logger.LogError("Failed to unset original variable.");
+                        }
+
                         if (parentProfile != null)
                         {
                             var backupName = EnvironmentVariablesHelper.GetBackupVariableName(clone, parentProfile.Name);
@@ -137,12 +141,10 @@ namespace EnvironmentVariables.Models
                         }
                     }
 
-                    success = EnvironmentVariablesHelper.SetVariable(this);
-                }
-
-                if (!success)
-                {
-                    // Show error
+                    if (!EnvironmentVariablesHelper.SetVariable(this))
+                    {
+                        Logger.LogError("Failed to set new variable.");
+                    }
                 }
             });
         }
