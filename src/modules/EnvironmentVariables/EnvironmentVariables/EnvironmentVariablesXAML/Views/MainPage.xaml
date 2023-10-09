@@ -562,7 +562,7 @@
                                                 TextWrapping="NoWrap" />
                                         </StackPanel>
                                         <ToggleSwitch
-                                            x:Uid="ApplyAsSystemTglBtn"
+                                            x:Uid="ApplyAsSystemBtn"
                                             Grid.Column="1"
                                             IsOn="{x:Bind Path=ApplyToSystem, Mode=TwoWay}"
                                             Visibility="Collapsed" />
