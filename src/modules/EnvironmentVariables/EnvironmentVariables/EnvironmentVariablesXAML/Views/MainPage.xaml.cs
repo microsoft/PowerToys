@@ -253,7 +253,7 @@ namespace EnvironmentVariables.Views
             if (profile != null)
             {
                 var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-                AddProfileDialog.Title = resourceLoader.GetString("AddNewProfileDialog_Title");
+                AddProfileDialog.Title = resourceLoader.GetString("EditProfileDialog_Title");
                 AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
                 AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
                 AddProfileDialog.PrimaryButtonCommand = UpdateProfileCommand;
