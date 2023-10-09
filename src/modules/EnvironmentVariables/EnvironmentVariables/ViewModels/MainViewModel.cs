@@ -203,7 +203,7 @@ namespace EnvironmentVariables.ViewModels
             bool changed = original.Name != edited.Name || original.Values != edited.Values;
             if (changed)
             {
-                var task = original.Update(edited, propagateChange);
+                var task = original.Update(edited, propagateChange, variablesSet);
                 task.ContinueWith(x =>
                 {
                     _dispatcherQueue.TryEnqueue(() =>

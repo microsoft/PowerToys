@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EnvironmentVariables.Helpers;
+using ManagedCommon;
 
 namespace EnvironmentVariables.Models
 {
@@ -75,7 +76,7 @@ namespace EnvironmentVariables.Models
             }
         }
 
-        internal Task Update(Variable edited, bool propagateChange)
+        internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)
         {
             bool nameChanged = Name != edited.Name;
             bool success = true;
@@ -95,7 +96,42 @@ namespace EnvironmentVariables.Models
                 {
                     if (nameChanged)
                     {
-                        success = EnvironmentVariablesHelper.UnsetVariable(clone);
+                        if (parentProfile != null)
+                        {
+                            var backupName = EnvironmentVariablesHelper.GetBackupVariableName(clone, parentProfile.Name);
+
+                            // Get backup variable if it exist
+                            var backupVariable = EnvironmentVariablesHelper.GetExisting(backupName);
+                            if (backupVariable != null)
+                            {
+                                var variableToRestore = new Variable(clone.Name, backupVariable.Values, backupVariable.ParentType);
+
+                                if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(backupVariable))
+                                {
+                                    Logger.LogError("Failed to unset backup variable.");
+                                }
+
+                                if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
+                                {
+                                    Logger.LogError("Failed to restore backup variable.");
+                                }
+                            }
+                        }
+                    }
+
+                    // Get existing variable with the same name if it exist
+                    var variableToOverride = EnvironmentVariablesHelper.GetExisting(Name);
+
+                    // It exists. Rename it to preserve it.
+                    if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User)
+                    {
+                        variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, parentProfile.Name);
+
+                        // Backup the variable
+                        if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
+                        {
+                            Logger.LogError("Failed to set backup variable.");
+                        }
                     }
 
                     success = EnvironmentVariablesHelper.SetVariable(this);

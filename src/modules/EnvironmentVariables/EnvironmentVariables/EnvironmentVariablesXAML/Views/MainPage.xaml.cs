@@ -363,20 +363,6 @@ namespace EnvironmentVariables.Views
             }
         }
 
-        private void EditVariableValuesList_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
-        {
-            var variable = EditVariableDialog.DataContext as Variable;
-            var settingsCard = EditVariableDialog.PrimaryButtonCommandParameter as SettingsCard;
-            var variableSet = settingsCard.DataContext as ProfileVariablesSet;
-
-            var newValues = string.Join(";", sender.Items?.Select(x => x).ToArray());
-            var edited = new Variable(variable.Name, newValues, variable.ParentType);
-
-            // ViewModel.EditVariable(variable, edited, variableSet);
-            EditVariableDialogValueTxtBox.Text = newValues;
-            EditVariableDialog.IsPrimaryButtonEnabled = true;
-        }
-
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var listItem = ((MenuFlyoutItem)sender).DataContext as string;
