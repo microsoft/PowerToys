@@ -185,9 +185,6 @@
     <value>Administrator: Environment Variables</value>
     <comment>Title of the window when running as administrator</comment>
   </data>
-  <data name="DefaultVariables" xml:space="preserve">
-    <value>DefaultVariables</value>
-  </data>
   <data name="CancelAddVariableBtn.Content" xml:space="preserve">
     <value>Cancel</value>
   </data>

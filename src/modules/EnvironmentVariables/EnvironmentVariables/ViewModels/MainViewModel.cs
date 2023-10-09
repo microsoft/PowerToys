@@ -28,7 +28,7 @@ namespace EnvironmentVariables.ViewModels
 
         public DefaultVariablesSet SystemDefaultSet { get; private set; } = new DefaultVariablesSet(VariablesSet.SystemGuid, ResourceLoaderInstance.ResourceLoader.GetString("System"), VariablesSetType.System);
 
-        public VariablesSet DefaultVariables { get; private set; } = new DefaultVariablesSet(Guid.NewGuid(), ResourceLoaderInstance.ResourceLoader.GetString("DefaultVariables"), VariablesSetType.User);
+        public VariablesSet DefaultVariables { get; private set; } = new DefaultVariablesSet(Guid.NewGuid(), "DefaultVariables", VariablesSetType.User);
 
         [ObservableProperty]
         private ObservableCollection<ProfileVariablesSet> _profiles;
