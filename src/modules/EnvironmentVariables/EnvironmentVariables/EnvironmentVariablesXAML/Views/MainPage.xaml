@@ -21,7 +21,7 @@
                 CommandParameter="{x:Bind (models:Variable)}"
                 Header="{x:Bind Name, Mode=TwoWay}"
                 IsActionIconVisible="False"
-                IsClickEnabled="True">
+                IsClickEnabled="False">
                 <controls:SettingsCard.Description>
                     <StackPanel HorizontalAlignment="Left">
                         <ItemsControl
@@ -55,7 +55,7 @@
                                 Click="EditVariable_Click"
                                 CommandParameter="{x:Bind (models:Variable)}"
                                 Icon="{ui:FontIcon Glyph=&#xE70F;}" />
-                            <MenuFlyoutSeparator/>
+                            <MenuFlyoutSeparator />
                             <MenuFlyoutItem
                                 x:Uid="RemoveVariable"
                                 Click="Delete_Variable_Click"
@@ -531,7 +531,8 @@
                             x:Uid="NewProfileVariablesListViewApplyToSystemHeader"
                             Grid.Column="1"
                             Margin="0,12,0,8"
-                            HorizontalAlignment="Right" />
+                            HorizontalAlignment="Right"
+                            Visibility="Collapsed" />
 
                         <ListView
                             x:Name="NewProfileVariablesListView"
@@ -563,7 +564,8 @@
                                         <ToggleSwitch
                                             x:Uid="ApplyAsSystemTglBtn"
                                             Grid.Column="1"
-                                            IsOn="{x:Bind Path=ApplyToSystem, Mode=TwoWay}" />
+                                            IsOn="{x:Bind Path=ApplyToSystem, Mode=TwoWay}"
+                                            Visibility="Collapsed" />
                                     </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>

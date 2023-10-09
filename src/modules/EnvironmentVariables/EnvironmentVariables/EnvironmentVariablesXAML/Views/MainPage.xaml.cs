@@ -71,7 +71,7 @@ namespace EnvironmentVariables.Views
 
         private async void EditVariable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var btn = sender as Button;
+            var btn = sender as MenuFlyoutItem;
             var variablesSet = btn.DataContext as VariablesSet;
             var variable = btn.CommandParameter as Variable;
 
