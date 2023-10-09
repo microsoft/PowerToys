@@ -35,6 +35,8 @@ namespace EnvironmentVariables.Models
             {
                 foreach (var variable in Variables)
                 {
+                    var applyToSystem = variable.ApplyToSystem;
+
                     // Get existing variable with the same name if it exist
                     var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
 

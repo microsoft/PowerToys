@@ -263,6 +263,9 @@
   <data name="MoveUp.Text" xml:space="preserve">
     <value>Move up</value>
   </data>
+  <data name="NewProfileVariablesListViewApplyToSystemHeader.Text" xml:space="preserve">
+    <value>Apply to SYSTEM?</value>
+  </data>
   <data name="RemoveListItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>

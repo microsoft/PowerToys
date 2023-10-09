@@ -25,6 +25,9 @@ namespace EnvironmentVariables.Models
         [ObservableProperty]
         private string _values;
 
+        [ObservableProperty]
+        private bool _applyToSystem;
+
         [JsonIgnore]
         public bool IsEditable
         {

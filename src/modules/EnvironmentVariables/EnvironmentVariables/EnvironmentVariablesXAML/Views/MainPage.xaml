@@ -517,37 +517,59 @@
                             OnContent="" />
                     </Grid>
 
-                    <TextBlock x:Uid="NewProfileVariablesListViewHeader" Margin="0,12,0,0" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Uid="NewProfileVariablesListViewHeader" Margin="0,12,0,8" />
+                        <TextBlock
+                            x:Uid="NewProfileVariablesListViewApplyToSystemHeader"
+                            Grid.Column="1"
+                            Margin="0,12,0,8"
+                            HorizontalAlignment="Right" />
 
-                    <ListView
-                        x:Name="NewProfileVariablesListView"
-                        Margin="-16,-8,0,12"
-                        HorizontalAlignment="Stretch"
-                        ItemsSource="{Binding Variables, Mode=TwoWay}"
-                        SelectionMode="None">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="models:Variable">
-                                <Grid Height="48" ColumnSpacing="8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel VerticalAlignment="Center" Orientation="Vertical">
-                                        <TextBlock
-                                            Text="{x:Bind Name}"
-                                            TextTrimming="CharacterEllipsis"
-                                            TextWrapping="NoWrap" />
-                                        <TextBlock
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                            Text="{x:Bind Values}"
-                                            TextTrimming="CharacterEllipsis"
-                                            TextWrapping="NoWrap" />
-                                    </StackPanel>
-                                </Grid>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        <ListView
+                            x:Name="NewProfileVariablesListView"
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Margin="-16,-8,0,12"
+                            HorizontalAlignment="Stretch"
+                            ItemsSource="{Binding Variables, Mode=TwoWay}"
+                            SelectionMode="None">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Variable">
+                                    <Grid Height="48" ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="40" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center" Orientation="Vertical">
+                                            <TextBlock
+                                                Text="{x:Bind Name}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind Values}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                        <ToggleSwitch
+                                            x:Uid="ApplyAsSystemTglBtn"
+                                            Grid.Column="1"
+                                            IsOn="{x:Bind Path=ApplyToSystem, Mode=TwoWay}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
 
+                    </Grid>
 
                     <Button>
                         <StackPanel Orientation="Horizontal" Spacing="8">
