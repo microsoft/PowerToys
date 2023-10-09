@@ -163,9 +163,9 @@ namespace EnvironmentVariables.Views
 
         private async void Delete_Variable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            Button btn = sender as Button;
-            var variableSet = btn.DataContext as ProfileVariablesSet;
-            var variable = btn.CommandParameter as Variable;
+            MenuFlyoutItem selectedItem = sender as MenuFlyoutItem;
+            var variableSet = selectedItem.DataContext as ProfileVariablesSet;
+            var variable = selectedItem.CommandParameter as Variable;
 
             if (variable != null)
             {
