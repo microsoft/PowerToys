@@ -60,6 +60,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string ButtonTitle { get; set; }
 
+        public bool IsButtonDescriptionVisible { get; set; }
+
         public string ButtonDescription { get; set; }
 
         public string ButtonGlyph { get; set; }

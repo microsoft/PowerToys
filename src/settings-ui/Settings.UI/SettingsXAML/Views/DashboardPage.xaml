@@ -246,18 +246,48 @@
                                                 </Grid>
                                                 <Button
                                                     HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch"
                                                     Click="{x:Bind ButtonClickHandler, Mode=OneWay}"
                                                     Visibility="{x:Bind IsButtonVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                                                     <Button.Content>
-                                                        <controls:SettingsCard
-                                                            ActionIcon="{ui:FontIcon FontSize=14, Glyph=&#xE8A7;}"
-                                                            Header="{x:Bind ButtonTitle, Mode=OneWay}"
-                                                            Description="{x:Bind ButtonDescription, Mode=OneWay}"
-                                                            IsClickEnabled="False">
-                                                            <controls:SettingsCard.HeaderIcon>
-                                                                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="{x:Bind ButtonGlyph, Mode=OneWay}" />
-                                                            </controls:SettingsCard.HeaderIcon>
-                                                        </controls:SettingsCard>
+                                                        <Grid
+                                                            HorizontalAlignment="Stretch">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <FontIcon
+                                                                Grid.Column="0"
+                                                                Width="20"
+                                                                Margin="0,0,16,0"
+                                                                FontFamily="Segoe Fluent Icons"
+                                                                FontSize="14"
+                                                                Glyph="{x:Bind ButtonGlyph, Mode=OneWay}" />
+                                                            <FontIcon
+                                                                Grid.Column="2"
+                                                                Width="20"
+                                                                Margin="16,0,0,0"
+                                                                FontSize="14"
+                                                                FontFamily="Segoe Fluent Icons"
+                                                                Glyph="&#xE8A7;" />
+                                                            <StackPanel
+                                                                Grid.Column="1"
+                                                                HorizontalAlignment="Stretch"
+                                                                VerticalAlignment="Center"
+                                                                Orientation="Vertical">
+                                                                <TextBlock
+                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                    Text="{x:Bind ButtonTitle, Mode=OneWay}"
+                                                                    TextWrapping="WrapWholeWords" />
+                                                                <TextBlock
+                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                    FontSize="12"
+                                                                    Visibility="{x:Bind IsButtonDescriptionVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}"
+                                                                    Text="{x:Bind ButtonDescription, Mode=OneWay}"
+                                                                    TextWrapping="WrapWholeWords" />
+                                                            </StackPanel>
+                                                        </Grid>
                                                     </Button.Content>
                                                 </Button>
                                             </StackPanel>
