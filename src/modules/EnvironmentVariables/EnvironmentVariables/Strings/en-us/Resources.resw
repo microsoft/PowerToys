@@ -248,4 +248,10 @@
   <data name="RemoveProfileTooltip.Text" xml:space="preserve">
     <value>Remove profile</value>
   </data>
+  <data name="EditVariableTooltip.Text" xml:space="preserve">
+    <value>Edit variable</value>
+  </data>
+  <data name="RemoveVariableTooltip.Text" xml:space="preserve">
+    <value>Remove variable</value>
+  </data>
 </root>

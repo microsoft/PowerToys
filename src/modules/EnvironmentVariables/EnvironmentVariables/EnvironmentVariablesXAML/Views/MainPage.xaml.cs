@@ -21,7 +21,7 @@ namespace EnvironmentVariables.Views
     {
         public MainViewModel ViewModel { get; private set; }
 
-        public ICommand EditCommand => new RelayCommand<SettingsCard>(EditVariable);
+        public ICommand EditCommand => new RelayCommand<Button>(EditVariable);
 
         public ICommand NewProfileCommand => new AsyncRelayCommand(AddProfileAsync);
 
@@ -40,7 +40,7 @@ namespace EnvironmentVariables.Views
             DataContext = ViewModel;
         }
 
-        private async Task ShowEditDialogAsync(SettingsCard card)
+        private async Task ShowEditDialogAsync(Button btn)
         {
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
@@ -48,9 +48,9 @@ namespace EnvironmentVariables.Views
             EditVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
             EditVariableDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
             EditVariableDialog.PrimaryButtonCommand = EditCommand;
-            EditVariableDialog.PrimaryButtonCommandParameter = card;
+            EditVariableDialog.PrimaryButtonCommandParameter = btn;
 
-            var variable = card.CommandParameter as Variable;
+            var variable = btn.CommandParameter as Variable;
             var clone = variable.Clone();
             EditVariableDialog.DataContext = clone;
 
@@ -59,17 +59,17 @@ namespace EnvironmentVariables.Views
 
         private async void EditVariable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            SettingsCard card = sender as SettingsCard;
-            if (card != null)
+            var btn = sender as Button;
+            if (btn != null)
             {
-                await ShowEditDialogAsync(card);
+                await ShowEditDialogAsync(btn);
             }
         }
 
-        private void EditVariable(SettingsCard card)
+        private void EditVariable(Button btn)
         {
-            var variableSet = card.DataContext as ProfileVariablesSet;
-            var original = card.CommandParameter as Variable;
+            var variableSet = btn.DataContext as ProfileVariablesSet;
+            var original = btn.CommandParameter as Variable;
             var edited = EditVariableDialog.DataContext as Variable;
             ViewModel.EditVariable(original, edited, variableSet);
         }
@@ -163,9 +163,9 @@ namespace EnvironmentVariables.Views
 
         private async void Delete_Variable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            MenuFlyoutItem menuItem = sender as MenuFlyoutItem;
-            var variableSet = menuItem.DataContext as ProfileVariablesSet;
-            var variable = menuItem.CommandParameter as Variable;
+            Button btn = sender as Button;
+            var variableSet = btn.DataContext as ProfileVariablesSet;
+            var variable = btn.CommandParameter as Variable;
 
             if (variable != null)
             {
@@ -311,8 +311,8 @@ namespace EnvironmentVariables.Views
         private void EditVariableDialogNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var variable = EditVariableDialog.DataContext as Variable;
-            var settingsCard = EditVariableDialog.PrimaryButtonCommandParameter as SettingsCard;
-            var variableSet = settingsCard.DataContext as VariablesSet;
+            var btn = EditVariableDialog.PrimaryButtonCommandParameter as Button;
+            var variableSet = btn.DataContext as VariablesSet;
 
             if (variableSet == null)
             {

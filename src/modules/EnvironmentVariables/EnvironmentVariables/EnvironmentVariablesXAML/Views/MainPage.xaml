@@ -17,11 +17,9 @@
     <Page.Resources>
         <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
             <controls:SettingsCard
-                ActionIcon="{ui:FontIcon Glyph=&#xE70F;}"
-                Click="EditVariable_Click"
-                CommandParameter="{x:Bind (models:Variable)}"
                 Header="{x:Bind Name, Mode=TwoWay}"
-                IsClickEnabled="{x:Bind IsEditable, Mode=OneWay}">
+                IsActionIconVisible="False"
+                IsClickEnabled="False">
                 <controls:SettingsCard.Description>
                     <StackPanel>
                         <ListView
@@ -37,17 +35,37 @@
                     </StackPanel>
                 </controls:SettingsCard.Description>
 
-                <controls:SettingsCard.ContextFlyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem
-                            x:Uid="DeleteMenuItem"
-                            Click="Delete_Variable_Click"
-                            CommandParameter="{x:Bind (models:Variable)}"
-                            Icon="Delete"
-                            IsEnabled="{x:Bind IsEditable, Mode=OneWay}" />
-                    </MenuFlyout>
-                </controls:SettingsCard.ContextFlyout>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Button
+                        x:Uid="EditVariable"
+                        Width="36"
+                        Height="36"
+                        Click="EditVariable_Click"
+                        CommandParameter="{x:Bind (models:Variable)}"
+                        Content="&#xE70F;"
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                        IsEnabled="{x:Bind IsEditable, Mode=OneWay}"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="EditVariableTooltip" TextWrapping="Wrap" />
+                        </ToolTipService.ToolTip>
+                    </Button>
+                    <Button
+                        x:Uid="RemoveVariable"
+                        Width="36"
+                        Height="36"
+                        Click="Delete_Variable_Click"
+                        CommandParameter="{x:Bind (models:Variable)}"
+                        Content="&#xE74D;"
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                        IsEnabled="{x:Bind IsEditable, Mode=OneWay}"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="RemoveVariableTooltip" TextWrapping="Wrap" />
+                        </ToolTipService.ToolTip>
+                    </Button>
 
+                </StackPanel>
             </controls:SettingsCard>
         </DataTemplate>
 
