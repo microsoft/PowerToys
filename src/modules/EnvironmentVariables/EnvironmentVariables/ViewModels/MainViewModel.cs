@@ -14,6 +14,7 @@ using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Helpers;
 using EnvironmentVariables.Models;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 
 namespace EnvironmentVariables.ViewModels
@@ -212,6 +213,8 @@ namespace EnvironmentVariables.ViewModels
                     });
                 });
 
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.EnvironmentVariablesVariableChangedEvent(original.ParentType));
+
                 _ = Task.Run(SaveAsync);
             }
         }
@@ -263,10 +266,24 @@ namespace EnvironmentVariables.ViewModels
                     {
                         UnsetAppliedProfile();
                         SetAppliedProfile(profile);
+
+                        var telemetryEnabled = new Telemetry.EnvironmentVariablesProfileEnabledEvent()
+                        {
+                            Enabled = true,
+                        };
+
+                        PowerToysTelemetry.Log.WriteEvent(telemetryEnabled);
                     }
                     else
                     {
                         UnsetAppliedProfile();
+
+                        var telemetryEnabled = new Telemetry.EnvironmentVariablesProfileEnabledEvent()
+                        {
+                            Enabled = false,
+                        };
+
+                        PowerToysTelemetry.Log.WriteEvent(telemetryEnabled);
                     }
                 }
             }
