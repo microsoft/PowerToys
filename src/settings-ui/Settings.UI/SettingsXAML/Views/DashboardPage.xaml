@@ -2,8 +2,8 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -126,17 +126,21 @@
                                         TextTrimming="CharacterEllipsis" />
                                     <FontIcon
                                         Grid.Column="2"
-                                        Width="20" 
+                                        Width="20"
                                         Margin="0,0,16,0"
-                                        FontFamily="Segoe Fluent Icons"
-                                        Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}"
-                                        Glyph="&#xE72E;" />
+                                        FontSize="16"
+                                        Glyph="&#xE72E;"
+                                        Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="GPO_IsSettingForcedText" />
+                                        </ToolTipService.ToolTip>
+                                    </FontIcon>
                                     <ToggleSwitch
                                         Grid.Column="3"
                                         Margin="0,0,0,0"
                                         HorizontalAlignment="Right"
-                                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                                         IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
+                                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                                         OffContent=""
                                         OnContent=""
                                         Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
@@ -244,52 +248,23 @@
                                                         Text="{x:Bind Label, Mode=OneWay}"
                                                         TextWrapping="WrapWholeWords" />
                                                 </Grid>
-                                                <Button
-                                                    HorizontalAlignment="Stretch"
-                                                    HorizontalContentAlignment="Stretch"
+                                                <controls:SettingsCard Padding="8" MinHeight="0"
                                                     Click="{x:Bind ButtonClickHandler, Mode=OneWay}"
+                                                    Description="{x:Bind ButtonDescription, Mode=OneWay}"
+                                                    Header="{x:Bind ButtonTitle, Mode=OneWay}"
+                                                    IsClickEnabled="True"
                                                     Visibility="{x:Bind IsButtonVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                                    <Button.Content>
-                                                        <Grid
-                                                            HorizontalAlignment="Stretch">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                            </Grid.ColumnDefinitions>
-                                                            <FontIcon
-                                                                Grid.Column="0"
-                                                                Width="20"
-                                                                Margin="0,0,16,0"
-                                                                FontFamily="Segoe Fluent Icons"
-                                                                FontSize="14"
-                                                                Glyph="{x:Bind ButtonGlyph, Mode=OneWay}" />
-                                                            <FontIcon
-                                                                Grid.Column="2"
-                                                                Width="20"
-                                                                Margin="16,0,0,0"
-                                                                FontSize="14"
-                                                                FontFamily="Segoe Fluent Icons"
-                                                                Glyph="&#xE8A7;" />
-                                                            <StackPanel
-                                                                Grid.Column="1"
-                                                                HorizontalAlignment="Stretch"
-                                                                VerticalAlignment="Center"
-                                                                Orientation="Vertical">
-                                                                <TextBlock
-                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                    Text="{x:Bind ButtonTitle, Mode=OneWay}"
-                                                                    TextWrapping="WrapWholeWords" />
-                                                                <TextBlock
-                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                    FontSize="12"
-                                                                    Visibility="{x:Bind IsButtonDescriptionVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}"
-                                                                    Text="{x:Bind ButtonDescription, Mode=OneWay}"
-                                                                    TextWrapping="WrapWholeWords" />
-                                                            </StackPanel>
-                                                        </Grid>
-                                                    </Button.Content>
-                                                </Button>
+                                                    <controls:SettingsCard.HeaderIcon>
+                                                        <FontIcon Glyph="{x:Bind ButtonGlyph, Mode=OneWay}" />
+                                                    </controls:SettingsCard.HeaderIcon>
+                                                    <controls:SettingsCard.ActionIcon>
+                                                        <FontIcon Glyph="&#xE8A7;" />
+                                                    </controls:SettingsCard.ActionIcon>
+                                                    <controls:SettingsCard.Resources>
+                                                        <x:Double x:Key="SettingsCardHeaderIconMaxSize">14</x:Double>
+                                                        <Thickness x:Key="SettingsCardHeaderIconMargin">4,0,12,0</Thickness>
+                                                    </controls:SettingsCard.Resources>
+                                                </controls:SettingsCard>
                                             </StackPanel>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>

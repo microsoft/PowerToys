@@ -3496,7 +3496,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
   <data name="GPO_IsSettingForced.Title" xml:space="preserve">
-    <value>The system administrator is forcing this setting.</value>
+    <value>This setting is enforced by your System Administrator.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
@@ -3786,5 +3786,8 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Dashboard</value>
+  </data>
+  <data name="GPO_IsSettingForcedText.Text" xml:space="preserve">
+    <value>This setting is enforced by your System Administrator.</value>
   </data>
 </root>
