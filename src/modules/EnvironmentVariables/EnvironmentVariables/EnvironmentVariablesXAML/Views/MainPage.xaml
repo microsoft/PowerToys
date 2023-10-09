@@ -17,17 +17,29 @@
     <Page.Resources>
         <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
             <controls:SettingsCard
+                Click="EditVariable_Click"
+                CommandParameter="{x:Bind (models:Variable)}"
                 Header="{x:Bind Name, Mode=TwoWay}"
                 IsActionIconVisible="False"
-                IsClickEnabled="False">
+                IsClickEnabled="True">
                 <controls:SettingsCard.Description>
-                    <StackPanel>
-                        <ListView
+                    <StackPanel HorizontalAlignment="Left">
+                        <ItemsControl
                             x:Name="VariableValuesList"
-                            HorizontalAlignment="Stretch"
+                            HorizontalAlignment="Left"
                             ItemsSource="{x:Bind ValuesList, Mode=TwoWay}"
-                            SelectionMode="None"
-                            Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <TextBlock
+                                        Margin="0,2,0,2"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        IsTextSelectionEnabled="True"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         <TextBlock
                             IsTextSelectionEnabled="True"
                             Text="{x:Bind Values, Mode=TwoWay}"
@@ -35,37 +47,26 @@
                     </StackPanel>
                 </controls:SettingsCard.Description>
 
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                    <Button
-                        x:Uid="EditVariable"
-                        Width="36"
-                        Height="36"
-                        Click="EditVariable_Click"
-                        CommandParameter="{x:Bind (models:Variable)}"
-                        Content="&#xE70F;"
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        IsEnabled="{x:Bind IsEditable, Mode=OneWay}"
-                        Style="{StaticResource SubtleButtonStyle}">
-                        <ToolTipService.ToolTip>
-                            <TextBlock x:Uid="EditVariableTooltip" TextWrapping="Wrap" />
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <Button
-                        x:Uid="RemoveVariable"
-                        Width="36"
-                        Height="36"
-                        Click="Delete_Variable_Click"
-                        CommandParameter="{x:Bind (models:Variable)}"
-                        Content="&#xE74D;"
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        IsEnabled="{x:Bind IsEditable, Mode=OneWay}"
-                        Style="{StaticResource SubtleButtonStyle}">
-                        <ToolTipService.ToolTip>
-                            <TextBlock x:Uid="RemoveVariableTooltip" TextWrapping="Wrap" />
-                        </ToolTipService.ToolTip>
-                    </Button>
-
-                </StackPanel>
+                <Button Content="{ui:FontIcon Glyph=&#xE712;}" Style="{StaticResource SubtleButtonStyle}">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem
+                                x:Uid="EditVariable"
+                                Click="EditVariable_Click"
+                                CommandParameter="{x:Bind (models:Variable)}"
+                                Icon="{ui:FontIcon Glyph=&#xE70F;}" />
+                            <MenuFlyoutSeparator/>
+                            <MenuFlyoutItem
+                                x:Uid="RemoveVariable"
+                                Click="Delete_Variable_Click"
+                                CommandParameter="{x:Bind (models:Variable)}"
+                                Icon="{ui:FontIcon Glyph=&#xE74D;}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="More_Options_ButtonTooltip" TextWrapping="Wrap" />
+                    </ToolTipService.ToolTip>
+                </Button>
             </controls:SettingsCard>
         </DataTemplate>
 
@@ -235,14 +236,10 @@
                         <StackPanel Orientation="Horizontal">
                             <Button
                                 x:Name="AddDefaultVariableUserBtn"
-                                x:Uid="AddDefaultVariableUserBtn"
-                                Width="40"
-                                Height="36"
+                                x:Uid="AddVariableContent"
                                 Click="AddDefaultVariableBtn_Click"
                                 CommandParameter="{x:Bind ViewModel.UserDefaultSet}"
-                                Content="&#xe710;"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Style="{StaticResource SubtleButtonStyle}">
+                                Content="Add variable">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="AddVariableTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
@@ -260,23 +257,27 @@
                                 Orientation="Horizontal"
                                 Spacing="4"
                                 Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
-                                <!--  TO DO: Glyph not showing, known WinUI issue - need to follow up with team  -->
-                                <InfoBadge IconSource="{ui:FontIconSource Glyph=&#xEA1F;}" Style="{StaticResource AttentionIconInfoBadgeStyle}" />
+                                <Border
+                                    Width="12"
+                                    Height="12"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                    CornerRadius="12">
+                                    <FontIcon
+                                        FontSize="8"
+                                        Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                        Glyph="&#xEA1F;" />
+                                </Border>
                                 <TextBlock x:Uid="EditSystemDefaultSetInfoBar" />
                             </StackPanel>
                         </controls:SettingsExpander.Description>
                         <StackPanel Orientation="Horizontal">
                             <Button
                                 x:Name="AddDefaultVariableSystemBtn"
-                                x:Uid="AddDefaultVariableSystemBtn"
-                                Width="40"
-                                Height="36"
+                                x:Uid="AddVariableContent"
                                 Click="AddDefaultVariableBtn_Click"
                                 CommandParameter="{x:Bind ViewModel.SystemDefaultSet}"
-                                Content="&#xe710;"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                IsEnabled="{x:Bind ViewModel.IsElevated}"
-                                Style="{StaticResource SubtleButtonStyle}">
+                                IsEnabled="{x:Bind ViewModel.IsElevated}">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="AddVariableTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
@@ -321,11 +322,11 @@
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="{ThemeResource ControlCornerRadius}">
-                    <ScrollViewer x:Name="AppliedVariablesScrollViewer" HorizontalScrollBarVisibility="Auto">
+                    <ScrollViewer x:Name="AppliedVariablesScrollViewer" HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl Margin="12,8,12,0" ItemsSource="{x:Bind ViewModel.AppliedVariables, Mode=TwoWay}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="models:Variable">
-                                    <Grid Height="56" ColumnSpacing="8">
+                                    <Grid Height="56" ColumnSpacing="12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="24" />
                                             <ColumnDefinition />
@@ -336,15 +337,14 @@
                                             FontSize="14"
                                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                             Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
-                                        <StackPanel
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Orientation="Vertical">
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock
                                                 Text="{x:Bind Name}"
                                                 TextTrimming="CharacterEllipsis"
                                                 TextWrapping="NoWrap" />
                                             <TextBlock
+                                                Grid.Row="1"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Style="{StaticResource CaptionTextBlockStyle}"
                                                 Text="{x:Bind Values}"
