@@ -270,16 +270,16 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void DisplayOrWorkAreaChangeMoveWindowsShouldSetValue2TrueWhenSuccessful()
+        public void DisplayOrWorkAreaChangeMoveWindowsShouldSetValue2FalseWhenSuccessful()
         {
             Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
-            Assert.IsFalse(viewModel.DisplayOrWorkAreaChangeMoveWindows); // check if value was initialized to false.
+            Assert.IsTrue(viewModel.DisplayOrWorkAreaChangeMoveWindows); // check if value was initialized to true.
 
             // act
-            viewModel.DisplayOrWorkAreaChangeMoveWindows = true;
+            viewModel.DisplayOrWorkAreaChangeMoveWindows = false;
 
             // assert
             var expected = viewModel.DisplayOrWorkAreaChangeMoveWindows;
