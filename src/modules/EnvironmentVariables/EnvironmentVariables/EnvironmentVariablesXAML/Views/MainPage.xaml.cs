@@ -8,12 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.WinUI.Controls;
 using EnvironmentVariables.Models;
 using EnvironmentVariables.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Foundation.Collections;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EnvironmentVariables.Views
 {
@@ -238,6 +235,17 @@ namespace EnvironmentVariables.Views
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
 
             int toRemove = -1;
+
+            if (e.AddedItems.Count > 0)
+            {
+                var list = sender as ListView;
+                var duplicates = list.SelectedItems.GroupBy(x => ((Variable)x).Name.ToLowerInvariant()).Where(g => g.Count() > 1).ToList();
+
+                foreach (var dup in duplicates)
+                {
+                    list.SelectedItems.Remove(dup.ElementAt(1));
+                }
+            }
 
             if (e.RemovedItems.Count > 0)
             {
