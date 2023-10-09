@@ -248,8 +248,23 @@
   <data name="RemoveProfileTooltip.Text" xml:space="preserve">
     <value>Remove profile</value>
   </data>
+  <data name="DefaultVariablesDescriptionLbl.Text" xml:space="preserve">
+    <value>Add, remove or edit USER and SYSTEM variables</value>
+  </data>
   <data name="EditVariableTooltip.Text" xml:space="preserve">
     <value>Edit variable</value>
+  </data>
+  <data name="More_Options_ButtonTooltip.Text" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="MoveDown.Text" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="MoveUp.Text" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+  <data name="RemoveListItem.Text" xml:space="preserve">
+    <value>Delete</value>
   </data>
   <data name="RemoveVariableTooltip.Text" xml:space="preserve">
     <value>Remove variable</value>

@@ -221,7 +221,7 @@
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                             Glyph="&#xE946;">
                             <ToolTipService.ToolTip>
-                                <TextBlock x:Uid="ProfilesDescriptionLbl" TextWrapping="Wrap" />
+                                <TextBlock x:Uid="DefaultVariablesDescriptionLbl" TextWrapping="Wrap" />
                             </ToolTipService.ToolTip>
                         </FontIcon>
                     </StackPanel>
@@ -433,13 +433,49 @@
                         x:Name="EditVariableValuesList"
                         Margin="-16,-8,0,12"
                         HorizontalAlignment="Stretch"
-                        AllowDrop="True"
-                        CanDragItems="True"
-                        CanReorderItems="True"
-                        DragItemsCompleted="EditVariableValuesList_DragItemsCompleted"
                         ItemsSource="{Binding ValuesList, Mode=TwoWay}"
                         SelectionMode="None"
-                        Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="40" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding}" />
+                                    <Button
+                                        x:Uid="More_Options_Button"
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Content="&#xE712;"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        Style="{StaticResource SubtleButtonStyle}">
+                                        <Button.Flyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem
+                                                    x:Uid="MoveUp"
+                                                    Click="ReorderButtonUp_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xE74A;}" />
+                                                <MenuFlyoutItem
+                                                    x:Uid="MoveDown"
+                                                    Click="ReorderButtonDown_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xE74B;}" />
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem
+                                                    x:Uid="RemoveListItem"
+                                                    Click="RemoveListVariableButton_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xE74D;}" />
+                                            </MenuFlyout>
+                                        </Button.Flyout>
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="More_Options_ButtonTooltip" />
+                                        </ToolTipService.ToolTip>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </StackPanel>
             </ScrollViewer>
         </ContentDialog>
