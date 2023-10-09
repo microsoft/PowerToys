@@ -1932,7 +1932,6 @@ timedate
 timediff
 timeunion
 timeutil
-titlebar
 Titlecase
 TKey
 TLayout
