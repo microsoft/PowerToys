@@ -12,7 +12,7 @@ namespace FancyZonesEditor
     {
         private LayoutModel _backup;
         private string _hotkeyBackup;
-        private List<LayoutModel> _defaultLayoutsBackup;
+        private Dictionary<int, LayoutModel> _defaultLayoutsBackup;
 
         public LayoutBackup()
         {
@@ -30,7 +30,7 @@ namespace FancyZonesEditor
             }
 
             _hotkeyBackup = MainWindowSettingsModel.LayoutHotkeys.Key(model.Uuid);
-            _defaultLayoutsBackup = new List<LayoutModel>(MainWindowSettingsModel.DefaultLayouts.Layouts);
+            _defaultLayoutsBackup = new Dictionary<int, LayoutModel>(MainWindowSettingsModel.DefaultLayouts.Layouts);
         }
 
         public void Restore(LayoutModel layoutToRestore)

@@ -13,7 +13,7 @@ namespace FancyZonesEditor.Models
     {
         private static int Count { get; } = Enum.GetValues(typeof(MonitorConfigurationType)).Length;
 
-        public List<LayoutModel> Layouts { get; } = new List<LayoutModel>(Count);
+        public Dictionary<int,  LayoutModel> Layouts { get; } = new Dictionary<int, LayoutModel>(Count);
 
         public DefaultLayoutsModel()
         {
@@ -51,7 +51,7 @@ namespace FancyZonesEditor.Models
         {
             if (Layouts.Count <= (int)type)
             {
-                Layouts.Insert((int)type, layout);
+                Layouts[(int)type] = layout;
             }
             else
             {
@@ -61,7 +61,7 @@ namespace FancyZonesEditor.Models
             FirePropertyChanged();
         }
 
-        public void Restore(List<LayoutModel> layouts)
+        public void Restore(Dictionary<int, LayoutModel> layouts)
         {
             for (int i = 0; i < Count; i++)
             {
