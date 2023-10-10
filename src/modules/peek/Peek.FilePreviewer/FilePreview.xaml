@@ -20,10 +20,10 @@
 
         <controls:ShellPreviewHandlerControl
             x:Name="ShellPreviewHandlerPreview"
-            Source="{x:Bind ShellPreviewHandlerPreviewer.Preview, Mode=OneWay}"
-            HandlerVisibility="{x:Bind IsPreviewVisible(ShellPreviewHandlerPreviewer, Previewer.State), Mode=OneWay}"
+            HandlerError="ShellPreviewHandlerPreview_HandlerError"
             HandlerLoaded="ShellPreviewHandlerPreview_HandlerLoaded"
-            HandlerError="ShellPreviewHandlerPreview_HandlerError" />
+            HandlerVisibility="{x:Bind IsPreviewVisible(ShellPreviewHandlerPreviewer, Previewer.State), Mode=OneWay}"
+            Source="{x:Bind ShellPreviewHandlerPreviewer.Preview, Mode=OneWay}" />
 
         <Image
             x:Name="ImagePreview"
