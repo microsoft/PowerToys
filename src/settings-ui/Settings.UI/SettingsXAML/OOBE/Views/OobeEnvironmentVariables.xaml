@@ -9,7 +9,7 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_EnvironmentVariables" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/EnvironmentVariables.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_EnvironmentVariables" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/EnvironmentVariables.png">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
                 <StackPanel
