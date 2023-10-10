@@ -18,6 +18,13 @@
             VerticalAlignment="Center"
             IsActive="{x:Bind MatchPreviewState(Previewer.State, previewers:PreviewState.Loading), Mode=OneWay}" />
 
+        <controls:ShellPreviewHandlerControl
+            x:Name="ShellPreviewHandlerPreview"
+            Source="{x:Bind ShellPreviewHandlerPreviewer.Preview, Mode=OneWay}"
+            HandlerVisibility="{x:Bind IsPreviewVisible(ShellPreviewHandlerPreviewer, Previewer.State), Mode=OneWay}"
+            HandlerLoaded="ShellPreviewHandlerPreview_HandlerLoaded"
+            HandlerError="ShellPreviewHandlerPreview_HandlerError" />
+
         <Image
             x:Name="ImagePreview"
             MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"

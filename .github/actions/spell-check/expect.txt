@@ -1429,6 +1429,7 @@ ppsi
 ppsid
 ppsrm
 ppsrree
+ppstm
 ppsz
 pptal
 ppv
@@ -1471,6 +1472,8 @@ psfi
 Psr
 psrm
 psrree
+pstatstg
+pstm
 pstr
 pstream
 pstrm
@@ -1823,6 +1826,7 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
+STGC
 STGM
 STGMEDIUM
 sticpl
@@ -2188,6 +2192,7 @@ wnd
 WNDCLASS
 WNDCLASSEX
 WNDCLASSEXW
+WNDCLASSW
 WNDPROC
 wordpad
 workaround
