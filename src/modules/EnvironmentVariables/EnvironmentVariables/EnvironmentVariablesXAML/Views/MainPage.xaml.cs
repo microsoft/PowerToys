@@ -299,6 +299,11 @@ namespace EnvironmentVariables.Views
                     {
                         if (profileItem.Name == item.Name && profileItem.Values == item.Values)
                         {
+                            if (ExistingVariablesListView.SelectedItems.Where(x => ((Variable)x).Name.Equals(profileItem.Name, StringComparison.OrdinalIgnoreCase)).Any())
+                            {
+                                continue;
+                            }
+
                             ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
                             ExistingVariablesListView.SelectedItems.Add(item);
                             ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
