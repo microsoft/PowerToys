@@ -252,7 +252,7 @@ namespace EnvironmentVariables.Views
                 Variable removedVariable = e.RemovedItems[0] as Variable;
                 for (int i = 0; i < profile.Variables.Count; i++)
                 {
-                    if (profile.Variables[i].Name == removedVariable.Name)
+                    if (profile.Variables[i].Name == removedVariable.Name && profile.Variables[i].Values == removedVariable.Values)
                     {
                         toRemove = i;
                         break;
@@ -295,9 +295,11 @@ namespace EnvironmentVariables.Views
                 {
                     foreach (var profileItem in profile.Variables)
                     {
-                        if (profileItem.Name == item.Name)
+                        if (profileItem.Name == item.Name && profileItem.Values == item.Values)
                         {
+                            ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
                             ExistingVariablesListView.SelectedItems.Add(item);
+                            ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
                         }
                     }
                 }
