@@ -243,7 +243,9 @@ namespace EnvironmentVariables.Views
 
                 foreach (var dup in duplicates)
                 {
+                    ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
                     list.SelectedItems.Remove(dup.ElementAt(1));
+                    ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
                 }
             }
 

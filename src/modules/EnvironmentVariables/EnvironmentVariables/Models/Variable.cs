@@ -41,10 +41,13 @@ namespace EnvironmentVariables.Models
         public VariablesSetType ParentType { get; set; }
 
         [ObservableProperty]
+        [JsonIgnore]
         private ObservableCollection<string> _valuesList;
 
+        [JsonIgnore]
         public bool Valid => Validate();
 
+        [JsonIgnore]
         public bool ShowAsList => IsList();
 
         private bool IsList()

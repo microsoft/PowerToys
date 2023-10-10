@@ -120,6 +120,8 @@ namespace EnvironmentVariables.ViewModels
             {
                 // Show some error
                 Logger.LogError("Failed to load profiles.json file", ex);
+
+                Profiles = new ObservableCollection<ProfileVariablesSet>();
             }
         }
 
