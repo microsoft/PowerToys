@@ -17,6 +17,10 @@ namespace FancyZonesEditor.Models
 
         public DefaultLayoutsModel()
         {
+            for (int i = 0; i < Count; i++)
+            {
+                Layouts.Add(null);
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
