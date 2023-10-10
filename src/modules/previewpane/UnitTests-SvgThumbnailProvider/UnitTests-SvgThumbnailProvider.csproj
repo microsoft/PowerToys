@@ -38,15 +38,19 @@
     <ProjectReference Include="..\SvgThumbnailProvider\SvgThumbnailProvider.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
+    <Compile Include="..\STATestClassAttribute.cs"
+      Link="STATestClassAttribute.cs" />
+    <Compile Include="..\STATestMethodAttribute.cs"
+      Link="STATestMethodAttribute.cs" />
   </ItemGroup>
+
   <ItemGroup>
-    <Content Include="HelperFiles\file1.svg">
+    <Content Include="HelperFiles\*.svg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="HelperFiles\file2.svg">
+    <Content Include="HelperFiles\*.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
 </Project>

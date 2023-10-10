@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Web;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
@@ -49,6 +50,20 @@ namespace RegistryPreview
                     if (eventArgs.Files.Count > 0)
                     {
                         AppFilename = eventArgs.Files[0].Path;
+                    }
+                }
+            }
+            else if (activatedArgs.Kind == ExtendedActivationKind.Protocol)
+            {
+                // When the app is the default handler for REG files and the filename has non-ASCII characters, the app gets activated by Protocol
+                AppFilename = string.Empty;
+                if (activatedArgs.Data != null)
+                {
+                    IProtocolActivatedEventArgs eventArgs = (IProtocolActivatedEventArgs)activatedArgs.Data;
+                    if (eventArgs.Uri.AbsoluteUri.Length > 0)
+                    {
+                        AppFilename = eventArgs.Uri.Query.Replace("?ContractId=Windows.File&Verb=open&File=", string.Empty);
+                        AppFilename = HttpUtility.UrlDecode(AppFilename);
                     }
                 }
             }

@@ -141,6 +141,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case "When both camera and microphone are muted":
                     _toolbarHideIndex = 2;
                     break;
+                case "After timeout":
+                    _toolbarHideIndex = 3;
+                    break;
+            }
+
+            switch (Settings.Properties.StartupAction.Value)
+            {
+                case "Nothing":
+                    _startupActionIndex = 0;
+                    break;
+                case "Unmute":
+                    _startupActionIndex = 1;
+                    break;
+                case "Mute":
+                    _startupActionIndex = 2;
+                    break;
             }
 
             if (shouldSaveSettings)
@@ -170,6 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _toolbarPositionIndex;
         private int _toolbarMonitorIndex;
         private int _toolbarHideIndex;
+        private int _startupActionIndex;
         private HotkeySettings _cameraAndMicrophoneMuteHotkey;
         private HotkeySettings _microphoneMuteHotkey;
         private HotkeySettings _microphonePushToTalkHotkey;
@@ -491,9 +508,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         case 2:
                             Settings.Properties.ToolbarHide.Value = "When both camera and microphone are muted";
                             break;
+                        case 3:
+                            Settings.Properties.ToolbarHide.Value = "After timeout";
+                            break;
                     }
 
                     RaisePropertyChanged(nameof(ToolbarHideIndex));
+                }
+            }
+        }
+
+        public int StartupActionIndex
+        {
+            get
+            {
+                return _startupActionIndex;
+            }
+
+            set
+            {
+                if (value != _startupActionIndex)
+                {
+                    _startupActionIndex = value;
+                    switch (_startupActionIndex)
+                    {
+                        case 0:
+                            Settings.Properties.StartupAction.Value = "Nothing";
+                            break;
+                        case 1:
+                            Settings.Properties.StartupAction.Value = "Unmute";
+                            break;
+                        case 2:
+                            Settings.Properties.StartupAction.Value = "Mute";
+                            break;
+                    }
+
+                    RaisePropertyChanged(nameof(_startupActionIndex));
                 }
             }
         }

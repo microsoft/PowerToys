@@ -292,12 +292,19 @@ namespace RegistryPreview
 
                     // set the name and the value
                     string name = registryLine.Substring(0, equal);
+
+                    // trim the whitespace and quotes from the name
+                    name = name.Trim();
                     name = StripFirstAndLast(name);
 
                     // Clean out any escaped characters in the value, only for the preview
                     name = StripEscapedCharacters(name);
 
+                    // set the value
                     string value = registryLine.Substring(equal + 1);
+
+                    // trim the whitespace from the value
+                    value = value.Trim();
 
                     // Create a new listview item that will be used to display the value
                     registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
@@ -1028,8 +1035,11 @@ namespace RegistryPreview
 
             try
             {
-                fileContents = jsonWindowPlacement.Stringify();
-                await Windows.Storage.FileIO.WriteTextAsync(storageFile, fileContents);
+                if (jsonWindowPlacement != null)
+                {
+                    fileContents = jsonWindowPlacement.Stringify();
+                    await Windows.Storage.FileIO.WriteTextAsync(storageFile, fileContents);
+                }
             }
             catch (Exception ex)
             {
