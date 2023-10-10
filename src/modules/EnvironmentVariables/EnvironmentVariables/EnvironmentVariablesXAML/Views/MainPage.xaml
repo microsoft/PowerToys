@@ -17,7 +17,6 @@
     <Page.Resources>
         <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
             <controls:SettingsCard
-                Click="EditVariable_Click"
                 CommandParameter="{x:Bind (models:Variable)}"
                 Header="{x:Bind Name, Mode=TwoWay}"
                 IsActionIconVisible="False"
@@ -72,7 +71,8 @@
 
         <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
         <converters:EnvironmentStateToBoolConverter x:Key="EnvironmentStateToBoolConverter" />
-        <converters:EnvironmentStateToStringConverter x:Key="EnvironmentStateToStringConverter" />
+        <converters:EnvironmentStateToMessageConverter x:Key="EnvironmentStateToMessageConverter" />
+        <converters:EnvironmentStateToTitleConverter x:Key="EnvironmentStateToTitleConverter" />
         <converters:EnvironmentStateToVisibilityConverter x:Key="EnvironmentStateToVisibilityConverter" />
 
         <converters1:BoolToVisibilityConverter
@@ -121,12 +121,14 @@
 
         <Grid Grid.Row="1">
             <InfoBar
-                x:Name="StateNotUpToDateInfoBar"
-                x:Uid="StateNotUpToDateInfoBar"
-                IsOpen="{x:Bind ViewModel.IsStateModified, Mode=OneWay, Converter={StaticResource EnvironmentStateToBoolConverter}}"
-                Message="{x:Bind ViewModel.IsStateModified, Mode=OneWay, Converter={StaticResource EnvironmentStateToStringConverter}}"
+                x:Name="InvalidStateInfoBar"
+                x:Uid="InvalidStateInfoBar"
+                Title="{x:Bind ViewModel.EnvironmentState, Mode=OneWay, Converter={StaticResource EnvironmentStateToTitleConverter}}"
+                CloseButtonClick="InvalidStateInfoBar_CloseButtonClick"
+                IsOpen="{x:Bind ViewModel.EnvironmentState, Mode=OneWay, Converter={StaticResource EnvironmentStateToBoolConverter}}"
+                Message="{x:Bind ViewModel.EnvironmentState, Mode=OneWay, Converter={StaticResource EnvironmentStateToMessageConverter}}"
                 Severity="Warning"
-                Visibility="{x:Bind ViewModel.IsStateModified, Mode=OneWay, Converter={StaticResource EnvironmentStateToVisibilityConverter}}">
+                Visibility="{x:Bind ViewModel.EnvironmentState, Mode=OneWay, Converter={StaticResource EnvironmentStateToVisibilityConverter}}">
                 <InfoBar.ActionButton>
                     <Button
                         Click="ReloadButton_Click"

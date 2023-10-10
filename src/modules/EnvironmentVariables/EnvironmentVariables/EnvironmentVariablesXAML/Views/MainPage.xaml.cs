@@ -204,7 +204,7 @@ namespace EnvironmentVariables.Views
 
             if (nameTxtBox != null)
             {
-                if (nameTxtBox.Text.Length == 0 || profile.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
+                if (nameTxtBox.Text.Length == 0 || nameTxtBox.Text.Length >= 255 || profile.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
                 {
                     ConfirmAddVariableBtn.IsEnabled = false;
                 }
@@ -218,7 +218,7 @@ namespace EnvironmentVariables.Views
         private void ReloadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             ViewModel.LoadEnvironmentVariables();
-            ViewModel.IsStateModified = EnvironmentState.Unchanged;
+            ViewModel.EnvironmentState = EnvironmentState.Unchanged;
         }
 
         private void ExistingVariablesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -363,13 +363,18 @@ namespace EnvironmentVariables.Views
                     EditVariableDialog.IsPrimaryButtonEnabled = true;
                 }
             }
+
+            if (!variable.Validate())
+            {
+                EditVariableDialog.IsPrimaryButtonEnabled = false;
+            }
         }
 
         private void AddDefaultVariableNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             TextBox nameTxtBox = sender as TextBox;
-            var param = EditVariableDialog.PrimaryButtonCommandParameter as RelayCommandParameter;
-            var defaultSet = param.Set;
+            var variable = AddDefaultVariableDialog.DataContext as Variable;
+            var defaultSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
 
             if (nameTxtBox != null)
             {
@@ -381,6 +386,11 @@ namespace EnvironmentVariables.Views
                 {
                     AddDefaultVariableDialog.IsPrimaryButtonEnabled = true;
                 }
+            }
+
+            if (!variable.Validate())
+            {
+                AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
             }
         }
 
@@ -450,6 +460,11 @@ namespace EnvironmentVariables.Views
 
             var newValues = string.Join(";", variable.ValuesList?.Select(x => x).ToArray());
             EditVariableDialogValueTxtBox.Text = newValues;
+        }
+
+        private void InvalidStateInfoBar_CloseButtonClick(InfoBar sender, object args)
+        {
+            ViewModel.EnvironmentState = EnvironmentState.Unchanged;
         }
     }
 }

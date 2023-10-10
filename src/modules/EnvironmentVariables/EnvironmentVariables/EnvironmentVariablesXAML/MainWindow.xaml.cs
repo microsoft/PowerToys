@@ -59,7 +59,7 @@ namespace EnvironmentVariables
                             if (wParam != (IntPtr)0x12345)
                             {
                                 var viewModel = App.GetService<MainViewModel>();
-                                viewModel.IsStateModified = Models.EnvironmentState.EnvironmentMessageReceived;
+                                viewModel.EnvironmentState = Models.EnvironmentState.EnvironmentMessageReceived;
                             }
                         }
 

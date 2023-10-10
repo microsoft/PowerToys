@@ -163,10 +163,17 @@ namespace EnvironmentVariables.Models
             };
         }
 
-        private bool Validate()
+        public bool Validate()
         {
             if (string.IsNullOrWhiteSpace(Name))
             {
+                return false;
+            }
+
+            const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
+            if (ParentType != VariablesSetType.System && Name.Length >= MaxUserEnvVariableLength)
+            {
+                Logger.LogError("Variable name too long.");
                 return false;
             }
 

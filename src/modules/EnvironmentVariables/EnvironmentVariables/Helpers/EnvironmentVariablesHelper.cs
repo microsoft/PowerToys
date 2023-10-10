@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using EnvironmentVariables.Helpers.Win32;
 using EnvironmentVariables.Models;
+using ManagedCommon;
 using Microsoft.Win32;
 
 namespace EnvironmentVariables.Helpers
@@ -66,6 +67,13 @@ namespace EnvironmentVariables.Helpers
 
         private static void SetEnvironmentVariableFromRegistryWithoutNotify(string variable, string value, bool fromMachine)
         {
+            const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
+            if (!fromMachine && variable.Length >= MaxUserEnvVariableLength)
+            {
+                Logger.LogError("Can't apply variable - name too long.");
+                return;
+            }
+
             using (RegistryKey environmentKey = OpenEnvironmentKeyIfExists(fromMachine, writable: true))
             {
                 if (environmentKey != null)

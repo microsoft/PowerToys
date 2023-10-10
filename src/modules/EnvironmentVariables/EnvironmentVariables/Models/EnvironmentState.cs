@@ -9,5 +9,6 @@ namespace EnvironmentVariables.Models
         Unchanged = 0,
         ChangedOnStartup,
         EnvironmentMessageReceived,
+        ProfileNotApplicable,
     }
 }

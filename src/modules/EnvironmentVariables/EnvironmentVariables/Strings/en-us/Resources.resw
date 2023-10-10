@@ -215,7 +215,7 @@
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
-  <data name="StateNotUpToDateInfoBar.Title" xml:space="preserve">
+  <data name="StateNotUpToDateTitle" xml:space="preserve">
     <value>Changes were made outside of this app.</value>
   </data>
   <data name="StateNotUpToDateOnStartupMsg" xml:space="preserve">
@@ -271,5 +271,11 @@
   </data>
   <data name="AddVariableContent.Content" xml:space="preserve">
     <value>Add variable</value>
+  </data>
+  <data name="ProfileNotApplicableTitle" xml:space="preserve">
+    <value>Profile can not be applied.</value>
+  </data>
+  <data name="StateProfileNotApplicableMsg" xml:space="preserve">
+    <value>Variables or backup variables are invalid.</value>
   </data>
 </root>

@@ -126,6 +126,32 @@ namespace EnvironmentVariables.Models
             return true;
         }
 
+        public bool IsApplicable()
+        {
+            foreach (var variable in Variables)
+            {
+                if (!variable.Validate())
+                {
+                    return false;
+                }
+
+                // Get existing variable with the same name if it exist
+                var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
+
+                // It exists. Backup is needed.
+                if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User)
+                {
+                    variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, this.Name);
+                    if (!variableToOverride.Validate())
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         public ProfileVariablesSet Clone()
         {
             var clone = new ProfileVariablesSet(this.Id, this.Name);

@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace EnvironmentVariables.Converters;
 
-public class EnvironmentStateToStringConverter : IValueConverter
+public class EnvironmentStateToTitleConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
@@ -17,10 +17,8 @@ public class EnvironmentStateToStringConverter : IValueConverter
         var type = (EnvironmentState)value;
         return type switch
         {
-            EnvironmentState.Unchanged => string.Empty,
-            EnvironmentState.ChangedOnStartup => resourceLoader.GetString("StateNotUpToDateOnStartupMsg"),
-            EnvironmentState.EnvironmentMessageReceived => resourceLoader.GetString("StateNotUpToDateEnvironmentMessageReceivedMsg"),
-            _ => throw new NotImplementedException(),
+            EnvironmentState.ProfileNotApplicable => resourceLoader.GetString("ProfileNotApplicableTitle"),
+            _ => resourceLoader.GetString("StateNotUpToDateTitle"),
         };
     }
 

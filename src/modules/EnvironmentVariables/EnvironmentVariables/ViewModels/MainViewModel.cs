@@ -42,9 +42,9 @@ namespace EnvironmentVariables.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsInfoBarButtonVisible))]
-        private EnvironmentState _isStateModified;
+        private EnvironmentState _environmentState;
 
-        public bool IsInfoBarButtonVisible => IsStateModified == EnvironmentState.EnvironmentMessageReceived;
+        public bool IsInfoBarButtonVisible => EnvironmentState == EnvironmentState.EnvironmentMessageReceived;
 
         public ProfileVariablesSet AppliedProfile { get; set; }
 
@@ -105,11 +105,11 @@ namespace EnvironmentVariables.ViewModels
                     if (appliedProfile.IsCorrectlyApplied())
                     {
                         AppliedProfile = appliedProfile;
-                        IsStateModified = EnvironmentState.Unchanged;
+                        EnvironmentState = EnvironmentState.Unchanged;
                     }
                     else
                     {
-                        IsStateModified = EnvironmentState.ChangedOnStartup;
+                        EnvironmentState = EnvironmentState.ChangedOnStartup;
                         appliedProfile.IsEnabled = false;
                     }
                 }
@@ -295,6 +295,20 @@ namespace EnvironmentVariables.ViewModels
 
         private void SetAppliedProfile(ProfileVariablesSet profile)
         {
+            if (profile != null)
+            {
+                if (!profile.IsApplicable())
+                {
+                    profile.PropertyChanged -= Profile_PropertyChanged;
+                    profile.IsEnabled = false;
+                    profile.PropertyChanged += Profile_PropertyChanged;
+
+                    EnvironmentState = EnvironmentState.ProfileNotApplicable;
+
+                    return;
+                }
+            }
+
             var task = profile.Apply();
             task.ContinueWith((a) =>
             {
