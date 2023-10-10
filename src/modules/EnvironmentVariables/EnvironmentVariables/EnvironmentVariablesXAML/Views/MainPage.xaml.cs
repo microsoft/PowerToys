@@ -41,6 +41,8 @@ namespace EnvironmentVariables.Views
 
         public ICommand AddVariableCommand => new RelayCommand(AddVariable);
 
+        public ICommand CancelAddVariableCommand => new RelayCommand(CancelAddVariable);
+
         public ICommand AddDefaultVariableCommand => new RelayCommand<DefaultVariablesSet>(AddDefaultVariable);
 
         public MainPage()
@@ -96,6 +98,7 @@ namespace EnvironmentVariables.Views
             AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
             AddProfileDialog.PrimaryButtonCommand = AddProfileCommand;
             AddProfileDialog.DataContext = new ProfileVariablesSet(Guid.NewGuid(), string.Empty);
+
             await AddProfileDialog.ShowAsync();
         }
 
@@ -162,6 +165,14 @@ namespace EnvironmentVariables.Views
             ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
             ExistingVariablesListView.SelectedItems.Clear();
             ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
+            AddVariableFlyout.Hide();
+        }
+
+        private void CancelAddVariable()
+        {
+            AddNewVariableName.Text = string.Empty;
+            AddNewVariableValue.Text = string.Empty;
+            ExistingVariablesListView.SelectedItems.Clear();
             AddVariableFlyout.Hide();
         }
 

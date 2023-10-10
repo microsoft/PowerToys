@@ -585,7 +585,7 @@
                             <TextBlock x:Uid="AddVariableBtn" />
                         </StackPanel>
                         <Button.Flyout>
-                            <Flyout x:Name="AddVariableFlyout">
+                            <Flyout x:Name="AddVariableFlyout" Placement="Right">
                                 <Grid Width="320" Height="480">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -675,14 +675,30 @@
 
                                         </controls:Case>
                                     </controls:SwitchPresenter>
-                                    <Button
-                                        x:Name="ConfirmAddVariableBtn"
-                                        x:Uid="ConfirmAddVariableBtn"
-                                        Grid.Row="2"
-                                        HorizontalAlignment="Stretch"
-                                        Command="{x:Bind AddVariableCommand}"
-                                        IsEnabled="False"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                    <Grid Grid.Row="2" HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Button
+                                            x:Name="ConfirmAddVariableBtn"
+                                            x:Uid="ConfirmAddVariableBtn"
+                                            Margin="4,0,4,0"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{x:Bind AddVariableCommand}"
+                                            IsEnabled="False"
+                                            Style="{StaticResource AccentButtonStyle}" />
+
+                                        <Button
+                                            x:Name="CancelAddVariableBtn"
+                                            x:Uid="CancelAddVariableBtn"
+                                            Grid.Column="1"
+                                            Margin="4,0,4,0"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{x:Bind CancelAddVariableCommand}" />
+
+                                    </Grid>
                                 </Grid>
 
                             </Flyout>
