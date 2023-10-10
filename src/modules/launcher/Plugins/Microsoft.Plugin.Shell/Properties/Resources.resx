@@ -154,7 +154,7 @@
     <value>Run in PowerShell (PowerShell.exe)</value>
   </data>
   <data name="find_executable_file_and_run_it" xml:space="preserve">
-    <value>Find and run executable file</value>
+    <value>Find and run the executable file</value>
   </data>
   <data name="run_command_in_powershell_seven" xml:space="preserve">
     <value>Run in PowerShell 7 (pwsh.exe)</value>
