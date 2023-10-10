@@ -1080,7 +1080,7 @@ mic
 microsoft
 MIDDLEDOWN
 MIDDLEUP
-Midl
+midl
 mii
 MIIM
 millis
@@ -1431,6 +1431,7 @@ ppsi
 ppsid
 ppsrm
 ppsrree
+ppstm
 ppsz
 pptal
 ppv
@@ -1474,6 +1475,8 @@ PSMODULEPATH
 Psr
 psrm
 psrree
+pstatstg
+pstm
 pstr
 pstream
 pstrm
@@ -1827,6 +1830,7 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
+STGC
 STGM
 STGMEDIUM
 sticpl
@@ -2083,6 +2087,7 @@ vscdb
 vsconfig
 VSCROLL
 vsetq
+VSM
 vsonline
 vstemplate
 VSTHRD
@@ -2191,6 +2196,7 @@ wnd
 WNDCLASS
 WNDCLASSEX
 WNDCLASSEXW
+WNDCLASSW
 WNDPROC
 wordpad
 workaround
@@ -2229,6 +2235,8 @@ Wubi
 WVC
 Wwan
 Wwanpp
+xamlstyler
+Xavalon
 XAxis
 xbf
 Xbox
@@ -2249,6 +2257,7 @@ XPels
 XPixel
 XResource
 xsi
+xstyler
 XStr
 XUP
 XVIRTUALSCREEN

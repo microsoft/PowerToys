@@ -77,7 +77,7 @@ namespace PowerAccent.Core
                 Language.SR => GetDefaultLetterKeySR(letter), // Serbian
                 Language.SV => GetDefaultLetterKeySV(letter), // Swedish
                 Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
-                _ => throw new ArgumentException("The language {0} is not know in this context", lang.ToString()),
+                _ => throw new ArgumentException("The language {0} is not known in this context", lang.ToString()),
             };
         }
 
@@ -131,27 +131,27 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_A => new[] { "α", "ȧ" },
+                LetterKey.VK_A => new[] { "α", "ά", "ȧ" },
                 LetterKey.VK_B => new[] { "ḃ", "β" },
                 LetterKey.VK_C => new[] { "ċ", "χ", "°C", "©", "ℂ" },
                 LetterKey.VK_D => new[] { "ḍ", "ḋ", "δ" },
-                LetterKey.VK_E => new[] { "ε", "η", "∈" },
+                LetterKey.VK_E => new[] { "ε", "έ", "η", "ή", "∈" },
                 LetterKey.VK_F => new[] { "ḟ", "°F" },
                 LetterKey.VK_G => new[] { "ģ", "ǧ", "ġ", "ĝ", "ǥ", "γ" },
                 LetterKey.VK_H => new[] { "ḣ", "ĥ", "ħ" },
-                LetterKey.VK_I => new[] { "ι" },
+                LetterKey.VK_I => new[] { "ι", "ί" },
                 LetterKey.VK_J => new[] { "ĵ" },
                 LetterKey.VK_K => new[] { "ķ", "ǩ", "κ" },
                 LetterKey.VK_L => new[] { "ļ", "₺", "λ" }, // ₺ is in VK_T for other languages, but not VK_L, so we add it here.
                 LetterKey.VK_M => new[] { "ṁ", "μ" },
                 LetterKey.VK_N => new[] { "ņ", "ṅ", "ⁿ", "ν", "ℕ" },
-                LetterKey.VK_O => new[] { "ȯ", "ω", "ο" },
+                LetterKey.VK_O => new[] { "ȯ", "ω", "ώ", "ο", "ό" },
                 LetterKey.VK_P => new[] { "ṗ", "φ", "ψ", "℗" },
                 LetterKey.VK_Q => new[] { "ℚ" },
                 LetterKey.VK_R => new[] { "ṙ", "ρ", "®", "ℝ" },
                 LetterKey.VK_S => new[] { "ṡ", "σ", "\u00A7" },
                 LetterKey.VK_T => new[] { "ţ", "ṫ", "ŧ", "θ", "τ", "™" },
-                LetterKey.VK_U => new[] { "ŭ", "υ" },
+                LetterKey.VK_U => new[] { "ŭ", "υ", "ύ" },
                 LetterKey.VK_V => new[] { "V̇" },
                 LetterKey.VK_W => new[] { "ẇ" },
                 LetterKey.VK_X => new[] { "ẋ", "ξ", "×" },
