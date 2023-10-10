@@ -173,6 +173,6 @@
     <comment>"Enter" means the Enter key on the keyboard.</comment>
   </data>
   <data name="wox_shell_command_execution_description" xml:space="preserve">
-    <value>All entries that using the Windows Terminal forcing the Windows Terminal as console host regardless of the system setting</value>
+    <value>All entries using the Windows Terminal force the Windows Terminal as the console host regardless of the system settings</value>
   </data>
 </root>
