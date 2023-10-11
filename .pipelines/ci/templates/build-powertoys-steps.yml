@@ -8,10 +8,10 @@ steps:
   clean: true
 
 - task: UseDotNet@2
-  displayName: 'Use .NET 7 SDK'
+  displayName: 'Use .NET 6 SDK'
   inputs:
     packageType: sdk
-    version: '7.x'
+    version: '6.x'
 
 - task: PowerShell@2
   displayName: Verify XAML formatting
