@@ -20,7 +20,7 @@
   "IcoPathLight": string // Path to light theme icon. The path is relative to the root plugin folder 
 }
 ```
-- [ ] Make sure your `Main` class contains a public, static string porperty for the `PluginID`. The plugin id has to be the same as the one in the `plugin.json`file.
+- [ ] Make sure your `Main` class contains a public, static string property for the `PluginID`. The plugin id has to be the same as the one in the `plugin.json`file.
 ```csharp
 public static string PluginID => "xxxxxxx"; // The part xxxxxxx stands for the plugin ID.
 ```
