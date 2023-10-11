@@ -103,6 +103,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 timestamp = new DateTime(1970, 1, 1).AddSeconds(secondsInt).ToLocalTime();
                 return true;
             }
+            else if (Regex.IsMatch(input, @"^ums\d+") && input.Length <= 17 && long.TryParse(input.TrimStart("ums".ToCharArray()), out long millisecondsInt))
+            {
+                // unix time stamp in milliseconds
+                // we use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
+                timestamp = new DateTime(1970, 1, 1).AddMilliseconds(millisecondsInt).ToLocalTime();
+                return true;
+            }
             else if (Regex.IsMatch(input, @"^ft\d+") && long.TryParse(input.TrimStart("ft".ToCharArray()), out long secondsLong))
             {
                 // windows file time
