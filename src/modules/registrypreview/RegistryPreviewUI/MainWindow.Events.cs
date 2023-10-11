@@ -55,6 +55,12 @@ namespace RegistryPreview
                     resourceLoader.GetString("YesNoCancelDialogCloseButtonText"));
             }
 
+            // Check to see if the textbox's context menu is open
+            if (textBox.ContextFlyout != null && textBox.ContextFlyout.IsOpen)
+            {
+                textBox.ContextFlyout.Hide();
+            }
+
             // Save window placement
             SaveWindowPlacementFile(settingsFolder, windowPlacementFile);
         }

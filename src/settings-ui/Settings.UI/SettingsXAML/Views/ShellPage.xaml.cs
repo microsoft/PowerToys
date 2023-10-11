@@ -373,6 +373,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
                 u.ExtendsContentIntoTitleBar = true;
                 u.SetTitleBar(AppTitleBar);
+                var loader = ResourceLoaderInstance.ResourceLoader;
+                AppTitleBarText.Text = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
 #if DEBUG
                 DebugMessage.Visibility = Visibility.Visible;
 #endif

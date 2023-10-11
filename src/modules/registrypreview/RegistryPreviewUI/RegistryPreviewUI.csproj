@@ -62,7 +62,9 @@
 	
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.CsWinRT" />
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
+		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" />
 		<PackageReference Include="WinUIEx" />

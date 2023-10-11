@@ -124,7 +124,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             // {
             //    results.Add(new Result()
             //    {
-            //        Title = "Getting network informations. Please wait ...",
+            //        Title = "Getting network information. Please wait ...",
             //        IcoPath = $"Images\\networkAdapter.{IconTheme}.png",
             //        Score = StringMatcher.FuzzySearch("address", "ip address").Score,
             //    });

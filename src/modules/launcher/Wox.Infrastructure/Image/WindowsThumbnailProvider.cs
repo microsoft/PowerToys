@@ -97,36 +97,53 @@ namespace Wox.Infrastructure.Image
 
         private static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
         {
-            Guid shellItem2Guid = new Guid(IShellItem2Guid);
-            int retCode = NativeMethods.SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out IShellItem nativeShellItem);
+            IntPtr hBitmap = IntPtr.Zero;
+            IShellItem nativeShellItem = null;
 
-            if (retCode != 0)
+            try
             {
-                throw Marshal.GetExceptionForHR(retCode);
-            }
+                Guid shellItem2Guid = new Guid(IShellItem2Guid);
+                int retCode = NativeMethods.SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out nativeShellItem);
 
-            NativeSize nativeSize = new NativeSize
-            {
-                Width = width,
-                Height = height,
-            };
+                if (retCode != 0)
+                {
+                    Log.Error($"Error while creating item. retCode:{retCode} ", MethodBase.GetCurrentMethod().DeclaringType);
+                    throw Marshal.GetExceptionForHR(retCode);
+                }
 
-            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out IntPtr hBitmap);
+                NativeSize nativeSize = new NativeSize
+                {
+                    Width = width,
+                    Height = height,
+                };
+
+                HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
 
             // if extracting image thumbnail and failed, extract shell icon
-            if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
-            {
-                hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
-            }
+                if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
+                {
+                    hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
+                }
 
-            Marshal.ReleaseComObject(nativeShellItem);
+                if (hr != HResult.Ok)
+                {
+                    throw Marshal.GetExceptionForHR((int)hr);
+                }
 
-            if (hr == HResult.Ok)
-            {
                 return hBitmap;
             }
-
-            throw new InvalidComObjectException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
+            catch (System.Exception ex)
+            {
+                Log.Exception($"Error while extracting thumbnail for {fileName}", ex, MethodBase.GetCurrentMethod().DeclaringType);
+                throw;
+            }
+            finally
+            {
+                if (nativeShellItem != null)
+                {
+                    Marshal.ReleaseComObject(nativeShellItem);
+                }
+            }
         }
 
         private static bool logReportedAdobeReaderDetected; // Keep track if Adobe Reader detection has been logged yet.

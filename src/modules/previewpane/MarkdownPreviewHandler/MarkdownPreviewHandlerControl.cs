@@ -200,11 +200,23 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     }
                 });
 
-                PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
             catch (Exception ex)
             {
-                PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
 
                 Controls.Clear();
                 _infoBarDisplayed = true;

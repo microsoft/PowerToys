@@ -2,28 +2,26 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PastePlainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl
-        x:Uid="PastePlain"
-        ModuleImageSource="ms-appx:///Assets/Settings/Modules/PastePlain.png">
-        <controls:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
-                Orientation="Vertical" Spacing="2">
-                <labs:SettingsCard
+    <custom:SettingsPageControl x:Uid="PastePlain" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PastePlain.png">
+        <custom:SettingsPageControl.ModuleContent>
+            <StackPanel
+                ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                Orientation="Vertical"
+                Spacing="2">
+                <controls:SettingsCard
                     x:Uid="PastePlain_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPastePlain.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch
-                        x:Uid="ToggleSwitch"
-                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </labs:SettingsCard>
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </controls:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -31,31 +29,22 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <controls:SettingsGroup
-                    x:Uid="Shortcut"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <labs:SettingsCard
-                        x:Uid="Activation_Shortcut"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
-                    </labs:SettingsCard>
+                <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </controls:SettingsCard>
                     <InfoBar
                         x:Uid="PastePlain_ShortcutWarning"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsConflictingCopyShortcut}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsConflictingCopyShortcut}"
                         Severity="Warning" />
-                </controls:SettingsGroup>
+                </custom:SettingsGroup>
             </StackPanel>
-        </controls:SettingsPageControl.ModuleContent>
+        </custom:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink
-                x:Uid="LearnMore_PastePlain"
-                Link="https://aka.ms/PowerToysOverview_PastePlain" />
-        </controls:SettingsPageControl.PrimaryLinks>
-    </controls:SettingsPageControl>
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink x:Uid="LearnMore_PastePlain" Link="https://aka.ms/PowerToysOverview_PastePlain" />
+        </custom:SettingsPageControl.PrimaryLinks>
+    </custom:SettingsPageControl>
 </Page>

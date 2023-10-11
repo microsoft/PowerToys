@@ -99,7 +99,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             else if (Regex.IsMatch(input, @"^u\d+") && input.Length <= 12 && long.TryParse(input.TrimStart('u'), out long secondsInt))
             {
                 // unix time stamp
-                // we use long instead of int because int ist to small after 03:14:07 UTC 2038-01-19
+                // we use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
                 timestamp = new DateTime(1970, 1, 1).AddSeconds(secondsInt).ToLocalTime();
                 return true;
             }

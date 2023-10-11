@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -561,6 +561,9 @@
   <data name="VideoConference_ToolbarHideUnmuted.Content" xml:space="preserve">
     <value>When both camera and microphone are unmuted</value>
   </data>
+  <data name="VideoConference_ToolbarHideTimeout.Content" xml:space="preserve">
+    <value>After timeout</value>
+  </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference Mute</value>
   </data>
@@ -575,6 +578,21 @@
   </data>
   <data name="VideoConference_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
+  </data>
+  <data name="VideoConference_Behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="VideoConference_StartupAction.Header" xml:space="preserve">
+    <value>Startup action</value>
+  </data>
+  <data name="VideoConference_StartupActionNothing.Content" xml:space="preserve">
+    <value>Nothing</value>
+  </data>
+  <data name="VideoConference_StartupActionUnmute.Content" xml:space="preserve">
+    <value>Unmute</value>
+  </data>
+  <data name="VideoConference_StartupActionMute.Content" xml:space="preserve">
+    <value>Mute</value>
   </data>
   <data name="VideoConference_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
@@ -735,6 +753,12 @@
   </data>
   <data name="PowerLauncher_SearchResultPreference.Header" xml:space="preserve">
     <value>Search result preference</value>
+  </data>
+  <data name="PowerLauncher_UsePinyin.Header" xml:space="preserve">
+    <value>Use Pinyin</value>
+  </data>
+  <data name="PowerLauncher_UsePinyin.Description" xml:space="preserve">
+    <value>Experimental: Use Pinyin on the search query. May not work for every plugin.</value>
   </data>
   <data name="PowerLauncher_SearchResultPreference_MostRecentlyUsed" xml:space="preserve">
     <value>Most recently used</value>
@@ -1148,7 +1172,7 @@
     <value>Use a shortcut or press the Windows key for some time to activate</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
-    <value>Customized shortcut</value>
+    <value>Custom shortcut</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" xml:space="preserve">
     <value>Hold down Windows key</value>
@@ -2152,6 +2176,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
+    <comment>Title of the settings window when running as user</comment>
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
@@ -2384,7 +2409,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Shake the mouse or press the left Ctrl key twice to focus the mouse pointer.</value>
+    <value>Focus the mouse pointer pressing the Ctrl key twice, using a custom shortcut or shaking the mouse.</value>
     <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
@@ -2512,7 +2537,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when shaking the mouse or pressing the left Ctrl key twice.</value>
+    <value>Find My Mouse highlights the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
@@ -2569,6 +2594,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Description" xml:space="preserve">
     <value>Time before the spotlight appears (ms)</value>
     <comment>ms = milliseconds</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Message" xml:space="preserve">
+    <value>Animations are disabled by OS. See Settings &gt; Accessibility &gt; Visual effects</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
     <value>Shake minimum distance</value>
@@ -3609,9 +3637,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
   </data>
-  <data name="SettingsWindow_TitleTxt.Text" xml:space="preserve">
-    <value>PowerToys Settings</value>
-  </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
   </data>
@@ -3628,7 +3653,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Security key</value>
   </data>
   <data name="Hosts_Encoding.Description" xml:space="preserve">
-    <value>Chose the encoding of the hosts file</value>
+    <value>Choose the encoding of the hosts file</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_Encoding.Header" xml:space="preserve">
@@ -3657,5 +3682,22 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationCustomizedShortcut.Content" xml:space="preserve">
+    <value>Custom shortcut</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationDoubleRightControlPress.Content" xml:space="preserve">
+    <value>Press Right Control twice</value>
+    <comment>Right control is the physical key on the keyboard.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to turn on or off this mode</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="SettingsWindow_AdminTitle" xml:space="preserve">
+    <value>Administrator: PowerToys Settings</value>
+    <comment>Title of the settings window when running as administrator</comment>
   </data>
 </root>

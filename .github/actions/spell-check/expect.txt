@@ -112,7 +112,7 @@ AUTHN
 AUTHZ
 AUTOHIDE
 AUTOMATIONPROPERTIES
-autorun
+Autorun
 AUTOUPDATE
 AValid
 awakeness
@@ -144,7 +144,7 @@ Blockquotes
 blogs
 Blt
 BLUEGRAY
-bluetooth
+Bluetooth
 BLURBEHIND
 BLURREGION
 bmi
@@ -619,6 +619,7 @@ gdi
 gdiplus
 GDISCALED
 GEmoji
+GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
@@ -783,6 +784,7 @@ IFACEMETHODIMP
 IFile
 IFilter
 IGraphics
+IGT
 iid
 Iindex
 IIO
@@ -1012,6 +1014,7 @@ lstrlen
 LTRB
 LTRREADING
 luid
+LUMA
 lusrmgr
 LVal
 LWA
@@ -1076,7 +1079,7 @@ mic
 microsoft
 MIDDLEDOWN
 MIDDLEUP
-Midl
+midl
 mii
 MIIM
 millis
@@ -1366,7 +1369,6 @@ pef
 PElems
 Pels
 PERCEIVEDFLAG
-Percision
 perfmon
 pesi
 petabyte
@@ -1427,6 +1429,7 @@ ppsi
 ppsid
 ppsrm
 ppsrree
+ppstm
 ppsz
 pptal
 ppv
@@ -1469,6 +1472,8 @@ psfi
 Psr
 psrm
 psrree
+pstatstg
+pstm
 pstr
 pstream
 pstrm
@@ -1494,7 +1499,9 @@ qianlifeng
 qit
 QITAB
 QITABENT
+qoi
 qps
+Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
@@ -1672,7 +1679,6 @@ Sekan
 SENDCHANGE
 sendinput
 sendvirtualinput
-Seperate
 Seraphima
 serverside
 SETCONTEXT
@@ -1777,7 +1783,6 @@ spam
 spdisp
 spdlog
 spdo
-spec'ing
 spesi
 splitwstring
 spsi
@@ -1821,6 +1826,7 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
+STGC
 STGM
 STGMEDIUM
 sticpl
@@ -1831,7 +1837,6 @@ stringtable
 stringval
 Strm
 Strmiids
-Stroe
 Strret
 strsafe
 strutil
@@ -1848,6 +1853,7 @@ subquery
 subresource
 Superbar
 sut
+svchost
 SVE
 SVGIn
 SVGIO
@@ -1915,6 +1921,7 @@ textblock
 TEXTEXTRACTOR
 TEXTINCLUDE
 tgz
+themeresources
 THH
 THICKFRAME
 THISCOMPONENT
@@ -2076,6 +2083,7 @@ vscdb
 vsconfig
 VSCROLL
 vsetq
+VSM
 vsonline
 vstemplate
 VSTHRD
@@ -2184,6 +2192,7 @@ wnd
 WNDCLASS
 WNDCLASSEX
 WNDCLASSEXW
+WNDCLASSW
 WNDPROC
 wordpad
 workaround
@@ -2222,7 +2231,8 @@ Wubi
 WVC
 Wwan
 Wwanpp
-XAttribute
+xamlstyler
+Xavalon
 XAxis
 xbf
 Xbox
@@ -2243,9 +2253,11 @@ XPels
 XPixel
 XResource
 xsi
+xstyler
 XStr
 XUP
 XVIRTUALSCREEN
+xxxxxx
 YAxis
 ycv
 Yeet

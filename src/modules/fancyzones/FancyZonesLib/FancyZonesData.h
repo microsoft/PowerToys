@@ -26,13 +26,7 @@ public:
         return settingsFileName;
     }
 
-private:
 #if defined(UNIT_TESTS)
-    friend class FancyZonesUnitTests::LayoutHotkeysUnitTests;
-    friend class FancyZonesUnitTests::LayoutTemplatesUnitTests;
-    friend class FancyZonesUnitTests::CustomLayoutsUnitTests;
-    friend class FancyZonesUnitTests::AppliedLayoutsUnitTests;
-
     inline void SetSettingsModulePath(std::wstring_view moduleName)
     {
         std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
@@ -46,6 +40,8 @@ private:
         return result + L"\\" + std::wstring(L"zones-settings.json");
     }
 #endif
+
+private:
     std::wstring settingsFileName;
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
