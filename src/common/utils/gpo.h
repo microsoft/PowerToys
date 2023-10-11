@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <optional>
 
 namespace powertoys_gpo {
     enum gpo_rule_configured_t {
@@ -13,6 +14,7 @@ namespace powertoys_gpo {
 
     // Registry path where gpo policy values are stored.
     const std::wstring POLICIES_PATH = L"SOFTWARE\\Policies\\PowerToys";
+    const std::wstring POWER_LAUNCHER_INDIVIDUAL_PLUGIN_ENABLED_LIST_PATH = POLICIES_PATH + L"\\PowerLauncherIndividualPluginEnabledList";
 
     // Registry scope where gpo policy values are stored.
     const HKEY POLICIES_SCOPE_MACHINE = HKEY_LOCAL_MACHINE;
@@ -62,6 +64,39 @@ namespace powertoys_gpo {
 
     // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
+    const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
+
+
+    inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name)
+    {
+        DWORD reg_value_type = REG_SZ;
+        DWORD reg_flags = RRF_RT_REG_SZ;
+
+        DWORD string_buffer_capacity;
+        // Request required buffer capacity / string length
+        if (RegGetValueW(hRootKey, subKey.c_str(), value_name.c_str(), reg_flags, &reg_value_type, NULL, &string_buffer_capacity) != ERROR_SUCCESS)
+        {
+            return std::nullopt;
+        }
+        else if (string_buffer_capacity == 0)
+        {
+            return std::nullopt;
+        }
+
+        // RegGetValueW overshoots sometimes. Use a buffer first to not have characters past the string end.
+        wchar_t* temp_buffer = new wchar_t[string_buffer_capacity / sizeof(wchar_t) + 1];
+        // Read string
+        if (RegGetValueW(hRootKey, subKey.c_str(), value_name.c_str(), reg_flags, &reg_value_type, temp_buffer, &string_buffer_capacity) != ERROR_SUCCESS)
+        {
+            delete temp_buffer;
+            return std::nullopt;
+        }
+
+        // Convert buffer to std::wstring, delete buffer and return REG_SZ value
+        std::wstring string_value = temp_buffer;
+        delete temp_buffer;
+        return string_value;
+    }
 
     inline gpo_rule_configured_t getConfiguredValue(const std::wstring& registry_value_name)
     {
@@ -115,6 +150,51 @@ namespace powertoys_gpo {
         default:
             return gpo_rule_configured_wrong_value;
         }
+    }
+
+    inline std::optional<std::wstring> getPolicyListValue(const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
+    {
+        // This function returns the value of an entry of an policy list. The user scope is only checked, if the list is not enabled for the machine to not mix the lists.
+
+        HKEY key{};
+
+        // Try to read from the machine list.
+        bool machine_list_found = false;
+        if (RegOpenKeyExW(POLICIES_SCOPE_MACHINE, registry_list_path.c_str(), 0, KEY_READ, &key) == ERROR_SUCCESS)
+        {
+            machine_list_found = true;
+            RegCloseKey(key);
+
+            // If the path exists in the machine registry, we try to read the value.
+            auto regValueData = readRegistryStringValue(POLICIES_SCOPE_MACHINE, registry_list_path, registry_list_value_name);
+
+            if (regValueData.has_value())
+            {
+                // Return the value from the machine list.
+                return *regValueData;
+            }
+        }
+
+        // If no list exists for machine, we try to read from the user list.
+        if (!machine_list_found)
+        {
+            if (RegOpenKeyExW(POLICIES_SCOPE_USER, registry_list_path.c_str(), 0, KEY_READ, &key) == ERROR_SUCCESS)
+            {
+                RegCloseKey(key);
+
+                // If the path exists in the user registry, we try to read the value.
+                auto regValueData = readRegistryStringValue(POLICIES_SCOPE_USER, registry_list_path, registry_list_value_name);
+
+                if (regValueData.has_value())
+                {
+                    // Return the value from the user list.
+                    return *regValueData;
+                }
+            }
+        }
+
+        // No list exists for machine and user, or no value was found in the list, or an error ocurred while reading the value.
+        return std::nullopt;
     }
 
     inline gpo_rule_configured_t getUtilityEnabledValue(const std::wstring& utility_name)
@@ -319,6 +399,46 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getAllowExperimentationValue()
     {
         return getConfiguredValue(POLICY_ALLOW_EXPERIMENTATION);
+    }
+
+    inline gpo_rule_configured_t getRunPluginEnabledValue(std::string pluginID)
+    {     
+        if (pluginID == "" || pluginID == " ")
+        {
+            // this plugin id can't exist in the registry
+            return gpo_rule_configured_not_configured;
+        }
+
+        std::wstring plugin_id(pluginID.begin(), pluginID.end());
+        auto individual_plugin_setting = getPolicyListValue(POWER_LAUNCHER_INDIVIDUAL_PLUGIN_ENABLED_LIST_PATH, plugin_id);
+        
+        if (individual_plugin_setting.has_value())
+        {
+            if (*individual_plugin_setting == L"0")
+            {
+                // force disabled
+                return gpo_rule_configured_disabled;
+            }
+            else if (*individual_plugin_setting == L"1")
+            {
+                // force enabled
+                return gpo_rule_configured_enabled;
+            }
+            else if (*individual_plugin_setting == L"2")
+            {
+                // user takes control
+                return gpo_rule_configured_not_configured;
+            }
+            else
+            {
+                return gpo_rule_configured_wrong_value;
+            }
+        }
+        else
+        {
+            // If no individual plugin policy exists, we check the policy with the setting for all plugins.
+            return getConfiguredValue(POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS);
+        }        
     }
 
 }
