@@ -29,7 +29,7 @@ bool FancyZonesWindowProcessing::IsProcessable(HWND window) noexcept
     // also, popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Telegram
     bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
     bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
-    if (isPopup && !(hasThickFrame && FancyZonesSettings::settings().allowSnapPopupWindows))
+    if (isPopup && (!hasThickFrame || !FancyZonesSettings::settings().allowSnapPopupWindows))
     {
         return false;
     }
