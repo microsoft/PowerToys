@@ -94,3 +94,34 @@ If enabled, the automatic update checks are disabled.
 
 If disabled or not configured, the automatic update checks are enabled.
 -->
+
+### PowerToys Run
+
+#### Configure enabled state for all plugins
+
+This policy configures the enabled state for all PowerToys Run plugins. All plugins will have the same state.
+
+If you enable this setting, the plugins will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, the plugins will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to disable or enable the plugins.
+
+You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
+
+Note: Changes require a restart of PowerToys Run.
+
+#### Configure enabled state for individual plugins
+
+With this policy you can configures an individual enabled state for each PowerToys Run plugin that you add to the list.
+
+If you enable this setting, you can define the list of plugins and their enabled states:
+  - The value name (first column) is the plugin ID. You will find it in the plugin.json which is located in the plugin folder.
+  - The value (second column) is a numeric value: 0 for disabled, 1 for enabled and 2 for user takes control.
+  - Example to disable the Program plugin: `791FC278BA414111B8D1886DFE447410 | 0`
+
+If you disable or don't configure this policy, either the user or the policy "Configure enabled state for all plugins" takes control over the enabled state of the plugins.
+
+You can set the enabled state for all plugins not listed here using the policy "Configure enabled state for all plugins".
+
+Note: Changes require a restart of PowerToys Run.
