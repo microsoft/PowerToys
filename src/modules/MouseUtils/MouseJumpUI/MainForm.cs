@@ -144,7 +144,7 @@ internal partial class MainForm : Form
         stopwatch.Stop();
 
         // we have to activate the form to make sure the deactivate event fires
-        Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
+        Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpShowEvent());
         this.Activate();
     }
 
