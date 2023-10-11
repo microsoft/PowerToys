@@ -153,12 +153,8 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard
-                        x:Uid="PowerLauncher_UsePinyin"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE98A;}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
+                    <controls:SettingsCard x:Uid="PowerLauncher_UsePinyin" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE98A;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles">
@@ -388,8 +384,10 @@
                                                                     Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}">
                                                                     <ComboBox
                                                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                                        ItemsSource="{x:Bind Path=ComboBoxOptions}"
-                                                                        SelectedIndex="{x:Bind Path=ComboBoxValue, Mode=TwoWay}" />
+                                                                        DisplayMemberPath="Key"
+                                                                        ItemsSource="{x:Bind Path=ComboBoxItems}"
+                                                                        SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
+                                                                        SelectedValuePath="Value" />
                                                                 </controls:SettingsCard>
                                                                 <!--  TextBox setting  -->
                                                                 <controls:SettingsCard
@@ -456,8 +454,10 @@
                                                                         IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
                                                                         <ComboBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                                            ItemsSource="{x:Bind Path=ComboBoxOptions}"
-                                                                            SelectedIndex="{x:Bind Path=ComboBoxValue, Mode=TwoWay}" />
+                                                                            DisplayMemberPath="Key"
+                                                                            ItemsSource="{x:Bind Path=ComboBoxItems}"
+                                                                            SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
+                                                                            SelectedValuePath="Value" />
                                                                     </controls:SettingsCard>
                                                                 </StackPanel>
                                                                 <!--  Checkbox And TextBox setting  -->
