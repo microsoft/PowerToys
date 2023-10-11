@@ -29,6 +29,8 @@ namespace Microsoft.Plugin.WindowWalker
 
         public string Description => Properties.Resources.wox_plugin_windowwalker_plugin_description;
 
+        public static string PluginID => "F737A9223560B3C6833B5FFB8CDF78E5";
+
         internal static readonly VirtualDesktopHelper VirtualDesktopHelperInstance = new VirtualDesktopHelper();
 
         public List<Result> Query(Query query)

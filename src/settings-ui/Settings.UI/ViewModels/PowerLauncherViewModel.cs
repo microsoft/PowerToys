@@ -132,6 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
+            OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
             UpdateSettings();
         }
 
@@ -171,6 +172,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(EnablePowerLauncher));
                     OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
                     OnPropertyChanged(nameof(ShowPluginsLoadingMessage));
+                    OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -183,6 +185,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(EnablePowerLauncher));
             OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
             OnPropertyChanged(nameof(ShowPluginsLoadingMessage));
+            OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
         }
 
         public bool IsEnabledGpoConfigured
@@ -613,9 +616,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowPluginsAreGpoManagedInfo
+        {
+            get => EnablePowerLauncher && settings.Plugins.Any() && Plugins.Any(x => x.EnabledGpoRuleIsConfigured);
+        }
+
         public bool ShowAllPluginsDisabledWarning
         {
-            get => EnablePowerLauncher && settings.Plugins.Any() && settings.Plugins.All(x => x.Disabled);
+            get => EnablePowerLauncher && settings.Plugins.Any() && Plugins.All(x => x.Disabled);
         }
 
         public bool ShowPluginsLoadingMessage

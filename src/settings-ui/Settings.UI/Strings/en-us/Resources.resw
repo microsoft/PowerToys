@@ -3680,6 +3680,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
     <value>Find more plugins</value>
   </data>
+  <data name="Run_SomePluginsAreGpoManaged.Title" xml:space="preserve">
+    <value>The system administrator is managing the enabled state of some plugins.</value>
+  </data>
   <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
   </data>

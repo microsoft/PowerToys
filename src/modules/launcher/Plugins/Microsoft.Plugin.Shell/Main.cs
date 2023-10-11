@@ -39,6 +39,8 @@ namespace Microsoft.Plugin.Shell
 
         public string Description => Properties.Resources.wox_plugin_cmd_plugin_description;
 
+        public static string PluginID => "D409510CD0D2481F853690A07E6DC426";
+
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             new PluginAdditionalOption()
