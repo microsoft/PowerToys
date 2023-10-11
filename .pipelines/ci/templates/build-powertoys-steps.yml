@@ -8,11 +8,10 @@ steps:
   clean: true
 
 - task: UseDotNet@2
-  displayName: 'Use .NET 8 SDK'
+  displayName: 'Use .NET 7 SDK'
   inputs:
     packageType: sdk
-    version: '8.x'
-    includePreviewVersions: true
+    version: '7.x'
 
 - task: PowerShell@2
   displayName: Verify XAML formatting
@@ -62,6 +61,13 @@ steps:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyArm64Configuration.ps1'
     arguments: -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
     pwsh: true
+
+- task: UseDotNet@2
+  displayName: 'Use .NET 8 SDK'
+  inputs:
+    packageType: sdk
+    version: '8.x'
+    includePreviewVersions: true
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
