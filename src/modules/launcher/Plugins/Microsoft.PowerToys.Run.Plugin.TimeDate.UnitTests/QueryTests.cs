@@ -52,12 +52,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("(time", 17)]
-        [DataRow("(date", 25)]
+        [DataRow("(time", 18)]
+        [DataRow("(date", 26)]
         [DataRow("(year", 7)]
-        [DataRow("(now", 31)]
-        [DataRow("(current", 31)]
-        [DataRow("(", 31)]
+        [DataRow("(now", 32)]
+        [DataRow("(current", 32)]
+        [DataRow("(", 32)]
         [DataRow("(now::10:10:10", 1)] // Windows file time
         [DataRow("(current::10:10:10", 0)]
         public void CountWithPluginKeyword(string typedString, int expectedResultCount)
@@ -104,6 +104,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(now", "Now -")]
         [DataRow("(now u", "Now UTC -")]
         [DataRow("(unix", "Unix epoch time -")]
+        [DataRow("(unix epoch time in milli", "Unix epoch time in milliseconds -")]
         [DataRow("(file", "Windows file time (Int64 number) ")]
         [DataRow("(hour", "Hour -")]
         [DataRow("(minute", "Minute -")]
@@ -156,6 +157,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(12:30", "Time -")]
         [DataRow("(10.10.2022", "Date -")]
         [DataRow("(u1646408119", "Date and time -")]
+        [DataRow("(ums1646408119", "Date and time -")]
         [DataRow("(ft637820085517321977", "Date and time -")]
         public void DateTimeNumberOnlyInput(string typedString, string expectedResult)
         {
@@ -201,6 +203,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("(ug1646408119")] // Invalid prefix
         [DataRow("(u9999999999999")] // Unix number + prefix is longer than 12 characters
+        [DataRow("(ums999999999999999")] // Unix number + prefix is longer than 17 characters
         [DataRow("(0123456")] // Missing prefix
         [DataRow("(ft63782008ab55173dasdas21977")] // Number contains letters
         public void InvalidNumberInputShowsErrorMessage(string typedString)
