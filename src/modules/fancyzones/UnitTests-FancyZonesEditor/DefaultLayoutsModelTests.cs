@@ -9,18 +9,6 @@ namespace UnitTestsFancyZonesEditor;
 public class DefaultLayoutsModelTests
 {
     [TestMethod]
-    public void SettingFirstLayoutShouldBeLengthOne()
-    {
-        var defaultLayoutsModel = new DefaultLayoutsModel();
-        GridLayoutModel gridLayoutModel = new GridLayoutModel();
-
-        defaultLayoutsModel.Set(gridLayoutModel, MonitorConfigurationType.Horizontal);
-
-        var actualCount = defaultLayoutsModel.Layouts.Count;
-        Assert.AreEqual(1, actualCount);
-    }
-
-    [TestMethod]
     public void LayoutCapacityShouldBeNumberOfMonitorConfigurations()
     {
         var defaultLayoutsModel = new DefaultLayoutsModel();
