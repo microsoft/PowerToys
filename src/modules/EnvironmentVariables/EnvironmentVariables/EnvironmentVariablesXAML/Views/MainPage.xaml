@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="EnvironmentVariables.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:baseControls="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:EnvironmentVariables.Converters"
     xmlns:converters1="using:CommunityToolkit.WinUI.Converters"
@@ -11,7 +12,6 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EnvironmentVariables.Models"
-    xmlns:baseControls="using:Microsoft.UI.Xaml.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     mc:Ignorable="d">
@@ -174,13 +174,12 @@
                                 <controls:SettingsExpander
                                     Margin="0,0,0,4"
                                     Header="{x:Bind Name, Mode=TwoWay}"
-                                    HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}" >
+                                    HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}">
                                     <controls:SettingsExpander.ItemsHeader>
                                         <baseControls:ItemsControl
                                             ItemTemplate="{StaticResource VariableTemplate}"
-                                            TabFocusNavigation="Local"
-                                            ItemsSource="{x:Bind Variables, Mode=OneWay}">
-                                        </baseControls:ItemsControl>
+                                            ItemsSource="{x:Bind Variables, Mode=OneWay}"
+                                            TabFocusNavigation="Local" />
                                     </controls:SettingsExpander.ItemsHeader>
 
                                     <StackPanel Orientation="Horizontal">
@@ -242,9 +241,8 @@
                         <controls:SettingsExpander.ItemsHeader>
                             <baseControls:ItemsControl
                                 ItemTemplate="{StaticResource VariableTemplate}"
-                                                        TabFocusNavigation="Local"
-                                                        ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}">
-                            </baseControls:ItemsControl>
+                                ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}"
+                                TabFocusNavigation="Local" />
                         </controls:SettingsExpander.ItemsHeader>
                         <StackPanel Orientation="Horizontal">
                             <Button
@@ -260,15 +258,12 @@
                         </StackPanel>
                     </controls:SettingsExpander>
 
-                    <controls:SettingsExpander
-                        Header="{x:Bind ViewModel.SystemDefaultSet.Name}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
+                    <controls:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}" HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
                         <controls:SettingsExpander.ItemsHeader>
                             <baseControls:ItemsControl
                                 ItemTemplate="{StaticResource VariableTemplate}"
-                                                        TabFocusNavigation="Local"
-                                                        ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}">
-                            </baseControls:ItemsControl>
+                                ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}"
+                                TabFocusNavigation="Local" />
                         </controls:SettingsExpander.ItemsHeader>
                         <controls:SettingsExpander.Description>
                             <StackPanel
