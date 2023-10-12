@@ -4,7 +4,7 @@
 
 using FancyZonesEditor.Models;
 
-namespace UnitTestFancyZonesEditor;
+namespace UnitTestsFancyZonesEditor;
 
 [TestClass]
 public class GridLayoutModelTests

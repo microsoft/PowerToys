@@ -10,6 +10,7 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UnitTest-FancyZonesEditor\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
