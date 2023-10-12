@@ -212,8 +212,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(ft12..54//8")] // Number contains punctuation and other characters
         [DataRow("(time::ft12..54//8")] // Number contains punctuation and other characters
         [DataRow("(ut2ed.5555")] // Number contains punctuation and other characters
-        [DataRow("(12..54//8")] // Number contains punctuation and other characters, but no speacial prefix
-        [DataRow("(ft::1288gg8888")] // Number contains delimiter and other characters, but no speacial prefix
+        [DataRow("(12..54//8")] // Number contains punctuation and other characters, but no special prefix
+        [DataRow("(ft::1288gg8888")] // Number contains delimiter and other characters, but no special prefix
         [DataRow("(date::12::55")]
         [DataRow("(date::12:aa:55")]
         [DataRow("(10.aa.22")]
@@ -233,9 +233,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("(ft1 2..548")] // Input conatins space
-        [DataRow("(ft12..54 //8")] // Input conatins space
-        [DataRow("(time::ft12..54 //8")] // Input conatins space
+        [DataRow("(ft1 2..548")] // Input contains space
+        [DataRow("(ft12..54 //8")] // Input contains space
+        [DataRow("(time::ft12..54 //8")] // Input contains space
+        [DataRow("(10.10aa")] // Input contains <Number>.<Number> (Can be part of a date.)
+        [DataRow("(10:10aa")] // Input contains <Number>:<Number> (Can be part of a time.)
+        [DataRow("(10/10aa")] // Input contains <Number>/<Number> (Can be part of a date.)
         public void InvalidInputNotShowsErrorMessage(string typedString)
         {
             // Setup
