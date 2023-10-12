@@ -11,6 +11,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EnvironmentVariables.Models"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     mc:Ignorable="d">
@@ -173,9 +174,14 @@
                                 <controls:SettingsExpander
                                     Margin="0,0,0,4"
                                     Header="{x:Bind Name, Mode=TwoWay}"
-                                    HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}"
-                                    ItemTemplate="{StaticResource VariableTemplate}"
-                                    ItemsSource="{x:Bind Variables, Mode=OneWay}">
+                                    HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}" >
+                                    <controls:SettingsExpander.ItemsHeader>
+                                        <muxc:ItemsControl
+                                            ItemTemplate="{StaticResource VariableTemplate}"
+                                            TabFocusNavigation="Local"
+                                            ItemsSource="{x:Bind Variables, Mode=OneWay}">
+                                        </muxc:ItemsControl>
+                                    </controls:SettingsExpander.ItemsHeader>
 
                                     <StackPanel Orientation="Horizontal">
                                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=IsEnabled}" />
@@ -232,9 +238,14 @@
                     <controls:SettingsExpander
                         Margin="0,4,0,0"
                         Header="{x:Bind ViewModel.UserDefaultSet.Name}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}"
-                        ItemTemplate="{StaticResource VariableTemplate}"
-                        ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}">
+                        <controls:SettingsExpander.ItemsHeader>
+                            <muxc:ItemsControl
+                                ItemTemplate="{StaticResource VariableTemplate}"
+                                                        TabFocusNavigation="Local"
+                                                        ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}">
+                            </muxc:ItemsControl>
+                        </controls:SettingsExpander.ItemsHeader>
                         <StackPanel Orientation="Horizontal">
                             <Button
                                 x:Name="AddDefaultVariableUserBtn"
@@ -251,9 +262,14 @@
 
                     <controls:SettingsExpander
                         Header="{x:Bind ViewModel.SystemDefaultSet.Name}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE977;}"
-                        ItemTemplate="{StaticResource VariableTemplate}"
-                        ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
+                        <controls:SettingsExpander.ItemsHeader>
+                            <muxc:ItemsControl
+                                ItemTemplate="{StaticResource VariableTemplate}"
+                                                        TabFocusNavigation="Local"
+                                                        ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}">
+                            </muxc:ItemsControl>
+                        </controls:SettingsExpander.ItemsHeader>
                         <controls:SettingsExpander.Description>
                             <StackPanel
                                 Orientation="Horizontal"
