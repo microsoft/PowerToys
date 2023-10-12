@@ -45,15 +45,15 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void FlyoutButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            List<string> filesInPowertoysDir = UMBUtilites.GetFilesNamesInDir(AppDomain.CurrentDomain.BaseDirectory);
-            List<string> moduleFiles = UMBUtilites.FindStringsContainingWord(filesInPowertoysDir, this.ModuleName);
+            List<string> filesInPowertoysDir = UninstallModuleUtilities.GetFilesNamesInDir(AppDomain.CurrentDomain.BaseDirectory);
+            List<string> moduleFiles = UninstallModuleUtilities.FindStringsContainingWord(filesInPowertoysDir, this.ModuleName);
 
             foreach (string file in moduleFiles)
             {
-                UMBUtilites.DeleteFile(file);
+                UninstallModuleUtilities.DeleteFile(file);
             }
 
-            UMBUtilites.WriteWordToFile(this.ModuleName, "uninstalled_modules");
+            UninstallModuleUtilities.WriteWordToFile(this.ModuleName, "uninstalled_modules");
 
             RestartApp.IsOpen = true;
         }

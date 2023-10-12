@@ -21,8 +21,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new FancyZonesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<FancyZonesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
 
-            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
-            if (UMBUtilites.DoesListContainWord(deletedModules, "FancyZones"))
+            List<string> deletedModules = UninstallModuleUtilities.ReadWordsFromFile("uninstalled_modules");
+            if (UninstallModuleUtilities.DoesListContainWord(deletedModules, "FancyZones"))
             {
                 this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;

@@ -12,8 +12,8 @@
 3. Edit __Views/YourModule.xaml.cs__ and add to ```public YourModule()``` this code after ```this.InitializeComponent();```
 ```c#
 
-List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
-if (UMBUtilites.DoesListContainWord(deletedModules, "YourModuleName"))
+List<string> deletedModules = UninstallModuleUtilities.ReadWordsFromFile("uninstalled_modules");
+if (UninstallModuleUtilities.DoesListContainWord(deletedModules, "YourModuleName"))
 {
     this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
     this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;

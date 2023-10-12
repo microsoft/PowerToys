@@ -20,8 +20,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var settingsUtils = new SettingsUtils();
             ViewModel = new HostsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<HostsSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
 
-            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
-            if (UMBUtilites.DoesListContainWord(deletedModules, "Hosts"))
+            List<string> deletedModules = UninstallModuleUtilities.ReadWordsFromFile("uninstalled_modules");
+            if (UninstallModuleUtilities.DoesListContainWord(deletedModules, "Hosts"))
             {
                 this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;

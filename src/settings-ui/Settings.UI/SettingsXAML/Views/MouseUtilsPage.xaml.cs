@@ -28,8 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     tempSettingsUtils.DeleteSettings("Find My Mouse");
                 }
 
-                List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
-                if (UMBUtilites.DoesListContainWord(deletedModules, "MouseUtils"))
+                List<string> deletedModules = UninstallModuleUtilities.ReadWordsFromFile("uninstalled_modules");
+                if (UninstallModuleUtilities.DoesListContainWord(deletedModules, "MouseUtils"))
                 {
                     this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                     this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;

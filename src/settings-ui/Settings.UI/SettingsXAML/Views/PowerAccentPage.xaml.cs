@@ -21,8 +21,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             this.InitializeComponent();
 
-            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
-            if (UMBUtilites.DoesListContainWord(deletedModules, "PowerAccent"))
+            List<string> deletedModules = UninstallModuleUtilities.ReadWordsFromFile("uninstalled_modules");
+            if (UninstallModuleUtilities.DoesListContainWord(deletedModules, "PowerAccent"))
             {
                 this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;

@@ -31,8 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new ImageResizerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, loader);
             DataContext = ViewModel;
 
-            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
-            if (UMBUtilites.DoesListContainWord(deletedModules, "ImageResizer"))
+            List<string> deletedModules = UninstallModuleUtilities.ReadWordsFromFile("uninstalled_modules");
+            if (UninstallModuleUtilities.DoesListContainWord(deletedModules, "ImageResizer"))
             {
                 this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;

@@ -21,8 +21,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
 
-            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
-            if (UMBUtilites.DoesListContainWord(deletedModules, "FileLocksmith"))
+            List<string> deletedModules = UninstallModuleUtilities.ReadWordsFromFile("uninstalled_modules");
+            if (UninstallModuleUtilities.DoesListContainWord(deletedModules, "FileLocksmith"))
             {
                 this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;

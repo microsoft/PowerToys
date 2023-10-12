@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     /// <summary>
     /// Utility class for performing various file and string operations.
     /// </summary>
-    internal sealed class UMBUtilites
+    internal sealed class UninstallModuleUtilities
     {
         /// <summary>
         /// Get a list of file names in a specified directory.
