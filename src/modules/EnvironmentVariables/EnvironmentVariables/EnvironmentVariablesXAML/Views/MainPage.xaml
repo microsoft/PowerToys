@@ -3,7 +3,6 @@
     x:Class="EnvironmentVariables.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:baseControls="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:EnvironmentVariables.Converters"
     xmlns:converters1="using:CommunityToolkit.WinUI.Converters"
@@ -176,10 +175,11 @@
                                     Header="{x:Bind Name, Mode=TwoWay}"
                                     HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}">
                                     <controls:SettingsExpander.ItemsHeader>
-                                        <baseControls:ItemsRepeater
+                                        <ItemsRepeater
                                             ItemTemplate="{StaticResource VariableTemplate}"
                                             ItemsSource="{x:Bind Variables, Mode=OneWay}"
-                                            TabFocusNavigation="Local" />
+                                            TabFocusNavigation="Local"
+                                            VerticalCacheLength="5" />
                                     </controls:SettingsExpander.ItemsHeader>
 
                                     <StackPanel Orientation="Horizontal">
@@ -239,10 +239,11 @@
                         Header="{x:Bind ViewModel.UserDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}">
                         <controls:SettingsExpander.ItemsHeader>
-                            <baseControls:ItemsRepeater
+                            <ItemsRepeater
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}"
-                                TabFocusNavigation="Local" />
+                                TabFocusNavigation="Local"
+                                VerticalCacheLength="5" />
                         </controls:SettingsExpander.ItemsHeader>
                         <StackPanel Orientation="Horizontal">
                             <Button
@@ -260,10 +261,11 @@
 
                     <controls:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}" HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
                         <controls:SettingsExpander.ItemsHeader>
-                            <baseControls:ItemsRepeater
+                            <ItemsRepeater
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}"
-                                TabFocusNavigation="Local" />
+                                TabFocusNavigation="Local"
+                                VerticalCacheLength="5" />
                         </controls:SettingsExpander.ItemsHeader>
                         <controls:SettingsExpander.Description>
                             <StackPanel
