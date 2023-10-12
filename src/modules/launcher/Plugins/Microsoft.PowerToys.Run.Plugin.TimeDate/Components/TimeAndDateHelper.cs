@@ -130,7 +130,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <returns>True if yes, otherwise false</returns>
         internal static bool IsSpecialInputParsing(string input)
         {
-            return Regex.IsMatch(input, @"^.*(u|ums|ft)\d+");
+            return Regex.IsMatch(input, @"^.*(u|ums|ft)\d");
         }
     }
 

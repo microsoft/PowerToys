@@ -31,13 +31,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("time", 2)]
-        [DataRow("date", 2)]
-        [DataRow("now", 3)]
-        [DataRow("current", 3)]
-        [DataRow("year", 0)]
-        [DataRow("time::10:10:10", 0)]
-        [DataRow("date::10/10/10", 0)]
+        [DataRow("time", 2)] // Setting 'Only Date, Time, Now on global results' is default on
+        [DataRow("date", 2)] // Setting 'Only Date, Time, Now on global results' is default on
+        [DataRow("now", 3)] // Setting 'Only Date, Time, Now on global results' is default on
+        [DataRow("current", 3)] // Setting 'Only Date, Time, Now on global results' is default on
+        [DataRow("year", 0)] // Setting 'Only Date, Time, Now on global results' is default on
+        [DataRow("time::10:10:10", 0)] // Setting 'Only Date, Time, Now on global results' is default on
+        [DataRow("date::10/10/10", 0)] // Setting 'Only Date, Time, Now on global results' is default on
         public void CountWithoutPluginKeyword(string typedString, int expectedResultCount)
         {
             // Setup
@@ -182,15 +182,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("(abcdefg")]
         [DataRow("(timmmmeeee")]
-        [DataRow("(10.10.20.aa.22")]
-        [DataRow("(12::55")]
-        [DataRow("(12:aa:55")]
         [DataRow("(timtaaaetetaae::u1646408119")]
         [DataRow("(time:eeee")]
         [DataRow("(time::eeee")]
         [DataRow("(time//eeee")]
-        [DataRow("(date::12::55")]
-        [DataRow("(date::12:aa:55")]
         public void InvalidInputNotShowsResults(string typedString)
         {
             // Setup
@@ -212,6 +207,18 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(+ums9999999999")] // Unix number with wrong placement of + sign
         [DataRow("(0123456")] // Missing prefix
         [DataRow("(ft63782008ab55173dasdas21977")] // Number contains letters
+        [DataRow("(ft63782008ab55173dasdas")] // Number contains letters at the end
+        [DataRow("(ft12..548")] // Number contains punctuation
+        [DataRow("(ft12..54//8")] // Number contains punctuation and other characters
+        [DataRow("(time::ft12..54//8")] // Number contains punctuation and other characters
+        [DataRow("(ut2ed.5555")] // Number contains punctuation and other characters
+        [DataRow("(12..54//8")] // Number contains punctuation and other characters, but no speacial prefix
+        [DataRow("(ft::1288gg8888")] // Number contains delimiter and other characters, but no speacial prefix
+        [DataRow("(date::12::55")]
+        [DataRow("(date::12:aa:55")]
+        [DataRow("(10.aa.22")]
+        [DataRow("(12::55")]
+        [DataRow("(12:aa:55")]
         public void InvalidNumberInputShowsErrorMessage(string typedString)
         {
             // Setup
@@ -226,10 +233,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("(ft12..548")] // Number contains punctuation
-        [DataRow("(ft12..54//8")] // Number contains punctuation and other characters
-        [DataRow("(12..54//8")] // Number contains punctuation and other characters
-        [DataRow("(ft::1288gg8888")] // Number contains delimiter and other characters
+        [DataRow("(ft1 2..548")] // Input conatins space
+        [DataRow("(ft12..54 //8")] // Input conatins space
+        [DataRow("(time::ft12..54 //8")] // Input conatins space
         public void InvalidInputNotShowsErrorMessage(string typedString)
         {
             // Setup
