@@ -176,7 +176,7 @@
                                     Header="{x:Bind Name, Mode=TwoWay}"
                                     HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}">
                                     <controls:SettingsExpander.ItemsHeader>
-                                        <baseControls:ItemsControl
+                                        <baseControls:ItemsRepeater
                                             ItemTemplate="{StaticResource VariableTemplate}"
                                             ItemsSource="{x:Bind Variables, Mode=OneWay}"
                                             TabFocusNavigation="Local" />
@@ -239,7 +239,7 @@
                         Header="{x:Bind ViewModel.UserDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}">
                         <controls:SettingsExpander.ItemsHeader>
-                            <baseControls:ItemsControl
+                            <baseControls:ItemsRepeater
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}"
                                 TabFocusNavigation="Local" />
@@ -260,7 +260,7 @@
 
                     <controls:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}" HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
                         <controls:SettingsExpander.ItemsHeader>
-                            <baseControls:ItemsControl
+                            <baseControls:ItemsRepeater
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}"
                                 TabFocusNavigation="Local" />
