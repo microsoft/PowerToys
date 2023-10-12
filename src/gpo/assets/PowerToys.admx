@@ -21,6 +21,9 @@
 	<category name="InstallerUpdates" displayName="$(string.InstallerUpdates)">
 		<parentCategory ref="PowerToys" />
     </category>
+	<category name="PowerToysRun" displayName="$(string.PowerToysRun)">
+		<parentCategory ref="PowerToys" />
+    </category>
   </categories>
   <policies>
   
@@ -416,6 +419,23 @@
       <disabledValue>
         <decimal value="0" />
       </disabledValue>
+    </policy>
+	<policy name="PowerToysRunAllPluginsEnabledState" class="Both" displayName="$(string.PowerToysRunAllPluginsEnabledState)" explainText="$(string.PowerToysRunAllPluginsEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PowerLauncherAllPluginsEnabledState">
+      <parentCategory ref="PowerToysRun" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+	<policy name="PowerToysRunIndividualPluginEnabledState" class="Both" displayName="$(string.PowerToysRunIndividualPluginEnabledState)" explainText="$(string.PowerToysRunIndividualPluginEnabledStateDescription)" presentation="$(presentation.PowerToysRunIndividualPluginEnabledState)" key="Software\Policies\PowerToys\PowerLauncherIndividualPluginEnabledList">
+      <parentCategory ref="PowerToysRun" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0"/>
+	  <elements>
+		<list id="PowerToysRunIndividualPluginEnabledList" explicitValue="true" />
+	  </elements>
     </policy>
   </policies>
 </policyDefinitions>
