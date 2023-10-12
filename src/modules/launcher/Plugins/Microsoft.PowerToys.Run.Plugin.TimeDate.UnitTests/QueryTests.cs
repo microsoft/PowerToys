@@ -202,18 +202,18 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("(ug1646408119")] // Invalid prefix
         [DataRow("(u9999999999999")] // Unix number + prefix is longer than 12 characters
-        [DataRow("(-u99999999999")] // Unix number with wring placement of - sign
-        [DataRow("(ums999999999999999")] // Unix number + prefix is longer than 17 characters
-        [DataRow("(+ums9999999999")] // Unix number with wrong placement of + sign
+        [DataRow("(ums999999999999999")] // Unix number in milliseconds + prefix is longer than 17 characters
+        [DataRow("(-u99999999999")] // Unix number with wrong placement of - sign
+        [DataRow("(+ums9999999999")] // Unix number in milliseconds with wrong placement of + sign
         [DataRow("(0123456")] // Missing prefix
         [DataRow("(ft63782008ab55173dasdas21977")] // Number contains letters
         [DataRow("(ft63782008ab55173dasdas")] // Number contains letters at the end
-        [DataRow("(ft12..548")] // Number contains punctuation
-        [DataRow("(ft12..54//8")] // Number contains punctuation and other characters
-        [DataRow("(time::ft12..54//8")] // Number contains punctuation and other characters
-        [DataRow("(ut2ed.5555")] // Number contains punctuation and other characters
+        [DataRow("(ft12..548")] // Number contains wrong punctuation
+        [DataRow("(ft12..54//8")] // Number contains wrong punctuation and other characters
+        [DataRow("(time::ft12..54//8")] // Number contains wrong punctuation and other characters
+        [DataRow("(ut2ed.5555")] // Number contains letters
         [DataRow("(12..54//8")] // Number contains punctuation and other characters, but no special prefix
-        [DataRow("(ft::1288gg8888")] // Number contains delimiter and other characters, but no special prefix
+        [DataRow("(ft::1288gg8888")] // Number contains delimiter and letters, but no special prefix
         [DataRow("(date::12::55")]
         [DataRow("(date::12:aa:55")]
         [DataRow("(10.aa.22")]
