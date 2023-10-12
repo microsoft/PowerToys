@@ -59,61 +59,60 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 DefaultMaterial = new DiffuseMaterial(new SolidColorBrush(DefaultMaterialColor)),
             };
 
-            Model3DGroup model;
             try
             {
-                model = stlReader.Read(stream);
+                var model = stlReader.Read(stream);
+
+                if (model == null || model.Children.Count == 0 || model.Bounds == Rect3D.Empty)
+                {
+                    return null;
+                }
+
+                var viewport = new System.Windows.Controls.Viewport3D();
+
+                viewport.Measure(new System.Windows.Size(cx, cx));
+                viewport.Arrange(new Rect(0, 0, cx, cx));
+
+                var modelVisual = new ModelVisual3D()
+                {
+                    Transform = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), 180)),
+                };
+                viewport.Children.Add(modelVisual);
+                viewport.Children.Add(new DefaultLights());
+
+                var perspectiveCamera = new PerspectiveCamera
+                {
+                    Position = new Point3D(1, 2, 1),
+                    LookDirection = new Vector3D(-1, -2, -1),
+                    UpDirection = new Vector3D(0, 0, 1),
+                    FieldOfView = 20,
+                    NearPlaneDistance = 0.1,
+                    FarPlaneDistance = double.PositiveInfinity,
+                };
+                viewport.Camera = perspectiveCamera;
+
+                modelVisual.Content = model;
+
+                perspectiveCamera.ZoomExtents(viewport);
+
+                var bitmapExporter = new BitmapExporter
+                {
+                    Background = new SolidColorBrush(Colors.Transparent),
+                    OversamplingMultiplier = 1,
+                };
+
+                var bitmapStream = new MemoryStream();
+
+                bitmapExporter.Export(viewport, bitmapStream);
+
+                bitmapStream.Position = 0;
+
+                thumbnail = new Bitmap(bitmapStream);
             }
             catch (Exception)
             {
                 return null;
             }
-
-            if (model == null || model.Children.Count == 0 || model.Bounds == Rect3D.Empty)
-            {
-                return null;
-            }
-
-            var viewport = new System.Windows.Controls.Viewport3D();
-
-            viewport.Measure(new System.Windows.Size(cx, cx));
-            viewport.Arrange(new Rect(0, 0, cx, cx));
-
-            var modelVisual = new ModelVisual3D()
-            {
-                Transform = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), 180)),
-            };
-            viewport.Children.Add(modelVisual);
-            viewport.Children.Add(new DefaultLights());
-
-            var perspectiveCamera = new PerspectiveCamera
-            {
-                Position = new Point3D(1, 2, 1),
-                LookDirection = new Vector3D(-1, -2, -1),
-                UpDirection = new Vector3D(0, 0, 1),
-                FieldOfView = 20,
-                NearPlaneDistance = 0.1,
-                FarPlaneDistance = double.PositiveInfinity,
-            };
-            viewport.Camera = perspectiveCamera;
-
-            modelVisual.Content = model;
-
-            perspectiveCamera.ZoomExtents(viewport);
-
-            var bitmapExporter = new BitmapExporter
-            {
-                Background = new SolidColorBrush(Colors.Transparent),
-                OversamplingMultiplier = 1,
-            };
-
-            var bitmapStream = new MemoryStream();
-
-            bitmapExporter.Export(viewport, bitmapStream);
-
-            bitmapStream.Position = 0;
-
-            thumbnail = new Bitmap(bitmapStream);
 
             return thumbnail;
         }
