@@ -823,6 +823,7 @@
   </data>
   <data name="PowerLauncher_GenerateThumbnailsFromFiles.Header" xml:space="preserve">
     <value>Generate thumbnails from files</value>
+    <comment>F</comment>
   </data>
   <data name="PowerLauncher_GenerateThumbnailsFromFiles.Description" xml:space="preserve">
     <value>Results will try to generate thumbnails for files. Disabling this setting may increase stability and speed</value>
@@ -3699,5 +3700,20 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="SettingsWindow_AdminTitle" xml:space="preserve">
     <value>Administrator: PowerToys Settings</value>
     <comment>Title of the settings window when running as administrator</comment>
+  </data>
+  <data name="UninstallModuleButton.Content" xml:space="preserve">
+    <value>🗑️ Uninstall module</value>
+  </data>
+  <data name="UninstallModuleFlyout.Text" xml:space="preserve">
+    <value>Module will be removed. Do you want to continue?</value>
+  </data>
+  <data name="RestartApp_Dialog_Title" xml:space="preserve">
+    <value>You must restart app for apply changes</value>
+  </data>
+  <data name="NMS_Text_End" xml:space="preserve">
+    <value>» has been removed.</value>
+  </data>
+  <data name="NMS_Text_Start" xml:space="preserve">
+    <value>Module «</value>
   </data>
 </root>

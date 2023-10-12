@@ -10,61 +10,62 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <custom:SettingsPageControl x:Uid="MeasureTool" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ScreenRuler.png">
-        <custom:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsCard
+    <Grid>
+        <custom:SettingsPageControl x:Uid="MeasureTool" x:Name="IfUninstalledModule" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ScreenRuler.png">
+            <custom:SettingsPageControl.ModuleContent>
+                <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                    <controls:SettingsCard
                     x:Uid="MeasureTool_EnableMeasureTool"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsScreenRuler.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </controls:SettingsCard>
-                <InfoBar
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
-                <custom:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingsCard x:Uid="MeasureTool_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-                    <controls:SettingsCard x:Uid="MeasureTool_DefaultMeasureStyle">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.DefaultMeasureStyle, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_None" />
-                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Bounds" />
-                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Spacing" />
-                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Horizontal_Spacing" />
-                            <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Vertical_Spacing" />
-                        </ComboBox>
-                    </controls:SettingsCard>
+                    <custom:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                        <controls:SettingsCard x:Uid="MeasureTool_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                            <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="MeasureTool_DefaultMeasureStyle">
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.DefaultMeasureStyle, Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_None" />
+                                <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Bounds" />
+                                <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Spacing" />
+                                <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Horizontal_Spacing" />
+                                <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Vertical_Spacing" />
+                            </ComboBox>
+                        </controls:SettingsCard>
 
-                </custom:SettingsGroup>
+                    </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingsCard x:Uid="MeasureTool_ContinuousCapture" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
-                        <ToggleSwitch x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-                    <InfoBar
+                    <custom:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                        <controls:SettingsCard x:Uid="MeasureTool_ContinuousCapture" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
+                            <ToggleSwitch x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" />
+                        </controls:SettingsCard>
+                        <InfoBar
                         x:Uid="MeasureTool_ContinuousCapture_Information"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
                         Severity="Warning" />
 
-                    <controls:SettingsCard x:Uid="MeasureTool_PerColorChannelEdgeDetection" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
-                        <ToggleSwitch x:Uid="MeasureTool_PerColorChannelEdgeDetection_ToggleSwitch" IsOn="{x:Bind ViewModel.PerColorChannelEdgeDetection, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="MeasureTool_PerColorChannelEdgeDetection" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
+                            <ToggleSwitch x:Uid="MeasureTool_PerColorChannelEdgeDetection_ToggleSwitch" IsOn="{x:Bind ViewModel.PerColorChannelEdgeDetection, Mode=TwoWay}" />
+                        </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="MeasureTool_PixelTolerance">
-                        <Slider
+                        <controls:SettingsCard x:Uid="MeasureTool_PixelTolerance">
+                            <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="255"
                             Minimum="0"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.PixelTolerance}" />
-                    </controls:SettingsCard>
+                        </controls:SettingsCard>
 
-                    <!--<controls:SettingsCard x:Uid="MeasureTool_UnitsOfMeasure" HeaderIcon="{ui:FontIcon Glyph=&#xECC6;}">
+                        <!--<controls:SettingsCard x:Uid="MeasureTool_UnitsOfMeasure" HeaderIcon="{ui:FontIcon Glyph=&#xECC6;}">
                         <ComboBox SelectedIndex="{x:Bind Path=ViewModel.UnitsOfMeasure, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Pixels" />
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Inches" />
@@ -72,21 +73,28 @@
                         </ComboBox>
                     </controls:SettingsCard>-->
 
-                    <controls:SettingsCard x:Uid="MeasureTool_DrawFeetOnCross">
-                        <ToggleSwitch x:Uid="MeasureTool_DrawFeetOnCross_ToggleSwitch" IsOn="{x:Bind ViewModel.DrawFeetOnCross, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="MeasureTool_DrawFeetOnCross">
+                            <ToggleSwitch x:Uid="MeasureTool_DrawFeetOnCross_ToggleSwitch" IsOn="{x:Bind ViewModel.DrawFeetOnCross, Mode=TwoWay}" />
+                        </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="MeasureTool_MeasureCrossColor">
-                        <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.CrossColor, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-                </custom:SettingsGroup>
-            </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
-        <custom:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_ScreenRuler" />
-        </custom:SettingsPageControl.PrimaryLinks>
-        <custom:SettingsPageControl.SecondaryLinks>
-            <custom:PageLink x:Uid="Attribution_Rooler" Link="https://github.com/peteblois/rooler" />
-        </custom:SettingsPageControl.SecondaryLinks>
-    </custom:SettingsPageControl>
+                        <controls:SettingsCard x:Uid="MeasureTool_MeasureCrossColor">
+                            <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.CrossColor, Mode=TwoWay}" />
+                        </controls:SettingsCard>
+                    </custom:SettingsGroup>
+
+                    <custom:SettingsGroup>
+                        <custom:UninstallModuleButton ModuleName="MeasureTool"></custom:UninstallModuleButton>
+                    </custom:SettingsGroup>
+                </StackPanel>
+            </custom:SettingsPageControl.ModuleContent>
+            <custom:SettingsPageControl.PrimaryLinks>
+                <custom:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_ScreenRuler" />
+            </custom:SettingsPageControl.PrimaryLinks>
+            <custom:SettingsPageControl.SecondaryLinks>
+                <custom:PageLink x:Uid="Attribution_Rooler" Link="https://github.com/peteblois/rooler" />
+            </custom:SettingsPageControl.SecondaryLinks>
+        </custom:SettingsPageControl>
+
+        <custom:NoModuleSection x:Name="NoModuleSection" ModuleName="MeasureTool"></custom:NoModuleSection>
+    </Grid>
 </Page>

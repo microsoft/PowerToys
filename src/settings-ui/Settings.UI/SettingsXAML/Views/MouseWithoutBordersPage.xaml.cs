@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -45,6 +46,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
             InitializeComponent();
+
+            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
+            if (UMBUtilites.DoesListContainWord(deletedModules, "MouseWithoutBorders"))
+            {
+                this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
         }
 
         private void OnConfigFileUpdate()

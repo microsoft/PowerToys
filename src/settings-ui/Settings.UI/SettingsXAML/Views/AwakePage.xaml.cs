@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -61,6 +63,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _fileSystemWatcher.EnableRaisingEvents = true;
 
             InitializeComponent();
+
+            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
+            if (UMBUtilites.DoesListContainWord(deletedModules, "Awake"))
+            {
+                this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
         }
 
         /// <summary>

@@ -34,6 +34,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+
+            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
+            if (UMBUtilites.DoesListContainWord(deletedModules, "ColorPicker"))
+            {
+                this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
         }
 
         /// <summary>

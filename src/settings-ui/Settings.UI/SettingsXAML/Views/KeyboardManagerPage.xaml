@@ -45,29 +45,30 @@
         </DataTemplate>-->
     </Page.Resources>
 
-    <custom:SettingsPageControl x:Uid="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
-        <custom:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsCard
+    <Grid>
+        <custom:SettingsPageControl x:Uid="KeyboardManager" x:Name="IfUninstalledModule" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
+            <custom:SettingsPageControl.ModuleContent>
+                <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                    <controls:SettingsCard
                     x:Uid="KeyboardManager_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsKeyboardManager.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Enabled, Mode=TwoWay}" />
-                    <controls:SettingsCard.Description>
-                        <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys">
-                            <TextBlock x:Uid="KBM_KeysCannotBeRemapped" FontWeight="SemiBold" />
-                        </HyperlinkButton>
-                    </controls:SettingsCard.Description>
-                </controls:SettingsCard>
-                <InfoBar
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Enabled, Mode=TwoWay}" />
+                        <controls:SettingsCard.Description>
+                            <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys">
+                                <TextBlock x:Uid="KBM_KeysCannotBeRemapped" FontWeight="SemiBold" />
+                            </HyperlinkButton>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
+                    <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
-                    <controls:SettingsCard
+                    <custom:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
+                        <controls:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"
                         ActionIcon="{ui:FontIcon FontSize=14,
                                                  Glyph=&#xE8A7;}"
@@ -75,53 +76,53 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}"
                         IsClickEnabled="True" />
 
-                    <ListView
+                        <ListView
                         x:Name="RemapKeysList"
                         x:Uid="RemapKeysList"
                         IsSwipeEnabled="False"
                         ItemsSource="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay}"
                         SelectionMode="None"
                         Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="Lib:KeysDataModel">
-                                <controls:SettingsCard ContentAlignment="Left">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ItemsControl
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="Lib:KeysDataModel">
+                                    <controls:SettingsCard ContentAlignment="Left">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ItemsControl
                                             IsTabStop="False"
                                             ItemTemplate="{StaticResource OriginalKeyTemplate}"
                                             ItemsSource="{x:Bind GetMappedOriginalKeys()}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                        <custom:IsEnabledTextBlock
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <custom:IsEnabledTextBlock
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
                                             Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
-                                        <ItemsControl
+                                            <ItemsControl
                                             Name="KeyboardManager_RemappedTo"
                                             x:Uid="KeyboardManager_RemappedTo"
                                             IsTabStop="False"
                                             ItemTemplate="{StaticResource RemappedKeyTemplate}"
                                             ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </controls:SettingsCard>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </custom:SettingsGroup>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </controls:SettingsCard>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
-                    <controls:SettingsCard
+                    <custom:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
+                        <controls:SettingsCard
                         x:Uid="KeyboardManager_RemapShortcutsButton"
                         ActionIcon="{ui:FontIcon FontSize=14,
                                                  Glyph=&#xE8A7;}"
@@ -129,65 +130,72 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}"
                         IsClickEnabled="True" />
 
-                    <ListView
+                        <ListView
                         x:Name="RemapShortcutsList"
                         x:Uid="RemapShortcutsList"
                         IsSwipeEnabled="False"
                         ItemsSource="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay}"
                         SelectionMode="None"
                         Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
-                                <controls:SettingsCard ContentAlignment="Left">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ItemsControl
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
+                                    <controls:SettingsCard ContentAlignment="Left">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ItemsControl
                                             IsTabStop="False"
                                             ItemTemplate="{StaticResource OriginalKeyTemplate}"
                                             ItemsSource="{x:Bind GetMappedOriginalKeys()}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                        <custom:IsEnabledTextBlock
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <custom:IsEnabledTextBlock
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
                                             Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
 
-                                        <ItemsControl
+                                            <ItemsControl
                                             Name="KeyboardManager_RemappedTo"
                                             x:Uid="KeyboardManager_RemappedTo"
                                             IsTabStop="False"
                                             ItemTemplate="{StaticResource RemappedKeyTemplate}"
                                             ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                        <Border
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <Border
                                             Margin="16,0,0,0"
                                             Padding="12,4,12,6"
                                             VerticalAlignment="Center"
                                             CornerRadius="12">
-                                            <Border.Background>
-                                                <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
-                                            </Border.Background>
-                                            <TextBlock Text="{x:Bind TargetApp}" />
-                                        </Border>
-                                    </StackPanel>
-                                </controls:SettingsCard>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </custom:SettingsGroup>
-            </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
-        <custom:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_KBM" Link="https://aka.ms/PowerToysOverview_KeyboardManager" />
-        </custom:SettingsPageControl.PrimaryLinks>
-    </custom:SettingsPageControl>
+                                                <Border.Background>
+                                                    <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
+                                                </Border.Background>
+                                                <TextBlock Text="{x:Bind TargetApp}" />
+                                            </Border>
+                                        </StackPanel>
+                                    </controls:SettingsCard>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </custom:SettingsGroup>
+
+                    <custom:SettingsGroup>
+                        <custom:UninstallModuleButton ModuleName="KeyboardManager"></custom:UninstallModuleButton>
+                    </custom:SettingsGroup>
+                </StackPanel>
+            </custom:SettingsPageControl.ModuleContent>
+            <custom:SettingsPageControl.PrimaryLinks>
+                <custom:PageLink x:Uid="LearnMore_KBM" Link="https://aka.ms/PowerToysOverview_KeyboardManager" />
+            </custom:SettingsPageControl.PrimaryLinks>
+        </custom:SettingsPageControl>
+
+        <custom:NoModuleSection x:Name="NoModuleSection" ModuleName="KeyboardManager"></custom:NoModuleSection>
+    </Grid>
 </Page>

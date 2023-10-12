@@ -21,6 +21,10 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="SettingsXAML\Controls\NoModuleSection.xaml" />
+    <None Remove="SettingsXAML\Controls\UninstallModuleButton.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />
@@ -123,6 +127,12 @@
     <None Update="Assets\Settings\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="SettingsXAML\Controls\NoModuleSection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="SettingsXAML\Controls\UninstallModuleButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 	
 </Project>

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -19,6 +20,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var settingsUtils = new SettingsUtils();
             ViewModel = new FancyZonesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<FancyZonesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
+
+            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
+            if (UMBUtilites.DoesListContainWord(deletedModules, "FancyZones"))
+            {
+                this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
         }
 
         private void OpenColorsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

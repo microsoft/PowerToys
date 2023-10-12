@@ -1,0 +1,35 @@
+<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.UninstallModuleButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Button x:Uid="UninstallModuleButton" Background="#ed2213" Height="48">
+            <Button.Flyout>
+                <Flyout>
+                    <StackPanel>
+                        <TextBlock Style="{ThemeResource BaseTextBlockStyle}" x:Uid="UninstallModuleFlyout" Margin="0,0,0,12" />
+                        <Button 
+                            x:Name="FlyoutButton"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Click="FlyoutButton_Click"/>
+                    </StackPanel>
+                </Flyout>
+            </Button.Flyout>
+        </Button>
+
+        <TeachingTip x:Name="RestartApp"
+	        PreferredPlacement="Auto"
+	        PlacementMargin="20"
+	        IsLightDismissEnabled="True"
+            ActionButtonClick="RestartApp_ActionButtonClick">
+        </TeachingTip>
+    </Grid>
+</UserControl>

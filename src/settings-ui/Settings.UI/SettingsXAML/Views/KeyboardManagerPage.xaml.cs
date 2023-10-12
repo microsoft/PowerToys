@@ -37,6 +37,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             InitializeComponent();
             DataContext = ViewModel;
+
+            List<string> deletedModules = UMBUtilites.ReadWordsFromFile("uninstalled_modules");
+            if (UMBUtilites.DoesListContainWord(deletedModules, "KeyboardManager"))
+            {
+                this.IfUninstalledModule.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                this.NoModuleSection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
         }
 
         private void OnConfigFileUpdate()
