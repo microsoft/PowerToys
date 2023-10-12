@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -19,11 +21,40 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class DashboardViewModel : Observable
     {
+        private bool _isAddPanelVisible;
+        private string _addButtonGlyph;
+
         public Func<string, int> SendConfigMSG { get; }
 
         public ObservableCollection<DashboardListItem> ActiveModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
+
+        public bool IsAddPanelVisible
+        {
+            get => _isAddPanelVisible;
+            set
+            {
+                if (_isAddPanelVisible != value)
+                {
+                    _isAddPanelVisible = value;
+                    OnPropertyChanged(nameof(IsAddPanelVisible));
+                }
+            }
+        }
+
+        public string AddButtonGlyph
+        {
+            get => _addButtonGlyph;
+            set
+            {
+                if (_addButtonGlyph != value)
+                {
+                    _addButtonGlyph = value;
+                    OnPropertyChanged(nameof(AddButtonGlyph));
+                }
+            }
+        }
 
         public bool UpdateAvailable { get; set; }
 
@@ -41,6 +72,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            IsAddPanelVisible = false;
+            AddButtonGlyph = "\uECC8";
 
             _allModules = new List<DashboardListItem>();
 
@@ -540,10 +574,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsKeyboardManager()
         {
+            const string JsonFileType = ".json";
+            const string PowerToyName = KeyboardManagerSettings.ModuleName;
+            var settingsUtils = new SettingsUtils();
+            ISettingsRepository<KeyboardManagerSettings> moduleSettingsRepository = SettingsRepository<KeyboardManagerSettings>.GetInstance(settingsUtils);
+            var settings = moduleSettingsRepository.SettingsConfig;
+            string fileName = settings.Properties.ActiveConfiguration.Value + JsonFileType;
+            KeyboardManagerProfile kbmProfile = settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = resourceLoader.GetString("KeyboardManager_RemapKeyboardButton/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("KeyboardManager_RemapKeyboardButton/Description"), ButtonGlyph = "\uE92E", ButtonClickHandler = KbmKeyLaunchClicked },
+                new DashboardModuleItem() { RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys },
                 new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = resourceLoader.GetString("KeyboardManager_RemapShortcutsButton/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("KeyboardManager_RemapShortcutsButton/Description"), ButtonGlyph = "\uE92E", ButtonClickHandler = KbmShortcutLaunchClicked },
+                new DashboardModuleItem() { RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts) },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -730,6 +773,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
+        internal void AddButtonClick()
+        {
+            if (IsAddPanelVisible)
+            {
+                IsAddPanelVisible = false;
+                AddButtonGlyph = "\uECC8";
+            }
+            else
+            {
+                IsAddPanelVisible = true;
+                AddButtonGlyph = "\uE930";
+            }
         }
     }
 }

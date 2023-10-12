@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -14,6 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isLabelVisible = true;
         private bool _isShortcutVisible;
         private bool _isButtonVisible;
+        private List<KeysDataModel> _remapKeys = new List<KeysDataModel>();
+        private List<AppSpecificKeysDataModel> _remapShortcuts = new List<AppSpecificKeysDataModel>();
 
         public string Label { get; set; }
 
@@ -54,6 +57,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged();
                 }
             }
+        }
+
+        public List<KeysDataModel> RemapKeys
+        {
+            get => _remapKeys;
+            set => _remapKeys = value;
+        }
+
+        public List<AppSpecificKeysDataModel> RemapShortcuts
+        {
+            get => _remapShortcuts;
+            set => _remapShortcuts = value;
         }
 
         public List<object> Shortcut { get; set; }

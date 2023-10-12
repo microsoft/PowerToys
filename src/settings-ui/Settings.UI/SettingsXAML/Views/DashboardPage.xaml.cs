@@ -54,5 +54,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             ViewModel.SettingsButtonClicked(sender);
         }
+
+        private void AddButtonClick(object sender, RoutedEventArgs e)
+        {
+            ViewModel.AddButtonClick();
+        }
     }
 }
