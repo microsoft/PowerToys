@@ -85,6 +85,8 @@ namespace Peek.UI
         /// </summary>
         private void OnPeekHotkey()
         {
+            // Need to read the foreground HWND before activating Peek to avoid focus stealing
+            // Foreground HWND must always be Explorer or Desktop
             var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
 
             // First Peek activation
