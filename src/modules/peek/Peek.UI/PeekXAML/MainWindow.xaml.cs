@@ -85,20 +85,22 @@ namespace Peek.UI
         /// </summary>
         private void OnPeekHotkey()
         {
+            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
             // First Peek activation
             if (!activated)
             {
                 Activate();
-                Initialize();
+                Initialize(foregroundWindowHandle);
                 activated = true;
                 return;
             }
 
             if (AppWindow.IsVisible)
             {
-                if (IsNewSingleSelectedItem())
+                if (IsNewSingleSelectedItem(foregroundWindowHandle))
                 {
-                    Initialize();
+                    Initialize(foregroundWindowHandle);
                 }
                 else
                 {
@@ -107,7 +109,7 @@ namespace Peek.UI
             }
             else
             {
-                Initialize();
+                Initialize(foregroundWindowHandle);
             }
         }
 
@@ -126,12 +128,12 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private void Initialize()
+        private void Initialize(Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
-            ViewModel.Initialize();
+            ViewModel.Initialize(foregroundWindowHandle);
             ViewModel.ScalingFactor = this.GetMonitorScale();
 
             bootTime.Stop();
@@ -156,6 +158,7 @@ namespace Peek.UI
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
             var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
             var monitorSize = foregroundWindowHandle.GetMonitorSize();
             var monitorScale = foregroundWindowHandle.GetMonitorScale();
 
@@ -210,12 +213,10 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private bool IsNewSingleSelectedItem()
+        private bool IsNewSingleSelectedItem(Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {
             try
             {
-                var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
-
                 var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
                 var selectedItemsCount = selectedItems?.GetCount() ?? 0;
                 if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
