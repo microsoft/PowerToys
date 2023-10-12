@@ -4,6 +4,8 @@
 const std::wstring ReparentCropAndLockWindow::ClassName = L"CropAndLock.ReparentCropAndLockWindow";
 std::once_flag ReparentCropAndLockWindowClassRegistration;
 
+static int retries = 3;
+
 void ReparentCropAndLockWindow::RegisterWindowClass()
 {
     auto instance = winrt::check_pointer(GetModuleHandleW(nullptr));
@@ -82,17 +84,42 @@ LRESULT ReparentCropAndLockWindow::MessageHandler(UINT const message, WPARAM con
     return 0;
 }
 
+bool ReparentCropAndLockWindow::AreRectsCloseEnough(const RECT& a, const RECT& b, int tolerance)
+{
+    return (abs(a.left - b.left) <= tolerance) &&
+           (abs(a.top - b.top) <= tolerance) &&
+           (abs(a.right - b.right) <= tolerance) &&
+           (abs(a.bottom - b.bottom) <= tolerance);
+}
+
 void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
 {
     DisconnectTarget();
     m_currentTarget = windowToCrop;
 
-    // Adjust the crop rect to be in the window space as reported by win32k
+    // Save original state
+    SaveOriginalState();
+
     RECT windowRect = {};
     winrt::check_bool(GetWindowRect(m_currentTarget, &windowRect));
     auto clientRect = ClientAreaInScreenSpace(m_currentTarget);
+
+    WINDOWPLACEMENT windowPlacement = { sizeof(windowPlacement) };
+    GetWindowPlacement(m_currentTarget, &windowPlacement);
+    bool isMaximized = (windowPlacement.showCmd == SW_SHOWMAXIMIZED);
+
     auto diffX = clientRect.left - windowRect.left;
     auto diffY = clientRect.top - windowRect.top;
+
+    if (isMaximized)
+    {
+        MONITORINFO mi = { sizeof(mi) };
+        GetMonitorInfo(MonitorFromWindow(m_currentTarget, MONITOR_DEFAULTTONEAREST), &mi);
+
+        diffX = mi.rcWork.left - windowRect.left;
+        diffY = mi.rcWork.top - windowRect.top;
+    }
+
     auto adjustedCropRect = cropRect;
     adjustedCropRect.left += diffX;
     adjustedCropRect.top += diffY;
@@ -131,8 +158,25 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);
     auto x = -cropRect.left;
     auto y = -cropRect.top;
-    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER));
+    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER));    
+
+    if (retries > 0)
+    {
+        RECT currentCropRect = {};
+        GetWindowRect(m_currentTarget, &currentCropRect); // Assuming this gives the cropped rect
+
+        if (!AreRectsCloseEnough(currentCropRect, cropRect)) // You might want to use a function to compare RECTs
+        {
+            Sleep(100); // Introduce a slight delay
+            retries--;
+            CropAndLock(windowToCrop, cropRect); // Retry
+        }
+        else
+            retries = 3;
+    }
 }
+
+
 
 void ReparentCropAndLockWindow::Hide()
 {
@@ -150,11 +194,55 @@ void ReparentCropAndLockWindow::DisconnectTarget()
             m_currentTarget = nullptr;
             return;
         }
-        winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, m_previousPosition.x, m_previousPosition.y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED));
+        //winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, m_previousPosition.x, m_previousPosition.y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED));
         SetParent(m_currentTarget, nullptr);
-        auto targetStyle = static_cast<DWORD>(GetWindowLongPtrW(m_currentTarget, GWL_STYLE));
-        targetStyle &= ~WS_CHILD;
-        SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);
-        m_currentTarget = nullptr;
+        //auto targetStyle = static_cast<DWORD>(GetWindowLongPtrW(m_currentTarget, GWL_STYLE));
+        RestoreOriginalState();
+        //targetStyle &= ~WS_CHILD;
+        //SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);
+
+        Sleep(50);
+
+    }
+}
+
+void ReparentCropAndLockWindow::SaveOriginalState()
+{
+    if (m_currentTarget != nullptr)
+    {
+        originalPlacement.length = sizeof(WINDOWPLACEMENT);
+        GetWindowPlacement(m_currentTarget, &originalPlacement);
+
+        originalExStyle = GetWindowLongPtr(m_currentTarget, GWL_EXSTYLE);
+        originalStyle = GetWindowLongPtr(m_currentTarget, GWL_STYLE);
+
+        GetWindowRect(m_currentTarget, &originalRect);
+    }
+}
+
+void ReparentCropAndLockWindow::RestoreOriginalState()
+{
+    if (m_currentTarget)
+    {
+        // Set the original extended style and style
+        originalStyle &= ~WS_CHILD;
+        SetWindowLongPtrW(m_currentTarget, GWL_EXSTYLE, originalExStyle);
+        SetWindowLongPtrW(m_currentTarget, GWL_STYLE, originalStyle);
+
+        // Restore window position and dimensions
+        int width = originalRect.right - originalRect.left;
+        int height = originalRect.bottom - originalRect.top;
+        SetWindowPos(m_currentTarget, nullptr, originalRect.left, originalRect.top, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+        // Now, restore the original placement
+        if (originalPlacement.showCmd != SW_SHOWMAXIMIZED)
+        {
+            originalPlacement.showCmd = SW_RESTORE;
+            SetWindowPlacement(m_currentTarget, &originalPlacement);
+        }
+        else
+        {
+            ShowWindow(m_currentTarget, SW_SHOWMAXIMIZED);
+        }
     }
 }

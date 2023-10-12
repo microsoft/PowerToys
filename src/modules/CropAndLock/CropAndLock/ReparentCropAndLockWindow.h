@@ -19,6 +19,9 @@ private:
 
 	void Hide();
 	void DisconnectTarget();
+    void SaveOriginalState();
+    void RestoreOriginalState();
+    bool AreRectsCloseEnough(const RECT& a, const RECT& b, int tolerance = 5);
 
 private:
 	HWND m_currentTarget = nullptr;
@@ -26,4 +29,10 @@ private:
 	std::unique_ptr<ChildWindow> m_childWindow;
 	bool m_destroyed = false;
 	std::function<void(HWND)> m_closedCallback;
+
+	LONG_PTR originalExStyle = 0;
+    LONG_PTR originalStyle = 0;
+    WINDOWPLACEMENT originalPlacement = { sizeof(WINDOWPLACEMENT) };
+    RECT originalRect = {};
+    WINDOWPLACEMENT wp;
 };
