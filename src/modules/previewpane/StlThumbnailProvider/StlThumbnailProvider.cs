@@ -2,11 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System.IO;
-using System.Runtime.InteropServices.ComTypes;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Common.Utilities;
 using HelixToolkit.Wpf;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Bitmap = System.Drawing.Bitmap;
@@ -61,9 +59,17 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 DefaultMaterial = new DiffuseMaterial(new SolidColorBrush(DefaultMaterialColor)),
             };
 
-            var model = stlReader.Read(stream);
+            Model3DGroup model;
+            try
+            {
+                model = stlReader.Read(stream);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
 
-            if (model.Bounds == Rect3D.Empty)
+            if (model == null || model.Children.Count == 0 || model.Bounds == Rect3D.Empty)
             {
                 return null;
             }
