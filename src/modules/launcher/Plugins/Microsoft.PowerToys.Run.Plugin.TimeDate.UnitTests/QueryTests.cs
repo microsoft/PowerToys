@@ -157,7 +157,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(12:30", "Time -")]
         [DataRow("(10.10.2022", "Date -")]
         [DataRow("(u1646408119", "Date and time -")]
+        [DataRow("(u+1646408119", "Date and time -")]
+        [DataRow("(u-1646408119", "Date and time -")]
         [DataRow("(ums1646408119", "Date and time -")]
+        [DataRow("(ums+1646408119", "Date and time -")]
+        [DataRow("(ums-1646408119", "Date and time -")]
         [DataRow("(ft637820085517321977", "Date and time -")]
         public void DateTimeNumberOnlyInput(string typedString, string expectedResult)
         {
@@ -203,7 +207,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataTestMethod]
         [DataRow("(ug1646408119")] // Invalid prefix
         [DataRow("(u9999999999999")] // Unix number + prefix is longer than 12 characters
+        [DataRow("(-u99999999999")] // Unix number with wring placement of - sign
         [DataRow("(ums999999999999999")] // Unix number + prefix is longer than 17 characters
+        [DataRow("(+ums9999999999")] // Unix number with wrong placement of + sign
         [DataRow("(0123456")] // Missing prefix
         [DataRow("(ft63782008ab55173dasdas21977")] // Number contains letters
         public void InvalidNumberInputShowsErrorMessage(string typedString)

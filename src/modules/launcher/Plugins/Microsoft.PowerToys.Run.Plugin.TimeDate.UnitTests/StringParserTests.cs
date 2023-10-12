@@ -49,6 +49,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             }
         }
 
+        public void 
+
         [TestCleanup]
         public void CleanUp()
         {
