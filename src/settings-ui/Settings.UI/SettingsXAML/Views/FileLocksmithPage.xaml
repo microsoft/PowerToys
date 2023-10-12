@@ -45,7 +45,7 @@
                     </custom:SettingsGroup>
 
                     <custom:SettingsGroup>
-                        <custom:UninstallModuleButton ModuleName="FileLocsmith"></custom:UninstallModuleButton>
+                        <custom:UninstallModuleButton ModuleName="FileLocksmith"></custom:UninstallModuleButton>
                     </custom:SettingsGroup>
                 </StackPanel>
             </custom:SettingsPageControl.ModuleContent>
@@ -54,6 +54,6 @@
             </custom:SettingsPageControl.PrimaryLinks>
         </custom:SettingsPageControl>
 
-        <custom:NoModuleSection x:Name="NoModuleSection" ModuleName="FileLocsmith"></custom:NoModuleSection>
+        <custom:NoModuleSection x:Name="NoModuleSection" ModuleName="FileLocksmith"></custom:NoModuleSection>
     </Grid>
 </Page>
