@@ -7,6 +7,12 @@
             "commands": [
                 "dotnet-consolidate"
             ]
-        }
+        },
+        "xamlstyler.console": {
+            "version": "3.2206.4",
+            "commands": [
+              "xstyler"
+            ]
+          }
     }
 }

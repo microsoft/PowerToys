@@ -41,6 +41,9 @@ namespace Microsoft.Plugin.Shell
         Cmd = 0,
         Powershell = 1,
         RunCommand = 2,
-        WindowsTerminal = 3,
+        WindowsTerminalPowerShell = 3,
+        WindowsTerminalPowerShellSeven = 4,
+        WindowsTerminalCmd = 5,
+        PowerShellSeven = 6,
     }
 }
