@@ -56,11 +56,11 @@ This policy configures whether PowerToys experimentation is allowed. With experi
 
 This policy configures whether PowerToys per-user installation is allowed or not.
 
-If enabled, per-user installation is not allowed.
-
-If disabled or not configured, per-user installation is allowed.
+- If enabled, per-user installation is not allowed.
+- If disabled or not configured, per-user installation is allowed.
 
 You can set this policy only as Computer policy.
+
 #### Disable automatic downloads
 
 This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
@@ -98,7 +98,7 @@ This policy configures the enabled state for all PowerToys Run plugins. All plug
 
 You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
 
-Note: Changes require a restart of PowerToys Run.
+**Note:** Changes require a restart of PowerToys Run.
 
 #### Configure enabled state for individual plugins
 
@@ -113,4 +113,4 @@ If you disable or don't configure this policy, either the user or the policy "Co
 
 You can set the enabled state for all plugins not listed here using the policy "Configure enabled state for all plugins".
 
-Note: Changes require a restart of PowerToys Run.
+**Note:** Changes require a restart of PowerToys Run.
