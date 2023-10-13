@@ -59,7 +59,7 @@ This policy configures whether PowerToys per-user installation is allowed or not
 - If enabled, per-user installation is not allowed.
 - If disabled or not configured, per-user installation is allowed.
 
-You can set this policy only as Computer policy.
+ **Note:** You can set this policy only as Computer policy.
 
 #### Disable automatic downloads
 
