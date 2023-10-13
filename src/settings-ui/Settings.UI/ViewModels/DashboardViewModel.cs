@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
+using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Windows.Threading;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -21,8 +21,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class DashboardViewModel : Observable
     {
+        private const string JsonFileType = ".json";
+        private readonly IFileSystemWatcher _watcher;
         private bool _isAddPanelVisible;
         private string _addButtonGlyph;
+        private DashboardModuleItem _kbmRemapKeysItem;
+        private DashboardModuleItem _kbmRemapShortcutsItem;
+        private Dispatcher dispatcher;
 
         public Func<string, int> SendConfigMSG { get; }
 
@@ -66,6 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
+            dispatcher = Dispatcher.CurrentDispatcher;
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
@@ -198,6 +204,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 EnabledChangedCallback = EnabledChangedOnUI,
                 DashboardModuleItems = GetModuleItemsKeyboardManager(),
             });
+
+            if (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.KeyboardManager)
+            {
+                KeyboardManagerSettings kbmSettings = GetKBMSettings();
+                _watcher = Library.Utilities.Helper.GetFileWatcher(KeyboardManagerSettings.ModuleName, kbmSettings.Properties.ActiveConfiguration.Value + JsonFileType, () => LoadKBMSettingsFromJson());
+            }
 
             gpo = GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
             _allModules.Add(new DashboardListItem()
@@ -360,6 +372,35 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();
             UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
+        }
+
+        private void LoadKBMSettingsFromJson()
+        {
+            KeyboardManagerProfile kbmProfile = GetKBMProfile();
+            _kbmRemapKeysItem.RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys;
+            _kbmRemapShortcutsItem.RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts);
+            dispatcher.Invoke(new Action(() => UpdateKBMItems()));
+        }
+
+        private void UpdateKBMItems()
+        {
+            _kbmRemapKeysItem.NotifyPropertyChanged(nameof(DashboardModuleItem.RemapKeys));
+            _kbmRemapShortcutsItem.NotifyPropertyChanged(nameof(DashboardModuleItem.RemapShortcuts));
+        }
+
+        private KeyboardManagerProfile GetKBMProfile()
+        {
+            KeyboardManagerSettings kbmSettings = GetKBMSettings();
+            const string PowerToyName = KeyboardManagerSettings.ModuleName;
+            string fileName = kbmSettings.Properties.ActiveConfiguration.Value + JsonFileType;
+            return new SettingsUtils().GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
+        }
+
+        private KeyboardManagerSettings GetKBMSettings()
+        {
+            var settingsUtils = new SettingsUtils();
+            ISettingsRepository<KeyboardManagerSettings> moduleSettingsRepository = SettingsRepository<KeyboardManagerSettings>.GetInstance(settingsUtils);
+            return moduleSettingsRepository.SettingsConfig;
         }
 
         internal void SettingsButtonClicked(object sender)
@@ -574,19 +615,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsKeyboardManager()
         {
-            const string JsonFileType = ".json";
-            const string PowerToyName = KeyboardManagerSettings.ModuleName;
-            var settingsUtils = new SettingsUtils();
-            ISettingsRepository<KeyboardManagerSettings> moduleSettingsRepository = SettingsRepository<KeyboardManagerSettings>.GetInstance(settingsUtils);
-            var settings = moduleSettingsRepository.SettingsConfig;
-            string fileName = settings.Properties.ActiveConfiguration.Value + JsonFileType;
-            KeyboardManagerProfile kbmProfile = settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
+            KeyboardManagerProfile kbmProfile = GetKBMProfile();
+            _kbmRemapKeysItem = new DashboardModuleItem() { RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys };
+            _kbmRemapShortcutsItem = new DashboardModuleItem() { RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts) };
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = resourceLoader.GetString("KeyboardManager_RemapKeyboardButton/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("KeyboardManager_RemapKeyboardButton/Description"), ButtonGlyph = "\uE92E", ButtonClickHandler = KbmKeyLaunchClicked },
-                new DashboardModuleItem() { RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys },
+                _kbmRemapKeysItem,
                 new DashboardModuleItem() { IsButtonVisible = true, ButtonTitle = resourceLoader.GetString("KeyboardManager_RemapShortcutsButton/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("KeyboardManager_RemapShortcutsButton/Description"), ButtonGlyph = "\uE92E", ButtonClickHandler = KbmShortcutLaunchClicked },
-                new DashboardModuleItem() { RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts) },
+                _kbmRemapShortcutsItem,
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

@@ -202,7 +202,6 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <Image Width="20" Margin="0,0,0,0">
                                         <Image.Source>
@@ -215,17 +214,6 @@
                                         FontWeight="SemiBold"
                                         Text="{x:Bind Label, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis" />
-                                    <Button
-                                        Grid.Column="4"
-                                        Height="24"
-                                        Margin="0,0,-12,0"
-                                        Padding="0"
-                                        Click="SettingsButtonClicked"
-                                        Content="{ui:FontIcon FontSize=14,
-                                                              Glyph=&#xE713;}"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Style="{StaticResource SubtleButtonStyle}"
-                                        Tag="{x:Bind Tag, Mode=OneWay}" />
                                 </Grid>
                                 <ItemsRepeater 
                                     Grid.Row="1" 
@@ -279,18 +267,14 @@
                                                         Text="{x:Bind Label, Mode=OneWay}"
                                                         TextWrapping="WrapWholeWords" />
                                                 </Grid>
-                                                <controls:SettingsCard Padding="8" MinHeight="0"
+                                                <controls:SettingsCard
+                                                    Padding="8"
+                                                    MinHeight="0"
                                                     Click="{x:Bind ButtonClickHandler, Mode=OneWay}"
-                                                    Description="{x:Bind ButtonDescription, Mode=OneWay}"
                                                     Header="{x:Bind ButtonTitle, Mode=OneWay}"
                                                     IsClickEnabled="True"
+                                                    IsActionIconVisible="False"
                                                     Visibility="{x:Bind IsButtonVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                                    <controls:SettingsCard.HeaderIcon>
-                                                        <FontIcon Glyph="{x:Bind ButtonGlyph, Mode=OneWay}" />
-                                                    </controls:SettingsCard.HeaderIcon>
-                                                    <controls:SettingsCard.ActionIcon>
-                                                        <FontIcon Glyph="&#xE8A7;" />
-                                                    </controls:SettingsCard.ActionIcon>
                                                     <controls:SettingsCard.Resources>
                                                         <x:Double x:Key="SettingsCardHeaderIconMaxSize">14</x:Double>
                                                         <Thickness x:Key="SettingsCardHeaderIconMargin">4,0,12,0</Thickness>
