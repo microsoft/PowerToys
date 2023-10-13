@@ -1,6 +1,6 @@
-# Group Policy Objects
+# Group Policies
 
-Since version 0.64, PowerToys is released on GitHub with GroupPolicyObject files. You can check these releases on https://github.com/microsoft/PowerToys/releases .
+Since version 0.64, PowerToys is released on GitHub with Administrative Templates that allows you to configure PowerToys using Group Policies.
 
 ## How to install
 
