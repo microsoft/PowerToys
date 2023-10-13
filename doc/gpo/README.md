@@ -26,11 +26,9 @@ You will find the policies under "Administrative Templates/Microsoft PowerToys" 
 
 This policy configures the enabled state for all PowerToys utilities.
 
-If you enable this setting, all utilities will be always enabled and the user won't be able to disable it.
-
-If you disable this setting, all utilities will be always disabled and the user won't be able to enable it.
-
-If you don't configure this setting, users are able to disable or enable the utilities.
+- If you enable this setting, all utilities will be always enabled and the user won't be able to disable it.
+- If you disable this setting, all utilities will be always disabled and the user won't be able to enable it.
+- If you don't configure this setting, users are able to disable or enable the utilities.
 
 The individual enabled state policies for the utilities will override this policy.
 
@@ -38,11 +36,9 @@ The individual enabled state policies for the utilities will override this polic
 
 For each utility shipped with PowerToys, there's a "Configure enabled state" policy, which forces and Enabled state for the utility.
 
-If you enable this setting, the utility will be always enabled and the user won't be able to disable it.
-
-If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
-
-If you don't configure this setting, users are able to disable or enable the utility.
+- If you enable this setting, the utility will be always enabled and the user won't be able to disable it.
+- If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
+- If you don't configure this setting, users are able to disable or enable the utility.
 
 This policy has a higher priority than the policy "Configure global utility enabled state" and overrides it.
 
@@ -50,11 +46,9 @@ This policy has a higher priority than the policy "Configure global utility enab
 
 This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
 
-If this setting is not configured or enabled, the user can control experimentation in the PowerToys settings menu.
-
-If this setting is disabled, experimentation is not allowed.
-
-If this setting is not configured, experimentation is allowed.
+- If this setting is not configured or enabled, the user can control experimentation in the PowerToys settings menu.
+- If this setting is disabled, experimentation is not allowed.
+- If this setting is not configured, experimentation is allowed.
 
 ### Installer and Updates
 
@@ -71,17 +65,15 @@ You can set this policy only as Computer policy.
 
 This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
 
-If enabled, automatic downloads are disabled.
-
-If disabled or not configured, the user is in control of automatic downloads setting.
+- If enabled, automatic downloads are disabled.
+- If disabled or not configured, the user is in control of automatic downloads setting.
 
 #### Suspend Action Center notification for new updates
 
 This policy configures whether the action center notification for new updates is suspended for 2 minor releases. (Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
 
-If enabled, the notification is suspended.
-
-If disabled or not configured, the notification is shown.
+- If enabled, the notification is suspended.
+- If disabled or not configured, the notification is shown.
 
 Note: The notification about new major versions is always displayed.
 
@@ -90,9 +82,8 @@ Note: The notification about new major versions is always displayed.
 
 This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
 
-If enabled, the automatic update checks are disabled.
-
-If disabled or not configured, the automatic update checks are enabled.
+- If enabled, the automatic update checks are disabled.
+- If disabled or not configured, the automatic update checks are enabled.
 -->
 
 ### PowerToys Run
@@ -101,11 +92,9 @@ If disabled or not configured, the automatic update checks are enabled.
 
 This policy configures the enabled state for all PowerToys Run plugins. All plugins will have the same state.
 
-If you enable this setting, the plugins will be always enabled and the user won't be able to disable it.
-
-If you disable this setting, the plugins will be always disabled and the user won't be able to enable it.
-
-If you don't configure this setting, users are able to disable or enable the plugins.
+- If you enable this setting, the plugins will be always enabled and the user won't be able to disable it.
+- If you disable this setting, the plugins will be always disabled and the user won't be able to enable it.
+- If you don't configure this setting, users are able to disable or enable the plugins.
 
 You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
 
