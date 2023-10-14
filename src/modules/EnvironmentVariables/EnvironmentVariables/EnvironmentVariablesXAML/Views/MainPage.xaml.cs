@@ -113,7 +113,7 @@ namespace EnvironmentVariables.Views
 
         private async void RemoveProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var button = sender as Button;
+            var button = sender as MenuFlyoutItem;
             var profile = button.CommandParameter as ProfileVariablesSet;
 
             if (profile != null)
@@ -272,7 +272,7 @@ namespace EnvironmentVariables.Views
         {
             SwitchViewsSegmentedView.SelectedIndex = 0;
 
-            var button = sender as Button;
+            var button = sender as MenuFlyoutItem;
             var profile = button.CommandParameter as ProfileVariablesSet;
 
             if (profile != null)

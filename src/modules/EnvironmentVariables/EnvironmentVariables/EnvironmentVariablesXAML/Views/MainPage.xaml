@@ -1,86 +1,94 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<Page
+﻿<Page
     x:Class="EnvironmentVariables.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:EnvironmentVariables.Converters"
-    xmlns:converters1="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EnvironmentVariables.Models"
+    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     mc:Ignorable="d">
     <Page.Resources>
-        <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
-            <controls:SettingsCard
-                CommandParameter="{x:Bind (models:Variable)}"
-                Header="{x:Bind Name, Mode=TwoWay}"
-                IsActionIconVisible="False"
-                IsClickEnabled="False">
-                <controls:SettingsCard.Description>
-                    <StackPanel HorizontalAlignment="Left">
-                        <ItemsControl
-                            x:Name="VariableValuesList"
-                            HorizontalAlignment="Left"
-                            ItemsSource="{x:Bind ValuesList, Mode=TwoWay}"
-                            Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <TextBlock
-                                        Margin="0,2,0,2"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        IsTextSelectionEnabled="True"
-                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                        Text="{Binding}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock
-                            IsTextSelectionEnabled="True"
-                            Text="{x:Bind Values, Mode=TwoWay}"
-                            Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
-                    </StackPanel>
-                </controls:SettingsCard.Description>
+        <ResourceDictionary>
+            <!--  These resourcedictionaries are needed to reference styles part of SettingsControls  -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsCard/SettingsCard.xaml" />
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-                <Button Content="{ui:FontIcon Glyph=&#xE712;}" Style="{StaticResource SubtleButtonStyle}">
-                    <Button.Flyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem
-                                x:Uid="EditVariable"
-                                Click="EditVariable_Click"
-                                CommandParameter="{x:Bind (models:Variable)}"
-                                Icon="{ui:FontIcon Glyph=&#xE70F;}" />
-                            <MenuFlyoutSeparator />
-                            <MenuFlyoutItem
-                                x:Uid="RemoveVariable"
-                                Click="Delete_Variable_Click"
-                                CommandParameter="{x:Bind (models:Variable)}"
-                                Icon="{ui:FontIcon Glyph=&#xE74D;}" />
-                        </MenuFlyout>
-                    </Button.Flyout>
-                    <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="More_Options_ButtonTooltip" TextWrapping="Wrap" />
-                    </ToolTipService.ToolTip>
-                </Button>
-            </controls:SettingsCard>
-        </DataTemplate>
+            <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
+                <controls:SettingsCard
+                    CommandParameter="{x:Bind (models:Variable)}"
+                    Header="{x:Bind Name, Mode=TwoWay}"
+                    IsActionIconVisible="False"
+                    IsClickEnabled="False"
+                    Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+                    <controls:SettingsCard.Description>
+                        <StackPanel HorizontalAlignment="Left">
+                            <ItemsControl
+                                x:Name="VariableValuesList"
+                                HorizontalAlignment="Left"
+                                ItemsSource="{x:Bind ValuesList, Mode=TwoWay}"
+                                Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <TextBlock
+                                            Margin="0,2,0,2"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            IsTextSelectionEnabled="True"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{Binding}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock
+                                IsTextSelectionEnabled="True"
+                                Text="{x:Bind Values, Mode=TwoWay}"
+                                Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        </StackPanel>
+                    </controls:SettingsCard.Description>
 
-        <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
-        <converters:EnvironmentStateToBoolConverter x:Key="EnvironmentStateToBoolConverter" />
-        <converters:EnvironmentStateToMessageConverter x:Key="EnvironmentStateToMessageConverter" />
-        <converters:EnvironmentStateToTitleConverter x:Key="EnvironmentStateToTitleConverter" />
-        <converters:EnvironmentStateToVisibilityConverter x:Key="EnvironmentStateToVisibilityConverter" />
+                    <Button Content="{ui:FontIcon Glyph=&#xE712;}" Style="{StaticResource SubtleButtonStyle}">
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem
+                                    x:Uid="EditItem"
+                                    Click="EditVariable_Click"
+                                    CommandParameter="{x:Bind (models:Variable)}"
+                                    Icon="{ui:FontIcon Glyph=&#xE70F;}" />
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem
+                                    x:Uid="RemoveItem"
+                                    Click="Delete_Variable_Click"
+                                    CommandParameter="{x:Bind (models:Variable)}"
+                                    Icon="{ui:FontIcon Glyph=&#xE74D;}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="More_Options_ButtonTooltip" TextWrapping="Wrap" />
+                        </ToolTipService.ToolTip>
+                    </Button>
+                </controls:SettingsCard>
+            </DataTemplate>
 
-        <converters1:BoolToVisibilityConverter
-            x:Key="BoolToInvertedVisibilityConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
-        <converters1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
+            <converters:EnvironmentStateToBoolConverter x:Key="EnvironmentStateToBoolConverter" />
+            <converters:EnvironmentStateToMessageConverter x:Key="EnvironmentStateToMessageConverter" />
+            <converters:EnvironmentStateToTitleConverter x:Key="EnvironmentStateToTitleConverter" />
+            <converters:EnvironmentStateToVisibilityConverter x:Key="EnvironmentStateToVisibilityConverter" />
+
+            <toolkitConverters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
+            <toolkitConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <toolkitConverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        </ResourceDictionary>
     </Page.Resources>
     <i:Interaction.Behaviors>
         <ic:EventTriggerBehavior EventName="Loaded">
@@ -182,34 +190,29 @@
                                             VerticalCacheLength="5" />
                                     </controls:SettingsExpander.ItemsHeader>
 
-                                    <StackPanel Orientation="Horizontal">
-                                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=IsEnabled}" />
-                                        <Button
-                                            x:Name="EditProfileBtn"
-                                            x:Uid="EditProfileBtn"
-                                            Width="40"
-                                            Height="36"
-                                            Click="EditProfileBtn_Click"
-                                            CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
-                                            Content="&#xE70F;"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <ToggleSwitch
+                                            x:Uid="ToggleSwitch"
+                                            IsOn="{x:Bind Mode=TwoWay, Path=IsEnabled}"
+                                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
+                                        <Button Content="{ui:FontIcon Glyph=&#xE712;}" Style="{StaticResource SubtleButtonStyle}">
+                                            <Button.Flyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem
+                                                        x:Uid="EditItem"
+                                                        Click="EditProfileBtn_Click"
+                                                        CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
+                                                        Icon="{ui:FontIcon Glyph=&#xE70F;}" />
+                                                    <MenuFlyoutSeparator />
+                                                    <MenuFlyoutItem
+                                                        x:Uid="RemoveItem"
+                                                        Click="RemoveProfileBtn_Click"
+                                                        CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
+                                                        Icon="{ui:FontIcon Glyph=&#xE74D;}" />
+                                                </MenuFlyout>
+                                            </Button.Flyout>
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="EditProfileTooltip" TextWrapping="Wrap" />
-                                            </ToolTipService.ToolTip>
-                                        </Button>
-                                        <Button
-                                            x:Name="RemoveProfileBtn"
-                                            x:Uid="RemoveProfileBtn"
-                                            Width="40"
-                                            Height="36"
-                                            Click="RemoveProfileBtn_Click"
-                                            CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
-                                            Content="&#xE74D;"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}">
-                                            <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="RemoveProfileTooltip" TextWrapping="Wrap" />
+                                                <TextBlock x:Uid="More_Options_ButtonTooltip" TextWrapping="Wrap" />
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
@@ -251,7 +254,8 @@
                                 x:Uid="AddVariableContent"
                                 Click="AddDefaultVariableBtn_Click"
                                 CommandParameter="{x:Bind ViewModel.UserDefaultSet}"
-                                Content="Add variable">
+                                Content="Add variable"
+                                Style="{StaticResource AccentButtonStyle}">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="AddVariableTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
@@ -292,7 +296,8 @@
                                 x:Uid="AddVariableContent"
                                 Click="AddDefaultVariableBtn_Click"
                                 CommandParameter="{x:Bind ViewModel.SystemDefaultSet}"
-                                IsEnabled="{x:Bind ViewModel.IsElevated}">
+                                IsEnabled="{x:Bind ViewModel.IsElevated}"
+                                Style="{StaticResource AccentButtonStyle}">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="AddVariableTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
@@ -393,14 +398,14 @@
                 <StackPanel
                     MinWidth="320"
                     HorizontalAlignment="Stretch"
-                    Spacing="12">
+                    Spacing="16">
                     <TextBox
-                        x:Uid="AddDefaultVariableNameTxtBox"
+                        x:Uid="AddNewVariableName"
                         IsSpellCheckEnabled="False"
                         Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         TextChanged="AddDefaultVariableNameTxtBox_TextChanged" />
                     <TextBox
-                        x:Uid="AddDefaultVariableValueTxtBox"
+                        x:Uid="AddNewVariableValue"
                         AcceptsReturn="False"
                         IsSpellCheckEnabled="False"
                         ScrollViewer.IsVerticalRailEnabled="True"
@@ -411,7 +416,6 @@
                 </StackPanel>
             </ScrollViewer>
         </ContentDialog>
-
 
         <ContentDialog
             x:Name="EditVariableDialog"
@@ -426,16 +430,16 @@
                 <StackPanel
                     MinWidth="320"
                     HorizontalAlignment="Stretch"
-                    Spacing="12">
+                    Spacing="16">
                     <TextBox
                         x:Name="EditVariableDialogNameTxtBox"
-                        x:Uid="NameTxtBox"
+                        x:Uid="AddNewVariableName"
                         IsSpellCheckEnabled="False"
                         Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         TextChanged="EditVariableDialogNameTxtBox_TextChanged" />
                     <TextBox
                         x:Name="EditVariableDialogValueTxtBox"
-                        x:Uid="EditVariableDialogValueTxtBox"
+                        x:Uid="AddNewVariableValue"
                         AcceptsReturn="False"
                         IsSpellCheckEnabled="False"
                         ScrollViewer.IsVerticalRailEnabled="True"

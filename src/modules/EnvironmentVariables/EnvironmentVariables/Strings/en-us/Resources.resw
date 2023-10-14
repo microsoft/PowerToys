@@ -124,7 +124,7 @@
     <value>Default variables</value>
   </data>
   <data name="NewProfileBtn.Text" xml:space="preserve">
-    <value>New</value>
+    <value>New profile</value>
   </data>
   <data name="ProfilesDescriptionLbl.Text" xml:space="preserve">
     <value>You can create profiles to quickly apply a set of preconfigured variables</value>
@@ -239,16 +239,10 @@
   <data name="AddVariableTooltip.Text" xml:space="preserve">
     <value>Add variable</value>
   </data>
-  <data name="EditProfileTooltip.Text" xml:space="preserve">
-    <value>Edit profile</value>
-  </data>
-  <data name="RemoveProfileTooltip.Text" xml:space="preserve">
-    <value>Remove profile</value>
-  </data>
   <data name="DefaultVariablesDescriptionLbl.Text" xml:space="preserve">
     <value>Add, remove or edit USER and SYSTEM variables</value>
   </data>
-  <data name="EditVariable.Text" xml:space="preserve">
+  <data name="EditItem.Text" xml:space="preserve">
     <value>Edit</value>
   </data>
   <data name="More_Options_ButtonTooltip.Text" xml:space="preserve">
@@ -266,7 +260,7 @@
   <data name="RemoveListItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>
-  <data name="RemoveVariable.Text" xml:space="preserve">
+  <data name="RemoveItem.Text" xml:space="preserve">
     <value>Remove</value>
   </data>
   <data name="AddVariableContent.Content" xml:space="preserve">
