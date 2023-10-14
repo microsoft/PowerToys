@@ -11,69 +11,14 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class DashboardModuleItem : INotifyPropertyChanged
+#pragma warning disable SA1402 // File may only contain a single type
+#pragma warning disable SA1649 // File name should match first type name
+    public class DashboardModuleTextItem : DashboardModuleItem
     {
-        private bool _isLabelVisible = true;
-        private bool _isShortcutVisible;
-        private bool _isButtonVisible;
-        private List<KeysDataModel> _remapKeys = new List<KeysDataModel>();
-        private List<AppSpecificKeysDataModel> _remapShortcuts = new List<AppSpecificKeysDataModel>();
+    }
 
-        public string Label { get; set; }
-
-        public bool IsLabelVisible
-        {
-            get => _isLabelVisible;
-            set
-            {
-                if (_isLabelVisible != value)
-                {
-                    _isLabelVisible = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public bool IsShortcutVisible
-        {
-            get => _isShortcutVisible;
-            set
-            {
-                if (_isShortcutVisible != value)
-                {
-                    _isShortcutVisible = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public bool IsButtonVisible
-        {
-            get => _isButtonVisible;
-            set
-            {
-                if (_isButtonVisible != value)
-                {
-                    _isButtonVisible = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public List<KeysDataModel> RemapKeys
-        {
-            get => _remapKeys;
-            set => _remapKeys = value;
-        }
-
-        public List<AppSpecificKeysDataModel> RemapShortcuts
-        {
-            get => _remapShortcuts;
-            set => _remapShortcuts = value;
-        }
-
-        public List<object> Shortcut { get; set; }
-
+    public class DashboardModuleButtonItem : DashboardModuleItem
+    {
         public string ButtonTitle { get; set; }
 
         public bool IsButtonDescriptionVisible { get; set; }
@@ -83,6 +28,35 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string ButtonGlyph { get; set; }
 
         public RoutedEventHandler ButtonClickHandler { get; set; }
+    }
+
+    public class DashboardModuleShortcutItem : DashboardModuleItem
+    {
+        public List<object> Shortcut { get; set; }
+    }
+
+    public class DashboardModuleKBMItem : DashboardModuleItem
+    {
+        private List<KeysDataModel> _remapKeys = new List<KeysDataModel>();
+
+        public List<KeysDataModel> RemapKeys
+        {
+            get => _remapKeys;
+            set => _remapKeys = value;
+        }
+
+        private List<AppSpecificKeysDataModel> _remapShortcuts = new List<AppSpecificKeysDataModel>();
+
+        public List<AppSpecificKeysDataModel> RemapShortcuts
+        {
+            get => _remapShortcuts;
+            set => _remapShortcuts = value;
+        }
+    }
+
+    public class DashboardModuleItem : INotifyPropertyChanged
+    {
+        public string Label { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -97,3 +71,5 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
     }
 }
+#pragma warning restore SA1402 // File may only contain a single type
+#pragma warning restore SA1649 // File name should match first type name
