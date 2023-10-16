@@ -135,12 +135,17 @@ namespace EnvironmentVariables.Models
                     // It exists. Rename it to preserve it.
                     if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User && parentProfile != null)
                     {
+                        // Gets which name the backup variable should have.
                         variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, parentProfile.Name);
 
-                        // Backup the variable
-                        if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
+                        // Only create a backup variable if there's not one already, to avoid overriding. (solves Path nuking errors, for example, after editing path on an enabled profile)
+                        if (EnvironmentVariablesHelper.GetExisting(variableToOverride.Name) == null)
                         {
-                            Logger.LogError("Failed to set backup variable.");
+                            // Backup the variable
+                            if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
+                            {
+                                Logger.LogError("Failed to set backup variable.");
+                            }
                         }
                     }
 
