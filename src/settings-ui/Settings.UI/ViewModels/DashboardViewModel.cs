@@ -23,8 +23,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private const string JsonFileType = ".json";
         private readonly IFileSystemWatcher _watcher;
-        private bool _isAddPanelVisible;
-        private string _addButtonGlyph;
         private DashboardModuleKBMItem _kbmItem;
         private Dispatcher dispatcher;
 
@@ -33,32 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<DashboardListItem> ActiveModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
-
-        public bool IsAddPanelVisible
-        {
-            get => _isAddPanelVisible;
-            set
-            {
-                if (_isAddPanelVisible != value)
-                {
-                    _isAddPanelVisible = value;
-                    OnPropertyChanged(nameof(IsAddPanelVisible));
-                }
-            }
-        }
-
-        public string AddButtonGlyph
-        {
-            get => _addButtonGlyph;
-            set
-            {
-                if (_addButtonGlyph != value)
-                {
-                    _addButtonGlyph = value;
-                    OnPropertyChanged(nameof(AddButtonGlyph));
-                }
-            }
-        }
 
         public bool UpdateAvailable { get; set; }
 
@@ -77,9 +49,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-
-            IsAddPanelVisible = false;
-            AddButtonGlyph = "\uECC8";
 
             _allModules = new List<DashboardListItem>();
 
@@ -794,20 +763,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
-        }
-
-        internal void AddButtonClick()
-        {
-            if (IsAddPanelVisible)
-            {
-                IsAddPanelVisible = false;
-                AddButtonGlyph = "\uECC8";
-            }
-            else
-            {
-                IsAddPanelVisible = true;
-                AddButtonGlyph = "\uE930";
-            }
         }
     }
 }
