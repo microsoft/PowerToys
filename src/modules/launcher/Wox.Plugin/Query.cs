@@ -44,6 +44,18 @@ namespace Wox.Plugin
             }
         }
 
+        /// <summary>
+        /// Gets the query as entered by the user.
+        /// You should only use this property if you need to process the raw text directly.
+        /// </summary>
+        public string RawUserQuery
+        {
+            get
+            {
+                return _query;
+            }
+        }
+
         private string _search;
 
         /// <summary>

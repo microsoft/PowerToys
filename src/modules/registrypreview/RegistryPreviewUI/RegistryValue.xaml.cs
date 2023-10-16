@@ -12,10 +12,10 @@ namespace RegistryPreview
     public class RegistryValue
     {
         // Static members
-        private static Uri uriStringValue = new Uri("ms-appx:///Assets/string32.png");
-        private static Uri uriBinaryValue = new Uri("ms-appx:///Assets/data32.png");
-        private static Uri uriDeleteValue = new Uri("ms-appx:///Assets/deleted-value32.png");
-        private static Uri uriErrorValue = new Uri("ms-appx:///Assets/error32.png");
+        private static Uri uriStringValue = new Uri("ms-appx:///Assets/RegistryPreview/string32.png");
+        private static Uri uriBinaryValue = new Uri("ms-appx:///Assets/RegistryPreview/data32.png");
+        private static Uri uriDeleteValue = new Uri("ms-appx:///Assets/RegistryPreview/deleted-value32.png");
+        private static Uri uriErrorValue = new Uri("ms-appx:///Assets/RegistryPreview/error32.png");
 
         public string Name { get; set; }
 
@@ -33,7 +33,7 @@ namespace RegistryPreview
                 switch (Type)
                 {
                     case "REG_SZ":
-                    case "REG_EXAND_SZ":
+                    case "REG_EXPAND_SZ":
                     case "REG_MULTI_SZ":
                         return uriStringValue;
                     case "ERROR":

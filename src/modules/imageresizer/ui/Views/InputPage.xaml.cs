@@ -5,8 +5,9 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using ImageResizer.ViewModels;
-using ModernWpf.Controls;
+using Wpf.Ui.Controls;
 using static ImageResizer.ViewModels.InputViewModel;
+using Numberbox = Wpf.Ui.Controls.NumberBox;
 
 namespace ImageResizer.Views
 {
@@ -31,7 +32,7 @@ namespace ImageResizer.Views
                 var viewModel = (InputViewModel)this.DataContext;
                 double number;
                 KeyPressParams keyParams;
-                if (double.TryParse(((TextBox)e.OriginalSource).Text, out number))
+                if (double.TryParse(((System.Windows.Controls.TextBox)e.OriginalSource).Text, out number))
                 {
                     // Determine which NumberBox triggered the event based on its name
                     switch (numberBox.Name)

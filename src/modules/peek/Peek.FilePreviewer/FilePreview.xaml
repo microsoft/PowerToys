@@ -1,4 +1,4 @@
-<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+﻿<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
 <!--  Licensed under the MIT License.  -->
 
 <UserControl
@@ -17,6 +17,13 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             IsActive="{x:Bind MatchPreviewState(Previewer.State, previewers:PreviewState.Loading), Mode=OneWay}" />
+
+        <controls:ShellPreviewHandlerControl
+            x:Name="ShellPreviewHandlerPreview"
+            HandlerError="ShellPreviewHandlerPreview_HandlerError"
+            HandlerLoaded="ShellPreviewHandlerPreview_HandlerLoaded"
+            HandlerVisibility="{x:Bind IsPreviewVisible(ShellPreviewHandlerPreviewer, Previewer.State), Mode=OneWay}"
+            Source="{x:Bind ShellPreviewHandlerPreviewer.Preview, Mode=OneWay}" />
 
         <Image
             x:Name="ImagePreview"
@@ -50,6 +57,15 @@
             NavigationCompleted="PreviewBrowser_NavigationCompleted"
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BrowserPreviewer, Previewer.State), Mode=OneWay, FallbackValue=Collapsed}" />
+
+        <controls:ArchiveControl
+            x:Name="ArchivePreview"
+            DirectoryCount="{x:Bind ArchivePreviewer.DirectoryCountText, Mode=OneWay}"
+            FileCount="{x:Bind ArchivePreviewer.FileCountText, Mode=OneWay}"
+            LoadingState="{x:Bind ArchivePreviewer.State, Mode=OneWay}"
+            Size="{x:Bind ArchivePreviewer.SizeText, Mode=OneWay}"
+            Source="{x:Bind ArchivePreviewer.Tree, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(ArchivePreviewer, Previewer.State), Mode=OneWay}" />
 
         <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"

@@ -21,6 +21,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     public class SvgPreviewControl : FormHandlerControl
     {
         /// <summary>
+        /// Settings class
+        /// </summary>
+        private readonly SvgPreviewHandler.Settings _settings = new();
+
+        /// <summary>
         /// Generator for the actual preview file
         /// </summary>
         private readonly SvgHTMLPreviewGenerator _previewGenerator = new();
@@ -78,6 +83,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
                                 "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgPreview-Temp";
 
+        public SvgPreviewControl()
+        {
+            this.SetBackgroundColor(_settings.ThemeColor);
+        }
+
         /// <summary>
         /// Start the preview on the Control.
         /// </summary>
@@ -133,7 +143,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             }
             catch (Exception ex)
             {
-                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
 
             try
@@ -150,7 +166,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                 AddWebViewControl(svgData);
                 Resize += FormResized;
                 base.DoPreview(dataSource);
-                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
             catch (Exception ex)
             {
@@ -199,6 +221,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         private void AddWebViewControl(string svgData)
         {
             _browser = new WebView2();
+            _browser.DefaultBackgroundColor = Color.Transparent;
             _browser.Dock = DockStyle.Fill;
 
             // Prevent new windows from being opened.
@@ -277,7 +300,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="dataSource">Stream reference to access source file.</param>
         private void PreviewError<T>(Exception exception, T dataSource)
         {
-            PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
+            try
+            {
+                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
+            }
+            catch
+            { // Should not crash if sending telemetry is failing. Ignore the exception.
+            }
+
             Controls.Clear();
             _infoBarAdded = true;
             AddTextBoxControl(Properties.Resource.SvgNotPreviewedError);

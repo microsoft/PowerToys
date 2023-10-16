@@ -12,9 +12,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ColorPickerProperties
     {
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x43);
+
         public ColorPickerProperties()
         {
-            ActivationShortcut = new HotkeySettings(true, false, false, true, 0x43);
+            ActivationShortcut = DefaultActivationShortcut;
             ChangeCursor = false;
             ColorHistoryLimit = 20;
             VisibleColorFormats = new Dictionary<string, KeyValuePair<bool, string>>();
@@ -49,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("activationaction")]
         public ColorPickerActivationAction ActivationAction { get; set; }
 
-        // Property ColorHistory is not used, the color history is saved separatedly in the colorHistory.json file
+        // Property ColorHistory is not used, the color history is saved separately in the colorHistory.json file
         [JsonPropertyName("colorhistory")]
         public List<string> ColorHistory { get; set; }
 

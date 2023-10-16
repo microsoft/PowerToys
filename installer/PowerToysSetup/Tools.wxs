@@ -10,7 +10,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="BugReportTool_exe" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Source="$(var.BinDir)BugReportTool\PowerToys.BugReportTool.exe" Id="BugReportTool.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)Tools\PowerToys.BugReportTool.exe" Id="BugReportTool.exe" Checksum="yes" />
       </Component>
       <Component Id="WebcamReportTool_exe" Win64="yes" Guid="41D5209F-7A9A-4DF2-A22A-9F0A9CF5AA63">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">

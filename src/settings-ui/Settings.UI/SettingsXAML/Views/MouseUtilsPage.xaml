@@ -1,0 +1,422 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.MouseUtilsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <localConverters:FindMyMouseActivationIntToVisibilityConverter x:Key="FindMyMouseActivationIntToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+    </Page.Resources>
+    <custom:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
+        <custom:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <custom:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
+                    <controls:SettingsCard
+                        x:Uid="MouseUtils_Enable_FindMyMouse"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured}"
+                        Severity="Informational" />
+                    <controls:SettingsExpander
+                        x:Uid="MouseUtils_FindMyMouse_ActivationMethod"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE961;}"
+                        IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
+                        IsExpanded="True">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.FindMyMouseActivationMethod, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationDoubleControlPress" />
+                            <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationDoubleRightControlPress" />
+                            <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationShakeMouse" />
+                            <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationCustomizedShortcut" />
+                        </ComboBox>
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=2}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="1000"
+                                    Maximum="1000000"
+                                    Minimum="0"
+                                    SmallChange="100"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseShakingMinimumDistance}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard
+                                x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
+                                HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                         Glyph=&#xEDA7;}"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=3}">
+                                <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsExpander
+                        x:Uid="Appearance_Behavior"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
+                        IsExpanded="False">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_OverlayOpacity">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="1"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseOverlayOpacity}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
+                                <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
+                                <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Minimum="5"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightRadius}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="40"
+                                    Minimum="1"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightInitialZoom}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAnimationEnabledBySystem}"
+                                    LargeChange="100"
+                                    Minimum="0"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseAnimationDurationMs}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                    <InfoBar
+                        x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Severity="Informational"
+                        Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsAnimationEnabledBySystem, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                    <controls:SettingsExpander
+                        x:Uid="MouseUtils_FindMyMouse_ExcludedApps"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                <TextBox
+                                    x:Uid="MouseUtils_FindMyMouse_ExcludedApps_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
+
+                <custom:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
+                    <controls:SettingsCard
+                        x:Uid="MouseUtils_Enable_MouseHighlighter"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
+                        Severity="Informational" />
+                    <controls:SettingsExpander
+                        x:Uid="MouseUtils_MouseHighlighter_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}"
+                        IsExpanded="True">
+                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MouseHighlighterAutoActivate, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                    <controls:SettingsExpander
+                        x:Uid="Appearance_Behavior"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor">
+                                <custom:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor">
+                                <custom:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
+                                <custom:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Minimum="5"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterRadius}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="100"
+                                    Minimum="100"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDelayMs}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="100"
+                                    Minimum="100"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDurationMs}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
+
+                <custom:SettingsGroup x:Uid="MouseUtils_MouseJump">
+                    <controls:SettingsCard
+                        x:Uid="MouseUtils_Enable_MouseJump"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseJump.png}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured}"
+                        Severity="Informational" />
+                    <controls:SettingsCard
+                        x:Uid="MouseUtils_MouseJump_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
+                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard
+                        x:Uid="MouseUtils_MouseJump_ThumbnailSize"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE740;}"
+                        IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
+                        <controls:SettingsCard.Description>
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Margin="0,4,0,0"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix"
+                                    Margin="0,0,4,0"
+                                    Style="{ThemeResource SecondaryTextStyle}" />
+                                <TextBlock
+                                    Margin="0,0,4,0"
+                                    FontWeight="SemiBold"
+                                    Style="{ThemeResource SecondaryTextStyle}"
+                                    Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=OneWay}" />
+                                <TextBlock
+                                    Margin="0,5,4,0"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="10"
+                                    Foreground="{ThemeResource SystemBaseMediumColor}"
+                                    Style="{ThemeResource SecondaryTextStyle}"
+                                    Text="&#xE947;" />
+                                <TextBlock
+                                    Margin="0,0,4,0"
+                                    FontWeight="SemiBold"
+                                    Style="{ThemeResource SecondaryTextStyle}"
+                                    Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=OneWay}" />
+                                <TextBlock
+                                    x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix"
+                                    Margin="0,0,4,0"
+                                    Foreground="{ThemeResource SystemBaseMediumColor}"
+                                    Style="{ThemeResource SecondaryTextStyle}" />
+                            </StackPanel>
+                        </controls:SettingsCard.Description>
+                        <StackPanel
+                            Grid.Column="2"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button
+                                x:Uid="EditButton"
+                                Width="40"
+                                Height="36"
+                                Content="&#xE70F;"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="EditTooltip" />
+                                </ToolTipService.ToolTip>
+                                <Button.Flyout>
+                                    <Flyout x:Uid="MouseJumpThumbnailSize_Edit">
+                                        <StackPanel Margin="0,12,0,0" Spacing="16">
+                                            <NumberBox
+                                                x:Uid="MouseUtils_MouseJump_ThumbnailSize_Edit_Width"
+                                                Width="140"
+                                                Minimum="160"
+                                                SpinButtonPlacementMode="Compact"
+                                                Value="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=TwoWay}" />
+                                            <NumberBox
+                                                x:Uid="MouseUtils_MouseJump_ThumbnailSize_Edit_Height"
+                                                Width="140"
+                                                Minimum="120"
+                                                SpinButtonPlacementMode="Compact"
+                                                Value="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
+
+                <custom:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
+                    <controls:SettingsCard
+                        x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
+                        Severity="Informational" />
+                    <controls:SettingsExpander
+                        x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}"
+                        IsExpanded="True">
+                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoActivate, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsExpander
+                        x:Uid="Appearance_Behavior"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
+                                <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="1"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsOpacity}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="500"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsRadius}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="50"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsThickness}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
+                                <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsBorderColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="2"
+                                    Maximum="50"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsBorderSize}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoHide, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled">
+                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+
+                            <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength" IsEnabled="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsFixedLength}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
+            </StackPanel>
+        </custom:SettingsPageControl.ModuleContent>
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink x:Uid="LearnMore_MouseUtils" Link="https://aka.ms/PowerToysOverview_MouseUtilities" />
+        </custom:SettingsPageControl.PrimaryLinks>
+        <custom:SettingsPageControl.SecondaryLinks>
+            <custom:PageLink Link="https://devblogs.microsoft.com/oldnewthing/author/oldnewthing" Text="Raymond Chen's Find My Mouse" />
+            <custom:PageLink Link="https://michael-clayton.com/projects/fancymouse" Text="Michael Clayton's Mouse Jump (FancyMouse)" />
+        </custom:SettingsPageControl.SecondaryLinks>
+    </custom:SettingsPageControl>
+</Page>

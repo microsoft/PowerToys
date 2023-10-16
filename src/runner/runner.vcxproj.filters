@@ -42,6 +42,9 @@
     <ClCompile Include="centralized_hotkeys.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="bug_report.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -87,6 +90,9 @@
     <ClInclude Include="centralized_hotkeys.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="bug_report.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utils">
@@ -111,5 +117,10 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/runner.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

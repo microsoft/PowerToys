@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -13,7 +14,7 @@ using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
-using CommunityToolkit.WinUI.UI;
+using CommunityToolkit.WinUI.Collections;
 using Hosts.Helpers;
 using Hosts.Models;
 using Hosts.Settings;
@@ -45,6 +46,9 @@ namespace Hosts.ViewModels
         private bool _error;
 
         [ObservableProperty]
+        private string _errorMessage;
+
+        [ObservableProperty]
         private bool _fileChanged;
 
         [ObservableProperty]
@@ -67,6 +71,9 @@ namespace Hosts.ViewModels
 
         [ObservableProperty]
         private bool _showOnlyDuplicates;
+
+        [ObservableProperty]
+        private bool _showSplittedEntriesTooltip;
 
         partial void OnShowOnlyDuplicatesChanged(bool value)
         {
@@ -123,12 +130,7 @@ namespace Hosts.ViewModels
         public void UpdateAdditionalLines(string lines)
         {
             AdditionalLines = lines;
-
-            Task.Run(async () =>
-            {
-                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
-                await _dispatcherQueue.EnqueueAsync(() => Error = error);
-            });
+            _ = Task.Run(SaveAsync);
         }
 
         public void Move(int oldIndex, int newIndex)
@@ -164,12 +166,13 @@ namespace Hosts.ViewModels
             Task.Run(async () =>
             {
                 _readingHosts = true;
-                var (additionalLines, entries) = await _hostsService.ReadAsync();
+                var data = await _hostsService.ReadAsync();
 
                 await _dispatcherQueue.EnqueueAsync(() =>
                 {
-                    AdditionalLines = additionalLines;
-                    _entries = new ObservableCollection<Entry>(entries);
+                    ShowSplittedEntriesTooltip = data.SplittedEntries;
+                    AdditionalLines = data.AdditionalLines;
+                    _entries = new ObservableCollection<Entry>(data.Entries);
 
                     foreach (var e in _entries)
                     {
@@ -250,7 +253,7 @@ namespace Hosts.ViewModels
         [RelayCommand]
         public void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts, true);
         }
 
         [RelayCommand]
@@ -283,20 +286,12 @@ namespace Hosts.ViewModels
                 return;
             }
 
-            Task.Run(async () =>
-            {
-                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
-                await _dispatcherQueue.EnqueueAsync(() => Error = error);
-            });
+            _ = Task.Run(SaveAsync);
         }
 
         private void Entries_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            Task.Run(async () =>
-            {
-                var error = !await _hostsService.WriteAsync(AdditionalLines, _entries);
-                await _dispatcherQueue.EnqueueAsync(() => Error = error);
-            });
+            _ = Task.Run(SaveAsync);
         }
 
         private void FindDuplicates(CancellationToken cancellationToken)
@@ -346,16 +341,67 @@ namespace Hosts.ViewModels
                 return;
             }
 
-            var hosts = entry.SplittedHosts;
+            var duplicate = false;
 
-            var duplicate = _entries.FirstOrDefault(e => e != entry
+            /*
+             * Duplicate are based on the following criteria:
+             * Entries with the same type and at least one host in common
+             * Entries with the same type and address, except when there is only one entry with less than 9 hosts for that type and address
+             */
+            if (_entries.Any(e => e != entry
                 && e.Type == entry.Type
-                && (string.Equals(e.Address, entry.Address, StringComparison.OrdinalIgnoreCase)
-                    || hosts.Intersect(e.SplittedHosts, StringComparer.OrdinalIgnoreCase).Any())) != null;
+                && entry.SplittedHosts.Intersect(e.SplittedHosts, StringComparer.OrdinalIgnoreCase).Any()))
+            {
+                duplicate = true;
+            }
+            else if (_entries.Any(e => e != entry
+                && e.Type == entry.Type
+                && string.Equals(e.Address, entry.Address, StringComparison.OrdinalIgnoreCase)))
+            {
+                duplicate = entry.SplittedHosts.Length < Consts.MaxHostsCount
+                    && _entries.Count(e => e.Type == entry.Type
+                        && string.Equals(e.Address, entry.Address, StringComparison.OrdinalIgnoreCase)
+                        && e.SplittedHosts.Length < Consts.MaxHostsCount) > 1;
+            }
 
             _dispatcherQueue.TryEnqueue(() =>
             {
                 entry.Duplicate = duplicate;
+            });
+        }
+
+        private async Task SaveAsync()
+        {
+            bool error = true;
+            string errorMessage = string.Empty;
+
+            try
+            {
+                await _hostsService.WriteAsync(AdditionalLines, _entries);
+                error = false;
+            }
+            catch (NotRunningElevatedException)
+            {
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                errorMessage = resourceLoader.GetString("FileSaveError_NotElevated");
+            }
+            catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 32)
+            {
+                // There are some edge cases where a big hosts file is being locked by svchost.exe https://github.com/microsoft/PowerToys/issues/28066
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                errorMessage = resourceLoader.GetString("FileSaveError_FileInUse");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to save hosts file", ex);
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                errorMessage = resourceLoader.GetString("FileSaveError_Generic");
+            }
+
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                Error = error;
+                ErrorMessage = errorMessage;
             });
         }
 

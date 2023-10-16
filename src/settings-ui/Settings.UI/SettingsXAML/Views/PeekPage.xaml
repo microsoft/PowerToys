@@ -1,0 +1,49 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PeekPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <custom:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Peek.png">
+        <custom:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+                <controls:SettingsCard
+                    x:Uid="Peek_EnablePeek"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPeek.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </controls:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
+
+                <custom:SettingsGroup x:Uid="Peek_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
+                <custom:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingsCard x:Uid="Peek_AlwaysRunNotElevated" HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.AlwaysRunNotElevated}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Peek_CloseAfterLosingFocus">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.CloseAfterLosingFocus}" />
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
+
+            </StackPanel>
+        </custom:SettingsPageControl.ModuleContent>
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink x:Uid="LearnMore_Peek" Link="https://aka.ms/PowerToysOverview_Peek" />
+        </custom:SettingsPageControl.PrimaryLinks>
+    </custom:SettingsPageControl>
+</Page>

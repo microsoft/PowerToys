@@ -276,7 +276,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Couldn't create SettingsSync: {ex}");
+                if (IsEnabled)
+                {
+                    Logger.LogError($"Couldn't create SettingsSync: {ex}");
+                }
+
                 return null;
             }
         }
@@ -475,10 +479,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             /* TODO: Error handling */
             _selectedSwitchBetweenMachineShortcutOptionsIndex = Array.IndexOf(_switchBetweenMachineShortcutOptions, moduleSettings.Properties.HotKeySwitchMachine.Value);
             _easyMouseOptionIndex = (EasyMouseOption)moduleSettings.Properties.EasyMouse.Value;
-            _toggleEasyMouseShortcutIndex = ConvertMouseWithoutBordersHotKeyValueToIndex(moduleSettings.Properties.HotKeyToggleEasyMouse.Value);
-            _lockMachinesShortcutIndex = ConvertMouseWithoutBordersHotKeyValueToIndex(moduleSettings.Properties.HotKeyLockMachine.Value);
-            _reconnectShortcutIndex = ConvertMouseWithoutBordersHotKeyValueToIndex(moduleSettings.Properties.HotKeyReconnect.Value);
-            _switch2AllPcShortcutIndex = ConvertMouseWithoutBordersHotKeyValueToIndex(moduleSettings.Properties.HotKeySwitch2AllPC.Value, 1);
+
             LoadMachineMatrixString();
         }
 
@@ -822,111 +823,60 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int ConvertMouseWithoutBordersHotKeyValueToIndex(int value, int additionalOptions = 0)
+        public HotkeySettings ToggleEasyMouseShortcut
         {
-            if (value >= 0x41 && value <= 0x5A)
-            {
-                return value - 0x40 + additionalOptions; /* VK_A <= value <= VK_Z */
-            }
-
-            if (value <= additionalOptions)
-            {
-                return value;
-            }
-
-            return 0; /* Disabled */
-        }
-
-        public int ConvertMouseWithoutBordersHotKeyIndexToValue(int index, int additionalOptions = 0)
-        {
-            if (index >= additionalOptions + 1 && index <= additionalOptions + 26)
-            {
-                return index + 0x40 - additionalOptions; /* VK_A to VK_Z */
-            }
-
-            if (index <= additionalOptions)
-            {
-                return index;
-            }
-
-            return 0; /* Disabled */
-        }
-
-        private int _toggleEasyMouseShortcutIndex;
-
-        public int ToggleEasyMouseShortcutIndex
-        {
-            get
-            {
-                return _toggleEasyMouseShortcutIndex;
-            }
+            get => Settings.Properties.ToggleEasyMouseShortcut;
 
             set
             {
-                if (_toggleEasyMouseShortcutIndex != value)
+                if (Settings.Properties.ToggleEasyMouseShortcut != value)
                 {
-                    _toggleEasyMouseShortcutIndex = value;
-                    Settings.Properties.HotKeyToggleEasyMouse.Value = ConvertMouseWithoutBordersHotKeyIndexToValue(value);
+                    Settings.Properties.ToggleEasyMouseShortcut = value ?? MouseWithoutBordersProperties.DefaultHotKeyToggleEasyMouse;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        private int _lockMachinesShortcutIndex;
-
-        public int LockMachinesShortcutIndex
+        public HotkeySettings LockMachinesShortcut
         {
-            get
-            {
-                return _lockMachinesShortcutIndex;
-            }
+            get => Settings.Properties.LockMachineShortcut;
 
             set
             {
-                if (_lockMachinesShortcutIndex != value)
+                if (Settings.Properties.LockMachineShortcut != value)
                 {
-                    _lockMachinesShortcutIndex = value;
-                    Settings.Properties.HotKeyLockMachine.Value = ConvertMouseWithoutBordersHotKeyIndexToValue(value);
+                    Settings.Properties.LockMachineShortcut = value;
+                    Settings.Properties.LockMachineShortcut = value ?? MouseWithoutBordersProperties.DefaultHotKeyLockMachine;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        private int _reconnectShortcutIndex;
-
-        public int ReconnectShortcutIndex
+        public HotkeySettings ReconnectShortcut
         {
-            get
-            {
-                return _reconnectShortcutIndex;
-            }
+            get => Settings.Properties.ReconnectShortcut;
 
             set
             {
-                if (_reconnectShortcutIndex != value)
+                if (Settings.Properties.ReconnectShortcut != value)
                 {
-                    _reconnectShortcutIndex = value;
-                    Settings.Properties.HotKeyReconnect.Value = ConvertMouseWithoutBordersHotKeyIndexToValue(value);
+                    Settings.Properties.ReconnectShortcut = value;
+                    Settings.Properties.ReconnectShortcut = value ?? MouseWithoutBordersProperties.DefaultHotKeyReconnect;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        private int _switch2AllPcShortcutIndex;
-
-        public int Switch2AllPcShortcutIndex
+        public HotkeySettings HotKeySwitch2AllPC
         {
-            get
-            {
-                return _switch2AllPcShortcutIndex;
-            }
+            get => Settings.Properties.Switch2AllPCShortcut;
 
             set
             {
-                if (_switch2AllPcShortcutIndex != value)
+                if (Settings.Properties.Switch2AllPCShortcut != value)
                 {
-                    _switch2AllPcShortcutIndex = value;
-                    Settings.Properties.HotKeySwitch2AllPC.Value = ConvertMouseWithoutBordersHotKeyIndexToValue(value, 1);
+                    Settings.Properties.Switch2AllPCShortcut = value;
+                    Settings.Properties.Switch2AllPCShortcut = value ?? MouseWithoutBordersProperties.DefaultHotKeySwitch2AllPC;
                     NotifyPropertyChanged();
                 }
             }

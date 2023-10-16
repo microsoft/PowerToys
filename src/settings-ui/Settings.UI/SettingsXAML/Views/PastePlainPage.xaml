@@ -1,0 +1,50 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PastePlainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <custom:SettingsPageControl x:Uid="PastePlain" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PastePlain.png">
+        <custom:SettingsPageControl.ModuleContent>
+            <StackPanel
+                ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                Orientation="Vertical"
+                Spacing="2">
+                <controls:SettingsCard
+                    x:Uid="PastePlain_EnableToggleControl_HeaderText"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPastePlain.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </controls:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
+
+                <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="PastePlain_ShortcutWarning"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsConflictingCopyShortcut}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsConflictingCopyShortcut}"
+                        Severity="Warning" />
+                </custom:SettingsGroup>
+            </StackPanel>
+        </custom:SettingsPageControl.ModuleContent>
+
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink x:Uid="LearnMore_PastePlain" Link="https://aka.ms/PowerToysOverview_PastePlain" />
+        </custom:SettingsPageControl.PrimaryLinks>
+    </custom:SettingsPageControl>
+</Page>

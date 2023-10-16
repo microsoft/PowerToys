@@ -1,209 +1,296 @@
-﻿<UserControl x:Class="ImageResizer.Views.InputPage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:ImageResizer.Views"
-             xmlns:m="clr-namespace:ImageResizer.Models"
-             xmlns:p="clr-namespace:ImageResizer.Properties"
-             xmlns:ui="http://schemas.modernwpf.com/2019"
-             MinWidth="350">
+﻿<UserControl
+    x:Class="ImageResizer.Views.InputPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:m="clr-namespace:ImageResizer.Models"
+    xmlns:p="clr-namespace:ImageResizer.Properties"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
 
-    <Grid Background="{DynamicResource PrimaryBackgroundBrush}">
-
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" MinHeight="84"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <ComboBox x:Name="SizeComboBox"
-                  ItemsSource="{Binding Settings.AllSizes}"
-                  HorizontalAlignment="Stretch"
-                  Margin="12"
-                  SelectedIndex="{Binding Settings.SelectedSizeIndex}"
-                  ui:ControlHelper.Header="{x:Static p:Resources.Input_Content}">
+        <ComboBox
+            x:Name="SizeComboBox"
+            Grid.Row="1"
+            Height="64"
+            Margin="16,16,16,24"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            ItemsSource="{Binding Settings.AllSizes}"
+            SelectedIndex="{Binding Settings.SelectedSizeIndex}">
             <ComboBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
-                    <Grid Margin="0,6,0,0" AutomationProperties.Name="{Binding Name}">
+                    <Grid
+                        Margin="2,0,0,0"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="{Binding Name}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="20" />
-                            <RowDefinition Height="24" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <TextBlock Text="{Binding Name}"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"/>
-                        <StackPanel Orientation="Horizontal"
-                                    Grid.Row="1"
-                                    VerticalAlignment="Top">
-                            <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}"
-                                       Style="{StaticResource CaptionTextBlockStyle}"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
-                                       Margin="4,0,0,0"
-                                       Style="{StaticResource CaptionTextBlockStyle}"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="×"
-                                       Margin="4,0,0,0"
-                                       Style="{StaticResource CaptionTextBlockStyle}"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                       Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}"/>
-                            <TextBlock Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
-                                       Margin="4,0,0,0"
-                                       Style="{StaticResource CaptionTextBlockStyle}"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                       Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}"/>
-                            <TextBlock Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}"
-                                       Margin="4,0,0,0"
-                                       Style="{StaticResource CaptionTextBlockStyle}"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                        <StackPanel
+                            Grid.Row="1"
+                            VerticalAlignment="Top"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="×"
+                                Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
+                                Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type m:CustomSize}">
-                    <Grid Height="50"
-                          AutomationProperties.Name="{Binding Name}">
-
-                        <TextBlock Text="{Binding Name}"
-                                   Margin="0,0,0,0"
-                                   VerticalAlignment="Center"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                    <Grid VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
                     </Grid>
                 </DataTemplate>
             </ComboBox.Resources>
         </ComboBox>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12,0,12,12" Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">
-            <ComboBox ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
-                      AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
-                      Height="56"
-                      MinWidth="120"
-                      ui:ControlHelper.Header="{x:Static p:Resources.Resize_Type}"
-                      Text="{Binding ElementName=SizeComboBox, Path= SelectedValue.Fit, Mode=TwoWay}"/>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border
+                Grid.RowSpan="5"
+                Background="{DynamicResource LayerFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0" />
 
-            <ui:NumberBox SpinButtonPlacementMode="Compact"
-                          Minimum="0"
-                          Width="102"
-                          Name="WidthNumberBox"
-                          KeyDown="Button_KeyDown"
-                          AutomationProperties.Name="{x:Static p:Resources.Width}"                          
-                          Margin="8,0,0,0">
-                <ui:ControlHelper.Header>
-                    <TextBlock Text="{x:Static p:Resources.Width}" Margin="0,0,0,-1" />
-                </ui:ControlHelper.Header>
-                <ui:NumberBox.Value>
-                    <Binding ElementName="SizeComboBox" Path="SelectedValue.Width" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
-                </ui:NumberBox.Value>
-            </ui:NumberBox>
-            <TextBlock VerticalAlignment="Center"
-                       Text="&#xE947;"
-                       FontFamily="{StaticResource SymbolThemeFontFamily}"
-                       Width="24"
-                       Foreground="{DynamicResource SecondaryForegroundBrush}"
-                       Name="Times_Symbol"
-                       AutomationProperties.Name="{x:Static p:Resources.Times_Symbol}"
-                       TextAlignment="Center"
-                       Margin="0,8,0,0"
-                       Visibility="{Binding ElementName=SizeComboBox, Path= SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}"/>
-
-            <ui:NumberBox DataContext="{Binding ElementName=SizeComboBox, Path=SelectedItem}" 
-                          SpinButtonPlacementMode="Compact"
-                          Minimum="0"
-                          Width="102"
-                          Name="HeightNumberBox"
-                          KeyDown="Button_KeyDown"
-                          AutomationProperties.Name="{x:Static p:Resources.Height}"
-                          Visibility="{Binding ElementName=SizeComboBox, Path= SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}">
-                <ui:ControlHelper.Header>
-                    <TextBlock Text="{x:Static p:Resources.Height}" Margin="0,0,0,-1" />
-                </ui:ControlHelper.Header>
-                <ui:NumberBox.Value>
-                    <Binding ElementName="SizeComboBox" Path="SelectedValue.Height" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
-                </ui:NumberBox.Value>
-            </ui:NumberBox>
-            <ComboBox Margin="8,0,0,0"
-                      Height="56"
-                      ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
-                      AutomationProperties.Name="{x:Static p:Resources.Unit}"
-                      ui:ControlHelper.Header="{x:Static p:Resources.Unit}"
-                      Text="{Binding ElementName=SizeComboBox, Path= SelectedValue.Unit, Mode=TwoWay}"/>
-        </StackPanel>
+            <Grid
+                Height="86"
+                Margin="18,16,16,16"
+                Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
 
-        <StackPanel Grid.Row="2" Orientation="Vertical">
+                <TextBlock
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{x:Static p:Resources.Width}"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{x:Static p:Resources.WidthChar}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Width}" />
+                <ui:NumberBox
+                    Name="WidthNumberBox"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="{x:Static p:Resources.Width}"
+                    KeyDown="Button_KeyDown"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Inline">
+                    <ui:NumberBox.Value>
+                        <Binding
+                            ElementName="SizeComboBox"
+                            Mode="TwoWay"
+                            Path="SelectedValue.Width"
+                            UpdateSourceTrigger="PropertyChanged" />
+                    </ui:NumberBox.Value>
+                </ui:NumberBox>
+                <TextBlock
+                    Grid.Column="3"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{x:Static p:Resources.Height}"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{x:Static p:Resources.HeightChar}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Height}"
+                    Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}" />
+                <ui:NumberBox
+                    Name="HeightNumberBox"
+                    Grid.Column="4"
+                    HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="{x:Static p:Resources.Height}"
+                    DataContext="{Binding ElementName=SizeComboBox, Path=SelectedItem}"
+                    KeyDown="Button_KeyDown"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Inline"
+                    Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}">
 
-        <CheckBox Margin="12,4,12,0"
-                  Content="{x:Static p:Resources.Input_ShrinkOnly}"
-                  IsChecked="{Binding Settings.ShrinkOnly}"/>
-            
-        <CheckBox Margin="12,4,12,0"
-                  Content="{x:Static p:Resources.Input_IgnoreOrientation}"
-                  IsChecked="{Binding Settings.IgnoreOrientation}"/>
-        <!-- TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
-                   to overwrite any files in the directory instead (issue #88) -->
-        <CheckBox Margin="12,4,12,0"
-                  Content="{x:Static p:Resources.Input_Replace}"
-                  IsChecked="{Binding Settings.Replace}"/>
+                    <ui:NumberBox.Value>
+                        <Binding
+                            ElementName="SizeComboBox"
+                            Mode="TwoWay"
+                            Path="SelectedValue.Height"
+                            UpdateSourceTrigger="PropertyChanged" />
+                    </ui:NumberBox.Value>
+                </ui:NumberBox>
 
-        <CheckBox Margin="12,4,12,0"
-                  Content="{x:Static p:Resources.Input_RemoveMetadata}"
-                  IsChecked="{Binding Settings.RemoveMetadata}"/>
+                <ui:SymbolIcon
+                    Grid.Row="2"
+                    Margin="-2,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Symbol="ArrowMaximize16"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Resize_Type}" />
 
-            <TextBlock Grid.Column="0"
-                           FontWeight="Bold"
-                           Text="{x:Static p:Resources.Input_GifWarning}"
-                           TextWrapping="Wrap"
-                       Margin="12,12,12,0"
-                           HorizontalAlignment="Right"
-                           TextAlignment="Left"
-                           Foreground="{ui:ThemeResource SystemControlErrorTextForegroundBrush}"
-                           Visibility="{Binding TryingToResizeGifFiles, Converter={StaticResource BoolValueConverter}}"
-                           />
-        </StackPanel>
-    
-        <Border Margin="0,12,0,0"
-                Background="{DynamicResource SecondaryBackgroundBrush}"
-                BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                BorderThickness="0,1,0,0"
-                Padding="12"
-                Grid.Row="3">
-            <Grid>
+                <ComboBox
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
+                    ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
+                    Text="{Binding ElementName=SizeComboBox, Path=SelectedValue.Fit, Mode=TwoWay}" />
+
+                <ui:SymbolIcon
+                    Grid.Row="2"
+                    Grid.Column="3"
+                    Margin="-2,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontSize="18"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Symbol="Ruler16"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Unit}" />
+
+                <ComboBox
+                    Grid.Row="2"
+                    Grid.Column="4"
+                    AutomationProperties.Name="{x:Static p:Resources.Unit}"
+                    ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
+                    Text="{Binding ElementName=SizeComboBox, Path=SelectedValue.Unit, Mode=TwoWay}" />
+
+            </Grid>
+
+            <StackPanel
+                Grid.Row="1"
+                VerticalAlignment="Top"
+                Orientation="Vertical">
+
+                <CheckBox
+                    Margin="16,12,16,0"
+                    Content="{x:Static p:Resources.Input_ShrinkOnly}"
+                    IsChecked="{Binding Settings.ShrinkOnly}" />
+
+                <CheckBox
+                    Margin="16,2,16,0"
+                    Content="{x:Static p:Resources.Input_IgnoreOrientation}"
+                    IsChecked="{Binding Settings.IgnoreOrientation}" />
+                <!--
+                    TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
+                    to overwrite any files in the directory instead (issue #88)
+                -->
+                <CheckBox
+                    Margin="16,2,16,0"
+                    Content="{x:Static p:Resources.Input_Replace}"
+                    IsChecked="{Binding Settings.Replace}" />
+
+                <CheckBox
+                    Margin="16,2,16,0"
+                    Content="{x:Static p:Resources.Input_RemoveMetadata}"
+                    IsChecked="{Binding Settings.RemoveMetadata}" />
+            </StackPanel>
+
+            <Border
+                Grid.Row="2"
+                Height="1"
+                Margin="0,12,0,8"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top"
+                Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+            <ui:InfoBar
+                Grid.Row="3"
+                Margin="16,0,16,0"
+                Padding="12,8,8,8"
+                IsClosable="False"
+                IsOpen="{Binding TryingToResizeGifFiles}"
+                Message="{x:Static p:Resources.Input_GifWarning}"
+                Severity="Warning" />
+            <Grid Grid.Row="4" Margin="16,8,16,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Button Width="36"
-                    Command="{Binding OpenSettingsCommand}"
+
+                <ui:Button
+                    Width="36"
                     Height="36"
-                    Margin="-8,0,0,0"
-                    Content="&#xE713;"
-                    Background="Transparent"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="16"
+                    Margin="-6,0,0,0"
+                    Padding="0"
                     HorizontalAlignment="Left"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
-                    AutomationProperties.Name="{x:Static p:Resources.Open_settings}" />
+                    AutomationProperties.Name="{x:Static p:Resources.Open_settings}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Command="{Binding OpenSettingsCommand}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}">
+                    <ui:Button.Content>
+                        <ui:SymbolIcon FontSize="18" Symbol="Settings20" />
+                    </ui:Button.Content>
+                </ui:Button>
+                <ui:Button
+                    Grid.Column="1"
+                    MinWidth="76"
+                    Margin="8,0,0,0"
+                    Appearance="Primary"
+                    AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
+                    Command="{Binding ResizeCommand}"
+                    IsDefault="True">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon FontSize="18" Symbol="ResizeImage20" />
+                        <TextBlock Margin="8,0,0,0" Text="{x:Static p:Resources.Input_Resize}" />
+                    </StackPanel>
+                </ui:Button>
 
-                <Button Grid.Column="1"
-                        Style="{StaticResource AccentButtonStyle}"
-                        MinWidth="76"
-                        Margin="12,0,0,0"
-                        Command="{Binding ResizeCommand}"
-                        AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
-                        Content="{x:Static p:Resources.Input_Resize}"
-                        IsDefault="True"/>
-
-                <Button Grid.Column="2"
-                        Style="{StaticResource DefaultButtonStyle}"
-                        MinWidth="76"
-                        Margin="12,0,0,0"
-                        Command="{Binding CancelCommand}"
-                        Content="{x:Static p:Resources.Cancel}"
-                        IsCancel="True"/>
+                <ui:Button
+                    Grid.Column="2"
+                    MinWidth="76"
+                    Margin="8,0,0,0"
+                    Command="{Binding CancelCommand}"
+                    Content="{x:Static p:Resources.Cancel}"
+                    IsCancel="True" />
             </Grid>
-        </Border>
+
+
+        </Grid>
     </Grid>
 </UserControl>

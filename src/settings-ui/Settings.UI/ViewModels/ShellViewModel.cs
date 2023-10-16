@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NativeMethods.FreeLibrary(mfHandle);
                 }
 
-                return this != null && File.Exists("modules/VideoConference/PowerToys.VideoConferenceModule.dll") && mfAvailable;
+                return this != null && File.Exists("PowerToys.VideoConferenceModule.dll") && mfAvailable;
             }
         }
 

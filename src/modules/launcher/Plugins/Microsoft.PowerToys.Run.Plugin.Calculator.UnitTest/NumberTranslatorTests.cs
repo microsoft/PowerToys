@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void Translate_ThrowError_WhenCalledNull(string input)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-DE"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
             Assert.ThrowsException<ArgumentNullException>(() => translator.Translate(input));
@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void Translate_WhenCalledEmpty(string input)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-DE"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
             var result = translator.Translate(input);
@@ -76,7 +76,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void Translate_NoErrors_WhenCalled(string input, string expectedResult)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-DE"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
             var result = translator.Translate(input);
@@ -95,7 +95,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void TranslateBack_NoErrors_WhenCalled(string input, string expectedResult)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-DE"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
             var result = translator.TranslateBack(input);
@@ -113,7 +113,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void Translate_RemoveNumberGroupSeparator_WhenCalled(string decimalSeparator, string groupSeparator, string input, string expectedResult)
         {
             // Arrange
-            var sourceCulture = new CultureInfo("en-US")
+            var sourceCulture = new CultureInfo("en-US", false)
             {
                 NumberFormat =
                 {
@@ -121,7 +121,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                     NumberGroupSeparator = groupSeparator,
                 },
             };
-            var translator = NumberTranslator.Create(sourceCulture, new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(sourceCulture, new CultureInfo("en-US", false));
 
             // Act
             var result = translator.Translate(input);
@@ -132,12 +132,28 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("12,0004", "12.0004")]
-        [DataRow("0xF000", "0xF000")]
-        public void Translate_NoRemovalOfLeadingZeroesOnEdgeCases(string input, string expectedResult)
+        [DataRow("de-DE", "12,0004", "12.0004")]
+        [DataRow("de-DE", "0xF000", "0xF000")]
+        [DataRow("de-DE", "0", "0")]
+        [DataRow("de-DE", "00", "0")]
+        [DataRow("de-DE", "12.004", "12004")] // . is the group separator in de-DE
+        [DataRow("de-DE", "12.04", "1204")]
+        [DataRow("de-DE", "12.4", "124")]
+        [DataRow("de-DE", "3.004.044.444,05", "3004044444.05")]
+        [DataRow("de-DE", "123.01 + 52.30", "12301 + 5230")]
+        [DataRow("de-DE", "123.001 + 52.30", "123001 + 5230")]
+        [DataRow("fr-FR", "0", "0")]
+        [DataRow("fr-FR", "00", "0")]
+        [DataRow("fr-FR", "12.004", "12.004")] // . is not decimal or group separator in fr-FR
+        [DataRow("fr-FR", "12.04", "12.04")]
+        [DataRow("fr-FR", "12.4", "12.4")]
+        [DataRow("fr-FR", "12.0004", "12.0004")]
+        [DataRow("fr-FR", "123.01 + 52.30", "123.01 + 52.30")]
+        [DataRow("fr-FR", "123.001 + 52.30", "123.001 + 52.30")]
+        public void Translate_NoRemovalOfLeadingZeroesOnEdgeCases(string sourceCultureName, string input, string expectedResult)
         {
             // Arrange
-            var translator = NumberTranslator.Create(new CultureInfo("de-de"), new CultureInfo("en-US"));
+            var translator = NumberTranslator.Create(new CultureInfo(sourceCultureName, false), new CultureInfo("en-US", false));
 
             // Act
             var result = translator.Translate(input);

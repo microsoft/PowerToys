@@ -8,9 +8,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PeekProperties
     {
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(false, true, false, false, 0x20);
+
         public PeekProperties()
         {
-            ActivationShortcut = new HotkeySettings(false, true, false, false, 0x20);
+            ActivationShortcut = DefaultActivationShortcut;
             AlwaysRunNotElevated = new BoolProperty(true);
             CloseAfterLosingFocus = new BoolProperty(false);
         }

@@ -1,0 +1,47 @@
+<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+<!--  Licensed under the MIT License.  -->
+
+<winuiex:WindowEx
+    x:Class="Peek.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fp="using:Peek.FilePreviewer"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:Peek.UI.Views"
+    xmlns:winuiex="using:WinUIEx"
+    MinWidth="450"
+    MinHeight="400"
+    mc:Ignorable="d">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+    <Grid KeyboardAcceleratorPlacementMode="Hidden">
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="Left" Invoked="PreviousNavigationInvoked" />
+            <KeyboardAccelerator Key="Up" Invoked="PreviousNavigationInvoked" />
+            <KeyboardAccelerator Key="Right" Invoked="NextNavigationInvoked" />
+            <KeyboardAccelerator Key="Down" Invoked="NextNavigationInvoked" />
+            <KeyboardAccelerator Key="Escape" Invoked="EscKeyInvoked" />
+        </Grid.KeyboardAccelerators>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <views:TitleBar
+            x:Name="TitleBarControl"
+            Grid.Row="0"
+            FileIndex="{x:Bind ViewModel.CurrentIndex, Mode=OneWay}"
+            IsMultiSelection="{x:Bind ViewModel.NeighboringItemsQuery.IsMultipleFilesActivation, Mode=OneWay}"
+            Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
+            NumberOfFiles="{x:Bind ViewModel.Items.Count, Mode=OneWay}" />
+
+        <fp:FilePreview
+            Grid.Row="1"
+            Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
+            PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
+            ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
+    </Grid>
+</winuiex:WindowEx>

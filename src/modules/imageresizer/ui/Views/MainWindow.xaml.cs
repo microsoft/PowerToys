@@ -5,18 +5,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using ImageResizer.ViewModels;
 using Microsoft.Win32;
+using Wpf.Ui.Controls;
 using AppResources = ImageResizer.Properties.Resources;
 
 namespace ImageResizer.Views
 {
-    public partial class MainWindow : Window, IMainView
+    public partial class MainWindow : FluentWindow, IMainView
     {
         public MainWindow(MainViewModel viewModel)
         {
             DataContext = viewModel;
+            Wpf.Ui.Appearance.Watcher.Watch(this);
             InitializeComponent();
         }
 

@@ -188,7 +188,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
             {
                 hr = StringCchCopy(result, cchMax, source);
             }
-        } 
+        }
         else if (flags & Capitalized)
         {
             if (!(flags & ExtensionOnly))
@@ -234,15 +234,13 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
     return hr;
 }
 
-bool isFileTimeUsed(_In_ PCWSTR source) 
+bool isFileTimeUsed(_In_ PCWSTR source)
 {
     bool used = false;
-    std::wstring patterns[] = { L"(([^\\$]|^)(\\$\\$)*)\\$Y", L"(([^\\$]|^)(\\$\\$)*)\\$M", L"(([^\\$]|^)(\\$\\$)*)\\$D", 
-        L"(([^\\$]|^)(\\$\\$)*)\\$h", L"(([^\\$]|^)(\\$\\$)*)\\$m", L"(([^\\$]|^)(\\$\\$)*)\\$s", L"(([^\\$]|^)(\\$\\$)*)\\$f" };
-    size_t patternsLength = ARRAYSIZE(patterns);
-    for (size_t i = 0; !used && i < patternsLength; i++)
+    static const std::array patterns = { std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$Y" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$M" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$D" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$h" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$m" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$s" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$f" } };
+    for (size_t i = 0; !used && i < patterns.size(); i++)
     {
-        if (std::regex_search(source, std::wregex(patterns[i])))
+        if (std::regex_search(source, patterns[i]))
         {
             used = true;
         }
@@ -253,7 +251,7 @@ bool isFileTimeUsed(_In_ PCWSTR source)
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME fileTime)
 {
     std::locale::global(std::locale(""));
-    HRESULT hr = E_INVALIDARG;     
+    HRESULT hr = E_INVALIDARG;
     if (source && wcslen(source) > 0)
     {
         std::wstring res(source);
@@ -274,17 +272,17 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", (fileTime.wYear % 10));
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Y"), replaceTerm);
-        
+
         GetDateFormatEx(localeName, NULL, &fileTime, L"MMMM", formattedDate, MAX_PATH, NULL);
         formattedDate[0] = towupper(formattedDate[0]);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMMM"), replaceTerm);
-        
+
         GetDateFormatEx(localeName, NULL, &fileTime, L"MMM", formattedDate, MAX_PATH, NULL);
         formattedDate[0] = towupper(formattedDate[0]);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMM"), replaceTerm);
-                
+
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", fileTime.wMonth);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MM"), replaceTerm);
 
@@ -295,7 +293,7 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         formattedDate[0] = towupper(formattedDate[0]);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD"), replaceTerm);
-        
+
         GetDateFormatEx(localeName, NULL, &fileTime, L"ddd", formattedDate, MAX_PATH, NULL);
         formattedDate[0] = towupper(formattedDate[0]);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
@@ -328,10 +326,10 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%03d"), L"$01", fileTime.wMilliseconds);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$fff"), replaceTerm);
 
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", fileTime.wMilliseconds/10);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", fileTime.wMilliseconds / 10);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ff"), replaceTerm);
 
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", fileTime.wMilliseconds/100);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", fileTime.wMilliseconds / 100);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$f"), replaceTerm);
 
         hr = StringCchCopy(result, cchMax, res.c_str());

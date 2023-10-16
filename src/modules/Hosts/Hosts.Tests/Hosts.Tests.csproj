@@ -2,13 +2,14 @@
   <Import Project="..\..\..\Version.props" />
   
   <PropertyGroup>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
     <IsPackable>false</IsPackable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Hosts\Hosts.Tests\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Hosts.Tests\</OutputPath>
     <RootNamespace>Hosts.Tests</RootNamespace>
     <AssemblyName>PowerToys.Hosts.Tests</AssemblyName>
   </PropertyGroup>

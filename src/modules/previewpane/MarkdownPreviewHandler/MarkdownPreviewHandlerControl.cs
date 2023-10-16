@@ -83,6 +83,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// </summary>
         public MarkdownPreviewHandlerControl()
         {
+            this.SetBackgroundColor(Settings.BackgroundColor);
         }
 
         /// <summary>
@@ -121,11 +122,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     _infoBarDisplayed = true;
                 }
 
-                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant(), filePath, ImagesBlockedCallBack);
+                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Settings.GetTheme(), filePath, ImagesBlockedCallBack);
 
                 _browser = new WebView2()
                 {
                     Dock = DockStyle.Fill,
+                    DefaultBackgroundColor = Color.Transparent,
                 };
 
                 var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
@@ -198,11 +200,23 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     }
                 });
 
-                PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
             catch (Exception ex)
             {
-                PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
 
                 Controls.Clear();
                 _infoBarDisplayed = true;

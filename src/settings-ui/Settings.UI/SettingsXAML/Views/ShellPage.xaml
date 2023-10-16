@@ -1,0 +1,221 @@
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
+    HighContrastAdjustment="None"
+    Loaded="ShellPage_Loaded"
+    mc:Ignorable="d">
+
+    <i:Interaction.Behaviors>
+        <ic:EventTriggerBehavior EventName="Loaded">
+            <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadedCommand}" />
+        </ic:EventTriggerBehavior>
+    </i:Interaction.Behaviors>
+
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Button
+            x:Name="PaneToggleBtn"
+            Width="48"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Click="PaneToggleBtn_Click"
+            Style="{StaticResource PaneToggleButtonStyle}" />
+        <Grid
+            x:Name="AppTitleBar"
+            Height="{Binding ElementName=navigationView, Path=CompactPaneLength}"
+            Margin="48,0,0,0"
+            VerticalAlignment="Top"
+            IsHitTestVisible="True">
+            <animations:Implicit.Animations>
+                <animations:OffsetAnimation Duration="0:0:0.3" />
+            </animations:Implicit.Animations>
+            <StackPanel Orientation="Horizontal">
+                <Image
+                    Width="16"
+                    Height="16"
+                    HorizontalAlignment="Left"
+                    Source="/Assets/Settings/icon.ico" />
+                <TextBlock
+                    x:Name="AppTitleBarText"
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    TextWrapping="NoWrap" />
+                <TextBlock
+                    x:Name="DebugMessage"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Debug"
+                    TextWrapping="NoWrap"
+                    Visibility="Collapsed" />
+            </StackPanel>
+        </Grid>
+        <NavigationView
+            x:Name="navigationView"
+            Grid.Row="1"
+            Canvas.ZIndex="0"
+            CompactModeThresholdWidth="1007"
+            DisplayModeChanged="NavigationView_DisplayModeChanged"
+            ExpandedModeThresholdWidth="1007"
+            IsBackButtonVisible="Collapsed"
+            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsPaneToggleButtonVisible="False"
+            IsSettingsVisible="False"
+            IsTitleBarAutoPaddingEnabled="False"
+            PaneClosed="NavigationView_PaneClosed"
+            PaneOpened="NavigationView_PaneOpened"
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+            SelectionChanged="NavigationView_SelectionChanged">
+            <NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+            </NavigationView.Resources>
+            <NavigationView.MenuItems>
+                <NavigationViewItem
+                    x:Uid="Shell_General"
+                    helpers:NavHelper.NavigateTo="views:GeneralPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsSettings.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_AlwaysOnTop"
+                    helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_Awake"
+                    helpers:NavHelper.NavigateTo="views:AwakePage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAwake.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_ColorPicker"
+                    helpers:NavHelper.NavigateTo="views:ColorPickerPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_CropAndLock"
+                    helpers:NavHelper.NavigateTo="views:CropAndLockPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCropAndLock.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_FancyZones"
+                    helpers:NavHelper.NavigateTo="views:FancyZonesPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFancyZones.png}" />
+                <NavigationViewItem
+                    x:Uid="Shell_FileLocksmith"
+                    helpers:NavHelper.NavigateTo="views:FileLocksmithPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFileLocksmith.png}" />
+                <NavigationViewItem
+                    x:Uid="Shell_PowerPreview"
+                    helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFileExplorerPreview.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_Hosts"
+                    helpers:NavHelper.NavigateTo="views:HostsPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsHosts.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_ImageResizer"
+                    helpers:NavHelper.NavigateTo="views:ImageResizerPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsImageResizer.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_KeyboardManager"
+                    helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsKeyboardManager.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_MouseUtilities"
+                    helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseUtils.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_MouseWithoutBorders"
+                    helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_PastePlain"
+                    helpers:NavHelper.NavigateTo="views:PastePlainPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPastePlain.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_Peek"
+                    helpers:NavHelper.NavigateTo="views:PeekPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPeek.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_PowerRename"
+                    helpers:NavHelper.NavigateTo="views:PowerRenamePage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerRename.png}" />
+                <NavigationViewItem
+                    x:Uid="Shell_PowerLauncher"
+                    helpers:NavHelper.NavigateTo="views:PowerLauncherPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_QuickAccent"
+                    helpers:NavHelper.NavigateTo="views:PowerAccentPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerAccent.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_RegistryPreview"
+                    helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_MeasureTool"
+                    helpers:NavHelper.NavigateTo="views:MeasureToolPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsScreenRuler.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_ShortcutGuide"
+                    helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_TextExtractor"
+                    helpers:NavHelper.NavigateTo="views:PowerOcrPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerOcr.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_VideoConference"
+                    helpers:NavHelper.NavigateTo="views:VideoConferencePage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsVideoConferenceMute.png}"
+                    IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
+            </NavigationView.MenuItems>
+            <NavigationView.PaneFooter>
+                <StackPanel Orientation="Vertical">
+                    <NavigationViewItem
+                        x:Uid="OOBE_NavViewItem"
+                        Icon="{ui:FontIcon Glyph=&#xF133;}"
+                        Tapped="OOBEItem_Tapped" />
+                    <NavigationViewItem
+                        x:Uid="Feedback_NavViewItem"
+                        Icon="{ui:FontIcon Glyph=&#xED15;}"
+                        Tapped="FeedbackItem_Tapped" />
+                </StackPanel>
+            </NavigationView.PaneFooter>
+            <i:Interaction.Behaviors>
+                <ic:EventTriggerBehavior EventName="ItemInvoked">
+                    <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
+                </ic:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
+            <Frame x:Name="shellFrame" />
+        </NavigationView>
+    </Grid>
+</UserControl>

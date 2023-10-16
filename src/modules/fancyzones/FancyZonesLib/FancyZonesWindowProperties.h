@@ -18,7 +18,7 @@ namespace ZonedWindowProperties
 
 namespace FancyZonesWindowProperties
 {
-    void StampZoneIndexProperty(HWND window, const ZoneIndexSet& zoneSet);
+    bool StampZoneIndexProperty(HWND window, const ZoneIndexSet& zoneSet);
     void RemoveZoneIndexProperty(HWND window);
     ZoneIndexSet RetrieveZoneIndexProperty(HWND window);
 

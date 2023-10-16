@@ -1,7 +1,7 @@
 parameters:
   configuration: 'Release'
   platform: ''
-  additionalBuildArguments: '-m'
+  additionalBuildArguments: '/p:RestorePackagesConfig=true -m'
 
 jobs:
 - job: Build${{ parameters.platform }}${{ parameters.configuration }}
@@ -12,11 +12,11 @@ jobs:
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=${{ parameters.platform }} # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
   pool:
-    demands: ImageOverride -equals WinDevVS17-latest
+    demands: ImageOverride -equals SHINE-VS17-Latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPoolOSS-L
+      name: SHINE-OSS-L
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPool-L
+      name: SHINE-INT-L
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
