@@ -377,6 +377,8 @@ namespace EnvironmentVariables.ViewModels
                 {
                     propagateChange = false;
                 }
+
+                _ = Task.Run(SaveAsync);
             }
             else
             {
