@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
+using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {

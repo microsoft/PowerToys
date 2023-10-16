@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Threading;
+using CommunityToolkit.WinUI.Helpers;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -16,6 +17,7 @@ using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -62,6 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 74, 196, 242), // #4ac4f2
                 DashboardModuleItems = GetModuleItemsAlwaysOnTop(),
             });
 
@@ -74,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsAwake.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 40, 177, 233), // #28b1e9
                 DashboardModuleItems = GetModuleItemsAwake(),
             });
 
@@ -86,6 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 7, 129, 211), // #0781d3
                 DashboardModuleItems = GetModuleItemsColorPicker(),
             });
 
@@ -98,6 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsCropAndLock.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 32, 166, 228), // #20a6e4
                 DashboardModuleItems = GetModuleItemsCropAndLock(),
             });
 
@@ -110,6 +116,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFancyZones.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 65, 209, 247), // #41d1f7
                 DashboardModuleItems = GetModuleItemsFancyZones(),
             });
 
@@ -122,6 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFileLocksmith.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 245, 161, 20), // #f5a114
                 DashboardModuleItems = GetModuleItemsFileLocksmith(),
             });
 
@@ -134,6 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 104, 109, 112), // #686d70
                 DashboardModuleItems = GetModuleItemsFindMyMouse(),
             });
 
@@ -146,6 +155,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsHosts.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 16, 132, 208), // #1084d0
                 DashboardModuleItems = GetModuleItemsHosts(),
             });
 
@@ -158,6 +168,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsImageResizer.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 85, 207, 248), // #55cff8
                 DashboardModuleItems = GetModuleItemsImageResizer(),
             });
 
@@ -170,6 +181,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsKeyboardManager.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 224, 231, 238), // #e0e7ee
                 DashboardModuleItems = GetModuleItemsKeyboardManager(),
             });
 
@@ -188,6 +200,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 17, 126, 199), // #117ec7
                 DashboardModuleItems = GetModuleItemsMouseHighlighter(),
             });
 
@@ -200,6 +213,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseJump.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 240, 240, 239), // #f0f0ef
                 DashboardModuleItems = GetModuleItemsMouseJump(),
             });
 
@@ -212,6 +226,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 25, 115, 182), // #1973b6
                 DashboardModuleItems = GetModuleItemsMouseCrosshairs(),
             });
 
@@ -224,6 +239,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 31, 164, 227), // #1fa4e3
                 DashboardModuleItems = GetModuleItemsMouseWithoutBorders(),
             });
 
@@ -236,6 +252,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPastePlain.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 243, 156, 16), // #f39c10
                 DashboardModuleItems = GetModuleItemsPastePlain(),
             });
 
@@ -248,6 +265,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPeek.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 255, 214, 103), // #ffd667
                 DashboardModuleItems = GetModuleItemsPeek(),
             });
 
@@ -260,6 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerRename.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 43, 186, 243), // #2bbaf3
                 DashboardModuleItems = GetModuleItemsPowerRename(),
             });
 
@@ -272,6 +291,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 51, 191, 240), // #33bff0
                 DashboardModuleItems = GetModuleItemsRun(),
             });
 
@@ -284,6 +304,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerAccent.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 84, 89, 92), // #54595c
                 DashboardModuleItems = GetModuleItemsPowerAccent(),
             });
 
@@ -296,6 +317,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 17, 80, 138), // #11508a
                 DashboardModuleItems = GetModuleItemsRegistryPreview(),
             });
 
@@ -308,6 +330,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsScreenRuler.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 135, 144, 153), // #879099
                 DashboardModuleItems = GetModuleItemsScreenRuler(),
             });
 
@@ -320,6 +343,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 193, 202, 209), // #c1cad1
                 DashboardModuleItems = GetModuleItemsShortcutGuide(),
             });
 
@@ -332,6 +356,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerOCR.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 24, 153, 224), // #1899e0
                 DashboardModuleItems = GetModuleItemsPowerOCR(),
             });
 

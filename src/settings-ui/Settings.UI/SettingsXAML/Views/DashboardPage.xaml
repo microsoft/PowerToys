@@ -9,6 +9,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:ABI.Microsoft.UI.Xaml.Media"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
@@ -326,7 +327,7 @@
                     BorderThickness="1"
                     CornerRadius="{StaticResource OverlayCornerRadius}"
                     RowSpacing="12">
-                    <ScrollViewer Grid.Row="1" x:Name="ListScrollViewer">
+                    <ScrollViewer x:Name="ListScrollViewer" Grid.Row="1">
                         <ItemsRepeater Grid.Row="1" ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}">
                             <ItemsRepeater.Layout>
                                 <StackLayout Orientation="Vertical" />
@@ -401,6 +402,22 @@
                                         <RowDefinition />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
+                                    <Border
+                                        Grid.RowSpan="2"
+                                        Margin="-16"
+                                        Opacity="0.05">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,3">
+                                                <GradientStop Offset="0.5" Color="{x:Bind AccentColor, Mode=OneWay}" />
+                                                <GradientStop Offset="0.9" Color="Transparent" />
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <!--<Border.Background>
+                                            <SolidColorBrush Opacity="0.1" Color="{x:Bind AccentColor, Mode=OneWay}"/>
+                                        </Border.Background>-->
+                                    </Border>
+
+
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
