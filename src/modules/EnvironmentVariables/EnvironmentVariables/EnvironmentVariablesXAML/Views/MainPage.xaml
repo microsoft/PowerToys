@@ -462,7 +462,11 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="40" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Background="Transparent" BorderBrush="Transparent" Text="{Binding Text}" LostFocus="EditVariableValuesListTextBox_LostFocus" />
+                                    <TextBox
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        LostFocus="EditVariableValuesListTextBox_LostFocus"
+                                        Text="{Binding Text}" />
                                     <Button
                                         x:Uid="More_Options_Button"
                                         Grid.Column="1"
