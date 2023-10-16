@@ -15,7 +15,7 @@ using ManagedCommon;
 
 namespace EnvironmentVariables.Models
 {
-    public partial class Variable : ObservableObject
+    public partial class Variable : ObservableObject, IJsonOnDeserialized
     {
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
@@ -41,6 +41,7 @@ namespace EnvironmentVariables.Models
         public VariablesSetType ParentType { get; set; }
 
         [ObservableProperty]
+        [property: JsonIgnore]
         [JsonIgnore]
         private ObservableCollection<string> _valuesList;
 
@@ -65,6 +66,13 @@ namespace EnvironmentVariables.Models
             return false;
         }
 
+        public void OnDeserialized()
+        {
+            // No need to save ValuesList to the Json, so we are generating it after deserializing
+            var splitValues = Values.Split(';').Where(x => x.Length > 0).ToArray();
+            ValuesList = new ObservableCollection<string>(splitValues);
+        }
+
         public Variable()
         {
         }
@@ -76,10 +84,7 @@ namespace EnvironmentVariables.Models
             ParentType = parentType;
 
             var splitValues = Values.Split(';').Where(x => x.Length > 0).ToArray();
-            if (splitValues.Length > 0)
-            {
-                ValuesList = new ObservableCollection<string>(splitValues);
-            }
+            ValuesList = new ObservableCollection<string>(splitValues);
         }
 
         internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)

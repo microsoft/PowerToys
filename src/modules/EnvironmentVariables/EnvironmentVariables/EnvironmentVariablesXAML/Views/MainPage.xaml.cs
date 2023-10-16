@@ -400,10 +400,7 @@ namespace EnvironmentVariables.Views
             var variable = EditVariableDialog.DataContext as Variable;
             EditVariableDialog.IsPrimaryButtonEnabled = true;
 
-            if (txtBox.Text.Contains(';'))
-            {
-                variable.ValuesList = new ObservableCollection<string>(txtBox.Text.Split(';').Where(x => x.Length > 0).ToArray());
-            }
+            variable.ValuesList = new ObservableCollection<string>(txtBox.Text.Split(';').Where(x => x.Length > 0).ToArray());
         }
 
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
