@@ -15,7 +15,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <ResourceDictionary>
-            <!--  These resourcedictionaries are needed to reference styles part of SettingsControls  -->
+            <!--  These resource dictionaries are needed to reference styles part of SettingsControls  -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsCard/SettingsCard.xaml" />
                 <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
