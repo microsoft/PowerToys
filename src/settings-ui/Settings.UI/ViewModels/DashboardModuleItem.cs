@@ -2,11 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Windows.UI;
 
@@ -34,25 +32,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public class DashboardModuleShortcutItem : DashboardModuleItem
     {
         public List<object> Shortcut { get; set; }
-    }
-
-    public class DashboardModuleKBMItem : DashboardModuleItem
-    {
-        private List<KeysDataModel> _remapKeys = new List<KeysDataModel>();
-
-        public List<KeysDataModel> RemapKeys
-        {
-            get => _remapKeys;
-            set => _remapKeys = value;
-        }
-
-        private List<AppSpecificKeysDataModel> _remapShortcuts = new List<AppSpecificKeysDataModel>();
-
-        public List<AppSpecificKeysDataModel> RemapShortcuts
-        {
-            get => _remapShortcuts;
-            set => _remapShortcuts = value;
-        }
     }
 
     public class DashboardModuleItem : INotifyPropertyChanged

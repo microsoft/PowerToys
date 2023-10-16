@@ -2983,7 +2983,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>outdated</value>
   </data>
   <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
-    <value>Pinning a window</value>
+    <value>Pin a window</value>
   </data>
   <data name="Awake_ShortDescription" xml:space="preserve">
     <value>Keep your PC awake</value>
@@ -3013,7 +3013,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Right-click on files or directories to show running processes</value>
   </data>
   <data name="FindMyMouse_ShortDescription" xml:space="preserve">
-    <value>Finds the mouse</value>
+    <value>Find the mouse</value>
   </data>
   <data name="Hosts_Launch" xml:space="preserve">
     <value>Launch</value>
@@ -3028,7 +3028,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Remap a shortcut</value>
   </data>
   <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
-    <value>Highlights clicks</value>
+    <value>Highlight clicks</value>
   </data>
   <data name="MouseJump_ShortDescription" xml:space="preserve">
     <value>Quickly move the mouse pointer</value>
@@ -3061,10 +3061,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Measure pixels on your screen</value>
   </data>
   <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
-    <value>Shows a help overlay with Windows shortcuts</value>
+    <value>Show a help overlay with Windows shortcuts</value>
   </data>
   <data name="PowerOcr_ShortDescription" xml:space="preserve">
-    <value>Shows a help overlay with Windows shortcuts</value>
+    <value>A convenient way to copy text from anywhere on screen</value>
   </data>
   <data name="Dashboard_Activation" xml:space="preserve">
     <value>Activation</value>

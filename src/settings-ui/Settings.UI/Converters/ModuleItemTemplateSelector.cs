@@ -16,15 +16,12 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 
         public DataTemplate ShortcutTemplate { get; set; }
 
-        public DataTemplate KBMTemplate { get; set; }
-
         protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
         {
             switch (item)
             {
                 case DashboardModuleButtonItem: return ButtonTemplate;
                 case DashboardModuleShortcutItem: return ShortcutTemplate;
-                case DashboardModuleKBMItem: return KBMTemplate;
                 case DashboardModuleTextItem: return TextTemplate;
                 default: return TextTemplate;
             }

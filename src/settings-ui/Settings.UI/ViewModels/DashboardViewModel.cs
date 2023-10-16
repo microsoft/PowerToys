@@ -5,10 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO.Abstractions;
 using System.Linq;
-using System.Windows.Threading;
-using CommunityToolkit.WinUI.Helpers;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -23,11 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class DashboardViewModel : Observable
     {
-        private const string JsonFileType = ".json";
-        private readonly IFileSystemWatcher _watcher;
-        private DashboardModuleKBMItem _kbmItem;
-        private Dispatcher dispatcher;
-
         public Func<string, int> SendConfigMSG { get; }
 
         public ObservableCollection<DashboardListItem> ActiveModules { get; set; } = new ObservableCollection<DashboardListItem>();
@@ -44,7 +36,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
-            dispatcher = Dispatcher.CurrentDispatcher;
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
@@ -60,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "AlwaysOnTop",
                 Label = resourceLoader.GetString("AlwaysOnTop/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.AlwaysOnTop,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.AlwaysOnTop),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -73,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "Awake",
                 Label = resourceLoader.GetString("Awake/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Awake,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Awake),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsAwake.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -86,7 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "ColorPicker",
                 Label = resourceLoader.GetString("ColorPicker/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ColorPicker,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ColorPicker),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -99,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "CropAndLock",
                 Label = resourceLoader.GetString("CropAndLock/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.CropAndLock,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.CropAndLock),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsCropAndLock.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -112,7 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "FancyZones",
                 Label = resourceLoader.GetString("FancyZones/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FancyZones,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FancyZones),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFancyZones.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -125,7 +116,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "FileLocksmith",
                 Label = resourceLoader.GetString("FileLocksmith/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FileLocksmith,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FileLocksmith),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFileLocksmith.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -138,7 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "FindMyMouse",
                 Label = resourceLoader.GetString("MouseUtils_FindMyMouse/Header"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FindMyMouse,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FindMyMouse),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -151,7 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "Hosts",
                 Label = resourceLoader.GetString("Hosts/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Hosts,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Hosts),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsHosts.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -164,7 +155,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "ImageResizer",
                 Label = resourceLoader.GetString("ImageResizer/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ImageResizer,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ImageResizer),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsImageResizer.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -177,7 +168,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "KeyboardManager",
                 Label = resourceLoader.GetString("KeyboardManager/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.KeyboardManager,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.KeyboardManager),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsKeyboardManager.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -185,18 +176,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 DashboardModuleItems = GetModuleItemsKeyboardManager(),
             });
 
-            if (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.KeyboardManager)
-            {
-                KeyboardManagerSettings kbmSettings = GetKBMSettings();
-                _watcher = Library.Utilities.Helper.GetFileWatcher(KeyboardManagerSettings.ModuleName, kbmSettings.Properties.ActiveConfiguration.Value + JsonFileType, () => LoadKBMSettingsFromJson());
-            }
-
             gpo = GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
             _allModules.Add(new DashboardListItem()
             {
                 Tag = "MouseHighlighter",
                 Label = resourceLoader.GetString("MouseUtils_MouseHighlighter/Header"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseHighlighter,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseHighlighter),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -209,7 +194,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "MouseJump",
                 Label = resourceLoader.GetString("MouseUtils_MouseJump/Header"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseJump,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseJump),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseJump.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -222,7 +207,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "MousePointerCrosshairs",
                 Label = resourceLoader.GetString("MouseUtils_MousePointerCrosshairs/Header"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MousePointerCrosshairs,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MousePointerCrosshairs),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -235,7 +220,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "MouseWithoutBorders",
                 Label = resourceLoader.GetString("MouseWithoutBorders/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseWithoutBorders,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseWithoutBorders),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -248,7 +233,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "PastePlain",
                 Label = resourceLoader.GetString("PastePlain/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PastePlain,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PastePlain),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPastePlain.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -261,7 +246,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "Peek",
                 Label = resourceLoader.GetString("Peek/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Peek,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Peek),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPeek.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -274,7 +259,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "PowerRename",
                 Label = resourceLoader.GetString("PowerRename/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerRename,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerRename),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerRename.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -287,7 +272,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "PowerLauncher",
                 Label = resourceLoader.GetString("PowerLauncher/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerLauncher,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerLauncher),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -300,7 +285,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "PowerAccent",
                 Label = resourceLoader.GetString("QuickAccent/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerAccent,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerAccent),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerAccent.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -313,7 +298,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "RegistryPreview",
                 Label = resourceLoader.GetString("RegistryPreview/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.RegistryPreview,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.RegistryPreview),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -326,7 +311,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "MeasureTool",
                 Label = resourceLoader.GetString("MeasureTool/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MeasureTool,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MeasureTool),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsScreenRuler.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -339,7 +324,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "ShortcutGuide",
                 Label = resourceLoader.GetString("ShortcutGuide/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ShortcutGuide,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ShortcutGuide),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -352,7 +337,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = "PowerOCR",
                 Label = resourceLoader.GetString("TextExtractor/ModuleTitle"),
-                IsEnabled = gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerOCR,
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerOCR),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerOCR.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -365,28 +350,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();
             UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
-        }
-
-        private void LoadKBMSettingsFromJson()
-        {
-            KeyboardManagerProfile kbmProfile = GetKBMProfile();
-            _kbmItem.RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys;
-            _kbmItem.RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts);
-            dispatcher.Invoke(new Action(() => UpdateKBMItems()));
-        }
-
-        private void UpdateKBMItems()
-        {
-            _kbmItem.NotifyPropertyChanged(nameof(_kbmItem.RemapKeys));
-            _kbmItem.NotifyPropertyChanged(nameof(_kbmItem.RemapShortcuts));
-        }
-
-        private KeyboardManagerProfile GetKBMProfile()
-        {
-            KeyboardManagerSettings kbmSettings = GetKBMSettings();
-            const string PowerToyName = KeyboardManagerSettings.ModuleName;
-            string fileName = kbmSettings.Properties.ActiveConfiguration.Value + JsonFileType;
-            return new SettingsUtils().GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
         }
 
         private KeyboardManagerSettings GetKBMSettings()
@@ -604,11 +567,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsKeyboardManager()
         {
-            KeyboardManagerProfile kbmProfile = GetKBMProfile();
-            _kbmItem = new DashboardModuleKBMItem() { RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys, RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts) };
             var list = new List<DashboardModuleItem>
             {
-                _kbmItem,
                 new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("KeyboardManager_RemapKeyboardButton/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("KeyboardManager_RemapKeyboardButton/Description"), ButtonGlyph = "\uE92E", ButtonClickHandler = KbmKeyLaunchClicked },
                 new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("KeyboardManager_RemapShortcutsButton/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("KeyboardManager_RemapShortcutsButton/Description"), ButtonGlyph = "\uE92E", ButtonClickHandler = KbmShortcutLaunchClicked },
             };
