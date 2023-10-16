@@ -254,6 +254,12 @@
   <data name="MoveUp.Text" xml:space="preserve">
     <value>Move up</value>
   </data>
+  <data name="InsertListEntryBefore.Text" xml:space="preserve">
+    <value>Insert Before</value>
+  </data>
+  <data name="InsertListEntryAfter.Text" xml:space="preserve">
+    <value>Insert After</value>
+  </data>
   <data name="NewProfileVariablesListViewApplyToSystemHeader.Text" xml:space="preserve">
     <value>Apply to SYSTEM?</value>
   </data>

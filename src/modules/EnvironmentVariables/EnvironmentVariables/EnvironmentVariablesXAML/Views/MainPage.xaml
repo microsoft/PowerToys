@@ -42,7 +42,7 @@
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             IsTextSelectionEnabled="True"
                                             Style="{StaticResource CaptionTextBlockStyle}"
-                                            Text="{Binding}" />
+                                            Text="{Binding Text}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -462,7 +462,7 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="40" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding}" />
+                                    <TextBox Background="Transparent" BorderBrush="Transparent" Text="{Binding Text}" LostFocus="EditVariableValuesListTextBox_LostFocus" />
                                     <Button
                                         x:Uid="More_Options_Button"
                                         Grid.Column="1"
@@ -485,6 +485,15 @@
                                                     x:Uid="RemoveListItem"
                                                     Click="RemoveListVariableButton_Click"
                                                     Icon="{ui:FontIcon Glyph=&#xE74D;}" />
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem
+                                                    x:Uid="InsertListEntryBefore"
+                                                    Click="InsertListEntryBeforeButton_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xECC8;}" />
+                                                <MenuFlyoutItem
+                                                    x:Uid="InsertListEntryAfter"
+                                                    Click="InsertListEntryAfterButton_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xECC8;}" />
                                             </MenuFlyout>
                                         </Button.Flyout>
                                         <ToolTipService.ToolTip>

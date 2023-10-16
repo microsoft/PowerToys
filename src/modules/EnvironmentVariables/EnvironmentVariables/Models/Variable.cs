@@ -40,10 +40,16 @@ namespace EnvironmentVariables.Models
         [JsonIgnore]
         public VariablesSetType ParentType { get; set; }
 
+        // To store the strings in the Values List with actual objects that can be referenced and identity compared
+        public class ValuesListItem
+        {
+            public string Text { get; set; }
+        }
+
         [ObservableProperty]
         [property: JsonIgnore]
         [JsonIgnore]
-        private ObservableCollection<string> _valuesList;
+        private ObservableCollection<ValuesListItem> _valuesList;
 
         [JsonIgnore]
         public bool Valid => Validate();
@@ -69,8 +75,7 @@ namespace EnvironmentVariables.Models
         public void OnDeserialized()
         {
             // No need to save ValuesList to the Json, so we are generating it after deserializing
-            var splitValues = Values.Split(';').Where(x => x.Length > 0).ToArray();
-            ValuesList = new ObservableCollection<string>(splitValues);
+            ValuesList = ValuesStringToValuesListItemCollection(Values);
         }
 
         public Variable()
@@ -83,8 +88,12 @@ namespace EnvironmentVariables.Models
             Values = values;
             ParentType = parentType;
 
-            var splitValues = Values.Split(';').Where(x => x.Length > 0).ToArray();
-            ValuesList = new ObservableCollection<string>(splitValues);
+            ValuesList = ValuesStringToValuesListItemCollection(Values);
+        }
+
+        internal static ObservableCollection<ValuesListItem> ValuesStringToValuesListItemCollection(string values)
+        {
+            return new ObservableCollection<ValuesListItem>(values.Split(';').Select(x => new ValuesListItem { Text = x }));
         }
 
         internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)
@@ -97,7 +106,7 @@ namespace EnvironmentVariables.Models
             Name = edited.Name;
             Values = edited.Values;
 
-            ValuesList = new ObservableCollection<string>(Values.Split(';').Where(x => x.Length > 0).ToArray());
+            ValuesList = ValuesStringToValuesListItemCollection(Values);
 
             return Task.Run(() =>
             {
@@ -169,7 +178,7 @@ namespace EnvironmentVariables.Models
                 Name = Name,
                 Values = Values,
                 ParentType = profile ? VariablesSetType.Profile : ParentType,
-                ValuesList = new ObservableCollection<string>(ValuesList),
+                ValuesList = ValuesStringToValuesListItemCollection(Values),
             };
         }
 
