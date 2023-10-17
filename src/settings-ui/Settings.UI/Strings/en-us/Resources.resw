@@ -865,8 +865,8 @@
     <value>Create window layouts to help make multi-tasking easy.</value>
     <comment>windows refers to application windows</comment>
   </data>
-  <data name="FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
-    <value>Keep windows in their zones when the screen resolution changes</value>
+  <data name="FancyZones_DisplayOrWorkAreaChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
+    <value>Keep windows in their zones when the screen resolution or work area changes</value>
     <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">

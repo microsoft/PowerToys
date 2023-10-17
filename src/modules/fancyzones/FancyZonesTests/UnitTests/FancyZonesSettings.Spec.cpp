@@ -29,7 +29,7 @@ namespace FancyZonesUnitTests
     {
         Assert::AreEqual(expected.shiftDrag, actual.shiftDrag);
         Assert::AreEqual(expected.mouseSwitch, actual.mouseSwitch);
-        Assert::AreEqual(expected.displayChange_moveWindows, actual.displayChange_moveWindows);
+        Assert::AreEqual(expected.displayOrWorkAreaChange_moveWindows, actual.displayOrWorkAreaChange_moveWindows);
         Assert::AreEqual(expected.zoneSetChange_flashZones, actual.zoneSetChange_flashZones);
         Assert::AreEqual(expected.zoneSetChange_moveWindows, actual.zoneSetChange_moveWindows);
         Assert::AreEqual(expected.overrideSnapHotkeys, actual.overrideSnapHotkeys);
@@ -69,7 +69,7 @@ namespace FancyZonesUnitTests
             PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
             values.add_property(L"fancyzones_shiftDrag", m_defaultSettings.shiftDrag);
             values.add_property(L"fancyzones_mouseSwitch", m_defaultSettings.mouseSwitch);
-            values.add_property(L"fancyzones_displayChange_moveWindows", m_defaultSettings.displayChange_moveWindows);
+            values.add_property(L"fancyzones_displayOrWorkAreaChange_moveWindows", m_defaultSettings.displayOrWorkAreaChange_moveWindows);
             values.add_property(L"fancyzones_zoneSetChange_flashZones", m_defaultSettings.zoneSetChange_flashZones);
             values.add_property(L"fancyzones_zoneSetChange_moveWindows", m_defaultSettings.zoneSetChange_moveWindows);
             values.add_property(L"fancyzones_overrideSnapHotkeys", m_defaultSettings.overrideSnapHotkeys);
@@ -112,7 +112,7 @@ namespace FancyZonesUnitTests
             PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
             values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
             values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
-            values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
+            values.add_property(L"fancyzones_displayOrWorkAreaChange_moveWindows", expected.displayOrWorkAreaChange_moveWindows);
             values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
             values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);

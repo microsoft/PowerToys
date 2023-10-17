@@ -728,7 +728,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     {
     case DisplayChangeType::WorkArea: // WorkArea size changed
     case DisplayChangeType::DisplayChange: // Resolution changed or display added
-        updateWindowsPositions = FancyZonesSettings::settings().displayChange_moveWindows;
+        updateWindowsPositions = FancyZonesSettings::settings().displayOrWorkAreaChange_moveWindows;
         break;
     case DisplayChangeType::VirtualDesktop: // Switched virtual desktop
         SyncVirtualDesktops();
