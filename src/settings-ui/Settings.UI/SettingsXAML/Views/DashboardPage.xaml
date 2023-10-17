@@ -56,7 +56,11 @@
         </DataTemplate>
 
         <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
-            <StackPanel Orientation="Horizontal" Spacing="12">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 <Border
                     Padding="8,4,8,4"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -86,12 +90,13 @@
                 </Border>
 
                 <TextBlock
+                    Grid.Column="1"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind Label, Mode=OneWay}"
                     TextWrapping="WrapWholeWords" />
-            </StackPanel>
+            </Grid>
         </DataTemplate>
     </Page.Resources>
     <Grid Margin="16,0,0,0" RowSpacing="24">
@@ -225,7 +230,7 @@
                         <ItemsRepeater.Layout>
                             <controls:StaggeredLayout
                                 ColumnSpacing="8"
-                                DesiredColumnWidth="420"
+                                DesiredColumnWidth="378"
                                 RowSpacing="8" />
                         </ItemsRepeater.Layout>
                         <ItemsRepeater.ItemTemplate>
