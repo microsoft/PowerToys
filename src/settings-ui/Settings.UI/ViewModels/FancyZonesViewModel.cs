@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             _moveWindowBehaviour = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value ? MoveWindowBehaviour.MoveWindowBasedOnPosition : MoveWindowBehaviour.MoveWindowBasedOnZoneIndex;
             _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value;
-            _displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
+            _displayOrWorkAreaChangeMoveWindows = Settings.Properties.FancyzonesDisplayOrWorkAreaChangeMoveWindows.Value;
             _zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
             _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
             _openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
@@ -144,7 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _moveWindowsAcrossMonitors;
         private MoveWindowBehaviour _moveWindowBehaviour;
         private OverlappingZonesAlgorithm _overlappingZonesAlgorithm;
-        private bool _displayChangemoveWindows;
+        private bool _displayOrWorkAreaChangeMoveWindows;
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
         private bool _openWindowOnActiveMonitor;
@@ -385,19 +385,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool DisplayChangeMoveWindows
+        public bool DisplayOrWorkAreaChangeMoveWindows
         {
             get
             {
-                return _displayChangemoveWindows;
+                return _displayOrWorkAreaChangeMoveWindows;
             }
 
             set
             {
-                if (value != _displayChangemoveWindows)
+                if (value != _displayOrWorkAreaChangeMoveWindows)
                 {
-                    _displayChangemoveWindows = value;
-                    Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value = value;
+                    _displayOrWorkAreaChangeMoveWindows = value;
+                    Settings.Properties.FancyzonesDisplayOrWorkAreaChangeMoveWindows.Value = value;
                     NotifyPropertyChanged();
                 }
             }
