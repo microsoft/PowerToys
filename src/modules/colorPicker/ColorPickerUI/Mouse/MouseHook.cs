@@ -25,6 +25,8 @@ namespace ColorPicker.Mouse
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
         private const int WM_MOUSEWHEEL = 0x020A;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
+        private const int WM_RBUTTONUP = 0x0205;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
         private const int WM_RBUTTONDOWN = 0x0204;
 
         private IntPtr _mouseHookHandle;
@@ -43,6 +45,23 @@ namespace ColorPicker.Mouse
             remove
             {
                 MouseDown -= value;
+                Unsubscribe();
+            }
+        }
+
+        private event SecondaryMouseUpEventHandler SecondaryMouseUp;
+
+        public event SecondaryMouseUpEventHandler OnSecondaryMouseUp
+        {
+            add
+            {
+                Subscribe();
+                SecondaryMouseUp += value;
+            }
+
+            remove
+            {
+                SecondaryMouseUp -= value;
                 Unsubscribe();
             }
         }
@@ -125,6 +144,16 @@ namespace ColorPicker.Mouse
                     if (MouseDown != null)
                     {
                         MouseDown.Invoke(null, new System.Drawing.Point(mouseHookStruct.pt.x, mouseHookStruct.pt.y));
+                    }
+
+                    return new IntPtr(-1);
+                }
+
+                if (wParam.ToInt32() == WM_RBUTTONUP)
+                {
+                    if (SecondaryMouseUp != null)
+                    {
+                        SecondaryMouseUp.Invoke(null, wParam);
                     }
 
                     return new IntPtr(-1);
