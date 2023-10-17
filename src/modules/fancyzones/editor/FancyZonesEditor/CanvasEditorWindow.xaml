@@ -1,57 +1,63 @@
-﻿<local:EditorWindow x:Class="FancyZonesEditor.CanvasEditorWindow"
-                    AutomationProperties.Name="{x:Static props:Resources.Canvas_Layout_Editor}"
-                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                    xmlns:local="clr-namespace:FancyZonesEditor"
-                    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
-                    mc:Ignorable="d"
-                    Title=""
-                    Height="196"
-                    MinWidth="360"
-                    BorderThickness="0"
-                    xmlns:ui="http://schemas.modernwpf.com/2019"
-                    ui:WindowHelper.UseModernWindowStyle="True"
-                    ui:TitleBar.IsIconVisible="False"
-                    SizeToContent="Width"
-                    Background="{DynamicResource PrimaryBackgroundBrush}"
-                    ResizeMode="NoResize"
-                    WindowStartupLocation="CenterOwner"
-                    ContentRendered="EditorWindow_ContentRendered"
-                    Closed="OnClosed">
+﻿<local:EditorWindow
+    x:Class="FancyZonesEditor.CanvasEditorWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:FancyZonesEditor"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title=""
+    Height="196"
+    MinWidth="360"
+    ui:TitleBar.IsIconVisible="False"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    AutomationProperties.Name="{x:Static props:Resources.Canvas_Layout_Editor}"
+    Background="{DynamicResource PrimaryBackgroundBrush}"
+    BorderThickness="0"
+    Closed="OnClosed"
+    ContentRendered="EditorWindow_ContentRendered"
+    ResizeMode="NoResize"
+    SizeToContent="Width"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
     <Grid Height="160">
-        <Grid Height="36"
-              Background="{DynamicResource SecondaryBackgroundBrush}"
-              Margin="0,-36,0,0"
-              VerticalAlignment="Top"
-              HorizontalAlignment="Stretch">
-            <Border Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
-                    Width="30"
-                    Height="3"
-                    CornerRadius="1.5"
-                    VerticalAlignment="Center"
-                    Margin="0,4,0,0" />
+        <Grid
+            Height="36"
+            Margin="0,-36,0,0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top"
+            Background="{DynamicResource SecondaryBackgroundBrush}">
+            <Border
+                Width="30"
+                Height="3"
+                Margin="0,4,0,0"
+                VerticalAlignment="Center"
+                Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
+                CornerRadius="1.5" />
         </Grid>
-        <StackPanel Margin="16" VerticalAlignment="Bottom"
-                    FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
+        <StackPanel
+            Margin="16"
+            VerticalAlignment="Bottom"
+            FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
 
-            <local:ClickAutomationEventButton x:Name="newZoneButton"
-                    HorizontalAlignment="Stretch"
-                    Height="64"
-                    Width="64"
-                    ui:ControlHelper.CornerRadius="64"
-                    Margin="0,8,0,0"
-                    Style="{StaticResource AccentButtonStyle}"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    Content="&#xE710;"
-                    FontSize="24"
-                    TabIndex="0"
-                    ToolTip="{x:Static props:Resources.Add_zone}"
-                    DataContext="{Binding Path=Model, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
-                    IsEnabled="{Binding IsZoneAddingAllowed}"
-                    Click="OnAddZone"
-                    OnClickAutomationValue="{x:Static props:Resources.New_zone_added}" />
+            <local:ClickAutomationEventButton
+                x:Name="newZoneButton"
+                Width="64"
+                Height="64"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Stretch"
+                ui:ControlHelper.CornerRadius="64"
+                Click="OnAddZone"
+                Content="&#xE710;"
+                DataContext="{Binding Path=Model, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                FontSize="24"
+                IsEnabled="{Binding IsZoneAddingAllowed}"
+                OnClickAutomationValue="{x:Static props:Resources.New_zone_added}"
+                Style="{StaticResource AccentButtonStyle}"
+                TabIndex="0"
+                ToolTip="{x:Static props:Resources.Add_zone}" />
 
             <Grid Margin="0,24,0,-4">
                 <Grid.ColumnDefinitions>
@@ -59,17 +65,19 @@
                     <ColumnDefinition Width="8" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Button Content="{x:Static props:Resources.Cancel}"
-                        Style="{StaticResource DefaultButtonStyle}"
-                        HorizontalAlignment="Stretch"
-                        Grid.Column="2"
-                        TabIndex="2"
-                        Click="OnCancel" />
-                <Button Content="{x:Static props:Resources.Save_Apply}"
-                        Style="{StaticResource AccentButtonStyle}"
-                        TabIndex="1"
-                        HorizontalAlignment="Stretch"
-                        Click="OnSaveApplyTemplate" />
+                <Button
+                    Grid.Column="2"
+                    HorizontalAlignment="Stretch"
+                    Click="OnCancel"
+                    Content="{x:Static props:Resources.Cancel}"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    TabIndex="2" />
+                <Button
+                    HorizontalAlignment="Stretch"
+                    Click="OnSaveApplyTemplate"
+                    Content="{x:Static props:Resources.Save_Apply}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    TabIndex="1" />
             </Grid>
         </StackPanel>
     </Grid>

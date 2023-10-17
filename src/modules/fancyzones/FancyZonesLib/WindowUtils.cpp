@@ -192,6 +192,12 @@ bool FancyZonesWindowUtils::IsPopupWindow(HWND window) noexcept
     return ((style & WS_POPUP) == WS_POPUP);
 }
 
+bool FancyZonesWindowUtils::HasThickFrame(HWND window) noexcept
+{
+    auto style = GetWindowLong(window, GWL_STYLE);
+    return ((style & WS_THICKFRAME) == WS_THICKFRAME);
+}
+
 bool FancyZonesWindowUtils::HasThickFrameAndMinimizeMaximizeButtons(HWND window) noexcept
 {
     auto style = GetWindowLong(window, GWL_STYLE);

@@ -1,6 +1,7 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:system="clr-namespace:System;assembly=System.Runtime">
 
     <!--  Metadata  -->
     <system:String x:Key="Theme.Name">HighContrast.Accent5</system:String>
@@ -21,7 +22,7 @@
     <SolidColorBrush x:Key="LayoutItemBackgroundPointerOverBrush" Color="#FFf2f2f2" />
     <SolidColorBrush x:Key="LayoutPreviewBackgroundBrush" Color="#19949494" />
     <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#9c9c9c" />
-    
+
     <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#EFF3F3F3" />
     <SolidColorBrush x:Key="LayoutPreviewSmallScaleZoneBackgroundBrush" Color="#FFDCDCDC" />
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#E5F3F3F3" />

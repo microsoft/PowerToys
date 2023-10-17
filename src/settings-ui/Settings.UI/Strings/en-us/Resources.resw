@@ -561,6 +561,9 @@
   <data name="VideoConference_ToolbarHideUnmuted.Content" xml:space="preserve">
     <value>When both camera and microphone are unmuted</value>
   </data>
+  <data name="VideoConference_ToolbarHideTimeout.Content" xml:space="preserve">
+    <value>After timeout</value>
+  </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference Mute</value>
   </data>
@@ -575,6 +578,21 @@
   </data>
   <data name="VideoConference_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
+  </data>
+  <data name="VideoConference_Behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="VideoConference_StartupAction.Header" xml:space="preserve">
+    <value>Startup action</value>
+  </data>
+  <data name="VideoConference_StartupActionNothing.Content" xml:space="preserve">
+    <value>Nothing</value>
+  </data>
+  <data name="VideoConference_StartupActionUnmute.Content" xml:space="preserve">
+    <value>Unmute</value>
+  </data>
+  <data name="VideoConference_StartupActionMute.Content" xml:space="preserve">
+    <value>Mute</value>
   </data>
   <data name="VideoConference_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
@@ -3635,7 +3653,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Security key</value>
   </data>
   <data name="Hosts_Encoding.Description" xml:space="preserve">
-    <value>Chose the encoding of the hosts file</value>
+    <value>Choose the encoding of the hosts file</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_Encoding.Header" xml:space="preserve">
@@ -3661,6 +3679,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
     <value>Find more plugins</value>
+  </data>
+  <data name="Run_SomePluginsAreGpoManaged.Title" xml:space="preserve">
+    <value>The system administrator is managing the enabled state of some plugins.</value>
   </data>
   <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
