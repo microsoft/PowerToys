@@ -288,14 +288,11 @@
         </InfoBar>
 
         <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1">
-
-            <StackPanel Orientation="Vertical">
-
+            <StackPanel Padding="0,0,16,16" Orientation="Vertical">
                 <TextBlock
+                    x:Uid="EnabledModules"
                     Margin="0,0,0,12"
-                    FontSize="20"
-                    Style="{StaticResource SubtitleTextBlockStyle}"
-                    Text="Enabled modules" />
+                    Style="{StaticResource SubtitleTextBlockStyle}" />
                 <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
                         <controls:StaggeredLayout
@@ -381,9 +378,9 @@
                 </ItemsRepeater>
 
                 <TextBlock
+                    x:Uid="DisabledModules"
                     Margin="0,24,0,12"
-                    Style="{StaticResource SubtitleTextBlockStyle}"
-                    Text="Disabled modules" />
+                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
