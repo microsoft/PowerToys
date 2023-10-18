@@ -9,17 +9,6 @@ namespace UnitTestsFancyZonesEditor;
 public class DefaultLayoutsModelTests
 {
     [TestMethod]
-    public void LayoutCapacityShouldBeNumberOfMonitorConfigurations()
-    {
-        var defaultLayoutsModel = new DefaultLayoutsModel();
-        var expectedOptionCount = Enum.GetValues(typeof(MonitorConfigurationType)).Length;
-
-        var actualCapacity = defaultLayoutsModel.Layouts.Capacity;
-
-        Assert.AreEqual(expectedOptionCount, actualCapacity);
-    }
-
-    [TestMethod]
     public void OverridingLayoutClearsOldDefault()
     {
         var defaultLayoutsModel = new DefaultLayoutsModel();
@@ -42,7 +31,7 @@ public class DefaultLayoutsModelTests
         defaultLayoutsModel.Set(firstLayout, MonitorConfigurationType.Horizontal);
         defaultLayoutsModel.Set(firstLayout, MonitorConfigurationType.Vertical);
 
-        Assert.AreEqual(defaultLayoutsModel.Layouts[(int)MonitorConfigurationType.Vertical], firstLayout);
+        Assert.AreEqual(defaultLayoutsModel.Layouts[MonitorConfigurationType.Vertical], firstLayout);
     }
 
     [TestMethod]
@@ -51,7 +40,7 @@ public class DefaultLayoutsModelTests
         var defaultLayoutsModel = new DefaultLayoutsModel();
         GridLayoutModel firstLayout = new GridLayoutModel();
         CanvasLayoutModel secondLayout = new CanvasLayoutModel("steve");
-        var restoredLayouts = new List<LayoutModel> { firstLayout, secondLayout };
+        var restoredLayouts = new Dictionary<MonitorConfigurationType, LayoutModel> { { MonitorConfigurationType.Horizontal, firstLayout }, { MonitorConfigurationType.Vertical, secondLayout } };
         defaultLayoutsModel.Restore(restoredLayouts);
 
         CollectionAssert.AreEqual(defaultLayoutsModel.Layouts, restoredLayouts);
