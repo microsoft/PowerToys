@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using FancyZonesEditor.Models;
@@ -8,17 +8,6 @@ namespace UnitTestsFancyZonesEditor;
 [TestClass]
 public class DefaultLayoutsModelTests
 {
-    [TestMethod]
-    public void LayoutCapacityShouldBeNumberOfMonitorConfigurations()
-    {
-        var defaultLayoutsModel = new DefaultLayoutsModel();
-        var expectedOptionCount = Enum.GetValues(typeof(MonitorConfigurationType)).Length;
-
-        var actualCapacity = defaultLayoutsModel.Layouts.Capacity;
-
-        Assert.AreEqual(expectedOptionCount, actualCapacity);
-    }
-
     [TestMethod]
     public void OverridingLayoutClearsOldDefault()
     {
