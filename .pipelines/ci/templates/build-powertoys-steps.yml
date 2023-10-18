@@ -197,6 +197,7 @@ steps:
       **\UnitTests-PdfThumbnailProvider.dll
       **\Settings.UI.UnitTests.dll
       **\UnitTests-GcodePreviewHandler.dll
+      **\UnitTests-FancyZonesEditor.dll
       **\UnitTests-PdfPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll

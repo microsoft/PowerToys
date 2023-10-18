@@ -1988,6 +1988,7 @@ uipi
 UIs
 ULARGE
 ULONGLONG
+ums
 unapply
 unassign
 uncompilable
