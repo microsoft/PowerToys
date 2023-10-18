@@ -131,28 +131,28 @@
 
                     <custom:SettingsGroup x:Uid="FancyZones_Windows" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
-                    <controls:SettingsExpander x:Uid="FancyZones_WindowBehavior_GroupSettings" IsExpanded="True">
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor" IsChecked="{Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_RestoreSize" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <custom:CheckBoxWithDescriptionControl
+                        <controls:SettingsExpander x:Uid="FancyZones_WindowBehavior_GroupSettings" IsExpanded="True">
+                            <controls:SettingsExpander.Items>
+                                <controls:SettingsCard ContentAlignment="Left">
+                                    <CheckBox x:Uid="FancyZones_DisplayOrWorkAreaChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayOrWorkAreaChangeMoveWindows}" />
+                                </controls:SettingsCard>
+                                <controls:SettingsCard ContentAlignment="Left">
+                                    <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}" />
+                                </controls:SettingsCard>
+                                <controls:SettingsCard ContentAlignment="Left">
+                                    <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}" />
+                                </controls:SettingsCard>
+                                <controls:SettingsCard ContentAlignment="Left">
+                                    <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor" IsChecked="{Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}" />
+                                </controls:SettingsCard>
+                                <controls:SettingsCard ContentAlignment="Left">
+                                    <CheckBox x:Uid="FancyZones_RestoreSize" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}" />
+                                </controls:SettingsCard>
+                                <controls:SettingsCard ContentAlignment="Left">
+                                    <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" />
+                                </controls:SettingsCard>
+                                <controls:SettingsCard ContentAlignment="Left">
+                                    <custom:CheckBoxWithDescriptionControl
                                     x:Uid="FancyZones_AllowPopupWindowSnap"
                                     Margin="0,0,0,6"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowPopupWindowSnap}" />
