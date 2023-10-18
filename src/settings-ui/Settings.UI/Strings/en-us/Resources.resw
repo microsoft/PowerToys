@@ -3072,6 +3072,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="RegistryPreview_Launch" xml:space="preserve">
     <value>Launch</value>
   </data>
+  <data name="DashboardKBMShowMappingsButton.Content" xml:space="preserve">
+    <value>Show remappings</value>
+  </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
     <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
   </data>
