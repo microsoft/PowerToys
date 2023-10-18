@@ -11,7 +11,7 @@
     mc:Ignorable="d">
 
     <Grid>
-        <Button x:Uid="UninstallModuleButton" Background="#ed2213" Height="48">
+        <Button x:Uid="UninstallModuleButton" x:Name="UninstallModuleButtonByName" Background="#ed2213" Height="48">
             <Button.Flyout>
                 <Flyout>
                     <StackPanel>

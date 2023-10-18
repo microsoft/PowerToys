@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -38,6 +39,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void UninstallModuleButton_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             FlyoutButton.Content = resourceLoader.GetString("Yes");
+
+            if (!File.Exists("uninstall_button_enabled"))
+            {
+                this.UninstallModuleButtonByName.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
 
             RestartApp.Title = resourceLoader.GetString("RestartApp_Dialog_Title");
             RestartApp.ActionButtonContent = resourceLoader.GetString("Yes");

@@ -163,5 +163,17 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 return false;
             }
         }
+
+        public static void CreateFile(string filePath)
+        {
+            try
+            {
+                // Create a new empty file or overwrite an existing file
+                File.Create(filePath).Close();
+            }
+            catch (Exception)
+            {
+            }
+        }
     }
 }

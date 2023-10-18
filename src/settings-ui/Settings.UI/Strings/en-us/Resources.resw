@@ -3719,4 +3719,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="NMS_Text_Start" xml:space="preserve">
     <value>Module «</value>
   </data>
+  <data name="GeneralPage_UninstallButton.Description" xml:space="preserve">
+    <value>Button for single users, who want delete PT Module.</value>
+  </data>
+  <data name="GeneralPage_UninstallButton.Header" xml:space="preserve">
+    <value>Uninstall Button</value>
+  </data>
 </root>

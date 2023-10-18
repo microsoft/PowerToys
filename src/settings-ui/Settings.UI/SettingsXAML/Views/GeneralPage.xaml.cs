@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -13,6 +14,8 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage.Pickers;
+using Windows.UI.Core;
+using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -87,6 +90,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
 
             doRefreshBackupRestoreStatus(100);
+
+            if (File.Exists("uninstall_button_enabled"))
+            {
+                EnableUninstallButton.IsOn = true;
+            }
         }
 
         public static int UpdateUIThemeMethod(string themeName)
@@ -157,6 +165,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             string r = await Task.FromResult<string>(ShellGetFolder.GetFolderDialog(hwnd));
             return r;
+        }
+
+        private void EnableUninstallButton_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                if (toggleSwitch.IsOn)
+                {
+                    UninstallModuleUtilities.CreateFile("uninstall_button_enabled");
+                }
+                else
+                {
+                    UninstallModuleUtilities.DeleteFile("uninstall_button_enabled");
+                }
+            }
         }
     }
 }
