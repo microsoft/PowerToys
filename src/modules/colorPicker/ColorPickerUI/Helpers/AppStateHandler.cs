@@ -9,6 +9,7 @@ using System.Windows.Interop;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.Helpers
@@ -204,7 +205,7 @@ namespace ColorPicker.Helpers
 
         private void ColorEditorViewModel_OpenSettingsRequested(object sender, EventArgs e)
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ColorPicker);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ColorPicker, false);
         }
 
         internal void RegisterWindowHandle(System.Windows.Interop.HwndSource hwndSource)

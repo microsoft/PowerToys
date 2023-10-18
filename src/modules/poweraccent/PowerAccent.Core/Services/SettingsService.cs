@@ -4,12 +4,14 @@
 
 using System.IO.Abstractions;
 using System.Text.Json;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerToys.PowerAccentKeyboardService;
 
 namespace PowerAccent.Core.Services;
+
 public class SettingsService
 {
     private const string PowerAccentModuleName = "QuickAccent";

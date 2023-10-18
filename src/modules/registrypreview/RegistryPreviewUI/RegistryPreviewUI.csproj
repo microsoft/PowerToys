@@ -1,0 +1,89 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\..\Version.props" />
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+		<Platforms>x86;x64;arm64</Platforms>
+		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+		<UseWinUI>true</UseWinUI>
+		<UseWindowsForms>False</UseWindowsForms>
+		<ApplicationIcon>Assets\RegistryPreview\app.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<WindowsPackageType>None</WindowsPackageType>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<SelfContained>true</SelfContained>
+		<Product>$(AssemblyName)</Product>
+		<AssemblyName>PowerToys.RegistryPreview</AssemblyName>
+		<AssemblyTitle>PowerToys.RegistryPreview</AssemblyTitle>
+		<AssemblyDescription>PowerToys RegistryPreview</AssemblyDescription>
+		<RootNamespace>RegistryPreview</RootNamespace>
+		<DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+		<ProjectPriFileName>PowerToys.RegistryPreview.pri</ProjectPriFileName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Page Remove="RegistryPreviewXAML\App.xaml" />
+	</ItemGroup>
+	<ItemGroup>
+		<ApplicationDefinition Include="RegistryPreviewXAML\App.xaml" />
+	</ItemGroup>
+
+	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
+	<PropertyGroup Condition="'$(Platform)'=='x64'">
+		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Platform)'=='ARM64'">
+		<RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<Content Include="Assets\RegistryPreview\app.ico" />
+	</ItemGroup>
+
+	<!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+	<PropertyGroup>
+		<CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+		<CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	</PropertyGroup>
+
+	<!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->
+	<PropertyGroup Condition="'$(IsPipeline)' == ''">
+		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.CsWinRT" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
+		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" />
+		<PackageReference Include="WinUIEx" />
+		<Manifest Include="$(ApplicationManifest)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+		<ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<Content Update="Assets\RegistryPreview\data32.png">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Content>
+		<Content Update="Assets\RegistryPreview\string32.png">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+</Project>
+<!--TargetFramework>net6.0-windows10.0.19041.0</TargetFramework-->

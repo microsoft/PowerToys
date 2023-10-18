@@ -6,7 +6,6 @@ using System;
 using System.Threading;
 using System.Windows;
 using ManagedCommon;
-using PowerOCR.Helpers;
 using PowerOCR.Keyboard;
 using PowerOCR.Settings;
 
@@ -26,6 +25,8 @@ public partial class App : Application, IDisposable
 
     public App()
     {
+        Logger.InitializeLogger("\\TextExtractor\\Logs");
+
         NativeThreadCTS = new CancellationTokenSource();
     }
 
@@ -65,10 +66,10 @@ public partial class App : Application, IDisposable
                 {
                     Logger.LogInfo("PowerToys Runner exited. Exiting TextExtractor");
                     NativeThreadCTS.Cancel();
-                    Application.Current.Dispatcher.Invoke(() => Shutdown());
+                    Current.Dispatcher.Invoke(() => Shutdown());
                 });
                 var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
-                eventMonitor = new EventMonitor(Application.Current.Dispatcher, NativeThreadCTS.Token);
+                eventMonitor = new EventMonitor(Current.Dispatcher, NativeThreadCTS.Token);
             }
             catch (Exception ex)
             {
@@ -87,11 +88,7 @@ public partial class App : Application, IDisposable
 
     protected override void OnExit(ExitEventArgs e)
     {
-        if (_instanceMutex != null)
-        {
-            _instanceMutex.ReleaseMutex();
-        }
-
+        _instanceMutex?.ReleaseMutex();
         base.OnExit(e);
     }
 

@@ -46,5 +46,15 @@ namespace PowerToys.GPOWrapperProjection
         {
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPastePlainEnabledValue();
         }
+
+        public static GpoRuleConfigured GetConfiguredPeekEnabledValue()
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPeekEnabledValue();
+        }
+
+        public static GpoRuleConfigured GetRunPluginEnabledValue(string pluginID)
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetRunPluginEnabledValue(pluginID);
+        }
     }
 }

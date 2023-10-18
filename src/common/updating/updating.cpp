@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include <common/utils/HttpClient.h>
+#include <common/utils/string_utils.h>
 #include <common/version/version.h>
 #include <common/version/helper.h>
 
@@ -8,6 +9,9 @@
 
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/json.h>
+#include <common/utils/registry.h>
+
+using namespace registry::install_scope;
 
 namespace // Strings in this namespace should not be localized
 {
@@ -42,9 +46,16 @@ namespace updating
     std::pair<Uri, std::wstring> extract_installer_asset_download_info(const json::JsonObject& release_object)
     {
         const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
-        constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
+        std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
         // Desc-sorted by its priority
         const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
+
+        const InstallScope current_install_scope = get_current_install_scope();
+        if (current_install_scope == InstallScope::PerUser)
+        {
+            required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN_USER;
+        }
+
         for (const auto asset_extension : asset_extensions)
         {
             for (auto asset_elem : release_object.GetNamedArray(L"assets"))
@@ -175,4 +186,48 @@ namespace updating
         co_return download_success ? installer_download_path : std::nullopt;
     }
 
+    void cleanup_updates()
+    {
+        auto update_dir = updating::get_pending_updates_path();
+        if (std::filesystem::exists(update_dir))
+        {
+            // Msi and exe files
+            for (const auto& entry : std::filesystem::directory_iterator(update_dir))
+            {
+                auto entryPath = entry.path().wstring();
+                std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+
+                if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
+                {
+                    std::error_code err;
+                    std::filesystem::remove(entry, err);
+                    if (err.value())
+                    {
+                        Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
+                    }
+                }
+            }
+        }
+
+        // Log files
+        auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
+        auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
+        if (std::filesystem::exists(rootPath))
+        {
+            for (const auto& entry : std::filesystem::directory_iterator(rootPath))
+            {
+                auto entryPath = entry.path().wstring();
+                std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+                if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::string::npos)
+                {
+                    std::error_code err;
+                    std::filesystem::remove(entry, err);
+                    if (err.value())
+                    {
+                        Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
+                    }
+                }
+            }
+        }
+    }
 }

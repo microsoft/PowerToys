@@ -43,11 +43,11 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(id1 == id2);
         }
 
-        TEST_METHOD (VirtualDesktopNull)
+        TEST_METHOD (VirtualDesktopDifferent)
         {
             FancyZonesDataTypes::WorkAreaId id1{
                 .monitorId = { .deviceId = { .id = L"device", .instanceId = L"instance-id" }, .serialNumber = L"serial-number" },
-                .virtualDesktopId = GUID_NULL
+                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{F21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
             };
 
             FancyZonesDataTypes::WorkAreaId id2{
@@ -55,14 +55,14 @@ namespace FancyZonesUnitTests
                 .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
             };
 
-            Assert::IsTrue(id1 == id2);
+            Assert::IsFalse(id1 == id2);
         }
 
-        TEST_METHOD (VirtualDesktopDifferent)
+        TEST_METHOD (VirtualDesktopNull)
         {
             FancyZonesDataTypes::WorkAreaId id1{
                 .monitorId = { .deviceId = { .id = L"device", .instanceId = L"instance-id" }, .serialNumber = L"serial-number" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{F21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
+                .virtualDesktopId = GUID_NULL
             };
 
             FancyZonesDataTypes::WorkAreaId id2{

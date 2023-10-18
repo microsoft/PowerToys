@@ -1,7 +1,8 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:ui="http://schemas.modernwpf.com/2019">
-    
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.modernwpf.com/2019">
+
     <Style x:Key="LayoutTypeRadioButtonStyle" TargetType="RadioButton">
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="Background" Value="{DynamicResource RadioButtonBackground}" />
@@ -27,50 +28,50 @@
                         Background="Transparent"
                         BorderBrush="Transparent"
                         BorderThickness="2"
-                 
                         SnapsToDevicePixels="True">
+                        <Grid>
+
+                            <Border
+                                x:Name="CheckGlyph"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                BorderThickness="2"
+                                CornerRadius="4"
+                                Opacity="0"
+                                UseLayoutRounding="False" />
+
+                            <ui:ContentPresenterEx
+                                x:Name="ContentPresenter"
+                                Grid.Column="1"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Focusable="False"
+                                RecognizesAccessKey="True"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                TextElement.Foreground="{TemplateBinding Foreground}"
+                                TextWrapping="Wrap" />
+                        </Grid>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                                         Storyboard.TargetProperty="Opacity"
-                                                         To="1"
-                                                         Duration="0" />
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="CheckGlyph"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"
+                                            Duration="0" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Unchecked" />
                                 <VisualState x:Name="Indeterminate" />
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid>
-
-                            <Border x:Name="CheckGlyph"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"
-                                    UseLayoutRounding="False"
-                                    Opacity="0"
-                                    CornerRadius="2"
-                                    BorderThickness="2"
-                                    BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
-
-                            <ui:ContentPresenterEx x:Name="ContentPresenter"
-                                                   TextElement.Foreground="{TemplateBinding Foreground}"
-                                                   Margin="{TemplateBinding Padding}"
-                                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                   Grid.Column="1"
-                                                   TextWrapping="Wrap"
-                                                   Focusable="False"
-                                                   RecognizesAccessKey="True"
-                                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ContentPresenter"
-                                    Property="Foreground"
-                                    Value="{DynamicResource RadioButtonForegroundPointerOver}" />
+                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource RadioButtonForegroundPointerOver}" />
                             <Setter TargetName="CheckGlyph" Property="Opacity" Value="0.6" />
 
                         </Trigger>
@@ -90,63 +91,48 @@
         </Setter>
     </Style>
 
-    <Style x:Key="IconOnlyButtonStyle"
-           BasedOn="{StaticResource DefaultButtonStyle}"
-           TargetType="Button">
-        <Setter Property="Background"
-                Value="Transparent" />
-        <Setter Property="Foreground"
-                Value="{DynamicResource ButtonForeground}" />
+    <Style
+        x:Key="IconOnlyButtonStyle"
+        BasedOn="{StaticResource DefaultButtonStyle}"
+        TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Background"
-                            Background="Transparent"
-                            CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius}"
-                            SnapsToDevicePixels="True">
-                        <Border x:Name="Border"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Padding="{TemplateBinding Padding}"
-                                CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius}">
-                            <ContentPresenter x:Name="ContentPresenter"
-                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              Focusable="False"
-                                              RecognizesAccessKey="True"
-                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    <Border
+                        x:Name="Background"
+                        Background="Transparent"
+                        CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius}"
+                        SnapsToDevicePixels="True">
+                        <Border
+                            x:Name="Border"
+                            Padding="{TemplateBinding Padding}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius}">
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Focusable="False"
+                                RecognizesAccessKey="True"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                         </Border>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver"
-                                 Value="True">
-                            <Setter TargetName="Background"
-                                    Property="Background"
-                                    Value="{DynamicResource ButtonBackgroundPointerOver}" />
-                            <Setter TargetName="Border"
-                                    Property="BorderBrush"
-                                    Value="{DynamicResource ButtonBorderBrushPointerOver}" />
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Background" Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
                         </Trigger>
-                        <Trigger Property="IsPressed"
-                                 Value="True">
-                            <Setter TargetName="Background"
-                                    Property="Background"
-                                    Value="{DynamicResource ButtonBackgroundPressed}" />
-                            <Setter TargetName="Border"
-                                    Property="BorderBrush"
-                                    Value="{DynamicResource ButtonBorderBrushPressed}" />
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Background" Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
                         </Trigger>
-                        <Trigger Property="IsEnabled"
-                                 Value="False">
-                            <Setter TargetName="Background"
-                                    Property="Background"
-                                    Value="{DynamicResource ButtonBackgroundDisabled}" />
-                            <Setter TargetName="Border"
-                                    Property="BorderBrush"
-                                    Value="{DynamicResource ButtonBorderBrushDisabled}" />
-                            <Setter TargetName="ContentPresenter"
-                                    Property="TextElement.Foreground"
-                                    Value="{DynamicResource ButtonForegroundDisabled}" />
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Background" Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushDisabled}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

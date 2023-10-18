@@ -4,7 +4,7 @@
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
 {
-    // NOTE: don't change the order (numbers) of the enumeration entires
+    // NOTE: don't change the order (numbers) of the enumeration entries
 
     /// <summary>
     /// The type of the color representation

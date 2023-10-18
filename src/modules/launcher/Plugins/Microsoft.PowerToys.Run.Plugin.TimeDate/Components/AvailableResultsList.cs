@@ -59,8 +59,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 
             if (isKeywordSearch || !TimeDateSettings.Instance.OnlyDateTimeNowGlobal)
             {
-                // We use long instead of int  for unix time stamp because int ist to small after 03:14:07 UTC 2038-01-19
+                // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
                 long unixTimestamp = (long)dateTimeNowUtc.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+                long unixTimestampMilliseconds = (long)dateTimeNowUtc.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
                 int weekOfYear = calendar.GetWeekOfYear(dateTimeNow, DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
                 string era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
                 string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
@@ -85,6 +86,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     {
                         Value = unixTimestamp.ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_Unix,
+                        AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
+                        IconType = ResultIconType.DateTime,
+                    },
+                    new AvailableResult()
+                    {
+                        Value = unixTimestampMilliseconds.ToString(CultureInfo.CurrentCulture),
+                        Label = Resources.Microsoft_plugin_timedate_Unix_Milliseconds,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                         IconType = ResultIconType.DateTime,
                     },
@@ -253,6 +261,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     {
                         Value = dateTimeNow.ToString("R"),
                         Label = Resources.Microsoft_plugin_timedate_Rfc1123,
+                        AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
+                        IconType = ResultIconType.DateTime,
+                    },
+                    new AvailableResult()
+                    {
+                        Value = dateTimeNow.ToString("yyyy-MM-dd_HH-mm-ss", CultureInfo.InvariantCulture),
+                        Label = Resources.Microsoft_plugin_timedate_filename_compatible,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                         IconType = ResultIconType.DateTime,
                     },

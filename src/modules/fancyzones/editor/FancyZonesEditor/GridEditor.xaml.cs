@@ -10,8 +10,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {
@@ -36,7 +36,7 @@ namespace FancyZonesEditor
 
         private GridData _data;
 
-        public GridEditor()
+        public GridEditor(GridLayoutModel layoutModel)
         {
             InitializeComponent();
             Loaded += GridEditor_Loaded;
@@ -44,6 +44,9 @@ namespace FancyZonesEditor
             KeyDown += GridEditor_KeyDown;
             KeyUp += GridEditor_KeyUp;
             gridEditorUniqueId = ++gridEditorUniqueIdCounter;
+
+            _data = new GridData(layoutModel);
+            Model = layoutModel;
         }
 
         public void FocusZone()
@@ -58,16 +61,6 @@ namespace FancyZonesEditor
         private void GridEditor_Loaded(object sender, RoutedEventArgs e)
         {
             ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
-
-            GridLayoutModel model = (GridLayoutModel)DataContext;
-            if (model == null)
-            {
-                return;
-            }
-
-            _data = new GridData(model);
-
-            Model = model;
             Model.PropertyChanged += OnGridDimensionsChanged;
             SetupUI();
         }

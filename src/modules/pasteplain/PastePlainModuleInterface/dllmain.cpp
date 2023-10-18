@@ -97,7 +97,7 @@ private:
         {
             Logger::info("PastePlain is going to use default shortcut");
             m_hotkey.win = true;
-            m_hotkey.alt = false;
+            m_hotkey.alt = true;
             m_hotkey.shift = false;
             m_hotkey.ctrl = true;
             m_hotkey.key = 'V';
@@ -119,7 +119,7 @@ private:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\PastePlain\\PowerToys.PastePlain.exe";
+        sei.lpFile = L"PowerToys.PastePlain.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
@@ -152,7 +152,7 @@ private:
         }
     }
 
-    void try_inject_modifier_key_up(std::vector<INPUT> &inputs, short modifier)
+    void try_inject_modifier_key_up(std::vector<INPUT>& inputs, short modifier)
     {
         // Most significant bit is set if key is down
         if ((GetAsyncKeyState(static_cast<int>(modifier)) & 0x8000) != 0)
@@ -161,6 +161,18 @@ private:
             input_event.type = INPUT_KEYBOARD;
             input_event.ki.wVk = modifier;
             input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+            inputs.push_back(input_event);
+        }
+    }
+
+    void try_inject_modifier_key_restore(std::vector<INPUT> &inputs, short modifier)
+    {
+        // Most significant bit is set if key is down
+        if ((GetAsyncKeyState(static_cast<int>(modifier)) & 0x8000) != 0)
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = modifier;
             inputs.push_back(input_event);
         }
     }
@@ -192,9 +204,9 @@ private:
                 return;
             }
 
-            wchar_t* pch_data= static_cast<wchar_t*>(GlobalLock(h_clipboard_data));
+            wchar_t* pch_data = static_cast<wchar_t*>(GlobalLock(h_clipboard_data));
 
-            if (NULL == pch_data )
+            if (NULL == pch_data)
             {
                 DWORD errorCode = GetLastError();
                 auto errorMessage = get_last_error_message(errorCode);
@@ -216,7 +228,7 @@ private:
             UINT no_clipboard_history_or_roaming_format = 0;
 
             // Get the format identifier for not adding the data to the clipboard history or roaming.
-            // https://learn.microsoft.com/en-us/windows/win32/dataxchg/clipboard-formats#cloud-clipboard-and-clipboard-history-formats
+            // https://learn.microsoft.com/windows/win32/dataxchg/clipboard-formats#cloud-clipboard-and-clipboard-history-formats
             if (0 == (no_clipboard_history_or_roaming_format = RegisterClipboardFormat(L"ExcludeClipboardContentFromMonitorProcessing")))
             {
                 DWORD errorCode = GetLastError();
@@ -283,7 +295,7 @@ private:
         }
         {
             // Clear kb state and send Ctrl+V begin
-            
+
             // we can assume that the last pressed key is...
             //  (1) not a modifier key and
             //  (2) marked as handled (so it never gets a key down input event).
@@ -311,6 +323,8 @@ private:
                 INPUT input_event = {};
                 input_event.type = INPUT_KEYBOARD;
                 input_event.ki.wVk = 0x56; // V
+                // Avoid triggering detection by the centralized keyboard hook. Allows using Control+V as activation.
+                input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
                 inputs.push_back(input_event);
             }
 
@@ -319,6 +333,8 @@ private:
                 input_event.type = INPUT_KEYBOARD;
                 input_event.ki.wVk = 0x56; // V
                 input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+                // Avoid triggering detection by the centralized keyboard hook. Allows using Control+V as activation.
+                input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
                 inputs.push_back(input_event);
             }
 
@@ -329,6 +345,15 @@ private:
                 input_event.ki.dwFlags = KEYEVENTF_KEYUP;
                 inputs.push_back(input_event);
             }
+
+            try_inject_modifier_key_restore(inputs, VK_LCONTROL);
+            try_inject_modifier_key_restore(inputs, VK_RCONTROL);
+            try_inject_modifier_key_restore(inputs, VK_LWIN);
+            try_inject_modifier_key_restore(inputs, VK_RWIN);
+            try_inject_modifier_key_restore(inputs, VK_LSHIFT);
+            try_inject_modifier_key_restore(inputs, VK_RSHIFT);
+            try_inject_modifier_key_restore(inputs, VK_LMENU);
+            try_inject_modifier_key_restore(inputs, VK_RMENU);
 
             auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
             if (uSent != inputs.size())
@@ -438,8 +463,6 @@ public:
         m_enabled = false;
         Trace::EnablePastePlain(false);
     }
-
-
 
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {

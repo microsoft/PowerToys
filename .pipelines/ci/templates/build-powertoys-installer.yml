@@ -1,7 +1,7 @@
 parameters:
   configuration: 'Release'
   platform: ''
-  additionalBuildArguments: '-m'
+  additionalBuildArguments: '/p:RestorePackagesConfig=true -m'
 
 jobs:
 - job: Build${{ parameters.platform }}${{ parameters.configuration }}
@@ -10,7 +10,7 @@ jobs:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
   pool:
-      name: WinDevPool-L
+      name: SHINE-INT-L
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10

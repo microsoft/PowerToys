@@ -13,29 +13,32 @@
         <Grid>
             <Canvas x:Name="Preview" />
             <Canvas x:Name="AdornerLayer" />
-            <Canvas x:Name="MergePanel"
-                    MouseUp="MergePanelMouseUp"
-                    Visibility="Collapsed">
+            <Canvas
+                x:Name="MergePanel"
+                MouseUp="MergePanelMouseUp"
+                Visibility="Collapsed">
                 <Canvas.Effect>
-                    <DropShadowEffect BlurRadius="6" Opacity="0.32"  ShadowDepth="2" />
+                    <DropShadowEffect
+                        BlurRadius="6"
+                        Opacity="0.32"
+                        ShadowDepth="2" />
                 </Canvas.Effect>
-                <StackPanel x:Name="MergeButtons"
-                            Orientation="Horizontal">
-                    <Border CornerRadius="2"
-                            Background="{DynamicResource PrimaryBackgroundBrush}">
-                        
-                        <Button Width="134"
-                                Height="36"
-                                Margin="0"
-                                Style="{StaticResource DefaultButtonStyle}"
-                                Click="MergeClick">
+                <StackPanel x:Name="MergeButtons" Orientation="Horizontal">
+                    <Border Background="{DynamicResource PrimaryBackgroundBrush}" CornerRadius="4">
+
+                        <Button
+                            Width="134"
+                            Height="36"
+                            Margin="0"
+                            Click="MergeClick"
+                            Style="{StaticResource DefaultButtonStyle}">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE746;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                           Margin="0,3,8,0" />
-                                <TextBlock Text="{x:Static props:Resources.Merge_zones}"
-                                           Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                                <TextBlock
+                                    Margin="0,3,8,0"
+                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    Text="&#xE746;" />
+                                <TextBlock Foreground="{DynamicResource PrimaryForegroundBrush}" Text="{x:Static props:Resources.Merge_zones}" />
                             </StackPanel>
                         </Button>
                     </Border>

@@ -10,12 +10,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         AlwaysOnTop,
         Awake,
         ColorPicker,
+        CropAndLock,
         FancyZones,
         FileLocksmith,
         FileExplorer,
         ImageResizer,
         KBM,
         MouseUtils,
+        MouseWithoutBorders,
+        Peek,
         PowerRename,
         Run,
         QuickAccent,
@@ -26,5 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         Hosts,
         PastePlain,
         WhatsNew,
+        RegistryPreview,
     }
 }

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\Version.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <Version>$(Version).0</Version>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
+    <Description>PowerToys FilePreviewCommon</Description>
+    <AssemblyName>PowerToys.FilePreviewCommon</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig.Signed" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\Monaco\customLanguages\reg.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Monaco\customLanguages\gitignore.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Monaco\index.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Monaco\monacoSpecialLanguages.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Content Include="Assets\Monaco\monacoSRC\**">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Update="Assets\Monaco\monaco_languages.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

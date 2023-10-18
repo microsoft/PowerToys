@@ -183,10 +183,26 @@
       "Command": "ms-settings:autoplay"
     },
     {
-      "Name": "Bluetooth",
+      "Name": "BluetoothAndDevices10",
       "Areas": [ "AreaDevices" ],
       "Type": "AppSettingsApp",
-      "Command": "ms-settings:bluetooth"
+      "Command": "ms-settings:bluetooth",
+      "DeprecatedInBuild": 22000
+    },
+    {
+      "Name": "Devices",
+      "Areas": [ "AreaBluetoothAndDevices11" ],
+      "Type": "AppSettingsApp",
+      "Command": "ms-settings:bluetooth",
+      "AltNames": ["ManageDevices", "AddDevices", "BluetoothDevices"],
+      "IntroducedInBuild": 22000
+    },
+    {
+      "Name": "AreaBluetoothAndDevices11",
+      "Type": "AppSettingsApp",
+      "Command": "ms-settings:devices",
+      "AltNames": ["Devices", "BluetoothDevices", "PrintersAndScanners", "PhoneLink", "Camera", "Mouse", "Touchpad", "PenAndWindowsInk", "AutoPlay", "Usb"],
+      "IntroducedInBuild": 22000
     },
     {
       "Name": "ConnectedDevices",
@@ -1224,7 +1240,15 @@
       "Name": "WindowsUpdateCheckForUpdates",
       "Areas": [ "AreaUpdateAndSecurity" ],
       "Type": "AppSettingsApp",
-      "Command": "ms-settings:windowsupdate-action"
+      "Command": "ms-settings:windowsupdate-action",
+      "DeprecatedInBuild": 22000
+    },
+    {
+      "Name": "WindowsUpdateCheckForUpdates",
+      "Areas": [ "AreaUpdateAndSecurity" ],
+      "Type": "AppSettingsApp",
+      "Command": "ms-settings:windowsupdate",
+      "IntroducedInBuild": 22000
     },
     {
       "Name": "WindowsUpdateAdvancedOptions",
@@ -1334,7 +1358,7 @@
       "Name": "BluetoothDevices",
       "Areas": [ "AreaHardwareAndSound", "bthprops.cpl" ],
       "Type": "AppControlPanel",
-      "Command": "control /name Microsoft.BluetoothDevices"
+      "Command": "control /bthprops.cpl"
     },
     {
       "Name": "ColorManagement",
@@ -1386,7 +1410,15 @@
       "Name": "DevicesAndPrinters",
       "Areas": [ "AreaHardwareAndSound" ],
       "Type": "AppControlPanel",
-      "Command": "control /name Microsoft.DevicesAndPrinters"
+      "Command": "control /name Microsoft.DevicesAndPrinters",
+      "DeprecatedInBuild": 22000
+    },
+    {
+      "Name": "DevicesAndPrinters",
+      "Areas": [ "AreaHardwareAndSound" ],
+      "Type": "AppControlPanel",
+      "Command": "explorer.exe shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}",
+      "IntroducedInBuild": 22000
     },
     {
       "Name": "EaseOfAccessCenter",

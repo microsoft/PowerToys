@@ -15,9 +15,14 @@ namespace Common.Utilities
     /// </summary>
     public static class SvgPreviewHandlerHelper
     {
+        private const string WidthAttribute = "width=\"";
+        private const string HeightAttribute = "height=\"";
+        private const string StyleAttribute = "style=\"";
+        private const string ViewboxAttribute = "viewBox=\"";
+
         /// <summary>
         /// Dictionary of elements in lower case that are blocked from Svg for preview pane.
-        /// Reference for list of Svg Elements: https://developer.mozilla.org/en-US/docs/Web/SVG/Element.
+        /// Reference for list of Svg Elements: https://developer.mozilla.org/docs/Web/SVG/Element.
         /// </summary>
         private static Dictionary<string, bool> blockedElementsName = new Dictionary<string, bool>
         {
@@ -65,6 +70,83 @@ namespace Common.Utilities
             return foundBlockedElement;
         }
 
+        private static string GetAttributeValue(int attributeNameLength, string data, int startIndex)
+        {
+            if (startIndex == -1)
+            {
+                return string.Empty;
+            }
+
+            int start = startIndex + attributeNameLength;
+            int end = data.IndexOf("\"", start, StringComparison.InvariantCultureIgnoreCase);
+            return data.Substring(start, end - start);
+        }
+
+        private static string RemoveAttribute(string data, int startIndex, string attributeName, out int numRemoved)
+        {
+            numRemoved = 0;
+
+            if (startIndex == -1)
+            {
+                return data;
+            }
+
+            int end = data.IndexOf("\"", startIndex + attributeName.Length, StringComparison.InvariantCultureIgnoreCase) + 1;
+            numRemoved = end - startIndex;
+            return data.Remove(startIndex, numRemoved);
+        }
+
+        private static string RemoveXmlProlog(string s, int prefixLength, out int numRemoved)
+        {
+            numRemoved = 0;
+            int startIndex = s.IndexOf("<?xml", 0, prefixLength, StringComparison.OrdinalIgnoreCase);
+            if (startIndex != -1)
+            {
+                int endIndex = s.IndexOf("?>", startIndex, StringComparison.InvariantCultureIgnoreCase);
+                if (endIndex != -1)
+                {
+                    numRemoved = endIndex + 2 - startIndex;
+                    return s.Remove(startIndex, numRemoved);
+                }
+            }
+
+            return s;
+        }
+
+        private static int FindFirstXmlOpenTagIndex(string s)
+        {
+            int index = 0;
+
+            while ((index = s.IndexOf('<', index)) != -1)
+            {
+                if (index < s.Length - 1 && s[index + 1] != '?' && s[index + 1] != '!')
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            return -1;
+        }
+
+        private static int FindFirstXmlCloseTagIndex(string s, int openTagIndex)
+        {
+            int index = 1;
+
+            while ((index = s.IndexOf('>', openTagIndex)) != -1)
+            {
+                if (index > 0 && s[index - 1] != '?')
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            return -1;
+        }
+
         /// <summary>
         /// Add proper
         /// </summary>
@@ -72,66 +154,82 @@ namespace Common.Utilities
         /// <returns>Returns modified svgData with added style</returns>
         public static string AddStyleSVG(string stringSvgData)
         {
-            XElement svgData = XElement.Parse(stringSvgData);
-
-            var attributes = svgData.Attributes();
-            string width = string.Empty;
-            string height = string.Empty;
-            string widthR = string.Empty;
-            string heightR = string.Empty;
-            string oldStyle = string.Empty;
-            bool hasViewBox = false;
-
-            // Get width and height of element and remove it afterwards because it will be added inside style attribute
-            for (int i = 0; i < attributes.Count(); i++)
+            int firstXmlOpenTagIndex = FindFirstXmlOpenTagIndex(stringSvgData);
+            if (firstXmlOpenTagIndex == -1)
             {
-                if (attributes.ElementAt(i).Name == "height")
-                {
-                    height = attributes.ElementAt(i).Value;
-                    attributes.ElementAt(i).Remove();
-                    i--;
-                }
-                else if (attributes.ElementAt(i).Name == "width")
-                {
-                    width = attributes.ElementAt(i).Value;
-                    attributes.ElementAt(i).Remove();
-                    i--;
-                }
-                else if (attributes.ElementAt(i).Name == "style")
-                {
-                    oldStyle = attributes.ElementAt(i).Value;
-                    attributes.ElementAt(i).Remove();
-                    i--;
-                }
-                else if (attributes.ElementAt(i).Name == "viewBox")
-                {
-                    hasViewBox = true;
-                }
+                return stringSvgData;
             }
 
-            svgData.ReplaceAttributes(attributes);
+            int firstXmlCloseTagIndex = FindFirstXmlCloseTagIndex(stringSvgData, firstXmlOpenTagIndex);
+            if (firstXmlCloseTagIndex == -1)
+            {
+                return stringSvgData;
+            }
 
-            height = CheckUnit(height);
+            stringSvgData = RemoveXmlProlog(stringSvgData, firstXmlOpenTagIndex, out int numRemoved);
+
+            firstXmlOpenTagIndex -= numRemoved;
+            firstXmlCloseTagIndex -= numRemoved;
+
+            int widthIndex = stringSvgData.IndexOf(WidthAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex, StringComparison.InvariantCultureIgnoreCase);
+            int heightIndex = stringSvgData.IndexOf(HeightAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex, StringComparison.InvariantCultureIgnoreCase);
+            int styleIndex = stringSvgData.IndexOf(StyleAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex, StringComparison.InvariantCultureIgnoreCase);
+
+            string width = GetAttributeValue(WidthAttribute.Length, stringSvgData, widthIndex);
+            string height = GetAttributeValue(HeightAttribute.Length, stringSvgData, heightIndex);
+            string oldStyle = GetAttributeValue(StyleAttribute.Length, stringSvgData, styleIndex);
+
+            bool hasViewBox = stringSvgData.IndexOf(ViewboxAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex - firstXmlOpenTagIndex, StringComparison.InvariantCultureIgnoreCase) != -1;
+
+            stringSvgData = RemoveAttribute(stringSvgData, widthIndex, WidthAttribute, out numRemoved);
+            if (heightIndex != -1 && heightIndex > widthIndex)
+            {
+                heightIndex -= numRemoved;
+            }
+
+            if (styleIndex != -1 && styleIndex > widthIndex)
+            {
+                styleIndex -= numRemoved;
+            }
+
+            firstXmlCloseTagIndex -= numRemoved;
+
+            stringSvgData = RemoveAttribute(stringSvgData, heightIndex, HeightAttribute, out numRemoved);
+            if (styleIndex != -1 && styleIndex > heightIndex)
+            {
+                styleIndex -= numRemoved;
+            }
+
+            firstXmlCloseTagIndex -= numRemoved;
+
+            stringSvgData = RemoveAttribute(stringSvgData, styleIndex, StyleAttribute, out numRemoved);
+            firstXmlCloseTagIndex -= numRemoved;
+
             width = CheckUnit(width);
-            heightR = RemoveUnit(height);
-            widthR = RemoveUnit(width);
+            height = CheckUnit(height);
+
+            string widthR = RemoveUnit(width);
+            string heightR = RemoveUnit(height);
 
             string centering = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);";
 
             // max-width and max-height not supported. Extra CSS is needed for it to work.
             string scaling = $"max-width: {width} ; max-height: {height} ;";
-            scaling += $"  _height:expression(this.scrollHeight > {heightR} ? \" {height}\" : \"auto\"); _width:expression(this.scrollWidth > {widthR} ? \"{width}\" : \"auto\");";
+            scaling += $"  _height:expression(this.scrollHeight &gt; {heightR} ? &quot; {height}&quot; : &quot;auto&quot;); _width:expression(this.scrollWidth &gt; {widthR} ? &quot;{width}&quot; : &quot;auto&quot;);";
 
-            svgData.Add(new XAttribute("style", scaling + centering + oldStyle));
+            string newStyle = $"style=\"{scaling}{centering}{oldStyle}\"";
+            int insertAt = firstXmlCloseTagIndex;
+
+            stringSvgData = stringSvgData.Insert(insertAt, " " + newStyle);
 
             if (!hasViewBox)
             {
                 // Fixes https://github.com/microsoft/PowerToys/issues/18107
-                string viewBox = $"0 0 {widthR} {heightR}";
-                svgData.Add(new XAttribute("viewBox", viewBox));
+                string viewBox = $"viewBox=\"0 0 {widthR} {heightR}\"";
+                stringSvgData = stringSvgData.Insert(insertAt, " " + viewBox);
             }
 
-            return svgData.ToString();
+            return stringSvgData;
         }
 
         /// <summary>

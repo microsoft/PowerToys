@@ -1,0 +1,237 @@
+id: 
+name: GitOps.PullRequestIssueManagement
+description: GitOps.PullRequestIssueManagement primitive
+owner: 
+resource: repository
+disabled: false
+where: 
+configuration:
+  resourceManagementConfiguration:
+    scheduledSearches:
+    - description: 
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: Needs-Author-Feedback
+      - hasLabel:
+          label: Status-No recent activity
+      - noActivitySince:
+          days: 5
+      actions:
+      - closeIssue
+    - description: 
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: Needs-Author-Feedback
+      - noActivitySince:
+          days: 5
+      - isNotLabeledWith:
+          label: Status-No recent activity
+      actions:
+      - addLabel:
+          label: Status-No recent activity
+      - addReply:
+          reply: This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **5 days**. It will be closed if no further activity occurs **within 5 days of this comment**.
+    - description: 
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: Resolution-Duplicate
+      - noActivitySince:
+          days: 1
+      actions:
+      - addReply:
+          reply: This issue has been marked as duplicate and has not had any activity for **1 day**. It will be closed for housekeeping purposes.
+      - closeIssue
+    eventResponderTasks:
+    - if:
+      - payloadType: Issue_Comment
+      - isAction:
+          action: Created
+      - isActivitySender:
+          issueAuthor: True
+      - hasLabel:
+          label: Needs-Author-Feedback
+      - isOpen
+      then:
+      - addLabel:
+          label: Needs-Triage
+      - removeLabel:
+          label: Needs-Author-Feedback
+      - addLabel:
+          label: Needs-Team-Response
+      description: 
+    - if:
+      - payloadType: Issues
+      - not:
+          isAction:
+            action: Closed
+      - hasLabel:
+          label: Status-No recent activity
+      then:
+      - removeLabel:
+          label: Status-No recent activity
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - hasLabel:
+          label: Status-No recent activity
+      then:
+      - removeLabel:
+          label: Status-No recent activity
+      description: 
+    - if:
+      - payloadType: Pull_Request
+      then:
+      - inPrLabel:
+          label: Status-In progress
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      then:
+      - cleanEmailReply
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - commentContains:
+          pattern: '\/(bugreport|reportbug)'
+          isRegex: True
+      - or:
+        - activitySenderHasAssociation:
+            association: Member
+        - activitySenderHasAssociation:
+            association: Owner
+        - activitySenderHasAssociation:
+            association: Collaborator
+      then:
+      - removeLabel:
+          label: Needs-Triage
+      - addLabel:
+          label: Needs-Author-Feedback
+      - addReply:
+          reply: Hi there!<br/><br/>We need a bit more information to really debug this issue. Can you add a "Report Bug" zip file here?  You right click on our system tray icon and just go to report bug.  Then drag the zipfile from your desktop onto the GitHub comment box in this issue.  Thanks! <br/>![Report Bug](https://user-images.githubusercontent.com/11349917/133042052-4975be21-4699-4363-83c9-a8e1869d079d.png)
+      - removeLabel:
+          label: Needs-Team-Response
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - commentContains:
+          pattern: '\/feedback[H|h]ub'
+          isRegex: True
+      - or:
+        - activitySenderHasAssociation:
+            association: Owner
+        - activitySenderHasAssociation:
+            association: Member
+        - activitySenderHasAssociation:
+            association: Collaborator
+      then:
+      - addReply:
+          reply: Hi! We've identified this issue that best is suited for Windows Feedback Hub. To do this on Windows, WinKey+F will bring it up!
+      - closeIssue
+      - removeLabel:
+          label: Needs-Triage
+      - removeLabel:
+          label: Needs-Team-Response
+      - addLabel:
+          label: Resolution-Please File on Feedback Hub
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - commentContains:
+          pattern: '\/dup(licate|e)?(\s+of)?\s+(\#[\d]+|https)'
+          isRegex: True
+      - or:
+        - activitySenderHasAssociation:
+            association: Owner
+        - activitySenderHasAssociation:
+            association: Member
+        - activitySenderHasAssociation:
+            association: Collaborator
+      then:
+      - addReply:
+          reply: Hi! We've identified this issue as a duplicate of another one that already exists on this Issue Tracker. This specific instance is being closed in favor of tracking the concern over on the referenced thread. Thanks for your report!
+      - closeIssue
+      - removeLabel:
+          label: Needs-Triage
+      - removeLabel:
+          label: Needs-Team-Response
+      - addLabel:
+          label: Resolution-Duplicate
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - commentContains:
+          pattern: '\/needinfo'
+          isRegex: True
+      - or:
+        - activitySenderHasAssociation:
+            association: Owner
+        - activitySenderHasAssociation:
+            association: Member
+        - activitySenderHasAssociation:
+            association: Collaborator
+      then:
+      - removeLabel:
+          label: Needs-Triage
+      - removeLabel:
+          label: Needs-Team-Response
+      - addLabel:
+          label: Needs-Author-Feedback
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - commentContains:
+          pattern: '\/helped'
+          isRegex: True
+      - or:
+        - activitySenderHasAssociation:
+            association: Owner
+        - activitySenderHasAssociation:
+            association: Member
+        - activitySenderHasAssociation:
+            association: Collaborator
+      then:
+      - removeLabel:
+          label: Needs-Triage
+      - removeLabel:
+          label: Needs-Team-Response
+      - addLabel:
+          label: Resolution-Helped User
+      - addReply:
+          reply: This issue is now marked as resolved. If you have any follow-up questions, please don't hesitate to ask. You can find out more about PowerToys functionalities in our [end-user documentation](https://aka.ms/powertoy-docs).
+      - closeIssue
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - commentContains:
+          pattern: '\/loc\b'
+          isRegex: True
+      - or:
+        - activitySenderHasAssociation:
+            association: Owner
+        - activitySenderHasAssociation:
+            association: Member
+      then:
+      - removeLabel:
+          label: Needs-Triage
+      - addLabel:
+          label: Loc-Sent To Team
+      - addReply:
+          reply: Hi! Thanks for making us aware of the problem. We raised the issue with our internal localization team. This issue should be fixed hopefully in the next version of PowerToys.
+      description: 
+onFailure: 
+onSuccess: 

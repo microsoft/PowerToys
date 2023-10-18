@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {
@@ -17,6 +17,7 @@ namespace FancyZonesEditor
         private LayoutPreview _layoutPreview;
         private UserControl _editorLayout;
         private EditorWindow _editorWindow;
+        private LayoutBackup _layoutBackup = new LayoutBackup();
 
         public List<Monitor> Monitors { get; private set; }
 
@@ -180,54 +181,23 @@ namespace FancyZonesEditor
             }
         }
 
-        public void SetLayoutSettings(Monitor monitor, LayoutModel model)
-        {
-            if (model == null)
-            {
-                return;
-            }
-
-            monitor.Settings.ZonesetUuid = model.Uuid;
-            monitor.Settings.Type = model.Type;
-            monitor.Settings.SensitivityRadius = model.SensitivityRadius;
-            monitor.Settings.ZoneCount = model.TemplateZoneCount;
-
-            if (model is GridLayoutModel grid)
-            {
-                monitor.Settings.ShowSpacing = grid.ShowSpacing;
-                monitor.Settings.Spacing = grid.Spacing;
-            }
-            else
-            {
-                monitor.Settings.ShowSpacing = false;
-                monitor.Settings.Spacing = 0;
-            }
-        }
-
         public void OpenEditor(LayoutModel model)
         {
             Logger.LogTrace();
 
             _layoutPreview = null;
-            if (CurrentDataContext is GridLayoutModel)
+            if (model is GridLayoutModel grid)
             {
-                _editorLayout = new GridEditor();
+                _editorLayout = new GridEditor(grid);
+                _editorWindow = new GridEditorWindow(grid);
             }
-            else if (CurrentDataContext is CanvasLayoutModel)
+            else if (model is CanvasLayoutModel canvas)
             {
-                _editorLayout = new CanvasEditor();
+                _editorLayout = new CanvasEditor(canvas);
+                _editorWindow = new CanvasEditorWindow(canvas);
             }
 
             CurrentLayoutWindow.Content = _editorLayout;
-
-            if (model is GridLayoutModel)
-            {
-                _editorWindow = new GridEditorWindow();
-            }
-            else
-            {
-                _editorWindow = new CanvasEditorWindow();
-            }
 
             _editorWindow.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
             _editorWindow.DataContext = model;
@@ -283,6 +253,21 @@ namespace FancyZonesEditor
             {
                 _editorWindow.Focus();
             }
+        }
+
+        public void StartEditing(LayoutModel model)
+        {
+            _layoutBackup.Backup(model);
+        }
+
+        public void EndEditing(LayoutModel modelToRestore)
+        {
+            if (modelToRestore != null)
+            {
+                _layoutBackup.Restore(modelToRestore);
+            }
+
+            _layoutBackup.Clear();
         }
 
         public void CloseLayoutWindow()

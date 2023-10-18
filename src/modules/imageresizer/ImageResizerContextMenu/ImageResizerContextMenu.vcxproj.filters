@@ -37,10 +37,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\**">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="ImageResizer.ico">
+    <None Include="Assets\ImageResizer\**">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="packages.config" />

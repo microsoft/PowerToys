@@ -9,7 +9,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Nullable>enable</Nullable>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\Plugins\Registry\</OutputPath>
+    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\RunPlugins\Registry\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

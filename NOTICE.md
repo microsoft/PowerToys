@@ -1,4 +1,5 @@
 # NOTICES AND INFORMATION
+
 This software incorporates material from third parties.
 
 - Color Picker
@@ -47,6 +48,34 @@ SOFTWARE.
 The MIT License (MIT)
 
 Copyright (c) 2016 - present Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+### The Quite OK Image Format reference decoder
+
+**Source**: https://github.com/phoboslab/qoi
+
+**Note**: [@pedrolamas](https://github.com/pedrolamas) translated and adapted the reference decoder code to C# that is in PowerToys from the original C++ implementation.
+
+MIT License
+
+Copyright (c) 2022 Dominic Szablewski
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -122,7 +151,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-###  Beta Tadele's Window Walker License
+### Beta Tadele's Window Walker License
 
 **Source**: https://github.com/betsegaw/windowwalker
 
@@ -167,11 +196,12 @@ SOFTWARE.
 ## PowerToy: Installer/Runner
 
 ### spdlog
+
 **Source**: https://github.com/gabime/spdlog
 
 The MIT License (MIT)
 
-Copyright (c) 2016 Gabi Melman.                                       
+Copyright (c) 2016 Gabi Melman.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -185,7 +215,7 @@ all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
@@ -195,8 +225,8 @@ THE SOFTWARE.
 This software depends on the fmt lib (MIT License),
 and users must comply to its license: https://github.com/fmtlib/fmt/blob/master/LICENSE.rst
 
-
 ### expected-lite
+
 **Source**: https://github.com/martinmoene/expected-lite
 
 Boost Software License - Version 1.0 - August 17th, 2003
@@ -224,6 +254,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ### zip
+
 **Source**: https://github.com/kuba--/zip
 
 This is free and unencumbered software released into the public domain.
@@ -254,6 +285,7 @@ For more information, please refer to <http://unlicense.org/>
 ## Utility: Measure tool
 
 ### sse2neon
+
 We adopted some functions from it.
 
 **Source**: https://github.com/DLTcollab/sse2neon
@@ -277,11 +309,17 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
-- CommunityToolkit.Labs.WinUI.SettingsControls 0.0.7
-- CommunityToolkit.Mvvm 8.0.0
-- CommunityToolkit.WinUI.UI 7.1.2
-- CommunityToolkit.WinUI.UI.Controls 7.1.2
-- ControlzEx 5.0.1
+- CommunityToolkit.Mvvm 8.2.0
+- CommunityToolkit.WinUI.Animations 8.0.230907
+- CommunityToolkit.WinUI.Collections 8.0.230907
+- CommunityToolkit.WinUI.Controls.Primitives 8.0.230907
+- CommunityToolkit.WinUI.Controls.SettingsControls 8.0.230907
+- CommunityToolkit.WinUI.Controls.Sizers 8.0.230907
+- CommunityToolkit.WinUI.Converters 8.0.230907
+- CommunityToolkit.WinUI.Extensions 8.0.230907
+- CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
+- CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
+- ControlzEx 6.0.0
 - HelixToolkit 2.20.2
 - HelixToolkit.Core.Wpf 2.20.2
 - hyjiacan.pinyin4net 4.1.1
@@ -289,40 +327,48 @@ SOFTWARE.
 - LazyCache 2.4.0
 - Mages 2.0.1
 - Markdig.Signed 0.27.0
-- Microsoft.CodeAnalysis.NetAnalyzers 7.0.0
+- Microsoft.CodeAnalysis.NetAnalyzers 7.0.3
 - Microsoft.Data.Sqlite 7.0.0
-- Microsoft.Extensions.Hosting 7.0.0
-- Microsoft.NET.Test.Sdk 17.4.1
+- Microsoft.Extensions.DependencyInjection 7.0.0
+- Microsoft.Extensions.Hosting 7.0.1
+- Microsoft.Extensions.Hosting.WindowsServices 7.0.0
+- Microsoft.Extensions.Logging 7.0.0
+- Microsoft.NET.Test.Sdk 17.6.3
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
-- Microsoft.Web.WebView2 1.0.1343.22
+- Microsoft.Web.WebView2 1.0.1722.45
+- Microsoft.Windows.Compatibility 7.0.3
 - Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.0.0
-- Microsoft.Windows.SDK.BuildTools 10.0.22621.755
-- Microsoft.WindowsAppSDK 1.2.221116.1
+- Microsoft.Windows.CsWinRT 2.0.3
+- Microsoft.Windows.SDK.BuildTools 10.0.22621.756
+- Microsoft.Windows.SDK.Contracts 10.0.19041.1
+- Microsoft.WindowsAppSDK 1.4.230913002
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
-- Moq 4.18.3
-- MSTest.TestAdapter 3.0.1
-- MSTest.TestFramework 3.0.1
-- NLog 5.0.4
+- Moq 4.18.4
+- MSTest.TestAdapter 3.1.1
+- MSTest.TestFramework 3.1.1
 - NLog.Extensions.Logging 5.0.4
 - NLog.Schema 5.0.4
 - ScipBe.Common.Office.OneNote 3.0.1
-- StyleCop.Analyzers 1.2.0-beta.435
-- System.CommandLine 2.0.0-beta1.20071.2
+- SharpCompress 0.33.0
+- StreamJsonRpc 2.14.24
+- StyleCop.Analyzers 1.2.0-beta.507
+- System.CommandLine 2.0.0-beta4.22272.1
 - System.ComponentModel.Composition 7.0.0
 - System.Configuration.ConfigurationManager 6.0.0
 - System.Data.OleDb 7.0.0
 - System.Drawing.Common 7.0.0
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
-- System.Management 7.0.0
-- System.Reactive 5.0.0
+- System.Management 7.0.2
+- System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 7.0.0
-- System.ServiceProcess.ServiceController 7.0.0
+- System.ServiceProcess.ServiceController 7.0.1
 - UnicodeInformation 2.6.0
 - UnitsNet 4.145.0
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
-- WinUIEx 1.8.0
+- WinUIEx 2.2.0
+- WPF-UI 3.0.0-preview.4
+

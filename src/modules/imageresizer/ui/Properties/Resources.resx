@@ -185,7 +185,7 @@
     <value>Resizing your pictures...</value>
   </data>
   <data name="Progress_Stop" xml:space="preserve">
-    <value>_Stop</value>
+    <value>Stop</value>
   </data>
   <data name="Progress_TimeRemaining_HourMinute" xml:space="preserve">
     <value>About {0} hour, {1} minute remaining.</value>
@@ -278,9 +278,17 @@
     <value>Width</value>
   </data>
   <data name="Open_settings" xml:space="preserve">
-    <value>Open settings</value>
+    <value>Settings</value>
   </data>
   <data name="Input_RemoveMetadata" xml:space="preserve">
     <value>Remove metadata that doesn't affect rendering</value>
+  </data>
+  <data name="HeightChar" xml:space="preserve">
+    <value>H</value>
+    <comment>First character of 'Height'</comment>
+  </data>
+  <data name="WidthChar" xml:space="preserve">
+    <value>W</value>
+    <comment>First character of 'Width'</comment>
   </data>
 </root>

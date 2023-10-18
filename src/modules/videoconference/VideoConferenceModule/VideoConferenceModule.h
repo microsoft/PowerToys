@@ -20,6 +20,7 @@ struct VideoConferenceSettings
 {
     PowerToysSettings::HotkeyObject cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 81);
     PowerToysSettings::HotkeyObject microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 65);
+    PowerToysSettings::HotkeyObject microphonePushToTalkHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 73);
     PowerToysSettings::HotkeyObject cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 79);
 
     std::wstring toolbarPositionString;
@@ -28,6 +29,10 @@ struct VideoConferenceSettings
     std::wstring selectedCamera;
     std::wstring imageOverlayPath;
     std::wstring selectedMicrophone;
+
+    std::wstring startupAction;
+
+    bool pushToReverseEnabled = false;
 };
 
 class VideoConferenceModule : public PowertoyModuleIface
@@ -93,4 +98,5 @@ private:
 
     static VideoConferenceSettings settings;
     static Toolbar toolbar;
+    static bool pushToTalkPressed;
 };

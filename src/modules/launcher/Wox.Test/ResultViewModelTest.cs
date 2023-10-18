@@ -26,7 +26,7 @@ namespace Wox.Test
             var result = new Result();
             contextMenuResult = new ContextMenuResult();
             mainViewModelMock = new Mock<IMainViewModel>();
-            resultViewModel = new ResultViewModel(result, mainViewModelMock.Object);
+            resultViewModel = new ResultViewModel(result, mainViewModelMock.Object, null);
 
             var pluginMock = new Mock<IPlugin>();
             pluginMock.As<IContextMenu>().Setup(x => x.LoadContextMenus(result)).Returns(new List<ContextMenuResult> { contextMenuResult });

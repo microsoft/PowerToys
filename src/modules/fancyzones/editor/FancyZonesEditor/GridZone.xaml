@@ -4,44 +4,42 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FancyZonesEditor"
-    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     d:DesignHeight="450"
     d:DesignWidth="800"
+    ui:ControlHelper.CornerRadius="4"
     Background="{DynamicResource GridZoneBackgroundBrush}"
     BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
     BorderThickness="1"
-    Opacity="1"
     Focusable="True"
-    IsTabStop="True"    
-    ui:ControlHelper.CornerRadius="4"
+    IsTabStop="True"
+    Opacity="1"
     mc:Ignorable="d">
-    
+
     <Grid x:Name="Frame">
         <Canvas x:Name="Body" />
-        <DockPanel HorizontalAlignment="Center"
-                   VerticalAlignment="Center">
+        <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <Label
                 Name="LabelID"
-                DockPanel.Dock="Top"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
                 Content="ID"
+                DockPanel.Dock="Top"
+                FontSize="68"
                 FontWeight="SemiBold"
-                FontSize="64"
                 Foreground="{DynamicResource PrimaryForegroundBrush}" />
-            <TextBlock FontSize="16"
-                       Foreground="{DynamicResource SecondaryForegroundBrush}"
-                       DockPanel.Dock="Bottom"
-                       FontWeight="SemiBold"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center">
-                     <Run x:Name="WidthLabel" />
-                     <Run Text="&#xe894;"
-                          FontSize="10"
-                          FontFamily="Segoe MDL2 Assets" />
-                    <Run x:Name="HeightLabel" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                DockPanel.Dock="Bottom"
+                FontSize="16"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource SecondaryForegroundBrush}">
+                <Run x:Name="WidthLabel" />
+                <Run Text="×" />
+                <Run x:Name="HeightLabel" />
             </TextBlock>
 
         </DockPanel>

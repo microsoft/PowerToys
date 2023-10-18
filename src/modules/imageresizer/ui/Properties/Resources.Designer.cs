@@ -19,7 +19,7 @@ namespace ImageResizer.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -84,6 +84,15 @@ namespace ImageResizer.Properties {
         public static string Height {
             get {
                 return ResourceManager.GetString("Height", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to H.
+        /// </summary>
+        public static string HeightChar {
+            get {
+                return ResourceManager.GetString("HeightChar", resourceCulture);
             }
         }
         
@@ -214,7 +223,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open settings.
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string Open_settings {
             get {
@@ -277,7 +286,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _Stop.
+        ///   Looks up a localized string similar to Stop.
         /// </summary>
         public static string Progress_Stop {
             get {
@@ -552,6 +561,15 @@ namespace ImageResizer.Properties {
         public static string Width {
             get {
                 return ResourceManager.GetString("Width", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to W.
+        /// </summary>
+        public static string WidthChar {
+            get {
+                return ResourceManager.GetString("WidthChar", resourceCulture);
             }
         }
     }

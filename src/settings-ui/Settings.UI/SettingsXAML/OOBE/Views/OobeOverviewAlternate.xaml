@@ -1,0 +1,193 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeOverviewAlternate"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <custom:OOBEPageControl
+        x:Uid="Oobe_Overview"
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/OOBEPTHeroShort.png"
+        HeroImageHeight="120">
+
+        <custom:OOBEPageControl.PageContent>
+            <StackPanel Orientation="Vertical">
+                <TextBlock
+                    x:Uid="Alternate_OOBE_Description"
+                    Margin="0,24,0,12"
+                    FontWeight="SemiBold" />
+                <GridView Margin="-8,0,0,0" SelectionMode="None">
+                    <GridViewItem>
+                        <Grid
+                            Width="280"
+                            Margin="8"
+                            Padding="16,16,16,10"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            RowSpacing="0">
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Image
+                                Width="36"
+                                HorizontalAlignment="Left"
+                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsFancyZones.png" />
+                            <TextBlock
+                                x:Uid="Alternate_OOBE_FancyZones_Title"
+                                Grid.Row="1"
+                                Margin="0,12,0,6"
+                                HorizontalAlignment="Left"
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                x:Uid="Alternate_OOBE_FancyZones_Description"
+                                Grid.Row="2"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                            <custom:ShortcutWithTextLabelControl
+                                x:Name="FancyZonesHotkeyControl"
+                                Grid.Row="3"
+                                Margin="0,8,0,0" />
+                        </Grid>
+                    </GridViewItem>
+
+                    <GridViewItem>
+                        <Grid
+                            Width="280"
+                            Padding="16,16,16,10"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            RowSpacing="0">
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Image
+                                Width="36"
+                                HorizontalAlignment="Left"
+                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png" />
+                            <TextBlock
+                                x:Uid="Alternate_OOBE_Run_Title"
+                                Grid.Row="1"
+                                Margin="0,12,0,6"
+                                HorizontalAlignment="Left"
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                x:Uid="Alternate_OOBE_Run_Description"
+                                Grid.Row="2"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                            <custom:ShortcutWithTextLabelControl
+                                x:Name="RunHotkeyControl"
+                                Grid.Row="3"
+                                Margin="0,8,0,0" />
+                        </Grid>
+                    </GridViewItem>
+
+                    <GridViewItem>
+                        <Grid
+                            Width="280"
+                            Padding="16,16,16,10"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            RowSpacing="0">
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Image
+                                Width="36"
+                                HorizontalAlignment="Left"
+                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png" />
+                            <TextBlock
+                                x:Uid="Alternate_OOBE_ColorPicker_Title"
+                                Grid.Row="1"
+                                Margin="0,12,0,6"
+                                HorizontalAlignment="Left"
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                x:Uid="Alternate_OOBE_ColorPicker_Description"
+                                Grid.Row="2"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="To pick a color:"
+                                TextWrapping="Wrap" />
+                            <custom:ShortcutWithTextLabelControl
+                                x:Name="ColorPickerHotkeyControl"
+                                Grid.Row="3"
+                                Margin="0,8,0,0" />
+                        </Grid>
+                    </GridViewItem>
+
+                    <GridViewItem>
+                        <Grid
+                            Width="280"
+                            Padding="16,16,16,10"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            RowSpacing="0">
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Image
+                                Width="36"
+                                HorizontalAlignment="Left"
+                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png" />
+                            <TextBlock
+                                x:Uid="Alternate_OOBE_AlwaysOnTop_Title"
+                                Grid.Row="1"
+                                Margin="0,12,0,6"
+                                HorizontalAlignment="Left"
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                x:Uid="Alternate_OOBE_AlwaysOnTop_Description"
+                                Grid.Row="2"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                            <custom:ShortcutWithTextLabelControl
+                                x:Name="AlwaysOnTopHotkeyControl"
+                                Grid.Row="3"
+                                Margin="0,8,0,0" />
+                        </Grid>
+                    </GridViewItem>
+
+                </GridView>
+            </StackPanel>
+        </custom:OOBEPageControl.PageContent>
+    </custom:OOBEPageControl>
+</Page>

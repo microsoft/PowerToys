@@ -26,6 +26,7 @@ namespace NonLocalizable
 enum DWMWINDOWATTRIBUTE_CUSTOM
 {
     DWMWA_WINDOW_CORNER_PREFERENCE = 33
+
 };
 
 enum DWM_WINDOW_CORNER_PREFERENCE
@@ -165,6 +166,8 @@ bool FancyZonesWindowUtils::HasVisibleOwner(HWND window) noexcept
 
 bool FancyZonesWindowUtils::IsStandardWindow(HWND window)
 {
+    // True if from the styles the window looks like a standard window
+
     if (GetAncestor(window, GA_ROOT) != window)
     {
         return false;
@@ -180,13 +183,6 @@ bool FancyZonesWindowUtils::IsStandardWindow(HWND window)
         return false;
     }
 
-    std::array<char, 256> class_name;
-    GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
-    if (is_system_window(window, class_name.data()))
-    {
-        return false;
-    }
-
     return true;
 }
 
@@ -196,48 +192,16 @@ bool FancyZonesWindowUtils::IsPopupWindow(HWND window) noexcept
     return ((style & WS_POPUP) == WS_POPUP);
 }
 
+bool FancyZonesWindowUtils::HasThickFrame(HWND window) noexcept
+{
+    auto style = GetWindowLong(window, GWL_STYLE);
+    return ((style & WS_THICKFRAME) == WS_THICKFRAME);
+}
+
 bool FancyZonesWindowUtils::HasThickFrameAndMinimizeMaximizeButtons(HWND window) noexcept
 {
     auto style = GetWindowLong(window, GWL_STYLE);
     return ((style & WS_THICKFRAME) == WS_THICKFRAME && (style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX && (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX);
-}
-
-bool FancyZonesWindowUtils::IsCandidateForZoning(HWND window)
-{
-    bool isStandard = IsStandardWindow(window);
-    if (!isStandard)
-    {
-        return false;
-    }
-
-    // popup could be the window we don't want to snap: start menu, notification popup, tray window, etc.
-    // also, popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Telegram
-    bool isPopup = IsPopupWindow(window);
-    if (isPopup && !HasThickFrameAndMinimizeMaximizeButtons(window) && !FancyZonesSettings::settings().allowSnapPopupWindows)
-    {
-        return false;
-    }
-
-    // allow child windows
-    auto hasOwner = HasVisibleOwner(window);
-    if (hasOwner && !FancyZonesSettings::settings().allowSnapChildWindows)
-    {
-        return false;
-    }
-
-    std::wstring processPath = get_process_path_waiting_uwp(window);
-    CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), static_cast<DWORD>(processPath.length()));
-    if (IsExcludedByUser(processPath))
-    {
-        return false;
-    }
-
-    if (IsExcludedByDefault(processPath))
-    {
-        return false;
-    }
-
-    return true;
 }
 
 bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
@@ -267,12 +231,29 @@ bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
     return false;
 }
 
-bool FancyZonesWindowUtils::IsExcludedByUser(const std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcluded(HWND window)
 {
-    return (find_app_name_in_path(processPath, FancyZonesSettings::settings().excludedAppsArray));
+    std::wstring processPath = get_process_path_waiting_uwp(window);
+    CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), static_cast<DWORD>(processPath.length()));
+    if (IsExcludedByUser(window, processPath))
+    {
+        return true;
+    }
+
+    if (IsExcludedByDefault(window, processPath))
+    {
+        return true;
+    }
+
+    return false;
 }
 
-bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcludedByUser(const HWND& hwnd, std::wstring& processPath) noexcept
+{
+    return (check_excluded_app(hwnd, processPath, FancyZonesSettings::settings().excludedAppsArray));
+}
+
+bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, std::wstring& processPath) noexcept
 {
     static std::vector<std::wstring> defaultExcludedFolders = { NonLocalizable::SystemAppsFolder };
     if (find_folder_in_path(processPath, defaultExcludedFolders))
@@ -280,8 +261,15 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const std::wstring& processPath)
         return true;
     }
 
+    std::array<char, 256> class_name;
+    GetClassNameA(hwnd, class_name.data(), static_cast<int>(class_name.size()));
+    if (is_system_window(hwnd, class_name.data()))
+    {
+        return true;
+    }
+
     static std::vector<std::wstring> defaultExcludedApps = { NonLocalizable::PowerToysAppFZEditor, NonLocalizable::CoreWindow, NonLocalizable::SearchUI };
-    return (find_app_name_in_path(processPath, defaultExcludedApps));
+    return (check_excluded_app(hwnd, processPath, defaultExcludedApps));
 }
 
 void FancyZonesWindowUtils::SwitchToWindow(HWND window) noexcept
@@ -455,15 +443,19 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
     ::GetWindowRect(window, &windowRect);
 
     // Take care of borders
-    RECT frameRect{};
-    if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+    // Skip when windowOfRect is not initialized (in unit tests)
+    if (windowOfRect)
     {
-        LONG leftMargin = frameRect.left - windowRect.left;
-        LONG rightMargin = frameRect.right - windowRect.right;
-        LONG bottomMargin = frameRect.bottom - windowRect.bottom;
-        newWindowRect.left -= leftMargin;
-        newWindowRect.right -= rightMargin;
-        newWindowRect.bottom -= bottomMargin;
+        RECT frameRect{};
+        if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+        {
+            LONG leftMargin = frameRect.left - windowRect.left;
+            LONG rightMargin = frameRect.right - windowRect.right;
+            LONG bottomMargin = frameRect.bottom - windowRect.bottom;
+            newWindowRect.left -= leftMargin;
+            newWindowRect.right -= rightMargin;
+            newWindowRect.bottom -= bottomMargin;
+        }
     }
 
     // Take care of windows that cannot be resized
@@ -474,7 +466,10 @@ RECT FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(HWND window, RECT rect
     }
 
     // Convert to screen coordinates
-    MapWindowRect(windowOfRect, nullptr, &newWindowRect);
+    if (windowOfRect)
+    {
+        MapWindowRect(windowOfRect, nullptr, &newWindowRect);
+    }
 
     return newWindowRect;
 }

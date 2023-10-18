@@ -37,8 +37,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
         [DataTestMethod]
         [DataRow("test")]
-        [DataRow("pi(2)")] // Incorrect input, constant is being treated as a function.
-        [DataRow("e(2)")]
         [DataRow("[10,10]")] // '[10,10]' is interpreted as array by mages engine
         public void Interpret_NoResult_WhenCalled(string input)
         {
@@ -241,7 +239,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 
             // Act
             // Using en-us culture to have a fixed number style
-            var result = engine.Interpret(input, new CultureInfo("en-us"), out _);
+            var result = engine.Interpret(input, new CultureInfo("en-us", false), out _);
 
             // Assert
             Assert.IsNotNull(result);

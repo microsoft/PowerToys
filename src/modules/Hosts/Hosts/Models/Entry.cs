@@ -12,35 +12,39 @@ namespace Hosts.Models
 {
     public partial class Entry : ObservableObject
     {
-        private string _line;
+        private static readonly char[] _spaceCharacters = new char[] { ' ', '\t' };
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Valid))]
         private string _address;
 
-        public string Address
+        partial void OnAddressChanged(string value)
         {
-            get => _address;
-            set
+            if (ValidationHelper.ValidIPv4(value))
             {
-                SetProperty(ref _address, value);
-                SetAddressType();
-                OnPropertyChanged(nameof(Valid));
+                Type = AddressType.IPv4;
             }
-        }
-
-        private string _hosts;
-
-        public string Hosts
-        {
-            get => _hosts;
-            set
+            else if (ValidationHelper.ValidIPv6(value))
             {
-                SetProperty(ref _hosts, value);
-                OnPropertyChanged(nameof(Valid));
-                SplittedHosts = _hosts.Split(' ');
+                Type = AddressType.IPv6;
+            }
+            else
+            {
+                Type = AddressType.Invalid;
             }
         }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Valid))]
+        private string _hosts;
+
+        partial void OnHostsChanged(string value)
+        {
+            SplittedHosts = value.Split(' ');
+        }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Valid))]
         private string _comment;
 
         [ObservableProperty]
@@ -55,7 +59,9 @@ namespace Hosts.Models
         [ObservableProperty]
         private bool _duplicate;
 
-        public bool Valid => ValidationHelper.ValidHosts(_hosts) && Type != AddressType.Invalid;
+        public bool Valid => Validate(true);
+
+        public string Line { get; private set; }
 
         public AddressType Type { get; private set; }
 
@@ -70,7 +76,7 @@ namespace Hosts.Models
         public Entry(int id, string line)
         {
             Id = id;
-            _line = line.Trim();
+            Line = line.Trim();
             Parse();
         }
 
@@ -85,9 +91,9 @@ namespace Hosts.Models
 
         public void Parse()
         {
-            Active = !_line.StartsWith("#", StringComparison.InvariantCultureIgnoreCase);
+            Active = !Line.StartsWith("#", StringComparison.InvariantCultureIgnoreCase);
 
-            var lineSplit = _line.TrimStart(' ', '#').Split('#');
+            var lineSplit = Line.TrimStart(' ', '#').Split('#');
 
             if (lineSplit.Length == 0)
             {
@@ -96,7 +102,7 @@ namespace Hosts.Models
 
             var addressHost = lineSplit[0];
 
-            var addressHostSplit = addressHost.Split(' ', '\t');
+            var addressHostSplit = addressHost.Split(_spaceCharacters, StringSplitOptions.RemoveEmptyEntries);
             var hostsBuilder = new StringBuilder();
             var commentBuilder = new StringBuilder();
 
@@ -104,17 +110,9 @@ namespace Hosts.Models
             {
                 var element = addressHostSplit[i].Trim();
 
-                if (string.IsNullOrWhiteSpace(element))
+                if (i == 0 && IPAddress.TryParse(element, out var _) && (element.Contains(':') || element.Contains('.')))
                 {
-                    continue;
-                }
-
-                if (Address == null)
-                {
-                    if (IPAddress.TryParse(element, out var _) && (element.Contains(':') || element.Contains('.')))
-                    {
-                        Address = element;
-                    }
+                    Address = element;
                 }
                 else
                 {
@@ -146,7 +144,7 @@ namespace Hosts.Models
         {
             return new Entry
             {
-                _line = _line,
+                Line = Line,
                 Address = Address,
                 Hosts = Hosts,
                 Comment = Comment,
@@ -154,25 +152,21 @@ namespace Hosts.Models
             };
         }
 
-        public string GetLine()
+        public bool Validate(bool validateHostsLength)
         {
-            return _line;
+            if (Equals("102.54.94.97", "rhino.acme.com", "source server") || Equals("38.25.63.10", "x.acme.com", "x client host"))
+            {
+                return false;
+            }
+
+            return Type != AddressType.Invalid && ValidationHelper.ValidHosts(Hosts, validateHostsLength);
         }
 
-        private void SetAddressType()
+        private bool Equals(string address, string hosts, string comment)
         {
-            if (ValidationHelper.ValidIPv4(_address))
-            {
-                Type = AddressType.IPv4;
-            }
-            else if (ValidationHelper.ValidIPv6(_address))
-            {
-                Type = AddressType.IPv6;
-            }
-            else
-            {
-                Type = AddressType.Invalid;
-            }
+            return string.Equals(Address, address, StringComparison.Ordinal)
+                && string.Equals(Hosts, hosts, StringComparison.Ordinal)
+                && string.Equals(Comment, comment, StringComparison.Ordinal);
         }
     }
 }

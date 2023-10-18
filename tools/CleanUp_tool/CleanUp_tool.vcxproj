@@ -6,7 +6,6 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{0995f59a-5074-42e4-afe4-6335a0368e8e}</ProjectGuid>
     <RootNamespace>CleanUptool</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">

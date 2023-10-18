@@ -135,6 +135,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
+            OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
             UpdateSettings();
         }
 
@@ -174,6 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(EnablePowerLauncher));
                     OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
                     OnPropertyChanged(nameof(ShowPluginsLoadingMessage));
+                    OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -186,6 +188,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(EnablePowerLauncher));
             OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
             OnPropertyChanged(nameof(ShowPluginsLoadingMessage));
+            OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
         }
 
         public bool IsEnabledGpoConfigured
@@ -319,7 +322,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (settings.Properties.OpenPowerLauncher != value)
                 {
-                    settings.Properties.OpenPowerLauncher = value;
+                    settings.Properties.OpenPowerLauncher = value ?? settings.Properties.DefaultOpenPowerLauncher;
                     UpdateSettings();
                 }
             }
@@ -455,7 +458,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (settings.Properties.OpenFileLocation != value)
                 {
-                    settings.Properties.OpenFileLocation = value;
+                    settings.Properties.OpenFileLocation = value ?? settings.Properties.DefaultOpenFileLocation;
                     UpdateSettings();
                 }
             }
@@ -472,7 +475,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (settings.Properties.CopyPathLocation != value)
                 {
-                    settings.Properties.CopyPathLocation = value;
+                    settings.Properties.CopyPathLocation = value ?? settings.Properties.DefaultCopyPathLocation;
                     UpdateSettings();
                 }
             }
@@ -563,6 +566,40 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool GenerateThumbnailsFromFiles
+        {
+            get
+            {
+                return settings.Properties.GenerateThumbnailsFromFiles;
+            }
+
+            set
+            {
+                if (settings.Properties.GenerateThumbnailsFromFiles != value)
+                {
+                    settings.Properties.GenerateThumbnailsFromFiles = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool UsePinyin
+        {
+            get
+            {
+                return settings.Properties.UsePinyin;
+            }
+
+            set
+            {
+                if (settings.Properties.UsePinyin != value)
+                {
+                    settings.Properties.UsePinyin = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
 
         public ObservableCollection<PowerLauncherPluginViewModel> Plugins
@@ -582,9 +619,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowPluginsAreGpoManagedInfo
+        {
+            get => EnablePowerLauncher && settings.Plugins.Any() && Plugins.Any(x => x.EnabledGpoRuleIsConfigured);
+        }
+
         public bool ShowAllPluginsDisabledWarning
         {
-            get => EnablePowerLauncher && settings.Plugins.Any() && settings.Plugins.All(x => x.Disabled);
+            get => EnablePowerLauncher && settings.Plugins.Any() && Plugins.All(x => x.Disabled);
         }
 
         public bool ShowPluginsLoadingMessage

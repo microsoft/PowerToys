@@ -1,0 +1,248 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>PowerToys.MouseWithoutBorders</AssemblyName>    
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>    
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SelfContained>true</SelfContained>
+    <Version>$(Version).0</Version>
+  </PropertyGroup>
+
+  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DefineConstants>TRACE;DEBUG;SHOW_ON_WINLOGON CODE_ANALYSIS CUSTOMIZE_LOGON_SCREEN</DefineConstants>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DefineConstants>TRACE;SHOW_ON_WINLOGON CODE_ANALYSIS CUSTOMIZE_LOGON_SCREEN</DefineConstants>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <NoWarn>
+    </NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Logo.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
+  </PropertyGroup>
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
+      <_Parameter1>false</_Parameter1>
+      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Resources\**" />
+    <Compile Remove="Service\**" />
+    <Compile Remove="Helper\**" />
+    <EmbeddedResource Remove="Resources\**" />
+        <EmbeddedResource Remove="Service\**" />
+        <ExcludeFromStyleCop Remove="Service\**" />
+    <None Remove="Resources\**" />
+        <None Remove="Service\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Control\ColorBorderField.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Control\ImageRadioButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Control\ImageButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Control\Machine.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form\Settings\SetupPage2ab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form\Settings\SetupPage2aa.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form\Settings\SetupPage4.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form\Settings\SettingsFormPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form\Settings\SetupPage1.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form\Settings\SetupPage2b.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form\Settings\SetupPage2a.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form\Settings\SetupPage3a.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form\Settings\SetupPage5.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="MouseWithoutBorders.exe.manifest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Icon\advanced_button_click.png" />
+    <Content Include="Icon\advanced_button_hover.png" />
+    <Content Include="Icon\advanced_button_normal.png" />
+    <Content Include="Icon\back_button_click.png" />
+    <Content Include="Icon\back_button_hover.png" />
+    <Content Include="Icon\back_button_normal.png" />
+    <Content Include="Icon\checkbox_checked.png" />
+    <Content Include="Icon\checkbox_unchecked.png" />
+    <Content Include="Icon\close_button_click.png" />
+    <Content Include="Icon\close_button_hover.png" />
+    <Content Include="Icon\close_button_normal.png" />
+    <Content Include="Icon\close_window_click.png" />
+    <Content Include="Icon\close_window_hover.png" />
+    <Content Include="Icon\collapse_button_click.png" />
+    <Content Include="Icon\collapse_button_hover.png" />
+    <Content Include="Icon\collapse_button_normal.png" />
+    <Content Include="Icon\combined_example.png" />
+    <Content Include="Icon\computer_button_click.png" />
+    <Content Include="Icon\computer_button_hover.png" />
+    <Content Include="Icon\computer_button_normal.png" />
+    <Content Include="Icon\computer_connected.png" />
+    <Content Include="Icon\computer_disconnected.png" />
+    <Content Include="Icon\computer_small_connected.png" />
+    <Content Include="Icon\computer_small_disconnected.png" />
+    <Content Include="Icon\copy_paste_example.png" />
+    <Content Include="Icon\dialog_background.png" />
+    <Content Include="Icon\done_button_click.png" />
+    <Content Include="Icon\done_button_hover.png" />
+    <Content Include="Icon\done_button_normal.png" />
+    <Content Include="Icon\drag_example.png" />
+    <Content Include="Icon\expand_button_click.png" />
+    <Content Include="Icon\expand_button_highlight.png" />
+    <Content Include="Icon\expand_button_normal.png" />
+    <Content Include="Icon\keyboard_button_click.png" />
+    <Content Include="Icon\keyboard_button_hover.png" />
+    <Content Include="Icon\keyboard_button_normal.png" />
+    <Content Include="Icon\keyboard_example.png" />
+    <Content Include="Icon\large_drag_tile.png" />
+    <Content Include="Icon\link_button_click.png" />
+    <Content Include="Icon\link_button_disabled.png" />
+    <Content Include="Icon\link_button_hover.png" />
+    <Content Include="Icon\link_button_normal.png" />
+    <Content Include="Icon\mouse.png" />
+    <Content Include="Icon\next_button_click.png" />
+    <Content Include="Icon\next_button_hover.png" />
+    <Content Include="Icon\next_button_normal.png" />
+    <Content Include="Icon\no_button_click.png" />
+    <Content Include="Icon\no_button_hover.png" />
+    <Content Include="Icon\no_button_normal.png" />
+    <Content Include="Icon\one_row_button_checked.png" />
+    <Content Include="Icon\one_row_button_unchecked.png" />
+    <Content Include="Icon\radio_button_checked.png" />
+    <Content Include="Icon\radio_button_unchecked.png" />
+    <Content Include="Icon\red_close_button_click.png" />
+    <Content Include="Icon\red_close_button_hover.png" />
+    <Content Include="Icon\red_close_button_normal.png" />
+    <Content Include="Icon\small_drag_tile.png" />
+    <Content Include="Icon\small_link_button_click.png" />
+    <Content Include="Icon\small_link_button_hover.png" />
+    <Content Include="Icon\small_link_button_normal.png" />
+    <Content Include="Icon\switch_off_click.png" />
+    <Content Include="Icon\switch_off_hover.png" />
+    <Content Include="Icon\switch_off_normal.png" />
+    <Content Include="Icon\switch_on_click.png" />
+    <Content Include="Icon\switch_on_hover.png" />
+    <Content Include="Icon\switch_on_normal.png" />
+    <Content Include="Icon\text_button_click.png" />
+    <Content Include="Icon\text_button_hover.png" />
+    <Content Include="Icon\text_button_normal.png" />
+    <Content Include="Icon\two_row_button_checked.png" />
+    <Content Include="Icon\two_row_button_unchecked.png" />
+    <Content Include="Icon\yes_button_click.png" />
+    <Content Include="Icon\yes_button_hover.png" />
+    <Content Include="Icon\yes_button_normal.png" />
+    <Content Include="Logo.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" />
+    <PackageReference Include="StreamJsonRpc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Control\Machine2.Designer.cs" />
+    <Compile Remove="Control\MachineMatrix.Designer.cs" />
+    <Compile Remove="Form\frmLogon.cs" />
+    <Compile Remove="Form\frmLogon.Designer.cs" />
+    <Compile Remove="Form\Settings\SettingsPage.Designer.cs" />
+    <Compile Remove="Form\Settings\SettingsPage1.Designer.cs" />
+    <Compile Remove="Form\Settings\SettingsPage2.Designer.cs" />
+    <Compile Remove="Form\Settings\SettingsPage3.Designer.cs" />
+    <Compile Remove="Form\Settings\SettingsPage4.Designer.cs" />
+    <EmbeddedResource Remove="Control\Machine2.resx" />
+    <EmbeddedResource Remove="Control\MachineMatrix.resx" />
+    <EmbeddedResource Remove="Form\frmLogon.resx" />
+    <EmbeddedResource Remove="Form\Settings\SettingsPage.resx" />
+    <EmbeddedResource Remove="Form\Settings\SettingsPage1.resx" />
+    <EmbeddedResource Remove="Form\Settings\SettingsPage2.resx" />
+    <EmbeddedResource Remove="Form\Settings\SettingsPage3.resx" />
+    <EmbeddedResource Remove="Form\Settings\SettingsPage4.resx" />
+  </ItemGroup>
+  <PropertyGroup>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+</Project>

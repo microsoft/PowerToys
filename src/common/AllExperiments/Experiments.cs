@@ -2,8 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Numerics;
-using System.Runtime.InteropServices;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
@@ -13,10 +12,10 @@ using Windows.System.Profile;
 
 namespace AllExperiments
 {
-// The dependencies required to build this project are only available in the official build pipeline and are internal to Microsoft.
-// However, this project is not required to build a test version of the application.
+    // The dependencies required to build this project are only available in the official build pipeline and are internal to Microsoft.
+    // However, this project is not required to build a test version of the application.
     public class Experiments
-   {
+    {
         public enum ExperimentState
         {
             Enabled,
@@ -25,7 +24,9 @@ namespace AllExperiments
         }
 
 #pragma warning disable SA1401 // Need to use LandingPageExperiment as a static property in OobeShellPage.xaml.cs
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         public static ExperimentState LandingPageExperiment = ExperimentState.NotLoaded;
+#pragma warning restore CA2211
 #pragma warning restore SA1401
 
         public async Task<bool> EnableLandingPageExperimentAsync()
@@ -87,7 +88,7 @@ namespace AllExperiments
                         else
                         {
                             var jsonDataVersion = jsonDictionary["dataversion"].ToString();
-                            if (jsonDataVersion != null && int.Parse(jsonDataVersion) < dataVersion)
+                            if (jsonDataVersion != null && int.Parse(jsonDataVersion, CultureInfo.InvariantCulture) < dataVersion)
                             {
                                 jsonDictionary["dataversion"] = dataVersion;
                                 jsonDictionary["variantassignment"] = featureFlagValue;

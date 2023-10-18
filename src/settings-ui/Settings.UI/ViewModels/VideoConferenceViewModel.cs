@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private Func<Task<string>> PickFileDialog { get; }
+        private Func<string> PickFileDialog { get; }
 
         private string _settingsConfigFileFolder = string.Empty;
 
@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<VideoConferenceSettings> videoConferenceSettingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
-            Func<Task<string>> pickFileDialog,
+            Func<string> pickFileDialog,
             string configFileSubfolder = "")
         {
             PickFileDialog = pickFileDialog;
@@ -96,6 +96,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _cameraAndMicrophoneMuteHotkey = Settings.Properties.MuteCameraAndMicrophoneHotkey.Value;
             _microphoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
+            _microphonePushToTalkHotkey = Settings.Properties.PushToTalkMicrophoneHotkey.Value;
+            _pushToReverseEnabled = Settings.Properties.PushToReverseEnabled.Value;
             _cameraMuteHotkey = Settings.Properties.MuteCameraHotkey.Value;
             CameraImageOverlayPath = Settings.Properties.CameraOverlayImagePath.Value;
             SelectOverlayImage = new ButtonClickCommand(SelectOverlayImageAction);
@@ -145,6 +147,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case "When both camera and microphone are muted":
                     _toolbarHideIndex = 2;
                     break;
+                case "After timeout":
+                    _toolbarHideIndex = 3;
+                    break;
+            }
+
+            switch (Settings.Properties.StartupAction.Value)
+            {
+                case "Nothing":
+                    _startupActionIndex = 0;
+                    break;
+                case "Unmute":
+                    _startupActionIndex = 1;
+                    break;
+                case "Mute":
+                    _startupActionIndex = 2;
+                    break;
             }
 
             if (shouldSaveSettings)
@@ -174,9 +192,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _toolbarPositionIndex;
         private int _toolbarMonitorIndex;
         private int _toolbarHideIndex;
+        private int _startupActionIndex;
         private HotkeySettings _cameraAndMicrophoneMuteHotkey;
         private HotkeySettings _microphoneMuteHotkey;
+        private HotkeySettings _microphonePushToTalkHotkey;
         private HotkeySettings _cameraMuteHotkey;
+        private bool _pushToReverseEnabled;
         private int _selectedCameraIndex = -1;
         private int _selectedMicrophoneIndex;
 
@@ -197,11 +218,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             RaisePropertyChanged(nameof(CameraImageOverlayPath));
         }
 
-        private async void SelectOverlayImageAction()
+        private void SelectOverlayImageAction()
         {
             try
             {
-                string pickedImage = await PickFileDialog().ConfigureAwait(true);
+                string pickedImage = PickFileDialog();
                 if (pickedImage != null)
                 {
                     CameraImageOverlayPath = pickedImage;
@@ -315,8 +336,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _cameraAndMicrophoneMuteHotkey)
                 {
-                    _cameraAndMicrophoneMuteHotkey = value;
-                    Settings.Properties.MuteCameraAndMicrophoneHotkey.Value = value;
+                    var hotkey = value ?? Settings.Properties.DefaultMuteCameraAndMicrophoneHotkey;
+                    _cameraAndMicrophoneMuteHotkey = hotkey;
+                    Settings.Properties.MuteCameraAndMicrophoneHotkey.Value = hotkey;
                     RaisePropertyChanged(nameof(CameraAndMicrophoneMuteHotkey));
                 }
             }
@@ -333,9 +355,47 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _microphoneMuteHotkey)
                 {
-                    _microphoneMuteHotkey = value;
-                    Settings.Properties.MuteMicrophoneHotkey.Value = value;
+                    var hotkey = value ?? Settings.Properties.DefaultMuteMicrophoneHotkey;
+                    _microphoneMuteHotkey = hotkey;
+                    Settings.Properties.MuteMicrophoneHotkey.Value = hotkey;
                     RaisePropertyChanged(nameof(MicrophoneMuteHotkey));
+                }
+            }
+        }
+
+        public HotkeySettings MicrophonePushToTalkHotkey
+        {
+            get
+            {
+                return _microphonePushToTalkHotkey;
+            }
+
+            set
+            {
+                if (value != _microphonePushToTalkHotkey)
+                {
+                    var hotkey = value ?? Settings.Properties.DefaultMuteMicrophoneHotkey;
+                    _microphonePushToTalkHotkey = hotkey;
+                    Settings.Properties.PushToTalkMicrophoneHotkey.Value = hotkey;
+                    RaisePropertyChanged(nameof(MicrophonePushToTalkHotkey));
+                }
+            }
+        }
+
+        public bool PushToReverseEnabled
+        {
+            get
+            {
+                return _pushToReverseEnabled;
+            }
+
+            set
+            {
+                if (value != _pushToReverseEnabled)
+                {
+                    _pushToReverseEnabled = value;
+                    Settings.Properties.PushToReverseEnabled.Value = value;
+                    RaisePropertyChanged(nameof(PushToReverseEnabled));
                 }
             }
         }
@@ -351,8 +411,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _cameraMuteHotkey)
                 {
-                    _cameraMuteHotkey = value;
-                    Settings.Properties.MuteCameraHotkey.Value = value;
+                    var hotkey = value ?? Settings.Properties.DefaultMuteCameraHotkey;
+                    _cameraMuteHotkey = hotkey;
+                    Settings.Properties.MuteCameraHotkey.Value = hotkey;
                     RaisePropertyChanged(nameof(CameraMuteHotkey));
                 }
             }
@@ -453,9 +514,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         case 2:
                             Settings.Properties.ToolbarHide.Value = "When both camera and microphone are muted";
                             break;
+                        case 3:
+                            Settings.Properties.ToolbarHide.Value = "After timeout";
+                            break;
                     }
 
                     RaisePropertyChanged(nameof(ToolbarHideIndex));
+                }
+            }
+        }
+
+        public int StartupActionIndex
+        {
+            get
+            {
+                return _startupActionIndex;
+            }
+
+            set
+            {
+                if (value != _startupActionIndex)
+                {
+                    _startupActionIndex = value;
+                    switch (_startupActionIndex)
+                    {
+                        case 0:
+                            Settings.Properties.StartupAction.Value = "Nothing";
+                            break;
+                        case 1:
+                            Settings.Properties.StartupAction.Value = "Unmute";
+                            break;
+                        case 2:
+                            Settings.Properties.StartupAction.Value = "Mute";
+                            break;
+                    }
+
+                    RaisePropertyChanged(nameof(_startupActionIndex));
                 }
             }
         }

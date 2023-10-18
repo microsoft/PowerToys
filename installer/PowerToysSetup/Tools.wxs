@@ -6,18 +6,33 @@
 
   <Fragment>
     <DirectoryRef Id="ToolsFolder">
-      <Component Id="BugReportTool_exe" Win64="yes">
-        <File Source="$(var.BinDir)BugReportTool\PowerToys.BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
+      <Component Id="BugReportTool_exe" Win64="yes" Guid="370D0C28-F423-4A12-9A64-6BAB57C7E5C3">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="BugReportTool_exe" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.BinDir)Tools\PowerToys.BugReportTool.exe" Id="BugReportTool.exe" Checksum="yes" />
       </Component>
-      <Component Id="WebcamReportTool_exe" Win64="yes">
+      <Component Id="WebcamReportTool_exe" Win64="yes" Guid="41D5209F-7A9A-4DF2-A22A-9F0A9CF5AA63">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="WebcamReportTool_exe" Value="" KeyPath="yes"/>
+        </RegistryKey>
         <File Source="$(var.BinDir)WebcamReportTool\PowerToys.WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
       </Component>
-      <Component Id="StylesReportTool_exe" Win64="yes">
+      <Component Id="StylesReportTool_exe" Win64="yes" Guid="9D348A78-38A0-4FDC-8D16-BDB0178E5F1E">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="StylesReportTool_exe" Value="" KeyPath="yes"/>
+        </RegistryKey>
         <File Source="$(var.BinDir)StylesReportTool\PowerToys.StylesReportTool.exe" Id="StylesReportTool.exe" Checksum="yes" />
       </Component>
     </DirectoryRef>
 
-    <ComponentGroup Id="ToolComponentGroup" Directory="ToolsFolder">
+    <ComponentGroup Id="ToolComponentGroup">
+      <Component Id="RemoveToolsFolder" Guid="0402A3E8-1B4F-4762-9CCF-2267BCF8B6EE" Directory="ToolsFolder" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveToolsFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderToolsFolder" Directory="ToolsFolder" On="uninstall"/>
+      </Component>
       <ComponentRef Id="BugReportTool_exe" />
       <ComponentRef Id="WebcamReportTool_exe" />
       <ComponentRef Id="StylesReportTool_exe" />

@@ -11,6 +11,7 @@
     <PackageTags>PowerToys</PackageTags>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>Recommended</AnalysisMode>
+    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     <PlatformTarget>$(Platform)</PlatformTarget>
   </PropertyGroup>
 

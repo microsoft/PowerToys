@@ -1,0 +1,10 @@
+﻿GETPROPERTYSTOREFLAGS
+_SHCONTF
+SIGDN
+SHGDNF
+SIATTRIBFLAGS
+IInitializeWithFile
+IInitializeWithItem
+IInitializeWithStream
+IPreviewHandler
+IPreviewHandlerVisuals

@@ -188,7 +188,7 @@ public
         }
 
         static String ^ FZEToggleEvent() {
-          return gcnew String(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
+            return gcnew String(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
         }
 
         static String ^ ColorPickerSendSettingsTelemetryEvent() {
@@ -203,10 +203,18 @@ public
             return gcnew String(CommonSharedConstants::SHOW_POWEROCR_SHARED_EVENT);
         }
 
+        static String ^ MouseJumpShowPreviewEvent() {
+            return gcnew String(CommonSharedConstants::MOUSE_JUMP_SHOW_PREVIEW_EVENT);
+        }
+
         static String ^ AwakeExitEvent() {
             return gcnew String(CommonSharedConstants::AWAKE_EXIT_EVENT);
         }
 
+        static String^ ShowPeekEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_PEEK_SHARED_EVENT);
+        }
+        
         static String ^ PowerAccentExitEvent() {
             return gcnew String(CommonSharedConstants::POWERACCENT_EXIT_EVENT);
         }
@@ -215,10 +223,14 @@ public
             return gcnew String(CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT);
         }
 
-        static String
-            ^ MeasureToolTriggerEvent() {
+        static String ^ RegistryPreviewTriggerEvent() {
+                  return gcnew String(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT);
+        }
+
+        static String ^ MeasureToolTriggerEvent() {
                   return gcnew String(CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT);
-              }
+        }
+
         static String ^ GcodePreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::GCODE_PREVIEW_RESIZE_EVENT);
         }
@@ -237,6 +249,22 @@ public
 
         static String ^ SvgPreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::SVG_PREVIEW_RESIZE_EVENT);
+        }
+
+        static String ^ ShowHostsSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_HOSTS_EVENT);
+        }
+
+        static String ^ ShowHostsAdminSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
+        }
+
+        static String ^ CropAndLockThumbnailEvent() {
+            return gcnew String(CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT);
+        }
+
+        static String ^ CropAndLockReparentEvent() {
+            return gcnew String(CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
         }
     };
 }

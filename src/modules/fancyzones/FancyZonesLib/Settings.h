@@ -26,7 +26,8 @@ struct Settings
     // The values specified here are the defaults.
     bool shiftDrag = true;
     bool mouseSwitch = false;
-    bool displayChange_moveWindows = false;
+    bool mouseMiddleClickSpanningMultipleZones = false;
+    bool displayOrWorkAreaChange_moveWindows = true;
     bool zoneSetChange_flashZones = false;
     bool zoneSetChange_moveWindows = false;
     bool overrideSnapHotkeys = false;
@@ -78,6 +79,13 @@ public:
         return saveFolderPath + L"\\settings.json";
 #endif
     }
+
+#if defined(UNIT_TESTS)
+    inline void SetSettings(const Settings& settings)
+    {
+        m_settings = settings;
+    }
+#endif
 
     void AddObserver(SettingsObserver& observer);
     void RemoveObserver(SettingsObserver& observer);

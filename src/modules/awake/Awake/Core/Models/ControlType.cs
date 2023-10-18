@@ -4,7 +4,12 @@
 
 namespace Awake.Core.Models
 {
-    // See: https://learn.microsoft.com/windows/console/handlerroutine
+    /// <summary>
+    /// The type of control signal received by the handler.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://learn.microsoft.com/windows/console/handlerroutine">HandlerRoutine callback function</see>.
+    /// </remarks>
     public enum ControlType
     {
         CTRL_C_EVENT = 0,

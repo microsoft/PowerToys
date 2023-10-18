@@ -57,19 +57,21 @@ bool WindowDrag::MoveSizeStart(HMONITOR monitor, bool isSnapping)
     }
 
     m_currentWorkArea = iter->second.get();
-
-    SwitchSnappingMode(isSnapping);
-
-    if (m_currentWorkArea)
+    if (!m_currentWorkArea)
     {
-        m_currentWorkArea->UnsnapWindow(m_window);
+        return false;
     }
+
+    m_currentWorkArea->UnsnapWindow(m_window);
+    SwitchSnappingMode(isSnapping);
     
     return true;
 }
 
 void WindowDrag::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool isSnapping, bool isSelectManyZonesState)
 {
+    SwitchSnappingMode(isSnapping);
+
     auto iter = m_activeWorkAreas.find(monitor);
     if (isSnapping && iter != m_activeWorkAreas.end())
     {
@@ -105,8 +107,6 @@ void WindowDrag::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool is
             }
         }
     }
-
-    SwitchSnappingMode(isSnapping);
 }
 
 void WindowDrag::MoveSizeEnd()
@@ -149,30 +149,31 @@ void WindowDrag::MoveSizeEnd()
 
 void WindowDrag::SwitchSnappingMode(bool isSnapping)
 {
+    if (!m_currentWorkArea)
+    {
+        return;
+    }
+
     if (!m_snappingMode && isSnapping) // turn on
     {
-        m_highlightedZones.Reset();
         SetWindowTransparency();
 
+        // init active layout
+        m_currentWorkArea->ShowZonesOverlay(m_highlightedZones.Zones(), m_window);
+
+        // init layouts on other monitors
         if (FancyZonesSettings::settings().showZonesOnAllMonitors)
         {
             for (const auto& [_, workArea] : m_activeWorkAreas)
             {
-                if (workArea)
+                if (workArea && workArea.get() != m_currentWorkArea)
                 {
                     workArea->ShowZonesOverlay({}, m_window);
                 }
             }
         }
-        else if (m_currentWorkArea)
-        {
-            m_currentWorkArea->ShowZonesOverlay({}, m_window);
-        }
 
-        if (m_currentWorkArea)
-        {
-            Trace::WorkArea::MoveOrResizeStarted(m_currentWorkArea->GetLayout().get(), m_currentWorkArea->GetLayoutWindows().get());
-        }
+        Trace::WorkArea::MoveOrResizeStarted(m_currentWorkArea->GetLayout().get(), m_currentWorkArea->GetLayoutWindows().get());
     }
     else if (m_snappingMode && !isSnapping) // turn off
     {
@@ -188,10 +189,7 @@ void WindowDrag::SwitchSnappingMode(bool isSnapping)
             }
         }
 
-        if (m_currentWorkArea)
-        {
-            Trace::WorkArea::MoveOrResizeEnd(m_currentWorkArea->GetLayout().get(), m_currentWorkArea->GetLayoutWindows().get());
-        }
+        Trace::WorkArea::MoveOrResizeEnd(m_currentWorkArea->GetLayout().get(), m_currentWorkArea->GetLayoutWindows().get());
     }
 
     m_snappingMode = isSnapping;

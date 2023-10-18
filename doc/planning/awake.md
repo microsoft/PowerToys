@@ -6,12 +6,22 @@ last-update: 3-20-2022
 
 ## Builds
 
-The build ID can be found in [`NLog.config`](https://github.com/microsoft/PowerToys/blob/2e3a2b3f96f67c7dfc72963e5135662d3230b5fe/src/modules/awake/Awake/NLog.config#L5) - it is a unique identifier for the current builds that allows better diagnostics (we can look up the build ID from the logs) and offers a way to triage Awake-specific issues faster independent of the PowerToys version. The build ID does not carry any significance beyond that within the PowerToys code base.
+The build ID can be found in `Program.cs` in the `BuildId` variable - it is a unique identifier for the current builds that allows better diagnostics (we can look up the build ID from the logs) and offers a way to triage Awake-specific issues faster independent of the PowerToys version. The build ID does not carry any significance beyond that within the PowerToys code base.
+
+The build ID moniker is made up of two components - a reference to a [Halo](https://en.wikipedia.org/wiki/Halo_(franchise)) character, and the date when the work on the specific build started in the format of `MMDDYYYY`.
 
 | Build ID                                                  | Build Date       |
 |:----------------------------------------------------------|:-----------------|
+| [`ATRIOX_04132023`](#ATRIOX_04132023-april-13-2023)       | April 13, 2023   |
 | [`LIBRARIAN_03202022`](#librarian_03202022-march-20-2022) | March 20, 2022   |
 | `ARBITER_01312022`                                        | January 31, 2022 |
+
+### `ATRIOX_04132023` (April 13, 2023)
+
+- Moves from using `Task.Run` to spin up threads to actually using a blocking queue that properly sets thread parameters on the same thread.
+- Moves back to using native Windows APIs through P/Invoke instead of using a package.
+- Move away from custom logging and to built-in logging that is consistent with the rest of PowerToys.
+- Updates `System.CommandLine` and `System.Reactive` to the latest preview versions of the package.
 
 ### `LIBRARIAN_03202022` (March 20, 2022)
 

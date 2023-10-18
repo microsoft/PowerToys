@@ -140,10 +140,9 @@ namespace FancyZonesUnitTests
             data.zoneCount = 4;
             
             // prepare settings
-            PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
-            values.add_property(L"fancyzones_overlappingZonesAlgorithm", json::value(static_cast<int>(OverlappingZonesAlgorithm::Smallest)));
-            json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
-            FancyZonesSettings::instance().LoadSettings();
+            auto settings = FancyZonesSettings::settings();
+            settings.overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
+            FancyZonesSettings::instance().SetSettings(settings);
 
             auto layout = std::make_unique<Layout>(data);
             layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor());
@@ -168,10 +167,9 @@ namespace FancyZonesUnitTests
             data.zoneCount = 4;
 
             // prepare settings
-            PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
-            values.add_property(L"fancyzones_overlappingZonesAlgorithm", json::value(static_cast<int>(OverlappingZonesAlgorithm::Smallest)));
-            json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
-            FancyZonesSettings::instance().LoadSettings();
+            auto settings = FancyZonesSettings::settings();
+            settings.overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
+            FancyZonesSettings::instance().SetSettings(settings);
 
             auto layout = std::make_unique<Layout>(data);
             layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor());
@@ -382,7 +380,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (ZeroZoneCount)
         {
-            for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
+            for (int type = static_cast<int>(ZoneSetLayoutType::Columns); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
             {
                 LayoutData data = m_data;
                 data.type = static_cast<ZoneSetLayoutType>(type);
@@ -393,6 +391,32 @@ namespace FancyZonesUnitTests
                 {
                     auto result = layout->Init(rect, Mocks::Monitor());
                     Assert::IsFalse(result);
+                }
+            }
+
+            {
+                LayoutData data = m_data;
+                data.type = static_cast<ZoneSetLayoutType>(ZoneSetLayoutType::Blank);
+                data.zoneCount = 0;
+                auto layout = std::make_unique<Layout>(data);
+
+                for (const auto& rect : m_workAreaRects)
+                {
+                    auto result = layout->Init(rect, Mocks::Monitor());
+                    Assert::IsTrue(result);
+                }
+            }
+
+            {
+                LayoutData data = m_data;
+                data.type = static_cast<ZoneSetLayoutType>(ZoneSetLayoutType::Focus);
+                data.zoneCount = 0;
+                auto layout = std::make_unique<Layout>(data);
+
+                for (const auto& rect : m_workAreaRects)
+                {
+                    auto result = layout->Init(rect, Mocks::Monitor());
+                    Assert::IsTrue(result);
                 }
             }
         }

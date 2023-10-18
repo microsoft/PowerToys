@@ -7,6 +7,9 @@
 #include "Trace.h"
 #include "Generated Files/resource.h"
 
+#include <common/themes/icon_helpers.h>
+#include <common/utils/process_path.h>
+
 // Implementations of inherited IUnknown methods
 
 IFACEMETHODIMP ExplorerCommand::QueryInterface(REFIID riid, void** ppv)
@@ -46,9 +49,10 @@ IFACEMETHODIMP ExplorerCommand::GetTitle(IShellItemArray* psiItemArray, LPWSTR* 
 
 IFACEMETHODIMP ExplorerCommand::GetIcon(IShellItemArray* psiItemArray, LPWSTR* ppszIcon)
 {
-    // Path to the icon should be computed relative to the path of this module
-    ppszIcon = NULL;
-    return E_NOTIMPL;
+    std::wstring iconResourcePath = get_module_filename();
+    iconResourcePath += L",-";
+    iconResourcePath += std::to_wstring(IDI_FILELOCKSMITH);
+    return SHStrDup(iconResourcePath.c_str(), ppszIcon);
 }
 
 IFACEMETHODIMP ExplorerCommand::GetToolTip(IShellItemArray* psiItemArray, LPWSTR* ppszInfotip)
@@ -65,14 +69,7 @@ IFACEMETHODIMP ExplorerCommand::GetCanonicalName(GUID* pguidCommandName)
 
 IFACEMETHODIMP ExplorerCommand::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
 {
-    if (globals::enabled)
-    {
-        *pCmdState = ECS_ENABLED;
-    }
-    else
-    {
-        *pCmdState = ECS_HIDDEN;
-    }
+    *pCmdState = FileLocksmithSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
     return S_OK;
 }
 
@@ -97,8 +94,17 @@ IFACEMETHODIMP ExplorerCommand::EnumSubCommands(IEnumExplorerCommand** ppEnum)
 
 IFACEMETHODIMP ExplorerCommand::Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataObject* pdtobj, HKEY hkeyProgID)
 {
-    m_data_obj = pdtobj;
-    m_data_obj->AddRef();
+    m_data_obj = NULL;
+
+    if (!FileLocksmithSettingsInstance().GetEnabled())
+    {
+        return E_FAIL;
+    }
+
+    if (pdtobj)
+    {
+        m_data_obj = pdtobj;
+    }
     return S_OK;
 }
 
@@ -109,7 +115,12 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
     // Skip if disabled
     if (!FileLocksmithSettingsInstance().GetEnabled())
     {
-        return S_OK;
+        return E_FAIL;
+    }
+
+    if (FileLocksmithSettingsInstance().GetShowInExtendedContextMenu() && !(uFlags & CMF_EXTENDEDVERBS))
+    {
+        return E_FAIL;
     }
 
     HRESULT hr = E_UNEXPECTED;
@@ -129,7 +140,18 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
 
         mii.fState = MFS_ENABLED;
 
-        // TODO icon from file
+        // icon from file
+        HICON hIcon = static_cast<HICON>(LoadImage(globals::instance, MAKEINTRESOURCE(IDI_FILELOCKSMITH), IMAGE_ICON, 16, 16, 0));
+        if (hIcon)
+        {
+            mii.fMask |= MIIM_BITMAP;
+            if (m_hbmpIcon == NULL)
+            {
+                m_hbmpIcon = CreateBitmapFromIcon(hIcon);
+            }
+            mii.hbmpItem = m_hbmpIcon;
+            DestroyIcon(hIcon);
+        }
 
         if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
         {
@@ -219,35 +241,7 @@ ExplorerCommand::ExplorerCommand()
 
 ExplorerCommand::~ExplorerCommand()
 {
-    if (m_data_obj)
-    {
-        m_data_obj->Release();
-    }
     --globals::ref_count;
-}
-
-// Implementation taken from src/common/utils
-// TODO reference that function
-inline std::wstring get_module_folderpath(HMODULE mod = nullptr, const bool removeFilename = true)
-{
-    wchar_t buffer[MAX_PATH + 1];
-    DWORD actual_length = GetModuleFileNameW(mod, buffer, MAX_PATH + 1);
-    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
-    {
-        const DWORD long_path_length = 0xFFFF; // should be always enough
-        std::wstring long_filename(long_path_length, L'\0');
-        actual_length = GetModuleFileNameW(mod, long_filename.data(), long_path_length);
-        PathRemoveFileSpecW(long_filename.data());
-        long_filename.resize(std::wcslen(long_filename.data()));
-        long_filename.shrink_to_fit();
-        return long_filename;
-    }
-
-    if (removeFilename)
-    {
-        PathRemoveFileSpecW(buffer);
-    }
-    return { buffer, static_cast<UINT>(lstrlenW(buffer)) };
 }
 
 HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer)

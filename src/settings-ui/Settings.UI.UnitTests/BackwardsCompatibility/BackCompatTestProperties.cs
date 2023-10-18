@@ -15,12 +15,12 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 {
     public static class BackCompatTestProperties
     {
-        public const string RootPathStubFiles = "..\\..\\..\\..\\src\\settings-ui\\Settings.UI.UnitTests\\BackwardsCompatibility\\TestFiles\\{0}\\Microsoft\\PowerToys\\{1}\\{2}";
+        public const string RootPathStubFiles = "..\\..\\..\\..\\..\\src\\settings-ui\\Settings.UI.UnitTests\\BackwardsCompatibility\\TestFiles\\{0}\\Microsoft\\PowerToys\\{1}\\{2}";
 
         // Using Ordinal since this is used internally for a path
         private static readonly Expression<Func<string, bool>> SettingsFilterExpression = s => s == null || s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
 
-        internal class MockSettingsRepository<T> : ISettingsRepository<T>
+        internal sealed class MockSettingsRepository<T> : ISettingsRepository<T>
             where T : ISettingsConfig, new()
         {
             private readonly ISettingsUtils _settingsUtils;
@@ -46,6 +46,23 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
                     {
                         _settingsConfig = value;
                     }
+                }
+            }
+
+            public bool ReloadSettings()
+            {
+                try
+                {
+                    T settingsItem = new T();
+                    _settingsConfig = _settingsUtils.GetSettingsOrDefault<T>(settingsItem.GetModuleName());
+
+                    SettingsConfig = _settingsConfig;
+
+                    return true;
+                }
+                catch
+                {
+                    return false;
                 }
             }
         }

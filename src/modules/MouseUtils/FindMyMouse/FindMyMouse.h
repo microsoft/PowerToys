@@ -3,9 +3,11 @@
 
 enum struct FindMyMouseActivationMethod : int
 {
-    DoubleControlKey = 0,
-    ShakeMouse = 1,
-    EnumElements = 2, // number of elements in the enum, not counting this
+    DoubleLeftControlKey = 0,
+    DoubleRightControlKey = 1,
+    ShakeMouse = 2,
+    Shortcut = 3,
+    EnumElements = 4, // number of elements in the enum, not counting this
 };
 
 constexpr bool FIND_MY_MOUSE_DEFAULT_DO_NOT_ACTIVATE_ON_GAME_MODE = true;
@@ -15,7 +17,7 @@ constexpr int FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY = 50;
 constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS = 100;
 constexpr int FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS = 500;
 constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM = 9;
-constexpr FindMyMouseActivationMethod FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD = FindMyMouseActivationMethod::DoubleControlKey;
+constexpr FindMyMouseActivationMethod FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD = FindMyMouseActivationMethod::DoubleLeftControlKey;
 constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE = 1000;
 
 struct FindMyMouseSettings
@@ -36,3 +38,4 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings);
 void FindMyMouseDisable();
 bool FindMyMouseIsEnabled();
 void FindMyMouseApplySettings(const FindMyMouseSettings& settings);
+HWND GetSonarHwnd() noexcept;

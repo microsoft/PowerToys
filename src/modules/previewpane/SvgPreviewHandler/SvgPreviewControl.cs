@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Common;
@@ -10,6 +11,7 @@ using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using SvgPreviewHandler;
 
 namespace Microsoft.PowerToys.PreviewHandler.Svg
 {
@@ -18,6 +20,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     /// </summary>
     public class SvgPreviewControl : FormHandlerControl
     {
+        /// <summary>
+        /// Settings class
+        /// </summary>
+        private readonly SvgPreviewHandler.Settings _settings = new();
+
+        /// <summary>
+        /// Generator for the actual preview file
+        /// </summary>
+        private readonly SvgHTMLPreviewGenerator _previewGenerator = new();
+
         /// <summary>
         /// WebView2 Control to display Svg.
         /// </summary>
@@ -70,6 +82,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// </summary>
         private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
                                 "\\AppData\\LocalLow\\Microsoft\\PowerToys\\SvgPreview-Temp";
+
+        public SvgPreviewControl()
+        {
+            this.SetBackgroundColor(_settings.ThemeColor);
+        }
 
         /// <summary>
         /// Start the preview on the Control.
@@ -126,7 +143,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             }
             catch (Exception ex)
             {
-                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
 
             try
@@ -143,7 +166,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                 AddWebViewControl(svgData);
                 Resize += FormResized;
                 base.DoPreview(dataSource);
-                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
             catch (Exception ex)
             {
@@ -192,6 +221,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         private void AddWebViewControl(string svgData)
         {
             _browser = new WebView2();
+            _browser.DefaultBackgroundColor = Color.Transparent;
             _browser.Dock = DockStyle.Fill;
 
             // Prevent new windows from being opened.
@@ -220,19 +250,21 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
                     _browser.CoreWebView2.WebResourceRequested += CoreWebView2_BlockExternalResources;
 
+                    string generatedPreview = _previewGenerator.GeneratePreview(svgData);
+
                     // WebView2.NavigateToString() limitation
                     // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
                     // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
-                    if (svgData.Length > 1_500_000)
+                    if (generatedPreview.Length > 1_500_000)
                     {
                         string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
-                        File.WriteAllText(filename, svgData);
+                        File.WriteAllText(filename, generatedPreview);
                         _localFileURI = new Uri(filename);
                         _browser.Source = _localFileURI;
                     }
                     else
                     {
-                        _browser.NavigateToString(svgData);
+                        _browser.NavigateToString(generatedPreview);
                     }
 
                     Controls.Add(_browser);
@@ -268,7 +300,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="dataSource">Stream reference to access source file.</param>
         private void PreviewError<T>(Exception exception, T dataSource)
         {
-            PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
+            try
+            {
+                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
+            }
+            catch
+            { // Should not crash if sending telemetry is failing. Ignore the exception.
+            }
+
             Controls.Clear();
             _infoBarAdded = true;
             AddTextBoxControl(Properties.Resource.SvgNotPreviewedError);
