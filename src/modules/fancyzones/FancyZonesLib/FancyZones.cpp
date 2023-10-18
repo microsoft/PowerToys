@@ -395,15 +395,6 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    // Hotfix
-    // Avoid automatically moving popup windows, as they can be just popup menus.
-    bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
-    bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
-    if (isPopup && !hasThickFrame)
-    {
-        return;
-    }
-
     // Avoid already stamped (zoned) windows
     const bool isZoned = !FancyZonesWindowProperties::RetrieveZoneIndexProperty(window).empty();
     if (isZoned)
@@ -737,7 +728,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     {
     case DisplayChangeType::WorkArea: // WorkArea size changed
     case DisplayChangeType::DisplayChange: // Resolution changed or display added
-        updateWindowsPositions = FancyZonesSettings::settings().displayChange_moveWindows;
+        updateWindowsPositions = FancyZonesSettings::settings().displayOrWorkAreaChange_moveWindows;
         break;
     case DisplayChangeType::VirtualDesktop: // Switched virtual desktop
         SyncVirtualDesktops();
