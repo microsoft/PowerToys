@@ -150,9 +150,9 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Padding" Value="0" />
-        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 
@@ -160,13 +160,13 @@
         x:Key="OnlyIconKeyVisualStyle"
         BasedOn="{StaticResource DefaultTextKeyVisualStyle}"
         TargetType="local:KeyVisual">
-        <Setter Property="MinHeight" Value="12" />
-        <Setter Property="MinWidth" Value="12" />
+        <Setter Property="MinHeight" Value="10" />
+        <Setter Property="MinWidth" Value="10" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Padding" Value="0,0,0,3" />
         <!--<Setter Property="FontSize" Value="9" />-->
         <Setter Property="HorizontalContentAlignment" Value="Center" />

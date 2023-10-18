@@ -9,8 +9,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:media="using:ABI.Microsoft.UI.Xaml.Media"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
@@ -20,8 +20,8 @@
         <localConverters:ModuleItemTemplateSelector
             x:Key="ModuleItemTemplateSelector"
             ButtonTemplate="{StaticResource ModuleItemButtonTemplate}"
-            ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}"
             KBMTemplate="{StaticResource ModuleItemKBMTemplate}"
+            ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}"
             TextTemplate="{StaticResource ModuleItemTextTemplate}" />
         <converters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
         <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
@@ -101,12 +101,9 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="ModuleItemKBMTemplate" x:DataType="viewmodels:DashboardModuleKBMItem">
-            <Button
-                HorizontalAlignment="Stretch"
-                x:Uid="DashboardKBMShowMappingsButton">
+            <Button x:Uid="DashboardKBMShowMappingsButton" HorizontalAlignment="Stretch">
                 <Button.Flyout>
-                    <Flyout x:Name="DetailsFlyout"
-                        Placement="Bottom">
+                    <Flyout x:Name="DetailsFlyout" Placement="Bottom">
                         <StackPanel Orientation="Vertical" Spacing="4">
                             <ItemsControl ItemsSource="{x:Bind Path=RemapKeys, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
@@ -170,6 +167,7 @@
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 Content="{Binding}"
+                                                                FontSize="12"
                                                                 Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                                                                 IsTabStop="False"
                                                                 VisualType="TextOnly" />
@@ -270,27 +268,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup>
-                <VisualState>
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="700" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState>
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="ModulesGrid.(Grid.Column)" Value="0" />
-                        <Setter Target="DashboardScroller.(Grid.Row)" Value="1" />
-                        <Setter Target="MainScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-                        <Setter Target="ListScrollViewer.(ScrollViewer.VerticalScrollBarVisibility)" Value="Disabled" />
-                        <Setter Target="DashboardScroller.VerticalScrollBarVisibility" Value="Disabled" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
         <TextBlock
             x:Uid="DashboardTitle"
             VerticalAlignment="Center"
@@ -301,6 +278,7 @@
             Margin="0,0,16,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
+            CornerRadius="8"
             IsClosable="False"
             IsOpen="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"
             Severity="Success">
@@ -309,191 +287,165 @@
             </InfoBar.ActionButton>
         </InfoBar>
 
-        <!--  This ScrollViewer is only enabled when is compact mode  -->
-        <ScrollViewer
-            x:Name="MainScrollViewer"
-            Grid.Row="1"
-            VerticalScrollBarVisibility="Disabled">
-            <Grid
-                Grid.Row="1"
-                Margin="0,0,16,0"
-                ColumnSpacing="16"
-                RowSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <ScrollViewer x:Name="DashboardScroller">
-                    <StackPanel Orientation="Vertical">
+        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1">
 
-                        <TextBlock
-                            Margin="0,0,0,12"
-                            FontSize="16"
-                            FontWeight="SemiBold"
-                            Text="Enabled modules" />
-                        <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <controls:StaggeredLayout
-                                    ColumnSpacing="8"
-                                    DesiredColumnWidth="378"
-                                    RowSpacing="8" />
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:DashboardListItem">
-                                    <Grid
-                                        Padding="16"
-                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="{StaticResource OverlayCornerRadius}"
-                                        RowSpacing="12">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                        </Grid.RowDefinitions>
-                                        <Border
-                                            Grid.RowSpan="2"
-                                            Margin="-16"
-                                            Opacity="0.05">
-                                            <Border.Background>
-                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,3">
-                                                    <GradientStop Offset="0.5" Color="{x:Bind AccentColor, Mode=OneWay}" />
-                                                    <GradientStop Offset="0.9" Color="Transparent" />
-                                                </LinearGradientBrush>
-                                            </Border.Background>
-                                            <!--<Border.Background>
-                                            <SolidColorBrush Opacity="0.1" Color="{x:Bind AccentColor, Mode=OneWay}"/>
-                                        </Border.Background>-->
-                                        </Border>
-                                        <Grid ColumnSpacing="12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <Image Width="20" Margin="0,0,0,0">
-                                                <Image.Source>
-                                                    <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
-                                                </Image.Source>
-                                            </Image>
-                                            <TextBlock
-                                                Grid.Column="1"
-                                                VerticalAlignment="Center"
-                                                FontWeight="SemiBold"
-                                                Text="{x:Bind Label, Mode=OneWay}"
-                                                TextTrimming="CharacterEllipsis" />
-                                            <FontIcon
-                                                Grid.Column="2"
-                                                Width="20"
-                                                Margin="0,0,16,0"
-                                                FontSize="16"
-                                                Glyph="&#xE72E;"
-                                                Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock x:Uid="GPO_IsSettingForcedText" />
-                                                </ToolTipService.ToolTip>
-                                            </FontIcon>
-                                            <ToggleSwitch
-                                                Grid.Column="3"
-                                                Margin="0,0,0,0"
-                                                HorizontalAlignment="Right"
-                                                IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
-                                                IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                                                OffContent=""
-                                                OnContent=""
-                                                Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
-                                        </Grid>
+            <StackPanel Orientation="Vertical">
 
-                                        <ItemsControl
-                                            Grid.Row="1"
-                                            ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
-                                            ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}"
-                                            Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                <TextBlock
+                    Margin="0,0,0,12"
+                    FontSize="20"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    Text="Enabled modules" />
+                <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <controls:StaggeredLayout
+                            ColumnSpacing="8"
+                            DesiredColumnWidth="378"
+                            RowSpacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:DashboardListItem">
+                            <Grid
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                RowSpacing="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Border Grid.RowSpan="2" Opacity="0.05">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,3">
+                                            <GradientStop Offset="0.5" Color="{x:Bind AccentColor, Mode=OneWay}" />
+                                            <GradientStop Offset="0.9" Color="Transparent" />
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <Grid Margin="16,8,16,0" ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Image Width="20" Margin="0,0,0,0">
+                                        <Image.Source>
+                                            <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
+                                        </Image.Source>
+                                    </Image>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        FontWeight="SemiBold"
+                                        Text="{x:Bind Label, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <FontIcon
+                                        Grid.Column="2"
+                                        Width="20"
+                                        Margin="0,0,-12,0"
+                                        FontSize="16"
+                                        Glyph="&#xE72E;"
+                                        Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="GPO_IsSettingForcedText" />
+                                        </ToolTipService.ToolTip>
+                                    </FontIcon>
+                                    <ToggleSwitch
+                                        Grid.Column="3"
+                                        Margin="0,-2,0,0"
+                                        HorizontalAlignment="Right"
+                                        IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
+                                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                                        OffContent=""
+                                        OnContent=""
+                                        Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
+                                </Grid>
 
-                        <TextBlock
-                            Margin="0,24,0,12"
-                            FontSize="16"
-                            FontWeight="SemiBold"
-                            Text="Disabled modules" />
+                                <ItemsControl
+                                    Grid.Row="1"
+                                    Margin="16,8,16,16"
+                                    ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
+                                    ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}"
+                                    Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Spacing="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
 
-                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <controls:StaggeredLayout
-                                    ColumnSpacing="8"
-                                    DesiredColumnWidth="378"
-                                    RowSpacing="8" />
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:DashboardListItem">
-                                    <Grid
-                                        Padding="16"
-                                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="{StaticResource OverlayCornerRadius}"
-                                        RowSpacing="12">
-                                        <Grid ColumnSpacing="12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <Image Width="20" Margin="0,0,0,0">
-                                                <Image.Source>
-                                                    <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
-                                                </Image.Source>
-                                            </Image>
-                                            <TextBlock
-                                                Grid.Column="1"
-                                                VerticalAlignment="Center"
-                                                FontWeight="SemiBold"
-                                                Foreground="{ThemeResource TextFillColorDisabledBrush}"
-                                                Text="{x:Bind Label, Mode=OneWay}"
-                                                TextTrimming="CharacterEllipsis" />
-                                            <FontIcon
-                                                Grid.Column="2"
-                                                Width="20"
-                                                Margin="0,0,16,0"
-                                                FontSize="16"
-                                                Glyph="&#xE72E;"
-                                                Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock x:Uid="GPO_IsSettingForcedText" />
-                                                </ToolTipService.ToolTip>
-                                            </FontIcon>
-                                            <ToggleSwitch
-                                                Grid.Column="3"
-                                                Margin="0,0,0,0"
-                                                HorizontalAlignment="Right"
-                                                IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
-                                                IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                                                OffContent=""
-                                                OnContent=""
-                                                Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
-                                        </Grid>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
-                    </StackPanel>
-                </ScrollViewer>
-            </Grid>
+                <TextBlock
+                    Margin="0,24,0,12"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    Text="Disabled modules" />
+
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <controls:StaggeredLayout
+                            ColumnSpacing="8"
+                            DesiredColumnWidth="378"
+                            RowSpacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:DashboardListItem">
+                            <Grid
+                                Padding="16,12,16,12"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                RowSpacing="12">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Image Width="20">
+                                        <Image.Source>
+                                            <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
+                                        </Image.Source>
+                                    </Image>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        FontWeight="SemiBold"
+                                        Text="{x:Bind Label, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <FontIcon
+                                        Grid.Column="2"
+                                        Width="20"
+                                        Margin="0,0,16,0"
+                                        FontSize="16"
+                                        Glyph="&#xE72E;"
+                                        Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="GPO_IsSettingForcedText" />
+                                        </ToolTipService.ToolTip>
+                                    </FontIcon>
+                                    <ToggleSwitch
+                                        Grid.Column="3"
+                                        Margin="0,-2,0,0"
+                                        HorizontalAlignment="Right"
+                                        IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
+                                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                                        OffContent=""
+                                        OnContent=""
+                                        Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+
         </ScrollViewer>
     </Grid>
 </Page>
