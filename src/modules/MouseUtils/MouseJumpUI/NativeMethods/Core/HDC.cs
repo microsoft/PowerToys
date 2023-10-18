@@ -29,6 +29,10 @@ internal static partial class Core
 
         public bool IsNull => this.Value == HDC.Null.Value;
 
+        public static implicit operator IntPtr(HDC value) => value.Value;
+
+        public static explicit operator HDC(IntPtr value) => new(value);
+
         public override string ToString()
         {
             return $"{this.GetType().Name}({this.Value})";

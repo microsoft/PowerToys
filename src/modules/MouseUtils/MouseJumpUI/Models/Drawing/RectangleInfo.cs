@@ -12,6 +12,8 @@ namespace MouseJumpUI.Models.Drawing;
 /// </summary>
 public sealed class RectangleInfo
 {
+    public static readonly RectangleInfo Empty = new(0, 0, 0, 0);
+
     public RectangleInfo(decimal x, decimal y, decimal width, decimal height)
     {
         this.X = x;
@@ -63,35 +65,15 @@ public sealed class RectangleInfo
 
     public decimal Bottom => this.Y + this.Height;
 
-    public SizeInfo Size => new(this.Width, this.Height);
+    public decimal Area => this.Width * this.Height;
 
     public PointInfo Location => new(this.X, this.Y);
 
-    public decimal Area => this.Width * this.Height;
+    public PointInfo Midpoint => new(
+        x: this.X + (this.Width / 2),
+        y: this.Y + (this.Height / 2));
 
-    /// <remarks>
-    /// Adapted from https://github.com/dotnet/runtime
-    /// See https://github.com/dotnet/runtime/blob/dfd618dc648ba9b11dd0f8034f78113d69f223cd/src/libraries/System.Drawing.Primitives/src/System/Drawing/Rectangle.cs
-    /// </remarks>
-    public bool Contains(RectangleInfo rect) =>
-        (this.X <= rect.X) && (rect.X + rect.Width <= this.X + this.Width) &&
-        (this.Y <= rect.Y) && (rect.Y + rect.Height <= this.Y + this.Height);
-
-    public RectangleInfo Enlarge(PaddingInfo padding) => new(
-        this.X + padding.Left,
-        this.Y + padding.Top,
-        this.Width + padding.Horizontal,
-        this.Height + padding.Vertical);
-
-    public RectangleInfo Offset(SizeInfo amount) => this.Offset(amount.Width, amount.Height);
-
-    public RectangleInfo Offset(decimal dx, decimal dy) => new(this.X + dx, this.Y + dy, this.Width, this.Height);
-
-    public RectangleInfo Scale(decimal scalingFactor) => new(
-        this.X * scalingFactor,
-        this.Y * scalingFactor,
-        this.Width * scalingFactor,
-        this.Height * scalingFactor);
+    public SizeInfo Size => new(this.Width, this.Height);
 
     public RectangleInfo Center(PointInfo point) => new(
         x: point.X - (this.Width / 2),
@@ -99,10 +81,9 @@ public sealed class RectangleInfo
         width: this.Width,
         height: this.Height);
 
-    public PointInfo Midpoint => new(
-        x: this.X + (this.Width / 2),
-        y: this.Y + (this.Height / 2));
-
+    /// <summary>
+    /// Moves this RectangleInfo inside the specified RectangleInfo.
+    /// </summary>
     public RectangleInfo Clamp(RectangleInfo outer)
     {
         if ((this.Width > outer.Width) || (this.Height > outer.Height))
@@ -116,6 +97,31 @@ public sealed class RectangleInfo
             width: this.Width,
             height: this.Height);
     }
+
+    /// <remarks>
+    /// Adapted from https://github.com/dotnet/runtime
+    /// See https://github.com/dotnet/runtime/blob/dfd618dc648ba9b11dd0f8034f78113d69f223cd/src/libraries/System.Drawing.Primitives/src/System/Drawing/Rectangle.cs
+    /// </remarks>
+    public bool Contains(RectangleInfo rect) =>
+        (this.X <= rect.X) && (rect.X + rect.Width <= this.X + this.Width) &&
+        (this.Y <= rect.Y) && (rect.Y + rect.Height <= this.Y + this.Height);
+
+    public RectangleInfo Enlarge(PaddingInfo padding) =>
+        new(
+            this.X + padding.Left,
+            this.Y + padding.Top,
+            this.Width + padding.Horizontal,
+            this.Height + padding.Vertical);
+
+    public RectangleInfo Offset(SizeInfo amount) => this.Offset(amount.Width, amount.Height);
+
+    public RectangleInfo Offset(decimal dx, decimal dy) => new(this.X + dx, this.Y + dy, this.Width, this.Height);
+
+    public RectangleInfo Scale(decimal scalingFactor) => new(
+        this.X * scalingFactor,
+        this.Y * scalingFactor,
+        this.Width * scalingFactor,
+        this.Height * scalingFactor);
 
     public Rectangle ToRectangle() => new((int)this.X, (int)this.Y, (int)this.Width, (int)this.Height);
 

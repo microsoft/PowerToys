@@ -32,16 +32,16 @@ public sealed class PointInfo
         get;
     }
 
-    public SizeInfo ToSize()
-    {
-        return new((int)this.X, (int)this.Y);
-    }
-
     public PointInfo Scale(decimal scalingFactor) => new(this.X * scalingFactor, this.Y * scalingFactor);
 
     public PointInfo Offset(PointInfo amount) => new(this.X + amount.X, this.Y + amount.Y);
 
     public Point ToPoint() => new((int)this.X, (int)this.Y);
+
+    public SizeInfo ToSize()
+    {
+        return new((int)this.X, (int)this.Y);
+    }
 
     public override string ToString()
     {

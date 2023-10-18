@@ -23,30 +23,30 @@ public static class RectangleInfoTests
                 this.ExpectedResult = expectedResult;
             }
 
-            public RectangleInfo Rectangle { get; set; }
+            public RectangleInfo Rectangle { get; }
 
-            public PointInfo Point { get; set; }
+            public PointInfo Point { get; }
 
-            public RectangleInfo ExpectedResult { get; set; }
+            public RectangleInfo ExpectedResult { get; }
         }
 
         public static IEnumerable<object[]> GetTestCases()
         {
             // zero-sized
-            yield return new[] { new TestCase(new(0, 0, 0, 0), new(0, 0), new(0, 0, 0, 0)), };
+            yield return new object[] { new TestCase(new(0, 0, 0, 0), new(0, 0), new(0, 0, 0, 0)), };
 
             // zero-origin
-            yield return new[] { new TestCase(new(0, 0, 200, 200), new(100, 100), new(0, 0, 200, 200)), };
-            yield return new[] { new TestCase(new(0, 0, 200, 200), new(500, 500), new(400, 400, 200, 200)), };
-            yield return new[] { new TestCase(new(0, 0, 800, 600), new(1000, 1000), new(600, 700, 800, 600)), };
+            yield return new object[] { new TestCase(new(0, 0, 200, 200), new(100, 100), new(0, 0, 200, 200)), };
+            yield return new object[] { new TestCase(new(0, 0, 200, 200), new(500, 500), new(400, 400, 200, 200)), };
+            yield return new object[] { new TestCase(new(0, 0, 800, 600), new(1000, 1000), new(600, 700, 800, 600)), };
 
             // non-zero origin
-            yield return new[] { new TestCase(new(1000, 2000, 200, 200), new(100, 100), new(0, 0, 200, 200)), };
-            yield return new[] { new TestCase(new(1000, 2000, 200, 200), new(500, 500), new(400, 400, 200, 200)), };
-            yield return new[] { new TestCase(new(1000, 2000, 800, 600), new(1000, 1000), new(600, 700, 800, 600)), };
+            yield return new object[] { new TestCase(new(1000, 2000, 200, 200), new(100, 100), new(0, 0, 200, 200)), };
+            yield return new object[] { new TestCase(new(1000, 2000, 200, 200), new(500, 500), new(400, 400, 200, 200)), };
+            yield return new object[] { new TestCase(new(1000, 2000, 800, 600), new(1000, 1000), new(600, 700, 800, 600)), };
 
             // negative result
-            yield return new[] { new TestCase(new(0, 0, 1000, 1200), new(300, 300), new(-200, -300, 1000, 1200)), };
+            yield return new object[] { new TestCase(new(0, 0, 1000, 1200), new(300, 300), new(-200, -300, 1000, 1200)), };
         }
 
         [TestMethod]
@@ -74,53 +74,53 @@ public static class RectangleInfoTests
                 this.ExpectedResult = expectedResult;
             }
 
-            public RectangleInfo Inner { get; set; }
+            public RectangleInfo Inner { get; }
 
-            public RectangleInfo Outer { get; set; }
+            public RectangleInfo Outer { get; }
 
-            public RectangleInfo ExpectedResult { get; set; }
+            public RectangleInfo ExpectedResult { get; }
         }
 
         public static IEnumerable<object[]> GetTestCases()
         {
             // already inside - obj fills bounds exactly
-            yield return new[]
+            yield return new object[]
             {
                 new TestCase(new(0, 0, 100, 100), new(0, 0, 100, 100), new(0, 0, 100, 100)),
             };
 
             // already inside - obj exactly in each corner
-            yield return new[]
+            yield return new object[]
             {
                 new TestCase(new(0, 0, 100, 100), new(0, 0, 200, 200), new(0, 0, 100, 100)),
             };
-            yield return new[]
+            yield return new object[]
             {
                 new TestCase(new(100, 0, 100, 100), new(0, 0, 200, 200), new(100, 0, 100, 100)),
             };
-            yield return new[]
+            yield return new object[]
             {
                 new TestCase(new(0, 100, 100, 100), new(0, 0, 200, 200), new(0, 100, 100, 100)),
             };
-            yield return new[]
+            yield return new object[]
             {
                 new TestCase(new(100, 100, 100, 100), new(0, 0, 200, 200), new(100, 100, 100, 100)),
             };
 
             // move inside - obj outside each corner
-            yield return new[]
+            yield return new object[]
             {
                 new TestCase(new(-50, -50, 100, 100), new(0, 0, 200, 200), new(0, 0, 100, 100)),
             };
-            yield return new[]
+            yield return new object[]
             {
                 new TestCase(new(250, -50, 100, 100), new(0, 0, 200, 200), new(100, 0, 100, 100)),
             };
-            yield return new[]
+            yield return new object[]
             {
                 new TestCase(new(-50, 250, 100, 100), new(0, 0, 200, 200), new(0, 100, 100, 100)),
             };
-            yield return new[]
+            yield return new object[]
             {
                 new TestCase(new(150, 150, 100, 100), new(0, 0, 200, 200), new(100, 100, 100, 100)),
             };

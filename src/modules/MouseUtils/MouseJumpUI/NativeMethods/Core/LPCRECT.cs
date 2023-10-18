@@ -25,6 +25,8 @@ internal static partial class Core
             this.Value = LPCRECT.ToPtr(value);
         }
 
+        public bool IsNull => this.Value == LPCRECT.Null.Value;
+
         private static IntPtr ToPtr(CRECT value)
         {
             var ptr = Marshal.AllocHGlobal(CRECT.Size);
@@ -39,7 +41,7 @@ internal static partial class Core
 
         public static implicit operator IntPtr(LPCRECT value) => value.Value;
 
-        public static implicit operator LPCRECT(IntPtr value) => new(value);
+        public static explicit operator LPCRECT(IntPtr value) => new(value);
 
         public override string ToString()
         {
