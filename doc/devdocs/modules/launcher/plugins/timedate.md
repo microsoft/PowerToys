@@ -18,6 +18,7 @@ The 'Time and Date' plugin shows the date and time in different formats. For the
 **Remarks**
 - The following formats requires a prefix in the query:
    - Unix Timestamp: `u`
+   - Unix Timestamp in milliseconds: `ums`
    - Windows file time: `ft`
 - On invalid number inputs we show a warning that tells the user which prefixes are allowed/required.
 
@@ -33,6 +34,7 @@ The following formats are currently available:
 | Time UTC | 4:10 PM | x | x |
 | Now UTC | 3/5/2022 4:10 PM | x | x |
 | Unix Timestamp | 1646496622 | x | x |
+| Unix Timestamp in milliseconds | 1646496622500 | x | x |
 | Hour | 10 | x | |
 | Minute | 30 | x | |
 | Second | 45 | x | |
