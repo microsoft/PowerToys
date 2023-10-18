@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using FancyZonesEditor.Models;
@@ -31,7 +31,7 @@ public class DefaultLayoutsModelTests
         defaultLayoutsModel.Set(firstLayout, MonitorConfigurationType.Horizontal);
         defaultLayoutsModel.Set(firstLayout, MonitorConfigurationType.Vertical);
 
-        Assert.AreEqual(defaultLayoutsModel.Layouts[(int)MonitorConfigurationType.Vertical], firstLayout);
+        Assert.AreEqual(defaultLayoutsModel.Layouts[MonitorConfigurationType.Vertical], firstLayout);
     }
 
     [TestMethod]
@@ -40,7 +40,7 @@ public class DefaultLayoutsModelTests
         var defaultLayoutsModel = new DefaultLayoutsModel();
         GridLayoutModel firstLayout = new GridLayoutModel();
         CanvasLayoutModel secondLayout = new CanvasLayoutModel("steve");
-        var restoredLayouts = new List<LayoutModel> { firstLayout, secondLayout };
+        var restoredLayouts = new Dictionary<MonitorConfigurationType, LayoutModel> { { MonitorConfigurationType.Horizontal, firstLayout }, { MonitorConfigurationType.Vertical, secondLayout } };
         defaultLayoutsModel.Restore(restoredLayouts);
 
         CollectionAssert.AreEqual(defaultLayoutsModel.Layouts, restoredLayouts);
