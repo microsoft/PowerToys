@@ -20,8 +20,6 @@ namespace ColorPicker.Mouse
 
         event SecondaryMouseUpEventHandler OnSecondaryMouseUp;
 
-        event SecondaryMouseUpEventHandler OnSecondaryMouseDown;
-
         System.Windows.Point CurrentPosition { get; }
 
         Color CurrentColor { get; }

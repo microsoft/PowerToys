@@ -66,23 +66,6 @@ namespace ColorPicker.Mouse
             }
         }
 
-        private event SecondaryMouseUpEventHandler SecondaryMouseDown;
-
-        public event SecondaryMouseUpEventHandler OnSecondaryMouseDown
-        {
-            add
-            {
-                Subscribe();
-                SecondaryMouseDown += value;
-            }
-
-            remove
-            {
-                SecondaryMouseDown -= value;
-                Unsubscribe();
-            }
-        }
-
         private event MouseWheelEventHandler MouseWheel;
 
         public event MouseWheelEventHandler OnMouseWheel
@@ -161,11 +144,6 @@ namespace ColorPicker.Mouse
 
                 if (wParam.ToInt32() == WM_RBUTTONDOWN)
                 {
-                    if (SecondaryMouseDown != null)
-                    {
-                        SecondaryMouseDown.Invoke(null, wParam);
-                    }
-
                     return new IntPtr(-1);
                 }
 
