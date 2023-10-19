@@ -44,7 +44,6 @@ class Awake : public PowertoyModuleIface
 
 private:
     bool m_enabled = false;
-    HANDLE send_telemetry_event;
     PROCESS_INFORMATION p_info = {};
 
     bool is_process_running()
@@ -136,7 +135,6 @@ public:
     virtual void enable()
     {
         Trace::EnableAwake(true);
-        ResetEvent(send_telemetry_event);
         launch_process();
         m_enabled = true;
     };
@@ -147,7 +145,6 @@ public:
         {
             Trace::EnableAwake(false);
             Logger::trace(L"Disabling Awake...");
-            ResetEvent(send_telemetry_event);
 
             auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::AWAKE_EXIT_EVENT);
             if (!exitEvent)
