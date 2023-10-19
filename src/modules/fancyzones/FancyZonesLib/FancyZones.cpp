@@ -157,7 +157,7 @@ private:
 
     void UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept;
     
-    bool MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept;
+    bool MoveToAppLastZone(HWND window, HMONITOR monitor, GUID currentVirtualDesktop) noexcept;
 
     void RefreshLayouts() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
@@ -331,7 +331,7 @@ void FancyZones::MoveSizeEnd()
     }
 }
 
-bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept
+bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor, GUID currentVirtualDesktop) noexcept
 {
     const auto& workAreas = m_workAreaConfiguration.GetAllWorkAreas();
     WorkArea* workArea{ nullptr };
@@ -342,7 +342,7 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept
         if (workAreas.contains(monitor))
         {
             workArea = workAreas.at(monitor).get();
-            if (workArea)
+            if (workArea && workArea->UniqueId().virtualDesktopId == currentVirtualDesktop)
             {
                 indexes = AppZoneHistory::instance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), workArea->GetLayoutId());
             }
@@ -356,7 +356,7 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor) noexcept
     {
         for (const auto& [_, secondaryWorkArea] : workAreas)
         {
-            if (secondaryWorkArea)
+            if (secondaryWorkArea && secondaryWorkArea->UniqueId().virtualDesktopId == currentVirtualDesktop)
             {
                 indexes = AppZoneHistory::instance().GetAppLastZoneIndexSet(window, secondaryWorkArea->UniqueId(), secondaryWorkArea->GetLayoutId());
                 workArea = secondaryWorkArea.get();
@@ -420,27 +420,28 @@ void FancyZones::WindowCreated(HWND window) noexcept
     }
 
     bool windowMovedToZone = false;
+    auto currentVirtualDesktop = VirtualDesktop::instance().GetCurrentVirtualDesktopIdFromRegistry();
     if (moveToAppLastZone)
     {
         if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
         {
-            windowMovedToZone = MoveToAppLastZone(window, nullptr);
+            windowMovedToZone = MoveToAppLastZone(window, nullptr, currentVirtualDesktop);
         }
         else
         {
             // Search application history on currently active monitor.
-            windowMovedToZone = MoveToAppLastZone(window, active);
+            windowMovedToZone = MoveToAppLastZone(window, active, currentVirtualDesktop);
 
             if (!windowMovedToZone && primary != active)
             {
                 // Search application history on primary monitor.
-                windowMovedToZone = MoveToAppLastZone(window, primary);
+                windowMovedToZone = MoveToAppLastZone(window, primary, currentVirtualDesktop);
             }
 
             if (!windowMovedToZone)
             {
                 // Search application history on remaining monitors.
-                windowMovedToZone = MoveToAppLastZone(window, nullptr);
+                windowMovedToZone = MoveToAppLastZone(window, nullptr, currentVirtualDesktop);
             }
         }
     }
