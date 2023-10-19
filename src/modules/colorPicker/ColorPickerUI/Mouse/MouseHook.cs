@@ -144,6 +144,7 @@ namespace ColorPicker.Mouse
 
                 if (wParam.ToInt32() == WM_RBUTTONDOWN)
                 {
+                    // Consume the event to avoid triggering context menus while in a Color Picker session.
                     return new IntPtr(-1);
                 }
 
