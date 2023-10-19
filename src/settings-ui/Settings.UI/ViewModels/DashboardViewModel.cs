@@ -33,8 +33,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<DashboardListItem> DisabledModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
-
         public bool UpdateAvailable { get; set; }
 
         private List<DashboardListItem> _allModules;
@@ -363,7 +361,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             ActiveModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => x.IsEnabled));
             DisabledModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => !x.IsEnabled));
-            AllModules = new ObservableCollection<DashboardListItem>(_allModules);
 
             UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();
             UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);

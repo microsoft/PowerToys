@@ -3069,9 +3069,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Dashboard_Activation" xml:space="preserve">
     <value>Activation</value>
   </data>
-  <data name="RegistryPreview_Launch" xml:space="preserve">
-    <value>Launch</value>
-  </data>
   <data name="DashboardKBMShowMappingsButton.Content" xml:space="preserve">
     <value>Show remappings</value>
   </data>

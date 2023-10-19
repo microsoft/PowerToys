@@ -9,8 +9,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:media="using:ABI.Microsoft.UI.Xaml.Media"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
@@ -64,7 +62,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Border
-                    Padding="8,4,8,4"
+                    Padding="8,4"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
@@ -115,7 +113,7 @@
                                     <DataTemplate x:DataType="Lib:KeysDataModel">
                                         <StackPanel Orientation="Horizontal">
                                             <Border
-                                                Padding="8,4,8,4"
+                                                Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1"
@@ -147,7 +145,7 @@
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                             <Border
-                                                Padding="8,4,8,4"
+                                                Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
                                                 BorderThickness="1"
@@ -189,7 +187,7 @@
                                     <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
                                         <StackPanel Orientation="Horizontal">
                                             <Border
-                                                Padding="8,4,8,4"
+                                                Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1"
@@ -221,7 +219,7 @@
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                             <Border
-                                                Padding="8,4,8,4"
+                                                Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
                                                 BorderThickness="1"
@@ -281,7 +279,7 @@
             CornerRadius="8"
             IsClosable="False"
             IsOpen="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"
-            Severity="Success">
+            Severity="Informational">
             <InfoBar.ActionButton>
                 <Button x:Uid="LearnMore" Click="SWVersionButtonClicked" />
             </InfoBar.ActionButton>
@@ -346,7 +344,7 @@
                                         Glyph="&#xE72E;"
                                         Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
                                         <ToolTipService.ToolTip>
-                                            <TextBlock x:Uid="GPO_IsSettingForcedText" />
+                                            <TextBlock x:Uid="GPO_IsSettingForcedText" TextWrapping="WrapWholeWords" />
                                         </ToolTipService.ToolTip>
                                     </FontIcon>
                                     <ToggleSwitch
@@ -392,7 +390,7 @@
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:DashboardListItem">
                             <Grid
-                                Padding="16,12,16,12"
+                                Padding="16,12"
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
@@ -424,7 +422,7 @@
                                         Glyph="&#xE72E;"
                                         Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
                                         <ToolTipService.ToolTip>
-                                            <TextBlock x:Uid="GPO_IsSettingForcedText" />
+                                            <TextBlock x:Uid="GPO_IsSettingForcedText" TextWrapping="WrapWholeWords" />
                                         </ToolTipService.ToolTip>
                                     </FontIcon>
                                     <ToggleSwitch
