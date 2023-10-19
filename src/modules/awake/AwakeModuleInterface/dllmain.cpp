@@ -45,7 +45,7 @@ class Awake : public PowertoyModuleIface
 private:
     bool m_enabled = false;
     HANDLE send_telemetry_event;
-    PROCESS_INFORMATION p_info;
+    PROCESS_INFORMATION p_info = {};
 
     bool is_process_running()
     {

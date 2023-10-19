@@ -124,7 +124,7 @@ private:
     bool m_enabled = false;
     bool run_in_service_mode = false;
     HANDLE send_telemetry_event;
-    PROCESS_INFORMATION p_info;
+    PROCESS_INFORMATION p_info = {};
 
     bool is_enabled_by_default() const override
     {
