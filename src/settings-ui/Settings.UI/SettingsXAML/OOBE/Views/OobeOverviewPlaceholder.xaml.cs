@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             if (OobeShellPage.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(GeneralPage));
+                OobeShellPage.OpenMainWindowCallback(typeof(DashboardPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
