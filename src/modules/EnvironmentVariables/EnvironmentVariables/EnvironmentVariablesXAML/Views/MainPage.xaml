@@ -187,7 +187,7 @@
                                             ItemTemplate="{StaticResource VariableTemplate}"
                                             ItemsSource="{x:Bind Variables, Mode=OneWay}"
                                             TabFocusNavigation="Local"
-                                            VerticalCacheLength="5" />
+                                            VerticalCacheLength="10" />
                                     </controls:SettingsExpander.ItemsHeader>
 
                                     <StackPanel Orientation="Horizontal" Spacing="12">
@@ -246,7 +246,7 @@
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}"
                                 TabFocusNavigation="Local"
-                                VerticalCacheLength="5" />
+                                VerticalCacheLength="10" />
                         </controls:SettingsExpander.ItemsHeader>
                         <StackPanel Orientation="Horizontal">
                             <Button
@@ -269,7 +269,7 @@
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}"
                                 TabFocusNavigation="Local"
-                                VerticalCacheLength="5" />
+                                VerticalCacheLength="10" />
                         </controls:SettingsExpander.ItemsHeader>
                         <controls:SettingsExpander.Description>
                             <StackPanel
