@@ -615,7 +615,10 @@
                             <TextBlock x:Uid="AddVariableBtn" />
                         </StackPanel>
                         <Button.Flyout>
-                            <Flyout x:Name="AddVariableFlyout" Placement="Right">
+                            <Flyout
+                                x:Name="AddVariableFlyout"
+                                Closed="AddVariableFlyout_Closed"
+                                Placement="Right">
                                 <Grid Width="320" Height="480">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />

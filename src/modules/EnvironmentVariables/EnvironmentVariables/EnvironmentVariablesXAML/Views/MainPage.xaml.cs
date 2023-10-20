@@ -239,15 +239,6 @@ namespace EnvironmentVariables.Views
 
         private void ExistingVariablesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ExistingVariablesListView.SelectedItems.Count == 0)
-            {
-                ConfirmAddVariableBtn.IsEnabled = false;
-            }
-            else
-            {
-                ConfirmAddVariableBtn.IsEnabled = true;
-            }
-
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
 
             int toRemove = -1;
@@ -280,6 +271,19 @@ namespace EnvironmentVariables.Views
                 if (toRemove != -1)
                 {
                     profile.Variables.RemoveAt(toRemove);
+                }
+            }
+
+            ConfirmAddVariableBtn.IsEnabled = false;
+            foreach (Variable variable in ExistingVariablesListView.SelectedItems)
+            {
+                if (variable != null)
+                {
+                    if (!profile.Variables.Where(x => x.Name.Equals(variable.Name, StringComparison.Ordinal) && x.Values.Equals(variable.Values, StringComparison.Ordinal)).Any())
+                    {
+                        ConfirmAddVariableBtn.IsEnabled = true;
+                        break;
+                    }
                 }
             }
         }
@@ -536,6 +540,12 @@ namespace EnvironmentVariables.Views
         private void InvalidStateInfoBar_CloseButtonClick(InfoBar sender, object args)
         {
             ViewModel.EnvironmentState = EnvironmentState.Unchanged;
+        }
+
+        private void AddVariableFlyout_Closed(object sender, object e)
+        {
+            CancelAddVariable();
+            ConfirmAddVariableBtn.IsEnabled = false;
         }
     }
 }
