@@ -7,42 +7,26 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
-    <custom:OOBEPageControl
-        x:Uid="Oobe_KBM"
-        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/KBM.gif">
+    <custom:OOBEPageControl x:Uid="Oobe_KBM" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/KBM.gif">
 
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
 
-                <TextBlock
-                    x:Uid="Oobe_HowToCreateMappings"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToCreateMappings" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_KBM_HowToCreateMappings"
-                    Background="Transparent" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_KBM_HowToCreateMappings" Background="Transparent" />
 
-                <TextBlock
-                    x:Uid="Oobe_TipsAndTricks"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_KBM_TipsAndTricks"
-                    Background="Transparent" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_KBM_TipsAndTricks" Background="Transparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"
                     Orientation="Horizontal"
                     Spacing="12">
-                    <Button
-                        x:Uid="OOBE_Settings"
-                        Click="SettingsLaunchButton_Click" />
-                    <HyperlinkButton
-                        NavigateUri="https://aka.ms/PowerToysOverview_KeyboardManager"
-                        Style="{StaticResource TextButtonStyle}">
-                        <TextBlock
-                            x:Uid="LearnMore_KBM"
-                            TextWrapping="Wrap" />
+                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_KeyboardManager" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock x:Uid="LearnMore_KBM" TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>

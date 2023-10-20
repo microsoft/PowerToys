@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.FancyZonesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -171,8 +171,8 @@
                         IsExpanded="True">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}" />
                         <controls:SettingsExpander.Items>
-                            <!-- HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first item in the expander, so we add an invisible card as the first one. -->
-                            <controls:SettingsCard Visibility="Collapsed"/>
+                            <!--  HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first item in the expander, so we add an invisible card as the first one.  -->
+                            <controls:SettingsCard Visibility="Collapsed" />
                             <controls:SettingsCard x:Uid="FancyZones_HotkeyNextTabControl" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.WindowSwitchingCategoryEnabled}">
                                 <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
                             </controls:SettingsCard>
