@@ -5,11 +5,13 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Flyout;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -19,6 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ISettingsRepository<GeneralSettings> _settingsRepository;
         private GeneralSettings generalSettingsConfig;
+        private ResourceLoader resourceLoader;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -30,274 +33,82 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
 
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            GpoRuleConfigured gpo;
-            gpo = GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("AlwaysOnTop/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.AlwaysOnTop),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "AlwaysOnTop",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
+            resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
-            gpo = GPOWrapper.GetConfiguredAwakeEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("Awake/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Awake),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "Awake",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsAwake.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredColorPickerEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("ColorPicker/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ColorPicker),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "ColorPicker",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredCropAndLockEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("CropAndLock/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.CropAndLock),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "CropAndLock",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsCropAndLock.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("EnvironmentVariables/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.EnvironmentVariables),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "EnvironmentVariables",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsEnvironmentVariables.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredFancyZonesEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("FancyZones/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FancyZones),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "FancyZones",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFancyZones.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredFileLocksmithEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("FileLocksmith/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FileLocksmith),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "FileLocksmith",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFileLocksmith.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredFindMyMouseEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("MouseUtils_FindMyMouse/Header"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FindMyMouse),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "FindMyMouse",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("Hosts/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Hosts),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "Hosts",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsHosts.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredImageResizerEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("ImageResizer/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ImageResizer),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "ImageResizer",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsImageResizer.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredKeyboardManagerEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("KeyboardManager/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.KeyboardManager),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "KeyboardManager",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsKeyboardManager.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("MouseUtils_MouseHighlighter/Header"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseHighlighter),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "MouseHighlighter",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredMouseJumpEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("MouseUtils_MouseJump/Header"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseJump),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "MouseJump",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseJump.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("MouseUtils_MousePointerCrosshairs/Header"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MousePointerCrosshairs),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "MousePointerCrosshairs",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("MouseWithoutBorders/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseWithoutBorders),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "MouseWithoutBorders",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredPastePlainEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("PastePlain/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PastePlain),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "PastePlain",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPastePlain.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredPeekEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("Peek/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Peek),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "Peek",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPeek.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredPowerRenameEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("PowerRename/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerRename),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "PowerRename",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerRename.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("PowerLauncher/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerLauncher),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "PowerLauncher",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredQuickAccentEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("QuickAccent/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerAccent),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "PowerAccent",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerAccent.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredRegistryPreviewEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("RegistryPreview/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.RegistryPreview),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "RegistryPreview",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredScreenRulerEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("MeasureTool/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MeasureTool),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "MeasureTool",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsScreenRuler.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("ShortcutGuide/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ShortcutGuide),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "ShortcutGuide",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
-
-            gpo = GPOWrapper.GetConfiguredTextExtractorEnabledValue();
-            FlyoutMenuItems.Add(new FlyoutMenuItem()
-            {
-                Label = resourceLoader.GetString("TextExtractor/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerOCR),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Tag = "PowerOCR",
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerOCR.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-            });
+            AddFlyoutMenuItem("AlwaysOnTop", generalSettingsConfig.Enabled.AlwaysOnTop, "AlwaysOnTop/ModuleTitle", "AlwaysOnTop");
+            AddFlyoutMenuItem("Awake", generalSettingsConfig.Enabled.Awake, "Awake/ModuleTitle", "Awake");
+            AddFlyoutMenuItem("ColorPicker", generalSettingsConfig.Enabled.ColorPicker, "ColorPicker/ModuleTitle", "ColorPicker");
+            AddFlyoutMenuItem("CropAndLock", generalSettingsConfig.Enabled.CropAndLock, "CropAndLock/ModuleTitle", "CropAndLock");
+            AddFlyoutMenuItem("EnvironmentVariables", generalSettingsConfig.Enabled.EnvironmentVariables, "EnvironmentVariables/ModuleTitle", "EnvironmentVariables");
+            AddFlyoutMenuItem("FancyZones", generalSettingsConfig.Enabled.FancyZones, "FancyZones/ModuleTitle", "FancyZones");
+            AddFlyoutMenuItem("FileLocksmith", generalSettingsConfig.Enabled.FileLocksmith, "FileLocksmith/ModuleTitle", "FileLocksmith");
+            AddFlyoutMenuItem("FindMyMouse", generalSettingsConfig.Enabled.FindMyMouse, "MouseUtils_FindMyMouse/Header", "FindMyMouse");
+            AddFlyoutMenuItem("Hosts", generalSettingsConfig.Enabled.Hosts, "Hosts/ModuleTitle", "Hosts");
+            AddFlyoutMenuItem("ImageResizer", generalSettingsConfig.Enabled.ImageResizer, "ImageResizer/ModuleTitle", "ImageResizer");
+            AddFlyoutMenuItem("KeyboardManager", generalSettingsConfig.Enabled.KeyboardManager, "KeyboardManager/ModuleTitle", "KeyboardManager");
+            AddFlyoutMenuItem("MouseHighlighter", generalSettingsConfig.Enabled.MouseHighlighter, "MouseUtils_MouseHighlighter/Header", "MouseHighlighter");
+            AddFlyoutMenuItem("MouseJump", generalSettingsConfig.Enabled.MouseJump, "MouseUtils_MouseJump/Header", "MouseJump");
+            AddFlyoutMenuItem("MousePointerCrosshairs", generalSettingsConfig.Enabled.MousePointerCrosshairs, "MouseUtils_MousePointerCrosshairs/Header", "MousePointerCrosshairs");
+            AddFlyoutMenuItem("MouseWithoutBorders", generalSettingsConfig.Enabled.MouseWithoutBorders, "MouseWithoutBorders/ModuleTitle", "MouseWithoutBorders");
+            AddFlyoutMenuItem("PastePlain", generalSettingsConfig.Enabled.PastePlain, "PastePlain/ModuleTitle", "PastePlain");
+            AddFlyoutMenuItem("Peek", generalSettingsConfig.Enabled.Peek, "Peek/ModuleTitle", "Peek");
+            AddFlyoutMenuItem("PowerRename", generalSettingsConfig.Enabled.PowerRename, "PowerRename/ModuleTitle", "PowerRename");
+            AddFlyoutMenuItem("PowerLauncher", generalSettingsConfig.Enabled.PowerLauncher, "PowerLauncher/ModuleTitle", "PowerToysRun");
+            AddFlyoutMenuItem("PowerAccent", generalSettingsConfig.Enabled.PowerAccent, "QuickAccent/ModuleTitle", "PowerAccent");
+            AddFlyoutMenuItem("RegistryPreview", generalSettingsConfig.Enabled.RegistryPreview, "RegistryPreview/ModuleTitle", "RegistryPreview");
+            AddFlyoutMenuItem("MeasureTool", generalSettingsConfig.Enabled.MeasureTool, "MeasureTool/ModuleTitle", "ScreenRuler");
+            AddFlyoutMenuItem("ShortcutGuide", generalSettingsConfig.Enabled.ShortcutGuide, "ShortcutGuide/ModuleTitle", "ShortcutGuide");
+            AddFlyoutMenuItem("PowerOCR", generalSettingsConfig.Enabled.PowerOCR, "TextExtractor/ModuleTitle", "PowerOCR");
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        private void AddFlyoutMenuItem(string moduleName, bool moduleEnabled, string labelModuleName, string fluentIconModuleName)
+        {
+            GpoRuleConfigured gpo = GetModuleGpoConfiguration(moduleName);
+
+            FlyoutMenuItems.Add(new FlyoutMenuItem()
+            {
+                Label = resourceLoader.GetString(labelModuleName),
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && moduleEnabled),
+                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
+                Tag = moduleName,
+                Icon = $"ms-appx:///Assets/Settings/FluentIcons/FluentIcons{fluentIconModuleName}.png",
+                EnabledChangedCallback = EnabledChangedOnUI,
+            });
+        }
+
+        private GpoRuleConfigured GetModuleGpoConfiguration(string moduleName)
+        {
+            switch (moduleName)
+            {
+                case "AlwaysOnTop": return GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
+                case "Awake": return GPOWrapper.GetConfiguredAwakeEnabledValue();
+                case "ColorPicker": return GPOWrapper.GetConfiguredColorPickerEnabledValue();
+                case "CropAndLock": return GPOWrapper.GetConfiguredCropAndLockEnabledValue();
+                case "EnvironmentVariables": return GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
+                case "FancyZones": return GPOWrapper.GetConfiguredFancyZonesEnabledValue();
+                case "FileLocksmith": return GPOWrapper.GetConfiguredFileLocksmithEnabledValue();
+                case "FindMyMouse": return GPOWrapper.GetConfiguredFindMyMouseEnabledValue();
+                case "Hosts": return GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
+                case "ImageResizer": return GPOWrapper.GetConfiguredImageResizerEnabledValue();
+                case "KeyboardManager": return GPOWrapper.GetConfiguredKeyboardManagerEnabledValue();
+                case "MouseHighlighter": return GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
+                case "MouseJump": return GPOWrapper.GetConfiguredMouseJumpEnabledValue();
+                case "MousePointerCrosshairs": return GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
+                case "MouseWithoutBorders": return GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue();
+                case "PastePlain": return GPOWrapper.GetConfiguredPastePlainEnabledValue();
+                case "Peek": return GPOWrapper.GetConfiguredPeekEnabledValue();
+                case "PowerRename": return GPOWrapper.GetConfiguredPowerRenameEnabledValue();
+                case "PowerLauncher": return GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
+                case "QuickAccent": return GPOWrapper.GetConfiguredQuickAccentEnabledValue();
+                case "RegistryPreview": return GPOWrapper.GetConfiguredRegistryPreviewEnabledValue();
+                case "ScreenRuler": return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
+                case "ShortcutGuide": return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
+                case "TextExtractor": return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
+                default: return GpoRuleConfigured.Unavailable;
+            }
         }
 
         private void EnabledChangedOnUI(FlyoutMenuItem flyoutMenuItem)
