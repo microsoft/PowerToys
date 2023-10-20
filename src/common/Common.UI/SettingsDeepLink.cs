@@ -29,6 +29,7 @@ namespace Common.UI
             RegistryPreview,
             CropAndLock,
             EnvironmentVariables,
+            Dashboard,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -71,6 +72,8 @@ namespace Common.UI
                     return "CropAndLock";
                 case SettingsWindow.EnvironmentVariables:
                     return "EnvironmentVariables";
+                case SettingsWindow.Dashboard:
+                    return "Dashboard";
                 default:
                     {
                         return string.Empty;

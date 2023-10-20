@@ -32,8 +32,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutDir>
-    <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutDir>
+    <OutDir Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup\</OutDir>
+    <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup\</OutDir>
     <IntDir Condition=" '$(PerUser)' != 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\MachineSetup\obj\</IntDir>
     <IntDir Condition=" '$(PerUser)' == 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\UserSetup\obj\</IntDir>
   </PropertyGroup>

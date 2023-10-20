@@ -116,7 +116,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                         case 91: // The left Windows key
                         case 92: // The right Windows key
-                            PathIcon winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M9,17V9h8v8ZM0,17V9H8v8ZM9,8V0h8V8ZM0,8V0H8V8Z"" />") as PathIcon;
+                            PathIcon winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M683 1229H0V546h683v683zm819 0H819V546h683v683zm-819 819H0v-683h683v683zm819 0H819v-683h683v683z"" />") as PathIcon;
                             Viewbox winIconContainer = new Viewbox();
                             winIconContainer.Child = winIcon;
                             winIconContainer.HorizontalAlignment = HorizontalAlignment.Center;
@@ -142,6 +142,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             else if (VisualType == VisualType.SmallOutline)
             {
                 return (Style)App.Current.Resources["SmallOutline" + styleName];
+            }
+            else if (VisualType == VisualType.TextOnly)
+            {
+                return (Style)App.Current.Resources["Only" + styleName];
             }
             else
             {
@@ -181,6 +185,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     {
         Small,
         SmallOutline,
+        TextOnly,
         Large,
     }
 }

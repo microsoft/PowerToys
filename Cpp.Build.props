@@ -50,7 +50,7 @@
     <ClCompile>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4679;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4679;5271;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ConformanceMode>false</ConformanceMode>
@@ -58,7 +58,8 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- TODO: _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING for compatibility with VS 17.8. Check if we can remove. -->
+      <PreprocessorDefinitions>_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- CLR + CFG are not compatible >:{ -->
       <ControlFlowGuard Condition="'$(CLRSupport)' == ''">Guard</ControlFlowGuard>
       <DebugInformationFormat Condition="'%(ControlFlowGuard)' == 'Guard'">ProgramDatabase</DebugInformationFormat>

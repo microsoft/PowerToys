@@ -774,7 +774,19 @@ namespace RegistryPreview
 
                 // before moving onto the next node, tag the previous node and update the path
                 previousNode = newNode;
-                fullPath = fullPath.Replace(string.Format(CultureInfo.InvariantCulture, @"\{0}", individualKeys[i]), string.Empty);
+
+                // this used to use Replace but that would replace all instances of the same key name, which causes bugs.
+                try
+                {
+                    int removeAt = fullPath.LastIndexOf(string.Format(CultureInfo.InvariantCulture, @"\{0}", individualKeys[i]), StringComparison.InvariantCulture);
+                    if (removeAt > -1)
+                    {
+                        fullPath = fullPath.Substring(0, removeAt);
+                    }
+                }
+                catch
+                {
+                }
 
                 // One last check: if we get here, the parent of this node is not yet in the tree, so we need to add it as a RootNode
                 if (i == 0)

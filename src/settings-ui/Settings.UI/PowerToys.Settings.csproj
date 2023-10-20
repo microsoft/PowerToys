@@ -21,6 +21,9 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="SettingsXAML\Views\DashboardPage.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />
@@ -125,4 +128,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Page Update="SettingsXAML\Views\DashboardPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+  </ItemGroup>
+	
 </Project>

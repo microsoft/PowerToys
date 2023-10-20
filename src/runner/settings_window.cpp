@@ -596,7 +596,7 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
                 }
                 else
                 {
-                    current_settings_ipc->send(L"{\"ShowYourself\":\"Overview\"}");
+                    current_settings_ipc->send(L"{\"ShowYourself\":\"Dashboard\"}");
                 }
             }
         }
@@ -678,6 +678,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "CropAndLock";
     case ESettingsWindowNames::EnvironmentVariables:
         return "EnvironmentVariables";
+    case ESettingsWindowNames::Dashboard:
+        return "Dashboard";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -761,11 +763,15 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     {
         return ESettingsWindowNames::EnvironmentVariables;
     }
+    else if (value == "Dashboard")
+    {
+        return ESettingsWindowNames::Dashboard;
+    }
     else
     {
         Logger::error(L"Can't convert string value={} to ESettingsWindowNames", winrt::to_hstring(value));
         assert(false);
     }
 
-    return ESettingsWindowNames::Overview;
+    return ESettingsWindowNames::Dashboard;
 }

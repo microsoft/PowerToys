@@ -81,7 +81,7 @@ inline wil::unique_mutex_nothrow create_msi_mutex()
 void open_menu_from_another_instance(std::optional<std::string> settings_window)
 {
     const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
-    LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Overview);
+    LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Dashboard);
     if (settings_window.has_value() && settings_window.value() != "")
     {
         msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
