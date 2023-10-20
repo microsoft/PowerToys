@@ -342,7 +342,6 @@ void VideoConferenceModule::onMicrophoneConfigurationChanged()
             toolbar.setMicrophoneMute(muted);
         });
     }
-    setMuteChangedCallback();
 }
 
 VideoConferenceModule::VideoConferenceModule()
@@ -403,25 +402,6 @@ void VideoConferenceModule::set_config(const wchar_t* config)
     catch (...)
     {
         LOG("VideoConferenceModule::set_config: exception during saving new settings values");
-    }
-}
-
-void VideoConferenceModule::setMuteChangedCallback()
-{
-    // Keep all controlledMic mute state same _microphoneTrackedInUI
-    // Should not change manually in Control Panel
-    for (const auto& controlledMic : _controlledMicrophones)
-    {
-        if (controlledMic->id() != _microphoneTrackedInUI->id())
-        {
-            controlledMic->set_mute_changed_callback([&](const bool muted) {
-                auto muteState = getMicrophoneMuteState();
-                if (muted != muteState)
-                {
-                    controlledMic->set_muted(muteState);
-                }
-            });
-        }
     }
 }
 
@@ -552,7 +532,6 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
             controlledMic->set_muted(true);
         }
     }
-    setMuteChangedCallback();
 }
 
 MicrophoneDevice* VideoConferenceModule::controlledDefaultMic()

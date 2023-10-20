@@ -15,7 +15,7 @@ using ManagedCommon;
 
 namespace EnvironmentVariables.Models
 {
-    public partial class Variable : ObservableObject
+    public partial class Variable : ObservableObject, IJsonOnDeserialized
     {
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
@@ -40,9 +40,16 @@ namespace EnvironmentVariables.Models
         [JsonIgnore]
         public VariablesSetType ParentType { get; set; }
 
+        // To store the strings in the Values List with actual objects that can be referenced and identity compared
+        public class ValuesListItem
+        {
+            public string Text { get; set; }
+        }
+
         [ObservableProperty]
+        [property: JsonIgnore]
         [JsonIgnore]
-        private ObservableCollection<string> _valuesList;
+        private ObservableCollection<ValuesListItem> _valuesList;
 
         [JsonIgnore]
         public bool Valid => Validate();
@@ -65,6 +72,12 @@ namespace EnvironmentVariables.Models
             return false;
         }
 
+        public void OnDeserialized()
+        {
+            // No need to save ValuesList to the Json, so we are generating it after deserializing
+            ValuesList = ValuesStringToValuesListItemCollection(Values);
+        }
+
         public Variable()
         {
         }
@@ -75,11 +88,12 @@ namespace EnvironmentVariables.Models
             Values = values;
             ParentType = parentType;
 
-            var splitValues = Values.Split(';').Where(x => x.Length > 0).ToArray();
-            if (splitValues.Length > 0)
-            {
-                ValuesList = new ObservableCollection<string>(splitValues);
-            }
+            ValuesList = ValuesStringToValuesListItemCollection(Values);
+        }
+
+        internal static ObservableCollection<ValuesListItem> ValuesStringToValuesListItemCollection(string values)
+        {
+            return new ObservableCollection<ValuesListItem>(values.Split(';').Select(x => new ValuesListItem { Text = x }));
         }
 
         internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)
@@ -92,7 +106,7 @@ namespace EnvironmentVariables.Models
             Name = edited.Name;
             Values = edited.Values;
 
-            ValuesList = new ObservableCollection<string>(Values.Split(';').Where(x => x.Length > 0).ToArray());
+            ValuesList = ValuesStringToValuesListItemCollection(Values);
 
             return Task.Run(() =>
             {
@@ -133,14 +147,19 @@ namespace EnvironmentVariables.Models
                     var variableToOverride = EnvironmentVariablesHelper.GetExisting(Name);
 
                     // It exists. Rename it to preserve it.
-                    if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User)
+                    if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User && parentProfile != null)
                     {
+                        // Gets which name the backup variable should have.
                         variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, parentProfile.Name);
 
-                        // Backup the variable
-                        if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
+                        // Only create a backup variable if there's not one already, to avoid overriding. (solves Path nuking errors, for example, after editing path on an enabled profile)
+                        if (EnvironmentVariablesHelper.GetExisting(variableToOverride.Name) == null)
                         {
-                            Logger.LogError("Failed to set backup variable.");
+                            // Backup the variable
+                            if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
+                            {
+                                Logger.LogError("Failed to set backup variable.");
+                            }
                         }
                     }
 
@@ -159,7 +178,7 @@ namespace EnvironmentVariables.Models
                 Name = Name,
                 Values = Values,
                 ParentType = profile ? VariablesSetType.Profile : ParentType,
-                ValuesList = new ObservableCollection<string>(ValuesList),
+                ValuesList = ValuesStringToValuesListItemCollection(Values),
             };
         }
 

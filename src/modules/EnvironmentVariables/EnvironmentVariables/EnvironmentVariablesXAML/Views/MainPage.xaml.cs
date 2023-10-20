@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariables.Models;
 using EnvironmentVariables.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Foundation.Collections;
 
 namespace EnvironmentVariables.Views
 {
@@ -116,7 +117,7 @@ namespace EnvironmentVariables.Views
 
         private async void RemoveProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var button = sender as Button;
+            var button = sender as MenuFlyoutItem;
             var profile = button.CommandParameter as ProfileVariablesSet;
 
             if (profile != null)
@@ -283,7 +284,7 @@ namespace EnvironmentVariables.Views
         {
             SwitchViewsSegmentedView.SelectedIndex = 0;
 
-            var button = sender as Button;
+            var button = sender as MenuFlyoutItem;
             var profile = button.CommandParameter as ProfileVariablesSet;
 
             if (profile != null)
@@ -411,15 +412,12 @@ namespace EnvironmentVariables.Views
             var variable = EditVariableDialog.DataContext as Variable;
             EditVariableDialog.IsPrimaryButtonEnabled = true;
 
-            if (txtBox.Text.Contains(';'))
-            {
-                variable.ValuesList = new ObservableCollection<string>(txtBox.Text.Split(';').Where(x => x.Length > 0).ToArray());
-            }
+            variable.ValuesList = Variable.ValuesStringToValuesListItemCollection(txtBox.Text);
         }
 
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as string;
+            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -433,13 +431,13 @@ namespace EnvironmentVariables.Views
                 variable.ValuesList.Move(index, index - 1);
             }
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x).ToArray());
+            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
         private void ReorderButtonDown_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as string;
+            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -454,13 +452,13 @@ namespace EnvironmentVariables.Views
                 variable.ValuesList.Move(index, index + 1);
             }
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x).ToArray());
+            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
         private void RemoveListVariableButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as string;
+            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -469,8 +467,66 @@ namespace EnvironmentVariables.Views
             var variable = EditVariableDialog.DataContext as Variable;
             variable.ValuesList.Remove(listItem);
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x).ToArray());
+            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.Text = newValues;
+        }
+
+        private void InsertListEntryBeforeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var listItem = (sender as MenuFlyoutItem)?.DataContext as Variable.ValuesListItem;
+            if (listItem == null)
+            {
+                return;
+            }
+
+            var variable = EditVariableDialog.DataContext as Variable;
+            var index = variable.ValuesList.IndexOf(listItem);
+            variable.ValuesList.Insert(index, new Variable.ValuesListItem { Text = string.Empty });
+
+            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
+            EditVariableDialogValueTxtBox.Text = newValues;
+            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+        }
+
+        private void InsertListEntryAfterButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var listItem = (sender as MenuFlyoutItem)?.DataContext as Variable.ValuesListItem;
+            if (listItem == null)
+            {
+                return;
+            }
+
+            var variable = EditVariableDialog.DataContext as Variable;
+            var index = variable.ValuesList.IndexOf(listItem);
+            variable.ValuesList.Insert(index + 1, new Variable.ValuesListItem { Text = string.Empty });
+
+            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
+            EditVariableDialogValueTxtBox.Text = newValues;
+            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+        }
+
+        private void EditVariableValuesListTextBox_LostFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var listItem = (sender as TextBox)?.DataContext as Variable.ValuesListItem;
+            if (listItem == null)
+            {
+                return;
+            }
+
+            if (listItem.Text == (sender as TextBox)?.Text)
+            {
+                return;
+            }
+
+            listItem.Text = (sender as TextBox)?.Text;
+            var variable = EditVariableDialog.DataContext as Variable;
+
+            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
+            EditVariableDialogValueTxtBox.Text = newValues;
+            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
         }
 
         private void InvalidStateInfoBar_CloseButtonClick(InfoBar sender, object args)

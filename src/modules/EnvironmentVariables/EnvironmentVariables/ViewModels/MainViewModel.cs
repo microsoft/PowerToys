@@ -16,6 +16,7 @@ using EnvironmentVariables.Models;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EnvironmentVariables.ViewModels
 {
@@ -238,9 +239,20 @@ namespace EnvironmentVariables.ViewModels
         internal void UpdateProfile(ProfileVariablesSet updatedProfile)
         {
             var existingProfile = Profiles.Where(x => x.Id == updatedProfile.Id).FirstOrDefault();
-            existingProfile.Name = updatedProfile.Name;
-            existingProfile.IsEnabled = updatedProfile.IsEnabled;
-            existingProfile.Variables = updatedProfile.Variables;
+            if (existingProfile != null)
+            {
+                if (updatedProfile.IsEnabled)
+                {
+                    // Let's unset the profile before applying the update. Even if this one is the one that's currently set.
+                    UnsetAppliedProfile();
+                }
+
+                existingProfile.Name = updatedProfile.Name;
+                existingProfile.IsEnabled = updatedProfile.IsEnabled;
+                existingProfile.Variables = updatedProfile.Variables;
+            }
+
+            _ = Task.Run(SaveAsync);
         }
 
         private async Task SaveAsync()
@@ -365,6 +377,8 @@ namespace EnvironmentVariables.ViewModels
                 {
                     propagateChange = false;
                 }
+
+                _ = Task.Run(SaveAsync);
             }
             else
             {

@@ -145,18 +145,34 @@
     <value>Keep shell open</value>
   </data>
   <data name="wox_shell_command_execution" xml:space="preserve">
-    <value>Shell command execution</value>
+    <value>Command execution</value>
   </data>
   <data name="run_command_in_command_prompt" xml:space="preserve">
-    <value>Run command in Command Prompt (cmd.exe)</value>
+    <value>Run in Command Prompt (cmd.exe)</value>
   </data>
   <data name="run_command_in_powershell" xml:space="preserve">
-    <value>Run command in PowerShell (PowerShell.exe)</value>
+    <value>Run in PowerShell (PowerShell.exe)</value>
   </data>
   <data name="find_executable_file_and_run_it" xml:space="preserve">
-    <value>Find executable file and run it</value>
+    <value>Find and run the executable file</value>
   </data>
-  <data name="run_command_in_windows_terminal" xml:space="preserve">
-    <value>Run command in Windows Terminal (wt.exe)</value>
+  <data name="run_command_in_powershell_seven" xml:space="preserve">
+    <value>Run in PowerShell 7 (pwsh.exe)</value>
+  </data>
+  <data name="run_command_in_windows_terminal_cmd" xml:space="preserve">
+    <value>Run in Command Prompt (cmd.exe) using Windows Terminal</value>
+  </data>
+  <data name="run_command_in_windows_terminal_powershell" xml:space="preserve">
+    <value>Run in PowerShell (PowerShell.exe) using Windows Terminal</value>
+  </data>
+  <data name="run_command_in_windows_terminal_powershell_seven" xml:space="preserve">
+    <value>Run in PowerShell 7 (pwsh.exe) using Windows Terminal</value>
+  </data>
+  <data name="run_plugin_cmd_wait_message" xml:space="preserve">
+    <value>Press Enter to continue</value>
+    <comment>"Enter" means the Enter key on the keyboard.</comment>
+  </data>
+  <data name="wox_shell_command_execution_description" xml:space="preserve">
+    <value>All entries using the Windows Terminal force the Windows Terminal as the console host regardless of the system settings</value>
   </data>
 </root>

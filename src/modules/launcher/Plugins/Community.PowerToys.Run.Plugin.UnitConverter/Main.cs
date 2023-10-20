@@ -21,6 +21,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public string Description => Properties.Resources.plugin_description;
 
+        public static string PluginID => "aa0ee9daff654fb7be452c2d77c471b9";
+
         private PluginInitContext _context;
         private static string _icon_path;
         private bool _disposed;

@@ -203,6 +203,10 @@ public
             return gcnew String(CommonSharedConstants::SHOW_POWEROCR_SHARED_EVENT);
         }
 
+        static String ^ MouseJumpShowPreviewEvent() {
+            return gcnew String(CommonSharedConstants::MOUSE_JUMP_SHOW_PREVIEW_EVENT);
+        }
+
         static String ^ AwakeExitEvent() {
             return gcnew String(CommonSharedConstants::AWAKE_EXIT_EVENT);
         }
