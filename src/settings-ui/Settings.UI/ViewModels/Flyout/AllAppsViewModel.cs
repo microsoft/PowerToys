@@ -64,17 +64,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 
-        private void AddFlyoutMenuItem(string moduleName, bool moduleEnabled, string labelModuleName, string fluentIconModuleName)
+        private void AddFlyoutMenuItem(string moduleName, bool isModuleEnabled, string moduleLabelResourceName, string moduleFluentIconName)
         {
             GpoRuleConfigured gpo = GetModuleGpoConfiguration(moduleName);
 
             FlyoutMenuItems.Add(new FlyoutMenuItem()
             {
-                Label = resourceLoader.GetString(labelModuleName),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && moduleEnabled),
+                Label = resourceLoader.GetString(moduleLabelResourceName),
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && isModuleEnabled),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Tag = moduleName,
-                Icon = $"ms-appx:///Assets/Settings/FluentIcons/FluentIcons{fluentIconModuleName}.png",
+                Icon = $"ms-appx:///Assets/Settings/FluentIcons/FluentIcons{moduleFluentIconName}.png",
                 EnabledChangedCallback = EnabledChangedOnUI,
             });
         }
