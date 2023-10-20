@@ -542,11 +542,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ISettingsRepository<FancyZonesSettings> moduleSettingsRepository = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils());
             var settings = moduleSettingsRepository.SettingsConfig;
+            string activationMode = $"{resourceLoader.GetString(settings.Properties.FancyzonesShiftDrag.Value ? "FancyZones_ShiftDragCheckBoxControl_Header/Content" : "FancyZones_ActivationNoShiftDrag")}.";
+            if (settings.Properties.FancyzonesMouseSwitch.Value)
+            {
+                activationMode += $" {resourceLoader.GetString("FancyZones_MouseDragCheckBoxControl_Header/Content")}.";
+            }
+
             var list = new List<DashboardModuleItem>
             {
+                new DashboardModuleTextItem() { Label = activationMode },
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("FancyZones_OpenEditor"), Shortcut = settings.Properties.FancyzonesEditorHotkey.Value.GetKeysList() },
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("FancyZones_PreviousLayout"), Shortcut = settings.Properties.FancyzonesPrevTabHotkey.Value.GetKeysList() },
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("FancyZones_NextLayout"), Shortcut = settings.Properties.FancyzonesNextTabHotkey.Value.GetKeysList() },
                 new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Description"), ButtonGlyph = "\uEB3C", ButtonClickHandler = FancyZoneLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
