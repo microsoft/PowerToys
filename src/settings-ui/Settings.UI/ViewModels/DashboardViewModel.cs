@@ -106,6 +106,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 DashboardModuleItems = GetModuleItemsCropAndLock(),
             });
 
+            gpo = GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
+            _allModules.Add(new DashboardListItem()
+            {
+                Tag = "EnvironmentVariables",
+                Label = resourceLoader.GetString("EnvironmentVariables/ModuleTitle"),
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.EnvironmentVariables),
+                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
+                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsEnvironmentVariables.png",
+                EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = Color.FromArgb(255, 16, 132, 208), // #1084d0
+                DashboardModuleItems = GetModuleItemsEnvironmentVariables(),
+            });
+
             gpo = GPOWrapper.GetConfiguredFancyZonesEnabledValue();
             _allModules.Add(new DashboardListItem()
             {
@@ -538,6 +551,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsEnvironmentVariables()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("EnvironmentVariables_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("EnvironmentVariables_LaunchButtonControl/Description"), ButtonGlyph = "\uEA37", ButtonClickHandler = EnvironmentVariablesLaunchClicked },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         private ObservableCollection<DashboardModuleItem> GetModuleItemsFancyZones()
         {
             ISettingsRepository<FancyZonesSettings> moduleSettingsRepository = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils());
@@ -765,6 +787,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         internal void SWVersionButtonClicked()
         {
             NavigationService.Navigate(typeof(GeneralPage));
+        }
+
+        private void EnvironmentVariablesLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var settingsUtils = new SettingsUtils();
+            var environmentVariablesViewModel = new EnvironmentVariablesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<EnvironmentVariablesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
+            environmentVariablesViewModel.Launch();
         }
 
         private void HostLaunchClicked(object sender, RoutedEventArgs e)
