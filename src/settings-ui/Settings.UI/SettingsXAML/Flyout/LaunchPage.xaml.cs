@@ -42,6 +42,21 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                     }
 
                     break;
+                case "EnvironmentVariables": // Launch Environment Variables
+                    {
+                        bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                        string eventName = !App.IsElevated && launchAdmin
+                            ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
+                            : Constants.ShowEnvironmentVariablesSharedEvent();
+
+                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
+                        {
+                            eventHandle.Set();
+                        }
+                    }
+
+                    break;
+
                 case "FancyZones": // Launch FancyZones Editor
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent()))
                     {

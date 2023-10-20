@@ -28,6 +28,7 @@ namespace Common.UI
             PowerOCR,
             RegistryPreview,
             CropAndLock,
+            EnvironmentVariables,
             Dashboard,
         }
 
@@ -69,6 +70,8 @@ namespace Common.UI
                     return "RegistryPreview";
                 case SettingsWindow.CropAndLock:
                     return "CropAndLock";
+                case SettingsWindow.EnvironmentVariables:
+                    return "EnvironmentVariables";
                 case SettingsWindow.Dashboard:
                     return "Dashboard";
                 default:

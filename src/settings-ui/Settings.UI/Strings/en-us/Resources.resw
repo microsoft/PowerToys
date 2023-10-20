@@ -3461,6 +3461,48 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
   </data>
+  <data name="EnvironmentVariables.ModuleDescription" xml:space="preserve">
+    <value>A quick utility for managing environment variables.</value>
+  </data>
+  <data name="EnvironmentVariables.ModuleTitle" xml:space="preserve">
+    <value>Environment Variables</value>
+  </data>
+  <data name="Shell_EnvironmentVariables.Content" xml:space="preserve">
+    <value>Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="EnvironmentVariables_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Manage your environment variables</value>
+  </data>
+  <data name="EnvironmentVariables_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Launch Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch Environment Variables</value>
+  </data>
+  <data name="Launch_EnvironmentVariables.Content" xml:space="preserve">
+    <value>Launch Environment Variables</value>
+  </data>
+  <data name="LearnMore_EnvironmentVariables.Text" xml:space="preserve">
+    <value>Learn more about Environment Variables</value>
+  </data>
+  <data name="Oobe_EnvironmentVariables.Description" xml:space="preserve">
+    <value>Environment Variables is a quick utility for managing environment variables.</value>
+  </data>
+  <data name="Oobe_EnvironmentVariables.Title" xml:space="preserve">
+    <value>Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Description" xml:space="preserve">
+    <value>Needs to be launched as administrator in order to make changes to the system environment variables</value>
+  </data>
+  <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
+    <value>Launch as administrator</value>
+  </data>
   <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
     <value>Press duration before showing taskbar icon shortcuts (ms)</value>
     <comment>ms = milliseconds</comment>

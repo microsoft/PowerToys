@@ -676,6 +676,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "RegistryPreview";
     case ESettingsWindowNames::CropAndLock:
         return "CropAndLock";
+    case ESettingsWindowNames::EnvironmentVariables:
+        return "EnvironmentVariables";
     case ESettingsWindowNames::Dashboard:
         return "Dashboard";
     default:
@@ -756,6 +758,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "CropAndLock")
     {
         return ESettingsWindowNames::CropAndLock;
+    }
+    else if (value == "EnvironmentVariables")
+    {
+        return ESettingsWindowNames::EnvironmentVariables;
     }
     else if (value == "Dashboard")
     {

@@ -155,6 +155,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"WinUI3Apps/PowerToys.MeasureToolModuleInterface.dll",
             L"WinUI3Apps/PowerToys.HostsModuleInterface.dll",
             L"WinUI3Apps/PowerToys.Peek.dll",
+            L"WinUI3Apps/PowerToys.EnvironmentVariablesModuleInterface.dll",
             L"PowerToys.MouseWithoutBordersModuleInterface.dll",
             L"PowerToys.CropAndLockModuleInterface.dll",
         };
