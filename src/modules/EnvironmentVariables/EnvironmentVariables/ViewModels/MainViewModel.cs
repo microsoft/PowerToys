@@ -16,7 +16,6 @@ using EnvironmentVariables.Models;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EnvironmentVariables.ViewModels
 {
