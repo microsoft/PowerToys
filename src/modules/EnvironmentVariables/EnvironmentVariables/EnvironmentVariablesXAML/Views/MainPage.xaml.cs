@@ -173,7 +173,6 @@ namespace EnvironmentVariables.Views
         {
             AddNewVariableName.Text = string.Empty;
             AddNewVariableValue.Text = string.Empty;
-            ExistingVariablesListView.SelectedItems.Clear();
             AddVariableFlyout.Hide();
         }
 
