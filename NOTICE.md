@@ -312,6 +312,7 @@ SOFTWARE.
 - CommunityToolkit.Mvvm 8.2.0
 - CommunityToolkit.WinUI.Animations 8.0.230907
 - CommunityToolkit.WinUI.Controls.Primitives 8.0.230907
+- CommunityToolkit.WinUI.Controls.Segmented 8.0.230907
 - CommunityToolkit.WinUI.Controls.SettingsControls 8.0.230907
 - CommunityToolkit.WinUI.Controls.Sizers 8.0.230907
 - CommunityToolkit.WinUI.Converters 8.0.230907

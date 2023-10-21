@@ -928,7 +928,10 @@
     <value>This overrides the Windows Snap shortcut (Win + arrow) to move windows between zones</value>
   </data>
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
-    <value>Hold Shift key to activate zones while dragging</value>
+    <value>Hold Shift key to activate zones while dragging a window</value>
+  </data>
+  <data name="FancyZones_ActivationNoShiftDrag" xml:space="preserve">
+    <value>Drag windows to activate zones</value>
   </data>
   <data name="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Show zones on all monitors while dragging a window</value>
@@ -2716,6 +2719,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="VideoConference_DeprecationWarningButton.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
+  <data name="LearnMore.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
   </data>
@@ -2990,6 +2996,78 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
+  </data>
+  <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
+    <value>Pin a window</value>
+  </data>
+  <data name="Awake_ShortDescription" xml:space="preserve">
+    <value>Keep your PC awake</value>
+  </data>
+  <data name="ColorPicker_ShortDescription" xml:space="preserve">
+    <value>Pick a color</value>
+  </data>
+  <data name="CropAndLock_Thumbnail" xml:space="preserve">
+    <value>Thumbnail</value>
+  </data>
+  <data name="CropAndLock_Reparent" xml:space="preserve">
+    <value>Reparent</value>
+  </data>
+  <data name="FancyZones_OpenEditor" xml:space="preserve">
+    <value>Open editor</value>
+  </data>
+  <data name="FileLocksmith_ShortDescription" xml:space="preserve">
+    <value>Right-click on files or directories to show running processes</value>
+  </data>
+  <data name="FindMyMouse_ShortDescription" xml:space="preserve">
+    <value>Find the mouse</value>
+  </data>
+  <data name="ImageResizer_ShortDescription" xml:space="preserve">
+    <value>Select Image Resizer in the right-click context menu</value>
+  </data>
+  <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
+    <value>Highlight clicks</value>
+  </data>
+  <data name="MouseJump_ShortDescription" xml:space="preserve">
+    <value>Quickly move the mouse pointer</value>
+  </data>
+  <data name="MouseCrosshairs_ShortDescription" xml:space="preserve">
+    <value>Draw crosshairs centered on the mouse pointer</value>
+  </data>
+  <data name="MouseWithoutBorders_ShortDescription" xml:space="preserve">
+    <value>Move your cursor across multiple devices</value>
+  </data>
+  <data name="PastePlain_ShortDescription" xml:space="preserve">
+    <value>Paste clipboard content without formatting</value>
+  </data>
+  <data name="Peek_ShortDescription" xml:space="preserve">
+    <value>Quick and easy previewer</value>
+  </data>
+  <data name="PowerRename_ShortDescription" xml:space="preserve">
+    <value>Select Power Rename in right-click context menu</value>
+  </data>
+  <data name="Run_ShortDescription" xml:space="preserve">
+    <value>A quick launcher</value>
+  </data>
+  <data name="PowerAccent_ShortDescription" xml:space="preserve">
+    <value>An alternative way to type accented characters</value>
+  </data>
+  <data name="RegistryPreview_ShortDescription" xml:space="preserve">
+    <value>Visualize and edit Windows Registry files</value>
+  </data>
+  <data name="ScreenRuler_ShortDescription" xml:space="preserve">
+    <value>Measure pixels on your screen</value>
+  </data>
+  <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
+    <value>Show a help overlay with Windows shortcuts</value>
+  </data>
+  <data name="PowerOcr_ShortDescription" xml:space="preserve">
+    <value>A convenient way to copy text from anywhere on screen</value>
+  </data>
+  <data name="Dashboard_Activation" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="DashboardKBMShowMappingsButton.Content" xml:space="preserve">
+    <value>Show remappings</value>
   </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
     <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
@@ -3383,6 +3461,48 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
   </data>
+  <data name="EnvironmentVariables.ModuleDescription" xml:space="preserve">
+    <value>A quick utility for managing environment variables.</value>
+  </data>
+  <data name="EnvironmentVariables.ModuleTitle" xml:space="preserve">
+    <value>Environment Variables</value>
+  </data>
+  <data name="Shell_EnvironmentVariables.Content" xml:space="preserve">
+    <value>Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="EnvironmentVariables_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Manage your environment variables</value>
+  </data>
+  <data name="EnvironmentVariables_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Launch Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch Environment Variables</value>
+  </data>
+  <data name="Launch_EnvironmentVariables.Content" xml:space="preserve">
+    <value>Launch Environment Variables</value>
+  </data>
+  <data name="LearnMore_EnvironmentVariables.Text" xml:space="preserve">
+    <value>Learn more about Environment Variables</value>
+  </data>
+  <data name="Oobe_EnvironmentVariables.Description" xml:space="preserve">
+    <value>Environment Variables is a quick utility for managing environment variables.</value>
+  </data>
+  <data name="Oobe_EnvironmentVariables.Title" xml:space="preserve">
+    <value>Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Description" xml:space="preserve">
+    <value>Needs to be launched as administrator in order to make changes to the system environment variables</value>
+  </data>
+  <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
+    <value>Launch as administrator</value>
+  </data>
   <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
     <value>Press duration before showing taskbar icon shortcuts (ms)</value>
     <comment>ms = milliseconds</comment>
@@ -3415,7 +3535,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
   <data name="GPO_IsSettingForced.Title" xml:space="preserve">
-    <value>The system administrator is forcing this setting.</value>
+    <value>This setting is enforced by your System Administrator.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
@@ -3702,5 +3822,20 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="SettingsWindow_AdminTitle" xml:space="preserve">
     <value>Administrator: PowerToys Settings</value>
     <comment>Title of the settings window when running as administrator</comment>
+  </data>
+  <data name="DashboardTitle.Text" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Shell_Dashboard.Content" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="GPO_IsSettingForcedText.Text" xml:space="preserve">
+    <value>This setting is enforced by your System Administrator.</value>
+  </data>
+  <data name="DisabledModules.Text" xml:space="preserve">
+    <value>Disabled modules</value>
+  </data>
+  <data name="EnabledModules.Text" xml:space="preserve">
+    <value>Enabled modules</value>
   </data>
 </root>

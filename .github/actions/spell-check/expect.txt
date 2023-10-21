@@ -789,6 +789,7 @@ iid
 Iindex
 IIO
 iiq
+IJson
 Ijwhost
 IKs
 ILogon
@@ -914,6 +915,7 @@ Lastdevice
 Laute
 laviusmotileng
 LAYOUTRTL
+Lbl
 LBUTTON
 LBUTTONDBLCLK
 LBUTTONDOWN
@@ -1342,6 +1344,7 @@ PARTIALCONFIRMATIONDIALOGTITLE
 pasteplain
 PATCOPY
 pathcch
+PATHEXT
 Pathto
 PATINVERT
 PATPAINT
@@ -1469,6 +1472,7 @@ pscid
 PSECURITY
 psfgao
 psfi
+PSMODULEPATH
 Psr
 psrm
 psrree
@@ -1691,6 +1695,7 @@ setlocal
 SETREDRAW
 SETTEXT
 SETTINGCHANGE
+SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
 SETWORKAREA

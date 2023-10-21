@@ -82,6 +82,10 @@ namespace CommonSharedConstants
     const wchar_t CROP_AND_LOCK_THUMBNAIL_EVENT[] = L"Local\\PowerToysCropAndLockThumbnailEvent-1637be50-da72-46b2-9220-b32b206b2434";
     const wchar_t CROP_AND_LOCK_EXIT_EVENT[] = L"Local\\PowerToysCropAndLockExitEvent-d995d409-7b70-482b-bad6-e7c8666f375a";
 
+    // Path to the events used by EnvironmentVariables
+    const wchar_t SHOW_ENVIRONMENT_VARIABLES_EVENT[] = L"Local\\PowerToysEnvironmentVariables-ShowEnvironmentVariablesEvent-1021f616-e951-4d64-b231-a8f972159978";
+    const wchar_t SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT[] = L"Local\\PowerToysEnvironmentVariables-EnvironmentVariablesAdminEvent-8c95d2ad-047c-49a2-9e8b-b4656326cfb2";
+
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }

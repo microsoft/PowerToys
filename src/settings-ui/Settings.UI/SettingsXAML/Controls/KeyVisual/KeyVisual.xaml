@@ -5,9 +5,7 @@
 
     <x:Double x:Key="DefaultIconSize">16</x:Double>
     <x:Double x:Key="SmallIconSize">12</x:Double>
-    <Style
-        x:Key="DefaultTextKeyVisualStyle"
-        TargetType="local:KeyVisual">
+    <Style x:Key="DefaultTextKeyVisualStyle" TargetType="local:KeyVisual">
         <Setter Property="MinWidth" Value="56" />
         <Setter Property="MinHeight" Value="48" />
         <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}" />
@@ -23,26 +21,6 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:KeyVisual">
                     <Grid>
-                        <Grid>
-                            <Rectangle
-                                x:Name="ContentHolder"
-                                Height="{TemplateBinding Height}"
-                                MinWidth="{TemplateBinding MinWidth}"
-                                Fill="{TemplateBinding Background}"
-                                RadiusX="4"
-                                RadiusY="4"
-                                Stroke="{TemplateBinding BorderBrush}"
-                                StrokeThickness="{TemplateBinding BorderThickness}" />
-                            <ContentPresenter
-                                x:Name="KeyPresenter"
-                                Margin="{TemplateBinding Padding}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="Center"
-                                Content="{TemplateBinding Content}"
-                                FontSize="{TemplateBinding FontSize}"
-                                FontWeight="{TemplateBinding FontWeight}"
-                                Foreground="{TemplateBinding Foreground}" />
-                        </Grid>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -67,6 +45,26 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+                        <Grid>
+                            <Rectangle
+                                x:Name="ContentHolder"
+                                Height="{TemplateBinding Height}"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                Fill="{TemplateBinding Background}"
+                                RadiusX="4"
+                                RadiusY="4"
+                                Stroke="{TemplateBinding BorderBrush}"
+                                StrokeThickness="{TemplateBinding BorderThickness}" />
+                            <ContentPresenter
+                                x:Name="KeyPresenter"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontWeight="{TemplateBinding FontWeight}"
+                                Foreground="{TemplateBinding Foreground}" />
+                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -99,6 +97,7 @@
         <Setter Property="FontSize" Value="13" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
+
 
 
     <Style
@@ -139,6 +138,37 @@
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="FontSize" Value="9" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style
+        x:Key="OnlyTextKeyVisualStyle"
+        BasedOn="{StaticResource DefaultTextKeyVisualStyle}"
+        TargetType="local:KeyVisual">
+        <Setter Property="MinHeight" Value="12" />
+        <Setter Property="MinWidth" Value="12" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style
+        x:Key="OnlyIconKeyVisualStyle"
+        BasedOn="{StaticResource DefaultTextKeyVisualStyle}"
+        TargetType="local:KeyVisual">
+        <Setter Property="MinHeight" Value="10" />
+        <Setter Property="MinWidth" Value="10" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Padding" Value="0,0,0,3" />
+        <!--<Setter Property="FontSize" Value="9" />-->
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 </ResourceDictionary>

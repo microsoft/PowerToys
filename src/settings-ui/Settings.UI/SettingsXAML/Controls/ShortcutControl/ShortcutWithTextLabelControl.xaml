@@ -23,9 +23,7 @@
             ItemsSource="{x:Bind Keys}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel
-                        Orientation="Horizontal"
-                        Spacing="4" />
+                    <StackPanel Orientation="Horizontal" Spacing="4" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
@@ -41,7 +39,6 @@
         </ItemsControl>
         <toolkitcontrols:MarkdownTextBlock
             Grid.Column="1"
-            Margin="8,0,0,0"
             VerticalAlignment="Center"
             Background="Transparent"
             Text="{x:Bind Text}" />
