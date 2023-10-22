@@ -1,196 +1,25 @@
-## Install tests
- * install a **previous version** on a clean machine (a clean machine doesn't have the `%localappdata%\Microsoft\PowerToys` folder)
- * open the Settings and for each module change at least one option
- * open the FancyZones editor and create two custom layouts:
-    * a canvas layout with 2 zones, use unicode chars in the layout's name
-    * one from grid template using 4 zones and splitting one zone
-    * apply the custom canvas layout to the primary desktop
-    * create a virtual desktop and apply the custom grid layout
-    * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
- * install the new version (it will uninstall the old version and install the new version)
- - [x] verify the settings are preserved and FancyZones configuration is still the same
- - [x] test installing as SYSTEM (LocalSystem account)
-   * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
-   * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe`
-   * Brief check if all modules are working
-
- * PER-USER and PER-MACHINE TESTS:
-   * Install **previous version** on a clean machine and update with new per-machine version. Ensure that it is installed in Program files and that registry entries are under **HKLM**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
-   * Try installing per-user version over already installed per-machine version and ensure that proper error message is shown.
-   * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
-   * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
-
 ## Functional tests
 
  Regressions:
- - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [x] https://github.com/microsoft/PowerToys/issues/1524
+ - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [ ] https://github.com/microsoft/PowerToys/issues/1524
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [x] System tray menu items
- - [x] Settings
- - [x] OOBE (What's new)
- - [x] Keyboard Manager Editor
- - [x] Color Picker (check the tooltips)
- - [x] FancyZones Editor
- - [x] Power Rename (new WinUI 3 may not be localized)
- - [x] PowerToys Run ("Start typing" string is localized, for example)
- - [x] Image Resizer
- - [x] Shortcut Guide (Windows controls are localized)
- - [x] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [x] Hosts File Editor
- - [x] File Locksmith
+ - [ ] System tray menu items
+ - [ ] Settings
+ - [ ] OOBE (What's new)
+ - [ ] Keyboard Manager Editor
+ - [ ] Color Picker (check the tooltips)
+ - [ ] FancyZones Editor
+ - [ ] Power Rename (new WinUI 3 may not be localized)
+ - [ ] PowerToys Run ("Start typing" string is localized, for example)
+ - [ ] Image Resizer
+ - [ ] Shortcut Guide (Windows controls are localized)
+ - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [ ] Hosts File Editor
+ - [ ] File Locksmith
 
-## General Settings
-
-**Admin mode:**
- - [x] restart PT and verify it runs as user
- - [x] restart as admin and set "Always run as admin"
- - [x] restart PT and verify it  runs as admin
- * if it's not on, turn on "Run at startup"
- - [x] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
- * turn Always run as admin" off
- - [x] reboot the machine and verify it now runs as user
-
-**Modules on/off:**
- - [x] turn off all the modules and verify all module are off
- - [x] restart PT and verify that all module are still off in the settings page and they are actually inactive
- - [x] turn on all the module, all module are now working
- - [x] restart PT and verify that all module are still on in the settings page and they are actually working
-
-**Quick access tray icon flyout:**
- - [x] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
- - [x] Try to launch a module from the launch screen in the flyout.
- - [x] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
- - [x] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
-
-**Settings backup/restore:**
- - [x] In the General tab, create a backup of the settings.
- - [x] Change some settings in some PowerToys.
- - [x] Restore the settings in the General tab and verify the Settings you've applied were reset.
-
-## Keyboard Manager
-
-UI Validation:
-
-  - [x] In Remap keys, add and remove rows to validate those buttons. While the blank rows are present, pressing the OK button should result in a warning dialog that some mappings are invalid.
-  - [x] Using only the Type buttons, for both the remap windows, try adding keys/shortcuts in all the columns. The right-side column in both windows should accept both keys and shortcuts, while the left-side column will accept only keys or only shortcuts for Remap keys and Remap shortcuts respectively. Validate that the Hold Enter and Esc accessibility features work as expected.
-  - [x] Using the drop downs try to add key to key, key to shortcut, shortcut to key and shortcut to shortcut remapping and ensure that you are able to select remapping both by using mouse and by keyboard navigation.
-  - [x] Validate that remapping can be saved by pressing the OK button and re-opening the windows loads existing remapping.
-
-Remapping Validation:
-
-For all the remapping below, try pressing and releasing the remapped key/shortcut and pressing and holding it. Try different behaviors like releasing the modifier key before the action key and vice versa.
-  - [x] Test key to key remapping
-    - A->B
-    - Ctrl->A
-    - A->Ctrl
-    - Win->B (make sure Start menu doesn't appear accidentally)
-    - B->Win (make sure Start menu doesn't appear accidentally)
-    - A->Disable
-    - Win->Disable
-  - [x] Test key to shortcut remapping
-    - A->Ctrl+V
-    - B->Win+A
-  - [x] Test shortcut to shortcut remapping
-    - Ctrl+A->Ctrl+V
-    - Win+A->Ctrl+V
-    - Ctrl+V->Win+A
-    - Win+A->Win+F
-  - [x] Test shortcut to key remapping
-    - Ctrl+A->B
-    - Ctrl+A->Win
-    - Win+A->B
-  * Test app-specific remaps
-    - [x] Similar remaps to above with Edge (entered as `msedge`), VSCode (entered as `code`) and cmd. For cmd try admin and non-admin (requires PT to run as admin)
-    - [x] Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
-  - [x] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
-
-## Screen Ruler
- * Enable Screen Ruler. Then:
-   - [x] Press the activation shortcut and verify the toolbar appears.
-   - [x] Press the activation shortcut again and verify the toolbar disappears.
-   - [x] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
-   - [x] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
-   - [x] Select the close button in the toolbar and verify it closes the utility.
- * With Screen Ruler enabled and activated:
-   - [x] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
-   - [x] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [x] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [x] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [x] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
-   - [x] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
- * In a multi-monitor setup with different dpis on each monitor:
-   - [x] Verify that the utilities work well on each monitor, with continuous mode on and off.
-   - [x] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
-   - [x] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
-   
- * Test the different settings and verify they are applied:
-   - [x] Activation shortcut
-   - [x] Continous mode
-   - [x] Per color channel edge detection
-   - [x] Pixel tolerance for edge detection
-   - [x] Draw feet on cross
-   - [x] Line color
-
-## File Locksmith
- * Start the PowerToys installer executable and let it stay in the initial screen.
-   - [x] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
-   - [x] End the tasks in File Locksmith UI and verify that closes the installer.
-   - [x] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
-   - [x] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
- * Start the PowerToys installer executable again and let it stay in the initial screen.
-   - [x] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
-   - [x] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
- * Restart PowerToys as admin.
-   - [x] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
-   - [x] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
- - [x] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
- - [x] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
-
-## GPO
- * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
- * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
- * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
- * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
- * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
- * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
- * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
-
-## Paste As Plain Text
- * Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.). Then:
-   - [x] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
-   - [x] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
-   - [x] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
-   - [x] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
-   - [x] Disable the module and ensure that text is not being pasted using activation shortcut. 
-
-## Crop And Lock
- * Thumbnail mode
-   - [x] Test with win32 app
-   - [x] Test with packaged app
-   
- * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
-   - [x] Test with win32 app
-   - [x] Test with packaged app
-
-## Additional tests
 ## FancyZones Editor
 
 - [ ] Open editor from the settings
@@ -370,35 +199,119 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
-   - [x] verify the README.md Preview Pane shows the correct content
+   - [ ] verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [x] verify Preview Pane works for the SVG files
-   - [x] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [ ] verify Preview Pane works for the SVG files
+   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [x] verify Preview Pane works for the PDF file
-   - [x] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   - [ ] verify Preview Pane works for the PDF file
+   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [x] verify Preview Pane works for the gcode file
-   - [x] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
+   - [ ] verify Preview Pane works for the gcode file
+   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [x] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\runner
-   - [x] verify Preview Pane works for source files (shows syntax highlighting)
+   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
  * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [x] verify the README.md Preview Pane doesn't show any content
+   - [ ] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [x] verify Preview Pane doesn't show the preview for the SVG files
+   - [ ] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [x] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [x] verify Preview Pane doesn't show the preview for the PDF file
+   - [ ] verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [x] verify Preview Pane doesn't show the preview for the gcode file
+   - [ ] verify Preview Pane doesn't show the preview for the gcode file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [x] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
    * go to PowerToys repo and visit src\runner
-   - [x] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
+## PowerRename
+- [ ] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
+- [ ] Check that with the `Show icon on context menu` icon is shown and vice versa.
+- [ ] Check if `Appear only in extended context menu` works.
+- [ ] Enable/disable autocomplete.
+- [ ] Enable/disable `Show values from last use`.
+* Select several files and folders and check PowerRename options:
+    - [ ] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
+    - [ ] Exclude Folders/Files/Subfolder Items (could be selected several)
+    - [ ] Item Name/Extension Only (one at the time)
+    - [ ] Enumerate Items. Test advanced enumeration using different values for every field ${start=10,increment=2,padding=4}.
+    - [ ] Case Sensitive
+    - [ ] Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
+    * Use regular expressions
+        - [ ] Search with an expression (e.g. `(.*).png`)
+        - [ ] Replace with an expression (e.g. `foo_$1.png`)
+        - [ ] Replace using file creation date and time (e.g. `$hh-$mm-$ss-$fff` `$DD_$MMMM_$YYYY`)
+        - [ ] Turn on `Use Boost library` and test with Perl Regular Expression Syntax (e.g. `(?<=t)est`)
+    * File list filters.
+        - [ ] In the `preview` window uncheck some items to exclude them from renaming.
+        - [ ] Click on the `Renamed` column to filter results.
+        - [ ] Click on the `Original` column to cycle between checked and unchecked items.
 
+## Shortcut Guide
+ * Run PowerToys as user:
+   - [ ] Verify `Win + Shift + /` opens the guide
+   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
+ * Restore the `Win + Shift + /` hotkey.
+   - [ ] Open the guide and close it pressing `Esc`
+   - [ ] Open the guide and close it pressing and releasing the `Win` key
+ * With PowerToys running as a user, open an elevated app and keep it on foreground:
+   - [ ] Verify `Win + Shift + /` opens the guide
+   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+
+## Always on Top
+ - [ ] Pin/unpin a window, verify it's topmost/not topmost.
+ - [ ] Pin/unpin a window, verify the border appeared/disappeared.
+ - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
+ - [ ] Minimize and maximize pinned window, verify the border looks as usual.
+ - [ ] Change border color and thickness.
+ - [ ] Verify if sound is played according to the sound setting.
+ - [ ] Exclude app, try to pin it.
+ - [ ] Exclude already pinned app, verify it was unpinned.
+ - [ ] Try to pin the app in the Game Mode.
+
+## Quick Accent
+ * Enable Quick Accent and open notepad. Then:
+   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+ * Test the different settings and verify they are applied:
+   - [ ] Activation key
+   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [ ] Toolbar position (test every option, some had issues before)
+   - [ ] Input delay
+   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [ ] Sort characters by frequency.
+   - [ ] Always start on the first character when using left/right arrows as activation method.
+
+## Registry Preview
+ * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
+ * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
+   - [ ] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
+   - [ ] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
+   - [ ] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
+   - [ ] Try opening different registry file by pressing Open file button.
+   - [ ] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
+   
+ * Open Registry Preview Settings. Then:
+   - [ ] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
+   - [ ] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
+   - [ ] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
+   - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
+   - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
+   - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
+   
+## Crop And Lock
+ * Thumbnail mode
+   - [ ] Test with win32 app
+   - [ ] Test with packaged app
+   
+ * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
+   - [ ] Test with win32 app
+   - [ ] Test with packaged app

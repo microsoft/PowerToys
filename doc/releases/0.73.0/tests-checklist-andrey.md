@@ -263,3 +263,28 @@ Mouse Jump:
  * Test Settings:
    - [ ] Change the rest of available settings on MWB page and verify that each setting works as described.
    
+## Additional tests
+## VCM
+ - [ ] Check "Hide toolbar when both camera and microphone are unmuted" and verify that it works
+ - [ ] Uncheck it, mute the microphone with the hotkey and make sure the toolbar doesn't hide after a timeout
+ - [ ] Go to some video conference application settings, e.g. meet.google.com, Microsoft Teams, Skype. "Select PowerToys VideoConference Mute" camera as an active device and try to mute it with a hotkey
+ - [ ] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now mute the microphone with a corresponding hotkey and verify that mute icon on the right side of volume slider reflects its muted status.
+ - [ ] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now press and release push-to-talk hotkey and verify that mute icon on the right side of volume slider reflects the actions.
+ - [ ] Verify that changing "toolbar position" setting works 
+ - [ ] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
+ - [ ] Try to select an overlay image when PT process is elevated.
+
+## Quick Accent
+ * Enable Quick Accent and open notepad. Then:
+   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+ * Test the different settings and verify they are applied:
+   - [ ] Activation key
+   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [ ] Toolbar position (test every option, some had issues before)
+   - [ ] Input delay
+   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [ ] Sort characters by frequency.
+   - [ ] Always start on the first character when using left/right arrows as activation method.
+

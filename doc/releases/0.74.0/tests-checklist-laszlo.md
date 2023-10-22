@@ -1,25 +1,42 @@
-## PowerRename
-- [ ] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
-- [ ] Check that with the `Show icon on context menu` icon is shown and vice versa.
-- [ ] Check if `Appear only in extended context menu` works.
-- [ ] Enable/disable autocomplete.
-- [ ] Enable/disable `Show values from last use`.
-* Select several files and folders and check PowerRename options:
-    - [ ] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
-    - [ ] Exclude Folders/Files/Subfolder Items (could be selected several)
-    - [ ] Item Name/Extension Only (one at the time)
-    - [ ] Enumerate Items. Test advanced enumeration using different values for every field ${start=10,increment=2,padding=4}.
-    - [ ] Case Sensitive
-    - [ ] Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
-    * Use regular expressions
-        - [ ] Search with an expression (e.g. `(.*).png`)
-        - [ ] Replace with an expression (e.g. `foo_$1.png`)
-        - [ ] Replace using file creation date and time (e.g. `$hh-$mm-$ss-$fff` `$DD_$MMMM_$YYYY`)
-        - [ ] Turn on `Use Boost library` and test with Perl Regular Expression Syntax (e.g. `(?<=t)est`)
-    * File list filters.
-        - [ ] In the `preview` window uncheck some items to exclude them from renaming.
-        - [ ] Click on the `Renamed` column to filter results.
-        - [ ] Click on the `Original` column to cycle between checked and unchecked items.
+## Color Picker
+* Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
+  - [ ] when PowerToys is running unelevated on start-up
+  - [ ] when PowerToys is running as admin on start-up
+  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
+- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
+- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
+- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
+- [ ] Try to copy color formats to the clipboard from the Editor
+- [ ] Check `Show color name` and verify if color name is shown in the Color picker
+- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
+- [ ] Select a color from the history in the Editor
+- [ ] Remove color from the history in the Editor
+- [ ] Open the Color Picker from the Editor
+- [ ] Open Adjust color from the Editor
+- [ ] Check Color Picker logs for errors
+
+## Image Resizer
+- [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
+- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
+- [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
+- [ ] Resize one image
+- [ ] Resize multiple images
+- [ ] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
+
+- [ ] Resize images with `Fill` option
+- [ ] Resize images with `Fit` option
+- [ ] Resize images with `Stretch` option
+
+- [ ] Resize images using dimension: Centimeters
+- [ ] Resize images using dimension: Inches
+- [ ] Resize images using dimension: Percents
+- [ ] Resize images using dimension: Pixels
+
+- [ ] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
+- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
+- [ ] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
+- [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
+- [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
 
 ## PowerToys Run
 
@@ -56,18 +73,6 @@
    - [ ] Change `Include in global result` and verify changes picked up by PT Run
    - [ ] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
    - [ ] Disable all plugins and verify the warning message is shown.
-
-## Shortcut Guide
- * Run PowerToys as user:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
-   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
- * Restore the `Win + Shift + /` hotkey.
-   - [ ] Open the guide and close it pressing `Esc`
-   - [ ] Open the guide and close it pressing and releasing the `Win` key
- * With PowerToys running as a user, open an elevated app and keep it on foreground:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ## OOBE
  * Quit PowerToys
@@ -158,16 +163,21 @@ Mouse Jump:
  - [ ] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
  - [ ] Try to select an overlay image when PT process is elevated.
 
-## Always on Top
- - [ ] Pin/unpin a window, verify it's topmost/not topmost.
- - [ ] Pin/unpin a window, verify the border appeared/disappeared.
- - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
- - [ ] Minimize and maximize pinned window, verify the border looks as usual.
- - [ ] Change border color and thickness.
- - [ ] Verify if sound is played according to the sound setting.
- - [ ] Exclude app, try to pin it.
- - [ ] Exclude already pinned app, verify it was unpinned.
- - [ ] Try to pin the app in the Game Mode.
+## Text Extractor
+ * Enable Text Extractor. Then:
+   - [ ] Press the activation shortcut and verify the overlay appears.
+   - [ ] Press Escape and verify the overlay disappears.
+   - [ ] Press the activation shortcut and verify the overlay appears.
+   - [ ] Right-click and select Cancel. Verify the overlay disappears.
+   - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+ * With Text Extractor enabled and activated:
+   - [ ] Try to select text and verify it is copied to the clipboard.
+   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
+ * In a multi-monitor setup with different dpis on each monitor:
+   - [ ] Verify text is correctly captured on all monitors.
+ * Test the different settings and verify they are applied:
+   - [ ] Activation shortcut
+   - [ ] OCR Language
 
 ## Hosts File Editor
  * Launch Host File Editor:
@@ -197,6 +207,30 @@ Mouse Jump:
    - [ ] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
  - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
  - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
+
+## GPO
+ * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
+   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+ * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled.
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+ * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is enabled.
+   - [ ] Open settings and verify the module is enabled and you can't disable it.
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+ * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
+   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+ * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled. (No context menu entry)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+ * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+ * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## Registry Preview
  * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
@@ -238,22 +272,4 @@ Mouse Jump:
  - [ ] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
  - [ ] Open multiple files, verify you can switch only between selected files.
  - [ ] Change the shortcut, verify the new one works.
-
-## Additional tests
-## Color Picker
-* Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
-  - [ ] when PowerToys is running unelevated on start-up
-  - [ ] when PowerToys is running as admin on start-up
-  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
-- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
-- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
-- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
-- [ ] Try to copy color formats to the clipboard from the Editor
-- [ ] Check `Show color name` and verify if color name is shown in the Color picker
-- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [ ] Select a color from the history in the Editor
-- [ ] Remove color from the history in the Editor
-- [ ] Open the Color Picker from the Editor
-- [ ] Open Adjust color from the Editor
-- [ ] Check Color Picker logs for errors
 
