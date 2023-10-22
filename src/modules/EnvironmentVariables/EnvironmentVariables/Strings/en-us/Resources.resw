@@ -170,10 +170,10 @@
     <value>Add variable</value>
   </data>
   <data name="AddNewVariableName.Header" xml:space="preserve">
-    <value>Variable name</value>
+    <value>Name</value>
   </data>
   <data name="AddNewVariableValue.Header" xml:space="preserve">
-    <value>Variable value</value>
+    <value>Value</value>
   </data>
   <data name="ExistingVariableSegmentedButton.Content" xml:space="preserve">
     <value>Existing</value>
