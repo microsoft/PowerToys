@@ -6,5 +6,5 @@ public:
 	KeyboardInput() = default;
     ~KeyboardInput() = default;
 
-	bool Initialize(HWND window);
+	static bool Initialize(HWND window);
 };
