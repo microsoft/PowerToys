@@ -171,9 +171,11 @@
   </data>
   <data name="AddNewVariableName.Header" xml:space="preserve">
     <value>Name</value>
+    <comment>Name as in Environment variable name</comment>
   </data>
   <data name="AddNewVariableValue.Header" xml:space="preserve">
     <value>Value</value>
+    <comment>Value as in Environment variable value</comment>
   </data>
   <data name="ExistingVariableSegmentedButton.Content" xml:space="preserve">
     <value>Existing</value>
