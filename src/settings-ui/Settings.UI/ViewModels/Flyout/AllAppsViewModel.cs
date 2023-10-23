@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             AddFlyoutMenuItem("KeyboardManager", generalSettingsConfig.Enabled.KeyboardManager, "KeyboardManager/ModuleTitle", "KeyboardManager");
             AddFlyoutMenuItem("MouseHighlighter", generalSettingsConfig.Enabled.MouseHighlighter, "MouseUtils_MouseHighlighter/Header", "MouseHighlighter");
             AddFlyoutMenuItem("MouseJump", generalSettingsConfig.Enabled.MouseJump, "MouseUtils_MouseJump/Header", "MouseJump");
-            AddFlyoutMenuItem("MousePointerCrosshairs", generalSettingsConfig.Enabled.MousePointerCrosshairs, "MouseUtils_MousePointerCrosshairs/Header", "MousePointerCrosshairs");
+            AddFlyoutMenuItem("MousePointerCrosshairs", generalSettingsConfig.Enabled.MousePointerCrosshairs, "MouseUtils_MousePointerCrosshairs/Header", "MouseCrosshairs");
             AddFlyoutMenuItem("MouseWithoutBorders", generalSettingsConfig.Enabled.MouseWithoutBorders, "MouseWithoutBorders/ModuleTitle", "MouseWithoutBorders");
             AddFlyoutMenuItem("PastePlain", generalSettingsConfig.Enabled.PastePlain, "PastePlain/ModuleTitle", "PastePlain");
             AddFlyoutMenuItem("Peek", generalSettingsConfig.Enabled.Peek, "Peek/ModuleTitle", "Peek");
