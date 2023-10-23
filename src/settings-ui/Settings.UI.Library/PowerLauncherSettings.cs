@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             };
 
             if (settingsUtils == null)

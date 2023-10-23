@@ -135,6 +135,10 @@
     <value>Crop And Lock (Thumbnail)</value>
     <comment>"Crop And Lock" is the name of the utility, "Thumbnail" is the activation mode</comment>
   </data>
+  <data name="Environment_Variables" xml:space="preserve">
+    <value>Environment Variables</value>
+    <comment>"Environment Variables" is the name of the utility</comment>
+  </data>
   <data name="FancyZones_Editor" xml:space="preserve">
     <value>FancyZones Editor</value>
     <comment>"FancyZones" is the name of the utility</comment>

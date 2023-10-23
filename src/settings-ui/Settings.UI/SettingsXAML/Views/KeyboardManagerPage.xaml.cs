@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private int FilterRemapKeysList(List<KeysDataModel> remapKeysList)
+        public static int FilterRemapKeysList(List<KeysDataModel> remapKeysList)
         {
             if (remapKeysList != null)
             {

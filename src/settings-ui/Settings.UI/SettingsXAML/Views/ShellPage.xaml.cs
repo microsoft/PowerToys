@@ -236,7 +236,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public void Refresh()
         {
-            shellFrame.Navigate(typeof(GeneralPage));
+            shellFrame.Navigate(typeof(DashboardPage));
         }
 
         // Tell the current page view model to update
@@ -361,7 +361,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         internal static void EnsurePageIsSelected()
         {
-            NavigationService.EnsurePageIsSelected(typeof(GeneralPage));
+            NavigationService.EnsurePageIsSelected(typeof(DashboardPage));
         }
 
         private void SetTitleBar()

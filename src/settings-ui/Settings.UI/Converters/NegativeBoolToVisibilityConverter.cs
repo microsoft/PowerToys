@@ -23,7 +23,15 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            throw new NotImplementedException();
+            if (value is Visibility)
+            {
+                if ((Visibility)value == Visibility.Visible)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

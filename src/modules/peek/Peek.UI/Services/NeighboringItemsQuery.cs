@@ -2,10 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Peek.Common.Models;
-using Peek.UI.Extensions;
 using Peek.UI.Helpers;
 using Peek.UI.Models;
 
@@ -16,10 +13,8 @@ namespace Peek.UI
         [ObservableProperty]
         private bool isMultipleFilesActivation;
 
-        public NeighboringItems? GetNeighboringItems()
+        public NeighboringItems? GetNeighboringItems(Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {
-            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
-
             var selectedItemsShellArray = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
             var selectedItemsCount = selectedItemsShellArray?.GetCount() ?? 0;
 

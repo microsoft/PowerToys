@@ -22,6 +22,8 @@
 
   <ItemGroup>
     <None Remove="HelperFiles\sample.gcode" />
+    <None Remove="HelperFiles\sample_JPG.gcode" />
+    <None Remove="HelperFiles\sample_QOI.gcode" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +41,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="HelperFiles\sample.gcode">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="HelperFiles\sample_JPG.gcode">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="HelperFiles\sample_QOI.gcode">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />

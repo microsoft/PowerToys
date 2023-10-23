@@ -1,4 +1,4 @@
-<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+﻿<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
 <!--  Licensed under the MIT License.  -->
 
 <UserControl
@@ -7,8 +7,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Peek.UI.Views"
-    FlowDirection="{x:Bind TitleBarFlowDirection, Mode=OneWay}"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    FlowDirection="{x:Bind TitleBarFlowDirection, Mode=OneWay}"
     mc:Ignorable="d">
 
     <Grid x:Name="TitleBarRootContainer" Height="48">

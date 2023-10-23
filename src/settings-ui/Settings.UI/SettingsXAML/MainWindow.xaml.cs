@@ -100,6 +100,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "CropAndLock":
                         needToUpdate = generalSettingsConfig.Enabled.CropAndLock != isEnabled;
                         generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
+                    case "EnvironmentVariables":
+                        needToUpdate = generalSettingsConfig.Enabled.EnvironmentVariables != isEnabled;
+                        generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
                     case "FancyZones":
                         needToUpdate = generalSettingsConfig.Enabled.FancyZones != isEnabled;
                         generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
