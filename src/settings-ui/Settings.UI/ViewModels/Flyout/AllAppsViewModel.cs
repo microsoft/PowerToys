@@ -102,11 +102,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case "Peek": return GPOWrapper.GetConfiguredPeekEnabledValue();
                 case "PowerRename": return GPOWrapper.GetConfiguredPowerRenameEnabledValue();
                 case "PowerLauncher": return GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
-                case "QuickAccent": return GPOWrapper.GetConfiguredQuickAccentEnabledValue();
+                case "PowerAccent": return GPOWrapper.GetConfiguredQuickAccentEnabledValue();
                 case "RegistryPreview": return GPOWrapper.GetConfiguredRegistryPreviewEnabledValue();
-                case "ScreenRuler": return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
+                case "MeasureTool": return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
                 case "ShortcutGuide": return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
-                case "TextExtractor": return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
+                case "PowerOCR": return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
         }
