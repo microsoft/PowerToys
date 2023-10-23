@@ -53,7 +53,10 @@
                         </StackPanel>
                     </controls:SettingsCard.Description>
 
-                    <Button Content="{ui:FontIcon Glyph=&#xE712;}" Style="{StaticResource SubtleButtonStyle}">
+                    <Button
+                        Content="{ui:FontIcon Glyph=&#xE712;}"
+                        IsEnabled="{x:Bind IsEditable}"
+                        Style="{StaticResource SubtleButtonStyle}">
                         <Button.Flyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem
