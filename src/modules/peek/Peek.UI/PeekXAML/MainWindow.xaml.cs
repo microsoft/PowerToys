@@ -184,7 +184,7 @@ namespace Peek.UI
             }
 
             this.Show();
-            this.BringToForeground();
+            WindowHelpers.BringToForeground(this.GetWindowHandle());
         }
 
         private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
