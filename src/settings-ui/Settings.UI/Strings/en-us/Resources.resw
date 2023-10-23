@@ -3022,7 +3022,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Find the mouse</value>
   </data>
   <data name="ImageResizer_ShortDescription" xml:space="preserve">
-    <value>Select Image Resizer in the right-click context menu</value>
+    <value>Resize images from right-click context menu</value>
   </data>
   <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
     <value>Highlight clicks</value>
@@ -3043,7 +3043,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Quick and easy previewer</value>
   </data>
   <data name="PowerRename_ShortDescription" xml:space="preserve">
-    <value>Select Power Rename in right-click context menu</value>
+    <value>Rename files and folders from right-click context menu</value>
   </data>
   <data name="Run_ShortDescription" xml:space="preserve">
     <value>A quick launcher</value>
