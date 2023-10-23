@@ -32,14 +32,6 @@ FancyZonesApp::~FancyZonesApp()
         m_app->Destroy();
         m_app = nullptr;
 
-        if (s_llKeyboardHook)
-        {
-            if (UnhookWindowsHookEx(s_llKeyboardHook))
-            {
-                s_llKeyboardHook = nullptr;
-            }
-        }
-
         m_staticWinEventHooks.erase(std::remove_if(begin(m_staticWinEventHooks),
                                                    end(m_staticWinEventHooks),
                                                    [](const HWINEVENTHOOK hook) {
@@ -66,24 +58,6 @@ void FancyZonesApp::Run()
 
 void FancyZonesApp::InitHooks()
 {
-#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
-    const bool hook_disabled = IsDebuggerPresent();
-#else
-    const bool hook_disabled = false;
-#endif
-
-    if (!hook_disabled)
-    {
-        s_llKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
-        if (!s_llKeyboardHook)
-        {
-            DWORD errorCode = GetLastError();
-            show_last_error_message(L"SetWindowsHookEx", errorCode, GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str());
-            auto errorMessage = get_last_error_message(errorCode);
-            Trace::FancyZones::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"enable.SetWindowsHookEx");
-        }
-    }
-
     std::array<DWORD, 6> events_to_subscribe = {
         EVENT_SYSTEM_MOVESIZESTART,
         EVENT_SYSTEM_MOVESIZEEND,
@@ -173,9 +147,4 @@ void FancyZonesApp::HandleWinHookEvent(WinHookEvent* data) noexcept
     default:
         break;
     }
-}
-
-intptr_t FancyZonesApp::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
-{
-    return m_app.as<IFancyZonesCallback>()->OnKeyDown(data->lParam);
 }

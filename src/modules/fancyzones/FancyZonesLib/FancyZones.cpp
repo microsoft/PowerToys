@@ -133,8 +133,6 @@ public:
 
     IFACEMETHODIMP_(void)
     VirtualDesktopChanged() noexcept;
-    IFACEMETHODIMP_(bool)
-    OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
 
     void MoveSizeStart(HWND window, HMONITOR monitor);
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen);
@@ -461,64 +459,6 @@ void FancyZones::WindowCreated(HWND window) noexcept
     }
 }
 
-// IFancyZonesCallback
-IFACEMETHODIMP_(bool)
-FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
-{
-    // Return true to swallow the keyboard event
-    bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-    bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
-    bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
-    bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
-    if ((win && !shift && !ctrl) || (win && ctrl && alt))
-    {
-        if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
-        {
-            if (ShouldProcessSnapHotkey(info->vkCode))
-            {
-                Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-                // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_SNAP_HOTKEY's handled
-                PostMessageW(m_window, WM_PRIV_SNAP_HOTKEY, 0, info->vkCode);
-                return true;
-            }
-        }
-    }
-
-    if (FancyZonesSettings::settings().quickLayoutSwitch)
-    {
-        int digitPressed = -1;
-        if ('0' <= info->vkCode && info->vkCode <= '9')
-        {
-            digitPressed = info->vkCode - '0';
-        }
-        else if (VK_NUMPAD0 <= info->vkCode && info->vkCode <= VK_NUMPAD9)
-        {
-            digitPressed = info->vkCode - VK_NUMPAD0;
-        }
-
-        bool dragging = m_draggingState.IsDragging();
-        bool changeLayoutWhileNotDragging = !dragging && !shift && win && ctrl && alt && digitPressed != -1;
-        bool changeLayoutWhileDragging = dragging && digitPressed != -1;
-
-        if (changeLayoutWhileNotDragging || changeLayoutWhileDragging)
-        {
-            auto layoutId = LayoutHotkeys::instance().GetLayoutId(digitPressed);
-            if (layoutId.has_value())
-            {
-                PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(digitPressed));
-                Trace::FancyZones::QuickLayoutSwitched(changeLayoutWhileNotDragging);
-                return true;
-            }
-        }
-    }
-
-    if (m_draggingState.IsDragging() && shift)
-    {
-        return true;
-    }
-    return false;
-}
-
 void FancyZones::ToggleEditor() noexcept
 {
     _TRACER_;
@@ -739,19 +679,70 @@ void FancyZones::OnKeyboardInput(WPARAM /*flags*/, HRAWINPUT hInput) noexcept
         return;
     }
 
-    switch (input.value().vkKey)
+    USHORT key = input.value().vkKey;
+    switch (key)
     {
     case VK_SHIFT:
         {
             m_draggingState.SetShiftState(input.value().pressed);
         }
         break;
+
     case VK_CONTROL:
         {
             m_draggingState.SetCtrlState(input.value().pressed);
         }
         break;
+
+    case VK_RIGHT:
+    case VK_LEFT:
+    case VK_UP:
+    case VK_DOWN:
+        {
+            bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
+            bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+            if (win && ShouldProcessSnapHotkey(key))
+            {
+                Trace::FancyZones::OnKeyDown(key, win, ctrl, false /*inMoveSize*/);
+                // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_SNAP_HOTKEY's handled
+                PostMessageW(m_window, WM_PRIV_SNAP_HOTKEY, 0, key);
+            }
+        }
+        break;
+
     default:
+        {
+            if (FancyZonesSettings::settings().quickLayoutSwitch && input.value().pressed)
+            {
+                int digitPressed = -1;
+                if ('0' <= key && key <= '9')
+                {
+                    digitPressed = key - '0';
+                }
+                else if (VK_NUMPAD0 <= key && key <= VK_NUMPAD9)
+                {
+                    digitPressed = key - VK_NUMPAD0;
+                }
+
+                bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
+                bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
+                bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
+                bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+                bool dragging = m_draggingState.IsDragging();
+                bool changeLayoutWhileNotDragging = !dragging && !shift && win && ctrl && alt && digitPressed != -1;
+                bool changeLayoutWhileDragging = dragging && digitPressed != -1;
+
+                if (changeLayoutWhileNotDragging || changeLayoutWhileDragging)
+                {
+                    auto layoutId = LayoutHotkeys::instance().GetLayoutId(digitPressed);
+                    if (layoutId.has_value())
+                    {
+                        PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(digitPressed));
+                        Trace::FancyZones::QuickLayoutSwitched(changeLayoutWhileNotDragging);
+                    }
+                }
+            }
+        }
         break;
     }
 }

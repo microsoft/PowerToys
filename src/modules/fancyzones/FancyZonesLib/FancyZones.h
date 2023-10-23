@@ -37,15 +37,6 @@ interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZones
      */
     IFACEMETHOD_(void, HandleWinHookEvent)
     (const WinHookEvent* data) = 0;
-    /**
-     * Process keyboard event.
-     *
-     * @param   info Information about low level keyboard event.
-     * @returns Boolean indicating if this event should be passed on further to other applications
-     *          in event chain, or should it be suppressed.
-     */
-    IFACEMETHOD_(bool, OnKeyDown)
-    (PKBDLLHOOKSTRUCT info) = 0;
 };
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, std::function<void()> disableCallback) noexcept;
