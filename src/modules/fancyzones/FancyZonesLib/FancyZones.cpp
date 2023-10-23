@@ -21,6 +21,7 @@
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
+#include <FancyZonesLib/KeyboardInput.h>
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/on_thread_executor.h>
 #include <FancyZonesLib/Settings.h>
@@ -172,6 +173,7 @@ private:
     const HINSTANCE m_hinstance{};
 
     HWND m_window{};
+    KeyboardInput m_keyboardInput{};
     std::unique_ptr<WindowMouseSnap> m_windowMouseSnapper{};
     WindowKeyboardSnap m_windowKeyboardSnapper{};
     WorkAreaConfiguration m_workAreaConfiguration;
@@ -220,7 +222,13 @@ FancyZones::Run() noexcept
     m_window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
     if (!m_window)
     {
-        Logger::error(L"Failed to create FancyZones window");
+        Logger::critical(L"Failed to create FancyZones window");
+        return;
+    }
+
+    if (!m_keyboardInput.Initialize(m_window))
+    {
+        Logger::critical(L"Failed to register raw input device");
         return;
     }
 
