@@ -166,7 +166,7 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return MainWindowSettingsModel.DefaultLayouts.Layouts[(int)MonitorConfigurationType.Vertical].Uuid == this.Uuid;
+                return MainWindowSettingsModel.DefaultLayouts.Layouts[MonitorConfigurationType.Vertical].Uuid == this.Uuid;
             }
         }
 
@@ -174,7 +174,7 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return MainWindowSettingsModel.DefaultLayouts.Layouts[(int)MonitorConfigurationType.Vertical].Uuid != this.Uuid;
+                return MainWindowSettingsModel.DefaultLayouts.Layouts[MonitorConfigurationType.Vertical].Uuid != this.Uuid;
             }
         }
 

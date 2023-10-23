@@ -29,6 +29,10 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new ArchivePreviewer(file);
             }
+            else if (ShellPreviewHandlerPreviewer.IsFileTypeSupported(file.Extension))
+            {
+                return new ShellPreviewHandlerPreviewer(file);
+            }
 
             // Other previewer types check their supported file types here
             return CreateDefaultPreviewer(file);

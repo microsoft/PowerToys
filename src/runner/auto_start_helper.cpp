@@ -156,7 +156,7 @@ bool create_auto_start_task_for_this_user(bool runElevated)
         ExitOnFailure(hr, "Cannot create the trigger: %x", hr);
 
         hr = pTrigger->QueryInterface(
-            IID_ILogonTrigger, (void**)&pLogonTrigger);
+            IID_ILogonTrigger, reinterpret_cast<void**>(&pLogonTrigger));
         pTrigger->Release();
         ExitOnFailure(hr, "QueryInterface call failed for ILogonTrigger: %x", hr);
 
@@ -191,7 +191,7 @@ bool create_auto_start_task_for_this_user(bool runElevated)
 
         // QI for the executable task pointer.
         hr = pAction->QueryInterface(
-            IID_IExecAction, (void**)&pExecAction);
+            IID_IExecAction, reinterpret_cast<void**>(&pExecAction));
         pAction->Release();
         ExitOnFailure(hr, "QueryInterface call failed for IExecAction: %x", hr);
 

@@ -18,6 +18,13 @@
             VerticalAlignment="Center"
             IsActive="{x:Bind MatchPreviewState(Previewer.State, previewers:PreviewState.Loading), Mode=OneWay}" />
 
+        <controls:ShellPreviewHandlerControl
+            x:Name="ShellPreviewHandlerPreview"
+            HandlerError="ShellPreviewHandlerPreview_HandlerError"
+            HandlerLoaded="ShellPreviewHandlerPreview_HandlerLoaded"
+            HandlerVisibility="{x:Bind IsPreviewVisible(ShellPreviewHandlerPreviewer, Previewer.State), Mode=OneWay}"
+            Source="{x:Bind ShellPreviewHandlerPreviewer.Preview, Mode=OneWay}" />
+
         <Image
             x:Name="ImagePreview"
             MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"
@@ -53,13 +60,13 @@
 
         <controls:ArchiveControl
             x:Name="ArchivePreview"
-            LoadingState="{x:Bind ArchivePreviewer.State, Mode=OneWay}"
-            Source="{x:Bind ArchivePreviewer.Tree, Mode=OneWay}"
-            FileCount="{x:Bind ArchivePreviewer.FileCountText, Mode=OneWay}"
             DirectoryCount="{x:Bind ArchivePreviewer.DirectoryCountText, Mode=OneWay}"
+            FileCount="{x:Bind ArchivePreviewer.FileCountText, Mode=OneWay}"
+            LoadingState="{x:Bind ArchivePreviewer.State, Mode=OneWay}"
             Size="{x:Bind ArchivePreviewer.SizeText, Mode=OneWay}"
+            Source="{x:Bind ArchivePreviewer.Tree, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(ArchivePreviewer, Previewer.State), Mode=OneWay}" />
-        
+
         <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"
             LoadingState="{x:Bind UnsupportedFilePreviewer.State, Mode=OneWay}"

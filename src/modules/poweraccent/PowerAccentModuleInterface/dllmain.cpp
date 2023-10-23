@@ -46,8 +46,7 @@ class PowerAccent : public PowertoyModuleIface
 
 private:
     bool m_enabled = false;
-    HANDLE m_hInvokeEvent;
-    PROCESS_INFORMATION p_info;
+    PROCESS_INFORMATION p_info = {};
 
     bool is_process_running()
     {
@@ -135,7 +134,6 @@ public:
 
     virtual void enable()
     {
-        ResetEvent(m_hInvokeEvent);
         launch_process();
         m_enabled = true;
         Trace::EnablePowerAccent(true);
@@ -146,7 +144,6 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Disabling QuickAccent... {}", m_enabled);
-            ResetEvent(m_hInvokeEvent);
 
             auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::POWERACCENT_EXIT_EVENT);
             if (!exitEvent)
