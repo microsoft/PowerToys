@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             AddFlyoutMenuItem("ShortcutGuide", generalSettingsConfig.Enabled.ShortcutGuide, "ShortcutGuide/ModuleTitle", "ShortcutGuide");
             AddFlyoutMenuItem("PowerOCR", generalSettingsConfig.Enabled.PowerOCR, "TextExtractor/ModuleTitle", "PowerOCR");
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 
