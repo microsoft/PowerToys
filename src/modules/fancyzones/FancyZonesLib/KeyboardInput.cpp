@@ -22,3 +22,22 @@ bool KeyboardInput::Initialize(HWND window)
 
     return res;
 }
+
+std::optional<KeyboardInput::Key> KeyboardInput::OnKeyboardInput(HRAWINPUT hInput)
+{
+    RAWINPUT input;
+    UINT size = sizeof(input);
+    auto result = GetRawInputData(hInput, RID_INPUT, &input, &size, sizeof(RAWINPUTHEADER));
+    if (result < sizeof(RAWINPUTHEADER))
+    {
+        return std::nullopt;
+    }
+
+    if (input.header.dwType == RIM_TYPEKEYBOARD)
+    {
+        bool pressed = (input.data.keyboard.Flags & RI_KEY_BREAK) == 0;
+        return KeyboardInput::Key{ input.data.keyboard.VKey, pressed };
+    }
+
+    return std::nullopt;
+}
