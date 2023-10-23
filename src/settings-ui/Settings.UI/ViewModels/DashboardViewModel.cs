@@ -472,6 +472,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     case "Awake": item.IsEnabled = generalSettingsConfig.Enabled.Awake; break;
                     case "ColorPicker": item.IsEnabled = generalSettingsConfig.Enabled.ColorPicker; break;
                     case "CropAndLock": item.IsEnabled = generalSettingsConfig.Enabled.CropAndLock; break;
+                    case "EnvironmentVariables": item.IsEnabled = generalSettingsConfig.Enabled.EnvironmentVariables; break;
                     case "FancyZones": item.IsEnabled = generalSettingsConfig.Enabled.FancyZones; break;
                     case "FileLocksmith": item.IsEnabled = generalSettingsConfig.Enabled.FileLocksmith; break;
                     case "FindMyMouse": item.IsEnabled = generalSettingsConfig.Enabled.FindMyMouse; break;
