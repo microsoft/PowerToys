@@ -8,8 +8,10 @@ using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
+using Peek.Common.Extensions;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
@@ -45,7 +47,7 @@ namespace Peek.UI
                 Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
             }
 
-            ViewModel = App.GetService<MainWindowViewModel>();
+            ViewModel = Application.Current.GetService<MainWindowViewModel>();
 
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
@@ -68,11 +70,11 @@ namespace Peek.UI
             }
         }
 
-        private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
+        private void PeekWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
-            if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
-                var userSettings = App.GetService<IUserSettings>();
+                var userSettings = Application.Current.GetService<IUserSettings>();
                 if (userSettings.CloseAfterLosingFocus)
                 {
                     Uninitialize();
