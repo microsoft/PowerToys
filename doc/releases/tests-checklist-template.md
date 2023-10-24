@@ -41,6 +41,8 @@
  - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
  - [ ] Hosts File Editor
  - [ ] File Locksmith
+ - [ ] Registry Preview
+ - [ ] Environment Variables
 
 ## General Settings
 
