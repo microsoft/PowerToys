@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private static string CheckScientificNotation(string input)
         {
             // Also needs to match RegValidExpressChar
-            var p = @"(-?(\d+(\.\d*)?)|-?(\.\d+))[E](-?\d+\.*\d*)";
+            var p = @"(-?(\d+(\.\d*)?)|-?(\.\d+))[E](-?\d+\.?\d*)";
             var r = "($1 * 10^($5))";
             return Regex.Replace(input, p, r);
         }
