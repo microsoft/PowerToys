@@ -40,9 +40,7 @@
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup
-                    x:Uid="Peek_Preview_GroupSettings"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="Peek_Preview_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingsExpander
                         x:Uid="Peek_SourceCode_Header"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}"
