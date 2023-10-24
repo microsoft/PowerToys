@@ -153,6 +153,8 @@ namespace winrt::PowerRenameUI::implementation
         UINT m_selectedCount = 0;
         UINT m_renamingCount = 0;
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
+        std::optional<std::pair<int,int>> m_updatedWindowSize;
+
 
         bool m_flagValidationInProgress = false;
 
