@@ -29,6 +29,7 @@ All:
 - Peek
 - MWB
 - Crop And Lock
+- Environment Variables
 ```
 
 ```
@@ -42,7 +43,8 @@ Group 1:
 - File Locksmith
 - GPO
 - Paste As Plain Text
-- Crop And Lock
+- MWB
+- Environment Variables
 ```
 
 ```
@@ -71,16 +73,18 @@ Group 3:
 - Text Extractor
 - GPO
 - Paste As Plain Text
-- MWB
+- Crop And Lock
+- Environment Variables
 ```
 
 ```
 Group 4:
-- Functional
+- Localization
 - Color Picker
 - Image Resizer
 - Keyboard Manager
 - Shortcut Guide
+- VCM
 - AlwaysOnTop
 - Screen Ruler
 - Quick Accent
@@ -91,7 +95,7 @@ Group 4:
 ```
 Group 5:
 - Install
-- Localization
+- Functional
 - General
 - FZ Editor
 - FZ
@@ -106,7 +110,6 @@ Group 6:
 - FZ Editor
 - FZ
 - File Explorer Add-ons
-- VCM
 - Quick Accent
 - Text Extractor
 - Registry Preview
