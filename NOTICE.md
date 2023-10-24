@@ -1321,6 +1321,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 7.0.0
 - System.ServiceProcess.ServiceController 7.0.1
+- System.Text.Encoding.CodePages 7.0.0
 - UnicodeInformation 2.6.0
 - UnitsNet 4.145.0
 - UTF.Unknown 2.5.1
