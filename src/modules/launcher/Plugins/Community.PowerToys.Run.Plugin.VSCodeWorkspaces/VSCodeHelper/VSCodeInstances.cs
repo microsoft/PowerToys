@@ -74,7 +74,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
                 if (Directory.Exists(path))
                 {
                     var files = Directory.GetFiles(path)
-                        .Where(x => (x.Contains("code", StringComparison.OrdinalIgnoreCase) || x.Contains("VSCodium", StringComparison.OrdinalIgnoreCase))
+                        .Where(x => (x.Contains("code", StringComparison.OrdinalIgnoreCase) || x.Contains("codium", StringComparison.OrdinalIgnoreCase))
                             && !x.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase)).ToArray();
 
                     var iconPath = Path.GetDirectoryName(path);
@@ -104,10 +104,15 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
                             version = "Code - Exploration";
                             instance.VSCodeVersion = VSCodeVersion.Exploration;
                         }
-                        else if (file.EndsWith("VSCodium", StringComparison.OrdinalIgnoreCase))
+                        else if (file.EndsWith("codium", StringComparison.OrdinalIgnoreCase))
                         {
                             version = "VSCodium";
-                            instance.VSCodeVersion = VSCodeVersion.Stable; // ?
+                            instance.VSCodeVersion = VSCodeVersion.Stable;
+                        }
+                        else if (file.EndsWith("codium-insiders", StringComparison.OrdinalIgnoreCase))
+                        {
+                            version = "VSCodium - Insiders";
+                            instance.VSCodeVersion = VSCodeVersion.Insiders;
                         }
 
                         if (version != string.Empty)
