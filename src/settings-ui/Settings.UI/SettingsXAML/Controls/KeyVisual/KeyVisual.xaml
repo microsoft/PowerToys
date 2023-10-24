@@ -21,6 +21,26 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:KeyVisual">
                     <Grid>
+                        <Grid>
+                            <Rectangle
+                                x:Name="ContentHolder"
+                                Height="{TemplateBinding Height}"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                Fill="{TemplateBinding Background}"
+                                RadiusX="4"
+                                RadiusY="4"
+                                Stroke="{TemplateBinding BorderBrush}"
+                                StrokeThickness="{TemplateBinding BorderThickness}" />
+                            <ContentPresenter
+                                x:Name="KeyPresenter"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontWeight="{TemplateBinding FontWeight}"
+                                Foreground="{TemplateBinding Foreground}" />
+                        </Grid>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -45,26 +65,6 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid>
-                            <Rectangle
-                                x:Name="ContentHolder"
-                                Height="{TemplateBinding Height}"
-                                MinWidth="{TemplateBinding MinWidth}"
-                                Fill="{TemplateBinding Background}"
-                                RadiusX="4"
-                                RadiusY="4"
-                                Stroke="{TemplateBinding BorderBrush}"
-                                StrokeThickness="{TemplateBinding BorderThickness}" />
-                            <ContentPresenter
-                                x:Name="KeyPresenter"
-                                Margin="{TemplateBinding Padding}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="Center"
-                                Content="{TemplateBinding Content}"
-                                FontSize="{TemplateBinding FontSize}"
-                                FontWeight="{TemplateBinding FontWeight}"
-                                Foreground="{TemplateBinding Foreground}" />
-                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
