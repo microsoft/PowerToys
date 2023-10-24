@@ -8,7 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
+using Peek.Common;
 using Peek.FilePreviewer;
+using Peek.FilePreviewer.Models;
 using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
 
@@ -17,7 +19,7 @@ namespace Peek.UI
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : Application
+    public partial class App : Application, IApp
     {
         public static int PowerToysPID { get; set; }
 
@@ -46,6 +48,7 @@ namespace Peek.UI
                 // Core Services
                 services.AddTransient<NeighboringItemsQuery>();
                 services.AddSingleton<IUserSettings, UserSettings>();
+                services.AddSingleton<IPreviewSettings, PreviewSettings>();
 
                 // Views and ViewModels
                 services.AddTransient<TitleBar>();
@@ -57,7 +60,7 @@ namespace Peek.UI
             UnhandledException += App_UnhandledException;
         }
 
-        public static T GetService<T>()
+        public T GetService<T>()
             where T : class
         {
             if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
