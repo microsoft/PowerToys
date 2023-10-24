@@ -95,7 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 UpdatingSettingsConfig = new UpdatingSettings();
             }
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
             SendCheckForUpdatesConfigMSG = ipcMSGCheckForUpdatesCallBackFunc;
             SendRestartAsAdminConfigMSG = ipcMSGRestartAsAdminMSGCallBackFunc;

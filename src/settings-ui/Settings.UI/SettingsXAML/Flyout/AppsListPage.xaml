@@ -6,11 +6,18 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Flyout"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <converters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+    </Page.Resources>
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -59,10 +66,12 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <!--<ViewBox VerticalAlignment="Center">-->
                         <Image
                             Width="20"
+                            VerticalAlignment="Center"
                             Margin="0,0,16,0">
                             <Image.Source>
                                 <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
@@ -74,12 +83,26 @@
                             VerticalAlignment="Center"
                             Text="{x:Bind Label, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis" />
-                        <ToggleSwitch
+                        <FontIcon
                             Grid.Column="2"
-                            Margin="0,0,0,0"
+                            Width="20"
+                            FontSize="16"
+                            Glyph="&#xE72E;"
+                            VerticalAlignment="Center"
+                            Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Uid="GPO_IsSettingForcedText" TextWrapping="WrapWholeWords" />
+                            </ToolTipService.ToolTip>
+                        </FontIcon>
+                        <ToggleSwitch
+                            Grid.Column="3"
                             HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
+                            IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
                             IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                            OffContent=""
+                            OnContent=""
                             Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
                     </Grid>
                 </DataTemplate>
