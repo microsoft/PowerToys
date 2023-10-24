@@ -8,6 +8,7 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.0.230907" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.0.230907" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.230907" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.230907" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.0.230907" />
     <PackageVersion Include="CommunityToolkit.WinUI.Collections " Version="8.0.230907" />
     <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.0.230907" />

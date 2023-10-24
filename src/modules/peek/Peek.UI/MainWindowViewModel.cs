@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.UI.Models;
+using Windows.Win32.Foundation;
 
 namespace Peek.UI
 {
@@ -40,11 +41,11 @@ namespace Peek.UI
             NavigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
         }
 
-        public void Initialize()
+        public void Initialize(HWND foregroundWindowHandle)
         {
             try
             {
-                Items = NeighboringItemsQuery.GetNeighboringItems();
+                Items = NeighboringItemsQuery.GetNeighboringItems(foregroundWindowHandle);
             }
             catch (Exception ex)
             {

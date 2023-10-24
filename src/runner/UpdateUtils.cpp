@@ -33,7 +33,7 @@ using namespace updating;
 std::wstring CurrentVersionToNextVersion(const new_version_download_info& info)
 {
     auto result = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
-    result += L" -> ";
+    result += L" \u2192 "; // Right arrow
     result += info.version.toWstring();
     return result;
 }

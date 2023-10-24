@@ -9,27 +9,17 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <custom:OOBEPageControl
-        x:Uid="Oobe_ColorPicker"
-        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ColorPicker.gif">
+    <custom:OOBEPageControl x:Uid="Oobe_ColorPicker" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ColorPicker.gif">
 
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
-                <TextBlock
-                    x:Uid="Oobe_HowToUse"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <custom:ShortcutWithTextLabelControl
-                    x:Name="HotkeyControl"
-                    x:Uid="Oobe_ColorPicker_HowToUse" />
+                <custom:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_ColorPicker_HowToUse" />
 
-                <TextBlock
-                    x:Uid="Oobe_TipsAndTricks"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_ColorPicker_TipsAndTricks"
-                    Background="Transparent" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_ColorPicker_TipsAndTricks" Background="Transparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"
@@ -39,15 +29,9 @@
                         x:Uid="Launch_ColorPicker"
                         Click="Start_ColorPicker_Click"
                         Style="{StaticResource AccentButtonStyle}" />
-                    <Button
-                        x:Uid="OOBE_Settings"
-                        Click="SettingsLaunchButton_Click" />
-                    <HyperlinkButton
-                        NavigateUri="https://aka.ms/PowerToysOverview_ColorPicker"
-                        Style="{StaticResource TextButtonStyle}">
-                        <TextBlock
-                            x:Uid="LearnMore_ColorPicker"
-                            TextWrapping="Wrap" />
+                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ColorPicker" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock x:Uid="LearnMore_ColorPicker" TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>

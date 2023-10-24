@@ -8,17 +8,14 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
-    <Grid
-        MinWidth="498"
-        MinHeight="220">
+    <Grid MinWidth="498" MinHeight="220">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition MinHeight="110" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock
-            Grid.Row="0" />
+        <TextBlock Grid.Row="0" />
 
         <ItemsControl
             x:Name="KeysControl"
@@ -31,9 +28,7 @@
             ItemsSource="{x:Bind Keys, Mode=OneWay}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel
-                        Orientation="Horizontal"
-                        Spacing="8" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
@@ -57,11 +52,12 @@
             Spacing="8">
             <Grid Height="62">
 
-                <InfoBar x:Uid="InvalidShortcut"
-                         IsClosable="False"
-                         IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
-                         IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
-                         Severity="Error" />
+                <InfoBar
+                    x:Uid="InvalidShortcut"
+                    IsClosable="False"
+                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                    Severity="Error" />
 
             </Grid>
             <toolkitcontrols:MarkdownTextBlock

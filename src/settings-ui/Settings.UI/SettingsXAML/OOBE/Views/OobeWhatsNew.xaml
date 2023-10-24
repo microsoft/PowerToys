@@ -30,9 +30,7 @@
                 Margin="0,0,0,16"
                 NavigateUri="https://github.com/microsoft/PowerToys/releases"
                 Style="{StaticResource TextButtonStyle}">
-                <TextBlock
-                    x:Uid="Oobe_WhatsNew_DetailedReleaseNotesLink"
-                    TextWrapping="Wrap" />
+                <TextBlock x:Uid="Oobe_WhatsNew_DetailedReleaseNotesLink" TextWrapping="Wrap" />
             </HyperlinkButton>
         </StackPanel>
         <InfoBar
@@ -53,9 +51,7 @@
             IsOpen="False"
             IsTabStop="True"
             Severity="Warning" />
-        <ScrollViewer
-            Grid.Row="1"
-            VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid Margin="32,24,32,24">
                 <ProgressRing
                     x:Name="LoadingProgressRing"

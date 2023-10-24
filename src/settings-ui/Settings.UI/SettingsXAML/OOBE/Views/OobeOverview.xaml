@@ -8,31 +8,21 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <custom:OOBEPageControl
-        x:Uid="Oobe_Overview"
-        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/OOBEPTHero.png">
+    <custom:OOBEPageControl x:Uid="Oobe_Overview" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/OOBEPTHero.png">
 
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
-                <TextBlock
-                    x:Uid="Oobe_HowToUse"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <HyperlinkButton
-                    NavigateUri="https://aka.ms/PowerToysOverview"
-                    Style="{StaticResource TextButtonStyle}">
-                    <TextBlock
-                        x:Uid="Oobe_Overview_DescriptionLinkText"
-                        TextWrapping="Wrap" />
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview" Style="{StaticResource TextButtonStyle}">
+                    <TextBlock x:Uid="Oobe_Overview_DescriptionLinkText" TextWrapping="Wrap" />
                 </HyperlinkButton>
 
                 <StackPanel
                     Margin="0,24,0,0"
                     Orientation="Horizontal"
                     Spacing="12">
-                    <Button
-                        x:Uid="OOBE_Settings"
-                        Click="SettingsLaunchButton_Click" />
+                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
                 </StackPanel>
             </StackPanel>
         </custom:OOBEPageControl.PageContent>

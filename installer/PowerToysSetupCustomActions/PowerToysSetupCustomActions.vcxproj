@@ -32,8 +32,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutDir>
-    <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutDir>
+    <OutDir Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup\</OutDir>
+    <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup\</OutDir>
     <IntDir Condition=" '$(PerUser)' != 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\MachineSetup\obj\</IntDir>
     <IntDir Condition=" '$(PerUser)' == 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\UserSetup\obj\</IntDir>
   </PropertyGroup>
@@ -52,6 +52,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Core.wxs"" ""$(ProjectDir)..\PowerToysSetup\Core.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs.bk""""

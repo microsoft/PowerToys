@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendIPCMessage = ipcMSGCallBackFunc;
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
@@ -43,6 +43,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Visible = generalSettingsConfig.Enabled.ColorPicker,
                     ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png",
+                });
+            }
+
+            if (GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                FlyoutMenuItems.Add(new FlyoutMenuItem()
+                {
+                    Label = resourceLoader.GetString("EnvironmentVariables/ModuleTitle"),
+                    Tag = "EnvironmentVariables",
+                    Visible = generalSettingsConfig.Enabled.EnvironmentVariables,
+                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsEnvironmentVariables.png",
                 });
             }
 

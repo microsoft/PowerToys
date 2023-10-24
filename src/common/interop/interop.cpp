@@ -266,5 +266,13 @@ public
         static String ^ CropAndLockReparentEvent() {
             return gcnew String(CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
         }
+
+        static String ^ ShowEnvironmentVariablesSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_EVENT);
+        }
+
+        static String ^ ShowEnvironmentVariablesAdminSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT);
+        }
     };
 }
