@@ -287,13 +287,13 @@
     <value>Key</value>
     <comment>Key on a keyboard</comment>
   </data>
-  <data name="MappingType_DropDown_Text" xml:space="preserve">
+  <data name="Mapping_Type_DropDown_Text" xml:space="preserve">
     <value>Text</value>
   </data>
-  <data name="MappingType_DropDown_Shortcut" xml:space="preserve">
+  <data name="Mapping_Type_DropDown_Shortcut" xml:space="preserve">
     <value>Shortcut</value>
   </data>
-  <data name="MappingType_DropDown_Key" xml:space="preserve">
+  <data name="Mapping_Type_DropDown_Key" xml:space="preserve">
     <value>Key</value>
   </data>
   <data name="Add_Key_Remap_Button" xml:space="preserve">

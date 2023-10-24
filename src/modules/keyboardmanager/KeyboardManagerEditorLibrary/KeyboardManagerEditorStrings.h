@@ -14,17 +14,17 @@ namespace KeyboardManagerEditorStrings
 
     inline std::wstring MappingTypeText()
     {
-        return GET_RESOURCE_STRING(IDS_MAPPINGTYPE_DROPDOWN_TEXT);
+        return GET_RESOURCE_STRING(IDS_MAPPING_TYPE_DROPDOWN_TEXT);
     }
 
     inline std::wstring MappingTypeShortcut()
     {
-        return GET_RESOURCE_STRING(IDS_MAPPINGTYPE_DROPDOWN_SHORTCUT);
+        return GET_RESOURCE_STRING(IDS_MAPPING_TYPE_DROPDOWN_SHORTCUT);
     }
 
     inline std::wstring MappingTypeKey()
     {
-        return GET_RESOURCE_STRING(IDS_MAPPINGTYPE_DROPDOWN_KEY);
+        return GET_RESOURCE_STRING(IDS_MAPPING_TYPE_DROPDOWN_KEY);
     }
 
     // Function to return the error message
