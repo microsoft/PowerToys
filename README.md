@@ -117,13 +117,13 @@ In this release, we focused on stability and improvements.
  - Terminate a picker session by using the right mouse button. Thanks [@fredso90](https://github.com/fredso90)!
 
 ### Environment Variables
- - Addded a new utility: An environment variables editor that also allows configuring profiles that can be enabled/disabled. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
- - Shows in the title bar if it's runnign as an administrator. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added a new utility: An environment variables editor that also allows configuring profiles that can be enabled/disabled. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
+ - Shows in the title bar if it's running as an administrator. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### FancyZones
 
- - Fixed an issue causing context menu popups from some apps to automatically snap to a zone. (This was a hotfix for 0.74)
- - Applied the fix for the context menu popups to the logic that decides which windows can be snapped.
+ - Fixed an issue causing context menu pop-ups from some apps to automatically snap to a zone. (This was a hotfix for 0.74)
+ - Applied the fix for the context menu pop-ups to the logic that decides which windows can be snapped.
  - Reworked the "Keep windows in their zones" option to include the work area and turn it on by default, fixing an incompatibility with the Copilot toolbar.
  - Fixed an issue causing windows to be snapped while moving to a different virtual desktop.
 
