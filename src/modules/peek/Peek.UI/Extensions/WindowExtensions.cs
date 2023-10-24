@@ -22,19 +22,6 @@ namespace Peek.UI.Extensions
             return hwnd.GetMonitorScale();
         }
 
-        public static void BringToForeground(this Window window)
-        {
-            // Ability to be able to set the Window to the Foreground is very limited. A current workaround is simulating mouse input before bringing to the foreground.
-            var windowHandle = window.GetWindowHandle();
-            Windows.Win32.UI.Input.KeyboardAndMouse.INPUT input = new Windows.Win32.UI.Input.KeyboardAndMouse.INPUT { type = Windows.Win32.UI.Input.KeyboardAndMouse.INPUT_TYPE.INPUT_MOUSE, Anonymous = { } };
-            Windows.Win32.UI.Input.KeyboardAndMouse.INPUT[] inputs = new Windows.Win32.UI.Input.KeyboardAndMouse.INPUT[] { input };
-            _ = PInvoke.SendInput(inputs.AsSpan<Windows.Win32.UI.Input.KeyboardAndMouse.INPUT>(), Marshal.SizeOf(typeof(Windows.Win32.UI.Input.KeyboardAndMouse.INPUT)));
-            if (PInvoke.SetForegroundWindow(new HWND(windowHandle)) == 0)
-            {
-                Logger.LogWarning("Couldn't set the Peek window as the foreground window.");
-            }
-        }
-
         internal static void CenterOnMonitor(this Window window, HWND hwndDesktop, double? width = null, double? height = null)
         {
             var hwndToCenter = new HWND(window.GetWindowHandle());

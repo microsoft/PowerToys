@@ -15,7 +15,7 @@ Available commands:
 * Hibernate
 * Open / Empty Recycle Bin
 * UEFI Firmware Settings (Only available on systems, that boot in UEFI mode.)
-* IP / MAC / Address => Show informations about network connections.
+* IP / MAC / Address => Show information about network connections.
 
 ## Optional plugin settings
 
@@ -46,7 +46,7 @@ Available commands:
 
 ### [`NetworkConnectionProperties.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/NetworkConnectionProperties.cs)
 - The [`NetworkConnectionProperties`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/NetworkConnectionProperties.cs) class contains methods to get the properties of a network interface/connection.
-- An instance of this class collects/provides all required informations about one connection/adapter.
+- An instance of this class collects/provides all required information about one connection/adapter.
 
 ### [`SystemPluginContext.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/SystemPluginContext.cs)
 - An instance of the class [`SystemPluginContext`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Components/SystemPluginContext.cs) contains/defines the context data of a system plugin result. We select the context menu based on the defined properties.

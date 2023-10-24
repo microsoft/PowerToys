@@ -18,13 +18,13 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 |              | Current utilities: |              |
 |--------------|--------------------|--------------|
 | [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) |
-| [Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) |
-| [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) |
-| [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) | [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) |
-| [Peek](https://aka.ms/PowerToysOverview_Peek) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
-| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) |
-| [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) |
-| [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
+| [Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
+| [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) |
+| [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) |
+| [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) | [Peek](https://aka.ms/PowerToysOverview_Peek) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) |
+| [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) |
+| [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) |
+| [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |
 
 ## Installing and running Microsoft PowerToys
 
@@ -41,17 +41,17 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F48
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F47
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.74.0/PowerToysUserSetup-0.74.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.74.0/PowerToysUserSetup-0.74.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.74.0/PowerToysSetup-0.74.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.74.0/PowerToysSetup-0.74.0-arm64.exe
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.74.1/PowerToysUserSetup-0.74.1-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.74.1/PowerToysUserSetup-0.74.1-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.74.1/PowerToysSetup-0.74.1-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.74.1/PowerToysSetup-0.74.1-arm64.exe
 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.74.0-x64.exe][ptUserX64] | 1C4ECE9F11488BAFFAE6B76D2B0504FA18BFFEA11EBC38BCC87F5D86AEA87C7C |
-| Per user - ARM64     | [PowerToysUserSetup-0.74.0-arm64.exe][ptUserArm64] | 4F3842FAB0839A361A15A06B7720BA8A0FE7F9AF98EA94245C08DEF37678CA4A |
-| Machine wide - x64   | [PowerToysSetup-0.74.0-x64.exe][ptMachineX64] | 648992E8CEA08F3C63C7CCBD554ADDF500ECBC4560187310BC12E6CB9C2F38E3 |
-| Machine wide - ARM64 | [PowerToysSetup-0.74.0-arm64.exe][ptMachineArm64] | 2B6D92F1A0EA688C7EE882050AC9B030C8B3A18765163FB6D67E5E694A4D4FE3 |
+| Per user - x64       | [PowerToysUserSetup-0.74.1-x64.exe][ptUserX64] | 748BF7BA33913237D36D6F48E3839D0C8035967305137A17DEFF39D775735C81 | 
+| Per user - ARM64     | [PowerToysUserSetup-0.74.1-arm64.exe][ptUserArm64] | F5DAA89A9CF3A2805E121085AFD056A890F241A170FAB5007AA58E2755C88C54 | 
+| Machine wide - x64   | [PowerToysSetup-0.74.1-x64.exe][ptMachineX64] | 298C6F4E4391BDC06E128BED86A303C3300A68EAF754B4630AF7542C78C0944A | 
+| Machine wide - ARM64 | [PowerToysSetup-0.74.1-arm64.exe][ptMachineArm64] | A65F3C300A48F9F81312B7FC7B306382CB87F591612D0CEC7E5C0E47E868904B |
 
 This is our preferred method.
 

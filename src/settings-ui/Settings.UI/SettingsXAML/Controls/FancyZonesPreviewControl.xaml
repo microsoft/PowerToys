@@ -11,39 +11,23 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush
-                        x:Key="SolidBackgroundBrush"
-                        Color="Black" />
-                    <SolidColorBrush
-                        x:Key="SolidZoneNumberBrush"
-                        Color="White" />
+                    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
+                    <SolidColorBrush x:Key="SolidZoneNumberBrush" Color="White" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush
-                        x:Key="SolidBackgroundBrush"
-                        Color="White" />
-                    <SolidColorBrush
-                        x:Key="SolidZoneNumberBrush"
-                        Color="Black" />
+                    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="White" />
+                    <SolidColorBrush x:Key="SolidZoneNumberBrush" Color="Black" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
-                    <SolidColorBrush
-                        x:Key="SolidBackgroundBrush"
-                        Color="Black" />
-                    <SolidColorBrush
-                        x:Key="SolidZoneNumberBrush"
-                        Color="White" />
+                    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
+                    <SolidColorBrush x:Key="SolidZoneNumberBrush" Color="White" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
-            <SolidColorBrush
-                x:Key="DefaultAccentBrush"
-                Color="{ThemeResource SystemAccentColor}" />
-            <SolidColorBrush
-                x:Key="DefaultBorderBrush"
-                Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="DefaultAccentBrush" Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="DefaultBorderBrush" Color="{ThemeResource SystemAccentColor}" />
         </ResourceDictionary>
     </UserControl.Resources>
-    
+
     <Grid
         x:Name="RootGrid"
         MinWidth="170"
@@ -64,10 +48,10 @@
         <Border
             Grid.RowSpan="2"
             Grid.ColumnSpan="2"
-            Opacity="0.8"
-            CornerRadius="4">
+            CornerRadius="4"
+            Opacity="0.8">
             <Image
-               AutomationProperties.AccessibilityView="Raw"
+                AutomationProperties.AccessibilityView="Raw"
                 Source="{x:Bind WallpaperPath, Mode=OneWay}"
                 Stretch="UniformToFill" />
         </Border>
@@ -75,10 +59,10 @@
         <Border
             x:Name="Zone1"
             Grid.RowSpan="2"
-            BorderThickness="1"
             Margin="4,4,2,4"
-            CornerRadius="2"
-            Background="{ThemeResource SystemControlAcrylicElementBrush}">
+            Background="{ThemeResource SystemControlAcrylicElementBrush}"
+            BorderThickness="1"
+            CornerRadius="2">
             <TextBlock
                 x:Name="Zone1Number"
                 HorizontalAlignment="Center"
@@ -90,10 +74,10 @@
         <Border
             x:Name="Zone2"
             Grid.Column="1"
-            BorderThickness="1"
             Margin="2,4,4,2"
-            CornerRadius="2"
-            Background="{ThemeResource SystemControlAcrylicElementBrush}">
+            Background="{ThemeResource SystemControlAcrylicElementBrush}"
+            BorderThickness="1"
+            CornerRadius="2">
             <TextBlock
                 x:Name="Zone2Number"
                 HorizontalAlignment="Center"
@@ -106,10 +90,10 @@
             x:Name="Zone3"
             Grid.Row="1"
             Grid.Column="1"
-            BorderThickness="1"
             Margin="2,2,4,4"
-            CornerRadius="2"
-            Background="{ThemeResource SystemControlAcrylicElementBrush}">
+            Background="{ThemeResource SystemControlAcrylicElementBrush}"
+            BorderThickness="1"
+            CornerRadius="2">
             <TextBlock
                 x:Name="Zone3Number"
                 HorizontalAlignment="Center"

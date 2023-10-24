@@ -427,6 +427,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool environmentVariables = true;
+
+        [JsonPropertyName("EnvironmentVariables")]
+        public bool EnvironmentVariables
+        {
+            get => environmentVariables;
+            set
+            {
+                if (environmentVariables != value)
+                {
+                    LogTelemetryEvent(value);
+                    environmentVariables = value;
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

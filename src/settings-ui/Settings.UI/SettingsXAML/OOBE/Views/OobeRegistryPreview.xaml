@@ -8,28 +8,18 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
-    <custom:OOBEPageControl
-        x:Uid="Oobe_RegistryPreview"
-        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/RegistryPreview.png">
+    <custom:OOBEPageControl x:Uid="Oobe_RegistryPreview" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/RegistryPreview.png">
 
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
 
-                <TextBlock
-                    x:Uid="Oobe_HowToUse"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_RegistryPreview_HowToUse"
-                    Background="Transparent" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_RegistryPreview_HowToUse" Background="Transparent" />
 
-                <TextBlock
-                    x:Uid="Oobe_TipsAndTricks"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_RegistryPreview_TipsAndTricks"
-                    Background="Transparent" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_RegistryPreview_TipsAndTricks" Background="Transparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"
@@ -39,15 +29,9 @@
                         x:Uid="Launch_RegistryPreview"
                         Click="Launch_RegistryPreview_Click"
                         Style="{StaticResource AccentButtonStyle}" />
-                    <Button
-                        x:Uid="OOBE_Settings"
-                        Click="SettingsLaunchButton_Click" />
-                    <HyperlinkButton
-                        NavigateUri="https://aka.ms/PowerToysOverview_RegistryPreview"
-                        Style="{StaticResource TextButtonStyle}">
-                        <TextBlock
-                            x:Uid="LearnMore_RegistryPreview"
-                            TextWrapping="Wrap" />
+                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_RegistryPreview" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock x:Uid="LearnMore_RegistryPreview" TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>

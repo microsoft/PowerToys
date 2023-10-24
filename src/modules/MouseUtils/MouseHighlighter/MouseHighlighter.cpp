@@ -212,6 +212,15 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
     auto animation = m_compositor.CreateColorKeyFrameAnimation();
     animation.InsertKeyFrame(1, winrt::Windows::UI::ColorHelper::FromArgb(0, brushColor.R, brushColor.G, brushColor.B));
     using timeSpan = std::chrono::duration<int, std::ratio<1, 1000>>;
+    // HACK: If user sets these durations to 0, the fade won't work. Setting them to 1ms instead to avoid this.
+    if (m_fadeDuration_ms == 0)
+    {
+        m_fadeDuration_ms = 1;
+    }
+    if (m_fadeDelay_ms == 0)
+    {
+        m_fadeDelay_ms = 1;
+    }
     std::chrono::milliseconds duration(m_fadeDuration_ms);
     std::chrono::milliseconds delay(m_fadeDelay_ms);
     animation.Duration(timeSpan(duration));
