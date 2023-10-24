@@ -451,6 +451,7 @@
                         Text="{Binding Values, Mode=TwoWay}"
                         TextChanged="EditVariableDialogValueTxtBox_TextChanged"
                         TextWrapping="Wrap" />
+                    <MenuFlyoutSeparator Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <ListView
                         x:Name="EditVariableValuesList"
                         Margin="-16,-8,0,12"
