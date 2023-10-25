@@ -135,7 +135,8 @@ In this release, we focused on stability and improvements.
 ### GPO
 
  - Added a global GPO rule that applies for all utilities unless it's overridden. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added GPO rules to control which plugins should be enabled/disabled by policy. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added GPO rules to control which PowerToys Run plugins should be enabled/disabled by policy. Thanks [@htcfreek](https://github.com/htcfreek)!
+   * All plugins have to provide its plugin ID as static property in its Main method.
 
 ### Image Resizer
 
