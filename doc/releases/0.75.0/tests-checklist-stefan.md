@@ -1,35 +1,35 @@
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
-  - [ ] when PowerToys is running unelevated on start-up
-  - [ ] when PowerToys is running as admin on start-up
-  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
-- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
-- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
-- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
-- [ ] Try to copy color formats to the clipboard from the Editor
-- [ ] Check `Show color name` and verify if color name is shown in the Color picker
-- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [ ] Select a color from the history in the Editor
-- [ ] Remove color from the history in the Editor
-- [ ] Open the Color Picker from the Editor
-- [ ] Open Adjust color from the Editor
-- [ ] Check Color Picker logs for errors
+  - [x] when PowerToys is running unelevated on start-up
+  - [x] when PowerToys is running as admin on start-up
+  - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
+- [x] Change `Activate Color Picker shortcut` and check the new shortcut is working
+- [x] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
+- [x] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
+- [x] Try to copy color formats to the clipboard from the Editor
+- [x] Check `Show color name` and verify if color name is shown in the Color picker
+- [x] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
+- [x] Select a color from the history in the Editor
+- [x] Remove color from the history in the Editor
+- [x] Open the Color Picker from the Editor
+- [x] Open Adjust color from the Editor
+- [x] Check Color Picker logs for errors
 
 ## FancyZones Editor
 
-- [ ] Open editor from the settings
-- [ ] Open editor with a shortcut
-- [ ] Create a new layout (grid and canvas)
-- [ ] Duplicate a template and a custom layout
-- [ ] Delete layout
-- [ ] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
-- [ ] Edit canvas layout: zones size and position, create or delete zones.
-- [ ] Edit grid layout: split, merge, resize zones.
-- [ ] Check `Save and apply` and `Cancel` buttons behavior after editing.
-- [ ] Assign a layout to each monitor.
-- [ ] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
-- [ ] Assign horizontal and vertical default layouts
-- [ ] Test duplicate layout focus
+- [x] Open editor from the settings
+- [x] Open editor with a shortcut
+- [x] Create a new layout (grid and canvas)
+- [x] Duplicate a template and a custom layout
+- [x] Delete layout
+- [x] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
+- [x] Edit canvas layout: zones size and position, create or delete zones.
+- [x] Edit grid layout: split, merge, resize zones.
+- [x] Check `Save and apply` and `Cancel` buttons behavior after editing.
+- [x] Assign a layout to each monitor.
+- [x] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+- [x] Assign horizontal and vertical default layouts
+- [x] Test duplicate layout focus
    * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
    * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
    * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
@@ -194,50 +194,50 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane shows the correct content
+   - [x] verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane works for the SVG files
-   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the SVG files
+   - [x] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the PDF file
-   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the PDF file
+   - [x] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the gcode file
-   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the gcode file
+   - [x] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   - [x] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
+   - [x] verify Preview Pane works for source files (shows syntax highlighting)
  * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane doesn't show any content
+   - [x] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane doesn't show the preview for the SVG files
+   - [x] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [x] copy and paste one of the SVG file and verify the new file show the generic SVG icon
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the PDF file
+   - [x] verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the gcode file
+   - [x] verify Preview Pane doesn't show the preview for the gcode file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   - [x] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+   - [x] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
 ## Quick Accent
  * Enable Quick Accent and open notepad. Then:
-   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+   - [x] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [x] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [x] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
  * Test the different settings and verify they are applied:
-   - [ ] Activation key
-   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [ ] Toolbar position (test every option, some had issues before)
-   - [ ] Input delay
-   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [ ] Sort characters by frequency.
-   - [ ] Always start on the first character when using left/right arrows as activation method.
+   - [x] Activation key
+   - [x] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [x] Toolbar position (test every option, some had issues before)
+   - [x] Input delay
+   - [X] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [x] Sort characters by frequency.
+   - [x] Always start on the first character when using left/right arrows as activation method.
 
 ## Text Extractor
  * Enable Text Extractor. Then:
