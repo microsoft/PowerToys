@@ -65,6 +65,9 @@ namespace EnvironmentVariables.Helpers
             return baseKey.OpenSubKey(keyName, writable: writable);
         }
 
+        // Code taken from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Environment.Win32.cs
+        // Set variables directly to registry instead of using Environment API - Environment.SetEnvironmentVariable() has 1 second timeout for SendNotifyMessage(WM_SETTINGSCHANGED).
+        // When applying profile, this would take num_of_variables * 1s to propagate the changes. We do manually SendNotifyMessage with no timeout where needed.
         private static void SetEnvironmentVariableFromRegistryWithoutNotify(string variable, string value, bool fromMachine)
         {
             const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
@@ -109,6 +112,8 @@ namespace EnvironmentVariables.Helpers
             }
         }
 
+        // Code taken from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Environment.Win32.cs
+        // Reading variables from registry instead of using Environment API, because Environment API expands variables by default.
         internal static void GetVariables(EnvironmentVariableTarget target, VariablesSet set)
         {
             var sortedList = new SortedList<string, Variable>();
