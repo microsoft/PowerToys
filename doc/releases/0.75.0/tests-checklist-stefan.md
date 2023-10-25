@@ -241,58 +241,58 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 
 ## Text Extractor
  * Enable Text Extractor. Then:
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Press Escape and verify the overlay disappears.
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Right-click and select Cancel. Verify the overlay disappears.
-   - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Press Escape and verify the overlay disappears.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Right-click and select Cancel. Verify the overlay disappears.
+   - [x] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
  * With Text Extractor enabled and activated:
-   - [ ] Try to select text and verify it is copied to the clipboard.
-   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
+   - [x] Try to select text and verify it is copied to the clipboard.
+   - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
  * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify text is correctly captured on all monitors.
+   - [x] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] OCR Language
+   - [x] Activation shortcut
+   - [x] OCR Language
 
 ## Registry Preview
  * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
  * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
-   - [ ] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
-   - [ ] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
-   - [ ] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
-   - [ ] Try opening different registry file by pressing Open file button.
-   - [ ] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
+   - [x] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
+   - [x] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
+   - [x] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
+   - [x] Try opening different registry file by pressing Open file button.
+   - [x] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
    
  * Open Registry Preview Settings. Then:
-   - [ ] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
-   - [ ] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
-   - [ ] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
-   - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
-   - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
-   - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
+   - [x] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
+   - [x] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
+   - [x] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
+   - [x] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
+   - [x] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
+   - [x] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
    
 ## Peek   
  * Open different files to check that they're shown properly
-   - [ ] Image
-   - [ ] Text or dev file
-   - [ ] Markdown file
-   - [ ] PDF
-   - [ ] HTML
-   - [ ] Archive files (.zip, .tar, .rar)
-   - [ ] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
+   - [x] Image
+   - [x] Text or dev file
+   - [x] Markdown file
+   - [x] PDF
+   - [x] HTML
+   - [x] Archive files (.zip, .tar, .rar)
+   - [x] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
    
  * Pinning/unpinning
-   - [ ] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
-   - [ ] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
-   - [ ] Unpin the window, switch to a different file, verify the window is moved to the default place.
-   - [ ] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
+   - [x] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
+   - [x] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
+   - [x] Unpin the window, switch to a different file, verify the window is moved to the default place.
+   - [x] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
 
 * Open with a default program
-   - [ ] By clicking a button.
-   - [ ] By pressing enter. 
+   - [x] By clicking a button.
+   - [x] By pressing enter. 
   
- - [ ] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
- - [ ] Open multiple files, verify you can switch only between selected files.
- - [ ] Change the shortcut, verify the new one works.
+ - [x] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
+ - [x] Open multiple files, verify you can switch only between selected files.
+ - [x] Change the shortcut, verify the new one works.
 
