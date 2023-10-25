@@ -114,10 +114,10 @@ In this release, we focused on stability and improvements.
 
 ### Color Picker
 
- - Terminate a picker session by using the right mouse button. Thanks [@fredso90](https://github.com/fredso90)!
+ - After activating Color Picker, it's now possible to cancel the session by clicking the right mouse button. Thanks [@fredso90](https://github.com/fredso90)!
 
 ### Environment Variables
- - Added a new utility: An environment variables editor that also allows configuring profiles that can be enabled/disabled. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
+ - Added a new utility: An environment variables editor that has the functionality to configure profiles that can be enabled/disabled. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
  - Shows in the title bar if it's running as an administrator. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### FancyZones
