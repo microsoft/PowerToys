@@ -5,7 +5,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Windows.Input;
 using EnvironmentVariables.Helpers.Win32;
 using EnvironmentVariables.Models;
 using ManagedCommon;
