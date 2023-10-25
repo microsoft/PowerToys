@@ -124,7 +124,7 @@ In this release, we focused on stability and improvements.
 
  - Fixed an issue causing context menu pop-ups from some apps to automatically snap to a zone. (This was a hotfix for 0.74)
  - Applied the fix for the context menu pop-ups to the logic that decides which windows can be snapped.
- - Reworked the "Keep windows in their zones" option to include the work area and turn it on by default, fixing an incompatibility with the Copilot toolbar.
+ - Reworked the "Keep windows in their zones" option to include the work area and turn it on by default, fixing an incompatibility with the Copilot flyout.
  - Fixed an issue causing windows to be snapped while moving to a different virtual desktop.
 
 ### File Explorer add-ons
