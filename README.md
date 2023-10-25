@@ -143,7 +143,7 @@ In this release, we focused on stability and improvements.
 
 ### Keyboard Manager
 
- - Visually distinguish between the Numpad and regular dot characters in the UI.
+ - Visually distinguish between the Numpad and regular period characters in the UI.
  - This utility is now disable by default on new installs, since it requires user configuration to do anything useful.
  - Fixed a typo in the Numpad Subtract key in the editor.
 
