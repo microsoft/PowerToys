@@ -87,6 +87,7 @@ namespace EnvironmentVariables.Helpers
                     }
                     else
                     {
+                        // If a variable contains %, we save it as a REG_EXPAND_SZ, which is the same behavior as the Windows default environment variables editor.
                         if (value.Contains('%'))
                         {
                             environmentKey.SetValue(variable, value, RegistryValueKind.ExpandString);
