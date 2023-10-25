@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Windows.Input;
 using EnvironmentVariables.Helpers.Win32;
 using EnvironmentVariables.Models;
 using ManagedCommon;
@@ -84,7 +85,14 @@ namespace EnvironmentVariables.Helpers
                     }
                     else
                     {
-                        environmentKey.SetValue(variable, value);
+                        if (value.Contains('%'))
+                        {
+                            environmentKey.SetValue(variable, value, RegistryValueKind.ExpandString);
+                        }
+                        else
+                        {
+                            environmentKey.SetValue(variable, value, RegistryValueKind.String);
+                        }
                     }
                 }
             }
@@ -104,21 +112,28 @@ namespace EnvironmentVariables.Helpers
 
         internal static void GetVariables(EnvironmentVariableTarget target, VariablesSet set)
         {
-            var variables = Environment.GetEnvironmentVariables(target);
             var sortedList = new SortedList<string, Variable>();
 
-            foreach (DictionaryEntry variable in variables)
+            bool fromMachine = target == EnvironmentVariableTarget.Machine ? true : false;
+
+            using (RegistryKey environmentKey = OpenEnvironmentKeyIfExists(fromMachine, writable: false))
             {
-                string key = variable.Key as string;
-                string value = variable.Value as string;
-
-                if (string.IsNullOrEmpty(key))
+                if (environmentKey != null)
                 {
-                    continue;
+                    foreach (string name in environmentKey.GetValueNames())
+                    {
+                        string value = environmentKey.GetValue(name, string.Empty, RegistryValueOptions.DoNotExpandEnvironmentNames).ToString();
+                        try
+                        {
+                            Variable entry = new Variable(name, value, set.Type);
+                            sortedList.Add(name, entry);
+                        }
+                        catch (ArgumentException)
+                        {
+                            // Throw and catch intentionally to provide non-fatal notification about corrupted environment block
+                        }
+                    }
                 }
-
-                Variable entry = new Variable(key, value, set.Type);
-                sortedList.Add(key, entry);
             }
 
             set.Variables = new System.Collections.ObjectModel.ObservableCollection<Variable>(sortedList.Values);
