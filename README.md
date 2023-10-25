@@ -200,7 +200,7 @@ In this release, we focused on stability and improvements.
  - Fixed a typo in the Hosts File Editor page. Thanks [@Deepak-Sangle](https://github.com/Deepak-Sangle)!
  - Added a lock icon to the flyout listing of all modules when its enabled state is controlled by policy.
 
-### VCM
+### Video Conference Mute
 
  - Added an option to allow for the toolbar to hide after some time passed. Thanks [@quyenvsp](https://github.com/quyenvsp)!
  - Added an option to select to mute or unmute at startup. Thanks [@quyenvsp](https://github.com/quyenvsp)!
