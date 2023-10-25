@@ -171,7 +171,8 @@ In this release, we focused on stability and improvements.
 ### PowerToys Run
 
  - Fixed a case where the query wasn't being cleared after invoking a result action through the keyboard. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Added options to the shell selection in the Shell plugin and improved the backend code for adding options to plugins. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Improved the shell selection option for Windows Terminal in the Shell plugin and improved the backend code for adding combo box options to plugins. Thanks [@htcfreek](https://github.com/htcfreek)!
+   * The implementation of the combo box items has changed amd isn't backward compatible. (Old plugins won't crash, but the combo box setting isn't shown in settings ui anymore.)
  - Added Unix time in milliseconds, fixed negative unix time input and improved error messages in the TimeDate plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
  - The PowerToys plugin allows calling the new Environment Variables utility. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Refactored and added support to VSCodium Stable, VSCodium Insider and Remote Tunnels workspaces. Thanks [@eternalphane](https://github.com/eternalphane)!
