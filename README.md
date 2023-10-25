@@ -208,7 +208,7 @@ In this release, we focused on stability and improvements.
 
 ### Documentation
 
- - Removed the Group Policy documentation from the repo and linked to the published documentation on learn.microsoft.com instead.
+ - Updated the Group Policy documentation on learn.microsoft.com, removed the Group Policy documentation from the repository and linked to the published documentation on learn.microsoft.com instead.
 
 ### Development
 
