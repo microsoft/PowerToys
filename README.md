@@ -103,7 +103,7 @@ In this release, we focused on stability and improvements.
 
 **Highlights**
 
- - New utility: An environment variables editor that also allows configuring profiles that can be enabled/disabled. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
+ - New utility: An environment variables editor with the functionality to configure profiles that can be enabled/disabled. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
  - Settings has a new Dashboard home page, with quick access for enabling modules, short descriptions and activation methods. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
  - Added a previewer to Peek that hosts File Explorer previewers to support every file type that a machine is currently able to preview. For example, this means that if Microsoft Office handlers are installed, Peek can preview Office files. Thanks [@dillydylann](https://github.com/dillydylann)!
 
