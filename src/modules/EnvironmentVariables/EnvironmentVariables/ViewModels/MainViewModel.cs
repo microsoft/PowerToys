@@ -135,6 +135,7 @@ namespace EnvironmentVariables.ViewModels
                 variables = variables.Concat(AppliedProfile.Variables.Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.Profile)).OrderBy(x => x.Name)).ToList();
             }
 
+            // Variables are expanded to be shown in the applied variables section, so the user sees their actual values.
             variables = variables.Concat(UserDefaultSet.Variables.Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.User)).OrderBy(x => x.Name))
                                  .Concat(SystemDefaultSet.Variables.Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.System)).OrderBy(x => x.Name))
                                  .ToList();
