@@ -22,6 +22,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Tag { get; set; }
 
+        public bool IsLocked { get; set; }
+
         public bool IsEnabled
         {
             get => _isEnabled;

@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _allModules = new List<DashboardListItem>();
@@ -472,6 +472,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     case "Awake": item.IsEnabled = generalSettingsConfig.Enabled.Awake; break;
                     case "ColorPicker": item.IsEnabled = generalSettingsConfig.Enabled.ColorPicker; break;
                     case "CropAndLock": item.IsEnabled = generalSettingsConfig.Enabled.CropAndLock; break;
+                    case "EnvironmentVariables": item.IsEnabled = generalSettingsConfig.Enabled.EnvironmentVariables; break;
                     case "FancyZones": item.IsEnabled = generalSettingsConfig.Enabled.FancyZones; break;
                     case "FileLocksmith": item.IsEnabled = generalSettingsConfig.Enabled.FileLocksmith; break;
                     case "FindMyMouse": item.IsEnabled = generalSettingsConfig.Enabled.FindMyMouse; break;

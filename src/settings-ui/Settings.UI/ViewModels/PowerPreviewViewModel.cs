@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Settings = moduleSettingsRepository.SettingsConfig;
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _svgRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgPreviewEnabledValue();

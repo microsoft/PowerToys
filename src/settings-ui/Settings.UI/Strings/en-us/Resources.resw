@@ -3022,7 +3022,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Find the mouse</value>
   </data>
   <data name="ImageResizer_ShortDescription" xml:space="preserve">
-    <value>Select Image Resizer in the right-click context menu</value>
+    <value>Resize images from right-click context menu</value>
   </data>
   <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
     <value>Highlight clicks</value>
@@ -3043,7 +3043,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Quick and easy previewer</value>
   </data>
   <data name="PowerRename_ShortDescription" xml:space="preserve">
-    <value>Select Power Rename in right-click context menu</value>
+    <value>Rename files and folders from right-click context menu</value>
   </data>
   <data name="Run_ShortDescription" xml:space="preserve">
     <value>A quick launcher</value>
@@ -3837,5 +3837,23 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="EnabledModules.Text" xml:space="preserve">
     <value>Enabled modules</value>
+  </data>
+  <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="Peek_SourceCode_Header.Description" xml:space="preserve">
+    <value>.cpp, .py, .json, .xml, .csproj, ...</value>
+  </data>
+  <data name="Peek_SourceCode_Header.Header" xml:space="preserve">
+    <value>Source code files (Monaco)</value>
+  </data>
+  <data name="Peek_SourceCode_TryFormat.Description" xml:space="preserve">
+    <value>Applies to json and xml. Files remain unchanged.</value>
+  </data>
+  <data name="Peek_SourceCode_TryFormat.Header" xml:space="preserve">
+    <value>Try to format the source for preview</value>
+  </data>
+  <data name="Peek_SourceCode_WrapText.Content" xml:space="preserve">
+    <value>Wrap text</value>
   </data>
 </root>

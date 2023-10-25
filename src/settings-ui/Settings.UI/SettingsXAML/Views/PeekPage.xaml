@@ -40,6 +40,25 @@
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 
+                <custom:SettingsGroup x:Uid="Peek_Preview_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingsExpander
+                        x:Uid="Peek_SourceCode_Header"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <CheckBox x:Uid="Peek_SourceCode_WrapText" IsChecked="{x:Bind ViewModel.SourceCodeWrapText, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <custom:CheckBoxWithDescriptionControl
+                                    x:Uid="Peek_SourceCode_TryFormat"
+                                    IsChecked="{x:Bind ViewModel.SourceCodeTryFormat, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
+
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>
         <custom:SettingsPageControl.PrimaryLinks>
