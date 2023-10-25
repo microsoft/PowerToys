@@ -184,7 +184,7 @@ In this release, we focused on stability and improvements.
 ### Registry Preview
 
  - Fixed a parsing error that crashed the Application. (This was a hotfix for 0.74)
- - Fixed opening file names with non-ascii characters. Thanks [@randyrants](https://github.com/randyrants)!
+ - Fixed opening file names with non-ASCII characters. Thanks [@randyrants](https://github.com/randyrants)!
  - Fixed wrong parsing when the file contained an assignment with spaces around the equals sign. Thanks [@randyrants](https://github.com/randyrants)!
  - Fixed key transversal issues when a key was a substring of a parent key. Thanks [@randyrants](https://github.com/randyrants)!
 
