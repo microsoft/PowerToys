@@ -99,7 +99,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.75 - October 2023 Update
 
-In this release, we focused on stability and improvements.
+In this release, we focused on new features, stability and improvements.
 
 **Highlights**
 
