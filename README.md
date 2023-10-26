@@ -199,6 +199,7 @@ In this release, we focused on stability and improvements.
  - Added a new Dashboard home page, with quick access for enabling modules, short descriptions and activation methods. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
  - Fixed a typo in the Hosts File Editor page. Thanks [@Deepak-Sangle](https://github.com/Deepak-Sangle)!
  - Added a lock icon to the flyout listing of all modules when its enabled state is controlled by policy.
+ - The "All apps" list in the flyout will now list all apps even if their enabled state is controlled by policy.
 
 ### Video Conference Mute
 
