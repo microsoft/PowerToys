@@ -21,25 +21,25 @@ namespace EnvironmentVariables.Helpers
 
         internal static Variable GetExisting(string variableName)
         {
-            var userVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
+            DefaultVariablesSet userSet = new DefaultVariablesSet(Guid.NewGuid(), "tmpUser", VariablesSetType.User);
+            GetVariables(EnvironmentVariableTarget.User, userSet);
 
-            foreach (DictionaryEntry variable in userVariables)
+            foreach (var variable in userSet.Variables)
             {
-                var key = variable.Key as string;
-                if (key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                if (variable.Name.Equals(variableName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new Variable(key, userVariables[key] as string, VariablesSetType.User);
+                    return new Variable(variable.Name, variable.Values, VariablesSetType.User);
                 }
             }
 
-            var systemVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+            DefaultVariablesSet systemSet = new DefaultVariablesSet(Guid.NewGuid(), "tmpSystem", VariablesSetType.System);
+            GetVariables(EnvironmentVariableTarget.Machine, systemSet);
 
-            foreach (DictionaryEntry variable in systemVariables)
+            foreach (var variable in systemSet.Variables)
             {
-                var key = variable.Key as string;
-                if (key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                if (variable.Name.Equals(variableName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new Variable(key, systemVariables[key] as string, VariablesSetType.System);
+                    return new Variable(variable.Name, variable.Values, VariablesSetType.System);
                 }
             }
 
