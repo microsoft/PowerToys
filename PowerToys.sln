@@ -545,7 +545,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentVariables", "src
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnvironmentVariablesModuleInterface", "src\modules\EnvironmentVariables\EnvironmentVariablesModuleInterface\EnvironmentVariablesModuleInterface.vcxproj", "{B9420661-B0E4-4241-ABD4-4A27A1F64250}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-FancyZones-WinAppDriver", "src\modules\fancyzones\UnitTests-FancyZones-WinAppDriver\UnitTests-FancyZones-WinAppDriver.csproj", "{FE38FC07-1C05-4B57-ADA3-2FE2F53C6A52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITests-FancyZones", "src\modules\fancyzones\UITests-FancyZones\UITests-FancyZones.csproj", "{FE38FC07-1C05-4B57-ADA3-2FE2F53C6A52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

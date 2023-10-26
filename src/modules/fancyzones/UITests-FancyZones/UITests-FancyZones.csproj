@@ -6,7 +6,7 @@
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectGuid>{FE38FC07-1C05-4B57-ADA3-2FE2F53C6A52}</ProjectGuid>
-    <RootNamespace>Microsoft.FancyZones.UnitTests</RootNamespace>
+    <RootNamespace>Microsoft.FancyZones.UITests</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UnitTest-FancyZones-WinAppDriver\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UITests-FancyZones\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

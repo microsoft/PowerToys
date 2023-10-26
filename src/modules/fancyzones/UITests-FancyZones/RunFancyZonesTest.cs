@@ -5,7 +5,7 @@
 using Microsoft.FancyZones.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTests_FancyZones_WinAppDriver
+namespace UITests_FancyZones
 {
     [TestClass]
     public class RunFancyZonesTest
