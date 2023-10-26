@@ -48,10 +48,10 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.75.0-x64.exe][ptUserX64] | B968400F816244C614984D8E2AF715F668AE54AF98560AF4EFA29BB6F26A6840 | 
-| Per user - ARM64     | [PowerToysUserSetup-0.75.0-arm64.exe][ptUserArm64] | B18B549889B546CF783C53D7C16DA7BD1F41D1902831710EFBBDC9CACEE3E54A | 
-| Machine wide - x64   | [PowerToysSetup-0.75.0-x64.exe][ptMachineX64] | 5CA8F49D66EC56E5DD763061BCB6CE58510FE462738F42D490FF9208FE4828C1 | 
-| Machine wide - ARM64 | [PowerToysSetup-0.75.0-arm64.exe][ptMachineArm64] | 9A5C1BC25ADFD54CA2808ABA4DA9867CDC3B1D5E9E2D62FC5D1F57C7B17B842E |
+| Per user - x64       | [PowerToysUserSetup-0.75.0-x64.exe][ptUserX64] | DF06E021E857B33DADF90FD825F47590544814C5EFE93038E54C2EE0DC52C541 | 
+| Per user - ARM64     | [PowerToysUserSetup-0.75.0-arm64.exe][ptUserArm64] | 75BDD7E9647F7D05BA0199B9C1408BA7365AC06947A949E73159113413C08ED0 | 
+| Machine wide - x64   | [PowerToysSetup-0.75.0-x64.exe][ptMachineX64] | 5DA2CC2ACD9009D2A679F1517350981016F7EB111047199DEFD0A23C7655B04A | 
+| Machine wide - ARM64 | [PowerToysSetup-0.75.0-arm64.exe][ptMachineArm64] | 9BA307E426C29E50B29128BBEAB2AB7423FCA610F76062020FBC5269A9D27FB1 |
 
 This is our preferred method.
 
