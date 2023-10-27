@@ -82,7 +82,15 @@ namespace Wox.Infrastructure.Image
 
         public static BitmapSource GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
         {
-            IntPtr hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, options);
+            IntPtr hBitmap = IntPtr.Zero;
+            if (Path.GetExtension(fileName).Equals(".lnk", StringComparison.OrdinalIgnoreCase))
+            {
+                hBitmap = GetTBitmapSource(fileName);
+            }
+            else
+            {
+                hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, options);
+            }
 
             try
             {
@@ -119,7 +127,7 @@ namespace Wox.Infrastructure.Image
 
                 HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
 
-            // if extracting image thumbnail and failed, extract shell icon
+                // if extracting image thumbnail and failed, extract shell icon
                 if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
                 {
                     hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
@@ -142,6 +150,19 @@ namespace Wox.Infrastructure.Image
                 if (nativeShellItem != null)
                 {
                     Marshal.ReleaseComObject(nativeShellItem);
+                }
+            }
+        }
+
+        public static IntPtr GetTBitmapSource(string fileName)
+        {
+            // Extracts the icon associated with the file
+            using (System.Drawing.Icon sysicon = System.Drawing.Icon.ExtractAssociatedIcon(fileName))
+            {
+                // Convert to Bitmap
+                using (System.Drawing.Bitmap bitmap = sysicon.ToBitmap())
+                {
+                    return bitmap.GetHbitmap();
                 }
             }
         }
