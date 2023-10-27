@@ -21,7 +21,7 @@ namespace UITests_FancyZones
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            _session?.Dispose();
+            _session?.Close();
         }
 
         [TestMethod]

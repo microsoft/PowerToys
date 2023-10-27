@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.FancyZones.UnitTests.Utils
 {
-    public class FancyZonesSession : IDisposable
+    public class FancyZonesSession
     {
         private const string FancyZonesPath = @"\..\..\..\PowerToys.FancyZones.exe";
         private const string FancyZonesProcessName = "PowerToys.FancyZones";
@@ -48,7 +48,7 @@ namespace Microsoft.FancyZones.UnitTests.Utils
             Assert.IsNotNull(FancyZonesProcess);
         }
 
-        public void Dispose()
+        public void Close()
         {
             // Close the application
             if (FancyZonesProcess != null)
@@ -61,8 +61,6 @@ namespace Microsoft.FancyZones.UnitTests.Utils
                 FancyZonesProcess.Close();
                 FancyZonesProcess.Dispose();
             }
-
-            GC.SuppressFinalize(this);
         }
     }
 }
