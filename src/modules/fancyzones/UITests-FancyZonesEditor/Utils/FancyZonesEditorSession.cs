@@ -55,7 +55,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             {
                 try
                 {
-                    // FZEditor applcation can be closed by explicitly closing main editor window
+                    // FZEditor application can be closed by explicitly closing main editor window
                     MainEditorWindow?.SendKeys(Keys.Alt + Keys.F4);
                 }
                 catch (Exception ex)
