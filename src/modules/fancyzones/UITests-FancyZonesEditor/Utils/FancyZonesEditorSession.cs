@@ -38,14 +38,14 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 testContext.WriteLine(ex.Message);
             }
 
-            Assert.IsNotNull(Session);
+            Assert.IsNotNull(Session, "Session not initialized");
 
             // Set implicit timeout to 1.5 seconds to make element search to retry every 500 ms for at most three times
             Session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1.5);
 
             // Find main editor window
             MainEditorWindow = Session.FindElementByAccessibilityId("MainWindow1");
-            Assert.IsNotNull(MainEditorWindow);
+            Assert.IsNotNull(MainEditorWindow, "Main editor window not found");
         }
 
         public void Close(TestContext testContext)
