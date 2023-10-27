@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             }
         }
 
-        public static string GetModulmoduleTypeFluentIconName(ModuleType moduleType)
+        public static string GetModuleTypeFluentIconName(ModuleType moduleType)
         {
             switch (moduleType)
             {
