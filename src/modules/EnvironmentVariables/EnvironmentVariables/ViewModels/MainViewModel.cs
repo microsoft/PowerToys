@@ -67,6 +67,16 @@ namespace EnvironmentVariables.ViewModels
             foreach (var variable in UserDefaultSet.Variables)
             {
                 DefaultVariables.Variables.Add(variable);
+                if (AppliedProfile != null)
+                {
+                    if (AppliedProfile.Variables.Where(
+                        x => (x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase) && x.Values.Equals(variable.Values, StringComparison.OrdinalIgnoreCase))
+                            || variable.Name.Equals(EnvironmentVariablesHelper.GetBackupVariableName(x, AppliedProfile.Name), StringComparison.OrdinalIgnoreCase)).Any())
+                    {
+                        // If it's a user variable that's also in the profile or is a backup variable, mark it as applied from profile.
+                        variable.IsAppliedFromProfile = true;
+                    }
+                }
             }
 
             foreach (var variable in SystemDefaultSet.Variables)
