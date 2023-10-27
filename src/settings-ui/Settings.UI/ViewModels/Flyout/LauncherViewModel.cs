@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -39,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("ColorPicker/ModuleTitle"),
-                    Tag = "ColorPicker",
+                    Tag = ModuleType.ColorPicker,
                     Visible = generalSettingsConfig.Enabled.ColorPicker,
                     ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png",
@@ -51,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("EnvironmentVariables/ModuleTitle"),
-                    Tag = "EnvironmentVariables",
+                    Tag = ModuleType.EnvironmentVariables,
                     Visible = generalSettingsConfig.Enabled.EnvironmentVariables,
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsEnvironmentVariables.png",
                 });
@@ -62,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("FZEditorString"),
-                    Tag = "FancyZones",
+                    Tag = ModuleType.FancyZones,
                     Visible = generalSettingsConfig.Enabled.FancyZones,
                     ToolTip = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFancyZones.png",
@@ -74,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("Hosts/ModuleTitle"),
-                    Tag = "Hosts",
+                    Tag = ModuleType.Hosts,
                     Visible = generalSettingsConfig.Enabled.Hosts,
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsHosts.png",
                 });
@@ -85,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("PowerLauncher/ModuleTitle"),
-                    Tag = "PowerLauncher",
+                    Tag = ModuleType.PowerLauncher,
                     Visible = generalSettingsConfig.Enabled.PowerLauncher,
                     ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png",
@@ -97,7 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("TextExtractor/ModuleTitle"),
-                    Tag = "PowerOCR",
+                    Tag = ModuleType.PowerOCR,
                     Visible = generalSettingsConfig.Enabled.PowerOCR,
                     ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerOcr.png",
@@ -109,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("RegistryPreview/ModuleTitle"),
-                    Tag = "RegistryPreview",
+                    Tag = ModuleType.RegistryPreview,
                     Visible = generalSettingsConfig.Enabled.RegistryPreview,
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png",
                 });
@@ -120,7 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("MeasureTool/ModuleTitle"),
-                    Tag = "MeasureTool",
+                    Tag = ModuleType.MeasureTool,
                     Visible = generalSettingsConfig.Enabled.MeasureTool,
                     ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsScreenRuler.png",
@@ -132,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 FlyoutMenuItems.Add(new FlyoutMenuItem()
                 {
                     Label = resourceLoader.GetString("ShortcutGuide/ModuleTitle"),
-                    Tag = "ShortcutGuide",
+                    Tag = ModuleType.ShortcutGuide,
                     Visible = generalSettingsConfig.Enabled.ShortcutGuide,
                     ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
                     Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png",
@@ -164,14 +165,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 switch (item.Tag)
                 {
-                    case "ColorPicker": item.Visible = generalSettingsConfig.Enabled.ColorPicker; break;
-                    case "FancyZones": item.Visible = generalSettingsConfig.Enabled.FancyZones; break;
-                    case "Hosts": item.Visible = generalSettingsConfig.Enabled.Hosts; break;
-                    case "PowerLauncher": item.Visible = generalSettingsConfig.Enabled.PowerLauncher; break;
-                    case "PowerOCR": item.Visible = generalSettingsConfig.Enabled.PowerOCR; break;
-                    case "RegistryPreview": item.Visible = generalSettingsConfig.Enabled.RegistryPreview; break;
-                    case "MeasureTool": item.Visible = generalSettingsConfig.Enabled.MeasureTool; break;
-                    case "ShortcutGuide": item.Visible = generalSettingsConfig.Enabled.ShortcutGuide; break;
+                    case ModuleType.ColorPicker: item.Visible = generalSettingsConfig.Enabled.ColorPicker; break;
+                    case ModuleType.FancyZones: item.Visible = generalSettingsConfig.Enabled.FancyZones; break;
+                    case ModuleType.Hosts: item.Visible = generalSettingsConfig.Enabled.Hosts; break;
+                    case ModuleType.PowerLauncher: item.Visible = generalSettingsConfig.Enabled.PowerLauncher; break;
+                    case ModuleType.PowerOCR: item.Visible = generalSettingsConfig.Enabled.PowerOCR; break;
+                    case ModuleType.RegistryPreview: item.Visible = generalSettingsConfig.Enabled.RegistryPreview; break;
+                    case ModuleType.MeasureTool: item.Visible = generalSettingsConfig.Enabled.MeasureTool; break;
+                    case ModuleType.ShortcutGuide: item.Visible = generalSettingsConfig.Enabled.ShortcutGuide; break;
                 }
             }
         }
