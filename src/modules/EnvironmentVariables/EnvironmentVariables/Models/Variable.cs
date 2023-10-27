@@ -29,6 +29,11 @@ namespace EnvironmentVariables.Models
         private bool _applyToSystem;
 
         [JsonIgnore]
+        [property: JsonIgnore]
+        [ObservableProperty]
+        private bool _isFromProfile;
+
+        [JsonIgnore]
         public bool IsEditable
         {
             get

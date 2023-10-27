@@ -30,6 +30,20 @@
                     Style="{StaticResource DefaultSettingsExpanderItemStyle}">
                     <controls:SettingsCard.Description>
                         <StackPanel HorizontalAlignment="Left">
+                            <Border
+                                Width="12"
+                                Height="12"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                CornerRadius="12"
+                                Visibility="{x:Bind IsFromProfile, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <FontIcon
+                                    FontSize="8"
+                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                    Glyph="&#xEA1F;"
+                                    Visibility="{x:Bind IsFromProfile, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </Border>
+
                             <ItemsControl
                                 x:Name="VariableValuesList"
                                 HorizontalAlignment="Left"

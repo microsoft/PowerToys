@@ -67,6 +67,13 @@ namespace EnvironmentVariables.ViewModels
             foreach (var variable in UserDefaultSet.Variables)
             {
                 DefaultVariables.Variables.Add(variable);
+                if (AppliedProfile != null)
+                {
+                    if (AppliedProfile.Variables.Where(x => x.Name == variable.Name && x.Values == variable.Values).Any())
+                    {
+                        variable.IsFromProfile = true;
+                    }
+                }
             }
 
             foreach (var variable in SystemDefaultSet.Variables)
