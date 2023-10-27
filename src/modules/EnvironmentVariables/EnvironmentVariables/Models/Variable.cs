@@ -31,14 +31,14 @@ namespace EnvironmentVariables.Models
         [JsonIgnore]
         [property: JsonIgnore]
         [ObservableProperty]
-        private bool _isFromProfile;
+        private bool _isAppliedFromProfile; // Used to mark that a variable in a default set is applied by a profile. Used to disable editing / mark it in the UI.
 
         [JsonIgnore]
         public bool IsEditable
         {
             get
             {
-                return (ParentType != VariablesSetType.System || App.GetService<IElevationHelper>().IsElevated) && !IsFromProfile;
+                return (ParentType != VariablesSetType.System || App.GetService<IElevationHelper>().IsElevated) && !IsAppliedFromProfile;
             }
         }
 

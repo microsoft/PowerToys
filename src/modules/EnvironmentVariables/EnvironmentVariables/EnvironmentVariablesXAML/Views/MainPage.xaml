@@ -35,7 +35,7 @@
                                 FontSize="16"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                 Glyph="&#xE930;"
-                                Visibility="{x:Bind IsFromProfile, Converter={StaticResource BoolToVisibilityConverter}}">
+                                Visibility="{x:Bind IsAppliedFromProfile, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="VariableIsAppliedByActiveProfileTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>

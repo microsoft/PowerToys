@@ -73,7 +73,8 @@ namespace EnvironmentVariables.ViewModels
                         x => (x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase) && x.Values.Equals(variable.Values, StringComparison.OrdinalIgnoreCase))
                             || variable.Name.Equals(EnvironmentVariablesHelper.GetBackupVariableName(x, AppliedProfile.Name), StringComparison.OrdinalIgnoreCase)).Any())
                     {
-                        variable.IsFromProfile = true;
+                        // If it's a user variable that's also in the profile or is a backup variable, mark it as applied from profile.
+                        variable.IsAppliedFromProfile = true;
                     }
                 }
             }
