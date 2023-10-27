@@ -38,7 +38,7 @@ namespace EnvironmentVariables.Models
         {
             get
             {
-                return ParentType != VariablesSetType.System || App.GetService<IElevationHelper>().IsElevated;
+                return (ParentType != VariablesSetType.System || App.GetService<IElevationHelper>().IsElevated) && !IsFromProfile;
             }
         }
 

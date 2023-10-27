@@ -24,15 +24,16 @@
             <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
                 <controls:SettingsCard
                     CommandParameter="{x:Bind (models:Variable)}"
-                    Header="{x:Bind Name, Mode=TwoWay}"
                     IsActionIconVisible="False"
                     IsClickEnabled="False"
                     Style="{StaticResource DefaultSettingsExpanderItemStyle}">
-                    <controls:SettingsCard.Description>
-                        <StackPanel HorizontalAlignment="Left">
+                    <controls:SettingsCard.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind Name, Mode=TwoWay}" />
                             <Border
                                 Width="12"
                                 Height="12"
+                                Margin="6,0,6,0"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Background="{ThemeResource AccentFillColorDefaultBrush}"
                                 CornerRadius="12"
@@ -41,9 +42,16 @@
                                     FontSize="8"
                                     Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
                                     Glyph="&#xEA1F;"
-                                    Visibility="{x:Bind IsFromProfile, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    Visibility="{x:Bind IsFromProfile, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <ToolTipService.ToolTip>
+                                        <TextBlock x:Uid="VariableIsAppliedByActiveProfileTooltip" TextWrapping="Wrap" />
+                                    </ToolTipService.ToolTip>
+                                </FontIcon>
                             </Border>
-
+                        </StackPanel>
+                    </controls:SettingsCard.Header>
+                    <controls:SettingsCard.Description>
+                        <StackPanel HorizontalAlignment="Left">
                             <ItemsControl
                                 x:Name="VariableValuesList"
                                 HorizontalAlignment="Left"
@@ -66,7 +74,6 @@
                                 Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                         </StackPanel>
                     </controls:SettingsCard.Description>
-
                     <Button
                         Content="{ui:FontIcon Glyph=&#xE712;}"
                         IsEnabled="{x:Bind IsEditable}"
