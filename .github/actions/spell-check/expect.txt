@@ -1871,6 +1871,7 @@ SYSCOLORCHANGE
 SYSCOMMAND
 SYSDEADCHAR
 sysdm
+sysicon
 SYSICONINDEX
 SYSKEY
 syskeydown
@@ -1897,6 +1898,7 @@ taskbar
 taskkill
 tasklist
 taskschd
+TBitmap
 TBM
 tchar
 Tcollab
