@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,6 +13,9 @@ namespace Microsoft.FancyZones.UnitTests.Utils
     public class FancyZonesSession : IDisposable
     {
         private const string FancyZonesPath = @"\..\..\..\PowerToys.FancyZones.exe";
+        private const string FancyZonesProcessName = "PowerToys.FancyZones";
+
+        private bool stopFancyZones = true;
 
         public Process? FancyZonesProcess { get; }
 
@@ -20,12 +23,22 @@ namespace Microsoft.FancyZones.UnitTests.Utils
         {
             try
             {
-                // Launch FancyZones
-                string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                path += FancyZonesPath;
+                // Check if FancyZones is already running
+                Process[] runningFZ = Process.GetProcessesByName(FancyZonesProcessName);
+                if (runningFZ.Length > 0)
+                {
+                    FancyZonesProcess = runningFZ[0];
+                    stopFancyZones = false;
+                }
+                else
+                {
+                    // Launch FancyZones
+                    string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    path += FancyZonesPath;
 
-                ProcessStartInfo info = new ProcessStartInfo(path);
-                FancyZonesProcess = Process.Start(info);
+                    ProcessStartInfo info = new ProcessStartInfo(path);
+                    FancyZonesProcess = Process.Start(info);
+                }
             }
             catch (Exception ex)
             {
@@ -40,7 +53,11 @@ namespace Microsoft.FancyZones.UnitTests.Utils
             // Close the application
             if (FancyZonesProcess != null)
             {
-                FancyZonesProcess.Kill();
+                if (stopFancyZones)
+                {
+                    FancyZonesProcess.Kill();
+                }
+
                 FancyZonesProcess.Close();
                 FancyZonesProcess.Dispose();
             }
