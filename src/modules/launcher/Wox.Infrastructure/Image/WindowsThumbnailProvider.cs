@@ -6,7 +6,6 @@ using System;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
@@ -118,30 +117,20 @@ namespace Wox.Infrastructure.Image
                     Height = height,
                 };
 
-                // Initialize a Task to run GetImage separately
-                Task.Run(() =>
+                HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
+
+            // if extracting image thumbnail and failed, extract shell icon
+                if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
                 {
-                    try
-                    {
-                        HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
+                    hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
+                }
 
-                        // if extracting image thumbnail and failed, extract shell icon
-                        if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
-                        {
-                            hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
-                        }
+                if (hr != HResult.Ok)
+                {
+                    throw Marshal.GetExceptionForHR((int)hr);
+                }
 
-                        if (hr != HResult.Ok)
-                        {
-                            throw Marshal.GetExceptionForHR((int)hr);
-                        }
-                    }
-                    catch (System.Exception ex)
-                    {
-                        Log.Exception($"Exception in GetImage: {ex.Message}", ex, MethodBase.GetCurrentMethod().DeclaringType);
-                        throw;
-                    }
-                });
+                return hBitmap;
             }
             catch (System.Exception ex)
             {
@@ -155,8 +144,6 @@ namespace Wox.Infrastructure.Image
                     Marshal.ReleaseComObject(nativeShellItem);
                 }
             }
-
-            return hBitmap;
         }
 
         private static bool logReportedAdobeReaderDetected; // Keep track if Adobe Reader detection has been logged yet.
