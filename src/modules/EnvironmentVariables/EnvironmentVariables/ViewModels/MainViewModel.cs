@@ -69,7 +69,9 @@ namespace EnvironmentVariables.ViewModels
                 DefaultVariables.Variables.Add(variable);
                 if (AppliedProfile != null)
                 {
-                    if (AppliedProfile.Variables.Where(x => x.Name == variable.Name && x.Values == variable.Values).Any())
+                    if (AppliedProfile.Variables.Where(
+                        x => (x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase) && x.Values.Equals(variable.Values, StringComparison.OrdinalIgnoreCase))
+                            || variable.Name.Equals(EnvironmentVariablesHelper.GetBackupVariableName(x, AppliedProfile.Name), StringComparison.OrdinalIgnoreCase)).Any())
                     {
                         variable.IsFromProfile = true;
                     }
