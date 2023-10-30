@@ -99,6 +99,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyGD(letter))
                 .Union(GetDefaultLetterKeyDE(letter))
                 .Union(GetDefaultLetterKeyEST(letter))
+                .Union(GetDefaultLetterKeyFI(letter))
                 .Union(GetDefaultLetterKeyFR(letter))
                 .Union(GetDefaultLetterKeyHR(letter))
                 .Union(GetDefaultLetterKeyHE(letter))
