@@ -21,8 +21,7 @@ namespace FancyZonesWindowUtils
     bool IsStandardWindow(HWND window);
     bool IsPopupWindow(HWND window) noexcept;
     bool HasThickFrame(HWND window) noexcept;
-    bool HasCaption(HWND window) noexcept;
-    bool HasThickFrameAndMinimizeMaximizeButtons(HWND window) noexcept;
+    bool HasMinimizeMaximizeButtons(HWND window) noexcept;
     bool IsProcessOfWindowElevated(HWND window); // If HWND is already dead, we assume it wasn't elevated
     
     bool IsExcluded(HWND window);

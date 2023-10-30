@@ -27,17 +27,18 @@ bool FancyZonesWindowProcessing::IsProcessable(HWND window) noexcept
 
     bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
     bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
-    bool hasCaption = FancyZonesWindowUtils::HasCaption(window);
+    bool hasMinimizeMaximizeButtons = FancyZonesWindowUtils::HasMinimizeMaximizeButtons(window); 
     if (isPopup)
     {
-        if (hasThickFrame && hasCaption)
+        if (hasThickFrame && hasMinimizeMaximizeButtons)
         {
-            // popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Calculator, Telegram
-            // if the window has both WS_THICKFRAME and WS_CAPTION, ignore the setting     
+            // popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Calculator, Telegram   
         }
-        else if (!FancyZonesSettings::settings().allowSnapPopupWindows || !hasThickFrame || !hasCaption)
+        else if (!FancyZonesSettings::settings().allowSnapPopupWindows || !hasThickFrame || !hasMinimizeMaximizeButtons)
         {
             // popup could be the window we don't want to snap: start menu, notification popup, tray window, etc.
+            // minimize maximize buttons are used for filtering out menus, 
+            // e.g., in Edge "Running as admin" menu when creating a new PowerToys issue.
             return false;
         }
     }
