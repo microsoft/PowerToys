@@ -231,7 +231,7 @@ namespace PowerAccent.Core
             {
                 LetterKey.VK_A => new[] { "ä", "å" },
                 LetterKey.VK_E => new[] { "€" },
-                LetterKey.VK_O => new[] { "ö"},
+                LetterKey.VK_O => new[] { "ö" },
                 _ => Array.Empty<string>(),
             };
         }
