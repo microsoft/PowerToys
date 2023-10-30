@@ -309,6 +309,7 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
+- Appium.WebDriver 4.4.5
 - CommunityToolkit.Mvvm 8.2.0
 - CommunityToolkit.WinUI.Animations 8.0.230907
 - CommunityToolkit.WinUI.Collections 8.0.230907
