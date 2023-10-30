@@ -25,13 +25,21 @@ bool FancyZonesWindowProcessing::IsProcessable(HWND window) noexcept
         return false;
     }
 
-    // popup could be the window we don't want to snap: start menu, notification popup, tray window, etc.
-    // also, popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Telegram
     bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
     bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
-    if (isPopup && (!hasThickFrame || !FancyZonesSettings::settings().allowSnapPopupWindows))
+    bool hasCaption = FancyZonesWindowUtils::HasCaption(window);
+    if (isPopup)
     {
-        return false;
+        if (hasThickFrame && hasCaption)
+        {
+            // popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Calculator, Telegram
+            // if the window has both WS_THICKFRAME and WS_CAPTION, ignore the setting     
+        }
+        else if (!FancyZonesSettings::settings().allowSnapPopupWindows || !hasThickFrame || !hasCaption)
+        {
+            // popup could be the window we don't want to snap: start menu, notification popup, tray window, etc.
+            return false;
+        }
     }
 
     // allow child windows
