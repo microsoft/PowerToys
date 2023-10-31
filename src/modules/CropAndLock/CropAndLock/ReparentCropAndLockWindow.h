@@ -19,8 +19,8 @@ private:
 
 	void Hide();
 	void DisconnectTarget();
-    void SaveOriginalState();
-    void RestoreOriginalState();
+	void SaveOriginalState();
+	void RestoreOriginalState();
 
 private:
 	HWND m_currentTarget = nullptr;
@@ -30,8 +30,8 @@ private:
 	std::function<void(HWND)> m_closedCallback;
 
 	LONG_PTR originalExStyle = 0;
-    LONG_PTR originalStyle = 0;
-    WINDOWPLACEMENT originalPlacement = { sizeof(WINDOWPLACEMENT) };
-    RECT originalRect = {};
-    WINDOWPLACEMENT wp;
+	LONG_PTR originalStyle = 0;
+	WINDOWPLACEMENT originalPlacement = { sizeof(WINDOWPLACEMENT) };
+	RECT originalRect = {};
+	WINDOWPLACEMENT wp;
 };
