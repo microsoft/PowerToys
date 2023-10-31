@@ -229,7 +229,7 @@
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="FileSaveError_ReadOnly" xml:space="preserve">
-    <value>The hosts file cannot be saved because is read-only.</value>
+    <value>The hosts file cannot be saved because it is read-only.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="FilterBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
