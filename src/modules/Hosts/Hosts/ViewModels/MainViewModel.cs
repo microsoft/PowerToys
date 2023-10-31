@@ -15,6 +15,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Collections;
+using Hosts.Exceptions;
 using Hosts.Helpers;
 using Hosts.Models;
 using Hosts.Settings;
@@ -47,6 +48,9 @@ namespace Hosts.ViewModels
 
         [ObservableProperty]
         private string _errorMessage;
+
+        [ObservableProperty]
+        private bool _isReadOnly;
 
         [ObservableProperty]
         private bool _fileChanged;
@@ -262,6 +266,13 @@ namespace Hosts.ViewModels
             _hostsService.OpenHostsFile();
         }
 
+        [RelayCommand]
+        public void OverwriteHosts()
+        {
+            _hostsService.RemoveReadOnly();
+            _ = Task.Run(SaveAsync);
+        }
+
         public void Dispose()
         {
             Dispose(disposing: true);
@@ -374,6 +385,7 @@ namespace Hosts.ViewModels
         {
             bool error = true;
             string errorMessage = string.Empty;
+            bool isReadOnly = false;
 
             try
             {
@@ -384,6 +396,12 @@ namespace Hosts.ViewModels
             {
                 var resourceLoader = ResourceLoaderInstance.ResourceLoader;
                 errorMessage = resourceLoader.GetString("FileSaveError_NotElevated");
+            }
+            catch (ReadOnlyHostsException)
+            {
+                isReadOnly = true;
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                errorMessage = resourceLoader.GetString("FileSaveError_ReadOnly");
             }
             catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 32)
             {
@@ -402,6 +420,7 @@ namespace Hosts.ViewModels
             {
                 Error = error;
                 ErrorMessage = errorMessage;
+                IsReadOnly = isReadOnly;
             });
         }
 
