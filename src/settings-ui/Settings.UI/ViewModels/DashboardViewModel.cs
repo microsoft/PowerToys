@@ -829,5 +829,52 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
+
+        internal void DashboardListItemClick(object sender)
+        {
+            Button button = sender as Button;
+            if (button == null)
+            {
+                return;
+            }
+
+            string tag = button.Tag as string;
+            if (tag == null)
+            {
+                return;
+            }
+
+            Type type = null;
+            switch (tag)
+            {
+                case "AlwaysOnTop": type = typeof(AlwaysOnTopPage); break;
+                case "Awake": type = typeof(AwakePage); break;
+                case "ColorPicker": type = typeof(ColorPickerPage); break;
+                case "CropAndLock": type = typeof(CropAndLockPage); break;
+                case "EnvironmentVariables": type = typeof(EnvironmentVariablesPage); break;
+                case "FancyZones": type = typeof(FancyZonesPage); break;
+                case "FileLocksmith": type = typeof(FileLocksmithPage); break;
+                case "FindMyMouse": type = typeof(MouseUtilsPage); break;
+                case "Hosts": type = typeof(HostsPage); break;
+                case "ImageResizer": type = typeof(ImageResizerPage); break;
+                case "KeyboardManager": type = typeof(KeyboardManagerPage); break;
+                case "MouseHighlighter": type = typeof(MouseUtilsPage); break;
+                case "MouseJump": type = typeof(MouseUtilsPage); break;
+                case "MousePointerCrosshairs": type = typeof(MouseUtilsPage); break;
+                case "MouseWithoutBorders": type = typeof(MouseWithoutBordersPage); break;
+                case "PastePlain": type = typeof(PastePlainPage); break;
+                case "Peek": type = typeof(PeekPage); break;
+                case "PowerRename": type = typeof(PowerRenamePage); break;
+                case "PowerLauncher": type = typeof(PowerLauncherPage); break;
+                case "PowerAccent": type = typeof(PowerAccentPage); break;
+                case "RegistryPreview": type = typeof(RegistryPreviewPage); break;
+                case "MeasureTool": type = typeof(MeasureToolPage); break;
+                case "ShortcutGuide": type = typeof(ShortcutGuidePage); break;
+                case "PowerOCR": type = typeof(PowerOcrPage); break;
+                case "VideoConference": type = typeof(VideoConferencePage); break;
+            }
+
+            NavigationService.Navigate(type);
+        }
     }
 }

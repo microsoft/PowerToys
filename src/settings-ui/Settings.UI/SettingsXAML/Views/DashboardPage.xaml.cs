@@ -54,5 +54,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             ViewModel.SettingsButtonClicked(sender);
         }
+
+        private void DashboardListItemClick(object sender, RoutedEventArgs e)
+        {
+            ViewModel.DashboardListItemClick(sender);
+        }
     }
 }
