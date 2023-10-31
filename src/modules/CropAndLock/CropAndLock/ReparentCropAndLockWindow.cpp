@@ -4,8 +4,6 @@
 const std::wstring ReparentCropAndLockWindow::ClassName = L"CropAndLock.ReparentCropAndLockWindow";
 std::once_flag ReparentCropAndLockWindowClassRegistration;
 
-static int retries = 3;
-
 void ReparentCropAndLockWindow::RegisterWindowClass()
 {
     auto instance = winrt::check_pointer(GetModuleHandleW(nullptr));
@@ -84,14 +82,6 @@ LRESULT ReparentCropAndLockWindow::MessageHandler(UINT const message, WPARAM con
     return 0;
 }
 
-bool ReparentCropAndLockWindow::AreRectsCloseEnough(const RECT& a, const RECT& b, int tolerance)
-{
-    return (abs(a.left - b.left) <= tolerance) &&
-           (abs(a.top - b.top) <= tolerance) &&
-           (abs(a.right - b.right) <= tolerance) &&
-           (abs(a.bottom - b.bottom) <= tolerance);
-}
-
 void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
 {
     DisconnectTarget();
@@ -158,25 +148,8 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);
     auto x = -cropRect.left;
     auto y = -cropRect.top;
-    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER));    
-
-    if (retries > 0)
-    {
-        RECT currentCropRect = {};
-        GetWindowRect(m_currentTarget, &currentCropRect); // Assuming this gives the cropped rect
-
-        if (!AreRectsCloseEnough(currentCropRect, cropRect)) // You might want to use a function to compare RECTs
-        {
-            Sleep(100); // Introduce a slight delay
-            retries--;
-            CropAndLock(windowToCrop, cropRect); // Retry
-        }
-        else
-            retries = 3;
-    }
+    winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER));
 }
-
-
 
 void ReparentCropAndLockWindow::Hide()
 {
@@ -194,15 +167,10 @@ void ReparentCropAndLockWindow::DisconnectTarget()
             m_currentTarget = nullptr;
             return;
         }
-        //winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, m_previousPosition.x, m_previousPosition.y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED));
         SetParent(m_currentTarget, nullptr);
-        //auto targetStyle = static_cast<DWORD>(GetWindowLongPtrW(m_currentTarget, GWL_STYLE));
         RestoreOriginalState();
-        //targetStyle &= ~WS_CHILD;
-        //SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);
 
         Sleep(50);
-
     }
 }
 

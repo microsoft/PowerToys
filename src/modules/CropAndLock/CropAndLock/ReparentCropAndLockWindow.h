@@ -21,7 +21,6 @@ private:
 	void DisconnectTarget();
     void SaveOriginalState();
     void RestoreOriginalState();
-    bool AreRectsCloseEnough(const RECT& a, const RECT& b, int tolerance = 5);
 
 private:
 	HWND m_currentTarget = nullptr;
