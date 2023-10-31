@@ -24,7 +24,6 @@ private:
 
 private:
 	HWND m_currentTarget = nullptr;
-	POINT m_previousPosition = {};
 	std::unique_ptr<ChildWindow> m_childWindow;
 	bool m_destroyed = false;
 	std::function<void(HWND)> m_closedCallback;
@@ -33,5 +32,4 @@ private:
 	LONG_PTR originalStyle = 0;
 	WINDOWPLACEMENT originalPlacement = { sizeof(WINDOWPLACEMENT) };
 	RECT originalRect = {};
-	WINDOWPLACEMENT wp;
 };

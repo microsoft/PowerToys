@@ -117,8 +117,6 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     adjustedCropRect.bottom += diffY;
     cropRect = adjustedCropRect;
 
-    // Save the previous position of the target so that we can restore it.
-    m_previousPosition = { windowRect.left, windowRect.top };
     auto newX = adjustedCropRect.left + windowRect.left;
     auto newY = adjustedCropRect.top + windowRect.top;
 
