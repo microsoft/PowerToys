@@ -107,7 +107,7 @@ if (-not $Passive)
 else 
 {
     Write-Output "Checking all files (passively)"
-    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\launcher\\PowerLauncher\\)|(\\launcher\\Wox.Plugin\\)|(\\colorPicker\\ColorPickerUI\\)|(\\settings-ui\\Settings.UI\\)" }
+    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\Generated Files\\PowerRenameXAML\\)|(\\launcher\\PowerLauncher\\)|(\\launcher\\Wox.Plugin\\)|(\\colorPicker\\ColorPickerUI\\)" }
 
     if ($files.count -gt 0)
     {

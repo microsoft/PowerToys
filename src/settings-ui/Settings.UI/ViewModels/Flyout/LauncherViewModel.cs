@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendIPCMessage = ipcMSGCallBackFunc;
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();

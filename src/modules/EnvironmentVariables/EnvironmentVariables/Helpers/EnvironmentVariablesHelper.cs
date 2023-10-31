@@ -21,25 +21,25 @@ namespace EnvironmentVariables.Helpers
 
         internal static Variable GetExisting(string variableName)
         {
-            var userVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
+            DefaultVariablesSet userSet = new DefaultVariablesSet(Guid.NewGuid(), "tmpUser", VariablesSetType.User);
+            GetVariables(EnvironmentVariableTarget.User, userSet);
 
-            foreach (DictionaryEntry variable in userVariables)
+            foreach (var variable in userSet.Variables)
             {
-                var key = variable.Key as string;
-                if (key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                if (variable.Name.Equals(variableName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new Variable(key, userVariables[key] as string, VariablesSetType.User);
+                    return new Variable(variable.Name, variable.Values, VariablesSetType.User);
                 }
             }
 
-            var systemVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+            DefaultVariablesSet systemSet = new DefaultVariablesSet(Guid.NewGuid(), "tmpSystem", VariablesSetType.System);
+            GetVariables(EnvironmentVariableTarget.Machine, systemSet);
 
-            foreach (DictionaryEntry variable in systemVariables)
+            foreach (var variable in systemSet.Variables)
             {
-                var key = variable.Key as string;
-                if (key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                if (variable.Name.Equals(variableName, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new Variable(key, systemVariables[key] as string, VariablesSetType.System);
+                    return new Variable(variable.Name, variable.Values, VariablesSetType.System);
                 }
             }
 
@@ -65,6 +65,9 @@ namespace EnvironmentVariables.Helpers
             return baseKey.OpenSubKey(keyName, writable: writable);
         }
 
+        // Code taken from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Environment.Win32.cs
+        // Set variables directly to registry instead of using Environment API - Environment.SetEnvironmentVariable() has 1 second timeout for SendNotifyMessage(WM_SETTINGSCHANGED).
+        // When applying profile, this would take num_of_variables * 1s to propagate the changes. We do manually SendNotifyMessage with no timeout where needed.
         private static void SetEnvironmentVariableFromRegistryWithoutNotify(string variable, string value, bool fromMachine)
         {
             const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
@@ -84,7 +87,15 @@ namespace EnvironmentVariables.Helpers
                     }
                     else
                     {
-                        environmentKey.SetValue(variable, value);
+                        // If a variable contains %, we save it as a REG_EXPAND_SZ, which is the same behavior as the Windows default environment variables editor.
+                        if (value.Contains('%'))
+                        {
+                            environmentKey.SetValue(variable, value, RegistryValueKind.ExpandString);
+                        }
+                        else
+                        {
+                            environmentKey.SetValue(variable, value, RegistryValueKind.String);
+                        }
                     }
                 }
             }
@@ -102,23 +113,32 @@ namespace EnvironmentVariables.Helpers
             }
         }
 
+        // Code taken from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Environment.Win32.cs
+        // Reading variables from registry instead of using Environment API, because Environment API expands variables by default.
         internal static void GetVariables(EnvironmentVariableTarget target, VariablesSet set)
         {
-            var variables = Environment.GetEnvironmentVariables(target);
             var sortedList = new SortedList<string, Variable>();
 
-            foreach (DictionaryEntry variable in variables)
+            bool fromMachine = target == EnvironmentVariableTarget.Machine ? true : false;
+
+            using (RegistryKey environmentKey = OpenEnvironmentKeyIfExists(fromMachine, writable: false))
             {
-                string key = variable.Key as string;
-                string value = variable.Value as string;
-
-                if (string.IsNullOrEmpty(key))
+                if (environmentKey != null)
                 {
-                    continue;
+                    foreach (string name in environmentKey.GetValueNames())
+                    {
+                        string value = environmentKey.GetValue(name, string.Empty, RegistryValueOptions.DoNotExpandEnvironmentNames).ToString();
+                        try
+                        {
+                            Variable entry = new Variable(name, value, set.Type);
+                            sortedList.Add(name, entry);
+                        }
+                        catch (ArgumentException)
+                        {
+                            // Throw and catch intentionally to provide non-fatal notification about corrupted environment block
+                        }
+                    }
                 }
-
-                Variable entry = new Variable(key, value, set.Type);
-                sortedList.Add(key, entry);
             }
 
             set.Variables = new System.Collections.ObjectModel.ObservableCollection<Variable>(sortedList.Values);

@@ -281,6 +281,9 @@ namespace PowerLauncher
                 if (option.Key != null && defaultOptions.TryGetValue(option.Key, out PluginAdditionalOption defaultOption))
                 {
                     defaultOption.Value = option.Value;
+                    defaultOption.ComboBoxValue = option.ComboBoxValue;
+                    defaultOption.TextValue = option.TextValue;
+                    defaultOption.NumberValue = option.NumberValue;
                 }
             }
 

@@ -170,10 +170,12 @@
     <value>Add variable</value>
   </data>
   <data name="AddNewVariableName.Header" xml:space="preserve">
-    <value>Variable name</value>
+    <value>Name</value>
+    <comment>Name as in Environment variable name</comment>
   </data>
   <data name="AddNewVariableValue.Header" xml:space="preserve">
-    <value>Variable value</value>
+    <value>Value</value>
+    <comment>Value as in Environment variable value</comment>
   </data>
   <data name="ExistingVariableSegmentedButton.Content" xml:space="preserve">
     <value>Existing</value>
@@ -277,5 +279,8 @@
   </data>
   <data name="StateProfileNotApplicableMsg" xml:space="preserve">
     <value>Variables or backup variables are invalid.</value>
+  </data>
+  <data name="VariableIsAppliedByActiveProfileTooltip.Text" xml:space="preserve">
+    <value>This variable is written by the active profile</value>
   </data>
 </root>
