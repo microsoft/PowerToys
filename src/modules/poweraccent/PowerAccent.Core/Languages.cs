@@ -200,6 +200,7 @@ namespace PowerAccent.Core
             {
                 LetterKey.VK_C => new[] { "ć", "č" },
                 LetterKey.VK_D => new[] { "đ" },
+                LetterKey.VK_E => new[] { "€" },
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_Z => new[] { "ž" },
                 _ => Array.Empty<string>(),
