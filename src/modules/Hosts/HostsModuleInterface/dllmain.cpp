@@ -49,7 +49,7 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
 
     HANDLE m_hShowEvent;
 
@@ -88,7 +88,7 @@ private:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\Hosts\\PowerToys.Hosts.exe";
+        sei.lpFile = L"WinUI3Apps\\PowerToys.Hosts.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
 
@@ -132,7 +132,7 @@ public:
         }
 
         m_hShowAdminEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
-        if (!m_hShowEvent)
+        if (!m_hShowAdminEvent)
         {
             Logger::error(L"Failed to create show hosts admin event");
             auto message = get_last_error_message(GetLastError());
@@ -147,7 +147,17 @@ public:
             if (m_enabled && err == ERROR_SUCCESS)
             {
                 Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_HOSTS_EVENT);
-                launch_process(false);
+
+                if (is_process_running())
+                {
+                    bring_process_to_front();
+                }
+                else
+                {
+                    launch_process(false);
+                }
+
+                Trace::ActivateEditor();
             }
         });
 
@@ -156,7 +166,17 @@ public:
             if (m_enabled && err == ERROR_SUCCESS)
             {
                 Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
-                launch_process(true);
+                
+                if (is_process_running())
+                {
+                    bring_process_to_front();
+                }
+                else
+                {
+                    launch_process(true);
+                }
+
+                Trace::ActivateEditor();
             }
         });
     }
@@ -209,31 +229,8 @@ public:
         return false;
     }
 
-    virtual void call_custom_action(const wchar_t* action) override
+    virtual void call_custom_action(const wchar_t* /*action*/) override
     {
-        try
-        {
-            PowerToysSettings::CustomActionObject action_object =
-                PowerToysSettings::CustomActionObject::from_json_string(action);
-
-            if (is_process_running())
-            {
-                bring_process_to_front();
-            }
-            else if (action_object.get_name() == L"Launch")
-            {
-                launch_process(false);
-            }
-            else if (action_object.get_name() == L"LaunchAdministrator")
-            {
-                launch_process(true);
-            }
-            Trace::ActivateEditor();
-        }
-        catch (std::exception&)
-        {
-            Logger::error(L"Failed to parse action. {}", action);
-        }
     }
 
     virtual void set_config(const wchar_t* /*config*/) override

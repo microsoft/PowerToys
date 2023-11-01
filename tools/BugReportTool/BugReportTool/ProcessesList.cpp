@@ -38,4 +38,6 @@ std::vector<std::wstring> processes =
     L"PowerToys.MouseWithoutBordersHelper.exe",
     L"PowerToys.MouseWithoutBordersService.exe",
     L"PowerToys.Peek.UI.exe",
+    L"PowerToys.CropAndLock.exe",
+    L"PowerToys.EnvironmentVariables.exe",
 };

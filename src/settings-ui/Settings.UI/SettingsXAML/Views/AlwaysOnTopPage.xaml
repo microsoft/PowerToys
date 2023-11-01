@@ -1,0 +1,127 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.AlwaysOnTopPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <custom:SettingsPageControl
+        x:Uid="AlwaysOnTop"
+        IsTabStop="False"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/AlwaysOnTop.png">
+        <custom:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:SettingsCard
+                    x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </controls:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
+                <custom:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+
+                    <controls:SettingsExpander
+                        x:Uid="AlwaysOnTop_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
+                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DoNotActivateOnGameMode}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
+
+                <custom:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingsExpander
+                        x:Uid="AlwaysOnTop_FrameEnabled"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        IsExpanded="True">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                                    <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Custom_Color" />
+                                    <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Windows_Default" />
+                                </ComboBox>
+                            </controls:SettingsCard>
+                            <controls:SettingsCard
+                                x:Uid="AlwaysOnTop_FrameColor"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                                <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FrameColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="AlwaysOnTop_FrameOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FrameOpacity}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="AlwaysOnTop_FrameThickness" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="5"
+                                    Maximum="30"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <CheckBox x:Uid="AlwaysOnTop_RoundCorners" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RoundCornersEnabled}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsExpander
+                        x:Uid="AlwaysOnTop_SoundTitle"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}"
+                        IsExpanded="True">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="AlwaysOnTop_Sound" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SoundEnabled}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
+
+                <custom:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingsExpander
+                        x:Uid="AlwaysOnTop_ExcludedApps"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        IsExpanded="True">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                <TextBox
+                                    x:Uid="AlwaysOnTop_ExcludedApps_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
+            </StackPanel>
+        </custom:SettingsPageControl.ModuleContent>
+
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink x:Uid="LearnMore_AlwaysOnTop" Link="https://aka.ms/PowerToysOverview_AlwaysOnTop" />
+        </custom:SettingsPageControl.PrimaryLinks>
+    </custom:SettingsPageControl>
+</Page>

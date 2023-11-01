@@ -50,6 +50,9 @@ namespace CommonSharedConstants
     // Path to the event used by PowerOCR
     const wchar_t SHOW_POWEROCR_SHARED_EVENT[] = L"Local\\PowerOCREvent-dc864e06-e1af-4ecc-9078-f98bee745e3a";
 
+    // Path to the events used by Mouse Jump
+    const wchar_t MOUSE_JUMP_SHOW_PREVIEW_EVENT[] = L"Local\\MouseJumpEvent-aa0be051-3396-4976-b7ba-1a9cc7d236a5";
+
     // Path to the event used by RegistryPreview
     const wchar_t REGISTRY_PREVIEW_TRIGGER_EVENT[] = L"Local\\RegistryPreviewEvent-4C559468-F75A-4E7F-BC4F-9C9688316687";
 
@@ -73,6 +76,15 @@ namespace CommonSharedConstants
 
     // Path to the event used to show Peek
     const wchar_t SHOW_PEEK_SHARED_EVENT[] = L"Local\\ShowPeekEvent";
+
+    // Path to the events used by CropAndLock
+    const wchar_t CROP_AND_LOCK_REPARENT_EVENT[] = L"Local\\PowerToysCropAndLockReparentEvent-6060860a-76a1-44e8-8d0e-6355785e9c36";
+    const wchar_t CROP_AND_LOCK_THUMBNAIL_EVENT[] = L"Local\\PowerToysCropAndLockThumbnailEvent-1637be50-da72-46b2-9220-b32b206b2434";
+    const wchar_t CROP_AND_LOCK_EXIT_EVENT[] = L"Local\\PowerToysCropAndLockExitEvent-d995d409-7b70-482b-bad6-e7c8666f375a";
+
+    // Path to the events used by EnvironmentVariables
+    const wchar_t SHOW_ENVIRONMENT_VARIABLES_EVENT[] = L"Local\\PowerToysEnvironmentVariables-ShowEnvironmentVariablesEvent-1021f616-e951-4d64-b231-a8f972159978";
+    const wchar_t SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT[] = L"Local\\PowerToysEnvironmentVariables-EnvironmentVariablesAdminEvent-8c95d2ad-047c-49a2-9e8b-b4656326cfb2";
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;

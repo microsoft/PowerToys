@@ -23,10 +23,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesShiftDrag = new BoolProperty(ConfigDefaults.DefaultFancyzonesShiftDrag);
             FancyzonesOverrideSnapHotkeys = new BoolProperty();
             FancyzonesMouseSwitch = new BoolProperty();
+            FancyzonesMouseMiddleClickSpanningMultipleZones = new BoolProperty();
             FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
             FancyzonesMoveWindowsBasedOnPosition = new BoolProperty();
             FancyzonesOverlappingZonesAlgorithm = new IntProperty();
-            FancyzonesDisplayChangeMoveWindows = new BoolProperty();
+            FancyzonesDisplayOrWorkAreaChangeMoveWindows = new BoolProperty(ConfigDefaults.DefaultFancyzonesDisplayOrWorkAreaChangeMoveWindows);
             FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
             FancyzonesAppLastZoneMoveWindows = new BoolProperty();
             FancyzonesOpenWindowOnActiveMonitor = new BoolProperty();
@@ -60,6 +61,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("fancyzones_mouseSwitch")]
         public BoolProperty FancyzonesMouseSwitch { get; set; }
 
+        [JsonPropertyName("fancyzones_mouseMiddleClickSpanningMultipleZones")]
+        public BoolProperty FancyzonesMouseMiddleClickSpanningMultipleZones { get; set; }
+
         [JsonPropertyName("fancyzones_overrideSnapHotkeys")]
         public BoolProperty FancyzonesOverrideSnapHotkeys { get; set; }
 
@@ -72,8 +76,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("fancyzones_overlappingZonesAlgorithm")]
         public IntProperty FancyzonesOverlappingZonesAlgorithm { get; set; }
 
-        [JsonPropertyName("fancyzones_displayChange_moveWindows")]
-        public BoolProperty FancyzonesDisplayChangeMoveWindows { get; set; }
+        [JsonPropertyName("fancyzones_displayOrWorkAreaChange_moveWindows")]
+        public BoolProperty FancyzonesDisplayOrWorkAreaChangeMoveWindows { get; set; }
 
         [JsonPropertyName("fancyzones_zoneSetChange_moveWindows")]
         public BoolProperty FancyzonesZoneSetChangeMoveWindows { get; set; }

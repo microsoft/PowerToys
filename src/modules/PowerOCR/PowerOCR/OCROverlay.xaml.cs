@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
@@ -27,37 +29,32 @@ public partial class OCROverlay : Window
     private bool isShiftDown;
     private Point clickedPoint;
     private Point shiftPoint;
+    private Border selectBorder = new();
+    private Language? selectedLanguage;
 
     private bool IsSelecting { get; set; }
-
-    private Border selectBorder = new();
-
-    private DpiScale? dpiScale;
-
-    private Point GetMousePos() => PointToScreen(Mouse.GetPosition(this));
-
-    private Language? selectedLanguage;
-    private MenuItem cancelMenuItem;
-
-    private System.Windows.Forms.Screen? CurrentScreen
-    {
-        get;
-        set;
-    }
 
     private double selectLeft;
     private double selectTop;
 
     private double xShiftDelta;
     private double yShiftDelta;
-
+    private bool isComboBoxReady;
     private const double ActiveOpacity = 0.4;
+    private readonly UserSettings userSettings = new(new ThrottledActionInvoker());
 
-    public OCROverlay()
+    public OCROverlay(System.Drawing.Rectangle screenRectangle)
     {
+        Left = screenRectangle.Left >= 0 ? screenRectangle.Left : screenRectangle.Left + (screenRectangle.Width / 2);
+        Top = screenRectangle.Top >= 0 ? screenRectangle.Top : screenRectangle.Top + (screenRectangle.Height / 2);
+
         InitializeComponent();
 
-        var userSettings = new UserSettings(new ThrottledActionInvoker());
+        PopulateLanguageMenu();
+    }
+
+    private void PopulateLanguageMenu()
+    {
         string? selectedLanguageName = userSettings.PreferredLanguage.Value;
 
         // build context menu
@@ -68,25 +65,26 @@ public partial class OCROverlay : Window
         }
 
         List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
+
+        int count = 0;
+
         foreach (Language language in possibleOcrLanguages)
         {
             MenuItem menuItem = new() { Header = language.NativeName, Tag = language, IsCheckable = true };
             menuItem.IsChecked = language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal);
+            LanguagesComboBox.Items.Add(language);
             if (language.DisplayName.Equals(selectedLanguageName, StringComparison.Ordinal))
             {
                 selectedLanguage = language;
+                LanguagesComboBox.SelectedIndex = count;
             }
 
             menuItem.Click += LanguageMenuItem_Click;
             CanvasContextMenu.Items.Add(menuItem);
+            count++;
         }
 
-        CanvasContextMenu.Items.Add(new Separator());
-
-        // ResourceLoader resourceLoader = ResourceLoader.GetForViewIndependentUse(); // resourceLoader.GetString("TextExtractor_Cancel")
-        cancelMenuItem = new MenuItem() { Header = "cancel" };
-        cancelMenuItem.Click += CancelMenuItem_Click;
-        CanvasContextMenu.Items.Add(cancelMenuItem);
+        isComboBoxReady = true;
     }
 
     private void LanguageMenuItem_Click(object sender, RoutedEventArgs e)
@@ -101,6 +99,7 @@ public partial class OCROverlay : Window
         }
 
         selectedLanguage = menuItem.Tag as Language;
+        LanguagesComboBox.SelectedItem = selectedLanguage;
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -112,15 +111,18 @@ public partial class OCROverlay : Window
 
         BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
         BackgroundBrush.Opacity = ActiveOpacity;
+
+        TopButtonsStackPanel.Visibility = Visibility.Visible;
+
+#if DEBUG
+        Topmost = false;
+#endif
     }
 
     private void Window_Unloaded(object sender, RoutedEventArgs e)
     {
         BackgroundImage.Source = null;
         BackgroundImage.UpdateLayout();
-
-        CurrentScreen = null;
-        dpiScale = null;
 
         KeyDown -= MainWindow_KeyDown;
         KeyUp -= MainWindow_KeyUp;
@@ -131,8 +133,6 @@ public partial class OCROverlay : Window
         RegionClickCanvas.MouseDown -= RegionClickCanvas_MouseDown;
         RegionClickCanvas.MouseUp -= RegionClickCanvas_MouseUp;
         RegionClickCanvas.MouseMove -= RegionClickCanvas_MouseMove;
-
-        cancelMenuItem.Click -= CancelMenuItem_Click;
     }
 
     private void MainWindow_KeyUp(object sender, KeyEventArgs e)
@@ -151,15 +151,7 @@ public partial class OCROverlay : Window
 
     private void MainWindow_KeyDown(object sender, KeyEventArgs e)
     {
-        switch (e.Key)
-        {
-            case Key.Escape:
-                WindowUtilities.CloseAllOCROverlays();
-                PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
-                break;
-            default:
-                break;
-        }
+        WindowUtilities.OcrOverlayKeyDown(e.Key);
     }
 
     private void RegionClickCanvas_MouseDown(object sender, MouseButtonEventArgs e)
@@ -169,14 +161,13 @@ public partial class OCROverlay : Window
             return;
         }
 
+        TopButtonsStackPanel.Visibility = Visibility.Collapsed;
         RegionClickCanvas.CaptureMouse();
 
         CursorClipper.ClipCursor(this);
         clickedPoint = e.GetPosition(this);
         selectBorder.Height = 1;
         selectBorder.Width = 1;
-
-        dpiScale = VisualTreeHelper.GetDpi(this);
 
         try
         {
@@ -192,17 +183,6 @@ public partial class OCROverlay : Window
         _ = RegionClickCanvas.Children.Add(selectBorder);
         Canvas.SetLeft(selectBorder, clickedPoint.X);
         Canvas.SetTop(selectBorder, clickedPoint.Y);
-
-        var screens = System.Windows.Forms.Screen.AllScreens;
-        System.Drawing.Point formsPoint = new((int)clickedPoint.X, (int)clickedPoint.Y);
-        foreach (var scr in screens)
-        {
-            if (scr.Bounds.Contains(formsPoint))
-            {
-                CurrentScreen = scr;
-                break;
-            }
-        }
 
         IsSelecting = true;
     }
@@ -231,18 +211,6 @@ public partial class OCROverlay : Window
 
             double leftValue = selectLeft + xShiftDelta;
             double topValue = selectTop + yShiftDelta;
-
-            if (CurrentScreen is not null && dpiScale is not null)
-            {
-                double currentScreenLeft = CurrentScreen.Bounds.Left; // Should always be 0
-                double currentScreenRight = CurrentScreen.Bounds.Right / dpiScale.Value.DpiScaleX;
-                double currentScreenTop = CurrentScreen.Bounds.Top; // Should always be 0
-                double currentScreenBottom = CurrentScreen.Bounds.Bottom / dpiScale.Value.DpiScaleY;
-
-                // this is giving issues on different monitors
-                // leftValue = Math.Clamp(leftValue, currentScreenLeft, currentScreenRight - selectBorder.Width);
-                // topValue = Math.Clamp(topValue, currentScreenTop, currentScreenBottom - selectBorder.Height);
-            }
 
             clippingGeometry.Rect = new Rect(
                 new Point(leftValue, topValue),
@@ -276,14 +244,13 @@ public partial class OCROverlay : Window
             return;
         }
 
+        TopButtonsStackPanel.Visibility = Visibility.Visible;
         IsSelecting = false;
 
-        CurrentScreen = null;
         CursorClipper.UnClipCursor();
         RegionClickCanvas.ReleaseMouseCapture();
         Matrix m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;
 
-        Point mPt = GetMousePos();
         Point movingPoint = e.GetPosition(this);
         movingPoint.X *= m.M11;
         movingPoint.Y *= m.M22;
@@ -313,32 +280,198 @@ public partial class OCROverlay : Window
 
         if (regionScaled.Width < 3 || regionScaled.Height < 3)
         {
+            BackgroundBrush.Opacity = 0;
+            Logger.LogInfo($"Getting clicked word, {selectedLanguage?.LanguageTag}");
             grabbedText = await ImageMethods.GetClickedWord(this, new Point(xDimScaled, yDimScaled), selectedLanguage);
         }
         else
         {
-            grabbedText = await ImageMethods.GetRegionsText(this, regionScaled, selectedLanguage);
+            if (TableMenuItem.IsChecked)
+            {
+                Logger.LogInfo($"Getting region as table, {selectedLanguage?.LanguageTag}");
+                grabbedText = await OcrExtensions.GetRegionsTextAsTableAsync(this, regionScaled, selectedLanguage);
+            }
+            else
+            {
+                Logger.LogInfo($"Standard region capture, {selectedLanguage?.LanguageTag}");
+                grabbedText = await ImageMethods.GetRegionsText(this, regionScaled, selectedLanguage);
+
+                if (SingleLineMenuItem.IsChecked)
+                {
+                    Logger.LogInfo($"Making grabbed text single line");
+                    grabbedText = grabbedText.MakeStringSingleLine();
+                }
+            }
         }
 
-        if (string.IsNullOrWhiteSpace(grabbedText) == false)
+        if (string.IsNullOrWhiteSpace(grabbedText))
         {
-            try
-            {
-                Clipboard.SetText(grabbedText);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Clipboard.SetText exception: {ex}");
-            }
-
-            WindowUtilities.CloseAllOCROverlays();
-            PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCaptureEvent());
+            BackgroundBrush.Opacity = ActiveOpacity;
+            return;
         }
+
+        try
+        {
+            Clipboard.SetText(grabbedText);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Clipboard.SetText exception: {ex}");
+        }
+
+        WindowUtilities.CloseAllOCROverlays();
+        PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCaptureEvent());
     }
 
     private void CancelMenuItem_Click(object sender, RoutedEventArgs e)
     {
         WindowUtilities.CloseAllOCROverlays();
         PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
+    }
+
+    private void LanguagesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ComboBox languageComboBox || !isComboBoxReady)
+        {
+            return;
+        }
+
+        // TODO: Set the preferred language based upon what was chosen here
+        int selection = languageComboBox.SelectedIndex;
+        selectedLanguage = languageComboBox.SelectedItem as Language;
+
+        Logger.LogError($"Changed language to {selectedLanguage?.LanguageTag}");
+
+        // Set the language in the context menu
+        foreach (var item in CanvasContextMenu.Items)
+        {
+            if (item is MenuItem menuItemLoop)
+            {
+                menuItemLoop.IsChecked = menuItemLoop.Tag as Language == selectedLanguage;
+            }
+        }
+
+        switch (selection)
+        {
+            case 0:
+                WindowUtilities.OcrOverlayKeyDown(Key.D1);
+                break;
+            case 1:
+                WindowUtilities.OcrOverlayKeyDown(Key.D2);
+                break;
+            case 2:
+                WindowUtilities.OcrOverlayKeyDown(Key.D3);
+                break;
+            case 3:
+                WindowUtilities.OcrOverlayKeyDown(Key.D4);
+                break;
+            case 4:
+                WindowUtilities.OcrOverlayKeyDown(Key.D5);
+                break;
+            case 5:
+                WindowUtilities.OcrOverlayKeyDown(Key.D6);
+                break;
+            case 6:
+                WindowUtilities.OcrOverlayKeyDown(Key.D7);
+                break;
+            case 7:
+                WindowUtilities.OcrOverlayKeyDown(Key.D8);
+                break;
+            case 8:
+                WindowUtilities.OcrOverlayKeyDown(Key.D9);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void SingleLineMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        bool isActive = CheckIfCheckingOrUnchecking(sender);
+        WindowUtilities.OcrOverlayKeyDown(Key.S, isActive);
+    }
+
+    private void TableToggleButton_Click(object sender, RoutedEventArgs e)
+    {
+        bool isActive = CheckIfCheckingOrUnchecking(sender);
+        WindowUtilities.OcrOverlayKeyDown(Key.T, isActive);
+    }
+
+    private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        WindowUtilities.CloseAllOCROverlays();
+        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.PowerOCR, false);
+    }
+
+    private static bool CheckIfCheckingOrUnchecking(object? sender)
+    {
+        if (sender is ToggleButton tb && tb.IsChecked is not null)
+        {
+            return tb.IsChecked.Value;
+        }
+
+        if (sender is MenuItem mi)
+        {
+            return mi.IsChecked;
+        }
+
+        return false;
+    }
+
+    internal void KeyPressed(Key key, bool? isActive)
+    {
+        switch (key)
+        {
+            // This case is handled in the WindowUtilities.OcrOverlayKeyDown
+            // case Key.Escape:
+            //     WindowUtilities.CloseAllFullscreenGrabs();
+            //     break;
+            case Key.S:
+                if (isActive is null)
+                {
+                    SingleLineMenuItem.IsChecked = !SingleLineMenuItem.IsChecked;
+                }
+                else
+                {
+                    SingleLineMenuItem.IsChecked = isActive.Value;
+                }
+
+                // Possibly save this in settings later and remember this preference
+                break;
+            case Key.T:
+                if (isActive is null)
+                {
+                    TableToggleButton.IsChecked = !TableToggleButton.IsChecked;
+                }
+                else
+                {
+                    TableToggleButton.IsChecked = isActive.Value;
+                }
+
+                break;
+            case Key.D1:
+            case Key.D2:
+            case Key.D3:
+            case Key.D4:
+            case Key.D5:
+            case Key.D6:
+            case Key.D7:
+            case Key.D8:
+            case Key.D9:
+                int numberPressed = (int)key - 34; // D1 casts to 35, D2 to 36, etc.
+                int numberOfLanguages = LanguagesComboBox.Items.Count;
+
+                if (numberPressed <= numberOfLanguages
+                    && numberPressed - 1 >= 0
+                    && numberPressed - 1 != LanguagesComboBox.SelectedIndex
+                    && isComboBoxReady)
+                {
+                    LanguagesComboBox.SelectedIndex = numberPressed - 1;
+                }
+
+                break;
+            default:
+                break;
+        }
     }
 }

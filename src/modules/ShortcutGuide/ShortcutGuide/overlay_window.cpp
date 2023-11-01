@@ -5,6 +5,7 @@
 #include "start_visible.h"
 #include <common/utils/resources.h>
 #include <common/utils/window.h>
+#include <common/utils/MsWindowsSettings.h>
 
 #include "shortcut_guide.h"
 #include "trace.h"
@@ -269,11 +270,12 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_right() const
 
 D2DOverlayWindow::D2DOverlayWindow() :
     total_screen({}),
-    background_animation(0.3),
-    global_windows_shortcuts_animation(0.3),
-    taskbar_icon_shortcuts_animation(0.3),
     D2DWindow()
 {
+    BOOL isEnabledAnimations = GetAnimationsEnabled();
+    background_animation = isEnabledAnimations? 0.3f : 0.f;
+    global_windows_shortcuts_animation = isEnabledAnimations ? 0.3f : 0.f;
+    taskbar_icon_shortcuts_animation = isEnabledAnimations ? 0.3f : 0.f;
     tasklist_thread = std::thread([&] {
         while (running)
         {
@@ -499,19 +501,19 @@ float D2DOverlayWindow::get_overlay_opacity()
 void D2DOverlayWindow::init()
 {
     colors.update();
-    landscape.load(L"svgs\\overlay.svg", d2d_dc.get())
+    landscape.load(L"Assets\\ShortcutGuide\\overlay.svg", d2d_dc.get())
         .find_thumbnail(L"monitorRect")
         .find_window_group(L"WindowControlsGroup")
         .recolor(0x2582FB, colors.start_color_menu);
-    portrait.load(L"svgs\\overlay_portrait.svg", d2d_dc.get())
+    portrait.load(L"Assets\\ShortcutGuide\\overlay_portrait.svg", d2d_dc.get())
         .find_thumbnail(L"monitorRect")
         .find_window_group(L"WindowControlsGroup")
         .recolor(0x2582FB, colors.start_color_menu);
-    no_active.load(L"svgs\\no_active_window.svg", d2d_dc.get());
+    no_active.load(L"Assets\\ShortcutGuide\\no_active_window.svg", d2d_dc.get());
     arrows.resize(10);
     for (unsigned i = 0; i < arrows.size(); ++i)
     {
-        arrows[i].load(L"svgs\\" + std::to_wstring((i + 1) % 10) + L".svg", d2d_dc.get()).recolor(0x2582FB, colors.start_color_menu);
+        arrows[i].load(L"Assets\\ShortcutGuide\\" + std::to_wstring((i + 1) % 10) + L".svg", d2d_dc.get()).recolor(0x2582FB, colors.start_color_menu);
     }
     light_mode = (theme_setting == Light) || (theme_setting == System && colors.light_mode);
     if (light_mode)
@@ -703,7 +705,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
                 {
                     continue;
                 }
-                render_arrow(arrows[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_device_context, taskbar_icon_shortcuts_x_offset, taskbar_icon_shortcuts_y_offset);
+                render_arrow(arrows[static_cast<size_t>(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_device_context, taskbar_icon_shortcuts_x_offset, taskbar_icon_shortcuts_y_offset);
             }
         }
     }

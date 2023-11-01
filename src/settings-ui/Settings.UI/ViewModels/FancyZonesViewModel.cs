@@ -74,11 +74,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
             _mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
+            _mouseMiddleButtonSpanningMultipleZones = Settings.Properties.FancyzonesMouseMiddleClickSpanningMultipleZones.Value;
             _overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             _moveWindowBehaviour = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value ? MoveWindowBehaviour.MoveWindowBasedOnPosition : MoveWindowBehaviour.MoveWindowBasedOnZoneIndex;
             _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value;
-            _displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
+            _displayOrWorkAreaChangeMoveWindows = Settings.Properties.FancyzonesDisplayOrWorkAreaChangeMoveWindows.Value;
             _zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
             _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
             _openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
@@ -101,7 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
             PrevTabHotkey = Settings.Properties.FancyzonesPrevTabHotkey.Value;
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
             string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
@@ -147,11 +148,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isEnabled;
         private bool _shiftDrag;
         private bool _mouseSwitch;
+        private bool _mouseMiddleButtonSpanningMultipleZones;
         private bool _overrideSnapHotkeys;
         private bool _moveWindowsAcrossMonitors;
         private MoveWindowBehaviour _moveWindowBehaviour;
         private OverlappingZonesAlgorithm _overlappingZonesAlgorithm;
-        private bool _displayChangemoveWindows;
+        private bool _displayOrWorkAreaChangeMoveWindows;
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
         private bool _openWindowOnActiveMonitor;
@@ -276,6 +278,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MouseMiddleClickSpanningMultipleZones
+        {
+            get
+            {
+                return _mouseMiddleButtonSpanningMultipleZones;
+            }
+
+            set
+            {
+                if (value != _mouseMiddleButtonSpanningMultipleZones)
+                {
+                    _mouseMiddleButtonSpanningMultipleZones = value;
+                    Settings.Properties.FancyzonesMouseMiddleClickSpanningMultipleZones.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public string GetSettingsSubPath()
         {
             return settingsConfigFileFolder + "\\" + ModuleName;
@@ -374,19 +394,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool DisplayChangeMoveWindows
+        public bool DisplayOrWorkAreaChangeMoveWindows
         {
             get
             {
-                return _displayChangemoveWindows;
+                return _displayOrWorkAreaChangeMoveWindows;
             }
 
             set
             {
-                if (value != _displayChangemoveWindows)
+                if (value != _displayOrWorkAreaChangeMoveWindows)
                 {
-                    _displayChangemoveWindows = value;
-                    Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value = value;
+                    _displayOrWorkAreaChangeMoveWindows = value;
+                    Settings.Properties.FancyzonesDisplayOrWorkAreaChangeMoveWindows.Value = value;
                     NotifyPropertyChanged();
                 }
             }

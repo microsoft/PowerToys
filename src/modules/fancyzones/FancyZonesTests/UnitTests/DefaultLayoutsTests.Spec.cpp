@@ -96,15 +96,21 @@ namespace FancyZonesUnitTests
                     .sensitivityRadius = DefaultValues::SensitivityRadius
                 };
 
+                LayoutData rows{
+                    .uuid = GUID_NULL,
+                    .type = FancyZonesDataTypes::ZoneSetLayoutType::Rows,
+                    .showSpacing = DefaultValues::ShowSpacing,
+                    .spacing = DefaultValues::Spacing,
+                    .zoneCount = DefaultValues::ZoneCount,
+                    .sensitivityRadius = DefaultValues::SensitivityRadius
+                };
+
                 Assert::IsTrue(priorityGrid == DefaultLayouts::instance().GetDefaultLayout(MonitorConfigurationType::Horizontal));
-                Assert::IsTrue(priorityGrid == DefaultLayouts::instance().GetDefaultLayout(MonitorConfigurationType::Vertical));
+                Assert::IsTrue(rows == DefaultLayouts::instance().GetDefaultLayout(MonitorConfigurationType::Vertical));
             }
 
             TEST_METHOD (DefaultLayoutsNoFile)
             {
-                // test
-                DefaultLayouts::instance().LoadData();
-
                 LayoutData priorityGrid{
                     .uuid = GUID_NULL,
                     .type = FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid,
@@ -114,8 +120,20 @@ namespace FancyZonesUnitTests
                     .sensitivityRadius = DefaultValues::SensitivityRadius
                 };
 
+                LayoutData rows{
+                    .uuid = GUID_NULL,
+                    .type = FancyZonesDataTypes::ZoneSetLayoutType::Rows,
+                    .showSpacing = DefaultValues::ShowSpacing,
+                    .spacing = DefaultValues::Spacing,
+                    .zoneCount = DefaultValues::ZoneCount,
+                    .sensitivityRadius = DefaultValues::SensitivityRadius
+                };
+
+                // test
+                DefaultLayouts::instance().LoadData();
+
                 Assert::IsTrue(priorityGrid == DefaultLayouts::instance().GetDefaultLayout(MonitorConfigurationType::Horizontal));
-                Assert::IsTrue(priorityGrid == DefaultLayouts::instance().GetDefaultLayout(MonitorConfigurationType::Vertical));
+                Assert::IsTrue(rows == DefaultLayouts::instance().GetDefaultLayout(MonitorConfigurationType::Vertical));
             }
     };
 }

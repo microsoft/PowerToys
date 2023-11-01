@@ -30,6 +30,8 @@ struct VideoConferenceSettings
     std::wstring imageOverlayPath;
     std::wstring selectedMicrophone;
 
+    std::wstring startupAction;
+
     bool pushToReverseEnabled = false;
 };
 

@@ -1,0 +1,583 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ViewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <custom:SettingsPageControl x:Uid="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerLauncher.png">
+        <custom:SettingsPageControl.ModuleContent>
+
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:SettingsCard
+                    x:Uid="PowerLauncher_EnablePowerLauncher"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
+                </controls:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
+
+                <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                    <controls:SettingsExpander
+                        x:Uid="Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
+                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <custom:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                </custom:SettingsGroup>
+
+
+                <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
+                                          HorizontalAlignment="Left"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{Binding Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
+                                          IsEnabled="False"
+                                        />
+            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
+                                          HorizontalAlignment="Left"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{Binding Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
+                                          Keys="Win, Ctrl, Alt, Shift"
+                                          IsEnabled="False"
+                                        />
+            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
+                                          HorizontalAlignment="Left"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{Binding Path=ViewModel.OpenConsole, Mode=TwoWay}"
+                                          Keys="Win, Ctrl, Alt, Shift"
+                                          IsEnabled="False"
+                                        />-->
+
+                <!--<CheckBox x:Uid="PowerLauncher_OverrideWinRKey"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsChecked="False"
+                      IsEnabled="False"
+                      />-->
+
+                <!--<CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsChecked="{Binding Mode=TwoWay, Path=ViewModel.OverrideWinSKey}"
+                      IsEnabled="False"
+                      />-->
+
+                <custom:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                    <controls:SettingsExpander
+                        x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xec48;}"
+                        IsExpanded="True">
+                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="50"
+                                    Maximum="500"
+                                    Minimum="0"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="50"
+                                    Maximum="1000"
+                                    Minimum="0"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsExpander
+                        x:Uid="PowerLauncher_MaximumNumberOfResults"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xec8f;}"
+                        IsExpanded="True">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Minimum="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsExpander
+                        x:Uid="PowerLauncher_SearchQueryTuningEnabled"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}"
+                        IsExpanded="True">
+                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryTuningEnabled}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="PowerLauncher_SearchClickedItemWeight" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="50"
+                                    Maximum="1000"
+                                    Minimum="0"
+                                    SmallChange="5"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
+                                <custom:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsCard x:Uid="PowerLauncher_TabSelectsContextButtons" HeaderIcon="{ui:FontIcon Glyph=&#xE7FD;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="PowerLauncher_UsePinyin" HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE98A;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                </custom:SettingsGroup>
+
+                <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
+                      MinWidth="320"
+                      Margin="{StaticResource SmallTopMargin}"
+                      ItemsSource="{Binding searchResultPreferencesOptions}"
+                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchResultPreference}"
+                      SelectedValuePath="Item2"
+                      DisplayMemberPath="Item1"
+                      IsEnabled="False"
+                      />
+
+            <ComboBox x:Uid="PowerLauncher_SearchTypePreference"
+                      MinWidth="320"
+                      Margin="{StaticResource SmallTopMargin}"
+                      ItemsSource="{Binding searchTypePreferencesOptions}"
+                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchTypePreference}"
+                      SelectedValuePath="Item2"
+                      DisplayMemberPath="Item1"
+                      IsEnabled="False"
+                      />-->
+
+                <custom:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                    <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorPositionIndex}">
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                        <controls:SettingsCard.Description>
+                            <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
+                        </controls:SettingsCard.Description>
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
+                            <ComboBoxItem x:Uid="Radio_Theme_Dark" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Light" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Default" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
+
+                <custom:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+
+                    <InfoBar
+                        x:Uid="Run_ConflictingKeywordInfo"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                        Severity="Informational">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton x:Uid="Run_ConflictingKeywordInfo_Link" NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
+                    <controls:SettingsCard x:Uid="Run_PluginUse" HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
+                        <controls:SettingsCard.Description>
+                            <StackPanel>
+                                <TextBlock x:Uid="Run_PluginUseDescription" />
+                                <HyperlinkButton x:Uid="Run_PluginUseFindMorePlugins" NavigateUri="https://aka.ms/powerToysRunPlugins" />
+                            </StackPanel>
+                        </controls:SettingsCard.Description>
+                        <AutoSuggestBox
+                            x:Uid="PowerLauncher_SearchList"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            QueryIcon="Find"
+                            Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}">
+                            <i:Interaction.Behaviors>
+                                <ic:EventTriggerBehavior EventName="TextChanged">
+                                    <ic:InvokeCommandAction Command="{x:Bind ViewModel.SearchPluginsCommand}" />
+                                </ic:EventTriggerBehavior>
+                            </i:Interaction.Behaviors>
+                        </AutoSuggestBox>
+                    </controls:SettingsCard>
+
+
+                    <InfoBar
+                        x:Uid="Run_SomePluginsAreGpoManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
+                        Severity="Informational" />
+                    <InfoBar
+                        x:Uid="Run_AllPluginsDisabled"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
+                        Severity="Error" />
+
+                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ProgressRing
+                            Width="20"
+                            Height="20"
+                            Margin="18,18"
+                            IsActive="True" />
+                        <TextBlock
+                            x:Uid="Run_PluginsLoading"
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource SecondaryTextStyle}" />
+                    </StackPanel>
+
+                    <ItemsControl x:Name="PluginsListView" ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
+                                <Grid>
+                                    <controls:SettingsExpander Description="{x:Bind Description}" Header="{x:Bind Path=Name}">
+                                        <controls:SettingsExpander.HeaderIcon>
+                                            <BitmapIcon UriSource="{x:Bind IconPath}" />
+                                        </controls:SettingsExpander.HeaderIcon>
+                                        <StackPanel Orientation="Horizontal" Spacing="16">
+                                            <!-- todo(Stefan): InfoBadge not available
+                                                        <InfoBadge AutomationProperties.AccessibilityView="Raw"
+                                                                        Visibility="{x:Bind ShowBadgeOnPluginSettingError}"
+                                                                        Style="{StaticResource CriticalIconInfoBadgeStyle}" />
+                                            -->
+
+                                            <!--  Temporary badge replacement for InfoBadge control (htcfreek). (Normally you need one grid per icon group. But if you want to show two badges at the same place in a StackPanel you have to put all FontIcons into the same Grid.)  -->
+                                            <Grid>
+                                                <!--  Error badge  -->
+                                                <FontIcon
+                                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                    Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}"
+                                                    Glyph="{StaticResource InfoBarIconBackgroundGlyph}"
+                                                    Visibility="{x:Bind ShowBadgeOnPluginSettingError}" />
+                                                <FontIcon
+                                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                    Foreground="{ThemeResource InfoBarErrorSeverityIconForeground}"
+                                                    Glyph="{StaticResource InfoBarErrorIconGlyph}"
+                                                    Visibility="{x:Bind ShowBadgeOnPluginSettingError}" />
+                                            </Grid>
+
+                                            <ToggleSwitch
+                                                x:Uid="PowerLauncher_EnablePluginToggle"
+                                                IsEnabled="{x:Bind Path=EnabledGpoRuleIsConfigured, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
+                                                IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}" />
+
+                                        </StackPanel>
+                                        <controls:SettingsExpander.Items>
+                                            <controls:SettingsCard x:Uid="PowerLauncher_ActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                                <TextBox MinWidth="{StaticResource SettingActionControlMinWidth}" Text="{x:Bind Path=ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard
+                                                Padding="0,-4,0,0"
+                                                HorizontalContentAlignment="Left"
+                                                Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                                                ContentAlignment="Vertical"
+                                                Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <InfoBar
+                                                    x:Uid="Run_NotAccessibleWarning"
+                                                    Margin="3,0,0,0"
+                                                    Background="Transparent"
+                                                    BorderBrush="Transparent"
+                                                    IsClosable="False"
+                                                    IsOpen="True"
+                                                    IsTabStop="{x:Bind ShowNotAccessibleWarning}"
+                                                    Severity="Error" />
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                                <CheckBox
+                                                    Margin="0,-8,0,0"
+                                                    AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
+                                                    IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock x:Name="IncludeInGlobalResultTitle" x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
+                                                        <custom:IsEnabledTextBlock
+                                                            x:Uid="PowerLauncher_IncludeInGlobalResultDescription"
+                                                            FontSize="{StaticResource SecondaryTextFontSize}"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    </StackPanel>
+                                                </CheckBox>
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard x:Uid="PowerLauncher_PluginWeightBoost" IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
+                                                <NumberBox
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    LargeChange="50"
+                                                    Maximum="1000"
+                                                    Minimum="-1000"
+                                                    SmallChange="10"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    Value="{x:Bind Mode=TwoWay, Path=WeightBoost}" />
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard
+                                                MinHeight="0"
+                                                HorizontalContentAlignment="Stretch"
+                                                ContentAlignment="Vertical">
+                                                <controls:SettingsCard.Resources>
+                                                    <Thickness x:Key="SettingsCardPadding">0</Thickness>
+                                                    <Thickness x:Key="SettingsExpanderItemPadding">0,0,0,0</Thickness>
+                                                </controls:SettingsCard.Resources>
+                                                <ItemsControl
+                                                    Margin="0,-6,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    IsEnabled="{x:Bind Enabled, Mode=OneWay}"
+                                                    ItemsSource="{x:Bind Path=AdditionalOptions}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+                                                            <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
+                                                                <!--  Checkbox setting  -->
+                                                                <controls:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="1"
+                                                                    Padding="0,6,0,12"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    ContentAlignment="Left"
+                                                                    CornerRadius="0"
+                                                                    Visibility="{x:Bind Path=ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <custom:CheckBoxWithDescriptionControl
+                                                                        Margin="56,0,0,0"
+                                                                        Description="{x:Bind Path=DisplayDescription}"
+                                                                        Header="{x:Bind Path=DisplayLabel}"
+                                                                        IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                </controls:SettingsCard>
+                                                                <!--  ComboBox setting  -->
+                                                                <controls:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="56,8,45,8"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    CornerRadius="0"
+                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=DisplayLabel}"
+                                                                    Visibility="{x:Bind Path=ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <ComboBox
+                                                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                        DisplayMemberPath="Key"
+                                                                        ItemsSource="{x:Bind Path=ComboBoxItems}"
+                                                                        SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
+                                                                        SelectedValuePath="Value" />
+                                                                </controls:SettingsCard>
+                                                                <!--  TextBox setting  -->
+                                                                <controls:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="56,8,45,8"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    CornerRadius="0"
+                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=DisplayLabel}"
+                                                                    Visibility="{x:Bind Path=ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <TextBox
+                                                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                        MaxWidth="450"
+                                                                        MaxLength="{x:Bind Path=TextBoxMaxLength, Mode=OneWay}"
+                                                                        Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
+                                                                </controls:SettingsCard>
+                                                                <!--  NumberBox setting  -->
+                                                                <controls:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="56,8,45,8"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    CornerRadius="0"
+                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=DisplayLabel}"
+                                                                    Visibility="{x:Bind Path=ShowNumberBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <NumberBox
+                                                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                        LargeChange="{x:Bind Path=NumberBoxLargeChange, Mode=OneWay}"
+                                                                        Maximum="{x:Bind Path=NumberBoxMax, Mode=OneWay}"
+                                                                        Minimum="{x:Bind Path=NumberBoxMin, Mode=OneWay}"
+                                                                        SmallChange="{x:Bind Path=NumberBoxSmallChange, Mode=OneWay}"
+                                                                        SpinButtonPlacementMode="Compact"
+                                                                        Value="{x:Bind Path=NumberValue, Mode=TwoWay}" />
+                                                                </controls:SettingsCard>
+                                                                <!--  Checkbox And ComboBox setting  -->
+                                                                <StackPanel
+                                                                    HorizontalAlignment="Stretch"
+                                                                    Orientation="Vertical"
+                                                                    Visibility="{x:Bind Path=ShowCheckboxAndCombobox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="1"
+                                                                        Padding="0,6,0,4"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        ContentAlignment="Left"
+                                                                        CornerRadius="0">
+                                                                        <custom:CheckBoxWithDescriptionControl
+                                                                            Margin="56,0,0,0"
+                                                                            Description="{x:Bind Path=DisplayDescription}"
+                                                                            Header="{x:Bind Path=DisplayLabel}"
+                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="84,0,45,8"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        CornerRadius="0"
+                                                                        Description="{x:Bind Path=SecondDisplayDescription}"
+                                                                        Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                        IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
+                                                                        <ComboBox
+                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            DisplayMemberPath="Key"
+                                                                            ItemsSource="{x:Bind Path=ComboBoxItems}"
+                                                                            SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
+                                                                            SelectedValuePath="Value" />
+                                                                    </controls:SettingsCard>
+                                                                </StackPanel>
+                                                                <!--  Checkbox And TextBox setting  -->
+                                                                <StackPanel
+                                                                    HorizontalAlignment="Stretch"
+                                                                    Orientation="Vertical"
+                                                                    Visibility="{x:Bind Path=ShowCheckboxAndTextbox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="1"
+                                                                        Padding="0,6,0,4"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        ContentAlignment="Left"
+                                                                        CornerRadius="0">
+                                                                        <custom:CheckBoxWithDescriptionControl
+                                                                            Margin="56,0,0,0"
+                                                                            Description="{x:Bind Path=DisplayDescription}"
+                                                                            Header="{x:Bind Path=DisplayLabel}"
+                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="84,0,45,8"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        CornerRadius="0"
+                                                                        Description="{x:Bind Path=SecondDisplayDescription}"
+                                                                        Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                        IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
+                                                                        <TextBox
+                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            MaxWidth="450"
+                                                                            MaxLength="{x:Bind Path=TextBoxMaxLength, Mode=OneWay}"
+                                                                            Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                </StackPanel>
+                                                                <!--  Checkbox And NumberBox setting  -->
+                                                                <StackPanel
+                                                                    HorizontalAlignment="Stretch"
+                                                                    Orientation="Vertical"
+                                                                    Visibility="{x:Bind Path=ShowCheckboxAndNumberbox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="1"
+                                                                        Padding="0,6,0,4"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        ContentAlignment="Left"
+                                                                        CornerRadius="0">
+                                                                        <custom:CheckBoxWithDescriptionControl
+                                                                            Margin="56,0,0,0"
+                                                                            Description="{x:Bind Path=DisplayDescription}"
+                                                                            Header="{x:Bind Path=DisplayLabel}"
+                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                    <controls:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="84,0,45,8"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        CornerRadius="0"
+                                                                        Description="{x:Bind Path=SecondDisplayDescription}"
+                                                                        Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                        IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
+                                                                        <NumberBox
+                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            LargeChange="{x:Bind Path=NumberBoxLargeChange, Mode=OneWay}"
+                                                                            Maximum="{x:Bind Path=NumberBoxMax, Mode=OneWay}"
+                                                                            Minimum="{x:Bind Path=NumberBoxMin, Mode=OneWay}"
+                                                                            SmallChange="{x:Bind Path=NumberBoxSmallChange, Mode=OneWay}"
+                                                                            SpinButtonPlacementMode="Compact"
+                                                                            Value="{x:Bind Path=NumberValue, Mode=TwoWay}" />
+                                                                    </controls:SettingsCard>
+                                                                </StackPanel>
+                                                                <!--  Separator line  -->
+                                                                <Rectangle
+                                                                    Height="1"
+                                                                    HorizontalAlignment="Stretch"
+                                                                    Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </controls:SettingsCard>
+                                            <controls:SettingsCard
+                                                MinHeight="0"
+                                                BorderThickness="0"
+                                                ContentAlignment="Right">
+                                                <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
+                                                    <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                                    <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                                </TextBlock>
+                                            </controls:SettingsCard>
+                                        </controls:SettingsExpander.Items>
+                                    </controls:SettingsExpander>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </custom:SettingsGroup>
+            </StackPanel>
+
+        </custom:SettingsPageControl.ModuleContent>
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink x:Uid="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun" />
+            <custom:PageLink x:Uid="Run_FindMorePlugins" Link="https://aka.ms/powerToysRunPlugins" />
+        </custom:SettingsPageControl.PrimaryLinks>
+        <custom:SettingsPageControl.SecondaryLinks>
+            <custom:PageLink Link="https://github.com/Wox-launcher/Wox/" Text="Wox" />
+            <custom:PageLink Link="https://github.com/betsegaw/windowwalker/" Text="Beta Tadele's Window Walker" />
+        </custom:SettingsPageControl.SecondaryLinks>
+    </custom:SettingsPageControl>
+</Page>

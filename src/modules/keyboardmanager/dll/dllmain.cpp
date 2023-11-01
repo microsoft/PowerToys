@@ -127,7 +127,7 @@ public:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\KeyboardManager\\KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe";
+        sei.lpFile = L"KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei) == false)
@@ -168,6 +168,13 @@ public:
     {
         return m_enabled;
     }
+
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

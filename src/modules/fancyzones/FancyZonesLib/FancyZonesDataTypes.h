@@ -16,7 +16,7 @@ namespace FancyZonesDataTypes
 {
     enum class ZoneSetLayoutType : int
     {
-        Blank = -1,
+        Blank,
         Focus,
         Columns,
         Rows,
@@ -144,9 +144,9 @@ namespace FancyZonesDataTypes
     {
         std::unordered_map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
-        std::wstring zoneSetUuid;
-        WorkAreaId workAreaId;
-        ZoneIndexSet zoneIndexSet;
+        GUID layoutId = {};
+        WorkAreaId workAreaId = {};
+        ZoneIndexSet zoneIndexSet = {};
     };
 
     struct DeviceInfoData
@@ -209,14 +209,12 @@ namespace FancyZonesDataTypes
 
     inline bool operator==(const WorkAreaId& lhs, const WorkAreaId& rhs)
     {
-        bool vdEqual = (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
-        return vdEqual && lhs.monitorId == rhs.monitorId;
+        return lhs.virtualDesktopId == rhs.virtualDesktopId && lhs.monitorId == rhs.monitorId;
     }
 
     inline bool operator!=(const WorkAreaId& lhs, const WorkAreaId& rhs)
     {
-        bool vdEqual = (lhs.virtualDesktopId == rhs.virtualDesktopId || lhs.virtualDesktopId == GUID_NULL || rhs.virtualDesktopId == GUID_NULL);
-        return !vdEqual || lhs.monitorId != rhs.monitorId;
+        return lhs.virtualDesktopId != rhs.virtualDesktopId || lhs.monitorId != rhs.monitorId;
     }
 
     inline bool operator<(const WorkAreaId& lhs, const WorkAreaId& rhs)
@@ -239,6 +237,11 @@ namespace FancyZonesDataTypes
         }
 
         return lhs.monitorId.deviceId < rhs.monitorId.deviceId;
+    }
+
+    inline bool operator==(const AppZoneHistoryData& lhs, const AppZoneHistoryData& rhs)
+    {
+        return lhs.layoutId == rhs.layoutId && lhs.workAreaId == rhs.workAreaId && lhs.zoneIndexSet == rhs.zoneIndexSet && lhs.processIdToHandleMap == rhs.processIdToHandleMap;
     }
 }
 

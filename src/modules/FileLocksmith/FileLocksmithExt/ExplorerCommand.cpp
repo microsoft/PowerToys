@@ -69,25 +69,7 @@ IFACEMETHODIMP ExplorerCommand::GetCanonicalName(GUID* pguidCommandName)
 
 IFACEMETHODIMP ExplorerCommand::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
 {
-    if (!globals::enabled)
-    {
-        *pCmdState = ECS_HIDDEN;
-    }
-
-    if (FileLocksmithSettingsInstance().GetShowInExtendedContextMenu())
-    {
-        *pCmdState = ECS_HIDDEN;
-        return S_OK;
-    }
-
-    // When right clicking directory background, selection is empty.
-    if (nullptr == psiItemArray)
-    {
-        *pCmdState = ECS_HIDDEN;
-        return S_OK;
-    }
-
-    *pCmdState = ECS_ENABLED;
+    *pCmdState = FileLocksmithSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
     return S_OK;
 }
 
@@ -112,15 +94,16 @@ IFACEMETHODIMP ExplorerCommand::EnumSubCommands(IEnumExplorerCommand** ppEnum)
 
 IFACEMETHODIMP ExplorerCommand::Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataObject* pdtobj, HKEY hkeyProgID)
 {
+    m_data_obj = NULL;
+
     if (!FileLocksmithSettingsInstance().GetEnabled())
     {
-        return S_OK;
+        return E_FAIL;
     }
 
     if (pdtobj)
     {
         m_data_obj = pdtobj;
-        m_data_obj->AddRef();
     }
     return S_OK;
 }
@@ -132,12 +115,12 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
     // Skip if disabled
     if (!FileLocksmithSettingsInstance().GetEnabled())
     {
-        return S_OK;
+        return E_FAIL;
     }
 
     if (FileLocksmithSettingsInstance().GetShowInExtendedContextMenu() && !(uFlags & CMF_EXTENDEDVERBS))
     {
-        return S_OK;
+        return E_FAIL;
     }
 
     HRESULT hr = E_UNEXPECTED;
@@ -258,10 +241,6 @@ ExplorerCommand::ExplorerCommand()
 
 ExplorerCommand::~ExplorerCommand()
 {
-    if (m_data_obj)
-    {
-        m_data_obj->Release();
-    }
     --globals::ref_count;
 }
 

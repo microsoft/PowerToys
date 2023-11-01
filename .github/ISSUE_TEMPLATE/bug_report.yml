@@ -50,6 +50,8 @@ body:
       - Always on Top
       - Awake
       - ColorPicker
+      - Crop and Lock
+      - Environment Variables
       - FancyZones
       - FancyZones Editor 
       - File Locksmith 

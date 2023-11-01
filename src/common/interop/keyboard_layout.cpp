@@ -5,6 +5,8 @@
 #include "keyboard_layout_impl.h"
 #include "shared_constants.h"
 
+constexpr DWORD numpadOriginBit = 1ull << 31;
+
 LayoutMap::LayoutMap() :
     impl(new LayoutMap::LayoutMapImpl())
 {
@@ -110,7 +112,6 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_BACK] = L"Backspace";
     keyboardLayoutMap[VK_TAB] = L"Tab";
     keyboardLayoutMap[VK_CLEAR] = L"Clear";
-    keyboardLayoutMap[VK_RETURN] = L"Enter";
     keyboardLayoutMap[VK_SHIFT] = L"Shift";
     keyboardLayoutMap[VK_CONTROL] = L"Ctrl";
     keyboardLayoutMap[VK_MENU] = L"Alt";
@@ -118,20 +119,37 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_CAPITAL] = L"Caps Lock";
     keyboardLayoutMap[VK_ESCAPE] = L"Esc";
     keyboardLayoutMap[VK_SPACE] = L"Space";
+
+    keyboardLayoutMap[VK_LEFT] = L"Left";
+    keyboardLayoutMap[VK_RIGHT] = L"Right";
+    keyboardLayoutMap[VK_UP] = L"Up";
+    keyboardLayoutMap[VK_DOWN] = L"Down";
+    keyboardLayoutMap[VK_INSERT] = L"Insert";
+    keyboardLayoutMap[VK_DELETE] = L"Delete";
     keyboardLayoutMap[VK_PRIOR] = L"PgUp";
     keyboardLayoutMap[VK_NEXT] = L"PgDn";
-    keyboardLayoutMap[VK_END] = L"End";
     keyboardLayoutMap[VK_HOME] = L"Home";
-    keyboardLayoutMap[VK_LEFT] = L"Left";
-    keyboardLayoutMap[VK_UP] = L"Up";
-    keyboardLayoutMap[VK_RIGHT] = L"Right";
-    keyboardLayoutMap[VK_DOWN] = L"Down";
+    keyboardLayoutMap[VK_END] = L"End";
+    keyboardLayoutMap[VK_RETURN] = L"Enter";
+
+    keyboardLayoutMap[VK_LEFT | numpadOriginBit] = L"Left (Numpad)";
+    keyboardLayoutMap[VK_RIGHT | numpadOriginBit] = L"Right (Numpad)";
+    keyboardLayoutMap[VK_UP | numpadOriginBit] = L"Up (Numpad)";
+    keyboardLayoutMap[VK_DOWN | numpadOriginBit] = L"Down (Numpad)";
+    keyboardLayoutMap[VK_INSERT | numpadOriginBit] = L"Insert (Numpad)";
+    keyboardLayoutMap[VK_DELETE | numpadOriginBit] = L"Delete (Numpad)";
+    keyboardLayoutMap[VK_PRIOR | numpadOriginBit] = L"PgUp (Numpad)";
+    keyboardLayoutMap[VK_NEXT | numpadOriginBit] = L"PgDn (Numpad)";
+    keyboardLayoutMap[VK_HOME | numpadOriginBit] = L"Home (Numpad)";
+    keyboardLayoutMap[VK_END | numpadOriginBit] = L"End (Numpad)";
+    keyboardLayoutMap[VK_RETURN | numpadOriginBit] = L"Enter (Numpad)";
+    keyboardLayoutMap[VK_DIVIDE | numpadOriginBit] = L"/ (Numpad)";
+
+    keyboardLayoutMap[VK_SUBTRACT] = L"- (Subtract)";
     keyboardLayoutMap[VK_SELECT] = L"Select";
     keyboardLayoutMap[VK_PRINT] = L"Print";
     keyboardLayoutMap[VK_EXECUTE] = L"Execute";
     keyboardLayoutMap[VK_SNAPSHOT] = L"Print Screen";
-    keyboardLayoutMap[VK_INSERT] = L"Insert";
-    keyboardLayoutMap[VK_DELETE] = L"Delete";
     keyboardLayoutMap[VK_HELP] = L"Help";
     keyboardLayoutMap[VK_LWIN] = L"Win (Left)";
     keyboardLayoutMap[VK_RWIN] = L"Win (Right)";
@@ -220,6 +238,7 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_NONCONVERT] = L"IME Non-Convert";
     keyboardLayoutMap[VK_ACCEPT] = L"IME Kana";
     keyboardLayoutMap[VK_MODECHANGE] = L"IME Mode Change";
+    keyboardLayoutMap[VK_DECIMAL] = L". (Numpad)";
     keyboardLayoutMap[CommonSharedConstants::VK_DISABLED] = L"Disable";
 }
 
@@ -273,6 +292,12 @@ std::vector<DWORD> LayoutMap::LayoutMapImpl::GetKeyCodeList(const bool isShortcu
                     specialKeys.push_back(i);
                 }
             }
+        }
+
+        // Add numpad keys
+        for (auto it = keyboardLayoutMap.rbegin(); it->first & numpadOriginBit; ++it)
+        {
+            keyCodes.push_back(it->first);
         }
 
         // Sort the special keys in alphabetical order

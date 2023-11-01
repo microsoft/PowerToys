@@ -2,11 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System.IO;
-using System.Runtime.InteropServices.ComTypes;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using Common.Utilities;
 using HelixToolkit.Wpf;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Bitmap = System.Drawing.Bitmap;
@@ -61,53 +59,60 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 DefaultMaterial = new DiffuseMaterial(new SolidColorBrush(DefaultMaterialColor)),
             };
 
-            var model = stlReader.Read(stream);
+            try
+            {
+                var model = stlReader.Read(stream);
 
-            if (model.Bounds == Rect3D.Empty)
+                if (model == null || model.Children.Count == 0 || model.Bounds == Rect3D.Empty)
+                {
+                    return null;
+                }
+
+                var viewport = new System.Windows.Controls.Viewport3D();
+
+                viewport.Measure(new System.Windows.Size(cx, cx));
+                viewport.Arrange(new Rect(0, 0, cx, cx));
+
+                var modelVisual = new ModelVisual3D()
+                {
+                    Transform = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), 180)),
+                };
+                viewport.Children.Add(modelVisual);
+                viewport.Children.Add(new DefaultLights());
+
+                var perspectiveCamera = new PerspectiveCamera
+                {
+                    Position = new Point3D(1, 2, 1),
+                    LookDirection = new Vector3D(-1, -2, -1),
+                    UpDirection = new Vector3D(0, 0, 1),
+                    FieldOfView = 20,
+                    NearPlaneDistance = 0.1,
+                    FarPlaneDistance = double.PositiveInfinity,
+                };
+                viewport.Camera = perspectiveCamera;
+
+                modelVisual.Content = model;
+
+                perspectiveCamera.ZoomExtents(viewport);
+
+                var bitmapExporter = new BitmapExporter
+                {
+                    Background = new SolidColorBrush(Colors.Transparent),
+                    OversamplingMultiplier = 1,
+                };
+
+                var bitmapStream = new MemoryStream();
+
+                bitmapExporter.Export(viewport, bitmapStream);
+
+                bitmapStream.Position = 0;
+
+                thumbnail = new Bitmap(bitmapStream);
+            }
+            catch (Exception)
             {
                 return null;
             }
-
-            var viewport = new System.Windows.Controls.Viewport3D();
-
-            viewport.Measure(new System.Windows.Size(cx, cx));
-            viewport.Arrange(new Rect(0, 0, cx, cx));
-
-            var modelVisual = new ModelVisual3D()
-            {
-                Transform = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), 180)),
-            };
-            viewport.Children.Add(modelVisual);
-            viewport.Children.Add(new DefaultLights());
-
-            var perspectiveCamera = new PerspectiveCamera
-            {
-                Position = new Point3D(1, 2, 1),
-                LookDirection = new Vector3D(-1, -2, -1),
-                UpDirection = new Vector3D(0, 0, 1),
-                FieldOfView = 20,
-                NearPlaneDistance = 0.1,
-                FarPlaneDistance = double.PositiveInfinity,
-            };
-            viewport.Camera = perspectiveCamera;
-
-            modelVisual.Content = model;
-
-            perspectiveCamera.ZoomExtents(viewport);
-
-            var bitmapExporter = new BitmapExporter
-            {
-                Background = new SolidColorBrush(Colors.Transparent),
-                OversamplingMultiplier = 1,
-            };
-
-            var bitmapStream = new MemoryStream();
-
-            bitmapExporter.Export(viewport, bitmapStream);
-
-            bitmapStream.Position = 0;
-
-            thumbnail = new Bitmap(bitmapStream);
 
             return thumbnail;
         }

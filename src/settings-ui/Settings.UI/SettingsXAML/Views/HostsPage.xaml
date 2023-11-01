@@ -1,0 +1,70 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.HostsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    mc:Ignorable="d">
+
+    <custom:SettingsPageControl x:Uid="Hosts" ModuleImageSource="ms-appx:///Assets/Settings/Modules/HostsFileEditor.png">
+        <custom:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:SettingsCard
+                    x:Uid="Hosts_EnableToggleControl_HeaderText"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsHosts.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </controls:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
+                <custom:SettingsGroup x:Uid="Hosts_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingsCard
+                        x:Uid="Hosts_LaunchButtonControl"
+                        ActionIcon="{ui:FontIcon FontSize=14,
+                                                 Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.LaunchEventHandler}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
+                        IsClickEnabled="True" />
+                    <controls:SettingsCard
+                        x:Uid="Hosts_Toggle_LaunchAdministrator"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.LaunchAdministratorEnabled}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LaunchAdministrator}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Hosts_Toggle_ShowStartupWarning" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.ShowStartupWarning}" />
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
+
+                <custom:SettingsGroup x:Uid="Hosts_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingsCard x:Uid="Hosts_AdditionalLinesPosition" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.AdditionalLinesPosition, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Top" />
+                            <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Bottom" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Hosts_Toggle_LoopbackDuplicates" HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LoopbackDuplicates}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Hosts_Encoding">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoding, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Hosts_Encoding_Utf8" />
+                            <ComboBoxItem x:Uid="Hosts_Encoding_Utf8Bom" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
+            </StackPanel>
+        </custom:SettingsPageControl.ModuleContent>
+
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink x:Uid="LearnMore_Hosts" Link="https://aka.ms/PowerToysOverview_HostsFileEditor" />
+        </custom:SettingsPageControl.PrimaryLinks>
+    </custom:SettingsPageControl>
+</Page>

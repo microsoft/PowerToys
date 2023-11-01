@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _settingsUtils.SaveSettings(localSettings.ToJsonString(), GetSettingsSubPath(), "power-rename-settings.json");
             }
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _powerRenameEnabledOnContextMenu = Settings.Properties.ShowIcon.Value;

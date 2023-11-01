@@ -88,6 +88,33 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Crop And Lock (Reparent).
+        /// </summary>
+        internal static string Crop_And_Lock_Reparent {
+            get {
+                return ResourceManager.GetString("Crop_And_Lock_Reparent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Crop And Lock (Thumbnail).
+        /// </summary>
+        internal static string Crop_And_Lock_Thumbnail {
+            get {
+                return ResourceManager.GetString("Crop_And_Lock_Thumbnail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Environment Variables.
+        /// </summary>
+        internal static string Environment_Variables {
+            get {
+                return ResourceManager.GetString("Environment_Variables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to FancyZones Editor.
         /// </summary>
         internal static string FancyZones_Editor {

@@ -72,6 +72,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("search_wait_for_slow_results")]
         public bool SearchWaitForSlowResults { get; set; }
 
+        [JsonPropertyName("use_pinyin")]
+        public bool UsePinyin { get; set; }
+
         [JsonPropertyName("generate_thumbnails_from_files")]
         public bool GenerateThumbnailsFromFiles { get; set; }
 
@@ -97,11 +100,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Position = StartupPosition.Cursor;
             UseCentralizedKeyboardHook = false;
             SearchQueryResultsWithDelay = true;
+            SearchInputDelayFast = 50;
             SearchInputDelay = 150;
             SearchClickedItemWeight = 5;
             SearchQueryTuningEnabled = false;
             SearchWaitForSlowResults = false;
             GenerateThumbnailsFromFiles = true;
+            UsePinyin = false;
         }
     }
 }

@@ -46,8 +46,7 @@ class PowerAccent : public PowertoyModuleIface
 
 private:
     bool m_enabled = false;
-    HANDLE m_hInvokeEvent;
-    PROCESS_INFORMATION p_info;
+    PROCESS_INFORMATION p_info = {};
 
     bool is_process_running()
     {
@@ -60,7 +59,7 @@ private:
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"" + std::to_wstring(powertoys_pid);
-        std::wstring application_path = L"modules\\PowerAccent\\PowerToys.PowerAccent.exe";
+        std::wstring application_path = L"PowerToys.PowerAccent.exe";
         std::wstring full_command_path = application_path + L" " + executable_args.data();
         Logger::trace(L"PowerToys QuickAccent launching: " + full_command_path);
 
@@ -135,7 +134,6 @@ public:
 
     virtual void enable()
     {
-        ResetEvent(m_hInvokeEvent);
         launch_process();
         m_enabled = true;
         Trace::EnablePowerAccent(true);
@@ -146,7 +144,6 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Disabling QuickAccent... {}", m_enabled);
-            ResetEvent(m_hInvokeEvent);
 
             auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::POWERACCENT_EXIT_EVENT);
             if (!exitEvent)
