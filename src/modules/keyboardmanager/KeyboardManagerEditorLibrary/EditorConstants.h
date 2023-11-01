@@ -3,12 +3,12 @@
 namespace EditorConstants
 {
     // Default window sizes
-    inline const int DefaultEditKeyboardWindowWidth = 800;
+    inline const int DefaultEditKeyboardWindowWidth = 960;
     inline const int DefaultEditKeyboardWindowHeight = 600;
     inline const int MinimumEditKeyboardWindowWidth = 500;
     inline const int MinimumEditKeyboardWindowHeight = 450;
     inline const int EditKeyboardTableMinWidth = 700;
-    inline const int DefaultEditShortcutsWindowWidth = 1090;
+    inline const int DefaultEditShortcutsWindowWidth = 1410;
     inline const int DefaultEditShortcutsWindowHeight = 600;
     inline const int MinimumEditShortcutsWindowWidth = 500;
     inline const int MinimumEditShortcutsWindowHeight = 500;
@@ -23,7 +23,7 @@ namespace EditorConstants
     inline const long RemapTableRemoveColIndex = 3;
     inline const DWORD64 RemapTableDropDownWidth = 160;
     inline const DWORD64 RemapTableDropDownSpacing = 10;
-    inline const long RemapTargetColumnWidth = 2 * RemapTableDropDownWidth + 3 * RemapTableDropDownSpacing + 65;
+    inline const long RemapTargetColumnWidth = 3 * RemapTableDropDownWidth + 3 * RemapTableDropDownSpacing + 65;
 
     // Shortcut table constants
     inline const long ShortcutTableColCount = 5;
@@ -36,8 +36,8 @@ namespace EditorConstants
     inline const long ShortcutArrowColumnWidth = 90;
     inline const DWORD64 ShortcutTableDropDownWidth = 160;
     inline const DWORD64 ShortcutTableDropDownSpacing = 10;
-    inline const long ShortcutOriginColumnWidth = 2 * ShortcutTableDropDownWidth + 3 * ShortcutTableDropDownSpacing;
-    inline const long ShortcutTargetColumnWidth = 2 * ShortcutTableDropDownWidth + 3 * ShortcutTableDropDownSpacing + 15;
+    inline const long ShortcutOriginColumnWidth = 3 * ShortcutTableDropDownWidth + 3 * ShortcutTableDropDownSpacing;
+    inline const long ShortcutTargetColumnWidth = 3 * ShortcutTableDropDownWidth + 3 * ShortcutTableDropDownSpacing + 15;
 
     // Drop down height used for both Edit Keyboard and Edit Shortcuts
     inline const DWORD64 TableDropDownHeight = 200;
