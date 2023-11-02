@@ -14,7 +14,9 @@ https://www.regexplanet.com/advanced/perl/) yours before committing to verify it
 
 * well-formed pattern.
 
-  If you can write a [pattern](https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-patterns) that would match it,
+  If you can write a [pattern](
+https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-patterns
+) that would match it,
   try adding it to the `patterns.txt` file.
 
   Patterns are Perl 5 Regular Expressions - you can [test](

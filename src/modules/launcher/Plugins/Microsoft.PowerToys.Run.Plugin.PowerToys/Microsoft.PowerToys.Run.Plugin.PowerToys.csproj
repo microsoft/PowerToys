@@ -105,6 +105,10 @@
       <Link>Images\ShortcutGuide.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsEnvironmentVariables.png">
+      <Link>Images\EnvironmentVariables.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

@@ -9,27 +9,17 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <custom:OOBEPageControl
-        x:Uid="Oobe_Run"
-        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Run.gif">
+    <custom:OOBEPageControl x:Uid="Oobe_Run" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Run.gif">
 
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
-                <TextBlock
-                    x:Uid="Oobe_HowToLaunch"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <custom:ShortcutWithTextLabelControl
-                    x:Name="HotkeyControl"
-                    x:Uid="Oobe_Run_HowToLaunch" />
+                <custom:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_Run_HowToLaunch" />
 
-                <TextBlock
-                    x:Uid="Oobe_TipsAndTricks"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_Run_TipsAndTricks"
-                    Background="Transparent" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_Run_TipsAndTricks" Background="Transparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"
@@ -39,15 +29,9 @@
                         x:Uid="Launch_Run"
                         Click="Start_Run_Click"
                         Style="{StaticResource AccentButtonStyle}" />
-                    <Button
-                        x:Uid="OOBE_Settings"
-                        Click="SettingsLaunchButton_Click" />
-                    <HyperlinkButton
-                        NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun"
-                        Style="{StaticResource TextButtonStyle}">
-                        <TextBlock
-                            x:Uid="LearnMore_Run"
-                            TextWrapping="Wrap" />
+                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock x:Uid="LearnMore_Run" TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>

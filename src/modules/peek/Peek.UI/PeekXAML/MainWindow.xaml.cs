@@ -8,8 +8,10 @@ using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
+using Peek.Common.Extensions;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
@@ -45,7 +47,7 @@ namespace Peek.UI
                 Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
             }
 
-            ViewModel = App.GetService<MainWindowViewModel>();
+            ViewModel = Application.Current.GetService<MainWindowViewModel>();
 
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
 
@@ -68,11 +70,11 @@ namespace Peek.UI
             }
         }
 
-        private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
+        private void PeekWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
-            if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
-                var userSettings = App.GetService<IUserSettings>();
+                var userSettings = Application.Current.GetService<IUserSettings>();
                 if (userSettings.CloseAfterLosingFocus)
                 {
                     Uninitialize();
@@ -85,20 +87,24 @@ namespace Peek.UI
         /// </summary>
         private void OnPeekHotkey()
         {
+            // Need to read the foreground HWND before activating Peek to avoid focus stealing
+            // Foreground HWND must always be Explorer or Desktop
+            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
             // First Peek activation
             if (!activated)
             {
                 Activate();
-                Initialize();
+                Initialize(foregroundWindowHandle);
                 activated = true;
                 return;
             }
 
             if (AppWindow.IsVisible)
             {
-                if (IsNewSingleSelectedItem())
+                if (IsNewSingleSelectedItem(foregroundWindowHandle))
                 {
-                    Initialize();
+                    Initialize(foregroundWindowHandle);
                 }
                 else
                 {
@@ -107,7 +113,7 @@ namespace Peek.UI
             }
             else
             {
-                Initialize();
+                Initialize(foregroundWindowHandle);
             }
         }
 
@@ -126,12 +132,12 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private void Initialize()
+        private void Initialize(Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
-            ViewModel.Initialize();
+            ViewModel.Initialize(foregroundWindowHandle);
             ViewModel.ScalingFactor = this.GetMonitorScale();
 
             bootTime.Stop();
@@ -156,6 +162,7 @@ namespace Peek.UI
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
             var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
             var monitorSize = foregroundWindowHandle.GetMonitorSize();
             var monitorScale = foregroundWindowHandle.GetMonitorScale();
 
@@ -179,7 +186,7 @@ namespace Peek.UI
             }
 
             this.Show();
-            this.BringToForeground();
+            WindowHelpers.BringToForeground(this.GetWindowHandle());
         }
 
         private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
@@ -210,12 +217,10 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private bool IsNewSingleSelectedItem()
+        private bool IsNewSingleSelectedItem(Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {
             try
             {
-                var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
-
                 var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
                 var selectedItemsCount = selectedItems?.GetCount() ?? 0;
                 if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -98,7 +99,7 @@ namespace RegistryPreview
                 UpdateWindowTitle(resourceLoader.GetString("FileNotFound"));
             }
 
-            ManagedCommon.WindowHelpers.BringToForeground(windowHandle);
+            WindowHelpers.BringToForeground(windowHandle);
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
