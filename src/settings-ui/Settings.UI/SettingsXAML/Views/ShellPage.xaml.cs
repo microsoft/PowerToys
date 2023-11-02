@@ -335,7 +335,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
         }
 
-        private void AboutItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void WhatIsNewItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             OpenWhatsNewWindowCallback();
         }
