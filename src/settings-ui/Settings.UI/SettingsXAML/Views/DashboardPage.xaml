@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -301,11 +301,11 @@
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:DashboardListItem">
                             <Button
-                                Click="DashboardListItemClick"
-                                Tag="{x:Bind Tag, Mode=OneWay}"
+                                Padding="0"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
-                                Padding="0">
+                                Click="DashboardListItemClick"
+                                Tag="{x:Bind Tag, Mode=OneWay}">
                                 <Grid
                                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
