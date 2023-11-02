@@ -30,6 +30,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public string Description => Resources.wox_plugin_calculator_plugin_description;
 
+        public static string PluginID => "CEA0FDFC6D3B4085823D60DC76F28855";
+
         private bool _disposed;
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()

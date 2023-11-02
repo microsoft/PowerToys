@@ -28,7 +28,7 @@
                         Type="string" />
         <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
         <RegistryValue Root="$(var.RegistryScope)"
-                          Key="SOFTWARE\Classes\SOFTWARE\Classes\SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
+                          Key="SOFTWARE\Classes\SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
                           Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                           Type="string" />
         <RegistryValue Root="$(var.RegistryScope)"

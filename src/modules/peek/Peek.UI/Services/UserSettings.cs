@@ -48,7 +48,7 @@ namespace Peek.UI
 
                         if (!_settingsUtils.SettingsExists(PeekModuleName))
                         {
-                            Logger.LogInfo("Hosts settings.json was missing, creating a new one");
+                            Logger.LogInfo("Peek settings.json was missing, creating a new one");
                             var defaultSettings = new PeekSettings();
                             defaultSettings.Save(_settingsUtils);
                         }

@@ -96,17 +96,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Known date/time format
                 return true;
             }
-            else if (Regex.IsMatch(input, @"^u\d+") && input.Length <= 12 && long.TryParse(input.TrimStart('u'), out long secondsInt))
+            else if (Regex.IsMatch(input, @"^u[\+-]?\d{1,10}$") && long.TryParse(input.TrimStart('u'), out long secondsU))
             {
                 // unix time stamp
                 // we use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
-                timestamp = new DateTime(1970, 1, 1).AddSeconds(secondsInt).ToLocalTime();
+                timestamp = new DateTime(1970, 1, 1).AddSeconds(secondsU).ToLocalTime();
                 return true;
             }
-            else if (Regex.IsMatch(input, @"^ft\d+") && long.TryParse(input.TrimStart("ft".ToCharArray()), out long secondsLong))
+            else if (Regex.IsMatch(input, @"^ums[\+-]?\d{1,13}$") && long.TryParse(input.TrimStart("ums".ToCharArray()), out long millisecondsUms))
+            {
+                // unix time stamp in milliseconds
+                // we use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
+                timestamp = new DateTime(1970, 1, 1).AddMilliseconds(millisecondsUms).ToLocalTime();
+                return true;
+            }
+            else if (Regex.IsMatch(input, @"^ft\d+$") && long.TryParse(input.TrimStart("ft".ToCharArray()), out long secondsFt))
             {
                 // windows file time
-                timestamp = new DateTime(secondsLong);
+                timestamp = new DateTime(secondsFt);
                 return true;
             }
             else
@@ -114,6 +121,16 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Test if input is special parsing for Unix time, Unix time in milliseconds or File time.
+        /// </summary>
+        /// <param name="input">String with date/time</param>
+        /// <returns>True if yes, otherwise false</returns>
+        internal static bool IsSpecialInputParsing(string input)
+        {
+            return Regex.IsMatch(input, @"^.*(u|ums|ft)\d");
         }
     }
 

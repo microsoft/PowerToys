@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         Awake,
         ColorPicker,
         CropAndLock,
+        EnvironmentVariables,
         FancyZones,
         FileLocksmith,
         FileExplorer,
