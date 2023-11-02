@@ -307,7 +307,7 @@ void Trace::SettingsTelemetry(const Settings& settings) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(settings.shiftDrag, ShiftDragKey),
         TraceLoggingBoolean(settings.mouseSwitch, MouseSwitchKey),
-        TraceLoggingBoolean(settings.displayChange_moveWindows, MoveWindowsOnDisplayChangeKey),
+        TraceLoggingBoolean(settings.displayOrWorkAreaChange_moveWindows, MoveWindowsOnDisplayChangeKey),
         TraceLoggingBoolean(settings.zoneSetChange_flashZones, FlashZonesOnZoneSetChangeKey),
         TraceLoggingBoolean(settings.zoneSetChange_moveWindows, MoveWindowsOnZoneSetChangeKey),
         TraceLoggingBoolean(settings.overrideSnapHotkeys, OverrideSnapHotKeysKey),

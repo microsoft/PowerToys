@@ -134,7 +134,7 @@ namespace winrt::PowerRenameUI::implementation
             GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &x_dpi, &x_dpi);
             UINT window_dpi = GetDpiForWindow(m_window);
 
-            const auto& [width, height] = CSettingsInstance().GetLastWindowSize();
+            const auto& [width, height] = LastRunSettingsInstance().GetLastWindowSize();
 
             winrt::Windows::Graphics::RectInt32 rect;
             // Scale window size
@@ -297,12 +297,15 @@ namespace winrt::PowerRenameUI::implementation
             Microsoft::UI::Windowing::AppWindow::GetFromWindowId(Microsoft::UI::GetWindowIdFromWindow(m_window));
         const auto [width, height] = appWindow.Size();
 
-        CSettingsInstance().UpdateLastWindowSize(static_cast<int>(width), static_cast<int>(height));
+        m_updatedWindowSize.emplace(std::make_pair(width, height));
     }
 
     void MainWindow::OnClosed(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::WindowEventArgs const&)
     {
-        CSettingsInstance().Save();
+        if (m_updatedWindowSize)
+        {
+            LastRunSettingsInstance().UpdateLastWindowSize(m_updatedWindowSize->first, m_updatedWindowSize->second);
+        }
     }
 
     void MainWindow::InvalidateItemListViewState()
@@ -820,8 +823,8 @@ namespace winrt::PowerRenameUI::implementation
         {
             flags = CSettingsInstance().GetFlags();
 
-            textBox_search().Text(CSettingsInstance().GetSearchText().c_str());
-            textBox_replace().Text(CSettingsInstance().GetReplaceText().c_str());
+            textBox_search().Text(LastRunSettingsInstance().GetSearchText().c_str());
+            textBox_replace().Text(LastRunSettingsInstance().GetReplaceText().c_str());
         }
         else
         {
@@ -846,7 +849,7 @@ namespace winrt::PowerRenameUI::implementation
             CSettingsInstance().SetFlags(flags);
 
             winrt::hstring searchTerm = textBox_search().Text();
-            CSettingsInstance().SetSearchText(std::wstring{ searchTerm });
+            LastRunSettingsInstance().SetSearchText(std::wstring{ searchTerm });
 
             if (CSettingsInstance().GetMRUEnabled() && m_searchMRU)
             {
@@ -858,7 +861,7 @@ namespace winrt::PowerRenameUI::implementation
             }
 
             winrt::hstring replaceTerm = textBox_replace().Text();
-            CSettingsInstance().SetReplaceText(std::wstring{ replaceTerm });
+            LastRunSettingsInstance().SetReplaceText(std::wstring{ replaceTerm });
 
             if (CSettingsInstance().GetMRUEnabled() && m_replaceMRU)
             {

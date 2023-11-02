@@ -35,6 +35,7 @@ mshtang
 Myrvold
 naveensrinivasan
 nVidia
+phoboslab
 Ponten
 Pooja
 robmen
@@ -44,6 +45,7 @@ skycommand
 snickler
 sinclairinat
 streamjsonrpc
+Szablewski
 tilovell
 TheJoeFin
 Triet

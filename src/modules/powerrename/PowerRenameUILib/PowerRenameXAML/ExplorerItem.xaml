@@ -17,27 +17,6 @@
             <!--  Error tooltip  -->
         </Grid.ColumnDefinitions>
 
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="CommonStates">
-                <VisualState x:Name="Normal" />
-                <VisualState x:Name="Highlight">
-                    <VisualState.Setters>
-                        <Setter Target="HighlightBorder.Opacity" Value="0.1" />
-                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="Error">
-                    <VisualState.Setters>
-                        <Setter Target="HighlightBorder.Opacity" Value="1" />
-                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
-                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
-                        <Setter Target="ErrorIcon.Visibility" Value="Visible" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-
         <Border
             Name="HighlightBorder"
             Grid.ColumnSpan="4"
@@ -121,5 +100,26 @@
                     TextWrapping="Wrap" />
             </ToolTipService.ToolTip>
         </Border>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Highlight">
+                    <VisualState.Setters>
+                        <Setter Target="HighlightBorder.Opacity" Value="0.1" />
+                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Error">
+                    <VisualState.Setters>
+                        <Setter Target="HighlightBorder.Opacity" Value="1" />
+                        <Setter Target="HighlightBorder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                        <Setter Target="HighlightBorder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                        <Setter Target="ErrorIcon.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </UserControl>

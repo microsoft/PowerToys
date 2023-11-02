@@ -8,6 +8,7 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
       <PRIResource Include="..\Peek.UI\Strings\en-US\Resources.resw" Link="Strings\en-US\Resources.resw">
@@ -17,6 +18,7 @@
   <ItemGroup>
     <None Remove="Controls\ArchiveControl.xaml" />
     <None Remove="Controls\BrowserControl.xaml" />
+    <None Remove="Controls\ShellPreviewHandlerControl.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\InformationalPreviewControl.xaml" />
     <None Remove="FilePreview.xaml" />
@@ -29,6 +31,10 @@
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
       <PackageReference Include="SharpCompress" />
       <PackageReference Include="System.Drawing.Common" />
+      <PackageReference Include="Microsoft.Windows.CsWin32">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +42,12 @@
     <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\ShellPreviewHandlerControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

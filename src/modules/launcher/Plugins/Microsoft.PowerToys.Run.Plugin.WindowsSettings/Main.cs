@@ -73,6 +73,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         public string Description => Resources.PluginDescription;
 
         /// <summary>
+        /// Gets the plugin ID for validation
+        /// </summary>
+        public static string PluginID => "5043CECEE6A748679CBE02D27D83747A";
+
+        /// <summary>
         /// Initialize the plugin with the given <see cref="PluginInitContext"/>.
         /// </summary>
         /// <param name="context">The <see cref="PluginInitContext"/> for this plugin.</param>

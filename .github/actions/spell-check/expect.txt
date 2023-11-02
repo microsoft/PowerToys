@@ -21,6 +21,7 @@ activationaction
 ADDUNDORECORD
 ADifferent
 adio
+adipiscing
 administra
 ADMINS
 adml
@@ -34,6 +35,7 @@ AGGREGATABLE
 AHybrid
 ALarger
 alekhyareddy
+aliquip
 ALLAPPS
 ALLINPUT
 ALLOWUNDO
@@ -97,6 +99,7 @@ ASingle
 ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
+ative
 atl
 atlbase
 atlcom
@@ -112,7 +115,7 @@ AUTHN
 AUTHZ
 AUTOHIDE
 AUTOMATIONPROPERTIES
-autorun
+Autorun
 AUTOUPDATE
 AValid
 awakeness
@@ -144,13 +147,12 @@ Blockquotes
 blogs
 Blt
 BLUEGRAY
-bluetooth
+Bluetooth
 BLURBEHIND
 BLURREGION
 bmi
 bms
 BNumber
-Bokm
 BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
@@ -275,6 +277,7 @@ cominterop
 commandline
 COMMANDTITLE
 commctrl
+commodo
 compmgmt
 COMPOSITIONFULL
 comsupp
@@ -285,6 +288,8 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
+consectetur
+consequat
 Consolas
 constexpr
 consts
@@ -327,6 +332,7 @@ CTRLALTDEL
 Ctrls
 Ctx
 CUI
+cupidatat
 currentculture
 CURRENTDIR
 CURSORINFO
@@ -373,6 +379,7 @@ dcomp
 DComposition
 dcr
 dcs
+ddd
 DDEIf
 DDevice
 ddf
@@ -399,12 +406,12 @@ DELETEDKEYIMAGE
 DELETESCANS
 deletethis
 Delimarsky
-dend
 DENORMAL
 Deondre
 depersist
 deprioritized
 deref
+deserunt
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
@@ -485,6 +492,7 @@ dxgidebug
 dxgiformat
 dxguid
 ecount
+ecyclebin
 EData
 Edid
 EDITKEYBOARD
@@ -492,8 +500,13 @@ editkeyboardwindow
 EDITSHORTCUTS
 editshortcutswindow
 EFile
+egistry
+egistrypreview
 eip
 ekus
+elease
+elemetry
+elit
 emmintrin
 Emoji
 ENABLEDELAYEDEXPANSION
@@ -504,6 +517,7 @@ encryptor
 endpointvolume
 endregion
 ENDSESSION
+enim
 ENTERSIZEMOVE
 ENU
 EOAC
@@ -518,10 +532,16 @@ ERRORLEVEL
 ERRORTITLE
 ESettings
 esize
+esource
 esrp
+estapp
+estart
+ests
+esult
 etl
 etstat
-etw
+ETW
+etwork
 EUQ
 eurochange
 eventlog
@@ -539,6 +559,7 @@ exabyte
 examplehandler
 examplepowertoy
 EXAND
+Excepteur
 EXCLUDEFROMCAPTURE
 exdisp
 executionpolicy
@@ -549,6 +570,8 @@ exlist
 EXPCMDFLAGS
 EXPCMDSTATE
 explr
+exppowertoys
+exptas
 exsb
 EXSEL
 exstyle
@@ -576,7 +599,7 @@ FILEOP
 FILEOS
 FILESUBTYPE
 FILESYSPATH
-filetime
+Filetime
 FILEVERSION
 Filtergraph
 Filterkeyboard
@@ -586,6 +609,7 @@ findfast
 firefox
 FIXEDFILEINFO
 flyout
+flyouts
 FOF
 FOFX
 FOLDERID
@@ -785,10 +809,12 @@ IFACEMETHODIMP
 IFile
 IFilter
 IGraphics
+IGT
 iid
 Iindex
 IIO
 iiq
+IJson
 Ijwhost
 IKs
 ILogon
@@ -906,6 +932,8 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
+laboris
+laborum
 LAlt
 Lambson
 langword
@@ -914,6 +942,7 @@ Lastdevice
 Laute
 laviusmotileng
 LAYOUTRTL
+Lbl
 LBUTTON
 LBUTTONDBLCLK
 LBUTTONDOWN
@@ -955,6 +984,7 @@ lmcons
 LMEM
 LMENU
 lnk
+lnks
 LOADFROMFILE
 LOBYTE
 LOCALAPPDATA
@@ -1014,6 +1044,7 @@ lstrlen
 LTRB
 LTRREADING
 luid
+LUMA
 lusrmgr
 LVal
 LWA
@@ -1079,7 +1110,7 @@ mic
 microsoft
 MIDDLEDOWN
 MIDDLEUP
-Midl
+midl
 mii
 MIIM
 millis
@@ -1108,6 +1139,7 @@ mockapi
 MODECHANGE
 modernwpf
 MODESPRUNED
+mollit
 MONITORENUMPROC
 MONITORINFO
 MONITORINFOEX
@@ -1182,6 +1214,7 @@ NCMBUTTONUP
 NCMOUSELEAVE
 NCMOUSEMOVE
 NCol
+nconsectetur
 ncpa
 NCPAINT
 NCRBUTTONDBLCLK
@@ -1206,7 +1239,6 @@ newitem
 newpath
 newrow
 Newtonsoft
-niels
 nielslaute
 NIF
 nint
@@ -1251,6 +1283,7 @@ NORMALUSER
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
+nostrud
 notfound
 NOTIFICATIONSDLL
 NOTIFYICONDATAW
@@ -1266,6 +1299,7 @@ NOZORDER
 NPH
 NResize
 nrw
+nsunt
 NTAPI
 ntdll
 ntfs
@@ -1282,12 +1316,15 @@ Objbase
 OBJID
 objidl
 oblitum
+obmikh
+occaecat
 ocr
 Ocrsettings
 odbc
 odbccp
 Oem
 officehubintl
+officia
 ofs
 oid
 oldcolor
@@ -1304,6 +1341,7 @@ onenote
 onstd
 oobe
 OOBEPT
+ools
 opencode
 opensource
 openxmlformats
@@ -1317,6 +1355,8 @@ ostr
 OSVERSIONINFOEX
 OSVERSIONINFOEXW
 osvi
+otating
+otifications
 OUTOFCONTEXT
 OUTOFMEMORY
 outpin
@@ -1346,6 +1386,7 @@ PARTIALCONFIRMATIONDIALOGTITLE
 pasteplain
 PATCOPY
 pathcch
+PATHEXT
 Pathto
 PATINVERT
 PATPAINT
@@ -1373,7 +1414,6 @@ pef
 PElems
 Pels
 PERCEIVEDFLAG
-Percision
 perfmon
 pesi
 petabyte
@@ -1434,6 +1474,7 @@ ppsi
 ppsid
 ppsrm
 ppsrree
+ppstm
 ppsz
 pptal
 ppv
@@ -1462,6 +1503,7 @@ PRODUCTVERSION
 Progman
 programdata
 PROGRAMFILES
+proident
 projectname
 PROPBAG
 PROPERTYKEY
@@ -1473,9 +1515,12 @@ pscid
 PSECURITY
 psfgao
 psfi
+PSMODULEPATH
 Psr
 psrm
 psrree
+pstatstg
+pstm
 pstr
 pstream
 pstrm
@@ -1501,7 +1546,9 @@ qianlifeng
 qit
 QITAB
 QITABENT
+qoi
 qps
+Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
@@ -1537,6 +1584,7 @@ RECTL
 rectp
 rects
 RECTSOURCE
+recyclebin
 redirectedfrom
 Redist
 redistributable
@@ -1575,6 +1623,7 @@ renamable
 RENAMEONCOLLISION
 Renamer
 reparent
+reparented
 reparenting
 reparse
 reportbug
@@ -1608,6 +1657,7 @@ RIGHTDOWN
 RIGHTSCROLLBAR
 RIGHTUP
 riid
+ringbuffer
 RKey
 RLO
 RMENU
@@ -1667,19 +1717,18 @@ Scode
 scoobe
 SCOPEID
 screenshot
+screenshots
 scrollviewer
 sddl
 SDKDDK
 sdns
 searchterm
 secpol
-Secur
 Segoe
 Sekan
 SENDCHANGE
 sendinput
 sendvirtualinput
-Seperate
 Seraphima
 serverside
 SETCONTEXT
@@ -1692,6 +1741,7 @@ setlocal
 SETREDRAW
 SETTEXT
 SETTINGCHANGE
+SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
 SETWORKAREA
@@ -1749,6 +1799,7 @@ sia
 SIATTRIBFLAGS
 SICHINT
 sid
+SIDs
 siex
 sigdn
 SIGNINGSCENARIO
@@ -1784,7 +1835,6 @@ spam
 spdisp
 spdlog
 spdo
-spec'ing
 spesi
 splitwstring
 spsi
@@ -1828,6 +1878,7 @@ STDMETHODCALLTYPE
 STDMETHODIMP
 stefan
 Stereolithography
+STGC
 STGM
 STGMEDIUM
 sticpl
@@ -1838,7 +1889,6 @@ stringtable
 stringval
 Strm
 Strmiids
-Stroe
 Strret
 strsafe
 strutil
@@ -1850,11 +1900,13 @@ stylecop
 Subdir
 subfolders
 subkey
+subkeys
 SUBLANG
 subquery
 subresource
 Superbar
 sut
+svchost
 SVE
 SVGIn
 SVGIO
@@ -1884,7 +1936,7 @@ SYSTEMTIME
 sysvol
 Tadele
 talynone
-TApp
+tapp
 TApplication
 TApplied
 targ
@@ -1922,6 +1974,7 @@ textblock
 TEXTEXTRACTOR
 TEXTINCLUDE
 tgz
+themeresources
 THH
 THICKFRAME
 THISCOMPONENT
@@ -1940,6 +1993,7 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
+tonos
 toolkitcontrols
 toolkitconverters
 Toolset
@@ -1960,6 +2014,7 @@ Tsd
 TServer
 TStr
 TValue
+tweakme
 TWF
 tymed
 typedef
@@ -1982,7 +2037,9 @@ UIEx
 uipi
 UIs
 ULARGE
+ullamco
 ULONGLONG
+ums
 unapply
 unassign
 uncompilable
@@ -2002,6 +2059,7 @@ unknwn
 UNLEN
 Unmap
 unmute
+unner
 UNORM
 unregistering
 unremapped
@@ -2084,6 +2142,7 @@ vscdb
 vsconfig
 VSCROLL
 vsetq
+VSM
 vsonline
 vstemplate
 VSTHRD
@@ -2110,6 +2169,7 @@ webpage
 websearch
 webserver
 website
+websites
 wekyb
 Wevtapi
 wgpocpl
@@ -2180,7 +2240,7 @@ WKSG
 Wlkr
 wmain
 Wman
-wmi
+WMI
 WMICIM
 wmimgmt
 WMKEYDOWN
@@ -2192,6 +2252,7 @@ wnd
 WNDCLASS
 WNDCLASSEX
 WNDCLASSEXW
+WNDCLASSW
 WNDPROC
 wordpad
 workaround
@@ -2232,6 +2293,8 @@ Wubi
 WVC
 Wwan
 Wwanpp
+xamlstyler
+Xavalon
 XAxis
 xbf
 Xbox
@@ -2252,9 +2315,11 @@ XPels
 XPixel
 XResource
 xsi
+xstyler
 XStr
 XUP
 XVIRTUALSCREEN
+xxxxxx
 YAxis
 ycv
 Yeet

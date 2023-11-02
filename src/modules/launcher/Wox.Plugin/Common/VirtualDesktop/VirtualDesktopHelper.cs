@@ -16,7 +16,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
 {
     /// <summary>
     /// Helper class to work with Virtual Desktops.
-    /// This helper uses only public available and documented COM-Interfaces or informations from registry.
+    /// This helper uses only public available and documented COM-Interfaces or information from registry.
     /// </summary>
     /// <remarks>
     /// To use this helper you have to create an instance of it and access the method via the helper instance.

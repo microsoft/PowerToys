@@ -3,19 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using Hosts.Helpers;
 using Hosts.Models;
 using Hosts.Settings;
 using Hosts.ViewModels;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
-using Windows.System;
-using Windows.UI.Core;
 
 namespace Hosts.Views
 {
@@ -97,60 +95,30 @@ namespace Hosts.Views
             ViewModel.UpdateAdditionalLines(AdditionalLines.Text);
         }
 
-        private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            var owner = sender as FrameworkElement;
-            if (owner != null)
-            {
-                var flyoutBase = FlyoutBase.GetAttachedFlyout(owner);
-                flyoutBase.ShowAt(owner, new FlyoutShowOptions
-                {
-                    Position = e.GetPosition(owner),
-                    ShowMode = FlyoutShowMode.Transient, // https://github.com/microsoft/PowerToys/issues/21263
-                });
-            }
-        }
-
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
-            var menuFlyoutItem = sender as MenuFlyoutItem;
-
-            if (menuFlyoutItem != null)
+            if (Entries.SelectedItem is Entry entry)
             {
-                await ShowDeleteDialogAsync(menuFlyoutItem.DataContext as Entry);
+                ViewModel.Selected = entry;
+                DeleteDialog.Title = entry.Address;
+                await DeleteDialog.ShowAsync();
             }
-        }
-
-        public async Task ShowDeleteDialogAsync(Entry entry)
-        {
-            ViewModel.Selected = entry;
-            DeleteDialog.Title = entry.Address;
-            await DeleteDialog.ShowAsync();
-        }
-
-        private async void Ping_Click(object sender, RoutedEventArgs e)
-        {
-            var menuFlyoutItem = sender as MenuFlyoutItem;
-
-            if (menuFlyoutItem != null)
-            {
-                await PingAsync(menuFlyoutItem.DataContext as Entry);
-            }
-        }
-
-        private async Task PingAsync(Entry entry)
-        {
-            ViewModel.Selected = entry;
-            await ViewModel.PingSelectedAsync();
         }
 
         private async void Edit_Click(object sender, RoutedEventArgs e)
         {
-            var menuFlyoutItem = sender as MenuFlyoutItem;
-
-            if (menuFlyoutItem != null)
+            if (Entries.SelectedItem is Entry entry)
             {
-                await ShowEditDialogAsync(menuFlyoutItem.DataContext as Entry);
+                await ShowEditDialogAsync(entry);
+            }
+        }
+
+        private async void Ping_Click(object sender, RoutedEventArgs e)
+        {
+            if (Entries.SelectedItem is Entry entry)
+            {
+                ViewModel.Selected = entry;
+                await ViewModel.PingSelectedAsync();
             }
         }
 
@@ -181,11 +149,8 @@ namespace Hosts.Views
 
         private void ReorderButtonUp_Click(object sender, RoutedEventArgs e)
         {
-            var menuFlyoutItem = sender as MenuFlyoutItem;
-
-            if (menuFlyoutItem != null)
+            if (Entries.SelectedItem is Entry entry)
             {
-                var entry = menuFlyoutItem.DataContext as Entry;
                 var index = ViewModel.Entries.IndexOf(entry);
                 if (index > 0)
                 {
@@ -196,44 +161,12 @@ namespace Hosts.Views
 
         private void ReorderButtonDown_Click(object sender, RoutedEventArgs e)
         {
-            var menuFlyoutItem = sender as MenuFlyoutItem;
-
-            if (menuFlyoutItem != null)
+            if (Entries.SelectedItem is Entry entry)
             {
-                var entry = menuFlyoutItem.DataContext as Entry;
                 var index = ViewModel.Entries.IndexOf(entry);
                 if (index < ViewModel.Entries.Count - 1)
                 {
                     ViewModel.Move(index, index + 1);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handle the keyboard shortcuts at list view level since
-        /// KeyboardAccelerators in FlyoutBase.AttachedFlyout works only when the flyout is open
-        /// </summary>
-        private async void Entries_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            var listView = sender as ListView;
-            if (listView != null && e.KeyStatus.WasKeyDown == false)
-            {
-                var entry = listView.SelectedItem as Entry;
-
-                if (Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
-                {
-                    if (e.Key == VirtualKey.E)
-                    {
-                        await ShowEditDialogAsync(entry);
-                    }
-                    else if (e.Key == VirtualKey.P)
-                    {
-                        await PingAsync(entry);
-                    }
-                }
-                else if (e.Key == VirtualKey.Delete)
-                {
-                    await ShowDeleteDialogAsync(entry);
                 }
             }
         }
@@ -250,13 +183,23 @@ namespace Hosts.Views
             }
         }
 
-        private void MenuFlyout_Opened(object sender, object e)
+        private void Entries_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            // Focus the first item: required for workaround https://github.com/microsoft/PowerToys/issues/21263
-            var menuFlyout = sender as MenuFlyout;
-            if (menuFlyout != null && menuFlyout.Items.Count > 0)
+            var entry = (e.OriginalSource as FrameworkElement).DataContext as Entry;
+            ViewModel.Selected = entry;
+        }
+
+        private void ContentDialog_Loaded_ApplyMargin(object sender, RoutedEventArgs e)
+        {
+            try
             {
-                menuFlyout.Items.First().Focus(FocusState.Programmatic);
+                // Based on the template from dev/CommonStyles/ContentDialog_themeresources.xaml in https://github.com/microsoft/microsoft-ui-xaml
+                var border = VisualTreeUtils.FindVisualChildByName(sender as ContentDialog, "BackgroundElement") as Border;
+                border.Margin = new Thickness(0, 32, 0, 0); // Should be the size reserved for the title bar as in MainWindow.xaml
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Couldn't set the margin for a content dialog. It will appear on top of the title bar.", ex);
             }
         }
     }

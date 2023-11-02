@@ -76,10 +76,30 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             string[] tokens = splitRegex.Split(input);
             foreach (string token in tokens)
             {
+                int leadingZeroCount = 0;
+
+                // Count leading zero characters.
+                foreach (char c in token)
+                {
+                    if (c != '0')
+                    {
+                        break;
+                    }
+
+                    leadingZeroCount++;
+                }
+
+                // number is all zero characters. no need to add zero characters at the end.
+                if (token.Length == leadingZeroCount)
+                {
+                    leadingZeroCount = 0;
+                }
+
                 decimal number;
+
                 outputBuilder.Append(
                     decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
-                    ? number.ToString(cultureTo)
+                    ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
                     : token);
             }
 

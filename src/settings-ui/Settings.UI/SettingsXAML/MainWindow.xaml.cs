@@ -50,8 +50,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
-            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            Title = loader.GetString("SettingsWindow_Title");
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
 
             // send IPC Message
             ShellPage.SetDefaultSndMessageCallback(msg =>
@@ -100,6 +100,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "CropAndLock":
                         needToUpdate = generalSettingsConfig.Enabled.CropAndLock != isEnabled;
                         generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
+                    case "EnvironmentVariables":
+                        needToUpdate = generalSettingsConfig.Enabled.EnvironmentVariables != isEnabled;
+                        generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
                     case "FancyZones":
                         needToUpdate = generalSettingsConfig.Enabled.FancyZones != isEnabled;
                         generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
@@ -202,7 +205,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
                     // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
                     // Need to call SetForegroundWindow to actually gain focus.
-                    Utils.BecomeForegroundWindow(flyout.GetWindowHandle());
+                    WindowHelpers.BringToForeground(flyout.GetWindowHandle());
                 });
             });
 
