@@ -153,7 +153,7 @@
     <value>Era abbreviation</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
-    <value>Valid prefixes: 'u' for Unix Timestamp, 'ft' for Windows file time</value>
+    <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
     <value>Error: Invalid number input</value>
@@ -311,5 +311,8 @@
   </data>
   <data name="Microsoft_plugin_timedate_Year" xml:space="preserve">
     <value>Year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Unix_Milliseconds" xml:space="preserve">
+    <value>Unix epoch time in milliseconds</value>
   </data>
 </root>

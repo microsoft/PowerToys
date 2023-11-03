@@ -80,8 +80,8 @@ namespace FancyZonesEditor
             TemplateModels.Insert((int)LayoutType.PriorityGrid, priorityGridModel);
 
             // set default layouts
-            DefaultLayouts.Set(priorityGridModel, MonitorConfigurationType.Horizontal);
             DefaultLayouts.Set(rowsModel, MonitorConfigurationType.Vertical);
+            DefaultLayouts.Set(priorityGridModel, MonitorConfigurationType.Horizontal);
         }
 
         // IsShiftKeyPressed - is the shift key currently being held down

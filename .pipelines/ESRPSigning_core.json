@@ -98,6 +98,10 @@
                 "WinUI3Apps\\Powertoys.Peek.UI.exe",
                 "WinUI3Apps\\Powertoys.Peek.dll",
 
+                "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
+
                 "PowerToys.ImageResizer.exe",
                 "PowerToys.ImageResizer.dll",
                 "PowerToys.ImageResizerExt.dll",

@@ -51,6 +51,8 @@ namespace Microsoft.Plugin.Indexer
 
         public string Description => Properties.Resources.Microsoft_plugin_indexer_plugin_description;
 
+        public static string PluginID => "2140FC9819AD43A3A616E2735815C27C";
+
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             new PluginAdditionalOption()
