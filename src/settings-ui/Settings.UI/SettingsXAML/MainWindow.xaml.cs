@@ -191,7 +191,7 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             // open whats new window
-            ShellPage.SetOpenWhatsNewCallback(() =>
+            ShellPage.SetOpenWhatIsNewCallback(() =>
             {
                 if (App.GetOobeWindow() == null)
                 {
