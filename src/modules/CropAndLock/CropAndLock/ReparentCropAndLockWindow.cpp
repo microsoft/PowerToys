@@ -195,11 +195,6 @@ void ReparentCropAndLockWindow::RestoreOriginalState()
         SetWindowLongPtrW(m_currentTarget, GWL_EXSTYLE, originalExStyle);
         SetWindowLongPtrW(m_currentTarget, GWL_STYLE, originalStyle);
 
-        // Restore window position and dimensions
-        int width = originalRect.right - originalRect.left;
-        int height = originalRect.bottom - originalRect.top;
-        SetWindowPos(m_currentTarget, nullptr, originalRect.left, originalRect.top, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-
         // Now, restore the original placement
         if (originalPlacement.showCmd != SW_SHOWMAXIMIZED)
         {
@@ -210,5 +205,10 @@ void ReparentCropAndLockWindow::RestoreOriginalState()
         {
             ShowWindow(m_currentTarget, SW_SHOWMAXIMIZED);
         }
+
+        // Restore window position and dimensions
+        int width = originalRect.right - originalRect.left;
+        int height = originalRect.bottom - originalRect.top;
+        SetWindowPos(m_currentTarget, nullptr, originalRect.left, originalRect.top, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     }
 }
