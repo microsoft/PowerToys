@@ -199,7 +199,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 }
                 else
                 {
-                    App.GetOobeWindow().SetActiveWindow(OOBE.Enums.PowerToysModules.WhatsNew);
+                    App.GetOobeWindow().SetAppWindow(OOBE.Enums.PowerToysModules.WhatsNew);
                 }
 
                 App.GetOobeWindow().Activate();

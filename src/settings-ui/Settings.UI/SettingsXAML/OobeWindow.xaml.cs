@@ -105,7 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI
             });
         }
 
-        public void SetActiveWindow(PowerToysModules module)
+        public void SetAppWindow(PowerToysModules module)
         {
             if (shellPage != null)
             {
