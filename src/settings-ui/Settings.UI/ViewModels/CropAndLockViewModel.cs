@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _reparentHotkey = Settings.Properties.ReparentHotkey.Value;
             _thumbnailHotkey = Settings.Properties.ThumbnailHotkey.Value;
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 

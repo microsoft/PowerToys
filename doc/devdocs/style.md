@@ -6,6 +6,7 @@
 
 ## Formatting
 
+- We use [XamlStyler](https://github.com/Xavalon/XamlStyler/) to format XAML files. You can use the [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=TeamXavalon.XAMLStyler2022) or apply formatting executing `.\.pipelines\applyXamlStyling.ps1 -Main`.
 - We use [`.clang-format`](https://github.com/microsoft/PowerToys/blob/main/src/.clang-format) style file to enable automatic code formatting. You can [easily format source files from Visual Studio](https://devblogs.microsoft.com/cppblog/clangformat-support-in-visual-studio-2017-15-7-preview-1/). For example, `CTRL+K CTRL+D` formats the current document.
 - If you prefer another text editor or have ClangFormat disabled in Visual Studio, you could invoke [`format_sources`](https://github.com/microsoft/PowerToys/blob/main/src/codeAnalysis/format_sources.ps1) powershell script from command line. It gets a list of all currently modified files from `git` and invokes clang-format on them.
 Please note that you should also have `clang-format.exe` in `%PATH%` for it to work. The script can infer the path of `clang-format.exe` version which is shipped with Visual Studio at `%VCINSTALLDIR%\Tools\Llvm\bin\`, if you launch it from the *Native Tools Command Prompt for VS*.

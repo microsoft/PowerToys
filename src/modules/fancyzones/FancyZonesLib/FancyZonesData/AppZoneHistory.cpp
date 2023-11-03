@@ -278,32 +278,7 @@ void AppZoneHistory::LoadData()
 
 void AppZoneHistory::SaveData()
 {
-    bool dirtyFlag = false;
-    std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> updatedHistory;
-    
-    for (const auto& [path, dataVector] : m_history)
-    {
-        auto updatedVector = dataVector;
-        for (auto& data : updatedVector)
-        {
-            if (!VirtualDesktop::instance().IsVirtualDesktopIdSavedInRegistry(data.workAreaId.virtualDesktopId))
-            {
-                data.workAreaId.virtualDesktopId = GUID_NULL;
-                dirtyFlag = true;
-            }
-        }
-
-        updatedHistory.insert(std::make_pair(path, updatedVector));
-    }
-
-    if (dirtyFlag)
-    {
-        json::to_file(AppZoneHistoryFileName(), JsonUtils::SerializeJson(updatedHistory));
-    }
-    else
-    {
-        json::to_file(AppZoneHistoryFileName(), JsonUtils::SerializeJson(m_history));
-    }
+    json::to_file(AppZoneHistoryFileName(), JsonUtils::SerializeJson(m_history));
 }
 
 void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids)
@@ -591,67 +566,43 @@ ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZone
     return {};
 }
 
-void AppZoneHistory::SyncVirtualDesktops()
+void AppZoneHistory::SyncVirtualDesktops(const GUID& currentVirtualDesktop, const GUID& lastUsedVirtualDesktop, std::optional<std::vector<GUID>> desktops)
 {
-    // Explorer persists current virtual desktop identifier to registry on a per session basis,
-    // but only after first virtual desktop switch happens. If the user hasn't switched virtual
-    // desktops in this session value in registry will be empty and we will use default GUID in
-    // that case (00000000-0000-0000-0000-000000000000).
-    
-    auto savedInRegistryVirtualDesktopID = VirtualDesktop::instance().GetCurrentVirtualDesktopIdFromRegistry();
-    if (!savedInRegistryVirtualDesktopID.has_value() || savedInRegistryVirtualDesktopID.value() == GUID_NULL)
+    TAppZoneHistoryMap history;
+
+    std::unordered_set<GUID> activeDesktops{};
+    if (desktops.has_value())
     {
-        return;
+        activeDesktops = std::unordered_set<GUID>(std::begin(desktops.value()), std::end(desktops.value()));
     }
 
-    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(savedInRegistryVirtualDesktopID.value());
-    if (!currentVirtualDesktopStr.has_value())
-    {
-        Logger::error(L"Failed to convert virtual desktop GUID to string");
-        return;
-    }
-
-    Logger::info(L"AppZoneHistory Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
-
-    bool dirtyFlag = false;
-
-    for (auto& [path, perDesktopData] : m_history)
-    {
-        for (auto& data : perDesktopData)
+    auto findCurrentVirtualDesktopInSavedHistory = [&](const std::pair<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& val) -> bool 
+    { 
+        for (auto& data : val.second)
         {
-            if (data.workAreaId.virtualDesktopId == GUID_NULL)
+            if (data.workAreaId.virtualDesktopId == currentVirtualDesktop)
             {
-                data.workAreaId.virtualDesktopId = savedInRegistryVirtualDesktopID.value();
-                dirtyFlag = true;
+                return true;
             }
         }
-    }
+        return false;
+    };
+    bool replaceLastUsedWithCurrent = !desktops.has_value() || currentVirtualDesktop == GUID_NULL || lastUsedVirtualDesktop == GUID_NULL || std::find_if(m_history.begin(), m_history.end(), findCurrentVirtualDesktopInSavedHistory) == m_history.end();
 
-    if (dirtyFlag)
-    {
-        Logger::info(L"Update Virtual Desktop id to {}", currentVirtualDesktopStr.value());
-        SaveData();
-    }
-}
-
-void AppZoneHistory::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops)
-{
-    std::unordered_set<GUID> active(std::begin(activeDesktops), std::end(activeDesktops));
     bool dirtyFlag = false;
-
     for (auto it = std::begin(m_history); it != std::end(m_history);)
     {
         auto& perDesktopData = it->second;
         for (auto desktopIt = std::begin(perDesktopData); desktopIt != std::end(perDesktopData);)
         {
-            if (desktopIt->workAreaId.virtualDesktopId != GUID_NULL && !active.contains(desktopIt->workAreaId.virtualDesktopId))
+            if (replaceLastUsedWithCurrent && desktopIt->workAreaId.virtualDesktopId == lastUsedVirtualDesktop)
             {
-                auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(desktopIt->workAreaId.virtualDesktopId);
-                if (virtualDesktopIdStr)
-                {
-                    Logger::info(L"Remove Virtual Desktop id {} from app-zone-history", virtualDesktopIdStr.value());
-                }
+                desktopIt->workAreaId.virtualDesktopId = currentVirtualDesktop;
+                dirtyFlag = true;
+            }
 
+            if (desktopIt->workAreaId.virtualDesktopId != currentVirtualDesktop && !activeDesktops.contains(desktopIt->workAreaId.virtualDesktopId))
+            {
                 desktopIt = perDesktopData.erase(desktopIt);
                 dirtyFlag = true;
             }
@@ -664,6 +615,7 @@ void AppZoneHistory::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activ
         if (perDesktopData.empty())
         {
             it = m_history.erase(it);
+            dirtyFlag = true;
         }
         else
         {

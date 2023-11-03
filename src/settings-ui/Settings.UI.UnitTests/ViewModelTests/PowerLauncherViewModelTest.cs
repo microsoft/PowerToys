@@ -81,6 +81,7 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.SearchResultPreference, viewModel.SearchResultPreference);
             Assert.AreEqual(originalSettings.Properties.SearchTypePreference, viewModel.SearchTypePreference);
             Assert.AreEqual(originalSettings.Properties.GenerateThumbnailsFromFiles, viewModel.GenerateThumbnailsFromFiles);
+            Assert.AreEqual(originalSettings.Properties.UsePinyin, viewModel.UsePinyin);
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)

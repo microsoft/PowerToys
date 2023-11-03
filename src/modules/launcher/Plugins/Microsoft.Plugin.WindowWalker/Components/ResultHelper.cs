@@ -43,7 +43,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                         return true;
                     },
 
-                    // For debugging you can set the second parameter to true to see more informations.
+                    // For debugging you can set the second parameter to true to see more information.
                     ToolTipData = GetToolTip(x.Result, false),
                 });
             }

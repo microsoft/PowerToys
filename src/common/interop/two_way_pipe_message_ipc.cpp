@@ -176,7 +176,7 @@ BOOL TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::GetLogonSID(HANDLE hToken, 
     if (!GetTokenInformation(
             hToken, // handle to the access token
             TokenGroups, // get information about the token's groups
-            (LPVOID)ptg, // pointer to TOKEN_GROUPS buffer
+            static_cast<LPVOID>(ptg), // pointer to TOKEN_GROUPS buffer
             0, // size of buffer
             &dwLength // receives required buffer size
             ))
@@ -197,7 +197,7 @@ BOOL TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::GetLogonSID(HANDLE hToken, 
     if (!GetTokenInformation(
             hToken, // handle to the access token
             TokenGroups, // get information about the token's groups
-            (LPVOID)ptg, // pointer to TOKEN_GROUPS buffer
+            static_cast<LPVOID>(ptg), // pointer to TOKEN_GROUPS buffer
             dwLength, // size of buffer
             &dwLength // receives required buffer size
             ))

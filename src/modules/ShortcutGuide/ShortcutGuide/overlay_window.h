@@ -93,7 +93,7 @@ private:
     std::mutex tasklist_cv_mutex;
     std::condition_variable tasklist_cv;
 
-    HTHUMBNAIL thumbnail;
+    HTHUMBNAIL thumbnail = nullptr;
     HWND active_window = nullptr;
     bool active_window_snappable = false;
     D2DOverlaySVG landscape, portrait;

@@ -50,12 +50,12 @@ bool VideoConferenceModule::isHotkeyPressed(DWORD code, PowerToysSettings::Hotke
 
 void VideoConferenceModule::reverseMicrophoneMute()
 {
-    bool muted = false;
+    // All controlled mic should same state with _microphoneTrackedInUI
+    // Avoid manually change in Control Panel make controlled mic has different state
+    bool muted = !getMicrophoneMuteState();
     for (auto& controlledMic : instance->_controlledMicrophones)
     {
-        const bool was_muted = controlledMic->muted();
-        controlledMic->toggle_muted();
-        muted = muted || !was_muted;
+        controlledMic->set_muted(muted);
     }
     if (muted)
     {
@@ -283,6 +283,10 @@ void VideoConferenceModule::onModuleSettingsChanged()
             {
                 toolbar.setToolbarHide(val.value());
             }
+            if (const auto val = values.get_string_value(L"startup_action"))
+            {
+                settings.startupAction = val.value();
+            }
 
             const auto selectedMic = values.get_string_value(L"selected_mic");
             if (selectedMic && selectedMic != settings.selectedMicrophone)
@@ -308,7 +312,7 @@ void VideoConferenceModule::onMicrophoneConfigurationChanged()
         return;
     }
 
-    const bool mutedStateForNewMics = _microphoneTrackedInUI ? _microphoneTrackedInUI->muted() : _mic_muted_state_during_disconnect;
+    const bool mutedStateForNewMics = getMicrophoneMuteState();
     std::unordered_set<std::wstring_view> currentlyTrackedMicsIds;
     for (const auto& controlledMic : _controlledMicrophones)
     {
@@ -447,6 +451,10 @@ void VideoConferenceModule::init_settings()
         {
             toolbar.setToolbarHide(val.value());
         }
+        if (const auto val = powerToysSettings.get_string_value(L"startup_action"))
+        {
+            settings.startupAction = val.value();
+        }
         if (const auto val = powerToysSettings.get_string_value(L"selected_mic"); val && *val != settings.selectedMicrophone)
         {
             settings.selectedMicrophone = *val;
@@ -508,6 +516,21 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
             toolbar.setMicrophoneMute(muted);
         });
         toolbar.setMicrophoneMute(_microphoneTrackedInUI->muted());
+    }
+
+    if (settings.startupAction == L"Unmute")
+    {
+        for (auto& controlledMic : _controlledMicrophones)
+        {
+            controlledMic->set_muted(false);
+        }
+    }
+    else if (settings.startupAction == L"Mute")
+    {
+        for (auto& controlledMic : _controlledMicrophones)
+        {
+            controlledMic->set_muted(true);
+        }
     }
 }
 
@@ -669,6 +692,14 @@ void VideoConferenceModule::sendSourceCameraNameUpdate()
         auto updatesChannel = reinterpret_cast<CameraSettingsUpdateChannel*>(memory._data);
         updatesChannel->sourceCameraName.emplace();
         std::copy(begin(settings.selectedCamera), end(settings.selectedCamera), begin(*updatesChannel->sourceCameraName));
+        if (settings.startupAction == L"Unmute")
+        {
+            updatesChannel->useOverlayImage = false;
+        }
+        else if (settings.startupAction == L"Mute")
+        {
+            updatesChannel->useOverlayImage = true;
+        }
     });
 }
 

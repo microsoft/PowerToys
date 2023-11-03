@@ -1,4 +1,4 @@
-<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+﻿<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
 <!--  Licensed under the MIT License.  -->
 
 <UserControl
@@ -34,18 +34,18 @@
                 Text="{x:Bind Source.FileName, Mode=OneWay}"
                 TextTrimming="CharacterEllipsis">
                 <ToolTipService.ToolTip>
-                    <ToolTip Content="{x:Bind Source.FileName, Mode=OneWay}"/>
+                    <ToolTip Content="{x:Bind Source.FileName, Mode=OneWay}" />
                 </ToolTipService.ToolTip>
             </TextBlock>
             <TextBlock Text="{x:Bind FormatFileType(Source.FileType), Mode=OneWay}">
                 <ToolTipService.ToolTip>
-                    <ToolTip Content="{x:Bind FormatFileType(Source.FileType), Mode=OneWay}"/>
+                    <ToolTip Content="{x:Bind FormatFileType(Source.FileType), Mode=OneWay}" />
                 </ToolTipService.ToolTip>
             </TextBlock>
-            <TextBlock Text="{x:Bind FormatFileSize(Source.FileSize), Mode=OneWay}"/>
+            <TextBlock Text="{x:Bind FormatFileSize(Source.FileSize), Mode=OneWay}" />
             <TextBlock Text="{x:Bind FormatFileDateModified(Source.DateModified), Mode=OneWay}">
                 <ToolTipService.ToolTip>
-                    <ToolTip Content="{x:Bind FormatFileDateModified(Source.DateModified), Mode=OneWay}"/>
+                    <ToolTip Content="{x:Bind FormatFileDateModified(Source.DateModified), Mode=OneWay}" />
                 </ToolTipService.ToolTip>
             </TextBlock>
         </StackPanel>

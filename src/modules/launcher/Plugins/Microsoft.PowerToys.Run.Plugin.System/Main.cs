@@ -31,6 +31,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public string Description => Resources.Microsoft_plugin_sys_plugin_description;
 
+        public static string PluginID => "CEA08895D2544B019B2E9C5009600DF4";
+
         public string IconTheme { get; set; }
 
         public bool IsBootedInUefiMode { get; set; }
@@ -124,7 +126,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             // {
             //    results.Add(new Result()
             //    {
-            //        Title = "Getting network informations. Please wait ...",
+            //        Title = "Getting network information. Please wait ...",
             //        IcoPath = $"Images\\networkAdapter.{IconTheme}.png",
             //        Score = StringMatcher.FuzzySearch("address", "ip address").Score,
             //    });
