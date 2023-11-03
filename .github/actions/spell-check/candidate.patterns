@@ -1,22 +1,35 @@
 # marker to ignore all code on line
 ^.*/\* #no-spell-check-line \*/.*$
-# marker for ignoring a comment to the end of the line
-// #no-spell-check.*$
+# marker to ignore all code on line
+^.*\bno-spell-check(?:-line|)(?:\s.*|)$
+
+# https://cspell.org/configuration/document-settings/
+# cspell inline
+^.*\b[Cc][Ss][Pp][Ee][Ll]{2}:\s*[Dd][Ii][Ss][Aa][Bb][Ll][Ee]-[Ll][Ii][Nn][Ee]\b
 
 # patch hunk comments
 ^\@\@ -\d+(?:,\d+|) \+\d+(?:,\d+|) \@\@ .*
 # git index header
-index [0-9a-z]{7,40}\.\.[0-9a-z]{7,40}
+index (?:[0-9a-z]{7,40},|)[0-9a-z]{7,40}\.\.[0-9a-z]{7,40}
+
+# file permissions
+['"`\s][-bcdLlpsw](?:[-r][-w][-Ssx]){2}[-r][-w][-SsTtx]\+?['"`\s]
+
+# css url wrappings
+\burl\([^)]+\)
 
 # cid urls
 (['"])cid:.*?\g{-1}
 
 # data url in parens
-\(data:[^)]*?(?:[A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,})[^)]*\)
+\(data:(?:[^) ][^)]*?|)(?:[A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,})[^)]*\)
 # data url in quotes
-([`'"])data:.*?(?:[A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,}).*\g{-1}
+([`'"])data:(?:[^ `'"].*?|)(?:[A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,}).*\g{-1}
 # data url
 data:[-a-zA-Z=;:/0-9+]*,\S*
+
+# https/http/file urls
+#(?:\b(?:https?|ftp|file)://)[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]
 
 # mailto urls
 mailto:[-a-zA-Z=;:/?%&0-9+@.]{3,}
@@ -34,6 +47,9 @@ magnet:[?=:\w]+
 # In this examples content, I'm using a number of different ways to match things to show various approaches
 # asciinema
 \basciinema\.org/a/[0-9a-zA-Z]+
+
+# asciinema v2
+^\[\d+\.\d+, "[io]", ".*"\]$
 
 # apple
 \bdeveloper\.apple\.com/[-\w?=/]+
@@ -89,7 +105,7 @@ vpc-\w+
 # Google Drive
 \bdrive\.google\.com/(?:file/d/|open)[-0-9a-zA-Z_?=]*
 # Google Groups
-\bgroups\.google\.com/(?:(?:forum/#!|d/)(?:msg|topics?|searchin)|a)/[^/\s"]+/[-a-zA-Z0-9$]+(?:/[-a-zA-Z0-9]+)*
+\bgroups\.google\.com(?:/[a-z]+/(?:#!|)[^/\s"]+)*
 # Google Maps
 \bmaps\.google\.com/maps\?[\w&;=]*
 # Google themes
@@ -117,6 +133,8 @@ themes\.googleusercontent\.com/static/fonts/[^/\s"]+/v\d+/[^.]+.
 (?:\[`?[0-9a-f]+`?\]\(https:/|)/(?:www\.|)github\.com(?:/[^/\s"]+){2,}(?:/[^/\s")]+)(?:[0-9a-f]+(?:[-0-9a-zA-Z/#.]*|)\b|)
 # GitHub SHAs
 \bgithub\.com(?:/[^/\s"]+){2}[@#][0-9a-f]+\b
+# GitHub SHA refs
+\[([0-9a-f]+)\]\(https://(?:www\.|)github.com/[-\w]+/[-\w]+/commit/\g{-1}[0-9a-f]*
 # GitHub wiki
 \bgithub\.com/(?:[^/]+/){2}wiki/(?:(?:[^/]+/|)_history|[^/]+(?:/_compare|)/[0-9a-f.]{40,})\b
 # githubusercontent
@@ -128,9 +146,9 @@ themes\.googleusercontent\.com/static/fonts/[^/\s"]+/v\d+/[^.]+.
 # git.io
 \bgit\.io/[0-9a-zA-Z]+
 # GitHub JSON
-"node_id": "[-a-zA-Z=;:/0-9+]*"
+"node_id": "[-a-zA-Z=;:/0-9+_]*"
 # Contributor
-\[[^\]]+\]\(https://github\.com/[^/\s"]+\)
+\[[^\]]+\]\(https://github\.com/[^/\s"]+/?\)
 # GHSA
 GHSA(?:-[0-9a-z]{4}){3}
 
@@ -143,8 +161,8 @@ GHSA(?:-[0-9a-z]{4}){3}
 # GitLab commits
 \bgitlab\.[^/\s"]*/(?:[^/\s"]+/){2}commits?/[0-9a-f]+\b
 
-# binanace
-accounts.binance.com/[a-z/]*oauth/authorize\?[-0-9a-zA-Z&%]*
+# binance
+accounts\.binance\.com/[a-z/]*oauth/authorize\?[-0-9a-zA-Z&%]*
 
 # bitbucket diff
 \bapi\.bitbucket\.org/\d+\.\d+/repositories/(?:[^/\s"]+/){2}diff(?:stat|)(?:/[^/\s"]+){2}:[0-9a-f]+
@@ -280,9 +298,9 @@ slack://[a-zA-Z0-9?&=]+
 \bdropbox\.com/sh?/[^/\s"]+/[-0-9A-Za-z_.%?=&;]+
 
 # ipfs protocol
-ipfs://[0-9a-z]*
+ipfs://[0-9a-zA-Z]{3,}
 # ipfs url
-/ipfs/[0-9a-z]*
+/ipfs/[0-9a-zA-Z]{3,}
 
 # w3
 \bw3\.org/[-0-9a-zA-Z/#.]+
@@ -359,14 +377,22 @@ ipfs://[0-9a-z]*
 # tinyurl
 \btinyurl\.com/\w+
 
+# codepen
+\bcodepen\.io/[\w/]+
+
+# registry.npmjs.org
+\bregistry\.npmjs\.org/(?:@[^/"']+/|)[^/"']+/-/[-\w@.]+
+
 # getopts
 \bgetopts\s+(?:"[^"]+"|'[^']+')
 
 # ANSI color codes
-(?:\\(?:u00|x)1b|\x1b)\[\d+(?:;\d+|)m
+(?:\\(?:u00|x)1[Bb]|\x1b|\\u\{1[Bb]\})\[\d+(?:;\d+|)m
 
 # URL escaped characters
 \%[0-9A-F][A-F]
+# lower URL escaped characters
+\%[0-9a-f][a-f](?=[a-z]{2,})
 # IPv6
 \b(?:[0-9a-fA-F]{0,4}:){3,7}[0-9a-fA-F]{0,4}\b
 # c99 hex digits (not the full format, just one I've seen)
@@ -376,7 +402,7 @@ ipfs://[0-9a-z]*
 # sha
 sha\d+:[0-9]*[a-f]{3,}[0-9a-f]*
 # sha-... -- uses a fancy capture
-(['"]|&quot;)[0-9a-f]{40,}\g{-1}
+(\\?['"]|&quot;)[0-9a-f]{40,}\g{-1}
 # hex runs
 \b[0-9a-fA-F]{16,}\b
 # hex in url queries
@@ -391,18 +417,21 @@ sha\d+:[0-9]*[a-f]{3,}[0-9a-f]*
 # Well known gpg keys
 .well-known/openpgpkey/[\w./]+
 
+# pki
+-----BEGIN.*-----END
+
 # uuid:
 \b[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\b
 # hex digits including css/html color classes:
-(?:[\\0][xX]|\\u|[uU]\+|#x?|\%23)[0-9_a-fA-FgGrR]*?[a-fA-FgGrR]{2,}[0-9_a-fA-FgGrR]*(?:[uUlL]{0,3}|u\d+)\b
+(?:[\\0][xX]|\\u|[uU]\+|#x?|\%23)[0-9_a-fA-FgGrR]*?[a-fA-FgGrR]{2,}[0-9_a-fA-FgGrR]*(?:[uUlL]{0,3}|[iu]\d+)\b
 # integrity
-integrity="sha\d+-[-a-zA-Z=;:/0-9+]{40,}"
+integrity=(['"])(?:\s*sha\d+-[-a-zA-Z=;:/0-9+]{40,})+\g{-1}
 
 # https://www.gnu.org/software/groff/manual/groff.html
 # man troff content
 \\f[BCIPR]
-# '
-\\\(aq
+# '/"
+\\\([ad]q
 
 # .desktop mime types
 ^MimeTypes?=.*$
@@ -411,21 +440,33 @@ integrity="sha\d+-[-a-zA-Z=;:/0-9+]{40,}"
 # Localized .desktop content
 Name\[[^\]]+\]=.*
 
-# IServiceProvider
-\bI(?=(?:[A-Z][a-z]{2,})+\b)
+# IServiceProvider / isAThing
+\b(?:I|isA)(?=(?:[A-Z][a-z]{2,})+\b)
 
 # crypt
-"\$2[ayb]\$.{56}"
+(['"])\$2[ayb]\$.{56}\g{-1}
 
 # scrypt / argon
 \$(?:scrypt|argon\d+[di]*)\$\S+
 
-# Input to GitHub JSON
-content: "[-a-zA-Z=;:/0-9+]*="
+# go.sum
+\bh1:\S+
 
-# Python stringprefix / binaryprefix
+# scala modules
+#("[^"]+"\s*%%?\s*){2,3}"[^"]+"
+
+# Input to GitHub JSON
+content: (['"])[-a-zA-Z=;:/0-9+]*=\g{-1}
+
+# This does not cover multiline strings, if your repository has them,
+# you'll want to remove the `(?=.*?")` suffix.
+# The `(?=.*?")` suffix should limit the false positives rate
+# printf
+#%(?:(?:(?:hh?|ll?|[jzt])?[diuoxn]|l?[cs]|L?[fega]|p)(?=[a-z]{2,})|(?:X|L?[FEGA]|p)(?=[a-zA-Z]{2,}))(?=[_a-zA-Z]+\b)(?!%)(?=.*?['"])
+
+# Python string prefix / binary prefix
 # Note that there's a high false positive rate, remove the `?=` and search for the regex to see if the matches seem like reasonable strings
-(?<!')\b(?:B|BR|Br|F|FR|Fr|R|RB|RF|Rb|Rf|U|UR|Ur|b|bR|br|f|fR|fr|r|rB|rF|rb|rf|u|uR|ur)'(?:[A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,})
+(?<!')\b(?:B|BR|Br|F|FR|Fr|R|RB|RF|Rb|Rf|U|UR|Ur|b|bR|br|f|fR|fr|r|rB|rF|rb|rf|u|uR|ur)'(?=[A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,})
 
 # Regular expressions for (P|p)assword
 \([A-Z]\|[a-z]\)[a-z]+
@@ -441,15 +482,34 @@ content: "[-a-zA-Z=;:/0-9+]*="
 ^\s*/\\[b].*/[gim]*\s*(?:\)(?:;|$)|,$)
 # javascript replace regex
 \.replace\(/[^/\s"]*/[gim]*\s*,
+# assign regex
+= /[^*]*?(?:[a-z]{3,}|[A-Z]{3,}|[A-Z][a-z]{2,}).*/
+# perl regex test
+[!=]~ (?:/.*/|m\{.*?\}|m<.*?>|m([|!/@#,;']).*?\g{-1})
+
+# perl qr regex
+(?<!\$)\bqr(?:\{.*?\}|<.*?>|\(.*?\)|([|!/@#,;']).*?\g{-1})
 
 # Go regular expressions
 regexp?\.MustCompile\(`[^`]*`\)
 
+# regex choice
+\(\?:[^)]+\|[^)]+\)
+
+# proto
+^\s*(\w+)\s\g{-1} =
+
 # sed regular expressions
 sed 's/(?:[^/]*?[a-zA-Z]{3,}[^/]*?/){2}
 
+# node packages
+(["'])\@[^/'" ]+/[^/'" ]+\g{-1}
+
 # go install
 go install(?:\s+[a-z]+\.[-@\w/.]+)+
+
+# jetbrains schema https://youtrack.jetbrains.com/issue/RSRP-489571
+urn:shemas-jetbrains-com
 
 # kubernetes pod status lists
 # https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase
@@ -462,18 +522,46 @@ go install(?:\s+[a-z]+\.[-@\w/.]+)+
 -[0-9a-f]{10}-\w{5}\s
 
 # posthog secrets
-posthog\.init\((['"])phc_[^"',]+\g{-1},
+([`'"])phc_[^"',]+\g{-1}
 
 # xcode
 
 # xcodeproject scenes
-(?:Controller|ID|id)="\w{3}-\w{2}-\w{3}"
+(?:Controller|destination|ID|id)="\w{3}-\w{2}-\w{3}"
 
 # xcode api botches
 customObjectInstantitationMethod
 
+# configure flags
+.* \| --\w{2,}.*?(?=\w+\s\w+)
+
 # font awesome classes
 \.fa-[-a-z0-9]+
+
+# bearer auth
+(['"])Bear[e][r] .*?\g{-1}
+
+# basic auth
+(['"])Basic [-a-zA-Z=;:/0-9+]{3,}\g{-1}
+
+# base64 encoded content
+([`'"])[-a-zA-Z=;:/0-9+]+=\g{-1}
+# base64 encoded content in xml/sgml
+>[-a-zA-Z=;:/0-9+]+=</
+# base64 encoded content, possibly wrapped in mime
+(?:^|[\s=;:?])[-a-zA-Z=;:/0-9+]{50,}(?:[\s=;:?]|$)
+
+# encoded-word
+=\?[-a-zA-Z0-9"*%]+\?[BQ]\?[^?]{0,75}\?=
+
+# Time Zones
+\b(?:Africa|Atlantic|America|Antarctica|Asia|Australia|Europe|Indian|Pacific)(?:/\w+)+
+
+# linux kernel info
+^(?:bugs|flags|Features)\s+:.*
+
+# systemd mode
+systemd.*?running in system mode \([-+].*\)$
 
 # Update Lorem based on your content (requires `ge` and `w` from https://github.com/jsoref/spelling; and `review` from https://github.com/check-spelling/check-spelling/wiki/Looking-for-items-locally )
 # grep '^[^#].*lorem' .github/actions/spelling/patterns.txt|perl -pne 's/.*i..\?://;s/\).*//' |tr '|' "\n"|sort -f |xargs -n1 ge|perl -pne 's/^[^:]*://'|sort -u|w|sed -e 's/ .*//'|w|review -
@@ -485,32 +573,57 @@ customObjectInstantitationMethod
 (?:\w|\s|[,.])*\b(?i)(?:amet|consectetur|cursus|dolor|eros|ipsum|lacus|libero|ligula|lorem|magna|neque|nulla|suscipit|tempus)\b(?:\w|\s|[,.])*
 
 # Non-English
-[a-zA-Z]*[ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź][a-zA-Z]{3}[a-zA-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź]*
+[a-zA-Z]*[ÀÁÂÃÄÅÆČÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæčçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź][a-zA-Z]{3}[a-zA-ZÀÁÂÃÄÅÆČÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæčçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź]*|[a-zA-Z]{3,}[ÀÁÂÃÄÅÆČÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæčçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź]|[ÀÁÂÃÄÅÆČÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæčçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź][a-zA-Z]{3,}
+
+# highlighted letters
+\[[A-Z]\][a-z]+
 
 # French
 # This corpus only had capital letters, but you probably want lowercase ones as well.
 \b[LN]'+[a-z]{2,}\b
 
-# latex
-\\(?:n(?:ew|ormal|osub)|r(?:enew)|t(?:able(?:of|)|he|itle))(?=[a-z]+)
+# latex (check-spelling >= 0.0.22)
+\\\w{2,}\{
+
+# eslint
+"varsIgnorePattern": ".+"
+
+# Windows short paths
+[/\\][^/\\]{5,6}~\d{1,2}[/\\]
+
+# in check-spelling@v0.0.22+, printf markers aren't automatically consumed
+# printf markers
+#(?<!\\)\\[nrt](?=[a-z]{2,})
+# alternate markers if you run into latex and friends
+#(?<!\\)\\[nrt](?=[a-z]{2,})(?=.*['"`])
+
+# apache
+a2(?:en|dis)
+
+# weak e-tag
+W/"[^"]+"
 
 # the negative lookahead here is to allow catching 'templatesz' as a misspelling
 # but to otherwise recognize a Windows path with \templates\foo.template or similar:
-\\(?:necessary|r(?:eport|esolve[dr]?|esult)|t(?:arget|emplates?))(?![a-z])
+#\\(?:necessary|r(?:eport|esolve[dr]?|esult)|t(?:arget|emplates?))(?![a-z])
 # ignore long runs of a single character:
 \b([A-Za-z])\g{-1}{3,}\b
-# Note that the next example is no longer necessary if you are using
-# to match a string starting with a `#`, use a character-class:
-[#]backwards
+
 # version suffix <word>v#
 (?:(?<=[A-Z]{2})V|(?<=[a-z]{2}|[A-Z]{2})v)\d+(?:\b|(?=[a-zA-Z_]))
-# Compiler flags (Scala)
-(?:^|[\t ,>"'`=(])-J-[DPWXY](?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,})
-# Compiler flags
-#(?:^|[\t ,"'`=(])-[DPWXYLlf](?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,})
+
+# Compiler flags (Unix, Java/Scala)
+# Use if you have things like `-Pdocker` and want to treat them as `docker`
+#(?:^|[\t ,>"'`=(])-(?:(?:J-|)[DPWXY]|[Llf])(?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,})
+
+# Compiler flags (Windows / PowerShell)
+# This is a subset of the more general compiler flags pattern.
+# It avoids matching `-Path` to prevent it from being treated as `ath`
+#(?:^|[\t ,"'`=(])-(?:[DPL](?=[A-Z]{2,})|[WXYlf](?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,}))
 
 # Compiler flags (linker)
 ,-B
+
 # curl arguments
 \b(?:\\n|)curl(?:\s+-[a-zA-Z]{1,2}\b)*(?:\s+-[a-zA-Z]{3,})(?:\s+-[a-zA-Z]+)*
 # set arguments

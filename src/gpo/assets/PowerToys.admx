@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.4" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.5" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.4"/><!-- Last changed with PowerToys v0.75.0 -->
+  <resources minRequiredRevision="1.5"/><!-- Last changed with PowerToys v0.75.1 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -71,6 +71,16 @@
     <policy name="ConfigureEnabledUtilityCropAndLock" class="Both" displayName="$(string.ConfigureEnabledUtilityCropAndLock)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityCropAndLock">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_73_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityEnvironmentVariables" class="Both" displayName="$(string.ConfigureEnabledUtilityEnvironmentVariables)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityEnvironmentVariables">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
