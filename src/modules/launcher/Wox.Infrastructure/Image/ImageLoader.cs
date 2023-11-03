@@ -66,8 +66,6 @@ namespace Wox.Infrastructure.Image
                 {
                     if (File.Exists(uri.LocalPath) && IsValidPngSignature(uri.LocalPath))
                     {
-                        Log.Info($"Image file '{icon}' is a valid PNG.", MethodBase.GetCurrentMethod().DeclaringType);
-
                         BitmapImage bmi = new BitmapImage();
                         bmi.BeginInit();
                         bmi.UriSource = uri;
