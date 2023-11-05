@@ -674,7 +674,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "€" },
                 LetterKey.VK_O => new[] { "ø" },
                 _ => Array.Empty<string>(),
-            }
+            };
         }
 
         // Lithuanian
