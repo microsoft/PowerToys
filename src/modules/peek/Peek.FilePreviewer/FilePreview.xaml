@@ -40,6 +40,9 @@
             Source="{x:Bind VideoPreviewer.Preview, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
+            <MediaPlayerElement.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Space" Invoked="KeyboardAccelerator_Space_Invoked" />
+            </MediaPlayerElement.KeyboardAccelerators>
             <MediaPlayerElement.TransportControls>
                 <MediaTransportControls
                     x:Name="mediaTransport"

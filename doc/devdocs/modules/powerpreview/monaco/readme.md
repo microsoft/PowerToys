@@ -1,6 +1,6 @@
 # Developer Preview (Monaco)
 
-Developer preview is based on [Microsofts Monaco Editor](https://microsoft.github.io/monaco-editor/) which is maintained by the Visual Studio Code team.
+Developer preview is based on [Microsoft's Monaco Editor](https://microsoft.github.io/monaco-editor/) which is maintained by the Visual Studio Code team.
 
 ## Update monaco editor
 

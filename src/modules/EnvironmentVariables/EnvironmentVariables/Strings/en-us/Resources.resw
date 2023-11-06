@@ -280,4 +280,7 @@
   <data name="StateProfileNotApplicableMsg" xml:space="preserve">
     <value>Variables or backup variables are invalid.</value>
   </data>
+  <data name="VariableIsAppliedByActiveProfileTooltip.Text" xml:space="preserve">
+    <value>This variable is written by the active profile</value>
+  </data>
 </root>

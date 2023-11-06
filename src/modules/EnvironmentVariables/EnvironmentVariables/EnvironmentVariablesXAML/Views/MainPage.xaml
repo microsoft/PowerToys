@@ -24,10 +24,24 @@
             <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
                 <controls:SettingsCard
                     CommandParameter="{x:Bind (models:Variable)}"
-                    Header="{x:Bind Name, Mode=TwoWay}"
                     IsActionIconVisible="False"
                     IsClickEnabled="False"
                     Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+                    <controls:SettingsCard.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind Name, Mode=TwoWay}" />
+                            <FontIcon
+                                Margin="6,0,6,0"
+                                FontSize="16"
+                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                Glyph="&#xE930;"
+                                Visibility="{x:Bind IsAppliedFromProfile, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="VariableIsAppliedByActiveProfileTooltip" TextWrapping="Wrap" />
+                                </ToolTipService.ToolTip>
+                            </FontIcon>
+                        </StackPanel>
+                    </controls:SettingsCard.Header>
                     <controls:SettingsCard.Description>
                         <StackPanel HorizontalAlignment="Left">
                             <ItemsControl
@@ -52,7 +66,6 @@
                                 Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                         </StackPanel>
                     </controls:SettingsCard.Description>
-
                     <Button
                         Content="{ui:FontIcon Glyph=&#xE712;}"
                         IsEnabled="{x:Bind IsEditable}"
