@@ -73,25 +73,39 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonStandardWindow, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
-        TEST_METHOD (PopupApp)
+        TEST_METHOD (Popup_App)
         {
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_TILEDWINDOW | WS_POPUP);
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
-        TEST_METHOD (PopupMenu)
+        TEST_METHOD (Popup_Menu)
         {
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_POPUP | WS_TILED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 
-            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::PopupMenu, FancyZonesWindowProcessing::DefineWindowType(window));
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonProcessablePopupWindow, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
-        TEST_METHOD (PopupMenuEdge)
+        TEST_METHOD (Popup_MenuEdge)
         {
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_POPUP | WS_TILED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_THICKFRAME | WS_SIZEBOX);
 
-            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::PopupMenu, FancyZonesWindowProcessing::DefineWindowType(window));
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonProcessablePopupWindow, FancyZonesWindowProcessing::DefineWindowType(window));
+        }
+
+        TEST_METHOD (Popup_Calculator)
+        {
+            HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_BORDER | WS_CLIPSIBLINGS | WS_DLGFRAME | WS_GROUP | WS_POPUP | WS_POPUPWINDOW | WS_SIZEBOX | WS_TABSTOP | WS_TILEDWINDOW);
+
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
+        }
+
+        TEST_METHOD (Popup_CalculatorTopmost)
+        {
+            HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_BORDER | WS_CAPTION | WS_CLIPSIBLINGS | WS_DLGFRAME | WS_OVERLAPPED | WS_POPUP | WS_POPUPWINDOW | WS_SIZEBOX | WS_SYSMENU | WS_THICKFRAME);
+
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
         TEST_METHOD (ChildWindow_OptionDisabled)
