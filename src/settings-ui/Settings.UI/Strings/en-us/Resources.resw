@@ -3333,6 +3333,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
     <value>French</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Finnish.Content" xml:space="preserve">
+    <value>Finnish</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Estonian.Content" xml:space="preserve">
     <value>Estonian</value>
   </data>

@@ -336,7 +336,7 @@ SOFTWARE.
 - Microsoft.Extensions.Logging 7.0.0
 - Microsoft.NET.Test.Sdk 17.6.3
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
-- Microsoft.Web.WebView2 1.0.1722.45
+- Microsoft.Web.WebView2 1.0.2088.41
 - Microsoft.Windows.Compatibility 7.0.3
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.3

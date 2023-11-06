@@ -32,6 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "GD",
             "NL",
             "EST",
+            "FI",
             "FR",
             "DE",
             "HE",
