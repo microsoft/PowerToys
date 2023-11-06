@@ -131,7 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
             if (moduleRun)
             {
-                PowerToysTelemetry.Log.WriteEvent(new TrayFlyoutModuleRunEvent() { ModuleName = (string)selectedModuleBtn.Tag });
+                PowerToysTelemetry.Log.WriteEvent(new TrayFlyoutModuleRunEvent() { ModuleName = ((ModuleType)selectedModuleBtn.Tag).ToString() });
             }
         }
 
