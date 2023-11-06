@@ -2,59 +2,55 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerPreviewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl
-        x:Uid="FileExplorerPreview"
-        ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerPreview.png">
-        <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical" ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
-                <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
+    <custom:SettingsPageControl x:Uid="FileExplorerPreview" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerPreview.png">
+        <custom:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <custom:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
                     <InfoBar
                         x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
                         IsClosable="False"
                         IsOpen="True"
                         IsTabStop="True"
                         Severity="Warning" />
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE91B;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}" />
-                        <labs:SettingsExpander.Items>
-                            <labs:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Color_Mode">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SVGRenderBackgroundColorMode, Mode=TwoWay}"
-                                          IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Color_Mode">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}"
+                                    SelectedIndex="{x:Bind Path=ViewModel.SVGRenderBackgroundColorMode, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Color_Mode_Default" />
                                     <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Color_Solid_Color" />
                                     <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade" />
                                 </ComboBox>
-                            </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Background_Color"
-                                               Visibility="{x:Bind ViewModel.IsSvgBackgroundColorVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                <controls:ColorPickerButton
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Background_Color" Visibility="{x:Bind ViewModel.IsSvgBackgroundColorVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                <custom:ColorPickerButton IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.SVGRenderBackgroundSolidColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode" Visibility="{x:Bind ViewModel.IsSvgCheckeredShadeVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}"
-                                    SelectedColor="{x:Bind Path=ViewModel.SVGRenderBackgroundSolidColor, Mode=TwoWay}" />
-                            </labs:SettingsCard>
-                            <labs:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode"
-                                               Visibility="{x:Bind ViewModel.IsSvgCheckeredShadeVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SVGRenderBackgroundCheckeredShade, Mode=TwoWay}"
-                                          IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}">
+                                    SelectedIndex="{x:Bind Path=ViewModel.SVGRenderBackgroundCheckeredShade, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_1" />
                                     <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_2" />
                                     <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_3" />
                                 </ComboBox>
-                            </labs:SettingsCard>
-                        </labs:SettingsExpander.Items>
-                    </labs:SettingsExpander>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
@@ -63,14 +59,12 @@
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGRenderEnabledGpoConfigured}"
                         Severity="Informational" />
 
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE943;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE943;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMDRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}" />
-                    </labs:SettingsCard>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}" />
+                    </controls:SettingsCard>
 
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
@@ -80,41 +74,31 @@
                         Severity="Informational" />
 
 
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE99A;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMonacoRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}" />
-                        <labs:SettingsExpander.Items>
-                            <labs:SettingsCard
-                                ContentAlignment="Left"
-                                IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
-                                <CheckBox
-                                    x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Wrap_Text"
-                                    IsChecked="{x:Bind ViewModel.MonacoWrapText, Mode=TwoWay}" />
-                            </labs:SettingsCard>
-                            <labs:SettingsCard
-                                ContentAlignment="Left"
-                                IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
+                                <CheckBox x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Wrap_Text" IsChecked="{x:Bind ViewModel.MonacoWrapText, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
+                                <custom:CheckBoxWithDescriptionControl
                                     x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format"
                                     IsChecked="{x:Bind ViewModel.MonacoPreviewTryFormat, Mode=TwoWay}"
                                     IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
-                            </labs:SettingsCard>
-                            <labs:SettingsCard
-                                x:Uid="FileExplorerPreview_Toggle_Monaco_Max_File_Size"
-                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.MonacoRenderIsEnabled}">
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="FileExplorerPreview_Toggle_Monaco_Max_File_Size" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.MonacoRenderIsEnabled}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="2"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoPreviewMaxFileSize}" />
-                            </labs:SettingsCard>
-                        </labs:SettingsExpander.Items>
-                    </labs:SettingsExpander>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
@@ -123,37 +107,33 @@
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsMonacoRenderEnabledGpoConfigured}"
                         Severity="Informational" />
 
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEA90;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}" />
-                    </labs:SettingsCard>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}" />
+                    </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFRenderEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFRenderEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE914;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODERenderIsEnabled}" />
-                    </labs:SettingsCard>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODERenderIsEnabled}" />
+                    </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured}"
                         Severity="Informational" />
-                </controls:SettingsGroup>
+                </custom:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
+                <custom:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
                     <InfoBar
                         x:Uid="FileExplorerPreview_RebootRequired"
                         IsClosable="False"
@@ -166,42 +146,36 @@
                         IsOpen="True"
                         IsTabStop="True"
                         Severity="Warning" />
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE91B;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}" />
-                    </labs:SettingsCard>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}" />
+                    </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGThumbnailEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsSVGThumbnailEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xEA90;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFThumbnailIsEnabled}" />
-                    </labs:SettingsCard>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFThumbnailIsEnabled}" />
+                    </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFThumbnailEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsPDFThumbnailEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <labs:SettingsCard
+                    <controls:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE914;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODEThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODEThumbnailIsEnabled}" />
-                    </labs:SettingsCard>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODEThumbnailIsEnabled}" />
+                    </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
@@ -210,43 +184,33 @@
                         Severity="Informational" />
 
 
-                    <labs:SettingsExpander
+                    <controls:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily}, Glyph=&#xE914;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.STLThumbnailIsEnabled}" />
-                        <labs:SettingsExpander.Items>
-                            <labs:SettingsCard x:Uid="FileExplorerPreview_Color_Thumbnail_STL">
-                                <controls:ColorPickerButton
-                                    IsEnabled="{x:Bind ViewModel.STLThumbnailIsEnabled, Mode=OneWay}"
-                                    SelectedColor="{x:Bind Path=ViewModel.STLThumbnailColor, Mode=TwoWay}" />
-                            </labs:SettingsCard>
-                        </labs:SettingsExpander.Items>
-                    </labs:SettingsExpander>
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.STLThumbnailIsEnabled}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="FileExplorerPreview_Color_Thumbnail_STL">
+                                <custom:ColorPickerButton IsEnabled="{x:Bind ViewModel.STLThumbnailIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.STLThumbnailColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured}"
                         Severity="Informational" />
-                </controls:SettingsGroup>
+                </custom:SettingsGroup>
             </StackPanel>
-        </controls:SettingsPageControl.ModuleContent>
+        </custom:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink
-                x:Uid="LearnMore_PowerPreview"
-                Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns" />
-        </controls:SettingsPageControl.PrimaryLinks>
-        <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink
-                Link="https://blog.aaron-junker.ch"
-                Text="Aaron Junker's work on developer file preview" />
-            <controls:PageLink
-                Link="https://www.pedrolamas.com"
-                Text="Pedro Lamas's work on G-Code and STL" />
-        </controls:SettingsPageControl.SecondaryLinks>
-    </controls:SettingsPageControl>
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns" />
+        </custom:SettingsPageControl.PrimaryLinks>
+        <custom:SettingsPageControl.SecondaryLinks>
+            <custom:PageLink Link="https://blog.aaron-junker.ch" Text="Aaron Junker's work on developer file preview" />
+            <custom:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code and STL" />
+        </custom:SettingsPageControl.SecondaryLinks>
+    </custom:SettingsPageControl>
 </Page>

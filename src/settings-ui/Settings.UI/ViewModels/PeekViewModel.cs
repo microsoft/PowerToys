@@ -9,6 +9,7 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -20,6 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly ISettingsUtils _settingsUtils;
         private readonly PeekSettings _peekSettings;
+        private readonly PeekPreviewSettings _peekPreviewSettings;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
@@ -44,6 +46,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _peekSettings = new PeekSettings();
+            }
+
+            if (_settingsUtils.SettingsExists(PeekSettings.ModuleName, PeekPreviewSettings.FileName))
+            {
+                _peekPreviewSettings = _settingsUtils.GetSettingsOrDefault<PeekPreviewSettings>(PeekSettings.ModuleName, PeekPreviewSettings.FileName);
+            }
+            else
+            {
+                _peekPreviewSettings = new PeekPreviewSettings();
             }
 
             InitializeEnabledValue();
@@ -137,15 +148,48 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SourceCodeWrapText
+        {
+            get => _peekPreviewSettings.SourceCodeWrapText.Value;
+            set
+            {
+                if (_peekPreviewSettings.SourceCodeWrapText.Value != value)
+                {
+                    _peekPreviewSettings.SourceCodeWrapText.Value = value;
+                    OnPropertyChanged(nameof(SourceCodeWrapText));
+                    SavePreviewSettings();
+                }
+            }
+        }
+
+        public bool SourceCodeTryFormat
+        {
+            get => _peekPreviewSettings.SourceCodeTryFormat.Value;
+            set
+            {
+                if (_peekPreviewSettings.SourceCodeTryFormat.Value != value)
+                {
+                    _peekPreviewSettings.SourceCodeTryFormat.Value = value;
+                    OnPropertyChanged(nameof(SourceCodeTryFormat));
+                    SavePreviewSettings();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Using InvariantCulture as this is an IPC message
             SendConfigMSG(
-                   string.Format(
-                       CultureInfo.InvariantCulture,
-                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                       PeekSettings.ModuleName,
-                       JsonSerializer.Serialize(_peekSettings)));
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                    PeekSettings.ModuleName,
+                    JsonSerializer.Serialize(_peekSettings)));
+        }
+
+        private void SavePreviewSettings()
+        {
+            _settingsUtils.SaveSettings(_peekPreviewSettings.ToJsonString(), PeekSettings.ModuleName, PeekPreviewSettings.FileName);
         }
 
         public void RefreshEnabledState()

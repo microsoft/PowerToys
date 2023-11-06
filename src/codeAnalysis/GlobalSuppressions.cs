@@ -33,7 +33,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Static methods may improve performance but decrease maintainability")]
 [assembly: SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Renaming everything would be a lot of work. It does not do any harm if an EventHandler delegate ends with the suffix EventHandler. Besides this, the Rule causes some false positives.")]
 [assembly: SuppressMessage("Performance", "CA1838:Avoid 'StringBuilder' parameters for P/Invokes", Justification = "We are not concerned about the performance impact of marshaling a StringBuilder")]
-[assembly: SuppressMessage("Performance", "CA1852:Seal internal types", Justification = "The assembly is getting a ComVisible set to false already.", Scope="namespaceanddescendants", Target="MouseWithoutBorders")]
+[assembly: SuppressMessage("Performance", "CA1852:Seal internal types", Justification = "The assembly is getting a ComVisible set to false already.", Scope = "namespaceanddescendants", Target = "MouseWithoutBorders")]
 
 // Threading suppressions
 [assembly: SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD100:Avoid async void methods", Justification = "Event handlers needs async void", Scope = "member", Target = "~M:Microsoft.Templates.UI.Controls.Notification.OnClose")]
@@ -57,8 +57,8 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("CodeQuality", "IDE0076:Invalid global 'SuppressMessageAttribute'", Justification = "Affect predefined suppressions.")]
 
 // Dotnet port
-[assembly: SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "<Dotnet port with style preservation>", Scope="namespaceanddescendants", Target="MouseWithoutBorders")]
-[assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "<Dotnet port with style preservation>", Scope="namespaceanddescendants", Target="MouseWithoutBorders")]
-[assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "<Dotnet port with style preservation>", Scope="namespaceanddescendants", Target="MouseWithoutBorders")]
-[assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "<Dotnet port with style preservation>", Scope="namespaceanddescendants", Target="MouseWithoutBorders")]
-[assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "<Dotnet port with style preservation>", Scope="namespaceanddescendants", Target="MouseWithoutBorders")]
+[assembly: SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "<Dotnet port with style preservation>", Scope = "namespaceanddescendants", Target = "MouseWithoutBorders")]
+[assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "<Dotnet port with style preservation>", Scope = "namespaceanddescendants", Target = "MouseWithoutBorders")]
+[assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "<Dotnet port with style preservation>", Scope = "namespaceanddescendants", Target = "MouseWithoutBorders")]
+[assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "<Dotnet port with style preservation>", Scope = "namespaceanddescendants", Target = "MouseWithoutBorders")]
+[assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "<Dotnet port with style preservation>", Scope = "namespaceanddescendants", Target = "MouseWithoutBorders")]

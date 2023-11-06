@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI.Flyout
 {
@@ -32,6 +33,10 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         {
             FlyoutMenuButton selectedModuleBtn = sender as FlyoutMenuButton;
             bool moduleRun = true;
+
+            // Closing manually the flyout to workaround focus gain problems
+            App.GetFlyoutWindow()?.Hide();
+
             switch ((string)selectedModuleBtn.Tag)
             {
                 case "ColorPicker": // Launch ColorPicker
@@ -41,6 +46,21 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                     }
 
                     break;
+                case "EnvironmentVariables": // Launch Environment Variables
+                    {
+                        bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                        string eventName = !App.IsElevated && launchAdmin
+                            ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
+                            : Constants.ShowEnvironmentVariablesSharedEvent();
+
+                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
+                        {
+                            eventHandle.Set();
+                        }
+                    }
+
+                    break;
+
                 case "FancyZones": // Launch FancyZones Editor
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent()))
                     {
@@ -141,6 +161,9 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         private void ReportBugBtn_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.StartBugReport();
+
+            // Closing manually the flyout since no window will steal the focus
+            App.GetFlyoutWindow()?.Hide();
         }
     }
 }

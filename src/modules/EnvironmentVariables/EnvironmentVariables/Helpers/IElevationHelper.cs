@@ -2,11 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-
-namespace Hosts.Helpers
+namespace EnvironmentVariables.Helpers
 {
-    public class NotRunningElevatedException : Exception
+    public interface IElevationHelper
     {
+        bool IsElevated { get; }
     }
 }

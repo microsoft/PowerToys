@@ -42,20 +42,27 @@
     <PreferredToolArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64' or '$(PROCESSOR_ARCHITEW6432)' == 'ARM64'">arm64</PreferredToolArchitecture>
     <VcpkgEnabled>false</VcpkgEnabled>
     <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(MSBuildThisFileFullPath)\..\packages\;$(ExternalIncludePath)</ExternalIncludePath>
+    <!-- Enable control flow guard for C++ projects that don't consume any C++ files -->
+    <!-- This covers the case where a .dll exports a .lib, but doesn't have any ClCompile entries. -->
+    <LinkControlFlowGuard>Guard</LinkControlFlowGuard>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4679;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4679;5271;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ConformanceMode>false</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-	<BuildStlModules>false</BuildStlModules>
+      <BuildStlModules>false</BuildStlModules>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- TODO: _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING for compatibility with VS 17.8. Check if we can remove. -->
+      <PreprocessorDefinitions>_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- CLR + CFG are not compatible >:{ -->
+      <ControlFlowGuard Condition="'$(CLRSupport)' == ''">Guard</ControlFlowGuard>
+      <DebugInformationFormat Condition="'%(ControlFlowGuard)' == 'Guard'">ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

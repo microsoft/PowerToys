@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Folder windows doesn&apos;t run in separate processes. (Klick to open Explorer properties.).
+        ///   Looks up a localized string similar to Folder windows doesn&apos;t run in separate processes. (Click to open Explorer properties.).
         /// </summary>
         public static string wox_plugin_windowwalker_ExplorerInfoSubTitle {
             get {

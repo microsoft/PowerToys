@@ -104,7 +104,6 @@ IFACEMETHODIMP ExplorerCommand::Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataOb
     if (pdtobj)
     {
         m_data_obj = pdtobj;
-        m_data_obj->AddRef();
     }
     return S_OK;
 }
@@ -242,10 +241,6 @@ ExplorerCommand::ExplorerCommand()
 
 ExplorerCommand::~ExplorerCommand()
 {
-    if (m_data_obj)
-    {
-        m_data_obj->Release();
-    }
     --globals::ref_count;
 }
 
