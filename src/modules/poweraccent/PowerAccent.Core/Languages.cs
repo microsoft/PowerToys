@@ -17,6 +17,7 @@ namespace PowerAccent.Core
         GA,
         GD,
         DE,
+        EL,
         EST,
         FI,
         FR,
@@ -56,6 +57,7 @@ namespace PowerAccent.Core
                 Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish)
                 Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
+                Language.EL => GetDefaultLetterKeyEL(letter), // Greek
                 Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
                 Language.FI => GetDefaultLetterKeyFI(letter), // Finnish
                 Language.FR => GetDefaultLetterKeyFR(letter), // French
@@ -509,6 +511,35 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new[] { "ö" },
                 LetterKey.VK_S => new[] { "ß" },
                 LetterKey.VK_U => new[] { "ü" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Greek
+        private static string[] GetDefaultLetterKeyEL(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new string[] { "Α", "α" },
+                LetterKey.VK_B => new string[] { "Β", "β" },
+                LetterKey.VK_C => new string[] { "Χ", "χ" },
+                LetterKey.VK_D => new string[] { "Δ", "δ" },
+                LetterKey.VK_E => new string[] { "Ε", "ε", "Η", "η" },
+                LetterKey.VK_G => new string[] { "Γ", "γ" },
+                LetterKey.VK_I => new string[] { "Ι", "ι" },
+                LetterKey.VK_K => new string[] { "Κ", "κ" },
+                LetterKey.VK_L => new string[] { "Λ", "λ" },
+                LetterKey.VK_M => new string[] { "Μ", "μ" },
+                LetterKey.VK_N => new string[] { "Ν", "ν" },
+                LetterKey.VK_O => new string[] { "Ο", "ο", "Ω", "ω" },
+                LetterKey.VK_P => new string[] { "Π", "π", "Φ", "φ", "Ψ", "ψ" },
+                LetterKey.VK_R => new string[] { "Ρ", "ρ" },
+                LetterKey.VK_S => new string[] { "Σ", "σ" },
+                LetterKey.VK_T => new string[] { "Τ", "τ" },
+                LetterKey.VK_U => new string[] { "Υ", "υ" },
+                LetterKey.VK_X => new string[] { "Ξ", "ξ" },
+                LetterKey.VK_Y => new string[] { "Υ", "υ" },
+                LetterKey.VK_Z => new string[] { "Ζ", "ζ" },
                 _ => Array.Empty<string>(),
             };
         }
