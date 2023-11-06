@@ -363,7 +363,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             DetectionResult result = CharsetDetector.DetectFromFile(filePath);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), result.Detected.Encoding))
+            // Check if the detected encoding is not null, otherwise default to UTF-8
+            Encoding encodingToUse = result.Detected?.Encoding ?? Encoding.UTF8;
+
+            using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), encodingToUse))
             {
                 Logger.LogInfo("Starting reading requested file");
                 var fileContent = fileReader.ReadToEnd();

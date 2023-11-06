@@ -16,8 +16,11 @@ namespace Peek.FilePreviewer.Previewers
             DetectionResult result = CharsetDetector.DetectFromFile(path);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
+            // Check if the detected encoding is not null, otherwise default to UTF-8
+            Encoding encodingToUse = result.Detected?.Encoding ?? Encoding.UTF8;
+
             using var fs = OpenReadOnly(path);
-            using var sr = new StreamReader(fs, result.Detected.Encoding);
+            using var sr = new StreamReader(fs, encodingToUse);
 
             string content = await sr.ReadToEndAsync();
             return content;
