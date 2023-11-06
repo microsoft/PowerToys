@@ -31,8 +31,7 @@ WindowMouseSnap::~WindowMouseSnap()
 
 std::unique_ptr<WindowMouseSnap> WindowMouseSnap::Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
 {
-    if (!FancyZonesWindowProcessing::IsProcessable(window) ||
-        FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent())
+    if (FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent() || !FancyZonesWindowProcessing::IsProcessable(window))
     {
         return nullptr;
     }
