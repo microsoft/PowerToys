@@ -26,6 +26,7 @@ $nullVersionExceptions = @(
     "e_sqlite3.dll",
     "vcamp140_app.dll",
     "vcruntime140_app.dll",
+    "vcruntime140_1_app.dll",
     "msvcp140_app.dll",
     "marshal.dll",
     "Microsoft.Toolkit.Win32.UI.XamlHost.dll",
