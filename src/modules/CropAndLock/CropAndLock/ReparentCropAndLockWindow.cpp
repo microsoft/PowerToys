@@ -164,8 +164,8 @@ void ReparentCropAndLockWindow::DisconnectTarget()
             // The child window was closed by other means?
             m_currentTarget = nullptr;
             return;
-        }
-        SetParent(m_currentTarget, nullptr);
+        }        
+        
         RestoreOriginalState();
 
         Sleep(50);
@@ -177,12 +177,15 @@ void ReparentCropAndLockWindow::SaveOriginalState()
     if (m_currentTarget != nullptr)
     {
         originalPlacement.length = sizeof(WINDOWPLACEMENT);
-        GetWindowPlacement(m_currentTarget, &originalPlacement);
+        winrt::check_bool(GetWindowPlacement(m_currentTarget, &originalPlacement));
 
         originalExStyle = GetWindowLongPtr(m_currentTarget, GWL_EXSTYLE);
-        originalStyle = GetWindowLongPtr(m_currentTarget, GWL_STYLE);
+        winrt::check_bool(originalExStyle != 0);
 
-        GetWindowRect(m_currentTarget, &originalRect);
+        originalStyle = GetWindowLongPtr(m_currentTarget, GWL_STYLE);
+        winrt::check_bool(originalStyle != 0);
+
+        winrt::check_bool(GetWindowRect(m_currentTarget, &originalRect));
     }
 }
 
@@ -190,25 +193,30 @@ void ReparentCropAndLockWindow::RestoreOriginalState()
 {
     if (m_currentTarget)
     {
-        // Set the original extended style and style
-        originalStyle &= ~WS_CHILD;
-        SetWindowLongPtrW(m_currentTarget, GWL_EXSTYLE, originalExStyle);
-        SetWindowLongPtrW(m_currentTarget, GWL_STYLE, originalStyle);
-
-        // Now, restore the original placement
-        if (originalPlacement.showCmd != SW_SHOWMAXIMIZED)
-        {
-            originalPlacement.showCmd = SW_RESTORE;
-            SetWindowPlacement(m_currentTarget, &originalPlacement);
-        }
-        else
-        {
-            ShowWindow(m_currentTarget, SW_SHOWMAXIMIZED);
-        }
-
         // Restore window position and dimensions
         int width = originalRect.right - originalRect.left;
         int height = originalRect.bottom - originalRect.top;
-        SetWindowPos(m_currentTarget, nullptr, originalRect.left, originalRect.top, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+        winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, originalRect.left, originalRect.top, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED));
+
+        // Restore the original placement
+        if (originalPlacement.showCmd != SW_SHOWMAXIMIZED)
+        {
+            originalPlacement.showCmd = SW_RESTORE;
+            winrt::check_bool(SetWindowPlacement(m_currentTarget, &originalPlacement));
+        }
+        else
+        {            
+            winrt::check_bool(ShowWindow(m_currentTarget, SW_SHOWMAXIMIZED));
+        }
+
+        SetParent(m_currentTarget, nullptr);
+
+        // Set the original extended style and style
+        originalStyle &= ~WS_CHILD;
+        LONG_PTR prevExStyle = SetWindowLongPtr(m_currentTarget, GWL_EXSTYLE, originalExStyle);
+        winrt::check_bool(prevExStyle != 0 || GetLastError() == ERROR_SUCCESS);
+
+        LONG_PTR prevStyle = SetWindowLongPtr(m_currentTarget, GWL_STYLE, originalStyle);
+        winrt::check_bool(prevStyle != 0 || GetLastError() == ERROR_SUCCESS);        
     }
 }
