@@ -1,19 +1,19 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
+using Peek.Common.Extensions;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
-using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 using WinUIEx;
@@ -28,7 +28,6 @@ namespace Peek.UI
         public MainWindowViewModel ViewModel { get; }
 
         private ThemeListener? themeListener;
-        private bool activated;
 
         public MainWindow()
         {
@@ -45,56 +44,22 @@ namespace Peek.UI
                 Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
             }
 
-            ViewModel = App.GetService<MainWindowViewModel>();
-
-            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
+            ViewModel = Application.Current.GetService<MainWindowViewModel>();
 
             TitleBarControl.SetTitleBarToWindow(this);
 
             AppWindow.Closing += AppWindow_Closing;
         }
 
-        private void HandleThemeChange()
-        {
-            AppWindow appWindow = this.AppWindow;
-
-            if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
-            {
-                appWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
-            }
-            else
-            {
-                appWindow.TitleBar.ButtonForegroundColor = Colors.White;
-            }
-        }
-
-        private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
-        {
-            if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
-            {
-                var userSettings = App.GetService<IUserSettings>();
-                if (userSettings.CloseAfterLosingFocus)
-                {
-                    Uninitialize();
-                }
-            }
-        }
-
         /// <summary>
-        /// Handle Peek hotkey, by toggling the window visibility and querying files when necessary.
+        /// Toggling the window visibility and querying files when necessary.
         /// </summary>
-        private void OnPeekHotkey()
+        public void Toggle(bool firstActivation, Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {
-            // Need to read the foreground HWND before activating Peek to avoid focus stealing
-            // Foreground HWND must always be Explorer or Desktop
-            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
-
-            // First Peek activation
-            if (!activated)
+            if (firstActivation)
             {
                 Activate();
                 Initialize(foregroundWindowHandle);
-                activated = true;
                 return;
             }
 
@@ -112,6 +77,32 @@ namespace Peek.UI
             else
             {
                 Initialize(foregroundWindowHandle);
+            }
+        }
+
+        private void HandleThemeChange()
+        {
+            AppWindow appWindow = this.AppWindow;
+
+            if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
+            {
+                appWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
+            }
+            else
+            {
+                appWindow.TitleBar.ButtonForegroundColor = Colors.White;
+            }
+        }
+
+        private void PeekWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                var userSettings = Application.Current.GetService<IUserSettings>();
+                if (userSettings.CloseAfterLosingFocus)
+                {
+                    Uninitialize();
+                }
             }
         }
 

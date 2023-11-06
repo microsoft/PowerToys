@@ -12,7 +12,7 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.0.230907" />
     <PackageVersion Include="CommunityToolkit.WinUI.Collections " Version="8.0.230907" />
     <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.0.230907" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.0.230907" /> 
+    <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.0.230907" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
@@ -34,7 +34,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
-    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.1722.45" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="7.0.3" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->

@@ -9,28 +9,31 @@ using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Settings.UI.Library;
 
-namespace Peek.UI
+namespace Peek.FilePreviewer.Models
 {
-    public class UserSettings : IUserSettings
+    public class PreviewSettings : IPreviewSettings
     {
-        private const string PeekModuleName = "Peek";
         private const int MaxNumberOfRetry = 5;
 
         private readonly ISettingsUtils _settingsUtils;
         private readonly IFileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new object();
+        private readonly object _loadingSettingsLock = new();
 
-        public bool CloseAfterLosingFocus { get; private set; }
+        public bool SourceCodeWrapText { get; private set; }
 
-        public UserSettings()
+        public bool SourceCodeTryFormat { get; private set; }
+
+        public PreviewSettings()
         {
             _settingsUtils = new SettingsUtils();
-            CloseAfterLosingFocus = false;
+            SourceCodeWrapText = false;
+            SourceCodeTryFormat = false;
 
             LoadSettingsFromJson();
 
-            _watcher = Helper.GetFileWatcher(PeekModuleName, "settings.json", () => LoadSettingsFromJson());
+            _watcher = Helper.GetFileWatcher(PeekSettings.ModuleName, PeekPreviewSettings.FileName, () => LoadSettingsFromJson());
         }
 
         private void LoadSettingsFromJson()
@@ -46,17 +49,18 @@ namespace Peek.UI
                     {
                         retryCount++;
 
-                        if (!_settingsUtils.SettingsExists(PeekModuleName))
+                        if (!_settingsUtils.SettingsExists(PeekSettings.ModuleName, PeekPreviewSettings.FileName))
                         {
-                            Logger.LogInfo("Peek settings.json was missing, creating a new one");
-                            var defaultSettings = new PeekSettings();
-                            defaultSettings.Save(_settingsUtils);
+                            Logger.LogInfo("Peek preview-settings.json was missing, creating a new one");
+                            var defaultSettings = new PeekPreviewSettings();
+                            _settingsUtils.SaveSettings(defaultSettings.ToJsonString(), PeekSettings.ModuleName, PeekPreviewSettings.FileName);
                         }
 
-                        var settings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekModuleName);
+                        var settings = _settingsUtils.GetSettingsOrDefault<PeekPreviewSettings>(PeekSettings.ModuleName, PeekPreviewSettings.FileName);
                         if (settings != null)
                         {
-                            CloseAfterLosingFocus = settings.Properties.CloseAfterLosingFocus.Value;
+                            SourceCodeWrapText = settings.SourceCodeWrapText.Value;
+                            SourceCodeTryFormat = settings.SourceCodeTryFormat.Value;
                         }
 
                         retry = false;
@@ -66,7 +70,7 @@ namespace Peek.UI
                         if (retryCount > MaxNumberOfRetry)
                         {
                             retry = false;
-                            Logger.LogError($"Failed to Deserialize PowerToys settings, Retrying {e.Message}", e);
+                            Logger.LogError($"Failed to deserialize preview settings, Retrying {e.Message}", e);
                         }
                         else
                         {
@@ -76,7 +80,7 @@ namespace Peek.UI
                     catch (Exception ex)
                     {
                         retry = false;
-                        Logger.LogError("Failed to read changed settings", ex);
+                        Logger.LogError("Failed to read changed preview settings", ex);
                     }
                 }
             }

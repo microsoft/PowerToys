@@ -27,9 +27,8 @@ bool FancyZonesWindowProcessing::IsProcessable(HWND window) noexcept
 
     // popup could be the window we don't want to snap: start menu, notification popup, tray window, etc.
     // also, popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Telegram
-    bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
-    bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
-    if (isPopup && (!hasThickFrame || !FancyZonesSettings::settings().allowSnapPopupWindows))
+    bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window) && !FancyZonesWindowUtils::HasThickFrameAndMinimizeMaximizeButtons(window);
+    if (isPopup && !FancyZonesSettings::settings().allowSnapPopupWindows)
     {
         return false;
     }

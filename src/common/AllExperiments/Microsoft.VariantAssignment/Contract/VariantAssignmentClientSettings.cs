@@ -24,7 +24,7 @@ namespace Microsoft.VariantAssignment.Contract
         public bool EnableCaching { get; set; }
 
         /// <summary>
-        /// Gets or sets the the maximum time a cached variant assignment response may be used without re-validating.
+        /// Gets or sets the maximum time a cached variant assignment response may be used without re-validating.
         /// </summary>
         public TimeSpan ResponseCacheTime { get; set; }
     }
