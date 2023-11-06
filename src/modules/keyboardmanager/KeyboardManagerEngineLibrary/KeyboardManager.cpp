@@ -62,7 +62,7 @@ KeyboardManager::KeyboardManager()
             return;
 
         const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
-        // We didn't have any bindings before and we have
+        // We didn't have any bindings before and we have now
         if (newHasRemappings && !hookHandle)
             PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
 
