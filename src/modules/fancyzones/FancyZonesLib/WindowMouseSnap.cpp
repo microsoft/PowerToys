@@ -20,8 +20,7 @@ WindowMouseSnap::WindowMouseSnap(HWND window, const std::unordered_map<HMONITOR,
     m_snappingMode(false)
 {
     m_windowProperties.hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(m_window);
-    m_windowProperties.isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(m_window) &&
-                                          (!FancyZonesWindowUtils::IsPopupWindow(m_window) || FancyZonesSettings::settings().allowSnapPopupWindows);
+    m_windowProperties.isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(m_window);
 }
 
 WindowMouseSnap::~WindowMouseSnap()

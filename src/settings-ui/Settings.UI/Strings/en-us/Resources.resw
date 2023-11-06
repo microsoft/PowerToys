@@ -2905,12 +2905,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Wrap text</value>
     <comment>Feature on or off</comment>
   </data>
-  <data name="FancyZones_AllowPopupWindowSnap.Description" xml:space="preserve">
-    <value>This setting can affect all popup windows including notifications</value>
-  </data>
-  <data name="FancyZones_AllowPopupWindowSnap.Header" xml:space="preserve">
-    <value>Allow popup windows snapping</value>
-  </data>
   <data name="FancyZones_AllowChildWindowSnap.Content" xml:space="preserve">
     <value>Allow child windows snapping</value>
   </data>

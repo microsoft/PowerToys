@@ -90,7 +90,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
             _spanZonesAcrossMonitors = Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value;
             _makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
-            _allowPopupWindowSnap = Settings.Properties.FancyzonesAllowPopupWindowSnap.Value;
             _allowChildWindowSnap = Settings.Properties.FancyzonesAllowChildWindowSnap.Value;
             _disableRoundCornersOnSnap = Settings.Properties.FancyzonesDisableRoundCornersOnSnap.Value;
             _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
@@ -166,7 +165,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _makeDraggedWindowTransparent;
         private bool _systemTheme;
         private bool _showZoneNumber;
-        private bool _allowPopupWindowSnap;
         private bool _allowChildWindowSnap;
         private bool _disableRoundCornersOnSnap;
 
@@ -624,24 +622,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _showZoneNumber = value;
                     Settings.Properties.FancyzonesShowZoneNumber.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public bool AllowPopupWindowSnap
-        {
-            get
-            {
-                return _allowPopupWindowSnap;
-            }
-
-            set
-            {
-                if (value != _allowPopupWindowSnap)
-                {
-                    _allowPopupWindowSnap = value;
-                    Settings.Properties.FancyzonesAllowPopupWindowSnap.Value = value;
                     NotifyPropertyChanged();
                 }
             }
