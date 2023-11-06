@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using interop;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +12,7 @@ using Microsoft.UI.Xaml;
 using Peek.Common;
 using Peek.FilePreviewer;
 using Peek.FilePreviewer.Models;
+using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
 
@@ -28,7 +30,7 @@ namespace Peek.UI
             get;
         }
 
-        private Window? Window { get; set; }
+        private MainWindow? Window { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -96,12 +98,32 @@ namespace Peek.UI
                 }
             }
 
-            Window = new MainWindow();
+            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)e.Exception.HResult, Failure = ErrorEvent.FailureType.AppCrash });
+        }
+
+        /// <summary>
+        /// Handle Peek hotkey
+        /// </summary>
+        private void OnPeekHotkey()
+        {
+            // Need to read the foreground HWND before activating Peek to avoid focus stealing
+            // Foreground HWND must always be Explorer or Desktop
+            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
+            bool firstActivation = false;
+
+            if (Window == null)
+            {
+                firstActivation = true;
+                Window = new MainWindow();
+            }
+
+            Window.Toggle(firstActivation, foregroundWindowHandle);
         }
     }
 }

@@ -394,6 +394,15 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
+    // Hotfix
+    // Avoid automatically moving popup windows, as they can be just popup menus.
+    bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
+    bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
+    if (isPopup && !hasThickFrame)
+    {
+        return;
+    }
+
     // Avoid already stamped (zoned) windows
     const bool isZoned = !FancyZonesWindowProperties::RetrieveZoneIndexProperty(window).empty();
     if (isZoned)

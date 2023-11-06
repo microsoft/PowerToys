@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Hosts.Helpers
+namespace Hosts.Exceptions
 {
     public class NotRunningElevatedException : Exception
     {
