@@ -28,19 +28,13 @@ FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::Defin
     bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
     bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
     bool hasMinimizeMaximizeButtons = FancyZonesWindowUtils::HasMinimizeMaximizeButtons(window); 
-    if (isPopup)
+    if (isPopup && !(hasThickFrame && hasMinimizeMaximizeButtons))
     {
-        if (hasThickFrame && hasMinimizeMaximizeButtons)
-        {
-            // popup could be the windows we want to snap disregarding the "allowSnapPopupWindows" setting, e.g. Calculator, Telegram   
-        }
-        else if (/*!FancyZonesSettings::settings().allowSnapPopupWindows ||*/ !hasThickFrame || !hasMinimizeMaximizeButtons)
-        {
-            // popup could be the window we don't want to snap: start menu, notification popup, tray window, etc.
-            // minimize maximize buttons are used for filtering out menus, 
-            // e.g., in Edge "Running as admin" menu when creating a new PowerToys issue.
-            return ProcessabilityType::PopupMenu;
-        }
+        // popup windows we want to snap: e.g. Calculator, Telegram   
+        // popup windows we don't want to snap: start menu, notification popup, tray window, etc.
+        // minimize maximize buttons are used for filtering out menus,
+        // e.g., in Edge "Running as admin" menu when creating a new PowerToys issue.
+        return ProcessabilityType::PopupMenu;
     }
 
     // allow child windows

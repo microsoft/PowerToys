@@ -73,57 +73,24 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonStandardWindow, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
-        TEST_METHOD (PopupApp_OptionDisabled)
+        TEST_METHOD (PopupApp)
         {
-            FancyZonesSettings::instance().SetSettings(Settings{ .allowSnapPopupWindows = false });
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_TILEDWINDOW | WS_POPUP);
 
-            // should always be processable
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
-        TEST_METHOD (PopupApp_OptionEnabled)
+        TEST_METHOD (PopupMenu)
         {
-            FancyZonesSettings::instance().SetSettings(Settings{ .allowSnapPopupWindows = true });
-            HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_TILEDWINDOW | WS_POPUP);
-
-            // should always be processable
-            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
-        }
-
-        TEST_METHOD (PopupMenu_OptionDisabled)
-        {
-            FancyZonesSettings::instance().SetSettings(Settings{ .allowSnapPopupWindows = false });
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_POPUP | WS_TILED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 
-            // should always not be processable
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::PopupMenu, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
-        TEST_METHOD (PopupMenu_OptionEnabled)
+        TEST_METHOD (PopupMenuEdge)
         {
-            FancyZonesSettings::instance().SetSettings(Settings{ .allowSnapPopupWindows = true });
-            HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_POPUP | WS_TILED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-
-            // should always not be processable
-            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::PopupMenu, FancyZonesWindowProcessing::DefineWindowType(window));
-        }
-
-        TEST_METHOD (PopupMenuEdge_OptionDisabled)
-        {
-            FancyZonesSettings::instance().SetSettings(Settings{ .allowSnapPopupWindows = false });
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_POPUP | WS_TILED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_THICKFRAME | WS_SIZEBOX);
 
-            // should always not be processable
-            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::PopupMenu, FancyZonesWindowProcessing::DefineWindowType(window));
-        }
-
-        TEST_METHOD (PopupMenuEdge_OptionEnabled)
-        {
-            FancyZonesSettings::instance().SetSettings(Settings{ .allowSnapPopupWindows = true });
-            HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_POPUP | WS_TILED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_THICKFRAME | WS_SIZEBOX);
-
-            // should always not be processable
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::PopupMenu, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
