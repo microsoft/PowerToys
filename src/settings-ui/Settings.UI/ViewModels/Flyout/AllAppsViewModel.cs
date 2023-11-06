@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void EnabledChangedOnUI(FlyoutMenuItem flyoutMenuItem)
         {
-            if (Views.ShellPage.UpdateGeneralSettingsCallback(flyoutMenuItem.Tag.ToString(), flyoutMenuItem.IsEnabled))
+            if (Views.ShellPage.UpdateGeneralSettingsCallback(flyoutMenuItem.Tag, flyoutMenuItem.IsEnabled))
             {
                 Views.ShellPage.DisableFlyoutHidingCallback();
             }

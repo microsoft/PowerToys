@@ -151,7 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
-            Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag.ToString(), dashboardListItem.IsEnabled);
+            Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
         }
 
         public void ModuleEnabledChangedOnSettingsPage()

@@ -4,6 +4,7 @@
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
@@ -27,6 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             switch (moduleType)
             {
+                case ModuleType.MousePointerCrosshairs: return "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png";
                 case ModuleType.MeasureTool: return "ms-appx:///Assets/Settings/FluentIcons/FluentIconsScreenRuler.png";
                 case ModuleType.PowerLauncher: return $"ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png";
                 default: return $"ms-appx:///Assets/Settings/FluentIcons/FluentIcons{moduleType}.png";
@@ -62,6 +64,37 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
                 case ModuleType.PowerOCR: return generalSettingsConfig.Enabled.PowerOCR;
                 default: return false;
+            }
+        }
+
+        internal static void SetIsModuleEnabled(GeneralSettings generalSettingsConfig, ModuleType moduleType, bool isEnabled)
+        {
+            switch (moduleType)
+            {
+                case ModuleType.AlwaysOnTop: generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
+                case ModuleType.Awake: generalSettingsConfig.Enabled.Awake = isEnabled; break;
+                case ModuleType.ColorPicker: generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
+                case ModuleType.CropAndLock: generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
+                case ModuleType.EnvironmentVariables: generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
+                case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
+                case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
+                case ModuleType.FindMyMouse: generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
+                case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
+                case ModuleType.ImageResizer: generalSettingsConfig.Enabled.ImageResizer = isEnabled; break;
+                case ModuleType.KeyboardManager: generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
+                case ModuleType.MouseHighlighter: generalSettingsConfig.Enabled.MouseHighlighter = isEnabled; break;
+                case ModuleType.MouseJump: generalSettingsConfig.Enabled.MouseJump = isEnabled; break;
+                case ModuleType.MousePointerCrosshairs: generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
+                case ModuleType.MouseWithoutBorders: generalSettingsConfig.Enabled.MouseWithoutBorders = isEnabled; break;
+                case ModuleType.PastePlain: generalSettingsConfig.Enabled.PastePlain = isEnabled; break;
+                case ModuleType.Peek: generalSettingsConfig.Enabled.Peek = isEnabled; break;
+                case ModuleType.PowerRename: generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
+                case ModuleType.PowerLauncher: generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
+                case ModuleType.PowerAccent: generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
+                case ModuleType.RegistryPreview: generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
+                case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
+                case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
+                case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOCR = isEnabled; break;
             }
         }
 
