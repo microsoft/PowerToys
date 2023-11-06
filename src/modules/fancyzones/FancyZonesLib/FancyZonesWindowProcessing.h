@@ -8,7 +8,7 @@ namespace FancyZonesWindowProcessing
         SplashScreen,
         Minimized,
         NonStandardWindow,
-        PopupMenu,
+        NonProcessablePopupWindow,
         ChildWindow,
         Excluded,
         NotCurrentVirtualDesktop

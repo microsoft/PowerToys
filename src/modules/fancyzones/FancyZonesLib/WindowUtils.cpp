@@ -186,6 +186,12 @@ bool FancyZonesWindowUtils::IsStandardWindow(HWND window)
     return true;
 }
 
+bool FancyZonesWindowUtils::HasCaption(HWND window) noexcept
+{
+    auto style = GetWindowLong(window, GWL_STYLE);
+    return ((style & WS_CAPTION) == WS_CAPTION);
+}
+
 bool FancyZonesWindowUtils::IsPopupWindow(HWND window) noexcept
 {
     auto style = GetWindowLong(window, GWL_STYLE);
