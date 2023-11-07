@@ -23,6 +23,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
 
         public string Description => Resources.wox_plugin_service_plugin_description;
 
+        public static string PluginID => "11A6C36E4E91439CA69F702CBD364EF7";
+
         public void Init(PluginInitContext context)
         {
             _context = context;

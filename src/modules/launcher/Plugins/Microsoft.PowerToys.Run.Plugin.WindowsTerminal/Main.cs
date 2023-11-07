@@ -34,6 +34,8 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
 
         public string Description => Resources.plugin_description;
 
+        public static string PluginID => "F59BA85006B14389A72A0EA756695F1D";
+
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             new PluginAdditionalOption()

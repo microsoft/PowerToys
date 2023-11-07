@@ -20,6 +20,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
         public string Description => Resources.plugin_description;
 
+        public static string PluginID => "a26b1bb4dbd911edafa10242ac120002";
+
         private PluginInitContext _context;
         private static bool _isLightTheme = true;
         private bool _disposed;

@@ -22,6 +22,8 @@ namespace Microsoft.PowerToys.Run.Plugin.History
 
         public string Description => Resources.wox_plugin_history_plugin_description;
 
+        public static string PluginID => "C88512156BB74580AADF7252E130BA8D";
+
         private bool _disposed;
 
         public List<Result> Query(Query query)

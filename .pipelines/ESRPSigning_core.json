@@ -14,7 +14,7 @@
                 "PowerToys.exe",
                 "PowerToys.FilePreviewCommon.dll",
                 "PowerToys.Interop.dll",
-                "BugReportTool\\PowerToys.BugReportTool.exe",
+                "Tools\\PowerToys.BugReportTool.exe",
                 "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
                 "StylesReportTool\\PowerToys.StylesReportTool.exe",
                 "Telemetry.dll",
@@ -97,6 +97,10 @@
                 "WinUI3Apps\\Powertoys.Peek.UI.dll",
                 "WinUI3Apps\\Powertoys.Peek.UI.exe",
                 "WinUI3Apps\\Powertoys.Peek.dll",
+
+                "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
                 "PowerToys.ImageResizer.exe",
                 "PowerToys.ImageResizer.dll",

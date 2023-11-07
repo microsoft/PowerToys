@@ -15,7 +15,7 @@
 #include "EditKeyboardWindow.h"
 #include "SingleKeyRemapControl.h"
 #include "KeyDropDownControl.h"
-#include "XamlBridge.h"
+#include "XamlBridge2.h"
 #include "Styles.h"
 #include "Dialog.h"
 #include "LoadingAndSavingRemappingHelper.h"
@@ -41,12 +41,12 @@ HWND hwndEditKeyboardNativeWindow = nullptr;
 std::mutex editKeyboardWindowMutex;
 
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
-static XamlBridge* xamlBridgePtr = nullptr;
+static XamlBridge2* xamlBridgePtr = nullptr;
 
 // Theming
-ThemeListener theme_listener{};
+static ThemeListener theme_listener{};
 
-void handleTheme()
+static void handleTheme()
 {
     auto theme = theme_listener.AppTheme;
     auto isDark = theme == AppTheme::Dark;
@@ -137,7 +137,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         windowClass.lpfnWndProc = EditKeyboardWindowProc;
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
-        windowClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW);
+        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == AppTheme::Dark) ? 0x00000000 : 0x00FFFFFF);
         windowClass.hIcon = static_cast<HICON>(LoadImageW(
             windowClass.hInstance,
             MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
@@ -196,17 +196,19 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     hwndEditKeyboardNativeWindow = _hWndEditKeyboardWindow;
     hwndLock.unlock();
 
+    // Hide icon and caption from title bar
+    const DWORD windowThemeOptionsMask = WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON;
+    WTA_OPTIONS windowThemeOptions{ windowThemeOptionsMask, windowThemeOptionsMask };
+    SetWindowThemeAttribute(_hWndEditKeyboardWindow, WTA_NONCLIENT, &windowThemeOptions, sizeof(windowThemeOptions));
+
     handleTheme();
     theme_listener.AddChangedHandler(handleTheme);
 
     // Create the xaml bridge object
-    XamlBridge xamlBridge(_hWndEditKeyboardWindow);
-
-    // DesktopSource needs to be declared before the RelativePanel xamlContainer object to avoid errors
-    winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource;
+    XamlBridge2 xamlBridge(_hWndEditKeyboardWindow);
 
     // Create the desktop window xaml source object and set its content
-    hWndXamlIslandEditKeyboardWindow = xamlBridge.InitDesktopWindowsXamlSource(desktopSource);
+    hWndXamlIslandEditKeyboardWindow = xamlBridge.InitBridge();
 
     // Set the pointer to the xaml bridge object
     xamlBridgePtr = &xamlBridge;
@@ -322,11 +324,8 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
-    FontIcon plusSymbol;
-    plusSymbol.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
-    plusSymbol.Glyph(L"\xE710");
-    addRemapKey.Content(plusSymbol);
     addRemapKey.Margin({ 10, 10, 0, 25 });
+    addRemapKey.Style(AccentButtonStyle());
     addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
 
@@ -337,13 +336,18 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         UIHelpers::SetFocusOnTypeButtonInLastRow(keyRemapTable, EditorConstants::RemapTableColCount);
     });
 
+    // Remap key button content
+    StackPanel addRemapKeyContent;
+    addRemapKeyContent.Orientation(Orientation::Horizontal);
+    addRemapKeyContent.Spacing(10);
+    addRemapKeyContent.Children().Append(SymbolIcon(Symbol::Add));
+    TextBlock addRemapKeyText;
+    addRemapKeyText.Text(GET_RESOURCE_STRING(IDS_ADD_KEY_REMAP_BUTTON));
+    addRemapKeyContent.Children().Append(addRemapKeyText);
+    addRemapKey.Content(addRemapKeyContent);
+
     // Set accessible name for the addRemapKey button
     addRemapKey.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_ADD_KEY_REMAP_BUTTON)));
-
-    // Add tooltip for add button which would appear on hover
-    ToolTip addRemapKeytoolTip;
-    addRemapKeytoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_ADD_KEY_REMAP_BUTTON)));
-    ToolTipService::SetToolTip(addRemapKey, addRemapKeytoolTip);
 
     // Header and example text at the top of the window
     StackPanel helperText;
@@ -381,7 +385,20 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     {
     }
 
-    desktopSource.Content(xamlContainer);
+    UserControl xamlContent;
+    xamlContent.Content(xamlContainer);
+    if (Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"Windows.UI.Composition.ICompositionSupportsSystemBackdrop"))
+    {
+        // Apply Mica
+        muxc::BackdropMaterial::SetApplyToRootOrPageBackground(xamlContent, true);
+    }
+    else
+    {
+        // Mica isn't available
+        xamlContainer.Background(Application::Current().Resources().Lookup(box_value(L"ApplicationPageBackgroundThemeBrush")).as<Media::SolidColorBrush>());
+    }
+    Window::Current().Content(xamlContent);
+
     ////End XAML Island section
     if (_hWndEditKeyboardWindow)
     {
@@ -400,9 +417,6 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     hwndEditKeyboardNativeWindow = nullptr;
     keyboardManagerState.ResetUIState();
     keyboardManagerState.ClearRegisteredKeyDelays();
-
-    // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
-    xamlBridge.ClearXamlIslands();
 }
 
 void CreateEditKeyboardWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)

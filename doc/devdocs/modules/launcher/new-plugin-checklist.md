@@ -20,6 +20,10 @@
   "IcoPathLight": string // Path to light theme icon. The path is relative to the root plugin folder 
 }
 ```
+- [ ] Make sure your `Main` class contains a public, static string property for the `PluginID`. The plugin id has to be the same as the one in the `plugin.json`file.
+```csharp
+public static string PluginID => "xxxxxxx"; // The part xxxxxxx stands for the plugin ID.
+```
 - [ ] Do not use plugin name or PowerToys as prefixes for entities inside of the plugin project
 - [ ] The plugin has to have Unit tests. Use MSTest framework
 - [ ] Plugin's output code and assets have to be included in the installer [`Product.wxs`](/installer/PowerToysSetup/Product.wxs)

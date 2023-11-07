@@ -61,11 +61,25 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowHostsAdminSharedEvent()))
-                        {
-                            eventHandle.Set();
-                        }
-
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowHostsAdminSharedEvent());
+                        eventHandle.Set();
+                        return true;
+                    },
+                });
+            }
+            else if (Key == UtilityKey.EnvironmentVariables)
+            {
+                results.Add(new ContextMenuResult
+                {
+                    Title = Resources.Action_Run_As_Administrator,
+                    Glyph = "\xE7EF",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = System.Windows.Input.Key.Enter,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ =>
+                    {
+                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowEnvironmentVariablesAdminSharedEvent());
+                        eventHandle.Set();
                         return true;
                     },
                 });

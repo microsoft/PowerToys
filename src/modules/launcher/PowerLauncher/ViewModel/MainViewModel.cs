@@ -1075,7 +1075,6 @@ namespace PowerLauncher.ViewModel
                 {
                     if (contextMenuItems.AcceleratorKey == acceleratorKey && contextMenuItems.AcceleratorModifiers == acceleratorModifiers)
                     {
-                        MainWindowVisibility = Visibility.Collapsed;
                         contextMenuItems.Command.Execute(null);
                     }
                 }
