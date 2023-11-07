@@ -101,7 +101,9 @@
         <DataTemplate x:Key="ModuleItemKBMTemplate" x:DataType="viewmodels:DashboardModuleKBMItem">
             <Button x:Uid="DashboardKBMShowMappingsButton" HorizontalAlignment="Stretch">
                 <Button.Flyout>
-                    <Flyout x:Name="DetailsFlyout" Placement="Bottom" ShouldConstrainToRootBounds="False">
+                    <Flyout x:Name="DetailsFlyout"
+                            Placement="Bottom"
+                            ShouldConstrainToRootBounds="False">
                         <StackPanel Orientation="Vertical" Spacing="4">
                             <ItemsControl ItemsSource="{x:Bind Path=RemapKeys, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
