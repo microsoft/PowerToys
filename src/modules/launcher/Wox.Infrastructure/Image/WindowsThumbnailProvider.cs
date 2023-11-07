@@ -85,7 +85,7 @@ namespace Wox.Infrastructure.Image
             IntPtr hBitmap = IntPtr.Zero;
             if (Path.GetExtension(fileName).Equals(".lnk", StringComparison.OrdinalIgnoreCase))
             {
-                hBitmap = GetTBitmapSource(fileName);
+                hBitmap = ExtractIconToHBitmap(fileName);
             }
             else
             {
@@ -154,13 +154,13 @@ namespace Wox.Infrastructure.Image
             }
         }
 
-        public static IntPtr GetTBitmapSource(string fileName)
+        public static IntPtr ExtractIconToHBitmap(string fileName)
         {
             // Extracts the icon associated with the file
-            using (System.Drawing.Icon sysicon = System.Drawing.Icon.ExtractAssociatedIcon(fileName))
+            using (System.Drawing.Icon thumbnailIcon = System.Drawing.Icon.ExtractAssociatedIcon(fileName))
             {
                 // Convert to Bitmap
-                using (System.Drawing.Bitmap bitmap = sysicon.ToBitmap())
+                using (System.Drawing.Bitmap bitmap = thumbnailIcon.ToBitmap())
                 {
                     return bitmap.GetHbitmap();
                 }
