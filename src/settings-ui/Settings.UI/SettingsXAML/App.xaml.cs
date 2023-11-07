@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public bool ShowScoobe { get; set; }
 
-        public Type StartupPage { get; set; } = typeof(Views.GeneralPage);
+        public Type StartupPage { get; set; } = typeof(Views.DashboardPage);
 
         public static Action<string> IPCMessageReceivedCallback { get; set; }
 
@@ -170,7 +170,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
                     // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
                     // Need to call SetForegroundWindow to actually gain focus.
-                    Utils.BecomeForegroundWindow(settingsWindow.GetWindowHandle());
+                    WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
                 }
                 else
                 {
@@ -218,8 +218,8 @@ namespace Microsoft.PowerToys.Settings.UI
                 settingsWindow.NavigateToSection(StartupPage);
                 ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
 #else
-                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the General page. */
-                SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Overview, true);
+                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
+                SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Dashboard, true);
                 Exit();
 #endif
             }
@@ -380,6 +380,7 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             switch (settingWindow)
             {
+                case "Dashboard": return typeof(DashboardPage);
                 case "Overview": return typeof(GeneralPage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
@@ -403,10 +404,11 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "PastePlain": return typeof(PastePlainPage);
                 case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
+                case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
                 default:
-                    // Fallback to general
+                    // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");
-                    return typeof(GeneralPage);
+                    return typeof(DashboardPage);
             }
         }
     }

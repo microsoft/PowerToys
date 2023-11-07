@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -160,9 +160,9 @@
                 <ContentDialog
                     x:Name="ColorFormatDialog"
                     x:Uid="ColorFormatDialog"
+                    Closed="ColorFormatDialog_Closed"
                     IsPrimaryButtonEnabled="{Binding IsValid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
-                    Closed="ColorFormatDialog_Closed">
+                    PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
                     <ContentDialog.DataContext>
                         <models:ColorFormatModel />
                     </ContentDialog.DataContext>

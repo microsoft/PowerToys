@@ -86,9 +86,15 @@
             </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
+                    x:Uid="Shell_Dashboard"
+                    helpers:NavHelper.NavigateTo="views:DashboardPage"
+                    Icon="{ui:FontIcon Glyph=&#xE80F;}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_General"
                     helpers:NavHelper.NavigateTo="views:GeneralPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsSettings.png}" />
+                    Icon="{ui:FontIcon Glyph=&#xE713;}" />
+                <NavigationViewItemSeparator />
 
                 <NavigationViewItem
                     x:Uid="Shell_AlwaysOnTop"
@@ -109,6 +115,11 @@
                     x:Uid="Shell_CropAndLock"
                     helpers:NavHelper.NavigateTo="views:CropAndLockPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCropAndLock.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_EnvironmentVariables"
+                    helpers:NavHelper.NavigateTo="views:EnvironmentVariablesPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsEnvironmentVariables.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_FancyZones"
