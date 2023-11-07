@@ -24,5 +24,7 @@ namespace Hosts.Helpers
         void CleanupBackup();
 
         void OpenHostsFile();
+
+        void RemoveReadOnly();
     }
 }

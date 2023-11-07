@@ -87,12 +87,29 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     DisconnectTarget();
     m_currentTarget = windowToCrop;
 
-    // Adjust the crop rect to be in the window space as reported by win32k
+    // Save original state
+    SaveOriginalState();
+
     RECT windowRect = {};
     winrt::check_bool(GetWindowRect(m_currentTarget, &windowRect));
     auto clientRect = ClientAreaInScreenSpace(m_currentTarget);
+
+    WINDOWPLACEMENT windowPlacement = { sizeof(windowPlacement) };
+    winrt::check_bool(GetWindowPlacement(m_currentTarget, &windowPlacement));
+    bool isMaximized = (windowPlacement.showCmd == SW_SHOWMAXIMIZED);
+
     auto diffX = clientRect.left - windowRect.left;
     auto diffY = clientRect.top - windowRect.top;
+
+    if (isMaximized)
+    {
+        MONITORINFO mi = { sizeof(mi) };
+        winrt::check_bool(GetMonitorInfo(MonitorFromWindow(m_currentTarget, MONITOR_DEFAULTTONEAREST), &mi));
+
+        diffX = mi.rcWork.left - windowRect.left;
+        diffY = mi.rcWork.top - windowRect.top;
+    }
+
     auto adjustedCropRect = cropRect;
     adjustedCropRect.left += diffX;
     adjustedCropRect.top += diffY;
@@ -100,8 +117,6 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     adjustedCropRect.bottom += diffY;
     cropRect = adjustedCropRect;
 
-    // Save the previous position of the target so that we can restore it.
-    m_previousPosition = { windowRect.left, windowRect.top };
     auto newX = adjustedCropRect.left + windowRect.left;
     auto newY = adjustedCropRect.top + windowRect.top;
 
@@ -152,12 +167,54 @@ void ReparentCropAndLockWindow::DisconnectTarget()
             // The child window was closed by other means?
             m_currentTarget = nullptr;
             return;
-        }
-        winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, m_previousPosition.x, m_previousPosition.y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED));
+        }        
+        
+        RestoreOriginalState();
+    }
+}
+
+void ReparentCropAndLockWindow::SaveOriginalState()
+{
+    if (m_currentTarget != nullptr)
+    {
+        originalPlacement.length = sizeof(WINDOWPLACEMENT);
+        winrt::check_bool(GetWindowPlacement(m_currentTarget, &originalPlacement));
+
+        originalExStyle = GetWindowLongPtr(m_currentTarget, GWL_EXSTYLE);
+        winrt::check_bool(originalExStyle != 0 || GetLastError() == ERROR_SUCCESS);
+
+        originalStyle = GetWindowLongPtr(m_currentTarget, GWL_STYLE);
+        winrt::check_bool(originalStyle != 0 || GetLastError() == ERROR_SUCCESS);
+
+        winrt::check_bool(GetWindowRect(m_currentTarget, &originalRect));
+    }
+}
+
+void ReparentCropAndLockWindow::RestoreOriginalState()
+{
+    if (m_currentTarget)
+    {
+        // Restore window position and dimensions
+        int width = originalRect.right - originalRect.left;
+        int height = originalRect.bottom - originalRect.top;
+        winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, originalRect.left, originalRect.top, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED));
+
         SetParent(m_currentTarget, nullptr);
-        auto targetStyle = static_cast<DWORD>(GetWindowLongPtrW(m_currentTarget, GWL_STYLE));
-        targetStyle &= ~WS_CHILD;
-        SetWindowLongPtrW(m_currentTarget, GWL_STYLE, targetStyle);
-        m_currentTarget = nullptr;
+
+        // Restore the original placement
+        if (originalPlacement.showCmd != SW_SHOWMAXIMIZED)
+        {
+            originalPlacement.showCmd = SW_RESTORE;            
+        }
+
+        winrt::check_bool(SetWindowPlacement(m_currentTarget, &originalPlacement));
+
+        // Set the original extended style and style
+        originalStyle &= ~WS_CHILD;
+        LONG_PTR prevExStyle = SetWindowLongPtr(m_currentTarget, GWL_EXSTYLE, originalExStyle);
+        winrt::check_bool(prevExStyle != 0 || GetLastError() == ERROR_SUCCESS);
+
+        LONG_PTR prevStyle = SetWindowLongPtr(m_currentTarget, GWL_STYLE, originalStyle);
+        winrt::check_bool(prevStyle != 0 || GetLastError() == ERROR_SUCCESS);        
     }
 }
