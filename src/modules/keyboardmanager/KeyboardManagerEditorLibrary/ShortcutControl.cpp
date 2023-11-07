@@ -90,13 +90,12 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     newrow.emplace_back(std::make_unique<ShortcutControl>(parent, row, 1, targetAppTextBox));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
-    row.Padding({ 10, 10, 10, 10 });
+    row.Padding({ 10, 15, 10, 5 });
+    row.Margin({ 0, 0, 0, 2 });
     row.Orientation(Orientation::Horizontal);
-    auto brush = Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundListLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>();
-    if (keyboardRemapControlObjects.size() % 2)
-    {
-        row.Background(brush);
-    }
+    row.Background(Application::Current().Resources().Lookup(box_value(L"CardBackgroundFillColorDefaultBrush")).as<Media::Brush>());
+    row.BorderBrush(Application::Current().Resources().Lookup(box_value(L"CardStrokeColorDefaultBrush")).as<Media::Brush>());
+    row.BorderThickness({ 0, 1, 0, 1 });
 
     // ShortcutControl for the original shortcut
     auto origin = keyboardRemapControlObjects.back()[0]->GetShortcutControl();
@@ -104,14 +103,13 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     row.Children().Append(origin);
 
     // Arrow icon
-    FontIcon arrowIcon;
-    arrowIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
-    arrowIcon.Glyph(L"\xE72A");
+    SymbolIcon arrowIcon(Symbol::Forward);
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
     auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, EditorConstants::ShortcutArrowColumnWidth).as<StackPanel>();
     arrowIconContainer.Orientation(Orientation::Vertical);
     arrowIconContainer.VerticalAlignment(VerticalAlignment::Center);
+    arrowIconContainer.Margin({ 0, 0, 0, 10 });
     row.Children().Append(arrowIconContainer);
 
     // ShortcutControl for the new shortcut
@@ -122,6 +120,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     targetAppTextBox.Width(EditorConstants::ShortcutTableDropDownWidth);
     targetAppTextBox.PlaceholderText(KeyboardManagerEditorStrings::DefaultAppName());
     targetAppTextBox.Text(targetAppName);
+    targetAppTextBox.Margin({ 0, 0, 0, 10 });
 
     // GotFocus handler will be called whenever the user tabs into or clicks on the textbox
     targetAppTextBox.GotFocus([targetAppTextBox](auto const& sender, auto const& e) {
@@ -194,13 +193,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteShortcut;
-    FontIcon deleteSymbol;
-    deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
-    deleteSymbol.Glyph(L"\xE74D");
-    deleteShortcut.Content(deleteSymbol);
+    deleteShortcut.Content(SymbolIcon(Symbol::Delete));
     deleteShortcut.Background(Media::SolidColorBrush(Colors::Transparent()));
     deleteShortcut.HorizontalAlignment(HorizontalAlignment::Center);
-    deleteShortcut.Click([&, parent, row, brush, deleteShortcut](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    deleteShortcut.Margin({ 0, 0, 0, 10 });
+    deleteShortcut.Click([&, parent, row, deleteShortcut](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         Button currentButton = sender.as<Button>();
         uint32_t rowIndex;
         // Get index of delete button
@@ -216,7 +213,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         for (uint32_t i = rowIndex + 1; i < children.Size(); i++)
         {
             StackPanel row = children.GetAt(i).as<StackPanel>();
-            row.Background(i % 2 ? brush : Media::SolidColorBrush(Colors::Transparent()));
             StackPanel sourceCol = row.Children().GetAt(0).as<StackPanel>();
             StackPanel targetCol = row.Children().GetAt(2).as<StackPanel>();
             TextBox targetApp = row.Children().GetAt(3).as<StackPanel>().Children().GetAt(0).as<StackPanel>().Children().GetAt(0).as<TextBox>();
@@ -294,8 +290,6 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     // ContentDialog requires manually setting the XamlRoot (https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectShortcutBox.XamlRoot(xamlRoot);
     detectShortcutBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPESHORTCUT_TITLE)));
-    detectShortcutBox.IsPrimaryButtonEnabled(false);
-    detectShortcutBox.IsSecondaryButtonEnabled(false);
 
     // Get the linked stack panel for the "Type shortcut" button that was clicked
     VariableSizedWrapGrid linkedShortcutVariableSizedWrapGrid = UIHelpers::GetSiblingElement(sender).as<VariableSizedWrapGrid>();
@@ -359,16 +353,13 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         onReleaseEnter();
     };
 
-    TextBlock primaryButtonText;
-    primaryButtonText.Text(GET_RESOURCE_STRING(IDS_OK_BUTTON));
-
-    Button primaryButton;
-    primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    primaryButton.Margin({ 2, 2, 2, 2 });
-    primaryButton.Content(primaryButtonText);
-
     // OK button
-    primaryButton.Click([onAccept](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    detectShortcutBox.DefaultButton(ContentDialogButton::Primary);
+    detectShortcutBox.PrimaryButtonText(GET_RESOURCE_STRING(IDS_OK_BUTTON));
+    detectShortcutBox.PrimaryButtonClick([onAccept](winrt::Windows::Foundation::IInspectable const& sender, ContentDialogButtonClickEventArgs const& args) {
+        // Cancel default dialog events
+        args.Cancel(true);
+
         onAccept();
     });
 
@@ -376,12 +367,10 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
         selectDetectedShortcutAndResetKeys,
-        [primaryButton, onPressEnter, detectShortcutBox](DWORD) {
+        [onPressEnter, detectShortcutBox](DWORD) {
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [primaryButton, onPressEnter] {
-                    // Use the base medium low brush to be consistent with the theme
-                    primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
+                [onPressEnter] {
                     onPressEnter();
                 });
         },
@@ -392,9 +381,6 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
                     onReleaseEnter();
                 });
         });
-
-    TextBlock cancelButtonText;
-    cancelButtonText.Text(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
 
     auto onCancel = [&keyboardManagerState,
                      detectShortcutBox,
@@ -418,12 +404,12 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         unregisterKeys();
     };
 
-    Button cancelButton;
-    cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    cancelButton.Margin({ 2, 2, 2, 2 });
-    cancelButton.Content(cancelButtonText);
     // Cancel button
-    cancelButton.Click([onCancel](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    detectShortcutBox.CloseButtonText(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
+    detectShortcutBox.CloseButtonClick([onCancel](winrt::Windows::Foundation::IInspectable const& sender, ContentDialogButtonClickEventArgs const& args) {
+        // Cancel default dialog events
+        args.Cancel(true);
+
         onCancel();
     });
 
@@ -474,21 +460,6 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);
 
-    ColumnDefinition primaryButtonColumn;
-    ColumnDefinition cancelButtonColumn;
-
-    Grid buttonPanel;
-    buttonPanel.Margin({ 0, 20, 0, 0 });
-    buttonPanel.HorizontalAlignment(HorizontalAlignment::Stretch);
-    buttonPanel.ColumnDefinitions().Append(primaryButtonColumn);
-    buttonPanel.ColumnDefinitions().Append(cancelButtonColumn);
-    buttonPanel.SetColumn(primaryButton, 0);
-    buttonPanel.SetColumn(cancelButton, 1);
-
-    buttonPanel.Children().Append(primaryButton);
-    buttonPanel.Children().Append(cancelButton);
-
-    stackPanel.Children().Append(buttonPanel);
     try
     {
         // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
