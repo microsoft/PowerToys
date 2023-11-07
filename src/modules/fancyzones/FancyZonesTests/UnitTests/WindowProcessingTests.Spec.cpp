@@ -112,7 +112,10 @@ namespace FancyZonesUnitTests
         {
             FancyZonesSettings::instance().SetSettings(Settings{ .allowSnapChildWindows = false });
             HWND parentWindow = Mocks::WindowCreate(hInst, L"", L"", 0, WS_TILEDWINDOW);
+            Assert::IsTrue(IsWindowVisible(parentWindow), L"Parent window not visible");
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, 0, parentWindow);
+            Assert::IsTrue(IsWindowVisible(window), L"Child window not visible");
+            Assert::IsTrue(FancyZonesWindowUtils::HasVisibleOwner(window), L"Child window doesn't have visible owner");
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::ChildWindow, FancyZonesWindowProcessing::DefineWindowType(window));
         }
