@@ -18,6 +18,7 @@ namespace NonLocalizable
     const static std::vector<std::wstring> ExtPDF      = { L".pdf" };
     const static std::vector<std::wstring> ExtGCode    = { L".gcode" };
     const static std::vector<std::wstring> ExtSTL      = { L".stl" };
+    const static std::vector<std::wstring> ExtQOI      = { L".qoi" };
     const static std::vector<std::wstring> ExtNoNoNo   = { 
         L".svgz" //Monaco cannot handle this file type at all; it's a binary file.
     };
@@ -198,6 +199,19 @@ inline registry::ChangeSet getStlThumbnailHandlerChangeSet(const std::wstring in
                                   NonLocalizable::ExtSTL);
 }
 
+inline registry::ChangeSet getQoiThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)
+{
+    using namespace registry::shellex;
+    return generatePreviewHandler(PreviewHandlerType::thumbnail,
+                                  perUser,
+                                  L"{AD856B15-D25E-4008-AFB7-AFAA55586188}",
+                                  get_std_product_version(),
+                                  (fs::path{ installationDir } / LR"d(PowerToys.QoiThumbnailProviderCpp.dll)d").wstring(),
+                                  L"QoiThumbnailProvider",
+                                  L"Qoi Thumbnail Provider",
+                                  NonLocalizable::ExtQOI);
+}
+
 inline registry::ChangeSet getRegistryPreviewSetDefaultAppChangeSet(const std::wstring installationDir, const bool perUser)
 {
     const HKEY scope = perUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
@@ -248,6 +262,7 @@ inline std::vector<registry::ChangeSet> getAllOnByDefaultModulesChangeSets(const
              getSvgThumbnailHandlerChangeSet(installationDir, PER_USER),
              getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
              getStlThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getQoiThumbnailHandlerChangeSet(installationDir, PER_USER),
              getRegistryPreviewChangeSet(installationDir, PER_USER) };
 }
 
@@ -263,6 +278,7 @@ inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstri
              getPdfThumbnailHandlerChangeSet(installationDir, PER_USER),
              getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
              getStlThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getQoiThumbnailHandlerChangeSet(installationDir, PER_USER),
              getRegistryPreviewChangeSet(installationDir, PER_USER),
              getRegistryPreviewSetDefaultAppChangeSet(installationDir, PER_USER) };
 }

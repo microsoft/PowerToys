@@ -188,6 +188,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerQOIThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerQOIThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerQOIThumbnails">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="ConfigureEnabledUtilityFileExplorerSTLThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerSTLThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerSTLThumbnails">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />

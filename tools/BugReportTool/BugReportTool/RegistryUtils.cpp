@@ -28,6 +28,7 @@ namespace
     { HKEY_CLASSES_ROOT, L".md\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
     { HKEY_CLASSES_ROOT, L".pdf\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
     { HKEY_CLASSES_ROOT, L".pdf\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
+    { HKEY_CLASSES_ROOT, L".qoi\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
     { HKEY_CLASSES_ROOT, L".gcode\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
     { HKEY_CLASSES_ROOT, L".gcode\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
     { HKEY_CLASSES_ROOT, L".stl\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" }

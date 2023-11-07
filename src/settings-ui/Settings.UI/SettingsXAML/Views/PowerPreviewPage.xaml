@@ -201,6 +201,19 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured}"
                         Severity="Informational" />
+
+                    <controls:SettingsCard
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QOIThumbnailIsEnabled}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIThumbnailEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIThumbnailEnabledGpoConfigured}"
+                        Severity="Informational" />
                 </custom:SettingsGroup>
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>

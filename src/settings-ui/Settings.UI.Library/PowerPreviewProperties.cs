@@ -221,6 +221,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("stl-thumbnail-color-setting")]
         public StringProperty StlThumbnailColor { get; set; }
 
+        private bool enableQoiThumbnail = true;
+
+        [JsonPropertyName("qoi-thumbnail-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableQoiThumbnail
+        {
+            get => enableQoiThumbnail;
+            set
+            {
+                if (value != enableQoiThumbnail)
+                {
+                    LogTelemetryEvent(value);
+                    enableQoiThumbnail = value;
+                }
+            }
+        }
+
         public PowerPreviewProperties()
         {
             SvgBackgroundColorMode = new IntProperty(DefaultSvgBackgroundColorMode);
