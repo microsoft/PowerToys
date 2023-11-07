@@ -5,14 +5,15 @@
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ManagedCommon;
-using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -43,20 +44,46 @@ namespace Wox.Infrastructure.Image
             ".ico",
         };
 
+        // Checks whether it is a valid PNG by checking the 8 bytes at the beginning of the file.
+        public static bool IsValidPngSignature(string filePath)
+        {
+            byte[] pngSignature = { 137, 80, 78, 71, 13, 10, 26, 10 };
+            byte[] buffer = new byte[8];
+
+            using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
+            return fs.Read(buffer, 0, buffer.Length) == buffer.Length && pngSignature.SequenceEqual(buffer);
+        }
+
         public static void Initialize(Theme theme)
         {
             _hashGenerator = new ImageHashGenerator();
 
             foreach (var icon in new[] { Constant.ErrorIcon, Constant.LightThemedErrorIcon })
             {
-                BitmapImage bmi = new BitmapImage();
-                bmi.BeginInit();
-                bmi.UriSource = new Uri(icon);
-                bmi.CacheOption = BitmapCacheOption.OnLoad;
-                bmi.EndInit();
-                ImageSource img = bmi;
-                img.Freeze();
-                ImageCache[icon] = img;
+                var uri = new Uri(icon);
+
+                try
+                {
+                    if (File.Exists(uri.LocalPath) && IsValidPngSignature(uri.LocalPath))
+                    {
+                        BitmapImage bmi = new BitmapImage();
+                        bmi.BeginInit();
+                        bmi.UriSource = uri;
+                        bmi.CacheOption = BitmapCacheOption.OnLoad;
+                        bmi.EndInit();
+                        ImageSource img = bmi;
+                        img.Freeze();
+                        ImageCache[icon] = img;
+                    }
+                    else
+                    {
+                        Log.Error($"Image file '{icon}' is not a valid PNG.", MethodBase.GetCurrentMethod().DeclaringType);
+                    }
+                }
+                catch (COMException comEx)
+                {
+                    Log.Exception($"COMException was thrown in {uri.LocalPath} file.", comEx, MethodBase.GetCurrentMethod().DeclaringType);
+                }
             }
 
             UpdateIconPath(theme);

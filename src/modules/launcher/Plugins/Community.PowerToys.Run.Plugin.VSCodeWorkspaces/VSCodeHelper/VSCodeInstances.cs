@@ -71,77 +71,90 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 
             foreach (var path in paths)
             {
-                if (Directory.Exists(path))
+                if (!Directory.Exists(path))
                 {
-                    var files = Directory.GetFiles(path)
-                        .Where(x => (x.Contains("code", StringComparison.OrdinalIgnoreCase) || x.Contains("codium", StringComparison.OrdinalIgnoreCase))
-                            && !x.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase)).ToArray();
-
-                    var iconPath = Path.GetDirectoryName(path);
-
-                    if (files.Length > 0)
-                    {
-                        var file = files[0];
-                        var version = string.Empty;
-
-                        var instance = new VSCodeInstance
-                        {
-                            ExecutablePath = file,
-                        };
-
-                        if (file.EndsWith("code", StringComparison.OrdinalIgnoreCase))
-                        {
-                            version = "Code";
-                            instance.VSCodeVersion = VSCodeVersion.Stable;
-                        }
-                        else if (file.EndsWith("code-insiders", StringComparison.OrdinalIgnoreCase))
-                        {
-                            version = "Code - Insiders";
-                            instance.VSCodeVersion = VSCodeVersion.Insiders;
-                        }
-                        else if (file.EndsWith("code-exploration", StringComparison.OrdinalIgnoreCase))
-                        {
-                            version = "Code - Exploration";
-                            instance.VSCodeVersion = VSCodeVersion.Exploration;
-                        }
-                        else if (file.EndsWith("codium", StringComparison.OrdinalIgnoreCase))
-                        {
-                            version = "VSCodium";
-                            instance.VSCodeVersion = VSCodeVersion.Stable;
-                        }
-                        else if (file.EndsWith("codium-insiders", StringComparison.OrdinalIgnoreCase))
-                        {
-                            version = "VSCodium - Insiders";
-                            instance.VSCodeVersion = VSCodeVersion.Insiders;
-                        }
-
-                        if (version != string.Empty)
-                        {
-                            var portableData = Path.Join(iconPath, "data");
-                            instance.AppData = Directory.Exists(portableData) ? Path.Join(portableData, "user-data") : Path.Combine(_userAppDataPath, version);
-
-                            var vsCodeIconPath = Path.Join(iconPath, $"{version}.exe");
-                            var vsCodeIcon = Icon.ExtractAssociatedIcon(vsCodeIconPath);
-
-                            if (vsCodeIcon != null)
-                            {
-                                using var vsCodeIconBitmap = vsCodeIcon.ToBitmap();
-
-                                // workspace
-                                using var folderIcon = (Bitmap)Image.FromFile(Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images//folder.png"));
-                                using var bitmapFolderIcon = BitmapOverlayToCenter(folderIcon, vsCodeIconBitmap);
-                                instance.WorkspaceIconBitMap = Bitmap2BitmapImage(bitmapFolderIcon);
-
-                                // remote
-                                using var monitorIcon = (Bitmap)Image.FromFile(Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images//monitor.png"));
-                                using var bitmapMonitorIcon = BitmapOverlayToCenter(monitorIcon, vsCodeIconBitmap);
-                                instance.RemoteIconBitMap = Bitmap2BitmapImage(bitmapMonitorIcon);
-                            }
-
-                            Instances.Add(instance);
-                        }
-                    }
+                    continue;
                 }
+
+                var files = Directory.GetFiles(path)
+                    .Where(x => (x.Contains("code", StringComparison.OrdinalIgnoreCase) || x.Contains("codium", StringComparison.OrdinalIgnoreCase))
+                        && !x.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase)).ToArray();
+
+                // Remove the trailing backslash to always get the correct path
+                var iconPath = Path.GetDirectoryName(path.TrimEnd('\\'));
+
+                if (files.Length == 0)
+                {
+                    continue;
+                }
+
+                var file = files[0];
+                var version = string.Empty;
+
+                var instance = new VSCodeInstance
+                {
+                    ExecutablePath = file,
+                };
+
+                if (file.EndsWith("code", StringComparison.OrdinalIgnoreCase))
+                {
+                    version = "Code";
+                    instance.VSCodeVersion = VSCodeVersion.Stable;
+                }
+                else if (file.EndsWith("code-insiders", StringComparison.OrdinalIgnoreCase))
+                {
+                    version = "Code - Insiders";
+                    instance.VSCodeVersion = VSCodeVersion.Insiders;
+                }
+                else if (file.EndsWith("code-exploration", StringComparison.OrdinalIgnoreCase))
+                {
+                    version = "Code - Exploration";
+                    instance.VSCodeVersion = VSCodeVersion.Exploration;
+                }
+                else if (file.EndsWith("codium", StringComparison.OrdinalIgnoreCase))
+                {
+                    version = "VSCodium";
+                    instance.VSCodeVersion = VSCodeVersion.Stable;
+                }
+                else if (file.EndsWith("codium-insiders", StringComparison.OrdinalIgnoreCase))
+                {
+                    version = "VSCodium - Insiders";
+                    instance.VSCodeVersion = VSCodeVersion.Insiders;
+                }
+
+                if (string.IsNullOrEmpty(version))
+                {
+                    continue;
+                }
+
+                var portableData = Path.Join(iconPath, "data");
+                instance.AppData = Directory.Exists(portableData) ? Path.Join(portableData, "user-data") : Path.Combine(_userAppDataPath, version);
+                var vsCodeIconPath = Path.Join(iconPath, $"{version}.exe");
+                if (!File.Exists(vsCodeIconPath))
+                {
+                    continue;
+                }
+
+                var vsCodeIcon = Icon.ExtractAssociatedIcon(vsCodeIconPath);
+
+                if (vsCodeIcon == null)
+                {
+                    continue;
+                }
+
+                using var vsCodeIconBitmap = vsCodeIcon.ToBitmap();
+
+                // Workspace
+                using var folderIcon = (Bitmap)Image.FromFile(Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images//folder.png"));
+                using var bitmapFolderIcon = BitmapOverlayToCenter(folderIcon, vsCodeIconBitmap);
+                instance.WorkspaceIconBitMap = Bitmap2BitmapImage(bitmapFolderIcon);
+
+                // Remote
+                using var monitorIcon = (Bitmap)Image.FromFile(Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images//monitor.png"));
+                using var bitmapMonitorIcon = BitmapOverlayToCenter(monitorIcon, vsCodeIconBitmap);
+                instance.RemoteIconBitMap = Bitmap2BitmapImage(bitmapMonitorIcon);
+
+                Instances.Add(instance);
             }
         }
     }
