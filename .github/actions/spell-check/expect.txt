@@ -174,6 +174,7 @@ BTNFACE
 Bto
 buf
 bugreport
+BUILDARCH
 BUILDNUMBER
 buildtask
 buildtransitive
@@ -1055,6 +1056,7 @@ majortype
 MAJORVERSION
 makecab
 MAKEINTRESOURCE
+MAKEINTRESOURCEA
 MAKEINTRESOURCEW
 makepri
 manifestdependency
@@ -1182,10 +1184,12 @@ msrc
 msstore
 mst
 msvc
+msvcp
 MTND
 Mul
 MULTIPLEUSE
 multizone
+muxc
 mvvm
 mwb
 MWBEx
@@ -1251,6 +1255,8 @@ NOCOPYBITS
 nodeca
 nodiscard
 nodoc
+NODRAWCAPTION
+NODRAWICON
 NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
@@ -2094,6 +2100,7 @@ VCINSTALLDIR
 vcm
 Vcpkg
 VCRT
+vcruntime
 vcvars
 VDesktop
 vdi
@@ -2276,6 +2283,8 @@ wsl
 wss
 wstr
 wsz
+WTA
+WTNCA
 wtoi
 WTS
 wtsapi
