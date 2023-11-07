@@ -25,6 +25,9 @@ namespace KeyboardManagerConstants
     // Name of the property use to store shortcut remaps.
     inline const std::wstring RemapShortcutsSettingName = L"remapShortcuts";
 
+    // Name of the property use to store shortcut to text remaps.
+    inline const std::wstring RemapShortcutsToTextSettingName = L"remapShortcutsToText";
+
     // Name of the property use to store global shortcut remaps array.
     inline const std::wstring GlobalRemapShortcutsSettingName = L"global";
 

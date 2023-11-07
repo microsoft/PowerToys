@@ -68,6 +68,6 @@ public:
 private:
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
-    bool LoadShortcutRemaps(const json::JsonObject& jsonData);
+    bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);
 };

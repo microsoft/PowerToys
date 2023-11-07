@@ -16,13 +16,13 @@ std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyRemap(const DWOR
 
 std::optional<std::wstring> State::GetSingleKeyToTextRemapEvent(const DWORD originalKey) const
 {
-    if (auto it = singleKeyToTextReMap.find(originalKey); it == end(singleKeyToTextReMap))
+    if (auto it = singleKeyToTextReMap.find(originalKey); it != end(singleKeyToTextReMap))
     {
-        return std::nullopt;
+        return std::get<std::wstring>(it->second);
     }
     else
     {
-        return std::get<std::wstring>(it->second);
+        return std::nullopt;
     }
 }
 

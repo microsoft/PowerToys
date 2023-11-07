@@ -19,12 +19,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("remapShortcuts")]
         public ShortcutsKeyDataModel RemapShortcuts { get; set; }
 
+        [JsonPropertyName("remapShortcutsToText")]
+        public ShortcutsKeyDataModel RemapShortcutsToText { get; set; }
+
         public KeyboardManagerProfile()
         {
             RemapKeys = new RemapKeysDataModel();
             RemapKeysToText = new RemapKeysDataModel();
 
             RemapShortcuts = new ShortcutsKeyDataModel();
+            RemapShortcutsToText = new ShortcutsKeyDataModel();
         }
 
         public string ToJsonString()
