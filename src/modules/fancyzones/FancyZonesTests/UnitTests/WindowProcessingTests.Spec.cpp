@@ -126,12 +126,21 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
-        TEST_METHOD (ExcludedApp)
+        TEST_METHOD (ExcludedApp_ByDefault)
+        {
+            // set class from the excluded list
+            HWND window = Mocks::WindowCreate(hInst, L"", L"SysListView32");
+
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Excluded, FancyZonesWindowProcessing::DefineWindowType(window));
+        }
+
+        TEST_METHOD (ExcludedApp_ByUser)
         {
             // case sensitive, should be uppercase
-            // created window path: \VisualStudio\Common7\IDE\Extensions\TestPlatform\testhost.exe
-            FancyZonesSettings::instance().SetSettings(Settings{ .excludedAppsArray = { L"TESTHOST" } });
-            HWND window = Mocks::WindowCreate(hInst);
+            FancyZonesSettings::instance().SetSettings(Settings{ .excludedAppsArray = { L"TEST_EXCLUDED" } });
+
+            // exclude by window title
+            HWND window = Mocks::WindowCreate(hInst, L"Test_Excluded");
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Excluded, FancyZonesWindowProcessing::DefineWindowType(window));
         }
