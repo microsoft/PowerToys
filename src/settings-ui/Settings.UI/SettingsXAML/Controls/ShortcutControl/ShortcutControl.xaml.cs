@@ -332,6 +332,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     EnableKeys();
                 }
             }
+
+            c.IsWarningAltGr = internalSettings.Ctrl && internalSettings.Alt && !internalSettings.Win && (internalSettings.Code > 0);
         }
 
         private void EnableKeys()
