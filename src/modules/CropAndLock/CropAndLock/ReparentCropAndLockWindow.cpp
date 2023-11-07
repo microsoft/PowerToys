@@ -201,18 +201,15 @@ void ReparentCropAndLockWindow::RestoreOriginalState()
         int height = originalRect.bottom - originalRect.top;
         winrt::check_bool(SetWindowPos(m_currentTarget, nullptr, originalRect.left, originalRect.top, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED));
 
+        SetParent(m_currentTarget, nullptr);
+
         // Restore the original placement
         if (originalPlacement.showCmd != SW_SHOWMAXIMIZED)
         {
-            originalPlacement.showCmd = SW_RESTORE;
-            winrt::check_bool(SetWindowPlacement(m_currentTarget, &originalPlacement));
-        }
-        else
-        {            
-            winrt::check_bool(ShowWindow(m_currentTarget, SW_SHOWMAXIMIZED));
+            originalPlacement.showCmd = SW_RESTORE;            
         }
 
-        SetParent(m_currentTarget, nullptr);
+        winrt::check_bool(SetWindowPlacement(m_currentTarget, &originalPlacement));
 
         // Set the original extended style and style
         originalStyle &= ~WS_CHILD;
