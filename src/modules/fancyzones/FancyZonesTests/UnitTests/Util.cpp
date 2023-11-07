@@ -96,12 +96,16 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
             creator->getTitle().c_str(), 
             creator->getStyle(), 
             CW_USEDEFAULT, CW_USEDEFAULT, 
-            10, 10, 
+            CW_USEDEFAULT, CW_USEDEFAULT, 
             creator->getParentWindow(),
             nullptr, 
             creator->getHInstance(), 
             NULL);
-        SetWindowPos(hWnd, HWND_TOPMOST, 10, 10, 100, 100, SWP_SHOWWINDOW);
+
+        ShowWindow(hWnd, SW_SHOW);
+        // wait after ShowWindow to make sure that it's finished and shown
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
+
         creator->setHwnd(hWnd);
         creator->setCondition(true);
 
@@ -110,8 +114,6 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
             TranslateMessage(&messages);
             DispatchMessage(&messages);
         }
-
-        creator->setHwnd(hWnd);
     }
     else
     {
@@ -147,9 +149,9 @@ namespace Mocks
         }
     }
 
-    HWND HwndCreator::operator()(HINSTANCE /*hInst*/)
+    HWND HwndCreator::operator()(HINSTANCE hInst)
     {
-        // m_hInst = hInst;
+        m_hInst = hInst;
         m_conditionFlag = false;
         std::unique_lock<std::mutex> lock(m_mutex);
 
