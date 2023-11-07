@@ -95,7 +95,7 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     auto clientRect = ClientAreaInScreenSpace(m_currentTarget);
 
     WINDOWPLACEMENT windowPlacement = { sizeof(windowPlacement) };
-    GetWindowPlacement(m_currentTarget, &windowPlacement);
+    winrt::check_bool(GetWindowPlacement(m_currentTarget, &windowPlacement));
     bool isMaximized = (windowPlacement.showCmd == SW_SHOWMAXIMIZED);
 
     auto diffX = clientRect.left - windowRect.left;
@@ -104,7 +104,7 @@ void ReparentCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     if (isMaximized)
     {
         MONITORINFO mi = { sizeof(mi) };
-        GetMonitorInfo(MonitorFromWindow(m_currentTarget, MONITOR_DEFAULTTONEAREST), &mi);
+        winrt::check_bool(GetMonitorInfo(MonitorFromWindow(m_currentTarget, MONITOR_DEFAULTTONEAREST), &mi));
 
         diffX = mi.rcWork.left - windowRect.left;
         diffY = mi.rcWork.top - windowRect.top;
@@ -170,8 +170,6 @@ void ReparentCropAndLockWindow::DisconnectTarget()
         }        
         
         RestoreOriginalState();
-
-        Sleep(50);
     }
 }
 
@@ -183,10 +181,10 @@ void ReparentCropAndLockWindow::SaveOriginalState()
         winrt::check_bool(GetWindowPlacement(m_currentTarget, &originalPlacement));
 
         originalExStyle = GetWindowLongPtr(m_currentTarget, GWL_EXSTYLE);
-        winrt::check_bool(originalExStyle != 0);
+        winrt::check_bool(originalExStyle != 0 || GetLastError() == ERROR_SUCCESS);
 
         originalStyle = GetWindowLongPtr(m_currentTarget, GWL_STYLE);
-        winrt::check_bool(originalStyle != 0);
+        winrt::check_bool(originalStyle != 0 || GetLastError() == ERROR_SUCCESS);
 
         winrt::check_bool(GetWindowRect(m_currentTarget, &originalRect));
     }
