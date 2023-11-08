@@ -49,6 +49,7 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Currency" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Croatian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Czech" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Danish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaeilge" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaidhlig" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Dutch" />

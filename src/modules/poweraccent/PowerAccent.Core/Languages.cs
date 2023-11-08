@@ -14,6 +14,7 @@ namespace PowerAccent.Core
         CUR,
         CY,
         CZ,
+        DK,
         GA,
         GD,
         DE,
@@ -53,6 +54,7 @@ namespace PowerAccent.Core
                 Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
                 Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
                 Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
+                Language.DK => GetDefaultLetterKeyDK(letter), // Danish
                 Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish)
                 Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
@@ -95,6 +97,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyCUR(letter))
                 .Union(GetDefaultLetterKeyCY(letter))
                 .Union(GetDefaultLetterKeyCZ(letter))
+                .Union(GetDefaultLetterKeyDK(letter))
                 .Union(GetDefaultLetterKeyGA(letter))
                 .Union(GetDefaultLetterKeyGD(letter))
                 .Union(GetDefaultLetterKeyDE(letter))
@@ -665,6 +668,18 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "€", "é" },
                 LetterKey.VK_O => new[] { "ø" },
                 LetterKey.VK_S => new[] { "$" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Danish
+        private static string[] GetDefaultLetterKeyDK(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "å", "æ" },
+                LetterKey.VK_E => new[] { "€" },
+                LetterKey.VK_O => new[] { "ø" },
                 _ => Array.Empty<string>(),
             };
         }
