@@ -111,7 +111,7 @@
                                             </ToolTipService.ToolTip>
                                             <Button.Flyout>
                                                 <Flyout x:Uid="ImageResizer_EditSize" ShouldConstrainToRootBounds="False">
-                                                    <StackPanel Margin="0,12,0,0" Spacing="16">
+                                                    <StackPanel Spacing="16">
                                                         <TextBox
                                                             x:Uid="ImageResizer_Name"
                                                             Width="240"
@@ -148,7 +148,6 @@
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Size"
                                                             Width="240"
-                                                            Margin="0,0,0,24"
                                                             SelectedIndex="{Binding Path=Unit, Mode=TwoWay}">
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
@@ -235,7 +234,7 @@
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Style="{StaticResource SubtleButtonStyle}">
                                 <Button.Flyout>
-                                    <Flyout>
+                                    <Flyout ShouldConstrainToRootBounds="False">
                                         <TextBlock x:Name="FileFormatTextBlock">
                                             <Run x:Uid="ImageResizer_FileFormatDescription" />
                                             <LineBreak />
