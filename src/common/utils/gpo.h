@@ -450,6 +450,6 @@ namespace powertoys_gpo {
 
     inline gpo_rule_configured_t getConfiguredQoiThumbnailsEnabledValue()
     {
-        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS);
     }
 }
