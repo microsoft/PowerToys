@@ -106,6 +106,15 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Keep awake on interval.
+        /// </summary>
+        internal static string AWAKE_KEEP_ON_INTERVAL {
+            get {
+                return ResourceManager.GetString("AWAKE_KEEP_ON_INTERVAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Keep screen on.
         /// </summary>
         internal static string AWAKE_KEEP_SCREEN_ON {
@@ -120,15 +129,6 @@ namespace Awake.Properties {
         internal static string AWAKE_KEEP_UNTIL_EXPIRATION {
             get {
                 return ResourceManager.GetString("AWAKE_KEEP_UNTIL_EXPIRATION", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Keep awake on interval.
-        /// </summary>
-        internal static string AWAKE_KEPP_ON_INTERVAL {
-            get {
-                return ResourceManager.GetString("AWAKE_KEPP_ON_INTERVAL", resourceCulture);
             }
         }
         

@@ -132,14 +132,14 @@
   <data name="AWAKE_KEEP_INDEFINITELY" xml:space="preserve">
     <value>Keep awake indefinitely</value>
   </data>
+  <data name="AWAKE_KEEP_ON_INTERVAL" xml:space="preserve">
+    <value>Keep awake on interval</value>
+  </data>
   <data name="AWAKE_KEEP_SCREEN_ON" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
   <data name="AWAKE_KEEP_UNTIL_EXPIRATION" xml:space="preserve">
     <value>Keep awake until expiration date and time</value>
-  </data>
-  <data name="AWAKE_KEPP_ON_INTERVAL" xml:space="preserve">
-    <value>Keep awake on interval</value>
   </data>
   <data name="AWAKE_MINUTE" xml:space="preserve">
     <value>minute</value>
