@@ -705,7 +705,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
                 {
                     continue;
                 }
-                render_arrow(arrows[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_device_context, taskbar_icon_shortcuts_x_offset, taskbar_icon_shortcuts_y_offset);
+                render_arrow(arrows[static_cast<size_t>(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_device_context, taskbar_icon_shortcuts_x_offset, taskbar_icon_shortcuts_y_offset);
             }
         }
     }

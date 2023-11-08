@@ -47,6 +47,7 @@ namespace PowerToys
             static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
             static GpoRuleConfigured GetAllowExperimentationValue();
             static GpoRuleConfigured GetRunPluginEnabledValue(String pluginID);
+            static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();
         }
     }
 }

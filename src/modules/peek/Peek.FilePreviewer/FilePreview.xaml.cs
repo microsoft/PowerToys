@@ -217,6 +217,7 @@ namespace Peek.FilePreviewer
         partial void OnPreviewerChanging(IPreviewer? value)
         {
             VideoPreview.MediaPlayer.Pause();
+            VideoPreview.MediaPlayer.Source = null;
             VideoPreview.Source = null;
 
             ImagePreview.Source = null;
@@ -296,6 +297,28 @@ namespace Peek.FilePreviewer
             {
                 await Previewer.CopyAsync();
             }
+        }
+
+        private void KeyboardAccelerator_Space_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            var mediaPlayer = VideoPreview.MediaPlayer;
+
+            if (mediaPlayer.Source == null || !mediaPlayer.CanPause)
+            {
+                return;
+            }
+
+            if (mediaPlayer.CurrentState == Windows.Media.Playback.MediaPlayerState.Playing)
+            {
+                mediaPlayer.Pause();
+            }
+            else
+            {
+                mediaPlayer.Play();
+            }
+
+            // Prevent the keyboard accelerator to be called twice
+            args.Handled = true;
         }
 
         private async Task UpdateImageTooltipAsync(CancellationToken cancellationToken)

@@ -86,6 +86,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         {
             Title = Resources.Microsoft_plugin_timedate_ErrorResultTitle,
             SubTitle = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle,
+            ToolTipData = new ToolTipData(Resources.Microsoft_plugin_timedate_ErrorResultTitle, Resources.Microsoft_plugin_timedate_ErrorResultSubTitle),
             IcoPath = $"Images\\Warning.{theme}.png",
         };
     }

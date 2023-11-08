@@ -73,7 +73,6 @@ public:
 
 private:
 
-    void setMuteChangedCallback();
     void init_settings();
     void updateControlledMicrophones(const std::wstring_view new_mic);
     MicrophoneDevice* controlledDefaultMic();

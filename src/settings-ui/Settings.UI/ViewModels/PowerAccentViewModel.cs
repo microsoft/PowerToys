@@ -32,6 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "GD",
             "NL",
             "EST",
+            "FI",
             "FR",
             "DE",
             "HE",
@@ -100,7 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _toolbarPositionIndex = Array.IndexOf(_toolbarOptions, _powerAccentSettings.Properties.ToolbarPosition.Value);
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 

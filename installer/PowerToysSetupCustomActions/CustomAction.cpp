@@ -1005,7 +1005,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 28> processesToTerminate = {
+    std::array<std::wstring_view, 29> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.Awake.exe",
@@ -1033,6 +1033,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.MouseWithoutBordersHelper.exe",
         L"PowerToys.MouseWithoutBordersService.exe",
         L"PowerToys.CropAndLock.exe",
+        L"PowerToys.EnvironmentVariables.exe",
         L"PowerToys.exe",
     };
 

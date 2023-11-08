@@ -18,6 +18,7 @@ namespace PowerAccent.Core
         GD,
         DE,
         EST,
+        FI,
         FR,
         HR,
         HE,
@@ -56,6 +57,7 @@ namespace PowerAccent.Core
                 Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
                 Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
+                Language.FI => GetDefaultLetterKeyFI(letter), // Finnish
                 Language.FR => GetDefaultLetterKeyFR(letter), // French
                 Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
                 Language.HE => GetDefaultLetterKeyHE(letter), // Hebrew
@@ -97,6 +99,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyGD(letter))
                 .Union(GetDefaultLetterKeyDE(letter))
                 .Union(GetDefaultLetterKeyEST(letter))
+                .Union(GetDefaultLetterKeyFI(letter))
                 .Union(GetDefaultLetterKeyFR(letter))
                 .Union(GetDefaultLetterKeyHR(letter))
                 .Union(GetDefaultLetterKeyHE(letter))
@@ -155,7 +158,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_V => new[] { "V̇" },
                 LetterKey.VK_W => new[] { "ẇ" },
                 LetterKey.VK_X => new[] { "ẋ", "ξ", "×" },
-                LetterKey.VK_Y => new[] { "ẏ" },
+                LetterKey.VK_Y => new[] { "ẏ", "ꝡ" },
                 LetterKey.VK_Z => new[] { "ʒ", "ǯ", "ζ", "ℤ" },
                 LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–" }, // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
                 LetterKey.VK_PERIOD => new[] { "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030C" },
@@ -200,6 +203,7 @@ namespace PowerAccent.Core
             {
                 LetterKey.VK_C => new[] { "ć", "č" },
                 LetterKey.VK_D => new[] { "đ" },
+                LetterKey.VK_E => new[] { "€" },
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_Z => new[] { "ž" },
                 _ => Array.Empty<string>(),
@@ -217,6 +221,18 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new[] { "ü" },
                 LetterKey.VK_Z => new[] { "ž" },
                 LetterKey.VK_S => new[] { "š" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Finnish
+        private static string[] GetDefaultLetterKeyFI(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "ä", "å" },
+                LetterKey.VK_E => new[] { "€" },
+                LetterKey.VK_O => new[] { "ö" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -438,7 +454,7 @@ namespace PowerAccent.Core
             return letter switch
             {
                 LetterKey.VK_A => new[] { "á" },
-                LetterKey.VK_E => new[] { "é" },
+                LetterKey.VK_E => new[] { "é", "€" },
                 LetterKey.VK_I => new[] { "í" },
                 LetterKey.VK_O => new[] { "ó" },
                 LetterKey.VK_U => new[] { "ú" },
@@ -455,6 +471,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "è" },
                 LetterKey.VK_I => new[] { "ì" },
                 LetterKey.VK_O => new[] { "ò" },
+                LetterKey.VK_P => new[] { "£" },
                 LetterKey.VK_U => new[] { "ù" },
                 _ => Array.Empty<string>(),
             };
@@ -588,6 +605,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "ê" },
                 LetterKey.VK_I => new[] { "î" },
                 LetterKey.VK_O => new[] { "ô" },
+                LetterKey.VK_P => new[] { "£" },
                 LetterKey.VK_U => new[] { "û" },
                 LetterKey.VK_Y => new[] { "ŷ" },
                 LetterKey.VK_W => new[] { "ŵ" },

@@ -29,10 +29,10 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
             {
                 case WorkspaceEnvironment.Local: return Resources.TypeWorkspaceLocal;
                 case WorkspaceEnvironment.Codespaces: return "Codespaces";
-                case WorkspaceEnvironment.RemoteContainers: return Resources.TypeWorkspaceContainer;
                 case WorkspaceEnvironment.RemoteSSH: return "SSH";
                 case WorkspaceEnvironment.RemoteWSL: return "WSL";
                 case WorkspaceEnvironment.DevContainer: return Resources.TypeWorkspaceDevContainer;
+                case WorkspaceEnvironment.RemoteTunnel: return "Tunnel";
             }
 
             return string.Empty;
@@ -45,8 +45,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
         Codespaces = 2,
         RemoteWSL = 3,
         RemoteSSH = 4,
-        RemoteContainers = 5,
-        DevContainer = 6,
+        DevContainer = 5,
+        RemoteTunnel = 6,
     }
 
     public enum WorkspaceType
