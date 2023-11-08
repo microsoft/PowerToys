@@ -134,6 +134,13 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
+                LetterKey.VK_0 => new[] { "↉" },
+                LetterKey.VK_1 => new[] { "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒" },
+                LetterKey.VK_2 => new[] { "⅔", "⅖" },
+                LetterKey.VK_3 => new[] { "¾", "⅗", "⅜" },
+                LetterKey.VK_4 => new[] { "⅘" },
+                LetterKey.VK_5 => new[] { "⅚", "⅝" },
+                LetterKey.VK_7 => new[] { "⅞" },
                 LetterKey.VK_A => new[] { "α", "ά", "ȧ" },
                 LetterKey.VK_B => new[] { "ḃ", "β" },
                 LetterKey.VK_C => new[] { "ċ", "χ", "°C", "©", "ℂ" },
