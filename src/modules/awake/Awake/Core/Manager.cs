@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using Awake.Core.Models;
 using Awake.Core.Native;
+using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
@@ -272,12 +273,10 @@ namespace Awake.Core
 
         public static Dictionary<string, int> GetDefaultTrayOptions()
         {
-            Dictionary<string, int> optionsList = new Dictionary<string, int>
-            {
-                { "30 minutes", 1800 },
-                { "1 hour", 3600 },
-                { "2 hours", 7200 },
-            };
+            Dictionary<string, int> optionsList = new Dictionary<string, int>();
+            optionsList.Add("30 " + Resources.AWAKE_MINUTES, 1800);
+            optionsList.Add("1 " + Resources.AWAKE_HOUR, 3600);
+            optionsList.Add("2 " + Resources.AWAKE_HOURS, 7200);
             return optionsList;
         }
     }
