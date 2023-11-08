@@ -37,14 +37,6 @@ namespace FancyZonesUnitTests
             FancyZonesSettings::instance().SetSettings(Settings{});
         }
 
-        TEST_METHOD (SplashScreen)
-        {
-            HWND window = Mocks::WindowCreate(hInst, L"", L"MsoSplash");
-            Assert::IsTrue(FancyZonesWindowUtils::IsSplashScreen(window));
-
-            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::SplashScreen, FancyZonesWindowProcessing::DefineWindowType(window));
-        }
-
         TEST_METHOD (MinimizedWindow)
         {
             HWND window = Mocks::WindowCreate(hInst);
@@ -133,6 +125,13 @@ namespace FancyZonesUnitTests
         {
             // set class from the excluded list
             HWND window = Mocks::WindowCreate(hInst, L"", L"SysListView32");
+
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Excluded, FancyZonesWindowProcessing::DefineWindowType(window));
+        }
+
+        TEST_METHOD (ExcludedApp_ByDefault_SplashScreen)
+        {
+            HWND window = Mocks::WindowCreate(hInst, L"", L"MsoSplash");
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Excluded, FancyZonesWindowProcessing::DefineWindowType(window));
         }

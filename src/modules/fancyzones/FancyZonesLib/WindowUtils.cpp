@@ -15,7 +15,7 @@
 namespace NonLocalizable
 {
     const wchar_t PowerToysAppFZEditor[] = L"POWERTOYS.FANCYZONESEDITOR.EXE";
-    const wchar_t SplashClassName[] = L"MsoSplash";
+    const char SplashClassName[] = "MsoSplash";
     const wchar_t CoreWindow[] = L"Windows.UI.Core.CoreWindow";
     const wchar_t SearchUI[] = L"SearchUI.exe";
     const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
@@ -120,17 +120,6 @@ namespace
             rect.bottom = min(monitorInfo.rcMonitor.bottom - yOffset, rect.bottom);
         }
     }
-}
-
-bool FancyZonesWindowUtils::IsSplashScreen(HWND window)
-{
-    wchar_t className[MAX_PATH];
-    if (GetClassName(window, className, MAX_PATH) == 0)
-    {
-        return false;
-    }
-
-    return wcscmp(NonLocalizable::SplashClassName, className) == 0;
 }
 
 bool FancyZonesWindowUtils::IsWindowMaximized(HWND window) noexcept
@@ -267,9 +256,14 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, std::wstring& 
         return true;
     }
 
-    std::array<char, 256> class_name;
-    GetClassNameA(hwnd, class_name.data(), static_cast<int>(class_name.size()));
-    if (is_system_window(hwnd, class_name.data()))
+    std::array<char, 256> className;
+    GetClassNameA(hwnd, className.data(), static_cast<int>(className.size()));
+    if (is_system_window(hwnd, className.data()))
+    {
+        return true;
+    }
+
+    if (strcmp(NonLocalizable::SplashClassName, className.data()) == 0)
     {
         return true;
     }

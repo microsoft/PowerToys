@@ -7,12 +7,6 @@
 
 FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::DefineWindowType(HWND window) noexcept
 {
-    const bool isSplashScreen = FancyZonesWindowUtils::IsSplashScreen(window);
-    if (isSplashScreen)
-    {
-        return ProcessabilityType::SplashScreen;
-    }
-
     const bool windowMinimized = IsIconic(window);
     if (windowMinimized)
     {
