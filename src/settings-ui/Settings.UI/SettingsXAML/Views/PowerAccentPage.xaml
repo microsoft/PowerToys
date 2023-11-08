@@ -49,10 +49,12 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Currency" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Croatian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Czech" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Danish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaeilge" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaidhlig" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Dutch" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Estonian" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Finnish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_German" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Hebrew" />

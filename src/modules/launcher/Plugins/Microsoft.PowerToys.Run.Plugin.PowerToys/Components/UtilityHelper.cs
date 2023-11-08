@@ -20,6 +20,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                 UtilityKey.ShortcutGuide => "Images/ShortcutGuide.png",
                 UtilityKey.RegistryPreview => "Images/RegistryPreview.png",
                 UtilityKey.CropAndLock => "Images/CropAndLock.png",
+                UtilityKey.EnvironmentVariables => "Images/EnvironmentVariables.png",
                 _ => null,
             };
         }
@@ -36,6 +37,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                 UtilityKey.ShortcutGuide => SettingsDeepLink.SettingsWindow.ShortcutGuide,
                 UtilityKey.RegistryPreview => SettingsDeepLink.SettingsWindow.RegistryPreview,
                 UtilityKey.CropAndLock => SettingsDeepLink.SettingsWindow.CropAndLock,
+                UtilityKey.EnvironmentVariables => SettingsDeepLink.SettingsWindow.EnvironmentVariables,
                 _ => null,
             };
         }
