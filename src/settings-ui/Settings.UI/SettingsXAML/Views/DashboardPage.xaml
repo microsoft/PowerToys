@@ -302,10 +302,10 @@
                         <DataTemplate x:DataType="viewmodels:DashboardListItem">
                             <Button
                                 Padding="0"
-                                BorderThickness="0"
-                                Background="Transparent"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                BorderThickness="0"
                                 Click="DashboardListItemClick"
                                 Tag="{x:Bind Tag, Mode=OneWay}">
                                 <Grid
@@ -400,10 +400,10 @@
                         <DataTemplate x:DataType="viewmodels:DashboardListItem">
                             <Button
                                 Padding="0"
-                                BorderThickness="0"
-                                Background="Transparent"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                BorderThickness="0"
                                 Click="DashboardListItemClick"
                                 Tag="{x:Bind Tag, Mode=OneWay}">
                                 <Grid
