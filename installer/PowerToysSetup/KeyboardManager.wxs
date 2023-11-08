@@ -17,6 +17,14 @@
           <RegistryValue Type="string" Name="Module_KeyboardManager_Editor" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Source="$(var.BinDir)KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\Microsoft.UI.Xaml.dll" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\msvcp140_app.dll" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\resources.pri" />
+        <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_app.dll" />
+        <?if $(sys.BUILDARCH) = x64 ?>
+          <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_1_app.dll" />
+        <?endif ?>
       </Component>
     </DirectoryRef>
 

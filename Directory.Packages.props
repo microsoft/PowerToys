@@ -34,7 +34,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0-rc.2.23479.6" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
-    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.1722.45" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="8.0.0-rc.2.23479.10" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->

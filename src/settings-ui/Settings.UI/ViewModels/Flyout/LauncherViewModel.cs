@@ -5,10 +5,12 @@
 using System;
 using System.Collections.ObjectModel;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -21,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings generalSettingsConfig;
         private UpdatingSettings updatingSettingsConfig;
         private ISettingsRepository<GeneralSettings> _settingsRepository;
+        private ResourceLoader resourceLoader;
 
         private Func<string, int> SendIPCMessage { get; }
 
@@ -32,112 +35,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendIPCMessage = ipcMSGCallBackFunc;
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            resourceLoader = ResourceLoaderInstance.ResourceLoader;
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
-            if (GPOWrapper.GetConfiguredColorPickerEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem()
-                {
-                    Label = resourceLoader.GetString("ColorPicker/ModuleTitle"),
-                    Tag = "ColorPicker",
-                    Visible = generalSettingsConfig.Enabled.ColorPicker,
-                    ToolTip = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
-                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png",
-                });
-            }
 
-            if (GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem()
-                {
-                    Label = resourceLoader.GetString("EnvironmentVariables/ModuleTitle"),
-                    Tag = "EnvironmentVariables",
-                    Visible = generalSettingsConfig.Enabled.EnvironmentVariables,
-                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsEnvironmentVariables.png",
-                });
-            }
-
-            if (GPOWrapper.GetConfiguredFancyZonesEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem()
-                {
-                    Label = resourceLoader.GetString("FZEditorString"),
-                    Tag = "FancyZones",
-                    Visible = generalSettingsConfig.Enabled.FancyZones,
-                    ToolTip = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
-                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFancyZones.png",
-                });
-            }
-
-            if (GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem()
-                {
-                    Label = resourceLoader.GetString("Hosts/ModuleTitle"),
-                    Tag = "Hosts",
-                    Visible = generalSettingsConfig.Enabled.Hosts,
-                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsHosts.png",
-                });
-            }
-
-            if (GPOWrapper.GetConfiguredPowerLauncherEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem()
-                {
-                    Label = resourceLoader.GetString("PowerLauncher/ModuleTitle"),
-                    Tag = "PowerLauncher",
-                    Visible = generalSettingsConfig.Enabled.PowerLauncher,
-                    ToolTip = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
-                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png",
-                });
-            }
-
-            if (GPOWrapper.GetConfiguredTextExtractorEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem()
-                {
-                    Label = resourceLoader.GetString("TextExtractor/ModuleTitle"),
-                    Tag = "PowerOCR",
-                    Visible = generalSettingsConfig.Enabled.PowerOCR,
-                    ToolTip = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
-                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerOcr.png",
-                });
-            }
-
-            if (GPOWrapper.GetConfiguredRegistryPreviewEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem()
-                {
-                    Label = resourceLoader.GetString("RegistryPreview/ModuleTitle"),
-                    Tag = "RegistryPreview",
-                    Visible = generalSettingsConfig.Enabled.RegistryPreview,
-                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png",
-                });
-            }
-
-            if (GPOWrapper.GetConfiguredScreenRulerEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem()
-                {
-                    Label = resourceLoader.GetString("MeasureTool/ModuleTitle"),
-                    Tag = "MeasureTool",
-                    Visible = generalSettingsConfig.Enabled.MeasureTool,
-                    ToolTip = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
-                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsScreenRuler.png",
-                });
-            }
-
-            if (GPOWrapper.GetConfiguredShortcutGuideEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                FlyoutMenuItems.Add(new FlyoutMenuItem()
-                {
-                    Label = resourceLoader.GetString("ShortcutGuide/ModuleTitle"),
-                    Tag = "ShortcutGuide",
-                    Visible = generalSettingsConfig.Enabled.ShortcutGuide,
-                    ToolTip = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
-                    Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png",
-                });
-            }
+            AddFlyoutMenuItem(ModuleType.ColorPicker);
+            AddFlyoutMenuItem(ModuleType.EnvironmentVariables);
+            AddFlyoutMenuItem(ModuleType.FancyZones);
+            AddFlyoutMenuItem(ModuleType.Hosts);
+            AddFlyoutMenuItem(ModuleType.PowerLauncher);
+            AddFlyoutMenuItem(ModuleType.PowerOCR);
+            AddFlyoutMenuItem(ModuleType.RegistryPreview);
+            AddFlyoutMenuItem(ModuleType.MeasureTool);
+            AddFlyoutMenuItem(ModuleType.ShortcutGuide);
 
             if (updatingSettingsConfig == null)
             {
@@ -156,23 +65,44 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private void AddFlyoutMenuItem(ModuleType moduleType)
+        {
+            if (ModuleHelper.GetModuleGpoConfiguration(moduleType) == GpoRuleConfigured.Disabled)
+            {
+                return;
+            }
+
+            FlyoutMenuItems.Add(new FlyoutMenuItem()
+            {
+                Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                Tag = moduleType,
+                Visible = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType),
+                ToolTip = GetModuleTooltip(moduleType),
+                Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+            });
+        }
+
+        private string GetModuleTooltip(ModuleType moduleType)
+        {
+            return moduleType switch
+            {
+                ModuleType.ColorPicker => SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
+                ModuleType.FancyZones => SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
+                ModuleType.PowerLauncher => SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
+                ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
+                ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
+                ModuleType.ShortcutGuide => SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
+                _ => string.Empty,
+            };
+        }
+
         private void ModuleEnabledChanged()
         {
             generalSettingsConfig = _settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
             foreach (FlyoutMenuItem item in FlyoutMenuItems)
             {
-                switch (item.Tag)
-                {
-                    case "ColorPicker": item.Visible = generalSettingsConfig.Enabled.ColorPicker; break;
-                    case "FancyZones": item.Visible = generalSettingsConfig.Enabled.FancyZones; break;
-                    case "Hosts": item.Visible = generalSettingsConfig.Enabled.Hosts; break;
-                    case "PowerLauncher": item.Visible = generalSettingsConfig.Enabled.PowerLauncher; break;
-                    case "PowerOCR": item.Visible = generalSettingsConfig.Enabled.PowerOCR; break;
-                    case "RegistryPreview": item.Visible = generalSettingsConfig.Enabled.RegistryPreview; break;
-                    case "MeasureTool": item.Visible = generalSettingsConfig.Enabled.MeasureTool; break;
-                    case "ShortcutGuide": item.Visible = generalSettingsConfig.Enabled.ShortcutGuide; break;
-                }
+                item.Visible = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag);
             }
         }
 

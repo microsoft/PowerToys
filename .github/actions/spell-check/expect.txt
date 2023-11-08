@@ -21,6 +21,7 @@ activationaction
 ADDUNDORECORD
 ADifferent
 adio
+adipiscing
 administra
 ADMINS
 adml
@@ -34,6 +35,7 @@ AGGREGATABLE
 AHybrid
 ALarger
 alekhyareddy
+aliquip
 ALLAPPS
 ALLINPUT
 ALLOWUNDO
@@ -97,6 +99,7 @@ ASingle
 ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
+ative
 atl
 atlbase
 atlcom
@@ -150,7 +153,6 @@ BLURREGION
 bmi
 bms
 BNumber
-Bokm
 BOKMAL
 bootstrapper
 BOOTSTRAPPERINSTALLFOLDER
@@ -172,6 +174,7 @@ BTNFACE
 Bto
 buf
 bugreport
+BUILDARCH
 BUILDNUMBER
 buildtask
 buildtransitive
@@ -274,6 +277,7 @@ cominterop
 commandline
 COMMANDTITLE
 commctrl
+commodo
 compmgmt
 COMPOSITIONFULL
 comsupp
@@ -284,6 +288,8 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
+consectetur
+consequat
 Consolas
 constexpr
 consts
@@ -326,6 +332,7 @@ CTRLALTDEL
 Ctrls
 Ctx
 CUI
+cupidatat
 currentculture
 CURRENTDIR
 CURSORINFO
@@ -372,6 +379,7 @@ dcomp
 DComposition
 dcr
 dcs
+ddd
 DDEIf
 DDevice
 ddf
@@ -398,12 +406,12 @@ DELETEDKEYIMAGE
 DELETESCANS
 deletethis
 Delimarsky
-dend
 DENORMAL
 Deondre
 depersist
 deprioritized
 deref
+deserunt
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
@@ -484,6 +492,7 @@ dxgidebug
 dxgiformat
 dxguid
 ecount
+ecyclebin
 EData
 Edid
 EDITKEYBOARD
@@ -491,8 +500,13 @@ editkeyboardwindow
 EDITSHORTCUTS
 editshortcutswindow
 EFile
+egistry
+egistrypreview
 eip
 ekus
+elease
+elemetry
+elit
 emmintrin
 Emoji
 ENABLEDELAYEDEXPANSION
@@ -503,6 +517,7 @@ encryptor
 endpointvolume
 endregion
 ENDSESSION
+enim
 ENTERSIZEMOVE
 ENU
 EOAC
@@ -517,10 +532,16 @@ ERRORLEVEL
 ERRORTITLE
 ESettings
 esize
+esource
 esrp
+estapp
+estart
+ests
+esult
 etl
 etstat
-etw
+ETW
+etwork
 EUQ
 eurochange
 eventlog
@@ -538,6 +559,7 @@ exabyte
 examplehandler
 examplepowertoy
 EXAND
+Excepteur
 EXCLUDEFROMCAPTURE
 exdisp
 executionpolicy
@@ -548,6 +570,8 @@ exlist
 EXPCMDFLAGS
 EXPCMDSTATE
 explr
+exppowertoys
+exptas
 exsb
 EXSEL
 exstyle
@@ -575,7 +599,7 @@ FILEOP
 FILEOS
 FILESUBTYPE
 FILESYSPATH
-filetime
+Filetime
 FILEVERSION
 Filtergraph
 Filterkeyboard
@@ -585,6 +609,7 @@ findfast
 firefox
 FIXEDFILEINFO
 flyout
+flyouts
 FOF
 FOFX
 FOLDERID
@@ -907,6 +932,8 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
+laboris
+laborum
 LAlt
 Lambson
 langword
@@ -957,6 +984,7 @@ lmcons
 LMEM
 LMENU
 lnk
+lnks
 LOADFROMFILE
 LOBYTE
 LOCALAPPDATA
@@ -1028,6 +1056,7 @@ majortype
 MAJORVERSION
 makecab
 MAKEINTRESOURCE
+MAKEINTRESOURCEA
 MAKEINTRESOURCEW
 makepri
 manifestdependency
@@ -1110,6 +1139,7 @@ mockapi
 MODECHANGE
 modernwpf
 MODESPRUNED
+mollit
 MONITORENUMPROC
 MONITORINFO
 MONITORINFOEX
@@ -1154,10 +1184,12 @@ msrc
 msstore
 mst
 msvc
+msvcp
 MTND
 Mul
 MULTIPLEUSE
 multizone
+muxc
 mvvm
 mwb
 MWBEx
@@ -1182,6 +1214,7 @@ NCMBUTTONUP
 NCMOUSELEAVE
 NCMOUSEMOVE
 NCol
+nconsectetur
 ncpa
 NCPAINT
 NCRBUTTONDBLCLK
@@ -1206,7 +1239,6 @@ newitem
 newpath
 newrow
 Newtonsoft
-niels
 nielslaute
 NIF
 nint
@@ -1223,6 +1255,8 @@ NOCOPYBITS
 nodeca
 nodiscard
 nodoc
+NODRAWCAPTION
+NODRAWICON
 NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
@@ -1249,6 +1283,7 @@ NORMALUSER
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
+nostrud
 notfound
 NOTIFICATIONSDLL
 NOTIFYICONDATAW
@@ -1264,6 +1299,7 @@ NOZORDER
 NPH
 NResize
 nrw
+nsunt
 NTAPI
 ntdll
 ntfs
@@ -1280,12 +1316,15 @@ Objbase
 OBJID
 objidl
 oblitum
+obmikh
+occaecat
 ocr
 Ocrsettings
 odbc
 odbccp
 Oem
 officehubintl
+officia
 ofs
 oid
 oldcolor
@@ -1302,6 +1341,7 @@ onenote
 onstd
 oobe
 OOBEPT
+ools
 opencode
 opensource
 openxmlformats
@@ -1315,6 +1355,8 @@ ostr
 OSVERSIONINFOEX
 OSVERSIONINFOEXW
 osvi
+otating
+otifications
 OUTOFCONTEXT
 OUTOFMEMORY
 outpin
@@ -1461,6 +1503,7 @@ PRODUCTVERSION
 Progman
 programdata
 PROGRAMFILES
+proident
 projectname
 PROPBAG
 PROPERTYKEY
@@ -1541,6 +1584,7 @@ RECTL
 rectp
 rects
 RECTSOURCE
+recyclebin
 redirectedfrom
 Redist
 redistributable
@@ -1579,6 +1623,7 @@ renamable
 RENAMEONCOLLISION
 Renamer
 reparent
+reparented
 reparenting
 reparse
 reportbug
@@ -1612,6 +1657,7 @@ RIGHTDOWN
 RIGHTSCROLLBAR
 RIGHTUP
 riid
+ringbuffer
 RKey
 RLO
 RMENU
@@ -1671,13 +1717,13 @@ Scode
 scoobe
 SCOPEID
 screenshot
+screenshots
 scrollviewer
 sddl
 SDKDDK
 sdns
 searchterm
 secpol
-Secur
 Segoe
 Sekan
 SENDCHANGE
@@ -1753,6 +1799,7 @@ sia
 SIATTRIBFLAGS
 SICHINT
 sid
+SIDs
 siex
 sigdn
 SIGNINGSCENARIO
@@ -1853,6 +1900,7 @@ stylecop
 Subdir
 subfolders
 subkey
+subkeys
 SUBLANG
 subquery
 subresource
@@ -1888,7 +1936,7 @@ SYSTEMTIME
 sysvol
 Tadele
 talynone
-TApp
+tapp
 TApplication
 TApplied
 targ
@@ -1966,6 +2014,7 @@ Tsd
 TServer
 TStr
 TValue
+tweakme
 TWF
 tymed
 typedef
@@ -1988,6 +2037,7 @@ UIEx
 uipi
 UIs
 ULARGE
+ullamco
 ULONGLONG
 ums
 unapply
@@ -2009,6 +2059,7 @@ unknwn
 UNLEN
 Unmap
 unmute
+unner
 UNORM
 unregistering
 unremapped
@@ -2049,6 +2100,7 @@ VCINSTALLDIR
 vcm
 Vcpkg
 VCRT
+vcruntime
 vcvars
 VDesktop
 vdi
@@ -2117,6 +2169,7 @@ webpage
 websearch
 webserver
 website
+websites
 wekyb
 Wevtapi
 wgpocpl
@@ -2187,7 +2240,7 @@ WKSG
 Wlkr
 wmain
 Wman
-wmi
+WMI
 WMICIM
 wmimgmt
 WMKEYDOWN
@@ -2230,6 +2283,8 @@ wsl
 wss
 wstr
 wsz
+WTA
+WTNCA
 wtoi
 WTS
 wtsapi
