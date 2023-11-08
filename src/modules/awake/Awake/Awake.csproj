@@ -19,6 +19,7 @@
     <PackageProjectUrl>https://awake.den.dev</PackageProjectUrl>
     <RepositoryUrl>https://github.com/microsoft/powertoys</RepositoryUrl>
     <SelfContained>true</SelfContained>
+    <ProjectPriFileName>PowerToys.Awake.pri</ProjectPriFileName>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
@@ -85,6 +86,12 @@
     <Content Include="Assets\Awake\Awake.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resource Files\Resource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

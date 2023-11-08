@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Awake.Core.Models;
 using Awake.Core.Native;
+using Awake.Helpers;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 
@@ -99,6 +100,7 @@ namespace Awake.Core
 
         public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts, bool startedFromPowerToys)
         {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             if (TrayMenu != IntPtr.Zero)
             {
                 var destructionStatus = Bridge.DestroyMenu(TrayMenu);
@@ -137,7 +139,7 @@ namespace Awake.Core
 
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
 
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.PASSIVE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, "Off (keep using the selected power plan)");
+            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.PASSIVE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, resourceLoader.GetString("Awake_off"));
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.INDEFINITE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, "Keep awake indefinitely");
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (mode == AwakeMode.TIMED ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, "Keep awake on interval");
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | Native.Constants.MF_DISABLED | (mode == AwakeMode.EXPIRABLE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_EXPIRABLE, "Keep awake until expiration date and time");
