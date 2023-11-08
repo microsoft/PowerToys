@@ -790,6 +790,8 @@ SOFTWARE.
 
 ### UTF Unknown
 
+We use the UTF.Unknown NuGet package for detecting encoding in text/code files.
+
 **Source**: https://github.com/CharsetDetector/UTF-unknown
 
 ```
