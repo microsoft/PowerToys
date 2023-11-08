@@ -29,10 +29,10 @@
     <CreateSymbolicLinksForPublishFilesIfPossible>true</CreateSymbolicLinksForPublishFilesIfPossible>
     <CreateSymbolicLinksForCopyAdditionalFilesIfPossible>true</CreateSymbolicLinksForCopyAdditionalFilesIfPossible>
     <CreateSymbolicLinksForCopyLocalIfPossible>true</CreateSymbolicLinksForCopyLocalIfPossible>
-    <BuildPassReferences>true</BuildPassReferences>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <SkipCopyUnchangedFiles>true</SkipCopyUnchangedFiles>
     <BuildInParallel>true</BuildInParallel>
-    <EnableClServerMode>true</EnableClServerMode>
+    <CopyRetryCount>20</CopyRetryCount>
   </PropertyGroup>
 
   <PropertyGroup>
