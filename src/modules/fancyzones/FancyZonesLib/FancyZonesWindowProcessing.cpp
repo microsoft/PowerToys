@@ -13,15 +13,22 @@ FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::Defin
         return ProcessabilityType::Minimized;
     }
 
-    const bool standard = FancyZonesWindowUtils::IsStandardWindow(window);
-    if (!standard)
+    auto style = GetWindowLong(window, GWL_STYLE);
+    auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
+
+    if (!FancyZonesWindowUtils::HasStyle(style, WS_VISIBLE))
     {
-        return ProcessabilityType::NonStandardWindow;
+        return ProcessabilityType::NotVisible;
     }
 
-    bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
-    bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
-    bool hasCaption = FancyZonesWindowUtils::HasCaption(window); 
+    if (!FancyZonesWindowUtils::HasStyle(exStyle, WS_EX_TOOLWINDOW))
+    {
+        return ProcessabilityType::ToolWindow;
+    }
+
+    bool isPopup = FancyZonesWindowUtils::HasStyle(style, WS_POPUP);
+    bool hasThickFrame = FancyZonesWindowUtils::HasStyle(style, WS_THICKFRAME);
+    bool hasCaption = FancyZonesWindowUtils::HasStyle(style, WS_CAPTION); 
     if (isPopup && !(hasThickFrame && hasCaption))
     {
         // popup windows we want to snap: e.g. Calculator, Telegram   

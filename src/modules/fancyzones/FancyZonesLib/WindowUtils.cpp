@@ -153,52 +153,6 @@ bool FancyZonesWindowUtils::HasVisibleOwner(HWND window) noexcept
     return rect.top != rect.bottom && rect.left != rect.right;
 }
 
-bool FancyZonesWindowUtils::IsStandardWindow(HWND window)
-{
-    // True if from the styles the window looks like a standard window
-
-    if (GetAncestor(window, GA_ROOT) != window)
-    {
-        return false;
-    }
-
-    auto style = GetWindowLong(window, GWL_STYLE);
-    auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
-
-    bool isToolWindow = (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW;
-    bool isVisible = (style & WS_VISIBLE) == WS_VISIBLE;
-    if (isToolWindow || !isVisible)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool FancyZonesWindowUtils::HasCaption(HWND window) noexcept
-{
-    auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_CAPTION) == WS_CAPTION);
-}
-
-bool FancyZonesWindowUtils::IsPopupWindow(HWND window) noexcept
-{
-    auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_POPUP) == WS_POPUP);
-}
-
-bool FancyZonesWindowUtils::HasThickFrame(HWND window) noexcept
-{
-    auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_THICKFRAME) == WS_THICKFRAME);
-}
-
-bool FancyZonesWindowUtils::HasMinimizeMaximizeButtons(HWND window) noexcept
-{
-    auto style = GetWindowLong(window, GWL_STYLE);
-    return (style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX && (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX;
-}
-
 bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
 {
     DWORD pid = 0;

@@ -50,9 +50,8 @@ namespace FancyZonesUnitTests
         TEST_METHOD (ToolWindow)
         {
             HWND window = Mocks::WindowCreate(hInst, L"", L"", WS_EX_TOOLWINDOW);
-            Assert::IsFalse(FancyZonesWindowUtils::IsStandardWindow(window));
-
-            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonStandardWindow, FancyZonesWindowProcessing::DefineWindowType(window));
+            
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::ToolWindow, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
         TEST_METHOD (InvisibleWindow)
@@ -60,9 +59,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst);
             ShowWindow(window, SW_HIDE);
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); // let ShowWindow finish
-            Assert::IsFalse(FancyZonesWindowUtils::IsStandardWindow(window));
-
-            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonStandardWindow, FancyZonesWindowProcessing::DefineWindowType(window));
+            
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NotVisible, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
         TEST_METHOD (Popup_App)
