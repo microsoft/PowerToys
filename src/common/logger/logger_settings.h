@@ -27,6 +27,8 @@ struct LogSettings
     inline const static std::wstring pdfPrevLogPath = L"logs\\FileExplorer_localLow\\PdfPrevHandler\\pdf-prev-handler-log.txt";
     inline const static std::string pdfThumbLoggerName = "PdfThumbnailProvider";
     inline const static std::wstring pdfThumbLogPath = L"logs\\FileExplorer_localLow\\PdfThumbnailProvider\\pdf-thumbnail-provider-log.txt";
+    inline const static std::string qoiPrevLoggerName = "QoiPrevHandler";
+    inline const static std::wstring qoiPrevLogPath = L"logs\\FileExplorer_localLow\\QoiPreviewHandler\\qoi-prev-handler-log.txt";
     inline const static std::string qoiThumbLoggerName = "QoiThumbnailProvider";
     inline const static std::wstring qoiThumbLogPath = L"logs\\FileExplorer_localLow\\QoiThumbnailProvider\\qoi-thumbnail-provider-log.txt";
     inline const static std::string stlThumbLoggerName = "StlThumbnailProvider";

@@ -221,6 +221,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("stl-thumbnail-color-setting")]
         public StringProperty StlThumbnailColor { get; set; }
 
+        private bool enableQoiPreview = true;
+
+        [JsonPropertyName("qoi-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableQoiPreview
+        {
+            get => enableQoiPreview;
+            set
+            {
+                if (value != enableQoiPreview)
+                {
+                    LogTelemetryEvent(value);
+                    enableQoiPreview = value;
+                }
+            }
+        }
+
         private bool enableQoiThumbnail = true;
 
         [JsonPropertyName("qoi-thumbnail-toggle-setting")]

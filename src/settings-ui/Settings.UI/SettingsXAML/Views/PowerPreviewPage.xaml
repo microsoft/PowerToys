@@ -131,6 +131,18 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured}"
                         Severity="Informational" />
+                    <controls:SettingsCard
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Preview_QOI"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QOIRenderIsEnabled}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIRenderEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIRenderEnabledGpoConfigured}"
+                        Severity="Informational" />
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
