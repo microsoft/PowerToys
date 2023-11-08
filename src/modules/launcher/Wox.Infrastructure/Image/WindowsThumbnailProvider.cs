@@ -85,7 +85,11 @@ namespace Wox.Infrastructure.Image
             IntPtr hBitmap = IntPtr.Zero;
             if (Path.GetExtension(fileName).Equals(".lnk", StringComparison.OrdinalIgnoreCase))
             {
-                hBitmap = ExtractIconToHBitmap(fileName);
+                // If the file has a '.lnk' extension, it is a shortcut file. Use the shellLinkHelper to retrieve the actual target file path from the shortcut.
+                IShellLinkHelper shellLinkHelper = new ShellLinkHelper();
+
+                string targetFilePath = shellLinkHelper.RetrieveTargetPath(fileName);
+                hBitmap = ExtractIconToHBitmap(targetFilePath);
             }
             else
             {
