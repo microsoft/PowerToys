@@ -20,7 +20,6 @@ WindowMouseSnap::WindowMouseSnap(HWND window, const std::unordered_map<HMONITOR,
     m_snappingMode(false)
 {
     m_windowProperties.hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(m_window);
-    m_windowProperties.isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(m_window);
 }
 
 WindowMouseSnap::~WindowMouseSnap()
@@ -111,10 +110,8 @@ void WindowMouseSnap::MoveSizeEnd()
     if (m_snappingMode)
     {   
         const bool hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(m_window);
-        const bool isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(m_window);
-
-        if ((isStandardWindow == false && hasNoVisibleOwner == true &&
-             m_windowProperties.isStandardWindow == true && m_windowProperties.hasNoVisibleOwner == true) ||
+        
+        if ((hasNoVisibleOwner && m_windowProperties.hasNoVisibleOwner) ||
              FancyZonesWindowUtils::IsWindowMaximized(m_window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
