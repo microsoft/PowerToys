@@ -7,7 +7,7 @@ using PreviewHandlerCommon.Utilities;
 namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
 {
     /// <summary>
-    /// G-code Thumbnail Provider.
+    /// Qoi Thumbnail Provider.
     /// </summary>
     public class QoiThumbnailProvider
     {
@@ -33,11 +33,11 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
         private const uint MaxThumbnailSize = 10000;
 
         /// <summary>
-        /// Reads the G-code content searching for thumbnails and returns the largest.
+        /// Generate thumbnail bitmap for provided Qoi stream.
         /// </summary>
-        /// <param name="stream">The Stream instance for the Qoi content.</param>
+        /// <param name="stream">The Stream instance for the Qoi bitmap.</param>
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
-        /// <returns>A thumbnail extracted from the G-code content.</returns>
+        /// <returns>A thumbnail rendered from the Qoi bitmap.</returns>
         public static Bitmap GetThumbnail(Stream stream, uint cx)
         {
             if (cx > MaxThumbnailSize || stream == null || stream.Length == 0)
