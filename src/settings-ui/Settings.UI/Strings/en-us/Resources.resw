@@ -1136,7 +1136,7 @@
     <value>Color</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Header" xml:space="preserve">
-    <value>Quick Ok Image</value>
+    <value>Quite Ok Image</value>
     <comment>File type, do not translate</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Description" xml:space="preserve">
