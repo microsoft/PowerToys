@@ -25,10 +25,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
-    <CreateHardLinksForPublishFilesIfPossible>true</CreateHardLinksForPublishFilesIfPossible>
-    <CreateHardLinksForCopyAdditionalFilesIfPossible>true</CreateHardLinksForCopyAdditionalFilesIfPossible>
-    <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>
+    <CreateSymbolicLinksForCopyLocalIfPossible>true</CreateSymbolicLinksForCopyLocalIfPossible>
+    <CreateSymbolicLinksForPublishFilesIfPossible>true</CreateSymbolicLinksForPublishFilesIfPossible>
+    <CreateSymbolicLinksForCopyAdditionalFilesIfPossible>true</CreateSymbolicLinksForCopyAdditionalFilesIfPossible>
+    <CreateSymbolicLinksForCopyLocalIfPossible>true</CreateSymbolicLinksForCopyLocalIfPossible>
     <BuildPassReferences>true</BuildPassReferences>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <BuildInParallel>true</BuildInParallel>
