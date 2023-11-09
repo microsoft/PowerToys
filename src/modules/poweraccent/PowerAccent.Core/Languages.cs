@@ -100,6 +100,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyGA(letter))
                 .Union(GetDefaultLetterKeyGD(letter))
                 .Union(GetDefaultLetterKeyDE(letter))
+                .Union(GetDefaultLetterKeyEL(letter))
                 .Union(GetDefaultLetterKeyEST(letter))
                 .Union(GetDefaultLetterKeyFI(letter))
                 .Union(GetDefaultLetterKeyFR(letter))
@@ -525,6 +526,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_C => new string[] { "χ" },
                 LetterKey.VK_D => new string[] { "δ" },
                 LetterKey.VK_E => new string[] { "ε", "η" },
+                LetterKey.VK_F => new string[] { "φ" },
                 LetterKey.VK_G => new string[] { "γ" },
                 LetterKey.VK_I => new string[] { "ι" },
                 LetterKey.VK_K => new string[] { "κ" },
@@ -535,7 +537,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_P => new string[] { "π", "φ", "ψ" },
                 LetterKey.VK_R => new string[] { "ρ" },
                 LetterKey.VK_S => new string[] { "σ" },
-                LetterKey.VK_T => new string[] { "τ" },
+                LetterKey.VK_T => new string[] { "τ", "θ" },
                 LetterKey.VK_U => new string[] { "υ" },
                 LetterKey.VK_X => new string[] { "ξ" },
                 LetterKey.VK_Y => new string[] { "υ" },
