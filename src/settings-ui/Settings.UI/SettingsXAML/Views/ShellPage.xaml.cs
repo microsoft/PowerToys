@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -34,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Declaration for the updating the general settings callback function.
         /// </summary>
-        public delegate bool UpdatingGeneralSettingsCallback(string module, bool isEnabled);
+        public delegate bool UpdatingGeneralSettingsCallback(ModuleType moduleType, bool isEnabled);
 
         /// <summary>
         /// Declaration for the opening oobe window callback function.

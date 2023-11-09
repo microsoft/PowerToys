@@ -236,17 +236,18 @@
                         </StackPanel>
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard x:Uid="General_SettingsBackupAndRestoreLocationText">
-                                <StackPanel
-                                    HorizontalAlignment="Right"
-                                    Orientation="Horizontal"
-                                    Spacing="8">
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
                                     <TextBlock
                                         x:Name="pathTextBlock"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         IsTextSelectionEnabled="True"
                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}"
-                                        TextTrimming="CharacterEllipsis">
+                                        TextWrapping="Wrap">
                                         <ToolTipService.ToolTip>
                                             <ToolTip IsEnabled="{Binding ElementName=pathTextBlock, Path=IsTextTrimmed}">
                                                 <TextBlock Text="{x:Bind Mode=TwoWay, Path=ViewModel.SettingsBackupAndRestoreDir}" />
@@ -254,6 +255,7 @@
                                         </ToolTipService.ToolTip>
                                     </TextBlock>
                                     <Button
+                                        Grid.Column="1"
                                         Command="{Binding SelectSettingBackupDirEventHandler}"
                                         Content="&#xe8da;"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}">
@@ -263,15 +265,18 @@
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
                                     </Button>
-                                </StackPanel>
+                                </Grid>
                             </controls:SettingsCard>
                             <controls:SettingsCard
                                 x:Uid="General_SettingsBackupAndRestoreStatusInfo"
                                 HorizontalContentAlignment="Left"
                                 ContentAlignment="Vertical">
-                                <Grid Margin="0,0,0,6" ColumnSpacing="8">
+                                <Grid
+                                    Margin="0,0,0,6"
+                                    ColumnSpacing="36"
+                                    RowSpacing="4">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" MinWidth="{StaticResource SettingActionControlMinWidth}" />
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
@@ -281,7 +286,10 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <TextBlock x:Uid="General_SettingsBackupInfo_StatusHeader" />
-                                    <TextBlock Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="WrapWholeWords">
                                         <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}" />
                                         <Hyperlink Click="UpdateBackupAndRestoreStatusText" TextDecorations="Underline">
                                             <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
@@ -293,20 +301,23 @@
                                         Grid.Row="1"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding LastSettingsBackupFileName, Mode=OneWay}" />
+                                        Text="{Binding LastSettingsBackupFileName, Mode=OneWay}"
+                                        TextWrapping="WrapWholeWords" />
 
                                     <TextBlock x:Uid="General_SettingsBackupInfo_SourceHeader" Grid.Row="2" />
                                     <TextBlock
                                         Grid.Row="2"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding LastSettingsBackupSource, Mode=OneWay}" />
+                                        Text="{Binding LastSettingsBackupSource, Mode=OneWay}"
+                                        TextWrapping="WrapWholeWords" />
                                     <TextBlock x:Uid="General_SettingsBackupInfo_DateHeader" Grid.Row="3" />
                                     <TextBlock
                                         Grid.Row="3"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding LastSettingsBackupDate, Mode=OneWay}" />
+                                        Text="{Binding LastSettingsBackupDate, Mode=OneWay}"
+                                        TextWrapping="WrapWholeWords" />
                                 </Grid>
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>

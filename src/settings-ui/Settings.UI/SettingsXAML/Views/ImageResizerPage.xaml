@@ -77,7 +77,6 @@
                                                 AutomationProperties.AccessibilityView="Raw"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 FontSize="10"
-                                                Foreground="{ThemeResource SystemBaseMediumColor}"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="&#xE947;"
                                                 Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
@@ -89,7 +88,6 @@
                                                 Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
-                                                Foreground="{ThemeResource SystemBaseMediumColor}"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" />
                                         </StackPanel>
@@ -110,8 +108,8 @@
                                                 <TextBlock x:Uid="EditTooltip" />
                                             </ToolTipService.ToolTip>
                                             <Button.Flyout>
-                                                <Flyout x:Uid="ImageResizer_EditSize">
-                                                    <StackPanel Margin="0,12,0,0" Spacing="16">
+                                                <Flyout x:Uid="ImageResizer_EditSize" ShouldConstrainToRootBounds="False">
+                                                    <StackPanel Spacing="16">
                                                         <TextBox
                                                             x:Uid="ImageResizer_Name"
                                                             Width="240"
@@ -148,7 +146,6 @@
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Size"
                                                             Width="240"
-                                                            Margin="0,0,0,24"
                                                             SelectedIndex="{Binding Path=Unit, Mode=TwoWay}">
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
@@ -235,7 +232,7 @@
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Style="{StaticResource SubtleButtonStyle}">
                                 <Button.Flyout>
-                                    <Flyout>
+                                    <Flyout ShouldConstrainToRootBounds="False">
                                         <TextBlock x:Name="FileFormatTextBlock">
                                             <Run x:Uid="ImageResizer_FileFormatDescription" />
                                             <LineBreak />

@@ -14,6 +14,7 @@ namespace PowerAccent.Core
         CUR,
         CY,
         CZ,
+        DK,
         GA,
         GD,
         DE,
@@ -53,6 +54,7 @@ namespace PowerAccent.Core
                 Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
                 Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
                 Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
+                Language.DK => GetDefaultLetterKeyDK(letter), // Danish
                 Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish)
                 Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
@@ -95,6 +97,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyCUR(letter))
                 .Union(GetDefaultLetterKeyCY(letter))
                 .Union(GetDefaultLetterKeyCZ(letter))
+                .Union(GetDefaultLetterKeyDK(letter))
                 .Union(GetDefaultLetterKeyGA(letter))
                 .Union(GetDefaultLetterKeyGD(letter))
                 .Union(GetDefaultLetterKeyDE(letter))
@@ -134,6 +137,13 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
+                LetterKey.VK_0 => new[] { "↉" },
+                LetterKey.VK_1 => new[] { "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒" },
+                LetterKey.VK_2 => new[] { "⅔", "⅖" },
+                LetterKey.VK_3 => new[] { "¾", "⅗", "⅜" },
+                LetterKey.VK_4 => new[] { "⅘" },
+                LetterKey.VK_5 => new[] { "⅚", "⅝" },
+                LetterKey.VK_7 => new[] { "⅞" },
                 LetterKey.VK_A => new[] { "α", "ά", "ȧ" },
                 LetterKey.VK_B => new[] { "ḃ", "β" },
                 LetterKey.VK_C => new[] { "ċ", "χ", "°C", "©", "ℂ" },
@@ -658,6 +668,18 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "€", "é" },
                 LetterKey.VK_O => new[] { "ø" },
                 LetterKey.VK_S => new[] { "$" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Danish
+        private static string[] GetDefaultLetterKeyDK(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "å", "æ" },
+                LetterKey.VK_E => new[] { "€" },
+                LetterKey.VK_O => new[] { "ø" },
                 _ => Array.Empty<string>(),
             };
         }
