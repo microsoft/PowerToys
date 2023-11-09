@@ -108,11 +108,8 @@ void WindowMouseSnap::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bo
 void WindowMouseSnap::MoveSizeEnd()
 {
     if (m_snappingMode)
-    {   
-        const bool hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(m_window);
-        
-        if ((hasNoVisibleOwner && m_windowProperties.hasNoVisibleOwner) ||
-             FancyZonesWindowUtils::IsWindowMaximized(m_window))
+    {
+        if (FancyZonesWindowUtils::IsWindowMaximized(m_window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
             // or if the window is maximized by Windows when the cursor hits the screen top border
