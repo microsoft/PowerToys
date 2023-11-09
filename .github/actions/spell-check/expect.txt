@@ -688,6 +688,7 @@ Hashset
 Hashtable
 hashtag
 HASHVAL
+HASSTRINGS
 hbitmap
 hbm
 hbmp
