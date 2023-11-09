@@ -11,6 +11,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using PowerLauncher.Properties;
@@ -180,7 +181,7 @@ namespace PowerLauncher.Plugin
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
                 var description = string.Format(CultureInfo.CurrentCulture, Resources.FailedToInitializePluginsDescription, failed);
-                API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false);
+                Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false));
             }
         }
 
