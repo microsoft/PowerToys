@@ -103,6 +103,7 @@
                 <Button.Flyout>
                     <Flyout x:Name="DetailsFlyout" Placement="Bottom">
                         <StackPanel Orientation="Vertical" Spacing="4">
+                            <!-- keys -->
                             <ItemsControl ItemsSource="{x:Bind Path=RemapKeys, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -111,7 +112,7 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="Lib:KeysDataModel">
-                                        <StackPanel Orientation="Horizontal">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
                                             <Border
                                                 Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -139,9 +140,8 @@
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </Border>
-                                            <custom:IsEnabledTextBlock
+                                            <TextBlock
                                                 x:Uid="To"
-                                                Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                             <Border
@@ -165,7 +165,7 @@
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 Content="{Binding}"
-                                                                FontSize="12"
+                                                                Style="{StaticResource CaptionTextBlockStyle}"
                                                                 Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                                                                 IsTabStop="False"
                                                                 VisualType="TextOnly" />
@@ -177,6 +177,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+                            <!-- shortcuts -->
                             <ItemsControl ItemsSource="{x:Bind Path=RemapShortcuts, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -185,7 +186,7 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
-                                        <StackPanel Orientation="Horizontal">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
                                             <Border
                                                 Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -213,9 +214,8 @@
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </Border>
-                                            <custom:IsEnabledTextBlock
+                                            <TextBlock
                                                 x:Uid="To"
-                                                Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                             <Border
@@ -247,7 +247,6 @@
                                                 </ItemsControl>
                                             </Border>
                                             <TextBlock
-                                                Margin="4,0,0,0"
                                                 VerticalAlignment="Center"
                                                 Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                                                 Text="{x:Bind TargetApp}" />
@@ -261,7 +260,8 @@
             </Button>
         </DataTemplate>
     </Page.Resources>
-    <Grid Margin="16,0,0,0" RowSpacing="24">
+    
+    <Grid Margin="16,0,0,0" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -273,10 +273,9 @@
 
         <InfoBar
             x:Uid="UpdateAvailable"
-            Margin="0,0,16,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
-            CornerRadius="8"
+            CornerRadius="{StaticResource ControlCornerRadius}"
             IsClosable="False"
             IsOpen="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"
             Severity="Informational">
@@ -285,27 +284,25 @@
             </InfoBar.ActionButton>
         </InfoBar>
 
-        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1">
-            <StackPanel Padding="0,0,16,16" Orientation="Vertical">
+        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1" Padding="0,0,16,0">
+            <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock
                     x:Uid="EnabledModules"
-                    Margin="0,0,0,12"
                     Style="{StaticResource SubtitleTextBlockStyle}" />
                 <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
                         <controls:StaggeredLayout
-                            ColumnSpacing="8"
+                            ColumnSpacing="12"
                             DesiredColumnWidth="378"
-                            RowSpacing="8" />
+                            RowSpacing="12" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:DashboardListItem">
-                            <Grid
+                            <Grid RowSpacing="8"
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="{StaticResource OverlayCornerRadius}"
-                                RowSpacing="0">
+                                CornerRadius="{StaticResource OverlayCornerRadius}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
                                     <RowDefinition />
@@ -318,14 +315,14 @@
                                         </LinearGradientBrush>
                                     </Border.Background>
                                 </Border>
-                                <Grid Margin="16,8,16,0" ColumnSpacing="12">
+                                <Grid Margin="16,16,16,0" ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <Image Width="20" Margin="0,0,0,0">
+                                    <Image Height="20">
                                         <Image.Source>
                                             <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
                                         </Image.Source>
@@ -333,13 +330,11 @@
                                     <TextBlock
                                         Grid.Column="1"
                                         VerticalAlignment="Center"
-                                        FontWeight="SemiBold"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
                                         Text="{x:Bind Label, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis" />
                                     <FontIcon
                                         Grid.Column="2"
-                                        Width="20"
-                                        Margin="0,0,-12,0"
                                         FontSize="16"
                                         Glyph="&#xE72E;"
                                         Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
@@ -349,7 +344,6 @@
                                     </FontIcon>
                                     <ToggleSwitch
                                         Grid.Column="3"
-                                        Margin="0,-2,0,0"
                                         HorizontalAlignment="Right"
                                         IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
                                         IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
@@ -360,7 +354,7 @@
 
                                 <ItemsControl
                                     Grid.Row="1"
-                                    Margin="16,8,16,16"
+                                    Margin="16,0,16,16"
                                     ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
                                     ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}"
                                     Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
@@ -377,20 +371,19 @@
 
                 <TextBlock
                     x:Uid="DisabledModules"
-                    Margin="0,24,0,12"
                     Style="{StaticResource SubtitleTextBlockStyle}" />
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
                         <controls:StaggeredLayout
-                            ColumnSpacing="8"
+                            ColumnSpacing="12"
                             DesiredColumnWidth="378"
-                            RowSpacing="8" />
+                            RowSpacing="12" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:DashboardListItem">
                             <Grid
-                                Padding="16,12"
+                                Padding="16"
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
@@ -403,7 +396,7 @@
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <Image Width="20">
+                                    <Image Height="20">
                                         <Image.Source>
                                             <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
                                         </Image.Source>
@@ -411,13 +404,11 @@
                                     <TextBlock
                                         Grid.Column="1"
                                         VerticalAlignment="Center"
-                                        FontWeight="SemiBold"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
                                         Text="{x:Bind Label, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis" />
                                     <FontIcon
                                         Grid.Column="2"
-                                        Width="20"
-                                        Margin="0,0,-12,0"
                                         FontSize="16"
                                         Glyph="&#xE72E;"
                                         Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
@@ -427,7 +418,6 @@
                                     </FontIcon>
                                     <ToggleSwitch
                                         Grid.Column="3"
-                                        Margin="0,-2,0,0"
                                         HorizontalAlignment="Right"
                                         IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
                                         IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
@@ -440,7 +430,6 @@
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
             </StackPanel>
-
         </ScrollViewer>
     </Grid>
 </Page>

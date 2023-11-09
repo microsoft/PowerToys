@@ -19,16 +19,16 @@
                 <controls:SettingsCard
                     x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
-                <custom:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
                     <controls:SettingsExpander
                         x:Uid="AlwaysOnTop_ActivationShortcut"
@@ -43,14 +43,14 @@
                     </controls:SettingsExpander>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsExpander
                         x:Uid="AlwaysOnTop_FrameEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsExpanded="True">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" />
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                            <controls:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Custom_Color" />
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Windows_Default" />
@@ -58,18 +58,18 @@
                             </controls:SettingsCard>
                             <controls:SettingsCard
                                 x:Uid="AlwaysOnTop_FrameColor"
-                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}"
-                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                                IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.FrameAccentColor, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FrameColor, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="AlwaysOnTop_FrameOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                            <controls:SettingsCard x:Uid="AlwaysOnTop_FrameOpacity" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
-                                    Minimum="0"
+                                    Minimum="1"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FrameOpacity}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="AlwaysOnTop_FrameThickness" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                            <controls:SettingsCard x:Uid="AlwaysOnTop_FrameThickness" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="5"
@@ -78,7 +78,7 @@
                                     SmallChange="1"
                                     Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <controls:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.Windows11, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <CheckBox x:Uid="AlwaysOnTop_RoundCorners" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RoundCornersEnabled}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
@@ -96,7 +96,7 @@
                     </controls:SettingsExpander>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsExpander
                         x:Uid="AlwaysOnTop_ExcludedApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"

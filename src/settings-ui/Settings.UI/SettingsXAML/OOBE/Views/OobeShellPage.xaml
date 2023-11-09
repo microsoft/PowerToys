@@ -30,7 +30,7 @@
             <animations:Implicit.Animations>
                 <animations:OffsetAnimation Duration="0:0:0.3" />
             </animations:Implicit.Animations>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="12">
                 <Image
                     Width="16"
                     Height="16"
@@ -39,7 +39,6 @@
                 <TextBlock
                     x:Name="AppTitleBarText"
                     x:Uid="OobeWindow_TitleTxt"
-                    Margin="12,0,0,0"
                     VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     TextWrapping="NoWrap" />
