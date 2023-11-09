@@ -77,7 +77,6 @@
                                                 AutomationProperties.AccessibilityView="Raw"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 FontSize="10"
-                                                Foreground="{ThemeResource SystemBaseMediumColor}"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="&#xE947;"
                                                 Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
@@ -89,7 +88,6 @@
                                                 Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
-                                                Foreground="{ThemeResource SystemBaseMediumColor}"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" />
                                         </StackPanel>
