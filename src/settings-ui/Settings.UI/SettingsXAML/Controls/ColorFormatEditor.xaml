@@ -16,7 +16,7 @@
         <DataTemplate x:Key="FormatParameterTemplate" x:DataType="local:ColorFormatParameter">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="34" />
+                    <ColumnDefinition Width="32" />
                     <ColumnDefinition Width="110" />
                 </Grid.ColumnDefinitions>
 
@@ -39,8 +39,8 @@
         <DataTemplate x:Key="ColorParameterTemplate" x:DataType="local:ColorFormatParameter">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="18" />
-                    <ColumnDefinition Width="186" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="192" />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
@@ -61,7 +61,7 @@
 
         <ItemsPanelTemplate x:Key="ItemPanelTemplate">
             <CommunityToolkit:WrapPanel
-                HorizontalSpacing="20"
+                HorizontalSpacing="16"
                 Orientation="Horizontal"
                 VerticalSpacing="4" />
         </ItemsPanelTemplate>
@@ -83,16 +83,13 @@
                 TextChanged="NewColorFormatTextBox_TextChanged" />
 
             <TextBlock
-                Margin="12,0,0,0"
                 FontWeight="SemiBold"
                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                Style="{StaticResource CaptionTextBlockStyle}"
                 Text="{Binding ElementName=NewColorFormatTextBox, Path=Text, Converter={StaticResource ColorFormatConverter}}" />
 
             <TextBlock
                 x:Uid="ColorFormatEditorHelpline1"
-                Margin="0,12,0,0"
-                Style="{StaticResource CaptionTextBlockStyle}" />
+                TextWrapping="Wrap" />
 
             <ItemsControl
                 x:Name="ParametersItemsControl"
@@ -101,9 +98,8 @@
 
             <TextBlock
                 x:Uid="ColorFormatEditorHelpline2"
-                Margin="0,12,0,0"
                 VerticalAlignment="Bottom"
-                Style="{StaticResource CaptionTextBlockStyle}" />
+                TextWrapping="Wrap" />
 
             <ItemsControl
                 x:Name="ColorParametersItemsControl"
@@ -113,7 +109,7 @@
             <TextBlock
                 x:Uid="ColorFormatEditorHelpline3"
                 VerticalAlignment="Bottom"
-                Style="{StaticResource CaptionTextBlockStyle}" />
+                TextWrapping="Wrap" />
         </StackPanel>
     </Grid>
 </UserControl>

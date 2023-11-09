@@ -27,18 +27,18 @@
                 <controls:SettingsCard
                     x:Uid="ImageResizer_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsImageResizer.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
@@ -58,11 +58,7 @@
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
                                     </controls:SettingsCard.Resources>
                                     <controls:SettingsCard.Description>
-                                        <StackPanel
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            Margin="0,4,0,0"
-                                            Orientation="Horizontal">
+                                        <StackPanel Orientation="Horizontal">
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 Style="{ThemeResource SecondaryTextStyle}"
@@ -73,22 +69,18 @@
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Width, Mode=OneWay}" />
                                             <TextBlock
-                                                Margin="0,5,4,0"
-                                                AutomationProperties.AccessibilityView="Raw"
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                FontSize="10"
+                                                Margin="0,0,4,0"
                                                 Foreground="{ThemeResource SystemBaseMediumColor}"
                                                 Style="{ThemeResource SecondaryTextStyle}"
-                                                Text="&#xE947;"
-                                                Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Text="×"
+                                                Visibility="{x:Bind Path=EnableExtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Height, Mode=OneWay}"
-                                                Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Visibility="{x:Bind Path=EnableExtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
-                                                Margin="0,0,4,0"
                                                 Foreground="{ThemeResource SystemBaseMediumColor}"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" />
@@ -101,7 +93,6 @@
                                         Spacing="8">
                                         <Button
                                             x:Uid="EditButton"
-                                            Width="40"
                                             Height="36"
                                             Content="&#xE70F;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
@@ -111,44 +102,45 @@
                                             </ToolTipService.ToolTip>
                                             <Button.Flyout>
                                                 <Flyout x:Uid="ImageResizer_EditSize">
-                                                    <StackPanel Margin="0,12,0,0" Spacing="16">
+                                                    <StackPanel Margin="8" Spacing="12" Width="240">
                                                         <TextBox
                                                             x:Uid="ImageResizer_Name"
-                                                            Width="240"
-                                                            HorizontalAlignment="Left"
+                                                            HorizontalAlignment="Stretch"
                                                             Text="{x:Bind Path=Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Fit"
-                                                            Width="240"
-                                                            HorizontalAlignment="Left"
+                                                            HorizontalAlignment="Stretch"
                                                             SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}">
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
                                                         </ComboBox>
 
-                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <Grid ColumnSpacing="8" HorizontalAlignment="Stretch">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition/>
+                                                            </Grid.ColumnDefinitions>
                                                             <NumberBox
                                                                 x:Uid="ImageResizer_Width"
-                                                                Width="116"
+                                                                Grid.Column="0"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
                                                                 Value="{x:Bind Path=Width, Mode=TwoWay}" />
 
                                                             <NumberBox
                                                                 x:Uid="ImageResizer_Height"
-                                                                Width="116"
+                                                                Grid.Column="1"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
-                                                                Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                Visibility="{x:Bind Path=EnableExtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                                                                 Value="{x:Bind Path=Height, Mode=TwoWay}" />
 
-                                                        </StackPanel>
+                                                        </Grid>
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Size"
-                                                            Width="240"
-                                                            Margin="0,0,0,24"
+                                                            HorizontalAlignment="Stretch"
                                                             SelectedIndex="{Binding Path=Unit, Mode=TwoWay}">
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
@@ -163,7 +155,6 @@
                                         <Button
                                             x:Name="RemoveButton"
                                             x:Uid="RemoveButton"
-                                            Width="40"
                                             Height="36"
                                             Click="DeleteCustomSize"
                                             CommandParameter="{Binding Id}"
@@ -181,7 +172,7 @@
                     </ListView>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="ImageResizer_FallBackEncoderText">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
@@ -197,7 +188,7 @@
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
-                            Minimum="0"
+                            Minimum="25"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}" />
                     </controls:SettingsCard>
 
@@ -222,9 +213,9 @@
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="File" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBox
                                 x:Uid="ImageResizer_FilenameFormatPlaceholder"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
