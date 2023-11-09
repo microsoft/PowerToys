@@ -153,6 +153,11 @@ bool FancyZonesWindowUtils::HasVisibleOwner(HWND window) noexcept
     return rect.top != rect.bottom && rect.left != rect.right;
 }
 
+bool FancyZonesWindowUtils::IsRoot(HWND window) noexcept
+{
+    return GetAncestor(window, GA_ROOT) == window;
+}
+
 bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
 {
     DWORD pid = 0;

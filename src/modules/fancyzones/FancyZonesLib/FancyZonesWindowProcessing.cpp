@@ -26,6 +26,12 @@ FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::Defin
         return ProcessabilityType::ToolWindow;
     }
 
+    if (!FancyZonesWindowUtils::IsRoot(window))
+    {
+        // child windows such as buttons, combo boxes, etc.
+        return ProcessabilityType::NonRootWindow;
+    }
+
     bool isPopup = FancyZonesWindowUtils::HasStyle(style, WS_POPUP);
     bool hasThickFrame = FancyZonesWindowUtils::HasStyle(style, WS_THICKFRAME);
     bool hasCaption = FancyZonesWindowUtils::HasStyle(style, WS_CAPTION); 

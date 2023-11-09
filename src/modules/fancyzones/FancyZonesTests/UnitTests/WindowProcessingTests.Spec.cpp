@@ -63,6 +63,17 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NotVisible, FancyZonesWindowProcessing::DefineWindowType(window));
         }
 
+        TEST_METHOD(NonRootWindow)
+        {
+            HWND rootWindow = Mocks::WindowCreate(hInst, L"RootWindow", L"", 0, WS_TILEDWINDOW | WS_CLIPCHILDREN);
+            Assert::IsTrue(FancyZonesWindowUtils::IsRoot(rootWindow));
+
+            HWND window = CreateWindow(WC_COMBOBOX, TEXT(""), CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 0, 0, 10, 10, rootWindow, NULL, hInst, NULL);
+            Assert::IsFalse(FancyZonesWindowUtils::IsRoot(window));
+
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonRootWindow, FancyZonesWindowProcessing::DefineWindowType(window));
+        }
+
         TEST_METHOD (Popup_App)
         {
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_TILEDWINDOW | WS_POPUP);

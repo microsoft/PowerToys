@@ -17,6 +17,7 @@ namespace FancyZonesWindowUtils
 {
     bool IsWindowMaximized(HWND window) noexcept;
     bool HasVisibleOwner(HWND window) noexcept;
+    bool IsRoot(HWND window) noexcept;
     
     constexpr bool HasStyle(LONG style, LONG styleToCheck) noexcept
     {

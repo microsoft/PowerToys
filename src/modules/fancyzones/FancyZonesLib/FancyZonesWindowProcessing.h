@@ -9,6 +9,7 @@ namespace FancyZonesWindowProcessing
         Minimized,
         ToolWindow,
         NotVisible,
+        NonRootWindow,
         NonProcessablePopupWindow,
         ChildWindow,
         Excluded,
