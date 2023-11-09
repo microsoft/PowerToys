@@ -21,7 +21,7 @@ FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::Defin
         return ProcessabilityType::NotVisible;
     }
 
-    if (!FancyZonesWindowUtils::HasStyle(exStyle, WS_EX_TOOLWINDOW))
+    if (FancyZonesWindowUtils::HasStyle(exStyle, WS_EX_TOOLWINDOW))
     {
         return ProcessabilityType::ToolWindow;
     }
