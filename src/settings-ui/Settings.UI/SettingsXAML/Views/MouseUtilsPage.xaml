@@ -239,23 +239,13 @@
                         <controls:SettingsCard.Description>
                             <StackPanel
                                 Orientation="Horizontal" Spacing="4">
-                                <TextBlock
-                                    x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix"
-                                    Style="{ThemeResource SecondaryTextStyle}" />
-                                <TextBlock
-                                    FontWeight="SemiBold"
-                                    Style="{ThemeResource SecondaryTextStyle}"
-                                    Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=OneWay}" />
-                                <TextBlock
-                                    Style="{ThemeResource SecondaryTextStyle}"
-                                    Text="×" />
-                                <TextBlock
-                                    FontWeight="SemiBold"
-                                    Style="{ThemeResource SecondaryTextStyle}"
-                                    Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=OneWay}" />
-                                <TextBlock
-                                    x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix"
-                                    Style="{ThemeResource SecondaryTextStyle}" />
+                                <TextBlock Style="{ThemeResource SecondaryTextStyle}">
+                                    <Run x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix" />
+                                    <Run Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=OneWay}" FontWeight="SemiBold" />
+                                    <Run Text="×" />
+                                    <Run Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=OneWay}" FontWeight="SemiBold" />
+                                    <Run x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix" />
+                                </TextBlock>
                             </StackPanel>
                         </controls:SettingsCard.Description>
                         <StackPanel
