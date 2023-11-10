@@ -19,7 +19,7 @@
             TrueValue="Visible" />
     </UserControl.Resources>
 
-    <Grid Padding="20,0,0,0" RowSpacing="24">
+    <Grid RowSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -31,11 +31,11 @@
             VerticalAlignment="Stretch"
             AutomationProperties.HeadingLevel="1"
             Style="{StaticResource TitleTextBlockStyle}"
-            Text="{x:Bind ModuleTitle}" />
+            Text="{x:Bind ModuleTitle}"
+            Padding="32,0" />
 
-        <ScrollViewer Grid.Row="1">
+        <ScrollViewer Grid.Row="1" Padding="32,0,32,32">
             <Grid
-                Padding="0,0,20,48"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 RowSpacing="24">
                 <Grid.RowDefinitions>
@@ -47,8 +47,7 @@
                 <!--  Top panel  -->
                 <Grid
                     MaxWidth="{StaticResource PageMaxWidth}"
-                    ColumnSpacing="16"
-                    RowSpacing="16">
+                    ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -69,7 +68,7 @@
                         </Image>
                     </Border>
 
-                    <StackPanel x:Name="DescriptionPanel" Grid.Column="1">
+                    <StackPanel x:Name="DescriptionPanel" Grid.Column="1" Spacing="12">
                         <TextBlock
                             x:Name="AboutDescription"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -78,7 +77,6 @@
 
                         <ItemsControl
                             x:Name="PrimaryLinksControl"
-                            Margin="0,8,0,0"
                             IsTabStop="False"
                             ItemsSource="{x:Bind PrimaryLinks}">
                             <ItemsControl.ItemTemplate>
@@ -102,7 +100,6 @@
                     x:Name="ModuleContentPresenter"
                     Grid.Row="1"
                     MaxWidth="{StaticResource PageMaxWidth}"
-                    Margin="0,12,0,0"
                     Content="{x:Bind ModuleContent}" />
 
                 <!--  Bottom panel  -->
@@ -113,13 +110,11 @@
                     Orientation="Vertical"
                     Visibility="{x:Bind SecondaryLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}">
                     <TextBlock
-                        Margin="2,8,0,0"
                         AutomationProperties.HeadingLevel="Level2"
                         Style="{ThemeResource BodyStrongTextBlockStyle}"
                         Text="{x:Bind SecondaryLinksHeader}" />
                     <ItemsControl
                         x:Name="SecondaryLinksItemControl"
-                        Margin="2,0,0,0"
                         IsTabStop="False"
                         ItemsSource="{x:Bind SecondaryLinks}">
                         <ItemsControl.ItemTemplate>

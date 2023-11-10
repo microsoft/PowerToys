@@ -29,7 +29,7 @@
                         <TextBlock
                             x:Name="HeaderPresenter"
                             Grid.Row="0"
-                            Margin="1,32,0,0"
+                            Margin="0,32,0,0"
                             AutomationProperties.HeadingLevel="Level2"
                             Style="{ThemeResource BodyStrongTextBlockStyle}"
                             Text="{TemplateBinding Header}" />
@@ -37,7 +37,6 @@
                         <ContentPresenter
                             x:Name="DescriptionPresenter"
                             Grid.Row="1"
-                            Margin="1,0,0,0"
                             Content="{TemplateBinding Description}"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             TextWrapping="WrapWholeWords">

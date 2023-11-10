@@ -13,7 +13,7 @@
         <!--TODO(stefan): ToDisplayName is no longer available in ColorHelper
         <DropDownButton Padding="4,4,8,4" AutomationProperties.FullDescription="{x:Bind clr:ColorHelper.ToDisplayName(SelectedColor), Mode=OneWay }">
         -->
-        <DropDownButton Padding="4,4,8,4">
+        <DropDownButton Padding="4,4,12,4">
             <Border
                 x:Name="ColorPreviewBorder"
                 Width="48"
