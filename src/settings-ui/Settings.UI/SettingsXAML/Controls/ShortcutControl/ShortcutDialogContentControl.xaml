@@ -51,7 +51,6 @@
             Spacing="8">
 
             <InfoBar
-                Height="64"
                 x:Uid="InvalidShortcut"
                 IsClosable="False"
                 IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
