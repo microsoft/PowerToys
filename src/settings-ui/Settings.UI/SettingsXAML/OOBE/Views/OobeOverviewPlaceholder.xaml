@@ -12,12 +12,10 @@
     Loaded="Page_Loaded"
     mc:Ignorable="d">
 
-    <Grid Margin="0,24,0,0">
-        <ProgressRing
-            x:Name="LoadingProgressRing"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            IsIndeterminate="True"
-            Visibility="Visible" />
-    </Grid>
+    <ProgressRing
+        x:Name="LoadingProgressRing"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        IsIndeterminate="True"
+        Visibility="Visible" />
 </Page>

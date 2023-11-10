@@ -185,7 +185,6 @@
                                 Margin="0,8,0,0" />
                         </Grid>
                     </GridViewItem>
-
                 </GridView>
             </StackPanel>
         </custom:OOBEPageControl.PageContent>
