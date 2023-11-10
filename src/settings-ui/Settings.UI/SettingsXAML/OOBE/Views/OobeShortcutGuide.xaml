@@ -16,7 +16,7 @@
 
                 <custom:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_ShortcutGuide_HowToLaunch" />
 
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button
                         x:Uid="Launch_ShortcutGuide"
                         Click="Start_ShortcutGuide_Click"
