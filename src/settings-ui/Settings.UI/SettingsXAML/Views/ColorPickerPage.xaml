@@ -1,14 +1,14 @@
 ﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
-    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     x:Name="RootPage"
     d:DataContext="{d:DesignInstance Type=viewmodels:ColorPickerViewModel}"
@@ -26,12 +26,12 @@
                 x:Name="ColorPickerView"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical">
-                <controls:SettingsCard
+                <toolkitcontrols:SettingsCard
                     x:Uid="ColorPicker_EnableColorPicker"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </controls:SettingsCard>
+                </toolkitcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -40,22 +40,22 @@
                     Severity="Informational" />
 
                 <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <toolkitcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
+                    <toolkitcontrols:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="EditorFirst" />
                             <ComboBoxItem x:Uid="ColorPickerFirst" />
                             <ComboBoxItem x:Uid="ColorPickerOnly" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
+                    <toolkitcontrols:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -65,11 +65,11 @@
                             SelectedIndex="{Binding ColorFormatsPreviewIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
                             SelectedValuePath="Key" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="ColorPicker_ShowColorName">
+                    <toolkitcontrols:SettingsCard x:Uid="ColorPicker_ShowColorName">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                     <!--
                     Disabling this until we have a safer way to reset cursor as
                     we can hit a state where the cursor doesn't reset
@@ -82,7 +82,7 @@
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard
+                    <toolkitcontrols:SettingsCard
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE762;}">
@@ -91,7 +91,7 @@
                             HorizontalAlignment="Right"
                             Click="NewFormatClick"
                             Style="{StaticResource AccentButtonStyle}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                     <!--  Disabled reordering by dragging  -->
                     <!--  CanReorderItems="True" AllowDrop="True"  -->
                     <ItemsControl
@@ -101,17 +101,17 @@
                         ItemsSource="{Binding ColorFormats, Mode=TwoWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ColorFormatModel">
-                                <controls:SettingsCard
+                                <toolkitcontrols:SettingsCard
                                     Margin="0,0,0,2"
                                     Click="EditButton_Click"
                                     Description="{x:Bind Example, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     Header="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     IsActionIconVisible="False"
                                     IsClickEnabled="True">
-                                    <controls:SettingsCard.Resources>
+                                    <toolkitcontrols:SettingsCard.Resources>
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
                                         <x:Double x:Key="SettingsCardActionButtonWidth">0</x:Double>
-                                    </controls:SettingsCard.Resources>
+                                    </toolkitcontrols:SettingsCard.Resources>
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <ToggleSwitch
                                             x:Uid="Enable_ColorFormat"
@@ -152,7 +152,7 @@
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
-                                </controls:SettingsCard>
+                                </toolkitcontrols:SettingsCard>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

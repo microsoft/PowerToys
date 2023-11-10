@@ -1,14 +1,14 @@
 <Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
@@ -291,7 +291,7 @@
                     Style="{StaticResource SubtitleTextBlockStyle}" />
                 <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
-                        <controls:StaggeredLayout
+                        <toolkitcontrols:StaggeredLayout
                             ColumnSpacing="12"
                             DesiredColumnWidth="378"
                             RowSpacing="12" />
@@ -375,7 +375,7 @@
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
-                        <controls:StaggeredLayout
+                        <toolkitcontrols:StaggeredLayout
                             ColumnSpacing="12"
                             DesiredColumnWidth="378"
                             RowSpacing="12" />

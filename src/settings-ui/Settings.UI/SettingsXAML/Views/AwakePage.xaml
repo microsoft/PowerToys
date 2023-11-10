@@ -1,13 +1,13 @@
 ﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.AwakePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:AwakeViewModel}"
     AutomationProperties.LandmarkType="Main"
@@ -23,12 +23,12 @@
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/Awake.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsCard
+                <toolkitcontrols:SettingsCard
                     x:Uid="Awake_EnableSettingsCard"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAwake.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </controls:SettingsCard>
+                </toolkitcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -38,31 +38,31 @@
 
                 <custom:SettingsGroup x:Uid="Awake_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <controls:SettingsCard x:Uid="Awake_ModeSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                    <toolkitcontrols:SettingsCard x:Uid="Awake_ModeSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
                             <ComboBoxItem x:Uid="Awake_NoKeepAwakeSelector" />
                             <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwakeSelector" />
                             <ComboBoxItem x:Uid="Awake_TemporaryKeepAwakeSelector" />
                             <ComboBoxItem x:Uid="Awake_ExpirableKeepAwakeSelector" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsExpander
+                    <toolkitcontrols:SettingsExpander
                         x:Uid="Awake_ExpirationSettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEC92;}"
                         IsExpanded="True"
                         Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Date">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Date">
                                 <DatePicker Date="{x:Bind ViewModel.ExpirationDateTime, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Time">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Time">
                                 <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
 
-                    <controls:SettingsCard
+                    <toolkitcontrols:SettingsCard
                         x:Uid="Awake_IntervalSettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
@@ -88,14 +88,14 @@
                                 SpinButtonPlacementMode="Compact"
                                 Value="{x:Bind ViewModel.IntervalMinutes, Mode=TwoWay}" />
                         </StackPanel>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsCard
+                    <toolkitcontrols:SettingsCard
                         x:Uid="Awake_DisplaySettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
                         IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                 </custom:SettingsGroup>
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>

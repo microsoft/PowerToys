@@ -1,15 +1,15 @@
 ﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ImageResizerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
-    xmlns:toolkitconverters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:toolkitconverters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
@@ -24,12 +24,12 @@
     <custom:SettingsPageControl x:Uid="ImageResizer" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ImageResizer.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
-                <controls:SettingsCard
+                <toolkitcontrols:SettingsCard
                     x:Uid="ImageResizer_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsImageResizer.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </controls:SettingsCard>
+                </toolkitcontrols:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
@@ -39,12 +39,12 @@
                     Severity="Informational" />
 
                 <custom:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
+                    <toolkitcontrols:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
                             Click="AddSizeButton_Click"
                             Style="{ThemeResource AccentButtonStyle}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                     <ListView
                         x:Name="ImagesSizesListView"
                         x:Uid="ImagesSizesListView"
@@ -53,11 +53,11 @@
                         SelectionMode="None">
                         <ListView.ItemTemplate>
                             <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
-                                <controls:SettingsCard Header="{x:Bind Name, Mode=OneWay}">
-                                    <controls:SettingsCard.Resources>
+                                <toolkitcontrols:SettingsCard Header="{x:Bind Name, Mode=OneWay}">
+                                    <toolkitcontrols:SettingsCard.Resources>
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
-                                    </controls:SettingsCard.Resources>
-                                    <controls:SettingsCard.Description>
+                                    </toolkitcontrols:SettingsCard.Resources>
+                                    <toolkitcontrols:SettingsCard.Description>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock
                                                 Margin="0,0,4,0"
@@ -83,7 +83,7 @@
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" />
                                         </StackPanel>
-                                    </controls:SettingsCard.Description>
+                                    </toolkitcontrols:SettingsCard.Description>
                                     <StackPanel
                                         Grid.Column="2"
                                         HorizontalAlignment="Right"
@@ -164,14 +164,14 @@
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
-                                </controls:SettingsCard>
+                                </toolkitcontrols:SettingsCard>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard x:Uid="ImageResizer_FallBackEncoderText">
+                    <toolkitcontrols:SettingsCard x:Uid="ImageResizer_FallBackEncoderText">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
@@ -180,25 +180,25 @@
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_WMPhoto" />
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="ImageResizer_Encoding">
+                    <toolkitcontrols:SettingsCard x:Uid="ImageResizer_Encoding">
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
                             Minimum="25"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
+                    <toolkitcontrols:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
                             <ComboBoxItem x:Uid="Default" />
                             <ComboBoxItem x:Uid="On" />
                             <ComboBoxItem x:Uid="Off" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="ImageResizer_TIFFCompression">
+                    <toolkitcontrols:SettingsCard x:Uid="ImageResizer_TIFFCompression">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}">
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None" />
@@ -208,11 +208,11 @@
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_RLE" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="File" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader">
+                    <toolkitcontrols:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBox
                                 x:Uid="ImageResizer_FilenameFormatPlaceholder"
@@ -257,14 +257,14 @@
                                 </Button.Flyout>
                             </Button>
                         </StackPanel>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="ImageResizer_FileModifiedDate">
+                    <toolkitcontrols:SettingsCard x:Uid="ImageResizer_FileModifiedDate">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate" />
                             <ComboBoxItem x:Uid="ImageResizer_UseResizeDate" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                 </custom:SettingsGroup>
             </StackPanel>
 

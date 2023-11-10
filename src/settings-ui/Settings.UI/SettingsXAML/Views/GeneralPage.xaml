@@ -1,13 +1,13 @@
 <Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.GeneralPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
@@ -20,8 +20,8 @@
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <custom:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
-                    <controls:SettingsCard Header="{Binding PowerToysVersion}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
-                        <controls:SettingsCard.Description>
+                    <toolkitcontrols:SettingsCard Header="{Binding PowerToysVersion}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
+                        <toolkitcontrols:SettingsCard.Description>
                             <StackPanel Orientation="Vertical">
                                 <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                     <Run x:Uid="General_VersionLastChecked" />
@@ -33,7 +33,7 @@
                                     FontWeight="SemiBold"
                                     NavigateUri="https://github.com/microsoft/PowerToys/releases/" />
                             </StackPanel>
-                        </controls:SettingsCard.Description>
+                        </toolkitcontrols:SettingsCard.Description>
                         <Grid Visibility="{Binding IsUpdatePanelVisible, Mode=OneWay}">
                             <StackPanel
                                 VerticalAlignment="Center"
@@ -55,7 +55,7 @@
                                 IsEnabled="{Binding IsDownloadAllowed}"
                                 Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
                         </Grid>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="General_UpToDate"
                         IsClosable="False"
@@ -175,13 +175,13 @@
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <controls:SettingsCard
+                    <toolkitcontrols:SettingsCard
                         x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
                         Margin="0,-6,0,0"
                         IsEnabled="{x:Bind ViewModel.IsAutoDownloadUpdatesCardEnabled, Mode=OneWay}"
                         Visibility="{Binding Mode=OneWay, Path=IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_AutoDownloadUpdatesIsDisabled"
                         IsClosable="False"
@@ -191,51 +191,51 @@
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="Admin_Mode">
-                    <controls:SettingsExpander
+                    <toolkitcontrols:SettingsExpander
                         x:Uid="Admin_Mode_Running_As"
                         Header="{Binding Mode=OneWay, Path=RunningAsText}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsExpanded="True">
-                        <controls:SettingsExpander.Description>
+                        <toolkitcontrols:SettingsExpander.Description>
                             <HyperlinkButton x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp" />
-                        </controls:SettingsExpander.Description>
+                        </toolkitcontrols:SettingsExpander.Description>
                         <Button
                             x:Uid="GeneralPage_RestartAsAdmin_Button"
                             Command="{Binding RestartElevatedButtonEventHandler}"
                             IsEnabled="{Binding Mode=OneWay, Path=IsAdminButtonEnabled}" />
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}">
                                 <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=RunElevated}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
-                    <controls:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
-                        <controls:SettingsCard.Description>
+                    <toolkitcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                        <toolkitcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
-                        </controls:SettingsCard.Description>
+                        </toolkitcontrols:SettingsCard.Description>
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="GeneralPage_RunAtStartUp">
+                    <toolkitcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=Startup}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
-                    <controls:SettingsExpander x:Uid="General_SettingsBackupAndRestore" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
+                    <toolkitcontrols:SettingsExpander x:Uid="General_SettingsBackupAndRestore" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
                             <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{Binding RestoreConfigsEventHandler}" />
                         </StackPanel>
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="General_SettingsBackupAndRestoreLocationText">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard x:Uid="General_SettingsBackupAndRestoreLocationText">
                                 <StackPanel
                                     HorizontalAlignment="Right"
                                     Orientation="Horizontal"
@@ -264,8 +264,8 @@
                                         </ToolTipService.ToolTip>
                                     </Button>
                                 </StackPanel>
-                            </controls:SettingsCard>
-                            <controls:SettingsCard
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard
                                 x:Uid="General_SettingsBackupAndRestoreStatusInfo"
                                 HorizontalContentAlignment="Left"
                                 ContentAlignment="Vertical">
@@ -308,9 +308,9 @@
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{Binding LastSettingsBackupDate, Mode=OneWay}" />
                                 </Grid>
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
                 </custom:SettingsGroup>
                 <InfoBar
                     x:Uid="General_SettingsBackupMessageResults"
@@ -320,12 +320,12 @@
                     IsTabStop="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                     Severity="{Binding BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
                 <custom:SettingsGroup x:Uid="General_Experimentation" Visibility="Visible">
-                    <controls:SettingsCard x:Uid="GeneralPage_EnableExperimentation" IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <controls:SettingsCard.HeaderIcon>
+                    <toolkitcontrols:SettingsCard x:Uid="GeneralPage_EnableExperimentation" IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <toolkitcontrols:SettingsCard.HeaderIcon>
                             <PathIcon Data="M1859 1758q14 23 21 47t7 51q0 40-15 75t-41 61-61 41-75 15H354q-40 0-75-15t-61-41-41-61-15-75q0-27 6-51t21-47l569-992q10-14 10-34V128H640V0h768v128h-128v604q0 19 10 35l569 991zM896 732q0 53-27 99l-331 577h972l-331-577q-27-46-27-99V128H896v604zm799 1188q26 0 44-19t19-45q0-10-2-17t-8-16l-164-287H464l-165 287q-9 15-9 33 0 26 18 45t46 19h1341z" />
-                        </controls:SettingsCard.HeaderIcon>
+                        </toolkitcontrols:SettingsCard.HeaderIcon>
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=EnableExperimentation}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_ExperimentationIsDisallowed"
                         IsClosable="False"

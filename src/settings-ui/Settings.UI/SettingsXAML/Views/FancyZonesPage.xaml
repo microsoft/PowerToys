@@ -1,24 +1,24 @@
 ﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.FancyZonesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
     <custom:SettingsPageControl x:Uid="FancyZones" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FancyZones.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsCard
+                <toolkitcontrols:SettingsCard
                     x:Uid="FancyZones_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFancyZones.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </controls:SettingsCard>
+                </toolkitcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -27,23 +27,23 @@
                     Severity="Informational" />
 
                 <custom:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard
+                    <toolkitcontrols:SettingsCard
                         x:Uid="FancyZones_LaunchEditorButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEditorEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsClickEnabled="True" />
 
-                    <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <toolkitcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="FancyZones_UseCursorPosEditorStartupScreen" HeaderIcon="{ui:FontIcon Glyph=&#xe7b5;}">
+                    <toolkitcontrols:SettingsCard x:Uid="FancyZones_UseCursorPosEditorStartupScreen" HeaderIcon="{ui:FontIcon Glyph=&#xe7b5;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="FancyZones_LaunchPositionScreen" />
                             <ComboBoxItem x:Uid="FancyZones_LaunchPositionMouse" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </toolkitcontrols:SettingsCard>
                 </custom:SettingsGroup>
 
 
@@ -51,35 +51,35 @@
                     x:Name="ZonesSettingsGroup"
                     x:Uid="FancyZones_Zones"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsExpander x:Uid="FancyZones_ZoneBehavior_GroupSettings" IsExpanded="True">
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard ContentAlignment="Left">
+                    <toolkitcontrols:SettingsExpander x:Uid="FancyZones_ZoneBehavior_GroupSettings" IsExpanded="True">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseMiddleClickSpanningMultipleZones}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <custom:CheckBoxWithDescriptionControl x:Uid="FancyZones_SpanZonesAcrossMonitors" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="FancyZones_OverlappingZones">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard x:Uid="FancyZones_OverlappingZones">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
                                     <ComboBoxItem x:Uid="FancyZones_OverlappingZonesLargest" />
                                     <ComboBoxItem x:Uid="FancyZones_OverlappingZonesPositional" />
                                     <ComboBoxItem x:Uid="FancyZones_OverlappingZonesClosestCenter" />
                                 </ComboBox>
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
 
-                    <controls:SettingsExpander
+                    <toolkitcontrols:SettingsExpander
                         x:Uid="FancyZones_Zone_Appearance"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsExpanded="True">
@@ -87,8 +87,8 @@
                             <ComboBoxItem x:Uid="FancyZones_Radio_Custom_Colors" />
                             <ComboBoxItem x:Uid="FancyZones_Radio_Default_Theme" />
                         </ComboBox>
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard ContentAlignment="Left">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <custom:FancyZonesPreviewControl
                                     Width="192"
                                     Height="108"
@@ -99,92 +99,92 @@
                                     HighlightOpacity="{x:Bind ViewModel.HighlightOpacity, Mode=OneWay}"
                                     IsSystemTheme="{x:Bind ViewModel.SystemTheme, Mode=OneWay}"
                                     ShowZoneNumber="{x:Bind Path=ViewModel.ShowZoneNumber, Mode=OneWay}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_ShowZoneNumberCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowZoneNumber}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="FancyZones_HighlightOpacity">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard x:Uid="FancyZones_HighlightOpacity">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="0"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}" />
-                            </controls:SettingsCard>
+                            </toolkitcontrols:SettingsCard>
 
-                            <controls:SettingsCard x:Uid="FancyZones_ZoneHighlightColor" Visibility="{x:Bind ViewModel.SystemTheme, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                            <toolkitcontrols:SettingsCard x:Uid="FancyZones_ZoneHighlightColor" Visibility="{x:Bind ViewModel.SystemTheme, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="FancyZones_InActiveColor" Visibility="{x:Bind ViewModel.SystemTheme, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard x:Uid="FancyZones_InActiveColor" Visibility="{x:Bind ViewModel.SystemTheme, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <custom:ColorPickerButton x:Name="InActiveColorButton" SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="FancyZones_BorderColor" Visibility="{x:Bind ViewModel.SystemTheme, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard x:Uid="FancyZones_BorderColor" Visibility="{x:Bind ViewModel.SystemTheme, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="FancyZones_NumberColor" Visibility="{x:Bind ViewModel.SystemTheme, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard x:Uid="FancyZones_NumberColor" Visibility="{x:Bind ViewModel.SystemTheme, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneNumberColor, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="FancyZones_Windows" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <controls:SettingsExpander x:Uid="FancyZones_WindowBehavior_GroupSettings" IsExpanded="True">
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard ContentAlignment="Left">
+                    <toolkitcontrols:SettingsExpander x:Uid="FancyZones_WindowBehavior_GroupSettings" IsExpanded="True">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_DisplayOrWorkAreaChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayOrWorkAreaChangeMoveWindows}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor" IsChecked="{Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_RestoreSize" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <custom:CheckBoxWithDescriptionControl
                                     x:Uid="FancyZones_AllowPopupWindowSnap"
                                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowPopupWindowSnap}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.Windows11, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.Windows11, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <CheckBox x:Uid="FancyZones_DisableRoundCornersOnWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
 
-                    <controls:SettingsExpander
+                    <toolkitcontrols:SettingsExpander
                         x:Uid="FancyZones_WindowSwitching_GroupSettings"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}" />
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="FancyZones_HotkeyNextTabControl" IsEnabled="{x:Bind ViewModel.WindowSwitchingCategoryEnabled, Mode=OneWay}">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard x:Uid="FancyZones_HotkeyNextTabControl" IsEnabled="{x:Bind ViewModel.WindowSwitchingCategoryEnabled, Mode=OneWay}">
                                 <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="FancyZones_HotkeyPrevTabControl" IsEnabled="{x:Bind ViewModel.WindowSwitchingCategoryEnabled, Mode=OneWay}">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard x:Uid="FancyZones_HotkeyPrevTabControl" IsEnabled="{x:Bind ViewModel.WindowSwitchingCategoryEnabled, Mode=OneWay}">
                                 <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
 
-                    <controls:SettingsExpander
+                    <toolkitcontrols:SettingsExpander
                         x:Uid="FancyZones_OverrideSnapHotkeys"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE90C;}"
                         IsExpanded="True">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}" />
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="FancyZones_MoveWindow" IsEnabled="{x:Bind ViewModel.SnapHotkeysCategoryEnabled, Mode=OneWay}">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard x:Uid="FancyZones_MoveWindow" IsEnabled="{x:Bind ViewModel.SnapHotkeysCategoryEnabled, Mode=OneWay}">
                                 <ComboBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     MinHeight="56"
@@ -206,33 +206,33 @@
                                         </StackPanel>
                                     </ComboBoxItem>
                                 </ComboBox>
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.SnapHotkeysCategoryEnabled, Mode=OneWay}">
+                            </toolkitcontrols:SettingsCard>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.SnapHotkeysCategoryEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsExpander x:Uid="FancyZones_QuickLayoutSwitch" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <toolkitcontrols:SettingsExpander x:Uid="FancyZones_QuickLayoutSwitch" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" />
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.QuickSwitchEnabled, Mode=OneWay}">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.QuickSwitchEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <controls:SettingsExpander
+                    <toolkitcontrols:SettingsExpander
                         x:Uid="FancyZones_ExcludeApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsExpanded="True">
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                        <toolkitcontrols:SettingsExpander.Items>
+                            <toolkitcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                                     MinWidth="240"
@@ -243,9 +243,9 @@
                                     ScrollViewer.VerticalScrollMode="Enabled"
                                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </toolkitcontrols:SettingsCard>
+                        </toolkitcontrols:SettingsExpander.Items>
+                    </toolkitcontrols:SettingsExpander>
                 </custom:SettingsGroup>
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>
