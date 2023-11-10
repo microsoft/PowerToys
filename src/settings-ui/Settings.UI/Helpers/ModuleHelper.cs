@@ -5,6 +5,8 @@
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Views;
+using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
@@ -128,6 +130,70 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
+        }
+
+        public static Color GetModuleAccentColor(ModuleType moduleType)
+        {
+            return moduleType switch
+            {
+                ModuleType.AlwaysOnTop => Color.FromArgb(255, 74, 196, 242), // #4ac4f2
+                ModuleType.Awake => Color.FromArgb(255, 40, 177, 233), // #28b1e9
+                ModuleType.ColorPicker => Color.FromArgb(255, 7, 129, 211), // #0781d3
+                ModuleType.CropAndLock => Color.FromArgb(255, 32, 166, 228), // #20a6e4
+                ModuleType.EnvironmentVariables => Color.FromArgb(255, 16, 132, 208), // #1084d0
+                ModuleType.FancyZones => Color.FromArgb(255, 65, 209, 247), // #41d1f7
+                ModuleType.FileLocksmith => Color.FromArgb(255, 245, 161, 20), // #f5a114
+                ModuleType.FindMyMouse => Color.FromArgb(255, 104, 109, 112), // #686d70
+                ModuleType.Hosts => Color.FromArgb(255, 16, 132, 208), // #1084d0
+                ModuleType.ImageResizer => Color.FromArgb(255, 85, 207, 248), // #55cff8
+                ModuleType.KeyboardManager => Color.FromArgb(255, 224, 231, 238), // #e0e7ee
+                ModuleType.MouseHighlighter => Color.FromArgb(255, 17, 126, 199), // #117ec7
+                ModuleType.MouseJump => Color.FromArgb(255, 240, 240, 239), // #f0f0ef
+                ModuleType.MousePointerCrosshairs => Color.FromArgb(255, 25, 115, 182), // #1973b6
+                ModuleType.MouseWithoutBorders => Color.FromArgb(255, 31, 164, 227), // #1fa4e3
+                ModuleType.PastePlain => Color.FromArgb(255, 243, 156, 16), // #f39c10
+                ModuleType.Peek => Color.FromArgb(255, 255, 214, 103), // #ffd667
+                ModuleType.PowerRename => Color.FromArgb(255, 43, 186, 243), // #2bbaf3
+                ModuleType.PowerLauncher => Color.FromArgb(255, 51, 191, 240), // #33bff0
+                ModuleType.PowerAccent => Color.FromArgb(255, 84, 89, 92), // #54595c
+                ModuleType.RegistryPreview => Color.FromArgb(255, 17, 80, 138), // #11508a
+                ModuleType.MeasureTool => Color.FromArgb(255, 135, 144, 153), // #879099
+                ModuleType.ShortcutGuide => Color.FromArgb(255, 193, 202, 209), // #c1cad1
+                ModuleType.PowerOCR => Color.FromArgb(255, 24, 153, 224), // #1899e0
+                _ => Color.FromArgb(255, 255, 255, 255), // never called, all values listed above
+            };
+        }
+
+        public static System.Type GetModulePageType(ModuleType moduleType)
+        {
+            return moduleType switch
+            {
+                ModuleType.AlwaysOnTop => typeof(AlwaysOnTopPage),
+                ModuleType.Awake => typeof(AwakePage),
+                ModuleType.ColorPicker => typeof(ColorPickerPage),
+                ModuleType.CropAndLock => typeof(CropAndLockPage),
+                ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
+                ModuleType.FancyZones => typeof(FancyZonesPage),
+                ModuleType.FileLocksmith => typeof(FileLocksmithPage),
+                ModuleType.FindMyMouse => typeof(MouseUtilsPage),
+                ModuleType.Hosts => typeof(HostsPage),
+                ModuleType.ImageResizer => typeof(ImageResizerPage),
+                ModuleType.KeyboardManager => typeof(KeyboardManagerPage),
+                ModuleType.MouseHighlighter => typeof(MouseUtilsPage),
+                ModuleType.MouseJump => typeof(MouseUtilsPage),
+                ModuleType.MousePointerCrosshairs => typeof(MouseUtilsPage),
+                ModuleType.MouseWithoutBorders => typeof(MouseWithoutBordersPage),
+                ModuleType.PastePlain => typeof(PastePlainPage),
+                ModuleType.Peek => typeof(PeekPage),
+                ModuleType.PowerRename => typeof(PowerRenamePage),
+                ModuleType.PowerLauncher => typeof(PowerLauncherPage),
+                ModuleType.PowerAccent => typeof(PowerAccentPage),
+                ModuleType.RegistryPreview => typeof(RegistryPreviewPage),
+                ModuleType.MeasureTool => typeof(MeasureToolPage),
+                ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),
+                ModuleType.PowerOCR => typeof(PowerOcrPage),
+                _ => typeof(DashboardPage), // never called, all values listed above
+            };
         }
     }
 }
