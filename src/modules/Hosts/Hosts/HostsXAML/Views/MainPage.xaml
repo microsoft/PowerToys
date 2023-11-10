@@ -1,8 +1,8 @@
-<Page
+﻿<Page
     x:Class="Hosts.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Hosts.Helpers"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
@@ -10,6 +10,7 @@
     xmlns:local="using:Hosts.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Hosts.Models"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="Page"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
@@ -28,8 +29,8 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
-            TrueValue="Collapsed"
-            FalseValue="Visible" />
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
         <converters:DoubleToVisibilityConverter
             x:Key="DoubleToVisibilityConverter"
             FalseValue="Visible"
@@ -37,21 +38,17 @@
             TrueValue="Collapsed" />
     </Page.Resources>
 
-    <Grid
-        Margin="16"
-        RowSpacing="8">
+    <Grid Margin="16" RowSpacing="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" /><!-- buttons -->
-            <RowDefinition Height="*" /><!-- content -->
+            <RowDefinition Height="Auto" />
+            <!--  Buttons  -->
+            <RowDefinition Height="*" />
+            <!--  Content  -->
         </Grid.RowDefinitions>
-
-        <Grid><!-- buttons -->
-            <Button
-                x:Uid="AddEntryBtn"
-                Command="{x:Bind NewDialogCommand}">
-                <StackPanel
-                    Orientation="Horizontal"
-                    Spacing="8">
+        <Grid>
+            <!--  Buttons  -->
+            <Button x:Uid="AddEntryBtn" Command="{x:Bind NewDialogCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon
                         x:Name="Icon"
                         FontSize="16"
@@ -60,9 +57,7 @@
                     <TextBlock x:Uid="AddEntry" />
                 </StackPanel>
                 <Button.KeyboardAccelerators>
-                    <KeyboardAccelerator
-                        Modifiers="Control"
-                        Key="N" />
+                    <KeyboardAccelerator Key="N" Modifiers="Control" />
                 </Button.KeyboardAccelerators>
             </Button>
 
@@ -74,21 +69,18 @@
                     x:Uid="AdditionalLinesBtn"
                     Height="32"
                     Command="{x:Bind AdditionalLinesDialogCommand}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon
-                        FontSize="16"
-                        Glyph="&#xe8a5;" />
-                </Button>
+                    Content="{ui:FontIcon Glyph=&#xe8a5;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
 
                 <Button
                     x:Uid="FilterBtn"
                     Height="32"
+                    Content="{ui:FontIcon Glyph=&#xe71c;,
+                                          FontSize=16}"
                     Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon
-                        FontSize="16"
-                        Glyph="&#xe71c;" />
                     <Button.Flyout>
-                        <Flyout>
+                        <Flyout ShouldConstrainToRootBounds="False">
                             <StackPanel
                                 Width="320"
                                 HorizontalAlignment="Stretch"
@@ -124,15 +116,13 @@
                                         </ic:EventTriggerBehavior>
                                     </i:Interaction.Behaviors>
                                 </AutoSuggestBox>
-                                <ToggleSwitch
-                                    x:Uid="ShowOnlyDuplicates"
-                                    IsOn="{x:Bind ViewModel.ShowOnlyDuplicates, Mode=TwoWay}" />
+                                <ToggleSwitch x:Uid="ShowOnlyDuplicates" IsOn="{x:Bind ViewModel.ShowOnlyDuplicates, Mode=TwoWay}" />
                                 <Button
                                     x:Uid="ClearFiltersBtn"
                                     HorizontalAlignment="Right"
                                     Command="{x:Bind ViewModel.ClearFiltersCommand}"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay}"/>
+                                    IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay}"
+                                    Style="{StaticResource AccentButtonStyle}" />
                             </StackPanel>
                         </Flyout>
                     </Button.Flyout>
@@ -142,21 +132,18 @@
                     x:Uid="OpenHostsFileBtn"
                     Height="32"
                     Command="{x:Bind ViewModel.OpenHostsFileCommand}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon
-                        FontSize="16"
-                        Glyph="&#xe8a7;" />
-                </Button>
+                    Content="{ui:FontIcon Glyph=&#xe8a7;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
+
 
                 <Button
                     x:Uid="SettingsBtn"
                     Height="32"
                     Command="{x:Bind ViewModel.OpenSettingsCommand}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon
-                        FontSize="16"
-                        Glyph="&#xe713;" />
-                </Button>
+                    Content="{ui:FontIcon Glyph=&#xe713;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
             </StackPanel>
         </Grid>
 
@@ -166,9 +153,7 @@
             CanDragItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
             CanReorderItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
         -->
-        <Grid
-            Grid.Row="1"
-            Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
+        <Grid Grid.Row="1" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
@@ -181,76 +166,81 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource OverlayCornerRadius}"
+                GotFocus="Entries_GotFocus"
                 IsItemClickEnabled="True"
                 ItemClick="Entries_ItemClick"
-                KeyDown="Entries_KeyDown"
-                GotFocus="Entries_GotFocus"
                 ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
+                RightTapped="Entries_RightTapped"
                 SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}">
+                <ListView.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            x:Uid="Edit"
+                            Click="Edit_Click"
+                            Icon="Edit">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="E"
+                                    Modifiers="Control"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="Ping"
+                            Click="Ping_Click"
+                            Icon="TwoBars">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="P"
+                                    Modifiers="Control"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="MoveUp"
+                            Click="ReorderButtonUp_Click"
+                            IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74A;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="MoveDown"
+                            Click="ReorderButtonDown_Click"
+                            IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74B;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem
+                            x:Uid="Delete"
+                            Click="Delete_Click"
+                            Icon="Delete">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Delete" ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </ListView.ContextFlyout>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Entry">
                         <Grid
                             AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
                             Background="Transparent"
-                            IsRightTapEnabled="True"
-                            RightTapped="Grid_RightTapped"
                             ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="256"/><!--address-->
-                                <ColumnDefinition Width="*"/><!--comment-->
-                                <ColumnDefinition Width="Auto"/><!--status-->
-                                <ColumnDefinition Width="Auto"/><!--duplicate-->
-                                <ColumnDefinition Width="Auto"/><!--toggleswitch-->
+                                <ColumnDefinition Width="256" />
+                                <!--  Address  -->
+                                <ColumnDefinition Width="*" />
+                                <!--  Comment  -->
+                                <ColumnDefinition Width="Auto" />
+                                <!--  Status  -->
+                                <ColumnDefinition Width="Auto" />
+                                <!--  Duplicate  -->
+                                <ColumnDefinition Width="Auto" />
+                                <!--  ToggleSwitch  -->
                             </Grid.ColumnDefinitions>
-                            <FlyoutBase.AttachedFlyout>
-                                <MenuFlyout Opened="MenuFlyout_Opened">
-                                    <MenuFlyoutItem
-                                        x:Uid="Edit"
-                                        Click="Edit_Click"
-                                        Icon="Edit">
-                                        <MenuFlyoutItem.KeyboardAccelerators>
-                                            <KeyboardAccelerator
-                                                Modifiers="Control"
-                                                Key="E" />
-                                        </MenuFlyoutItem.KeyboardAccelerators>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem
-                                        x:Uid="Ping"
-                                        Click="Ping_Click"
-                                        Icon="TwoBars">
-                                        <MenuFlyoutItem.KeyboardAccelerators>
-                                            <KeyboardAccelerator
-                                                Modifiers="Control"
-                                                Key="P" />
-                                        </MenuFlyoutItem.KeyboardAccelerators>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem
-                                        x:Uid="MoveUp"
-                                        Click="ReorderButtonUp_Click"
-                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                        <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xE74A;" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem
-                                        x:Uid="MoveDown"
-                                        Click="ReorderButtonDown_Click"
-                                        IsEnabled="{Binding DataContext.Filtered, ElementName=Page, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                        <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xE74B;" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutSeparator />
-                                    <MenuFlyoutItem
-                                        x:Uid="Delete"
-                                        Click="Delete_Click"
-                                        Icon="Delete">
-                                        <MenuFlyoutItem.KeyboardAccelerators>
-                                            <KeyboardAccelerator Key="Delete" />
-                                        </MenuFlyoutItem.KeyboardAccelerators>
-                                    </MenuFlyoutItem>
-                                </MenuFlyout>
-                            </FlyoutBase.AttachedFlyout>
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
@@ -269,8 +259,8 @@
                                 Height="20"
                                 IsActive="{x:Bind Pinging, Mode=OneWay}" />
                             <FontIcon
-                                x:Uid="PingIcon"
                                 x:Name="PingIcon"
+                                x:Uid="PingIcon"
                                 Grid.Column="2"
                                 FontSize="16"
                                 Visibility="Collapsed">
@@ -323,8 +313,8 @@
                             <FontIcon
                                 x:Uid="DuplicateEntryIcon"
                                 Grid.Column="3"
-                                Foreground="{StaticResource SystemControlErrorTextForegroundBrush}"
                                 FontSize="16"
+                                Foreground="{StaticResource SystemControlErrorTextForegroundBrush}"
                                 Glyph="&#xe7BA;"
                                 Visibility="{x:Bind Duplicate, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <ToggleSwitch
@@ -350,14 +340,12 @@
                     VerticalAlignment="Center"
                     Spacing="8"
                     Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
-                    <FontIcon
-                        FontSize="32"
-                        Glyph="&#xe774;" />
+                    <FontIcon FontSize="32" Glyph="&#xe774;" />
                     <TextBlock
                         x:Uid="EmptyHosts"
                         HorizontalAlignment="Center"
-                        TextWrapping="Wrap"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
                     <HyperlinkButton
                         x:Uid="AddEntryLink"
                         HorizontalAlignment="Center"
@@ -369,14 +357,12 @@
                     VerticalAlignment="Center"
                     Spacing="8"
                     Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <FontIcon
-                        FontSize="32"
-                        Glyph="&#xf78b;" />
+                    <FontIcon FontSize="32" Glyph="&#xf78b;" />
                     <TextBlock
                         x:Uid="EmptyFilterResults"
                         HorizontalAlignment="Center"
-                        TextWrapping="Wrap"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
                     <HyperlinkButton
                         x:Uid="ClearFiltersLink"
                         HorizontalAlignment="Center"
@@ -384,24 +370,32 @@
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel
-                Grid.Row="1">
+            <StackPanel Grid.Row="1">
                 <InfoBar
                     x:Uid="FileSaveError"
                     Margin="0,8,0,0"
-                    Severity="Error"
                     IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
-                    Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-
+                    Message="{x:Bind ViewModel.ErrorMessage, Mode=TwoWay}"
+                    Severity="Error"
+                    Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <InfoBar.ActionButton>
+                        <Button
+                            x:Uid="MakeWritable"
+                            HorizontalAlignment="Right"
+                            Command="{x:Bind ViewModel.OverwriteHostsCommand}"
+                            Visibility="{x:Bind ViewModel.IsReadOnly, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
                 <InfoBar
                     x:Uid="FileChanged"
                     Margin="0,8,0,0"
-                    Severity="Informational"
                     IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
+                    Severity="Informational"
                     Visibility="{x:Bind ViewModel.FileChanged, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <InfoBar.ActionButton>
                         <Button
                             x:Uid="Reload"
+                            HorizontalAlignment="Right"
                             Command="{x:Bind ViewModel.ReadHostsCommand}" />
                     </InfoBar.ActionButton>
                 </InfoBar>
@@ -409,15 +403,16 @@
         </Grid>
 
         <ProgressRing
+            Grid.Row="1"
             Width="48"
             Height="48"
-            Grid.Row="1"
             IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
         <ContentDialog
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
+            Loaded="ContentDialog_Loaded_ApplyMargin"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
                 <models:Entry />
@@ -433,22 +428,22 @@
                         Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox
                         x:Uid="Hosts"
-                        IsSpellCheckEnabled="False"
                         AcceptsReturn="False"
-                        TextWrapping="Wrap"
+                        IsSpellCheckEnabled="False"
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
-                        Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap" />
                     <TextBox
                         x:Uid="Comment"
-                        IsSpellCheckEnabled="False" 
                         AcceptsReturn="False"
-                        TextWrapping="Wrap"
+                        IsSpellCheckEnabled="False"
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
-                        Text="{Binding Comment, Mode=TwoWay}" />
+                        Text="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap" />
                     <ToggleSwitch
                         x:Uid="Active"
                         IsOn="{Binding Active, Mode=TwoWay}"
@@ -469,14 +464,15 @@
         <ContentDialog
             x:Name="AdditionalLinesDialog"
             x:Uid="AdditionalLinesDialog"
+            Loaded="ContentDialog_Loaded_ApplyMargin"
             PrimaryButtonCommand="{x:Bind UpdateAdditionalLinesCommand}"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
 
             <TextBox
                 x:Name="AdditionalLines"
-                HorizontalAlignment="Stretch"
                 MinHeight="40"
                 Padding="16,0"
+                HorizontalAlignment="Stretch"
                 AcceptsReturn="True"
                 ScrollViewer.IsVerticalRailEnabled="True"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
@@ -486,15 +482,12 @@
 
         <TeachingTip
             x:Uid="TooManyHostsTeachingTip"
+            IconSource="{ui:FontIconSource Glyph=&#xe946;}"
             IsOpen="{x:Bind ViewModel.ShowSplittedEntriesTooltip, Mode=OneWay}"
-	        PreferredPlacement="Top"
-	        PlacementMargin="20">
-            <TeachingTip.IconSource>
-                <FontIconSource Glyph="&#xe946;" />
-            </TeachingTip.IconSource>
+            PlacementMargin="20"
+            PreferredPlacement="Top">
             <TeachingTip.Content>
-                <TextBlock x:Uid="TooManyHostsTeachingTipContent"
-                           TextWrapping="Wrap"/>
+                <TextBlock x:Uid="TooManyHostsTeachingTipContent" TextWrapping="Wrap" />
             </TeachingTip.Content>
         </TeachingTip>
     </Grid>

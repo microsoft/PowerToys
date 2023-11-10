@@ -166,6 +166,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool cropAndLock = true;
+
+        [JsonPropertyName("CropAndLock")]
+        public bool CropAndLock
+        {
+            get => cropAndLock;
+            set
+            {
+                if (cropAndLock != value)
+                {
+                    LogTelemetryEvent(value);
+                    cropAndLock = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool awake;
 
         [JsonPropertyName("Awake")]
@@ -406,6 +423,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     registryPreview = value;
+                }
+            }
+        }
+
+        private bool environmentVariables = true;
+
+        [JsonPropertyName("EnvironmentVariables")]
+        public bool EnvironmentVariables
+        {
+            get => environmentVariables;
+            set
+            {
+                if (environmentVariables != value)
+                {
+                    LogTelemetryEvent(value);
+                    environmentVariables = value;
                 }
             }
         }

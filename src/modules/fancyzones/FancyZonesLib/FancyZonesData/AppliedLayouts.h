@@ -49,12 +49,18 @@ public:
 #endif
     }
 
+#if defined(UNIT_TESTS)
+    inline void SetAppliedLayouts(TAppliedLayoutsMap layouts)
+    {
+        m_layouts = layouts;
+    }
+#endif
+
     void LoadData();
     void SaveData();
     void AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids);
 
-    void SyncVirtualDesktops();
-    void RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops);
+    void SyncVirtualDesktops(const GUID& currentVirtualDesktop, const GUID& lastUsedVirtualDesktop, std::optional<std::vector<GUID>> desktops);
 
     std::optional<LayoutData> GetDeviceLayout(const FancyZonesDataTypes::WorkAreaId& id) const noexcept;
     const TAppliedLayoutsMap& GetAppliedLayoutMap() const noexcept;

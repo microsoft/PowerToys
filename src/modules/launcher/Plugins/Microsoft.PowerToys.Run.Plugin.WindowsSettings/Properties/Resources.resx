@@ -157,6 +157,9 @@
     <value>Activity history</value>
     <comment>Area Privacy</comment>
   </data>
+  <data name="AddDevices" xml:space="preserve">
+    <value>Add devices</value>
+  </data>
   <data name="AddHardware" xml:space="preserve">
     <value>Add Hardware</value>
     <comment>Area Control Panel (legacy settings)</comment>
@@ -256,6 +259,10 @@
   </data>
   <data name="AreaApps" xml:space="preserve">
     <value>Apps</value>
+  </data>
+  <data name="AreaBluetoothAndDevices11" xml:space="preserve">
+    <value>Bluetooth &amp; devices</value>
+    <comment>Area Bluetooth&amp;Devices in Win11 Settings app</comment>
   </data>
   <data name="AreaClockAndRegion" xml:space="preserve">
     <value>Clock and Region</value>
@@ -393,6 +400,10 @@
   <data name="Bluetooth" xml:space="preserve">
     <value>Bluetooth</value>
     <comment>Area Device</comment>
+  </data>
+  <data name="BluetoothAndDevices10" xml:space="preserve">
+    <value>Bluetooth and other devices</value>
+    <comment>Page Bluetooth and devices in Win10 Settings app</comment>
   </data>
   <data name="BluetoothDevices" xml:space="preserve">
     <value>Bluetooth devices</value>
@@ -622,6 +633,9 @@
   <data name="DeviceManagerSnapIn" xml:space="preserve">
     <value>Device Manager</value>
     <comment>Name of MMC Snap-In.</comment>
+  </data>
+  <data name="Devices" xml:space="preserve">
+    <value>Devices</value>
   </data>
   <data name="DevicesAndPrinters" xml:space="preserve">
     <value>Devices and printers</value>
@@ -977,6 +991,9 @@
   <data name="main.cpl" xml:space="preserve">
     <value>main.cpl</value>
     <comment>File name, Should not translated</comment>
+  </data>
+  <data name="ManageDevices" xml:space="preserve">
+    <value>Manage devices</value>
   </data>
   <data name="ManageKnownNetworks" xml:space="preserve">
     <value>Manage known networks</value>
@@ -1390,6 +1407,9 @@
   <data name="PhoneDefaultApps" xml:space="preserve">
     <value>Phone - Default apps</value>
     <comment>Area System</comment>
+  </data>
+  <data name="PhoneLink" xml:space="preserve">
+    <value>Phone Link</value>
   </data>
   <data name="Picture" xml:space="preserve">
     <value>Picture</value>

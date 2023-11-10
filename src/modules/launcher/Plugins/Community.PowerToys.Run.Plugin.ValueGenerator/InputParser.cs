@@ -121,6 +121,12 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                 request = new Base64Request(Encoding.UTF8.GetBytes(content));
             }
+            else if (command.ToLower(null) == "base64d")
+            {
+                int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                request = new Base64DecodeRequest(content);
+            }
             else
             {
                 throw new FormatException($"Invalid Query: {query.RawUserQuery}");

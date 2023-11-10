@@ -14,7 +14,7 @@
                 "PowerToys.exe",
                 "PowerToys.FilePreviewCommon.dll",
                 "PowerToys.Interop.dll",
-                "BugReportTool\\PowerToys.BugReportTool.exe",
+                "Tools\\PowerToys.BugReportTool.exe",
                 "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
                 "StylesReportTool\\PowerToys.StylesReportTool.exe",
                 "Telemetry.dll",
@@ -32,6 +32,9 @@
                 "PowerToys.ColorPicker.dll",
                 "PowerToys.ColorPickerUI.dll",
                 "PowerToys.ColorPickerUI.exe",
+
+                "PowerToys.CropAndLockModuleInterface.dll",
+                "PowerToys.CropAndLock.exe",
 
                 "PowerToys.PowerOCRModuleInterface.dll",
                 "PowerToys.PowerOCR.dll",
@@ -94,6 +97,10 @@
                 "WinUI3Apps\\Powertoys.Peek.UI.dll",
                 "WinUI3Apps\\Powertoys.Peek.UI.exe",
                 "WinUI3Apps\\Powertoys.Peek.dll",
+
+                "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
                 "PowerToys.ImageResizer.exe",
                 "PowerToys.ImageResizer.dll",
@@ -281,7 +288,8 @@
                 "WinUI3Apps\\SharpCompress.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
-                "UnitsNet.dll"
+                "UnitsNet.dll",
+                "Wpf.Ui.dll"
             ],
             "SigningInfo": {
                 "Operations": [

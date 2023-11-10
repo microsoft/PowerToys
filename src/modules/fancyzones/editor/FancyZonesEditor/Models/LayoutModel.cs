@@ -150,7 +150,7 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Horizontal].Uuid == this.Uuid;
+                return MainWindowSettingsModel.DefaultLayouts.Layouts[(int)MonitorConfigurationType.Horizontal].Uuid == this.Uuid;
             }
         }
 
@@ -158,7 +158,7 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Horizontal].Uuid != this.Uuid;
+                return MainWindowSettingsModel.DefaultLayouts.Layouts[(int)MonitorConfigurationType.Horizontal].Uuid != this.Uuid;
             }
         }
 
@@ -166,7 +166,7 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Vertical].Uuid == this.Uuid;
+                return MainWindowSettingsModel.DefaultLayouts.Layouts[MonitorConfigurationType.Vertical].Uuid == this.Uuid;
             }
         }
 
@@ -174,7 +174,7 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return MainWindowSettingsModel.DefaultLayouts.DefaultLayouts[(int)MonitorConfigurationType.Vertical].Uuid != this.Uuid;
+                return MainWindowSettingsModel.DefaultLayouts.Layouts[MonitorConfigurationType.Vertical].Uuid != this.Uuid;
             }
         }
 
@@ -337,6 +337,12 @@ namespace FancyZonesEditor.Models
             {
                 customModels.RemoveAt(i);
             }
+        }
+
+        public void RestoreTo(LayoutModel layout)
+        {
+            layout.SensitivityRadius = SensitivityRadius;
+            layout.TemplateZoneCount = TemplateZoneCount;
         }
 
         // Adds new custom Layout

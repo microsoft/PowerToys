@@ -8,7 +8,14 @@ steps:
   clean: true
 
 - task: PowerShell@2
-  displayName: Verifying Nuget package versions for PowerToys.sln
+  displayName: Verify XAML formatting
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\applyXamlStyling.ps1'
+    arguments: -Passive
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Nuget package versions for PowerToys.sln
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
     arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
@@ -55,20 +62,8 @@ steps:
     packageType: sdk
     version: '7.x'
 
-- task: NuGetToolInstaller@1
-  displayName: Ensure NuGet Installer
-
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToys.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: PowerToys.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\packages'
 
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
@@ -77,17 +72,8 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for BugReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\BugReportTool\BugReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\BugReportTool\packages'
 
 - task: VSBuild@1
   displayName: 'Build BugReportTool.sln'
@@ -96,17 +82,8 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for WebcamReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\WebcamReportTool\WebcamReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\WebcamReportTool\packages'
 
 - task: VSBuild@1
   displayName: 'Build WebcamReportTool.sln'
@@ -115,17 +92,8 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for StylesReportTool.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: tools\StylesReportTool\StylesReportTool.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\tools\StylesReportTool\packages'
 
 - task: VSBuild@1
   displayName: 'Build StylesReportTool.sln'
@@ -134,17 +102,8 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToysSetup.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: installer\PowerToysSetup.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
 
 - task: PowerShell@2
   displayName: Download and install WiX 3.14 development build
@@ -159,7 +118,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysInstaller ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: /t:PowerToysInstaller -restore ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -180,15 +139,6 @@ steps:
     script: git clean -xfd  -e *exe -- .\installer\
     pwsh: true
 
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToysSetup.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: installer\PowerToysSetup.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
-
 - task: VSBuild@1
   displayName: 'Build PowerToys per-user MSI'
   inputs:
@@ -196,7 +146,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysInstaller ${{ parameters.additionalBuildArguments }} /p:PerUser=true
+    msbuildArgs: /t:PowerToysInstaller -restore ${{ parameters.additionalBuildArguments }} /p:PerUser=true
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -247,6 +197,7 @@ steps:
       **\UnitTests-PdfThumbnailProvider.dll
       **\Settings.UI.UnitTests.dll
       **\UnitTests-GcodePreviewHandler.dll
+      **\UnitTests-FancyZonesEditor.dll
       **\UnitTests-PdfPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
@@ -297,7 +248,7 @@ steps:
       dotnet list $(build.sourcesdirectory)\src\common\Common.UI\Common.UI.csproj package
 
 - task: PowerShell@2
-  displayName: Verifying Notice.md and Nuget packages match
+  displayName: Verify Notice.md and Nuget packages match
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
     arguments: -path '$(build.sourcesdirectory)\'

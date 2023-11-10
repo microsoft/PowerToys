@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -34,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Declaration for the updating the general settings callback function.
         /// </summary>
-        public delegate bool UpdatingGeneralSettingsCallback(string module, bool isEnabled);
+        public delegate bool UpdatingGeneralSettingsCallback(ModuleType moduleType, bool isEnabled);
 
         /// <summary>
         /// Declaration for the opening oobe window callback function.
@@ -236,7 +237,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public void Refresh()
         {
-            shellFrame.Navigate(typeof(GeneralPage));
+            shellFrame.Navigate(typeof(DashboardPage));
         }
 
         // Tell the current page view model to update
@@ -361,7 +362,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         internal static void EnsurePageIsSelected()
         {
-            NavigationService.EnsurePageIsSelected(typeof(GeneralPage));
+            NavigationService.EnsurePageIsSelected(typeof(DashboardPage));
         }
 
         private void SetTitleBar()
@@ -373,6 +374,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
                 u.ExtendsContentIntoTitleBar = true;
                 u.SetTitleBar(AppTitleBar);
+                var loader = ResourceLoaderInstance.ResourceLoader;
+                AppTitleBarText.Text = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
 #if DEBUG
                 DebugMessage.Visibility = Visibility.Visible;
 #endif

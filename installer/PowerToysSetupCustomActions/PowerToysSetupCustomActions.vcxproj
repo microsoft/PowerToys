@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32f3882b-f2d6-4586-b5ed-11e39e522bd3}</ProjectGuid>
@@ -32,8 +32,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutDir>
-    <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutDir>
+    <OutDir Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup\</OutDir>
+    <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup\</OutDir>
     <IntDir Condition=" '$(PerUser)' != 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\MachineSetup\obj\</IntDir>
     <IntDir Condition=" '$(PerUser)' == 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\UserSetup\obj\</IntDir>
   </PropertyGroup>
@@ -52,6 +52,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Core.wxs"" ""$(ProjectDir)..\PowerToysSetup\Core.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs.bk""""
@@ -89,7 +90,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;Newdev.lib;Crypt32.lib;msi.lib;wcautil.lib;Psapi.lib;Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Userenv.lib;Wtsapi32.lib;WindowsApp.lib;Newdev.lib;Crypt32.lib;msi.lib;wcautil.lib;Psapi.lib;Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>CustomAction.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -164,13 +165,13 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
 </Project>

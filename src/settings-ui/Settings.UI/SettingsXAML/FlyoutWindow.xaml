@@ -1,14 +1,14 @@
-<winuiex:WindowEx
+﻿<winuiex:WindowEx
     x:Class="Microsoft.PowerToys.Settings.UI.FlyoutWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:flyout="using:Microsoft.PowerToys.Settings.UI.Flyout"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
-    xmlns:i="using:Microsoft.Xaml.Interactivity"
-    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     Title="PowerToys Settings"
     IsAlwaysOnTop="True"
     IsMaximizable="False"
@@ -29,19 +29,15 @@
             LightTintOpacity="0" />
     </winuiex:WindowEx.Backdrop>
     <Grid>
-        <!-- HACK: https://github.com/microsoft/microsoft-ui-xaml/issues/7629 -->
-        <!-- W11 grey border, W10: no border  -->
+        <!--  HACK: https://github.com/microsoft/microsoft-ui-xaml/issues/7629  -->
+        <!--  W11 grey border, W10: no border  -->
         <i:Interaction.Behaviors>
             <ic:DataTriggerBehavior
                 Binding="{x:Bind ViewModel.Windows10}"
                 ComparisonCondition="Equal"
                 Value="True">
-                <ic:ChangePropertyAction
-                    PropertyName="BorderThickness"
-                    Value="1" />
-                <ic:ChangePropertyAction
-                    PropertyName="BorderBrush"
-                    Value="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
+                <ic:ChangePropertyAction PropertyName="BorderThickness" Value="1" />
+                <ic:ChangePropertyAction PropertyName="BorderBrush" Value="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
             </ic:DataTriggerBehavior>
         </i:Interaction.Behaviors>
         <flyout:ShellPage x:Name="FlyoutShellPage" />

@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "..\src\common\log
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysBootstrapper", "PowerToysSetup\PowerToysBootstrapper.wixproj", "{31D72625-43C1-41B1-B784-BCE4A8DC5543}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Version", "..\src\common\version\version.vcxproj", "{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -58,6 +60,14 @@ Global
 		{31D72625-43C1-41B1-B784-BCE4A8DC5543}.Release|ARM64.Build.0 = Release|ARM64
 		{31D72625-43C1-41B1-B784-BCE4A8DC5543}.Release|x64.ActiveCfg = Release|x64
 		{31D72625-43C1-41B1-B784-BCE4A8DC5543}.Release|x64.Build.0 = Release|x64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Debug|ARM64.Build.0 = Debug|ARM64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Debug|x64.ActiveCfg = Debug|x64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Debug|x64.Build.0 = Debug|x64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Release|ARM64.ActiveCfg = Release|ARM64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Release|ARM64.Build.0 = Release|ARM64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Release|x64.ActiveCfg = Release|x64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

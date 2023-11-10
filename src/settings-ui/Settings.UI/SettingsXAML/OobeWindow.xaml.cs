@@ -13,6 +13,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using WinUIEx;
+using WinUIEx.Messaging;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
@@ -65,6 +66,18 @@ namespace Microsoft.PowerToys.Settings.UI
             _appWindow.Resize(size);
 
             this.initialModule = initialModule;
+
+            var msgMonitor = new WindowMessageMonitor(this);
+            msgMonitor.WindowMessageReceived += (_, e) =>
+            {
+                const int WM_NCLBUTTONDBLCLK = 0x00A3;
+                if (e.Message.MessageId == WM_NCLBUTTONDBLCLK)
+                {
+                    // Disable double click on title bar to maximize window
+                    e.Result = 0;
+                    e.Handled = true;
+                }
+            };
 
             this.SizeChanged += OobeWindow_SizeChanged;
 
@@ -120,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
-        private void SetTheme(bool isDark)
+        public void SetTheme(bool isDark)
         {
             shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }

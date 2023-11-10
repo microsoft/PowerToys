@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h fancyzones.base.rc fancyzones.rc" />
   </Target>
@@ -43,6 +43,7 @@
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesDataTypes.h" />
     <ClInclude Include="FancyZonesData\DefaultLayouts.h" />
+    <ClInclude Include="FancyZonesData\LastUsedVirtualDesktop.h" />
     <ClInclude Include="FancyZonesData\LayoutData.h" />
     <ClInclude Include="FancyZonesData\LayoutDefaults.h" />
     <ClInclude Include="FancyZonesData\LayoutTemplates.h" />
@@ -59,7 +60,7 @@
     <ClInclude Include="LayoutAssignedWindows.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="MonitorUtils.h" />
-    <ClInclude Include="MonitorWorkAreaMap.h" />
+    <ClInclude Include="WorkAreaConfiguration.h" />
     <ClInclude Include="NotificationUtil.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Generated Files/resource.h" />
@@ -71,7 +72,8 @@
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VirtualDesktop.h" />
-    <ClInclude Include="WindowDrag.h" />
+    <ClInclude Include="WindowKeyboardSnap.h" />
+    <ClInclude Include="WindowMouseSnap.h" />
     <ClInclude Include="FancyZonesWindowProperties.h" />
     <ClInclude Include="WindowUtils.h" />
     <ClInclude Include="Zone.h" />
@@ -99,9 +101,13 @@
     <ClCompile Include="FancyZonesData\DefaultLayouts.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="FancyZonesData\LastUsedVirtualDesktop.cpp">
+      <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="FancyZonesData\LayoutTemplates.cpp">
       <PrecompiledHeaderFile>../pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="FancyZonesWindowProcessing.cpp" />
     <ClCompile Include="FancyZonesWindowProperties.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="FancyZonesData.cpp" />
@@ -113,7 +119,7 @@
     <ClCompile Include="LayoutConfigurator.cpp" />
     <ClCompile Include="LayoutAssignedWindows.cpp" />
     <ClCompile Include="MonitorUtils.cpp" />
-    <ClCompile Include="MonitorWorkAreaMap.cpp" />
+    <ClCompile Include="WorkAreaConfiguration.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
@@ -123,7 +129,8 @@
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VirtualDesktop.cpp" />
-    <ClCompile Include="WindowDrag.cpp" />
+    <ClCompile Include="WindowKeyboardSnap.cpp" />
+    <ClCompile Include="WindowMouseSnap.cpp" />
     <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="WorkArea.cpp" />
@@ -148,15 +155,15 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220914.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220914.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets'))" />
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220914.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220914.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
 </Project>

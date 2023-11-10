@@ -13,7 +13,7 @@ namespace FancyZonesEditor.Models
     {
         private static int Count { get; } = Enum.GetValues(typeof(MonitorConfigurationType)).Length;
 
-        public List<LayoutModel> DefaultLayouts { get; } = new List<LayoutModel>(Count);
+        public Dictionary<MonitorConfigurationType,  LayoutModel> Layouts { get; } = new Dictionary<MonitorConfigurationType, LayoutModel>(Count);
 
         public DefaultLayoutsModel()
         {
@@ -23,40 +23,42 @@ namespace FancyZonesEditor.Models
 
         public void Reset(MonitorConfigurationType type)
         {
-            Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], type);
+            switch (type)
+            {
+                case MonitorConfigurationType.Horizontal:
+                    Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], type);
+                    break;
+                case MonitorConfigurationType.Vertical:
+                    Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.Rows], type);
+                    break;
+            }
         }
 
         public void Reset(string uuid)
         {
-            for (int i = 0; i < Count; i++)
+            if (Layouts[MonitorConfigurationType.Horizontal].Uuid == uuid)
             {
-                if (DefaultLayouts[i].Uuid == uuid)
-                {
-                    Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], (MonitorConfigurationType)i);
-                    break;
-                }
+                Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], MonitorConfigurationType.Horizontal);
+            }
+
+            if (Layouts[MonitorConfigurationType.Vertical].Uuid == uuid)
+            {
+                Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.Rows], MonitorConfigurationType.Vertical);
             }
         }
 
         public void Set(LayoutModel layout, MonitorConfigurationType type)
         {
-            if (DefaultLayouts.Count <= (int)type)
-            {
-                DefaultLayouts.Insert((int)type, layout);
-            }
-            else
-            {
-                DefaultLayouts[(int)type] = layout;
-            }
+            Layouts[type] = layout;
 
             FirePropertyChanged();
         }
 
-        public void Restore(List<LayoutModel> layouts)
+        public void Restore(Dictionary<MonitorConfigurationType, LayoutModel> layouts)
         {
-            for (int i = 0; i < Count; i++)
+            foreach (var monitorConfigurationType in layouts.Keys)
             {
-                Set(layouts[i], (MonitorConfigurationType)i);
+                Set(layouts[monitorConfigurationType], monitorConfigurationType);
             }
         }
 

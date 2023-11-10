@@ -33,7 +33,7 @@ using namespace updating;
 std::wstring CurrentVersionToNextVersion(const new_version_download_info& info)
 {
     auto result = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
-    result += L" -> ";
+    result += L" \u2192 "; // Right arrow
     result += info.version.toWstring();
     return result;
 }
@@ -159,6 +159,10 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
     if (download_update)
     {
         Logger::trace(L"Downloading installer for a new version");
+
+        // Cleanup old updates before downloading the latest
+        updating::cleanup_updates();
+
         if (download_new_version(new_version_info).get())
         {
             state.state = UpdateState::readyToInstall;

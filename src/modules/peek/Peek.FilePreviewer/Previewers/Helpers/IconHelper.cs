@@ -7,9 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common;
-using Peek.Common.Extensions;
 using Peek.Common.Models;
 
 namespace Peek.FilePreviewer.Previewers.Helpers
@@ -21,6 +19,16 @@ namespace Peek.FilePreviewer.Previewers.Helpers
 
         public static async Task<ImageSource?> GetIconAsync(string fileName, CancellationToken cancellationToken)
         {
+            return await GetImageAsync(fileName, ThumbnailOptions.BiggerSizeOk | ThumbnailOptions.IconOnly, true, cancellationToken);
+        }
+
+        public static async Task<ImageSource?> GetThumbnailAsync(string fileName, CancellationToken cancellationToken)
+        {
+            return await GetImageAsync(fileName, ThumbnailOptions.ThumbnailOnly, true, cancellationToken);
+        }
+
+        public static async Task<ImageSource?> GetImageAsync(string fileName, ThumbnailOptions options, bool isSupportingTransparency, CancellationToken cancellationToken)
+        {
             if (string.IsNullOrEmpty(fileName))
             {
                 return null;
@@ -28,6 +36,7 @@ namespace Peek.FilePreviewer.Previewers.Helpers
 
             ImageSource? imageSource = null;
             IShellItem? nativeShellItem = null;
+            IntPtr hbitmap = IntPtr.Zero;
 
             try
             {
@@ -40,16 +49,22 @@ namespace Peek.FilePreviewer.Previewers.Helpers
                 }
 
                 NativeSize large = new NativeSize { Width = 256, Height = 256 };
-                var options = ThumbnailOptions.BiggerSizeOk | ThumbnailOptions.IconOnly;
 
-                HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(large, options, out IntPtr hbitmap);
+                HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(large, options, out hbitmap);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                imageSource = hr == HResult.Ok ? await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, true, cancellationToken) : null;
+                imageSource = hr == HResult.Ok ? await BitmapHelper.GetBitmapFromHBitmapAsync(hbitmap, isSupportingTransparency, cancellationToken) : null;
+
+                hbitmap = IntPtr.Zero;
             }
             finally
             {
+                if (hbitmap != IntPtr.Zero)
+                {
+                    NativeMethods.DeleteObject(hbitmap);
+                }
+
                 if (nativeShellItem != null)
                 {
                     Marshal.ReleaseComObject(nativeShellItem);

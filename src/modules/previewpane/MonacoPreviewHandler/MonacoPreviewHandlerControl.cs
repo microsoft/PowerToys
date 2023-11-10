@@ -157,6 +157,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                 _webView.NavigationCompleted += WebView2Init;
                                 _webView.Height = this.Height;
                                 _webView.Width = this.Width;
+                                _webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
                                 Controls.Add(_webView);
                                 _webView.SendToBack();
                                 _loadingBar.Value = 100;
@@ -164,7 +165,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             }
                             catch (NullReferenceException e)
                             {
-                                Logger.LogError("NullReferenceException catched. Skipping exception.", e);
+                                Logger.LogError("NullReferenceException caught. Skipping exception.", e);
                             }
                         }
                         catch (WebView2RuntimeNotFoundException e)
@@ -215,6 +216,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             {
                 Logger.LogInfo("File is too big to display. Showing error message");
                 AddTextBoxControl(Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture));
+            }
+        }
+
+        private async void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            // Monaco opens URI in a new window. We open the URI in the default web browser.
+            if (e.Uri != null && e.IsUserInitiated)
+            {
+                e.Handled = true;
+                await Launcher.LaunchUriAsync(new Uri(e.Uri));
             }
         }
 

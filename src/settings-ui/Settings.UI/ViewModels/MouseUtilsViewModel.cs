@@ -9,6 +9,7 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -48,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
-            _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value;
+            _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value < 4 ? FindMyMouseSettingsConfig.Properties.ActivationMethod.Value : 0;
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
 
             string backgroundColor = FindMyMouseSettingsConfig.Properties.BackgroundColor.Value;
@@ -82,6 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
+            _highlighterAutoActivate = MouseHighlighterSettingsConfig.Properties.AutoActivate.Value;
 
             if (mouseJumpSettingsRepository == null)
             {
@@ -111,6 +113,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsAutoHide = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsAutoHide.Value;
             _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
+            _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
+
+            int isEnabled = 0;
+            NativeMethods.SystemParametersInfo(NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
+            _isAnimationEnabledBySystem = isEnabled != 0;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -216,6 +223,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings FindMyMouseActivationShortcut
+        {
+            get
+            {
+                return FindMyMouseSettingsConfig.Properties.ActivationShortcut;
+            }
+
+            set
+            {
+                if (FindMyMouseSettingsConfig.Properties.ActivationShortcut != value)
+                {
+                    FindMyMouseSettingsConfig.Properties.ActivationShortcut = value ?? FindMyMouseSettingsConfig.Properties.DefaultActivationShortcut;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
         public bool FindMyMouseDoNotActivateOnGameMode
         {
             get
@@ -305,6 +329,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     FindMyMouseSettingsConfig.Properties.SpotlightRadius.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
+            }
+        }
+
+        public bool IsAnimationEnabledBySystem
+        {
+            get
+            {
+                return _isAnimationEnabledBySystem;
+            }
+
+            set
+            {
+                _isAnimationEnabledBySystem = value;
             }
         }
 
@@ -544,6 +581,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _highlightFadeDurationMs = value;
                     MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public bool MouseHighlighterAutoActivate
+        {
+            get
+            {
+                return _highlighterAutoActivate;
+            }
+
+            set
+            {
+                if (value != _highlighterAutoActivate)
+                {
+                    _highlighterAutoActivate = value;
+                    MouseHighlighterSettingsConfig.Properties.AutoActivate.Value = value;
                     NotifyMouseHighlighterPropertyChanged();
                 }
             }
@@ -852,6 +907,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MousePointerCrosshairsAutoActivate
+        {
+            get
+            {
+                return _mousePointerCrosshairsAutoActivate;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsAutoActivate)
+                {
+                    _mousePointerCrosshairsAutoActivate = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMousePointerCrosshairsPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -896,6 +969,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;
+        private bool _highlighterAutoActivate;
 
         private GpoRuleConfigured _jumpEnabledGpoRuleConfiguration;
         private bool _jumpEnabledStateIsGPOConfigured;
@@ -913,5 +987,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mousePointerCrosshairsAutoHide;
         private bool _mousePointerCrosshairsIsFixedLengthEnabled;
         private int _mousePointerCrosshairsFixedLength;
+        private bool _mousePointerCrosshairsAutoActivate;
+        private bool _isAnimationEnabledBySystem;
     }
 }

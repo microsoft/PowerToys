@@ -27,7 +27,7 @@ DWORD KeyDropDownControl::GetSelectedValue(ComboBox comboBox)
     }
 
     auto value = winrt::unbox_value<hstring>(dataContext);
-    return stoi(std::wstring(value));
+    return stoul(std::wstring(value));
 }
 
 void KeyDropDownControl::SetSelectedValue(std::wstring value)
@@ -51,8 +51,10 @@ std::vector<std::pair<DWORD, std::wstring>> KeyDropDownControl::GetKeyList(bool 
 void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisable)
 {
     dropDown = ComboBox();
+#ifndef USE_NEW_DROPDOWN_WARNING_TIP
     warningFlyout = Flyout();
     warningMessage = TextBlock();
+#endif
 
     if (!isShortcut)
     {
@@ -77,6 +79,19 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
         CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut, renderDisable);
     });
 
+#ifdef USE_NEW_DROPDOWN_WARNING_TIP
+    // Attach the tip to the drop down
+    warningTip.Target(dropDown.as<ComboBox>());
+    dropDown.as<ComboBox>().Loaded([&](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
+        Media::VisualTreeHelper::GetChild(dropDown.as<ComboBox>(), 0).as<Grid>().Children().Append(warningTip);
+    });
+
+    // Tip properties
+    muxc::SymbolIconSource warningIcon;
+    warningIcon.Symbol(Symbol::Important);
+    warningTip.IconSource(warningIcon);
+    warningTip.IsLightDismissEnabled(true);
+#else
     // Attach flyout to the drop down
     warningFlyout.as<Flyout>().Content(warningMessage.as<TextBlock>());
 
@@ -86,6 +101,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     style.Setters().Append(Setter(Windows::UI::Xaml::Controls::Control::TabNavigationProperty(), winrt::box_value(Windows::UI::Xaml::Input::KeyboardNavigationMode::Cycle)));
     warningFlyout.as<Flyout>().FlyoutPresenterStyle(style);
     dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
+#endif
     
     // To set the accessible name of the combo-box (by default index 1)
     SetAccessibleNameForComboBox(dropDown.as<ComboBox>(), 1);
@@ -376,6 +392,11 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(StackPanel table, Stac
 void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring message)
 {
     currentDropDown.SelectedIndex(-1);
+
+#ifdef USE_NEW_DROPDOWN_WARNING_TIP
+    warningTip.Title(message);
+    warningTip.IsOpen(true);
+#else
     warningMessage.as<TextBlock>().Text(message);
     try
     {
@@ -386,6 +407,7 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
         // If it's loading and some remaps are invalid from previous configs, avoid crashing when flyouts can't be showed yet.
         Logger::error(L"Failed to show dropdown error flyout: {}", message);
     }
+#endif
 }
 
 // Function to add a shortcut to the UI control as combo boxes

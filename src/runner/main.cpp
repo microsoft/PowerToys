@@ -81,7 +81,7 @@ inline wil::unique_mutex_nothrow create_msi_mutex()
 void open_menu_from_another_instance(std::optional<std::string> settings_window)
 {
     const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
-    LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Overview);
+    LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Dashboard);
     if (settings_window.has_value() && settings_window.value() != "")
     {
         msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
@@ -100,7 +100,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 //init_global_error_handlers();
 #endif
     Trace::RegisterProvider();
-    start_tray_icon();
+    start_tray_icon(isProcessElevated);
     CentralizedKeyboardHook::Start();
 
     int result = -1;
@@ -155,7 +155,9 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"WinUI3Apps/PowerToys.MeasureToolModuleInterface.dll",
             L"WinUI3Apps/PowerToys.HostsModuleInterface.dll",
             L"WinUI3Apps/PowerToys.Peek.dll",
+            L"WinUI3Apps/PowerToys.EnvironmentVariablesModuleInterface.dll",
             L"PowerToys.MouseWithoutBordersModuleInterface.dll",
+            L"PowerToys.CropAndLockModuleInterface.dll",
         };
         const auto VCM_PATH = L"PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
@@ -295,57 +297,6 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
 }
 
-void cleanup_updates()
-{
-    auto state = UpdateState::read();
-    if (state.state != UpdateState::upToDate)
-    {
-        return;
-    }
-
-    auto update_dir = updating::get_pending_updates_path();
-    if (std::filesystem::exists(update_dir))
-    {
-        // Msi and exe files
-        for (const auto& entry : std::filesystem::directory_iterator(update_dir))
-        {
-            auto entryPath = entry.path().wstring();
-            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
-
-            if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
-            {
-                std::error_code err;
-                std::filesystem::remove(entry, err);
-                if (err.value())
-                {
-                    Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
-                }
-            }
-        }
-    }
-
-    // Log files
-    auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
-    auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
-    if (std::filesystem::exists(rootPath))
-    {
-        for (const auto& entry : std::filesystem::directory_iterator(rootPath))
-        {
-            auto entryPath = entry.path().wstring();
-            std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
-            if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::string::npos)
-            {
-                std::error_code err;
-                std::filesystem::remove(entry, err);
-                if (err.value())
-                {
-                    Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
-                }
-            }
-        }
-    }
-}
-
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
     Gdiplus::GdiplusStartupInput gpStartupInput;
@@ -454,7 +405,11 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         modules();
 
         std::thread{ [] {
-            cleanup_updates();
+            auto state = UpdateState::read();
+            if (state.state == UpdateState::upToDate)
+            {
+                updating::cleanup_updates();
+            }
         } }.detach();
 
         auto general_settings = load_general_settings();
@@ -464,6 +419,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         const bool elevated = is_process_elevated();
         const bool with_dont_elevate_arg = cmdLine.find("--dont-elevate") != std::string::npos;
         const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
+        const bool with_restartedElevated_arg = cmdLine.find("--restartedElevated") != std::string::npos;
 
         if (elevated && with_dont_elevate_arg && !run_elevated_setting)
         {
@@ -471,8 +427,14 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             schedule_restart_as_non_elevated();
             result = 0;
         }
-        else if (elevated || !run_elevated_setting || with_dont_elevate_arg)
+        else if (elevated || !run_elevated_setting || with_dont_elevate_arg || (!elevated && with_restartedElevated_arg))
         {
+            // The condition (!elevated && with_restartedElevated_arg) solves issue #19307. Restart elevated loop detected, running non-elevated
+            if (!elevated && with_restartedElevated_arg)
+            {
+                Logger::info("Restart as elevated failed. Running non-elevated.");
+            }
+
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe);
 
             if (result == 0)

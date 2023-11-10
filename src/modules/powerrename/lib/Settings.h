@@ -96,28 +96,6 @@ public:
         WriteFlags();
     }
 
-    inline const std::wstring& GetSearchText() const
-    {
-        return settings.searchText;
-    }
-
-    inline void SetSearchText(const std::wstring& text)
-    {
-        settings.searchText = text;
-        Save();
-    }
-
-    inline const std::wstring& GetReplaceText() const
-    {
-        return settings.replaceText;
-    }
-
-    inline void SetReplaceText(const std::wstring& text)
-    {
-        settings.replaceText = text;
-        Save();
-    }
-
     void Save();
     void Load();
 
@@ -132,8 +110,6 @@ private:
         bool MRUEnabled{ true };
         unsigned int maxMRUSize{ 10 };
         unsigned int flags{ 0 };
-        std::wstring searchText{};
-        std::wstring replaceText{};
     };
 
     void Reload();
@@ -150,3 +126,60 @@ private:
 };
 
 CSettings& CSettingsInstance();
+
+class LastRunSettings
+{
+    static constexpr inline int DEFAULT_WINDOW_WIDTH = 1400;
+    static constexpr inline int DEFAULT_WINDOW_HEIGHT = 800;
+
+    int lastWindowWidth{ DEFAULT_WINDOW_WIDTH };
+    int lastWindowHeight{ DEFAULT_WINDOW_HEIGHT };
+
+    std::wstring searchText{};
+    std::wstring replaceText{};
+
+public:
+    inline LastRunSettings()
+    {
+        Load();
+    }
+
+    inline std::tuple<int, int> GetLastWindowSize() const
+    {
+        return std::make_tuple(lastWindowWidth, lastWindowHeight);
+    }
+
+    inline void UpdateLastWindowSize(const int width, const int height)
+    {
+        lastWindowWidth = std::max(width, DEFAULT_WINDOW_WIDTH);
+        lastWindowHeight = std::max(height, DEFAULT_WINDOW_HEIGHT);
+        Save();
+    }
+
+    inline const std::wstring& GetSearchText() const
+    {
+        return searchText;
+    }
+
+    inline void SetSearchText(const std::wstring& text)
+    {
+        searchText = text;
+        Save();
+    }
+
+    inline const std::wstring& GetReplaceText() const
+    {
+        return replaceText;
+    }
+
+    inline void SetReplaceText(const std::wstring& text)
+    {
+        replaceText = text;
+        Save();
+    }
+
+    void Load();
+    void Save();
+};
+
+LastRunSettings& LastRunSettingsInstance();

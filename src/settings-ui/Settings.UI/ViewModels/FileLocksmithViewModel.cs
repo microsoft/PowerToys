@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _fileLocksmithEnabledOnContextExtendedMenu = Settings.Properties.ExtendedContextMenuOnly.Value;

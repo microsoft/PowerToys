@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using CommunityToolkit.WinUI.UI;
+using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
@@ -17,8 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     public sealed partial class ShortcutControl : UserControl, IDisposable
     {
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
-        private bool _shiftKeyDownOnEntering;
-        private bool _shiftToggled;
+        private System.Collections.Generic.HashSet<VirtualKey> _modifierKeysOnEntering = new System.Collections.Generic.HashSet<VirtualKey>();
         private bool _enabled;
         private HotkeySettings hotkeySettings;
         private HotkeySettings internalSettings;
@@ -167,26 +166,50 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void KeyEventHandler(int key, bool matchValue, int matchValueCode)
         {
-            switch ((VirtualKey)key)
+            VirtualKey virtualKey = (VirtualKey)key;
+            switch (virtualKey)
             {
                 case VirtualKey.LeftWindows:
                 case VirtualKey.RightWindows:
+                    if (!matchValue && _modifierKeysOnEntering.Contains(virtualKey))
+                    {
+                        SendSingleKeyboardInput((short)virtualKey, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
+                        _ = _modifierKeysOnEntering.Remove(virtualKey);
+                    }
+
                     internalSettings.Win = matchValue;
                     break;
                 case VirtualKey.Control:
                 case VirtualKey.LeftControl:
                 case VirtualKey.RightControl:
+                    if (!matchValue && _modifierKeysOnEntering.Contains(VirtualKey.Control))
+                    {
+                        SendSingleKeyboardInput((short)virtualKey, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
+                        _ = _modifierKeysOnEntering.Remove(VirtualKey.Control);
+                    }
+
                     internalSettings.Ctrl = matchValue;
                     break;
                 case VirtualKey.Menu:
                 case VirtualKey.LeftMenu:
                 case VirtualKey.RightMenu:
+                    if (!matchValue && _modifierKeysOnEntering.Contains(VirtualKey.Menu))
+                    {
+                        SendSingleKeyboardInput((short)virtualKey, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
+                        _ = _modifierKeysOnEntering.Remove(VirtualKey.Menu);
+                    }
+
                     internalSettings.Alt = matchValue;
                     break;
                 case VirtualKey.Shift:
                 case VirtualKey.LeftShift:
                 case VirtualKey.RightShift:
-                    _shiftToggled = true;
+                    if (!matchValue && _modifierKeysOnEntering.Contains(VirtualKey.Shift))
+                    {
+                        SendSingleKeyboardInput((short)virtualKey, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
+                        _ = _modifierKeysOnEntering.Remove(VirtualKey.Shift);
+                    }
+
                     internalSettings.Shift = matchValue;
                     break;
                 case VirtualKey.Escape:
@@ -235,13 +258,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             if ((VirtualKey)key == VirtualKey.Tab)
             {
                 // Shift was not pressed while entering and Shift is not pressed while leaving the hotkey control, treat it as a normal tab key press.
-                if (!internalSettings.Shift && !_shiftKeyDownOnEntering && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
+                if (!internalSettings.Shift && !_modifierKeysOnEntering.Contains(VirtualKey.Shift) && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     return false;
                 }
 
                 // Shift was not pressed while entering but it was pressed while leaving the hotkey, therefore simulate a shift key press as the system does not know about shift being pressed in the hotkey.
-                else if (internalSettings.Shift && !_shiftKeyDownOnEntering && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
+                else if (internalSettings.Shift && !_modifierKeysOnEntering.Contains(VirtualKey.Shift) && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     // This is to reset the shift key press within the control as it was not used within the control but rather was used to leave the hotkey.
                     internalSettings.Shift = false;
@@ -253,27 +276,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                 // Shift was pressed on entering and remained pressed, therefore only ignore the tab key so that it can be passed to the system.
                 // As the shift key is already assumed to be pressed by the system while it entered the hotkey control, shift would still remain pressed, hence ignoring the tab input would simulate a Shift+Tab key press.
-                else if (!internalSettings.Shift && _shiftKeyDownOnEntering && !_shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
+                else if (!internalSettings.Shift && _modifierKeysOnEntering.Contains(VirtualKey.Shift) && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
-                    return false;
-                }
-
-                // Shift was pressed on entering but it was released and later pressed again.
-                // Ignore the tab key and the system already has the shift key pressed, therefore this would simulate Shift+Tab.
-                // However, since the last shift key was only used to move out of the control, reset the status of shift within the control.
-                else if (internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
-                {
-                    internalSettings.Shift = false;
-
-                    return false;
-                }
-
-                // Shift was pressed on entering and was later released.
-                // The system still has shift in the key pressed status, therefore pass a Shift KeyUp message to the system, to release the shift key, therefore simulating only the Tab key press.
-                else if (!internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
-                {
-                    SendSingleKeyboardInput((short)VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
-
                     return false;
                 }
             }
@@ -368,13 +372,32 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             // Reset the status on entering the hotkey each time.
-            _shiftKeyDownOnEntering = false;
-            _shiftToggled = false;
+            _modifierKeysOnEntering.Clear();
 
-            // To keep track of the shift key, whether it was pressed on entering.
+            // To keep track of the modifier keys, whether it was pressed on entering.
             if ((NativeMethods.GetAsyncKeyState((int)VirtualKey.Shift) & 0x8000) != 0)
             {
-                _shiftKeyDownOnEntering = true;
+                _modifierKeysOnEntering.Add(VirtualKey.Shift);
+            }
+
+            if ((NativeMethods.GetAsyncKeyState((int)VirtualKey.Control) & 0x8000) != 0)
+            {
+                _modifierKeysOnEntering.Add(VirtualKey.Control);
+            }
+
+            if ((NativeMethods.GetAsyncKeyState((int)VirtualKey.Menu) & 0x8000) != 0)
+            {
+                _modifierKeysOnEntering.Add(VirtualKey.Menu);
+            }
+
+            if ((NativeMethods.GetAsyncKeyState((int)VirtualKey.LeftWindows) & 0x8000) != 0)
+            {
+                _modifierKeysOnEntering.Add(VirtualKey.LeftWindows);
+            }
+
+            if ((NativeMethods.GetAsyncKeyState((int)VirtualKey.RightWindows) & 0x8000) != 0)
+            {
+                _modifierKeysOnEntering.Add(VirtualKey.RightWindows);
             }
 
             _isActive = true;

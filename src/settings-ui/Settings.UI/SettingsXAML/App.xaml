@@ -3,15 +3,12 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI">
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyVisual.xaml" />
-                <ResourceDictionary Source="/SettingsXAML/Controls/IsEnabledTextBlock/IsEnabledTextBlock.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/Button.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Colors.xaml" />
@@ -58,11 +55,8 @@
             <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="controls:CheckBoxWithDescriptionControl" />
             <!--  Other app resources here  -->
 
-            <SolidColorBrush x:Key="WindowCaptionBackground" Color="Transparent" />
-            <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled" Color="Transparent" />
-
             <TransitionCollection x:Key="SettingsCardsAnimations">
-                <EntranceThemeTransition FromVerticalOffset="50" /> 
+                <EntranceThemeTransition FromVerticalOffset="50" />
                 <!--  Animates cards when loaded  -->
                 <RepositionThemeTransition IsStaggeringEnabled="False" />
                 <!--  Smoothly animates individual cards upon whenever Expanders are expanded/collapsed  -->

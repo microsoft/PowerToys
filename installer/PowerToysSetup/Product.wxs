@@ -72,6 +72,7 @@
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
       <ComponentGroupRef Id="VideoConferenceComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
+      <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
         
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
@@ -113,7 +114,6 @@
     <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Images\dialog.png" />
     <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
-    <Property Id="CREATESCHEDULEDTASK" Value="1"/>
     <Property Id="WixShellExecTarget" Value="[#PowerToys_ActionRunner.exe]" />
 
     <SetProperty Action="SetDEFAULTBOOTSTRAPPERINSTALLFOLDER" Id="DEFAULTBOOTSTRAPPERINSTALLFOLDER" Value="[$(var.DefaultInstallDir)]PowerToys" Before="SetBOOTSTRAPPERINSTALLFOLDER" Sequence="execute"></SetProperty>
@@ -133,12 +133,9 @@
     <SetProperty Id="InstallScope" Value="$(var.InstallScope)" Before="DetectPrevInstallPath" Sequence="execute"></SetProperty>
     <InstallExecuteSequence>
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
-      <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
+      <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
-      <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
-        NOT Installed and CREATESCHEDULEDTASK = 1
-      </Custom>
       <Custom Action="CheckGPO" After="InstallInitialize">
         NOT Installed
       </Custom>
@@ -172,17 +169,22 @@
       </Custom>-->
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
 
-      <Custom Action="LaunchPowerToys" After="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="LaunchPowerToys" Before="InstallFinalize">NOT Installed</Custom>
 
     </InstallExecuteSequence>
 
+    <CustomAction Id="SetLaunchPowerToysParam"
+                    Property="LaunchPowerToys"
+                    Value="[INSTALLFOLDER]" />
+
     <CustomAction
       Id="LaunchPowerToys"
-      Execute="immediate"
+      Return="ignore"
       Impersonate="yes"
-      Return="asyncNoWait"
-      FileKey="PowerToys.exe"
-      ExeCommand="--dont-elevate" />
+      Execute="deferred"
+      BinaryKey="PTCustomActions"
+      DllEntry="LaunchPowerToysCA"
+      />
 
     <CustomAction
       Id="TerminateProcesses"
@@ -190,10 +192,6 @@
       Execute="immediate"
       BinaryKey="PTCustomActions"
       DllEntry="TerminateProcessesCA" />
-
-    <CustomAction Id="SetRegisterPowerToysSchTaskParam"
-                  Property="RegisterPowerToysSchTask"
-                  Value="[INSTALLFOLDER]PowerToys.exe" />
 
     <CustomAction Id="SetApplyModulesRegistryChangeSetsParam"
                     Property="ApplyModulesRegistryChangeSets"
@@ -226,15 +224,6 @@
     <CustomAction Id="SetDeleteDotnetRuntimeHardlinksParam"
                     Property="DeleteDotnetRuntimeHardlinks"
                     Value="[INSTALLFOLDER]" />
-
-    <!-- Needs to Impersonate="no" and Execute="deferred" in order to run elevated. -->
-    <CustomAction Id="RegisterPowerToysSchTask"
-                  Return="ignore"
-                  Impersonate="no"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="CreateScheduledTaskCA"
-                   />
 
     <CustomAction Id="RemovePowerToysSchTasks"
                   Return="ignore"

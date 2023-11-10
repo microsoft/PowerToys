@@ -96,14 +96,14 @@ VirtualDesktop& VirtualDesktop::instance()
     return self;
 }
 
-std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() const
+GUID VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() const
 {
     // On newer Windows builds, the current virtual desktop is persisted to
     // a totally different reg key. Look there first.
     std::optional<GUID> desktopId = NewGetCurrentDesktopId();
     if (desktopId.has_value())
     {
-        return desktopId;
+        return desktopId.value();
     }
 
     // Explorer persists current virtual desktop identifier to registry on a per session basis, but only
@@ -112,7 +112,7 @@ std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() con
     desktopId = GetDesktopIdFromCurrentSession();
     if (desktopId.has_value())
     {
-        return desktopId;
+        return desktopId.value();
     }
 
     // Fallback scenario is to get array of virtual desktops stored in registry, but not kept per session.
@@ -128,7 +128,7 @@ std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopIdFromRegistry() con
         }
     }
 
-    return std::nullopt;
+    return GUID_NULL;
 }
 
 std::optional<std::vector<GUID>> VirtualDesktop::GetVirtualDesktopIdsFromRegistry(HKEY hKey) const
@@ -169,25 +169,6 @@ std::optional<std::vector<GUID>> VirtualDesktop::GetVirtualDesktopIdsFromRegistr
     return GetVirtualDesktopIdsFromRegistry(GetVirtualDesktopsRegKey());
 }
 
-bool VirtualDesktop::IsVirtualDesktopIdSavedInRegistry(GUID id) const
-{
-    auto ids = GetVirtualDesktopIdsFromRegistry();
-    if (!ids.has_value())
-    {
-        return false;
-    }
-
-    for (const auto& regId : *ids)
-    {
-        if (regId == id)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 bool VirtualDesktop::IsWindowOnCurrentDesktop(HWND window) const
 {
     BOOL isWindowOnCurrentDesktop = false;
@@ -197,47 +178,6 @@ bool VirtualDesktop::IsWindowOnCurrentDesktop(HWND window) const
     }
 
     return isWindowOnCurrentDesktop;
-}
-
-std::optional<GUID> VirtualDesktop::GetDesktopId(HWND window) const
-{
-    GUID id;
-    BOOL isWindowOnCurrentDesktop = false;
-    if (m_vdManager && m_vdManager->IsWindowOnCurrentVirtualDesktop(window, &isWindowOnCurrentDesktop) == S_OK && isWindowOnCurrentDesktop)
-    {
-        // Filter windows such as Windows Start Menu, Task Switcher, etc.
-        if (m_vdManager->GetWindowDesktopId(window, &id) == S_OK)
-        {
-            return id;
-        }
-    }
-
-    return std::nullopt;
-}
-
-std::vector<std::pair<HWND, GUID>> VirtualDesktop::GetWindowsRelatedToDesktops() const
-{
-    using result_t = std::vector<HWND>;
-    result_t windows;
-
-    auto callback = [](HWND window, LPARAM data) -> BOOL {
-        result_t& result = *reinterpret_cast<result_t*>(data);
-        result.push_back(window);
-        return TRUE;
-    };
-    EnumWindows(callback, reinterpret_cast<LPARAM>(&windows));
-
-    std::vector<std::pair<HWND, GUID>> result;
-    for (auto window : windows)
-    {
-        auto desktop = GetDesktopId(window);
-        if (desktop.has_value())
-        {
-            result.push_back({ window, *desktop });
-        }
-    }
-
-    return result;
 }
 
 std::vector<HWND> VirtualDesktop::GetWindowsFromCurrentDesktop() const
@@ -263,63 +203,4 @@ std::vector<HWND> VirtualDesktop::GetWindowsFromCurrentDesktop() const
     }
 
     return result;
-}
-
-GUID VirtualDesktop::GetCurrentVirtualDesktopId() const noexcept
-{
-    return m_currentVirtualDesktopId;
-}
-
-GUID VirtualDesktop::GetPreviousVirtualDesktopId() const noexcept
-{
-    return m_previousDesktopId;
-}
-
-void VirtualDesktop::UpdateVirtualDesktopId() noexcept
-{
-    m_previousDesktopId = m_currentVirtualDesktopId;
-
-    auto currentVirtualDesktopId = GetCurrentVirtualDesktopIdFromRegistry();
-    if (!currentVirtualDesktopId.has_value())
-    {
-        Logger::info("No Virtual Desktop Id found in registry");
-        currentVirtualDesktopId = VirtualDesktop::instance().GetDesktopIdByTopLevelWindows();
-    }
-
-    if (currentVirtualDesktopId.has_value())
-    {
-        m_currentVirtualDesktopId = *currentVirtualDesktopId;
-
-        if (m_currentVirtualDesktopId == GUID_NULL)
-        {
-            Logger::warn("Couldn't retrieve virtual desktop id");
-        }
-    }
-
-    Trace::VirtualDesktopChanged();
-}
-
-std::optional<GUID> VirtualDesktop::GetDesktopIdByTopLevelWindows() const
-{
-    using result_t = std::vector<HWND>;
-    result_t windows;
-
-    auto callback = [](HWND window, LPARAM data) -> BOOL {
-        result_t& result = *reinterpret_cast<result_t*>(data);
-        result.push_back(window);
-        return TRUE;
-    };
-    EnumWindows(callback, reinterpret_cast<LPARAM>(&windows));
-
-    for (const auto window : windows)
-    {
-        std::optional<GUID> id = GetDesktopId(window);
-        if (id.has_value())
-        {
-            // Otherwise keep checking other windows
-            return *id;
-        }
-    }
-
-    return std::nullopt;
 }

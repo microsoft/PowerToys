@@ -4,11 +4,17 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Appium.WebDriver" Version="4.2.1" />
-    <PackageVersion Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.18" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.0" />
-    <PackageVersion Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
-    <PackageVersion Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
-    <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.0.230907" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.0.230907" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.230907" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.230907" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.0.230907" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Collections " Version="8.0.230907" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.0.230907" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.0.230907" />
+    <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
+    <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
     <PackageVersion Include="coverlet.collector" Version="1.3.0" />
     <PackageVersion Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
@@ -26,22 +32,22 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
-    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.1722.45" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="7.0.3" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.3" />
-    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
     <PackageVersion Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.3.230502000" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.4.230913002" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
-    <PackageVersion Include="Moq" Version="4.18.3" />
-    <PackageVersion Include="MSTest.TestAdapter" Version="3.0.1" />
-    <PackageVersion Include="MSTest.TestFramework" Version="3.0.1" />
+    <PackageVersion Include="Moq" Version="4.18.4" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.1.1" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.1.1" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageVersion Include="NLog" Version="5.0.4" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.0.4" />
@@ -49,7 +55,7 @@
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.33.0" />
     <PackageVersion Include="StreamJsonRpc" Version="2.14.24" />
-    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.435" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.507" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="7.0.0" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
@@ -66,6 +72,7 @@
     <PackageVersion Include="Vanara.PInvoke.User32" Version="3.4.11" />
     <PackageVersion Include="Vanara.PInvoke.Shell32" Version="3.4.11" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
+    <PackageVersion Include="WPF-UI" Version="3.0.0-preview.4" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->

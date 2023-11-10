@@ -138,6 +138,12 @@
   <data name="FilterRegistryName" xml:space="preserve">
     <value>Registry files (*.reg)</value>
   </data>
+  <data name="InvalidBinary" xml:space="preserve">
+    <value>(Invalid binary value)</value>
+  </data>
+  <data name="InvalidDword" xml:space="preserve">
+    <value>(Invalid DWORD (32-bit) value)</value>
+  </data>
   <data name="InvalidQword" xml:space="preserve">
     <value>(Invalid QWORD (64-bit) value)</value>
   </data>
@@ -146,6 +152,9 @@
   </data>
   <data name="InvalidRegistryFileTitle" xml:space="preserve">
     <value>File was not a Registry file</value>
+  </data>
+  <data name="InvalidString" xml:space="preserve">
+    <value>(Invalid string value)</value>
   </data>
   <data name="LargeRegistryFile" xml:space="preserve">
     <value> is larger than 10MB which is too large for this application.</value>
@@ -177,6 +186,9 @@
   </data>
   <data name="RegistryJumpToKeyButton.Label" xml:space="preserve">
     <value>Open Key</value>
+  </data>
+  <data name="SaveDialogTitle" xml:space="preserve">
+    <value>Save As</value>
   </data>
   <data name="SaveAsButton.Label" xml:space="preserve">
     <value>Save as…</value>
@@ -225,7 +237,7 @@
     <value>User Account Control</value>
   </data>
   <data name="ValueColumn.Header" xml:space="preserve">
-    <value>Value</value>
+    <value>Data</value>
   </data>
   <data name="WriteButton.Label" xml:space="preserve">
     <value>Write to Registry</value>

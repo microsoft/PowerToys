@@ -16,20 +16,23 @@ class Ntdll
 private:
     HMODULE m_module;
 public:
-    struct SYSTEM_HANDLE
+    struct SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX
     {
-        ULONG ProcessId;
-        BYTE ObjectTypeNumber;
-        BYTE Flags;
-        USHORT Handle;
         PVOID Object;
-        ACCESS_MASK GrantedAccess;
+        ULONG_PTR UniqueProcessId;
+        ULONG_PTR HandleValue;
+        ULONG GrantedAccess;
+        USHORT CreatorBackTraceIndex;
+        USHORT ObjectTypeIndex;
+        ULONG HandleAttributes;
+        ULONG Reserved;
     };
 
-    struct SYSTEM_HANDLE_INFORMATION
+    struct SYSTEM_HANDLE_INFORMATION_EX
     {
-        ULONG HandleCount;
-        SYSTEM_HANDLE Handles[1];
+        ULONG_PTR NumberOfHandles;
+        ULONG_PTR Reserved;
+        SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX Handles[1];
     };
 
     enum POOL_TYPE

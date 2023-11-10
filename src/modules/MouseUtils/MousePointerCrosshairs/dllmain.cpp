@@ -20,6 +20,7 @@ namespace
     const wchar_t JSON_KEY_CROSSHAIRS_AUTO_HIDE[] = L"crosshairs_auto_hide";
     const wchar_t JSON_KEY_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED[] = L"crosshairs_is_fixed_length_enabled";
     const wchar_t JSON_KEY_CROSSHAIRS_FIXED_LENGTH[] = L"crosshairs_fixed_length";
+    const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -232,7 +233,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Opacity value");
                 }
             }
             catch (...)
@@ -269,7 +270,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Radius value");
                 }
                 
             }
@@ -288,7 +289,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Thickness value");
                 }
                 
             }
@@ -326,7 +327,7 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Border Color value");
                 }
             }
             catch (...)
@@ -337,7 +338,7 @@ public:
             {
                 // Parse auto hide
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_AUTO_HIDE);
-                inclusiveCrosshairsSettings.crosshairsAutoHide = static_cast<bool>(jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE));
+                inclusiveCrosshairsSettings.crosshairsAutoHide = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
             }
             catch (...)
             {
@@ -365,12 +366,22 @@ public:
                 }
                 else
                 {
-                    throw;
+                    throw std::runtime_error("Invalid Fixed Length value");
                 }
             }
             catch (...)
             {
                 Logger::warn("Failed to initialize fixed length from settings. Will use default value");
+            }
+            try
+            {
+                // Parse auto activate
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_AUTO_ACTIVATE);
+                inclusiveCrosshairsSettings.autoActivate = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize auto activate from settings. Will use default value");
             }
         }
         else

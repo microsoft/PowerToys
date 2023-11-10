@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls">
 
-    <Style TargetType="local:IsEnabledTextBlock">
+    <Style x:Key="DefaultIsEnabledTextBlockStyle" TargetType="local:IsEnabledTextBlock">
         <Setter Property="Foreground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
@@ -35,6 +35,7 @@
     </Style>
     <Style
         x:Key="SecondaryIsEnabledTextBlockStyle"
+        BasedOn="{StaticResource DefaultIsEnabledTextBlockStyle}"
         TargetType="local:IsEnabledTextBlock">
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
         <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}" />

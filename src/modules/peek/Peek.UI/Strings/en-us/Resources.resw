@@ -154,31 +154,31 @@
     <comment>Date Modified label for the unsupported files view. {0} is the date.</comment>
   </data>
   <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} bytes</value>
+    <value>byte</value>
     <comment>Abbreviation for the size unit byte.</comment>
   </data>
   <data name="ReadableString_KiloByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} KB</value>
+    <value>KB</value>
     <comment>Abbreviation for the size unit kilobyte.</comment>
   </data>
   <data name="ReadableString_MegaByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} MB</value>
+    <value>MB</value>
     <comment>Abbreviation for the size unit megabyte.</comment>
   </data>
   <data name="ReadableString_GigaByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} GB</value>
+    <value>GB</value>
     <comment>Abbreviation for the size unit gigabyte.</comment>
   </data>
   <data name="ReadableString_TeraByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} TB</value>
+    <value>TB</value>
     <comment>Abbreviation for the size unit terabyte.</comment>
   </data>
   <data name="ReadableString_PetaByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} PB</value>
+    <value>PB</value>
     <comment>Abbreviation for the size unit petabyte.</comment>
   </data>
   <data name="ReadableString_ExaByteAbbreviationFormat" xml:space="preserve">
-    <value>{0} EB</value>
+    <value>EB</value>
     <comment>Abbreviation for the size unit exabyte.</comment>
   </data>
   <data name="PreviewTooltip_FileName" xml:space="preserve">
@@ -232,5 +232,33 @@
   <data name="Archive_Size" xml:space="preserve">
     <value>{0} (extracted {1})</value>
     <comment>{0} is the size of the archive, {1} is the extracted size</comment>
+  </data>
+  <data name="ReadableString_BytesAbbreviationFormat" xml:space="preserve">
+    <value>bytes</value>
+    <comment>Abbreviation for the size bytes</comment>
+  </data>
+  <data name="OpenUriDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Dialog showed when an URI is clicked. Button to close the dialog.</comment>
+  </data>
+  <data name="OpenUriDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Open</value>
+    <comment>Dialog showed when an URI is clicked. Button to open the URI.</comment>
+  </data>
+  <data name="OpenUriDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Dialog showed when an URI is clicked. Button to copy the URI.</comment>
+  </data>
+  <data name="OpenUriDialog.Title" xml:space="preserve">
+    <value>Do you want Peek to open the external application?</value>
+    <comment>Title of the dialog showed when an URI is clicked,"Peek" is the name of the utility. </comment>
+  </data>
+  <data name="ReadableString_BytesString" xml:space="preserve">
+    <value> ({1:N0} bytes)</value>
+    <comment>Displays total number of bytes. Don't localize the "{1:N0}" part.</comment>
+  </data>
+  <data name="ReadableString_ByteString" xml:space="preserve">
+    <value> ({1:N0} byte)</value>
+    <comment>Displays unit byte. Don't localize the "{1:N0}" part.</comment>
   </data>
 </root>

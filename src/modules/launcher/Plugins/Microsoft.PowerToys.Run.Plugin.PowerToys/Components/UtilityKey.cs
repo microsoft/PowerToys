@@ -13,5 +13,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
         PowerOCR = 4,
         ShortcutGuide = 5,
         RegistryPreview = 6,
+        CropAndLock = 7,
+        EnvironmentVariables = 8,
     }
 }

@@ -331,20 +331,19 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
 
 inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& params, const std::wstring& working_dir)
 {
+    bool success = false;
+    HRESULT co_init = E_FAIL;
     try
     {
-        CoInitialize(nullptr);
-        if (!ShellExecuteFromExplorer(file.c_str(), params.c_str(), working_dir.c_str()))
-        {
-            return false;
-        }
+        co_init = CoInitialize(nullptr);
+        success = ShellExecuteFromExplorer(file.c_str(), params.c_str(), working_dir.c_str());
     }
     catch (...)
     {
-        return false;
     }
+    if (SUCCEEDED(co_init)) CoUninitialize();
 
-    return true;
+    return success;
 }
 
 struct ProcessInfo

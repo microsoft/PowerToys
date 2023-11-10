@@ -45,6 +45,7 @@ private:
     void StartDrawingPointFading(MouseButton button);
     void ClearDrawingPoint(MouseButton button);
     void ClearDrawing();
+    void BringToFront();
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
@@ -72,6 +73,7 @@ private:
 
     bool m_leftButtonPressed = false;
     bool m_rightButtonPressed = false;
+    UINT_PTR m_timer_id = 0;
 
     bool m_visible = false;
 
@@ -85,7 +87,7 @@ private:
     winrt::Windows::UI::Color m_rightClickColor = MOUSE_HIGHLIGHTER_DEFAULT_RIGHT_BUTTON_COLOR;
     winrt::Windows::UI::Color m_alwaysColor = MOUSE_HIGHLIGHTER_DEFAULT_ALWAYS_COLOR;
 };
-
+static const uint32_t BRING_TO_FRONT_TIMER_ID = 123;
 Highlighter* Highlighter::instance = nullptr;
 
 bool Highlighter::CreateHighlighter()
@@ -126,11 +128,10 @@ bool Highlighter::CreateHighlighter()
     }
 }
 
-
 void Highlighter::AddDrawingPoint(MouseButton button)
 {
     POINT pt;
-        
+
     // Applies DPIs.
     GetCursorPos(&pt);
 
@@ -211,6 +212,15 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
     auto animation = m_compositor.CreateColorKeyFrameAnimation();
     animation.InsertKeyFrame(1, winrt::Windows::UI::ColorHelper::FromArgb(0, brushColor.R, brushColor.G, brushColor.B));
     using timeSpan = std::chrono::duration<int, std::ratio<1, 1000>>;
+    // HACK: If user sets these durations to 0, the fade won't work. Setting them to 1ms instead to avoid this.
+    if (m_fadeDuration_ms == 0)
+    {
+        m_fadeDuration_ms = 1;
+    }
+    if (m_fadeDelay_ms == 0)
+    {
+        m_fadeDelay_ms = 1;
+    }
     std::chrono::milliseconds duration(m_fadeDuration_ms);
     std::chrono::milliseconds delay(m_fadeDelay_ms);
     animation.Duration(timeSpan(duration));
@@ -257,6 +267,13 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 }
                 instance->AddDrawingPoint(MouseButton::Left);
                 instance->m_leftButtonPressed = true;
+                // start a timer for the scenario, when the user clicks a pinned window which has no focus.
+                // after we drow the highlighting circle the pinned window will jump in front of us,
+                // we have to bring our window back to topmost position
+                if (instance->m_timer_id == 0)
+                {
+                    instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+                }
             }
             break;
         case WM_RBUTTONDOWN:
@@ -269,6 +286,11 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 }
                 instance->AddDrawingPoint(MouseButton::Right);
                 instance->m_rightButtonPressed = true;
+                // same as for the left button, start a timer for reposition ourselves to topmost position
+                if (instance->m_timer_id == 0)
+                {
+                    instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
+                }
             }
             break;
         case WM_MOUSEMOVE:
@@ -316,7 +338,6 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
     return CallNextHookEx(0, nCode, wParam, lParam);
 }
 
-
 void Highlighter::StartDrawing()
 {
     Logger::info("Starting draw mode.");
@@ -363,6 +384,11 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
     m_alwaysPointerEnabled = settings.alwaysColor.A != 0;
 }
 
+void Highlighter::BringToFront() {
+    // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
+    SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
+}
+
 void Highlighter::DestroyHighlighter()
 {
     StopDrawing();
@@ -393,6 +419,28 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
     case WM_DESTROY:
         instance->DestroyHighlighter();
         break;
+    case WM_TIMER:
+    {
+        switch (wParam)
+        {
+            // when the bring-to-front-timer expires (every 10 ms), we are repositioning our window to topmost Z order position
+            // As we experience that it takes 0-30 ms that the pinned window hides our window,
+            // we await 5 timer ticks (50 ms together) and then we stop the timer.
+            // If we would use a timer with a 50 ms period, there would be a flickering on the UI, as in most of the cases
+            // the pinned window hides our window in a few milliseconds.
+        case BRING_TO_FRONT_TIMER_ID:
+            static int fireCount = 0;
+            if (fireCount++ >= 4)
+            {
+                KillTimer(instance->m_hwnd, instance->m_timer_id);
+                instance->m_timer_id = 0;
+                fireCount = 0;
+            }
+            instance->BringToFront();
+            break;
+        }
+        break;
+    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -494,6 +542,11 @@ int MouseHighlighterMain(HINSTANCE hInstance, MouseHighlighterSettings settings)
         return FALSE;
     }
     Logger::info("Initialized the highlighter instance.");
+
+    if (settings.autoActivate)
+    {
+        highlighter.SwitchActivationMode();
+    }
 
     MSG msg;
 

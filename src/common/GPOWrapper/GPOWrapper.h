@@ -10,6 +10,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredAlwaysOnTopEnabledValue();
         static GpoRuleConfigured GetConfiguredAwakeEnabledValue();
         static GpoRuleConfigured GetConfiguredColorPickerEnabledValue();
+        static GpoRuleConfigured GetConfiguredCropAndLockEnabledValue();
         static GpoRuleConfigured GetConfiguredFancyZonesEnabledValue();
         static GpoRuleConfigured GetConfiguredFileLocksmithEnabledValue();
         static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
@@ -41,6 +42,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredPeekEnabledValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
         static GpoRuleConfigured GetAllowExperimentationValue();
+        static GpoRuleConfigured GetRunPluginEnabledValue(winrt::hstring const& pluginID);
+        static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();
     };
 }
 

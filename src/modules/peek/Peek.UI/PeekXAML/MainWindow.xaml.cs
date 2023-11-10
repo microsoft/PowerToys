@@ -1,19 +1,19 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
+using Peek.Common.Extensions;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
-using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 using WinUIEx;
@@ -28,7 +28,6 @@ namespace Peek.UI
         public MainWindowViewModel ViewModel { get; }
 
         private ThemeListener? themeListener;
-        private bool activated;
 
         public MainWindow()
         {
@@ -45,13 +44,40 @@ namespace Peek.UI
                 Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", e);
             }
 
-            ViewModel = App.GetService<MainWindowViewModel>();
-
-            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
+            ViewModel = Application.Current.GetService<MainWindowViewModel>();
 
             TitleBarControl.SetTitleBarToWindow(this);
 
             AppWindow.Closing += AppWindow_Closing;
+        }
+
+        /// <summary>
+        /// Toggling the window visibility and querying files when necessary.
+        /// </summary>
+        public void Toggle(bool firstActivation, Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        {
+            if (firstActivation)
+            {
+                Activate();
+                Initialize(foregroundWindowHandle);
+                return;
+            }
+
+            if (AppWindow.IsVisible)
+            {
+                if (IsNewSingleSelectedItem(foregroundWindowHandle))
+                {
+                    Initialize(foregroundWindowHandle);
+                }
+                else
+                {
+                    Uninitialize();
+                }
+            }
+            else
+            {
+                Initialize(foregroundWindowHandle);
+            }
         }
 
         private void HandleThemeChange()
@@ -68,46 +94,15 @@ namespace Peek.UI
             }
         }
 
-        private void PeekWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
+        private void PeekWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
-            if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
-                var userSettings = App.GetService<IUserSettings>();
+                var userSettings = Application.Current.GetService<IUserSettings>();
                 if (userSettings.CloseAfterLosingFocus)
                 {
                     Uninitialize();
                 }
-            }
-        }
-
-        /// <summary>
-        /// Handle Peek hotkey, by toggling the window visibility and querying files when necessary.
-        /// </summary>
-        private void OnPeekHotkey()
-        {
-            // First Peek activation
-            if (!activated)
-            {
-                Activate();
-                Initialize();
-                activated = true;
-                return;
-            }
-
-            if (AppWindow.IsVisible)
-            {
-                if (IsNewSingleSelectedItem())
-                {
-                    Initialize();
-                }
-                else
-                {
-                    Uninitialize();
-                }
-            }
-            else
-            {
-                Initialize();
             }
         }
 
@@ -126,12 +121,12 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private void Initialize()
+        private void Initialize(Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
-            ViewModel.Initialize();
+            ViewModel.Initialize(foregroundWindowHandle);
             ViewModel.ScalingFactor = this.GetMonitorScale();
 
             bootTime.Stop();
@@ -156,6 +151,7 @@ namespace Peek.UI
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
             var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
             var monitorSize = foregroundWindowHandle.GetMonitorSize();
             var monitorScale = foregroundWindowHandle.GetMonitorScale();
 
@@ -179,7 +175,7 @@ namespace Peek.UI
             }
 
             this.Show();
-            this.BringToForeground();
+            WindowHelpers.BringToForeground(this.GetWindowHandle());
         }
 
         private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
@@ -210,12 +206,10 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private bool IsNewSingleSelectedItem()
+        private bool IsNewSingleSelectedItem(Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {
             try
             {
-                var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
-
                 var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
                 var selectedItemsCount = selectedItems?.GetCount() ?? 0;
                 if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)

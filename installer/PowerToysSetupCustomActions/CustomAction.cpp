@@ -2,7 +2,6 @@
 #include "resource.h"
 #include "RcResource.h"
 #include <ProjectTelemetry.h>
-
 #include <spdlog/sinks/base_sink.h>
 
 #include "../../src/common/logger/logger.h"
@@ -15,6 +14,11 @@
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
+
+#include <wtsapi32.h>
+#include <processthreadsapi.h>
+#include <UserEnv.h>
+#include <winnt.h>
 
 using namespace std;
 
@@ -48,6 +52,188 @@ HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring& installationDir)
     ExitOnFailure(hr, "Failed to get INSTALLFOLDER property.");
 LExit:
     return hr;
+}
+
+BOOL IsLocalSystem()
+{
+    HANDLE hToken;
+    UCHAR bTokenUser[sizeof(TOKEN_USER) + 8 + 4 * SID_MAX_SUB_AUTHORITIES];
+    PTOKEN_USER pTokenUser = (PTOKEN_USER)bTokenUser;
+    ULONG cbTokenUser;
+    SID_IDENTIFIER_AUTHORITY siaNT = SECURITY_NT_AUTHORITY;
+    PSID pSystemSid;
+    BOOL bSystem;
+
+    // open process token
+    if (!OpenProcessToken(GetCurrentProcess(),
+        TOKEN_QUERY,
+        &hToken))
+        return FALSE;
+
+    // retrieve user SID
+    if (!GetTokenInformation(hToken, TokenUser, pTokenUser,
+        sizeof(bTokenUser), &cbTokenUser))
+    {
+        CloseHandle(hToken);
+        return FALSE;
+    }
+
+    CloseHandle(hToken);
+
+    // allocate LocalSystem well-known SID
+    if (!AllocateAndInitializeSid(&siaNT, 1, SECURITY_LOCAL_SYSTEM_RID,
+        0, 0, 0, 0, 0, 0, 0, &pSystemSid))
+        return FALSE;
+
+    // compare the user SID from the token with the LocalSystem SID
+    bSystem = EqualSid(pTokenUser->User.Sid, pSystemSid);
+
+    FreeSid(pSystemSid);
+
+    return bSystem;
+}
+
+BOOL ImpersonateLoggedInUserAndDoSomething(std::function<bool(HANDLE userToken)> action)
+{
+    HRESULT hr = S_OK;
+    HANDLE hUserToken = NULL;
+    DWORD dwSessionId;
+    ProcessIdToSessionId(GetCurrentProcessId(), &dwSessionId);
+    auto rv = WTSQueryUserToken(dwSessionId, &hUserToken);
+
+    if (rv == 0)
+    {
+        hr = E_ABORT;
+        ExitOnFailure(hr, "Failed to query user token");
+    }
+
+    HANDLE hUserTokenDup;
+    if (DuplicateTokenEx(hUserToken, TOKEN_ALL_ACCESS, NULL, SECURITY_IMPERSONATION_LEVEL::SecurityImpersonation, TOKEN_TYPE::TokenPrimary, &hUserTokenDup) == 0)
+    {
+        CloseHandle(hUserToken);
+        CloseHandle(hUserTokenDup);
+        hr = E_ABORT;
+        ExitOnFailure(hr, "Failed to duplicate user token");
+    }
+
+    if (ImpersonateLoggedOnUser(hUserTokenDup))
+    {
+        if (!action(hUserTokenDup))
+        {
+            hr = E_ABORT;
+            ExitOnFailure(hr, "Failed to execute action");
+        }
+
+        RevertToSelf();
+        CloseHandle(hUserToken);
+        CloseHandle(hUserTokenDup);
+    }
+    else
+    {
+        hr = E_ABORT;
+        ExitOnFailure(hr, "Failed to duplicate user token");
+    }
+
+LExit:
+    return SUCCEEDED(hr);
+}
+
+UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder, path, args;
+    std::wstring commandLine;
+
+    hr = WcaInitialize(hInstall, "LaunchPowerToys");
+    ExitOnFailure(hr, "Failed to initialize");
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    path = installationFolder;
+    path += L"\\PowerToys.exe";
+
+    args = L"--dont-elevate";
+
+    commandLine = L"\"" + path + L"\" ";
+    commandLine += args;
+
+    BOOL isSystemUser = IsLocalSystem();
+
+    if (isSystemUser) {
+    
+        auto action = [&commandLine](HANDLE userToken) {
+            STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
+            PROCESS_INFORMATION processInformation;
+
+            PVOID lpEnvironment = NULL;
+            CreateEnvironmentBlock(&lpEnvironment, userToken, FALSE);
+
+            CreateProcessAsUser(
+                userToken,
+                NULL,
+                commandLine.data(),
+                NULL,
+                NULL,
+                FALSE,
+                CREATE_DEFAULT_ERROR_MODE | CREATE_UNICODE_ENVIRONMENT,
+                lpEnvironment,
+                NULL,
+                &startupInfo,
+                &processInformation);
+
+            if (!CloseHandle(processInformation.hProcess))
+            {
+                return false;
+            }
+            if (!CloseHandle(processInformation.hThread))
+            {
+                return false;
+            }
+
+            return true;
+        };
+
+        if (!ImpersonateLoggedInUserAndDoSomething(action))
+        {
+            hr = E_ABORT;
+            ExitOnFailure(hr, "ImpersonateLoggedInUserAndDoSomething failed");
+        }
+    }
+    else
+    {
+        STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
+
+        PROCESS_INFORMATION processInformation;
+
+        // Start the resizer
+        CreateProcess(
+            NULL,
+            commandLine.data(),
+            NULL,
+            NULL,
+            TRUE,
+            0,
+            NULL,
+            NULL,
+            &startupInfo,
+            &processInformation);
+
+        if (!CloseHandle(processInformation.hProcess))
+        {
+            hr = E_ABORT;
+            ExitOnFailure(hr, "Failed to close process handle");
+        }
+        if (!CloseHandle(processInformation.hThread))
+        {
+            hr = E_ABORT;
+            ExitOnFailure(hr, "Failed to close thread handle");
+        }
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
 }
 
 UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
@@ -253,285 +439,13 @@ UINT __stdcall UninstallServicesCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
-    hr = WcaInitialize(hInstall, "CreateScheduledTaskCA");
+    hr = WcaInitialize(hInstall, "UninstallServicesCA");
 
     ExitOnFailure(hr, "Failed to initialize");
 
     hr = RemoveWindowsServiceByName(L"PowerToys.MWB.Service");
 
 LExit:
-    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
-    return WcaFinalize(er);
-}
-
-
-// Creates a Scheduled Task to run at logon for the current user.
-// The path of the executable to run should be passed as the CustomActionData (Value).
-// Based on the Task Scheduler Logon Trigger Example:
-// https://learn.microsoft.com/windows/win32/taskschd/logon-trigger-example--c---/
-UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
-{
-    HRESULT hr = S_OK;
-    UINT er = ERROR_SUCCESS;
-
-    TCHAR username_domain[USERNAME_DOMAIN_LEN];
-    TCHAR username[USERNAME_LEN];
-
-    std::wstring wstrTaskName;
-
-    ITaskService* pService = nullptr;
-    ITaskFolder* pTaskFolder = nullptr;
-    ITaskDefinition* pTask = nullptr;
-    IRegistrationInfo* pRegInfo = nullptr;
-    ITaskSettings* pSettings = nullptr;
-    ITriggerCollection* pTriggerCollection = nullptr;
-    IRegisteredTask* pRegisteredTask = nullptr;
-    IPrincipal* pPrincipal = nullptr;
-    ITrigger* pTrigger = nullptr;
-    ILogonTrigger* pLogonTrigger = nullptr;
-    IAction* pAction = nullptr;
-    IActionCollection* pActionCollection = nullptr;
-    IExecAction* pExecAction = nullptr;
-
-    LPWSTR wszExecutablePath = nullptr;
-
-    hr = WcaInitialize(hInstall, "CreateScheduledTaskCA");
-    ExitOnFailure(hr, "Failed to initialize");
-
-    Logger::info(L"CreateScheduledTaskCA Initialized.");
-
-    // ------------------------------------------------------
-    // Get the Domain/Username for the trigger.
-    //
-    // This action needs to run as the system to get elevated privileges from the installation,
-    // so GetUserNameEx can't be used to get the current user details.
-    // The USERNAME and USERDOMAIN environment variables are used instead.
-    if (!GetEnvironmentVariable(L"USERNAME", username, USERNAME_LEN))
-    {
-        ExitWithLastError(hr, "Getting username failed: %x", hr);
-    }
-    if (!GetEnvironmentVariable(L"USERDOMAIN", username_domain, USERNAME_DOMAIN_LEN))
-    {
-        ExitWithLastError(hr, "Getting the user's domain failed: %x", hr);
-    }
-    wcscat_s(username_domain, L"\\");
-    wcscat_s(username_domain, username);
-
-    Logger::info(L"Current user detected: {}", username_domain);
-
-    // Task Name.
-    wstrTaskName = L"Autorun for ";
-    wstrTaskName += username;
-
-    // Get the executable path passed to the custom action.
-    hr = WcaGetProperty(L"CustomActionData", &wszExecutablePath);
-    ExitOnFailure(hr, "Failed to get the executable path from CustomActionData.");
-
-    // COM and Security Initialization is expected to have been done by the MSI.
-    // It couldn't be done in the DLL, anyway.
-    // ------------------------------------------------------
-    // Create an instance of the Task Service.
-    hr = CoCreateInstance(CLSID_TaskScheduler,
-        nullptr,
-        CLSCTX_INPROC_SERVER,
-        IID_ITaskService,
-        reinterpret_cast<void**>(&pService));
-    ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
-
-    // Connect to the task service.
-    hr = pService->Connect(_variant_t(), _variant_t(), _variant_t(), _variant_t());
-    ExitOnFailure(hr, "ITaskService::Connect failed: %x", hr);
-
-    // ------------------------------------------------------
-    // Get the PowerToys task folder. Creates it if it doesn't exist.
-    hr = pService->GetFolder(_bstr_t(L"\\PowerToys"), &pTaskFolder);
-    if (FAILED(hr))
-    {
-        // Folder doesn't exist. Get the Root folder and create the PowerToys subfolder.
-        ITaskFolder* pRootFolder = nullptr;
-        hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
-        ExitOnFailure(hr, "Cannot get Root Folder pointer: %x", hr);
-        hr = pRootFolder->CreateFolder(_bstr_t(L"\\PowerToys"), _variant_t(L""), &pTaskFolder);
-        if (FAILED(hr))
-        {
-            pRootFolder->Release();
-            ExitOnFailure(hr, "Cannot create PowerToys task folder: %x", hr);
-        }
-        Logger::info(L"PowerToys task folder created.");
-    }
-
-    // If the same task exists, remove it.
-    pTaskFolder->DeleteTask(_bstr_t(wstrTaskName.c_str()), 0);
-
-    // Create the task builder object to create the task.
-    hr = pService->NewTask(0, &pTask);
-    ExitOnFailure(hr, "Failed to create a task definition: %x", hr);
-
-    // ------------------------------------------------------
-    // Get the registration info for setting the identification.
-    hr = pTask->get_RegistrationInfo(&pRegInfo);
-    ExitOnFailure(hr, "Cannot get identification pointer: %x", hr);
-    hr = pRegInfo->put_Author(_bstr_t(username_domain));
-    ExitOnFailure(hr, "Cannot put identification info: %x", hr);
-
-    // ------------------------------------------------------
-    // Create the settings for the task
-    hr = pTask->get_Settings(&pSettings);
-    ExitOnFailure(hr, "Cannot get settings pointer: %x", hr);
-
-    hr = pSettings->put_StartWhenAvailable(VARIANT_FALSE);
-    ExitOnFailure(hr, "Cannot put_StartWhenAvailable setting info: %x", hr);
-    hr = pSettings->put_StopIfGoingOnBatteries(VARIANT_FALSE);
-    ExitOnFailure(hr, "Cannot put_StopIfGoingOnBatteries setting info: %x", hr);
-    hr = pSettings->put_ExecutionTimeLimit(_bstr_t(L"PT0S")); //Unlimited
-    ExitOnFailure(hr, "Cannot put_ExecutionTimeLimit setting info: %x", hr);
-    hr = pSettings->put_DisallowStartIfOnBatteries(VARIANT_FALSE);
-    ExitOnFailure(hr, "Cannot put_DisallowStartIfOnBatteries setting info: %x", hr);
-    hr = pSettings->put_Priority(4);
-    ExitOnFailure(hr, "Cannot put_Priority setting info : %x", hr);
-
-    // ------------------------------------------------------
-    // Get the trigger collection to insert the logon trigger.
-    hr = pTask->get_Triggers(&pTriggerCollection);
-    ExitOnFailure(hr, "Cannot get trigger collection: %x", hr);
-
-    // Add the logon trigger to the task.
-    hr = pTriggerCollection->Create(TASK_TRIGGER_LOGON, &pTrigger);
-    ExitOnFailure(hr, "Cannot create the trigger: %x", hr);
-
-    hr = pTrigger->QueryInterface(
-        IID_ILogonTrigger, (void**)&pLogonTrigger);
-    pTrigger->Release();
-    ExitOnFailure(hr, "QueryInterface call failed for ILogonTrigger: %x", hr);
-
-    hr = pLogonTrigger->put_Id(_bstr_t(L"Trigger1"));
-    if (FAILED(hr))
-    {
-        Logger::error(L"Cannot put the trigger ID: {}", hr);
-    }
-
-    // Timing issues may make explorer not be started when the task runs.
-    // Add a little delay to mitigate this.
-    hr = pLogonTrigger->put_Delay(_bstr_t(L"PT03S"));
-    if (FAILED(hr))
-    {
-        Logger::error(L"Cannot put the trigger delay: {}", hr);
-    }
-
-    // Define the user. The task will execute when the user logs on.
-    // The specified user must be a user on this computer.
-    hr = pLogonTrigger->put_UserId(_bstr_t(username_domain));
-    pLogonTrigger->Release();
-    ExitOnFailure(hr, "Cannot add user ID to logon trigger: %x", hr);
-
-    // ------------------------------------------------------
-    // Add an Action to the task. This task will execute the path passed to this custom action.
-
-    // Get the task action collection pointer.
-    hr = pTask->get_Actions(&pActionCollection);
-    ExitOnFailure(hr, "Cannot get Task collection pointer: %x", hr);
-
-    // Create the action, specifying that it is an executable action.
-    hr = pActionCollection->Create(TASK_ACTION_EXEC, &pAction);
-    pActionCollection->Release();
-    ExitOnFailure(hr, "Cannot create the action: %x", hr);
-
-    // QI for the executable task pointer.
-    hr = pAction->QueryInterface(
-        IID_IExecAction, (void**)&pExecAction);
-    pAction->Release();
-    ExitOnFailure(hr, "QueryInterface call failed for IExecAction: %x", hr);
-
-    // Set the path of the executable to PowerToys (passed as CustomActionData).
-    hr = pExecAction->put_Path(_bstr_t(wszExecutablePath));
-    pExecAction->Release();
-    ExitOnFailure(hr, "Cannot set path of executable: %x", hr);
-
-    // ------------------------------------------------------
-    // Create the principal for the task
-    hr = pTask->get_Principal(&pPrincipal);
-    ExitOnFailure(hr, "Cannot get principal pointer: %x", hr);
-
-    // Set up principal information:
-    hr = pPrincipal->put_Id(_bstr_t(L"Principal1"));
-    if (FAILED(hr))
-    {
-        Logger::error(L"Cannot put the principal ID: {}", hr);
-    }
-
-    hr = pPrincipal->put_UserId(_bstr_t(username_domain));
-    if (FAILED(hr))
-    {
-        Logger::error(L"Cannot put principal user Id: {}", hr);
-    }
-
-    hr = pPrincipal->put_LogonType(TASK_LOGON_INTERACTIVE_TOKEN);
-    if (FAILED(hr))
-    {
-        Logger::error(L"Cannot put principal logon type: {}", hr);
-    }
-
-    // Run the task with the highest available privileges.
-    hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_LUA);
-    pPrincipal->Release();
-    ExitOnFailure(hr, "Cannot put principal run level: %x", hr);
-
-    // ------------------------------------------------------
-    //  Save the task in the PowerToys folder.
-    {
-        _variant_t SDDL_FULL_ACCESS_FOR_EVERYONE = L"D:(A;;FA;;;WD)";
-        hr = pTaskFolder->RegisterTaskDefinition(
-            _bstr_t(wstrTaskName.c_str()),
-            pTask,
-            TASK_CREATE_OR_UPDATE,
-            _variant_t(username_domain),
-            _variant_t(),
-            TASK_LOGON_INTERACTIVE_TOKEN,
-            SDDL_FULL_ACCESS_FOR_EVERYONE,
-            &pRegisteredTask);
-        ExitOnFailure(hr, "Error saving the Task : %x", hr);
-    }
-
-    Logger::info(L"Scheduled task created for the current user.");
-
-LExit:
-    ReleaseStr(wszExecutablePath);
-    if (pService)
-    {
-        pService->Release();
-    }
-    if (pTaskFolder)
-    {
-        pTaskFolder->Release();
-    }
-    if (pTask)
-    {
-        pTask->Release();
-    }
-    if (pRegInfo)
-    {
-        pRegInfo->Release();
-    }
-    if (pSettings)
-    {
-        pSettings->Release();
-    }
-    if (pTriggerCollection)
-    {
-        pTriggerCollection->Release();
-    }
-    if (pRegisteredTask)
-    {
-        pRegisteredTask->Release();
-    }
-
-    if (!SUCCEEDED(hr))
-    {
-        PMSIHANDLE hRecord = MsiCreateRecord(0);
-        MsiRecordSetString(hRecord, 0, TEXT("Failed to create a scheduled task to start PowerToys at user login. You can re-try to create the scheduled task using the PowerToys settings."));
-        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
-    }
-
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
@@ -1091,7 +1005,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 28> processesToTerminate = {
+    std::array<std::wstring_view, 30> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.Awake.exe",
@@ -1119,6 +1033,8 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.MouseWithoutBorders.exe",
         L"PowerToys.MouseWithoutBordersHelper.exe",
         L"PowerToys.MouseWithoutBordersService.exe",
+        L"PowerToys.CropAndLock.exe",
+        L"PowerToys.EnvironmentVariables.exe",
         L"PowerToys.exe",
     };
 
