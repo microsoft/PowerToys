@@ -4,6 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d">
@@ -23,20 +24,20 @@
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
-                <toolkitcontrols:SettingsGroup x:Uid="EnvironmentVariables_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <custom:SettingsGroup x:Uid="EnvironmentVariables_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <toolkitcontrols:SettingsCard
                         x:Uid="EnvironmentVariables_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
-                    <custom:SettingsCard
+                    <toolkitcontrols:SettingsCard
                         x:Uid="EnvironmentVariables_Toggle_LaunchAdministrator"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsEnabled="{x:Bind ViewModel.LaunchAdministratorEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LaunchAdministrator, Mode=TwoWay}" />
-                    </custom:SettingsCard>
-                </toolkitcontrols:SettingsGroup>
+                    </toolkitcontrols:SettingsCard>
+                </custom:SettingsGroup>
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>
 
