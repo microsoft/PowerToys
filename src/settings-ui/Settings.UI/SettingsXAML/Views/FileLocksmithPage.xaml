@@ -29,7 +29,7 @@
 
                 <custom:SettingsGroup x:Uid="FileLocksmith_ShellIntegration" IsEnabled="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=OneWay}">
                     <toolkitcontrols:SettingsCard x:Uid="FileLocksmith_Toggle_ContextMenu">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EnabledOnContextExtendedMenu, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="FileLocksmith_Toggle_StandardContextMenu" />
                             <ComboBoxItem x:Uid="FileLocksmith_Toggle_ExtendedContextMenu" />
                         </ComboBox>

@@ -37,7 +37,7 @@
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DoNotActivateOnGameMode}" />
+                                <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -48,10 +48,10 @@
                         x:Uid="AlwaysOnTop_FrameEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.FrameEnabled, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.FrameAccentColor, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Custom_Color" />
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Windows_Default" />
                                 </ComboBox>
@@ -67,7 +67,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FrameOpacity}" />
+                                    Value="{x:Bind ViewModel.FrameOpacity, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameThickness" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <Slider
@@ -79,7 +79,7 @@
                                     Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.Windows11, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <CheckBox x:Uid="AlwaysOnTop_RoundCorners" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RoundCornersEnabled}" />
+                                <CheckBox x:Uid="AlwaysOnTop_RoundCorners" IsChecked="{x:Bind ViewModel.RoundCornersEnabled, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -90,7 +90,7 @@
                         IsExpanded="True">
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="AlwaysOnTop_Sound" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SoundEnabled}" />
+                                <CheckBox x:Uid="AlwaysOnTop_Sound" IsChecked="{x:Bind ViewModel.SoundEnabled, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -111,7 +111,7 @@
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{x:Bind ViewModel.ExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>

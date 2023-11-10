@@ -54,7 +54,7 @@
                                     Minimum="0"
                                     SmallChange="100"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseShakingMinimumDistance}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseShakingMinimumDistance, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard
                                 x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
@@ -79,7 +79,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseOverlayOpacity}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseOverlayOpacity, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
                                 <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
@@ -94,14 +94,14 @@
                                     Minimum="5"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightRadius}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseSpotlightRadius, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="40"
                                     Minimum="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightInitialZoom}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseSpotlightInitialZoom, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
                                 <NumberBox
@@ -111,7 +111,7 @@
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseAnimationDurationMs}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseAnimationDurationMs, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -136,7 +136,7 @@
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{x:Bind ViewModel.FindMyMouseExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
@@ -189,7 +189,7 @@
                                     Minimum="5"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterRadius}" />
+                                    Value="{x:Bind ViewModel.MouseHighlighterRadius, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs">
                                 <NumberBox
@@ -198,7 +198,7 @@
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDelayMs}" />
+                                    Value="{x:Bind ViewModel.MouseHighlighterFadeDelayMs, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs">
                                 <NumberBox
@@ -207,7 +207,7 @@
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDurationMs}" />
+                                    Value="{x:Bind ViewModel.MouseHighlighterFadeDurationMs, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -324,7 +324,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsOpacity}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsOpacity, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
 
                             <toolkitcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
@@ -335,7 +335,7 @@
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsRadius}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsRadius, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
 
                             <toolkitcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
@@ -346,7 +346,7 @@
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsThickness}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsThickness, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
 
                             <toolkitcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
@@ -361,7 +361,7 @@
                                     Minimum="0"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsBorderSize}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsBorderSize, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
 
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
@@ -379,7 +379,7 @@
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsFixedLength}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsFixedLength, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>

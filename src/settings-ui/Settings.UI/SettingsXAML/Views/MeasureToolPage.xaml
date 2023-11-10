@@ -61,7 +61,7 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="255"
                             Minimum="0"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.PixelTolerance}" />
+                            Value="{x:Bind ViewModel.PixelTolerance, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
 
                     <!--<toolkitcontrols:SettingsCard x:Uid="MeasureTool_UnitsOfMeasure" HeaderIcon="{ui:FontIcon Glyph=&#xECC6;}">

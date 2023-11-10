@@ -39,7 +39,7 @@
                     </toolkitcontrols:SettingsCard>
 
                     <toolkitcontrols:SettingsCard x:Uid="FancyZones_UseCursorPosEditorStartupScreen" HeaderIcon="{ui:FontIcon Glyph=&#xe7b5;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.UseCursorPosEditorStartupScreen, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="FancyZones_LaunchPositionScreen" />
                             <ComboBoxItem x:Uid="FancyZones_LaunchPositionMouse" />
                         </ComboBox>
@@ -54,19 +54,19 @@
                     <toolkitcontrols:SettingsExpander x:Uid="FancyZones_ZoneBehavior_GroupSettings" IsExpanded="True">
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}" />
+                                <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header" IsChecked="{x:Bind ViewModel.ShiftDrag, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}" />
+                                <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header" IsChecked="{x:Bind ViewModel.MouseSwitch, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseMiddleClickSpanningMultipleZones}" />
+                                <CheckBox x:Uid="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header" IsChecked="{x:Bind ViewModel.MouseMiddleClickSpanningMultipleZones, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" />
+                                <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind ViewModel.ShowOnAllMonitors, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <custom:CheckBoxWithDescriptionControl x:Uid="FancyZones_SpanZonesAcrossMonitors" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" />
+                                <custom:CheckBoxWithDescriptionControl x:Uid="FancyZones_SpanZonesAcrossMonitors" IsChecked="{x:Bind ViewModel.SpanZonesAcrossMonitors, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard x:Uid="FancyZones_OverlappingZones">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}">
@@ -83,7 +83,7 @@
                         x:Uid="FancyZones_Zone_Appearance"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsExpanded="True">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.SystemTheme, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.SystemTheme, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="FancyZones_Radio_Custom_Colors" />
                             <ComboBoxItem x:Uid="FancyZones_Radio_Default_Theme" />
                         </ComboBox>
@@ -101,14 +101,14 @@
                                     ShowZoneNumber="{x:Bind Path=ViewModel.ShowZoneNumber, Mode=OneWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_ShowZoneNumberCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowZoneNumber}" />
+                                <CheckBox x:Uid="FancyZones_ShowZoneNumberCheckBoxControl" IsChecked="{x:Bind ViewModel.ShowZoneNumber, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard x:Uid="FancyZones_HighlightOpacity">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="0"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}" />
+                                    Value="{x:Bind ViewModel.HighlightOpacity, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
 
                             <toolkitcontrols:SettingsCard x:Uid="FancyZones_ZoneHighlightColor" Visibility="{x:Bind ViewModel.SystemTheme, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
@@ -132,33 +132,33 @@
                     <toolkitcontrols:SettingsExpander x:Uid="FancyZones_WindowBehavior_GroupSettings" IsExpanded="True">
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_DisplayOrWorkAreaChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayOrWorkAreaChangeMoveWindows}" />
+                                <CheckBox x:Uid="FancyZones_DisplayOrWorkAreaChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind ViewModel.DisplayOrWorkAreaChangeMoveWindows, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}" />
+                                <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows" IsChecked="{x:Bind ViewModel.ZoneSetChangeMoveWindows, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}" />
+                                <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows" IsChecked="{x:Bind ViewModel.AppLastZoneMoveWindows, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor" IsChecked="{Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_RestoreSize" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}" />
+                                <CheckBox x:Uid="FancyZones_RestoreSize" IsChecked="{x:Bind ViewModel.RestoreSize, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" />
+                                <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind ViewModel.MakeDraggedWindowsTransparent, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <custom:CheckBoxWithDescriptionControl
                                     x:Uid="FancyZones_AllowPopupWindowSnap"
-                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowPopupWindowSnap}" />
+                                    IsChecked="{x:Bind ViewModel.AllowPopupWindowSnap, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" />
+                                <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind ViewModel.AllowChildWindowSnap, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.Windows11, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <CheckBox x:Uid="FancyZones_DisableRoundCornersOnWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableRoundCornersOnWindowSnap}" />
+                                <CheckBox x:Uid="FancyZones_DisableRoundCornersOnWindowSnap" IsChecked="{x:Bind ViewModel.DisableRoundCornersOnWindowSnap, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -167,7 +167,7 @@
                         x:Uid="FancyZones_WindowSwitching_GroupSettings"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.WindowSwitching}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.WindowSwitching, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard x:Uid="FancyZones_HotkeyNextTabControl" IsEnabled="{x:Bind ViewModel.WindowSwitchingCategoryEnabled, Mode=OneWay}">
                                 <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
@@ -182,13 +182,13 @@
                         x:Uid="FancyZones_OverrideSnapHotkeys"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE90C;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.OverrideSnapHotkeys, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard x:Uid="FancyZones_MoveWindow" IsEnabled="{x:Bind ViewModel.SnapHotkeysCategoryEnabled, Mode=OneWay}">
                                 <ComboBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     MinHeight="56"
-                                    SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                                    SelectedIndex="{x:Bind ViewModel.MoveWindowsBasedOnPosition, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                                     <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible">
                                         <StackPanel Orientation="Vertical" Spacing="4">
                                             <custom:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex" />
@@ -208,7 +208,7 @@
                                 </ComboBox>
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.SnapHotkeysCategoryEnabled, Mode=OneWay}">
-                                <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}" />
+                                <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl" IsChecked="{x:Bind ViewModel.MoveWindowsAcrossMonitors, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -216,10 +216,10 @@
 
                 <custom:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <toolkitcontrols:SettingsExpander x:Uid="FancyZones_QuickLayoutSwitch" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.QuickLayoutSwitch, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.QuickSwitchEnabled, Mode=OneWay}">
-                                <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}" />
+                                <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch" IsChecked="{x:Bind ViewModel.FlashZonesOnQuickSwitch, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -241,7 +241,7 @@
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{x:Bind ViewModel.ExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>

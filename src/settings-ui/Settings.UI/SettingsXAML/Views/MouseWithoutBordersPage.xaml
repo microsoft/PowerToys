@@ -28,7 +28,7 @@
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
                             IsEnabled="{x:Bind ViewModel.CanBeEnabled, Mode=OneWay}"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" />
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
@@ -43,7 +43,7 @@
                         x:Name="MouseWithoutBorders_ConnectSettings"
                         x:Uid="MouseWithoutBorders_SecurityKey"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D7;}"
-                        IsExpanded="{x:Bind Mode=TwoWay, Path=ViewModel.ConnectFieldsVisible}">
+                        IsExpanded="{x:Bind ViewModel.ConnectFieldsVisible, Mode=TwoWay}">
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard ContentAlignment="Right">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -63,7 +63,7 @@
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox IsReadOnly="True" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SecurityKey}" />
+                            <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=TwoWay}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_NewKey"
                                 Command="{x:Bind Mode=OneTime, Path=GenerateNewKeyCommand}"
@@ -82,7 +82,7 @@
                                 VerticalAlignment="Center"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 IsTextSelectionEnabled="True"
-                                Text="{x:Bind Mode=OneTime, Path=ViewModel.MachineHostName}" />
+                                Text="{x:Bind ViewModel.MachineHostName, Mode=OneTime}" />
                             <Button
                                 Width="32"
                                 Height="32"
@@ -300,7 +300,7 @@
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.Name2IP, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{x:Bind ViewModel.Name2IP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>

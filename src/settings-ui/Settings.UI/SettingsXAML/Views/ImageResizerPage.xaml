@@ -187,11 +187,11 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
                             Minimum="25"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}" />
+                            Value="{x:Bind ViewModel.JPEGQualityLevel, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
 
                     <toolkitcontrols:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PngInterlaceOption, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Default" />
                             <ComboBoxItem x:Uid="On" />
                             <ComboBoxItem x:Uid="Off" />
@@ -199,7 +199,7 @@
                     </toolkitcontrols:SettingsCard>
 
                     <toolkitcontrols:SettingsCard x:Uid="ImageResizer_TIFFCompression">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.TiffCompressOption, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3" />
@@ -217,7 +217,7 @@
                             <TextBox
                                 x:Uid="ImageResizer_FilenameFormatPlaceholder"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}" />
+                                Text="{x:Bind ViewModel.FileName, Mode=TwoWay}" />
                             <Button
                                 x:Uid="ImageResizer_FilenameParameters"
                                 Content="&#xE946;"
@@ -260,7 +260,7 @@
                     </toolkitcontrols:SettingsCard>
 
                     <toolkitcontrols:SettingsCard x:Uid="ImageResizer_FileModifiedDate">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.KeepDateModified, Mode=TwoWay, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate" />
                             <ComboBoxItem x:Uid="ImageResizer_UseResizeDate" />
                         </ComboBox>

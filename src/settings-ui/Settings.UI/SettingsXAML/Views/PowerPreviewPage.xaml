@@ -24,7 +24,7 @@
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}"
                         IsEnabled="{x:Bind ViewModel.IsSVGRenderEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Color_Mode">
                                 <ComboBox
@@ -63,7 +63,7 @@
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE943;}"
                         IsEnabled="{x:Bind ViewModel.IsMDRenderEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MDRenderIsEnabled, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
 
                     <InfoBar
@@ -78,7 +78,7 @@
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}"
                         IsEnabled="{x:Bind ViewModel.IsMonacoRenderEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoRenderIsEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Wrap_Text" IsChecked="{x:Bind ViewModel.MonacoWrapText, Mode=TwoWay}" />
@@ -95,7 +95,7 @@
                                     Maximum="100"
                                     Minimum="2"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MonacoPreviewMaxFileSize}" />
+                                    Value="{x:Bind ViewModel.MonacoPreviewMaxFileSize, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -111,7 +111,7 @@
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}"
                         IsEnabled="{x:Bind ViewModel.IsPDFRenderEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.PDFRenderIsEnabled, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
@@ -123,7 +123,7 @@
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind ViewModel.IsGCODERenderEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODERenderIsEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GCODERenderIsEnabled, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
@@ -150,7 +150,7 @@
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}"
                         IsEnabled="{x:Bind ViewModel.IsSVGThumbnailEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.SVGThumbnailIsEnabled, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
@@ -162,7 +162,7 @@
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}"
                         IsEnabled="{x:Bind ViewModel.IsPDFThumbnailEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFThumbnailIsEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.PDFThumbnailIsEnabled, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
@@ -174,7 +174,7 @@
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind ViewModel.IsGCODEThumbnailEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.GCODEThumbnailIsEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GCODEThumbnailIsEnabled, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
@@ -188,7 +188,7 @@
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind ViewModel.IsSTLThumbnailEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.STLThumbnailIsEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.STLThumbnailIsEnabled, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard x:Uid="FileExplorerPreview_Color_Thumbnail_STL">
                                 <custom:ColorPickerButton IsEnabled="{x:Bind ViewModel.STLThumbnailIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.STLThumbnailColor, Mode=TwoWay}" />

@@ -38,10 +38,10 @@
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <custom:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}" />
+                                <custom:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" />
+                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind ViewModel.IgnoreHotkeysInFullScreen, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -86,7 +86,7 @@
                         x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
                         HeaderIcon="{ui:FontIcon Glyph=&#xec48;}"
                         IsExpanded="True">
-                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
                                 <NumberBox
@@ -96,7 +96,7 @@
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}" />
+                                    Value="{x:Bind ViewModel.SearchInputDelayFast, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
                                 <NumberBox
@@ -106,7 +106,7 @@
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}" />
+                                    Value="{x:Bind ViewModel.SearchInputDelay, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -122,7 +122,7 @@
                             Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" />
+                                <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind ViewModel.ClearInputOnLaunch, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -131,7 +131,7 @@
                         x:Uid="PowerLauncher_SearchQueryTuningEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}"
                         IsExpanded="True">
-                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryTuningEnabled}" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=TwoWay}" />
                         <toolkitcontrols:SettingsExpander.Items>
                             <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_SearchClickedItemWeight" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
                                 <NumberBox
@@ -141,10 +141,10 @@
                                     Minimum="0"
                                     SmallChange="5"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}" />
+                                    Value="{x:Bind ViewModel.SearchClickedItemWeight, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
-                                <custom:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}" />
+                                <custom:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                         </toolkitcontrols:SettingsExpander.Items>
                     </toolkitcontrols:SettingsExpander>
@@ -185,7 +185,7 @@
 
                 <custom:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <toolkitcontrols:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorPositionIndex}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.MonitorPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
@@ -196,7 +196,7 @@
                         <toolkitcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </toolkitcontrols:SettingsCard.Description>
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
@@ -332,7 +332,7 @@
                                                     Minimum="-1000"
                                                     SmallChange="10"
                                                     SpinButtonPlacementMode="Compact"
-                                                    Value="{x:Bind Mode=TwoWay, Path=WeightBoost}" />
+                                                    Value="{x:Bind WeightBoost, Mode=TwoWay}" />
                                             </toolkitcontrols:SettingsCard>
                                             <toolkitcontrols:SettingsCard
                                                 MinHeight="0"

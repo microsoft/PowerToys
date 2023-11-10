@@ -36,7 +36,7 @@
                         IsClickEnabled="True" />
 
                     <toolkitcontrols:SettingsCard x:Uid="RegistryPreview_DefaultRegApp" HeaderIcon="{ui:FontIcon Glyph=&#xE7AC;}">
-                        <ToggleSwitch x:Uid="RegistryPreview_DefaultRegApp_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsRegistryPreviewDefaultRegApp}" />
+                        <ToggleSwitch x:Uid="RegistryPreview_DefaultRegApp_ToggleSwitch" IsOn="{x:Bind ViewModel.IsRegistryPreviewDefaultRegApp, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
                 </custom:SettingsGroup>
 
