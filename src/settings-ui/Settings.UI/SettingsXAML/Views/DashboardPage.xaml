@@ -261,30 +261,30 @@
         </DataTemplate>
     </Page.Resources>
     
-    <Grid Margin="16,0,0,0" RowSpacing="12">
+    <Grid RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBlock
             x:Uid="DashboardTitle"
-            VerticalAlignment="Center"
-            Style="{StaticResource TitleTextBlockStyle}" />
+            Style="{StaticResource TitleTextBlockStyle}"
+            Margin="36,0" />
 
         <InfoBar
             x:Uid="UpdateAvailable"
             HorizontalAlignment="Right"
-            VerticalAlignment="Center"
             CornerRadius="{StaticResource ControlCornerRadius}"
             IsClosable="False"
             IsOpen="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"
+            Margin="36,0"
             Severity="Informational">
             <InfoBar.ActionButton>
                 <Button x:Uid="LearnMore" Click="SWVersionButtonClicked" />
             </InfoBar.ActionButton>
         </InfoBar>
 
-        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1" Padding="0,0,16,0">
+        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1" Padding="36,0">
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock
                     x:Uid="EnabledModules"

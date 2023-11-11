@@ -31,7 +31,7 @@
             <animations:Implicit.Animations>
                 <animations:OffsetAnimation Duration="0:0:0.3" />
             </animations:Implicit.Animations>
-            <StackPanel Orientation="Horizontal" Spacing="12">
+            <StackPanel Orientation="Horizontal">
                 <Image
                     Width="16"
                     Height="16"

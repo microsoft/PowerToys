@@ -19,7 +19,7 @@
             TrueValue="Visible" />
     </UserControl.Resources>
 
-    <Grid RowSpacing="24">
+    <Grid RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -32,11 +32,12 @@
             AutomationProperties.HeadingLevel="1"
             Style="{StaticResource TitleTextBlockStyle}"
             Text="{x:Bind ModuleTitle}"
-            Padding="32,0" />
+            Padding="36,0" />
 
-        <ScrollViewer Grid.Row="1" Padding="32,0">
+        <ScrollViewer Grid.Row="1" Padding="36,0">
             <Grid
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                Padding="0,0,0,24"
                 RowSpacing="24">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />

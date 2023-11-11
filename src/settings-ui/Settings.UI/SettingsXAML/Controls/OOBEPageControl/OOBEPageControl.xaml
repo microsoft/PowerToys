@@ -23,10 +23,9 @@
 
         <ScrollViewer
             Grid.Row="1"
-            Padding="32,24,32,24"
+            Padding="36,0"
             VerticalScrollBarVisibility="Auto">
-            <StackPanel VerticalAlignment="Top" Orientation="Vertical" Spacing="12">
-
+            <StackPanel VerticalAlignment="Top" Orientation="Vertical" Padding="0,0,0,24" Spacing="12">
                 <TextBlock
                     x:Name="TitleTxt"
                     AutomationProperties.HeadingLevel="Level1"

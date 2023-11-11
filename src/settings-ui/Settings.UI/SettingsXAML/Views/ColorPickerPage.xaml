@@ -15,10 +15,6 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
-    </Page.Resources>
-
     <custom:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ColorPicker.png">
         <custom:SettingsPageControl.ModuleContent>
 

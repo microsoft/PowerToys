@@ -36,7 +36,7 @@
             x:Name="AppTitleBar"
             Height="{Binding ElementName=navigationView, Path=CompactPaneLength}"
             Margin="48,0,0,0"
-            VerticalAlignment="Top"
+            VerticalAlignment="Center"
             IsHitTestVisible="True">
             <animations:Implicit.Animations>
                 <animations:OffsetAnimation Duration="0:0:0.3" />
