@@ -8,7 +8,6 @@ long g_cDllRef = 0;
 // {AD856B15-D25E-4008-AFB7-AFAA55586188}
 static const GUID CLSID_QoiThumbnailProvider = { 0xad856b15, 0xd25e, 0x4008, { 0xaf, 0xb7, 0xaf, 0xaa, 0x55, 0x58, 0x61, 0x88 } };
 
-
 BOOL APIENTRY DllMain(HMODULE hModule,
                       DWORD ul_reason_for_call,
                       LPVOID lpReserved)
