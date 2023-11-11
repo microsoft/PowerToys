@@ -11,7 +11,7 @@
     <custom:OOBEPageControl x:Uid="Oobe_VideoConference" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/VideoConferenceMute.png">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource SubtitleTextBlockStyle}" />
                 
                 <StackPanel>
                     <custom:ShortcutWithTextLabelControl x:Name="HotkeyMicVidControl" x:Uid="Oobe_VideoConference_ToggleMicVid" />

@@ -11,11 +11,11 @@
     <custom:OOBEPageControl x:Uid="Oobe_Awake" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Awake.png">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource SubtitleTextBlockStyle}" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_Awake_HowToUse" Background="Transparent" />
 
-                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource SubtitleTextBlockStyle}" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_Awake_TipsAndTricks" Background="Transparent" />
 

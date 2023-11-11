@@ -11,7 +11,7 @@
     <custom:OOBEPageControl x:Uid="Oobe_QuickAccent" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerAccent.gif">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource SubtitleTextBlockStyle}" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_QuickAccent_HowToUse" Background="Transparent" />
 

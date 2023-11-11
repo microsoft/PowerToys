@@ -11,7 +11,7 @@
     <custom:OOBEPageControl x:Uid="Oobe_MeasureTool" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ScreenRuler.gif">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource SubtitleTextBlockStyle}" />
 
                 <custom:ShortcutWithTextLabelControl x:Name="HotkeyActivation" x:Uid="Oobe_MeasureTool_Activation" />
 

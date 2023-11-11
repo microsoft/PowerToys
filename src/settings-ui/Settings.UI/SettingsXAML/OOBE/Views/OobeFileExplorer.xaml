@@ -11,7 +11,7 @@
     <custom:OOBEPageControl x:Uid="Oobe_FileExplorer" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/FileExplorer.png">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_HowToEnable" Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToEnable" Style="{ThemeResource SubtitleTextBlockStyle}" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_FileExplorer_HowToEnable" Background="Transparent" />
 
