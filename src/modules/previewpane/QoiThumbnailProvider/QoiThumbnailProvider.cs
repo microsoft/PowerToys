@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using PreviewHandlerCommon.Utilities;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
@@ -45,9 +46,19 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
                 return null;
             }
 
-            var thumbnail = QoiImage.FromStream(stream);
+            Bitmap thumbnail = null;
+            try
+            {
+                thumbnail = QoiImage.FromStream(stream);
+            }
+            catch (Exception)
+            {
+                // TODO: add logger
+            }
 
-            if (thumbnail != null && thumbnail.Width != cx && thumbnail.Height != cx)
+            if (thumbnail != null && (
+                ((thumbnail.Width != cx || thumbnail.Height > cx) && (thumbnail.Height != cx || thumbnail.Width > cx)) ||
+                thumbnail.PixelFormat != PixelFormat.Format32bppArgb))
             {
                 // We are not the appropriate size for caller.  Resize now while
                 // respecting the aspect ratio.
@@ -78,7 +89,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
                 return null;
             }
 
-            Bitmap destImage = new Bitmap(width, height);
+            Bitmap destImage = new Bitmap(width, height, PixelFormat.Format32bppArgb);
 
             destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
 
@@ -92,6 +103,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
 
                 graphics.DrawImage(image, 0, 0, width, height);
             }
+
+            image.Dispose();
 
             return destImage;
         }
