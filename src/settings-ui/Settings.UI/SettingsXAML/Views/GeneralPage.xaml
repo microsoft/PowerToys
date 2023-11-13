@@ -247,7 +247,7 @@
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         IsTextSelectionEnabled="True"
                                         Text="{x:Bind ViewModel.SettingsBackupAndRestoreDir, Mode=TwoWay}"
-                                        TextTrimming="Wrap">
+                                        TextWrapping="Wrap">
                                         <ToolTipService.ToolTip>
                                             <ToolTip IsEnabled="{Binding ElementName=pathTextBlock, Path=IsTextTrimmed}">
                                                 <TextBlock Text="{x:Bind ViewModel.SettingsBackupAndRestoreDir, Mode=TwoWay}" />
