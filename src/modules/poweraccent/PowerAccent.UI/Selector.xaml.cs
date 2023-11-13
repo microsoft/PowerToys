@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel;
 using System.Windows;
+using Common.UI;
 using PowerAccent.Core.Services;
 using Wpf.Ui.Controls;
 using Point = PowerAccent.Core.Point;
@@ -40,8 +41,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
     {
         InitializeComponent();
 
-        Wpf.Ui.Appearance.Watcher.Watch(this);
-        this.WindowBackdropType = WindowBackdropType.Acrylic;
+        Wpf.Ui.Appearance.Watcher.Watch(this, OSVersionHelper.IsWindows11() ? WindowBackdropType.Acrylic : WindowBackdropType.None);
         Application.Current.MainWindow.ShowActivated = false;
         Application.Current.MainWindow.Topmost = true;
     }
