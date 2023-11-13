@@ -136,7 +136,7 @@
                     x:Name="TableToggleButton"
                     Width="32"
                     Height="32"
-                    Margin="4,0"
+                    Margin="2,0"
                     Padding="0"
                     d:IsChecked="True"
                     BorderBrush="Transparent"
