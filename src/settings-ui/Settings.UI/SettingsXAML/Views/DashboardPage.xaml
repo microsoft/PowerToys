@@ -1,14 +1,14 @@
 ﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
@@ -106,7 +106,7 @@
                         Placement="Bottom"
                         ShouldConstrainToRootBounds="False">
                         <StackPanel Orientation="Vertical" Spacing="4">
-                            <!-- keys -->
+                            <!--  keys  -->
                             <ItemsControl ItemsSource="{x:Bind Path=RemapKeys, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -168,9 +168,9 @@
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 Content="{Binding}"
-                                                                Style="{StaticResource CaptionTextBlockStyle}"
                                                                 Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                                                                 IsTabStop="False"
+                                                                Style="{StaticResource CaptionTextBlockStyle}"
                                                                 VisualType="TextOnly" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
@@ -180,7 +180,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <!-- shortcuts -->
+                            <!--  shortcuts  -->
                             <ItemsControl ItemsSource="{x:Bind Path=RemapShortcuts, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -263,7 +263,7 @@
             </Button>
         </DataTemplate>
     </Page.Resources>
-    
+
     <Grid RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -271,27 +271,28 @@
         </Grid.RowDefinitions>
         <TextBlock
             x:Uid="DashboardTitle"
-            Style="{StaticResource TitleTextBlockStyle}"
-            Margin="36,0" />
+            Margin="36,0"
+            Style="{StaticResource TitleTextBlockStyle}" />
 
         <InfoBar
             x:Uid="UpdateAvailable"
+            Margin="36,0"
             HorizontalAlignment="Right"
             CornerRadius="{StaticResource ControlCornerRadius}"
             IsClosable="False"
             IsOpen="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"
-            Margin="36,0"
             Severity="Informational">
             <InfoBar.ActionButton>
                 <Button x:Uid="LearnMore" Click="SWVersionButtonClicked" />
             </InfoBar.ActionButton>
         </InfoBar>
 
-        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1" Padding="36,0">
+        <ScrollViewer
+            x:Name="MainScrollViewer"
+            Grid.Row="1"
+            Padding="36,0">
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock
-                    x:Uid="EnabledModules"
-                    Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="EnabledModules" Style="{StaticResource SubtitleTextBlockStyle}" />
                 <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
                         <toolkitcontrols:StaggeredLayout
@@ -309,11 +310,12 @@
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
                                 Tag="{x:Bind Tag, Mode=OneWay}">
-                                <Grid RowSpacing="8"
+                                <Grid
                                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                     BorderThickness="1"
-                                    CornerRadius="{StaticResource OverlayCornerRadius}">
+                                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                                    RowSpacing="8">
                                     <Grid.RowDefinitions>
                                         <RowDefinition />
                                         <RowDefinition />
@@ -381,9 +383,7 @@
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
 
-                <TextBlock
-                    x:Uid="DisabledModules"
-                    Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="DisabledModules" Style="{StaticResource SubtitleTextBlockStyle}" />
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>

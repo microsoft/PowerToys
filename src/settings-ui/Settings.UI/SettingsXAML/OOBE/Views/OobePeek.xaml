@@ -20,7 +20,7 @@
                 <custom:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_Peek_HowToUse" />
 
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
-                
+
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_Peek" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="LearnMore_Peek" TextWrapping="Wrap" />
                 </HyperlinkButton>

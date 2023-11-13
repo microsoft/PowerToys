@@ -20,7 +20,7 @@
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_Awake_TipsAndTricks" Background="Transparent" />
 
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
-                
+
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_Awake" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="LearnMore_Awake" TextWrapping="Wrap" />
                 </HyperlinkButton>

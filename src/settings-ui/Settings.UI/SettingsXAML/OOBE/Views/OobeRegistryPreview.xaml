@@ -27,7 +27,7 @@
                         Style="{StaticResource AccentButtonStyle}" />
                     <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
                 </StackPanel>
-                
+
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_RegistryPreview" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="LearnMore_RegistryPreview" TextWrapping="Wrap" />
                 </HyperlinkButton>

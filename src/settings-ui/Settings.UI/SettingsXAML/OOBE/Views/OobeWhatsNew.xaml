@@ -25,13 +25,11 @@
                 x:Uid="Oobe_WhatsNew"
                 AutomationProperties.HeadingLevel="Level1"
                 Style="{StaticResource TitleTextBlockStyle}" />
-            <HyperlinkButton
-                NavigateUri="https://github.com/microsoft/PowerToys/releases"
-                Style="{StaticResource TextButtonStyle}">
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Style="{StaticResource TextButtonStyle}">
                 <TextBlock x:Uid="Oobe_WhatsNew_DetailedReleaseNotesLink" TextWrapping="Wrap" />
             </HyperlinkButton>
         </StackPanel>
-        
+
         <InfoBar
             x:Name="ErrorInfoBar"
             x:Uid="Oobe_WhatsNew_LoadingError"
@@ -50,7 +48,10 @@
             IsOpen="False"
             IsTabStop="True"
             Severity="Warning" />
-        <ScrollViewer Grid.Row="1" Padding="32,0" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer
+            Grid.Row="1"
+            Padding="32,0"
+            VerticalScrollBarVisibility="Auto">
             <Grid>
                 <ProgressRing
                     x:Name="LoadingProgressRing"

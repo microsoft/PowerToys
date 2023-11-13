@@ -12,7 +12,7 @@
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource SubtitleTextBlockStyle}" />
-                
+
                 <StackPanel>
                     <custom:ShortcutWithTextLabelControl x:Name="HotkeyMicVidControl" x:Uid="Oobe_VideoConference_ToggleMicVid" />
                     <custom:ShortcutWithTextLabelControl x:Name="HotkeyMicControl" x:Uid="Oobe_VideoConference_ToggleMic" />
@@ -23,7 +23,7 @@
                 <!--<toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_VideoConference_HowToLaunch" Background="Transparent" />-->
 
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
-                
+
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_VideoConference" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="LearnMore_VCM" TextWrapping="Wrap" />
                 </HyperlinkButton>

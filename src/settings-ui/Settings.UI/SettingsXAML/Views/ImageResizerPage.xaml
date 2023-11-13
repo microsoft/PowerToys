@@ -1,15 +1,15 @@
 ﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ImageResizerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkitconverters="using:CommunityToolkit.WinUI.UI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
@@ -79,9 +79,7 @@
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Height, Mode=OneWay}"
                                                 Visibility="{x:Bind EnableExtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                            <TextBlock
-                                                Style="{ThemeResource SecondaryTextStyle}"
-                                                Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" />
+                                            <TextBlock Style="{ThemeResource SecondaryTextStyle}" Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" />
                                         </StackPanel>
                                     </toolkitcontrols:SettingsCard.Description>
                                     <StackPanel
@@ -100,7 +98,10 @@
                                             </ToolTipService.ToolTip>
                                             <Button.Flyout>
                                                 <Flyout x:Uid="ImageResizer_EditSize" ShouldConstrainToRootBounds="False">
-                                                    <StackPanel Margin="8" Spacing="12" Width="240">
+                                                    <StackPanel
+                                                        Width="240"
+                                                        Margin="8"
+                                                        Spacing="12">
                                                         <TextBox
                                                             x:Uid="ImageResizer_Name"
                                                             HorizontalAlignment="Stretch"
@@ -115,10 +116,10 @@
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
                                                         </ComboBox>
 
-                                                        <Grid ColumnSpacing="8" HorizontalAlignment="Stretch">
+                                                        <Grid HorizontalAlignment="Stretch" ColumnSpacing="8">
                                                             <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition/>
-                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition />
+                                                                <ColumnDefinition />
                                                             </Grid.ColumnDefinitions>
                                                             <NumberBox
                                                                 x:Uid="ImageResizer_Width"

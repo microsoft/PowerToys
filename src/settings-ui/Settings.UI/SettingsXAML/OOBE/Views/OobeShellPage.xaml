@@ -9,7 +9,7 @@
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
     mc:Ignorable="d">
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -45,7 +45,7 @@
                     TextWrapping="NoWrap" />
             </StackPanel>
         </Grid>
-        
+
         <NavigationView
             x:Name="navigationView"
             Grid.Row="1"
@@ -165,7 +165,7 @@
                 <Frame x:Name="NavigationFrame" />
             </NavigationView.Content>
         </NavigationView>
-        
+
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">

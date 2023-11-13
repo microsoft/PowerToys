@@ -20,7 +20,7 @@
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_ImageResizer_TipsAndTricks" Background="Transparent" />
 
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
-                
+
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ImageResizer" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="LearnMore_ImageResizer" TextWrapping="Wrap" />
                 </HyperlinkButton>

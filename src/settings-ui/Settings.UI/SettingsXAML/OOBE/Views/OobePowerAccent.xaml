@@ -16,7 +16,7 @@
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_QuickAccent_HowToUse" Background="Transparent" />
 
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
-                
+
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_QuickAccent" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="LearnMore_QuickAccent" TextWrapping="Wrap" />
                 </HyperlinkButton>

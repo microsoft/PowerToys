@@ -27,17 +27,17 @@
         <TextBlock
             x:Name="Header"
             MaxWidth="{StaticResource PageMaxWidth}"
+            Padding="36,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             AutomationProperties.HeadingLevel="1"
             Style="{StaticResource TitleTextBlockStyle}"
-            Text="{x:Bind ModuleTitle}"
-            Padding="36,0" />
+            Text="{x:Bind ModuleTitle}" />
 
         <ScrollViewer Grid.Row="1" Padding="36,0">
             <Grid
-                ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Padding="0,0,0,24"
+                ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 RowSpacing="24">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -46,9 +46,7 @@
                 </Grid.RowDefinitions>
 
                 <!--  Top panel  -->
-                <Grid
-                    MaxWidth="{StaticResource PageMaxWidth}"
-                    ColumnSpacing="16">
+                <Grid MaxWidth="{StaticResource PageMaxWidth}" ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -69,7 +67,10 @@
                         </Image>
                     </Border>
 
-                    <StackPanel x:Name="DescriptionPanel" Grid.Column="1" Spacing="12">
+                    <StackPanel
+                        x:Name="DescriptionPanel"
+                        Grid.Column="1"
+                        Spacing="12">
                         <TextBlock
                             x:Name="AboutDescription"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"

@@ -21,7 +21,7 @@
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_FancyZones_TipsAndTricks" Background="Transparent" />
 
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
-                
+
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FancyZones" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="LearnMore_FancyZones" TextWrapping="Wrap" />
                 </HyperlinkButton>

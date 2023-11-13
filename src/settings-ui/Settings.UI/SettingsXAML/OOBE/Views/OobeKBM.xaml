@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
-    
+
     <custom:OOBEPageControl x:Uid="Oobe_KBM" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/KBM.gif">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
@@ -20,7 +20,7 @@
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_KBM_TipsAndTricks" Background="Transparent" />
 
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
-                
+
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_KeyboardManager" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="LearnMore_KBM" TextWrapping="Wrap" />
                 </HyperlinkButton>
