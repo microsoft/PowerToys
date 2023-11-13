@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Qoi
         private PictureBox _pictureBox;
 
         /// <summary>
-        /// Text box to display the information about blocked elements from Svg.
+        /// Text box to display errors.
         /// </summary>
         private RichTextBox _textBox;
 
@@ -117,7 +117,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Qoi
         }
 
         /// <summary>
-        /// Adds a Text Box in Controls for showing information about blocked elements.
+        /// Adds a Text Box to display errors.
         /// </summary>
         /// <param name="message">Message to be displayed in textbox.</param>
         private void AddTextBoxControl(string message)
