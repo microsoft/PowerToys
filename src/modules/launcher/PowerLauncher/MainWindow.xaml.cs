@@ -560,7 +560,7 @@ namespace PowerLauncher
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
-            if (_viewModel.Results != null && !string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+            if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
             {
                 SearchBox.AutoCompleteTextBlock.Text = MainViewModel.GetAutoCompleteText(
                     _viewModel.Results.SelectedIndex,
