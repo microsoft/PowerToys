@@ -74,7 +74,6 @@
     <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\ui\Resources\Hopper.ico">

@@ -1,6 +1,6 @@
 #pragma once
 
-#define ID_HOPPER 0
+#define ID_HOPPER 1
 #define HOPPER_VERBW L"PowerToysHopper"
 #include "pch.h"
 #include "Generated Files/resource.h"

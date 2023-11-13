@@ -55,6 +55,7 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 
 HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT /*idCmdLast*/, UINT uFlags)
 {
+    UINT idCmdFirstTmp = idCmdFirst;
     //idCmdFirst = idCmdLast;
     if (uFlags & CMF_DEFAULTONLY)
         return S_OK;
@@ -167,7 +168,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.wID = idCmdFirst++;
     mii.hSubMenu = hSubMenu;
     mii.dwTypeData = strAddToHopper;
-    if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
+    if (!InsertMenuItem(hmenu, indexMenu, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
@@ -175,12 +176,12 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.dwTypeData = strViewHopper;
-    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
     mii.dwTypeData = strClearHopper;
-    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
@@ -189,7 +190,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.fMask = MIIM_FTYPE | MIIM_ID;
     mii.wID = idCmdFirst++;
     mii.fType = MFT_SEPARATOR;
-    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
@@ -199,7 +200,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.wID = idCmdFirst++;
     mii.hSubMenu = hFetchSubMenu;
     mii.dwTypeData = strFetchHopper;
-    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
@@ -208,7 +209,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.hSubMenu = hAddSubMenu;
     mii.dwTypeData = strAddHopper;
     mii.wID = idCmdFirst++;
-    if (!InsertMenuItem(hSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return  HRESULT_FROM_WIN32(GetLastError());
     }
@@ -220,7 +221,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
     mii.dwTypeData = strMoveHere;
-    if (!InsertMenuItem(hFetchSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hFetchSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return  HRESULT_FROM_WIN32(GetLastError());
     }
@@ -229,7 +230,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
     mii.dwTypeData = strCopyHere;
-    if (!InsertMenuItem(hFetchSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hFetchSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
@@ -240,7 +241,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
     mii.dwTypeData = strAppendToRootHopper;
-    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
@@ -249,16 +250,15 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
     mii.dwTypeData = strAppendWithFoldersHopper;
-    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
     iMenuCounter++;
-
     mii.fMask = MIIM_FTYPE | MIIM_ID;
     mii.wID = idCmdFirst++;
     mii.fType = MFT_SEPARATOR;
-    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
@@ -267,7 +267,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
     mii.dwTypeData = strReplaceToRootHopper;
-    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
@@ -276,21 +276,23 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.wID = idCmdFirst++;
     mii.dwTypeData = strReplaceWithFoldersHopper;
-    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, TRUE, &mii))
+    if (!InsertMenuItem(hAddSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
     iMenuCounter++;
 
-    return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, iMenuCounter);
+    return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, idCmdFirst - idCmdFirstTmp + 1);
 }
 
-HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
-{
+int verbCount = 0;
 
+HRESULT CContextMenuHandler::GetCommandString(UINT_PTR /*idCmd*/, UINT uType, _In_ UINT* /* pReserved*/, LPSTR pszName, UINT cchMax)
+{
     if (uType == GCS_VERBW)
     {
-        switch (idCmd) {
+        switch (verbCount)
+        {
         case 0:
                 wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, HOPPER_VERBW);
                 break;
@@ -298,11 +300,12 @@ HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ U
                 wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, L"PowerToysHopperMoveHere");
                 break;
         default:
-                return E_INVALIDARG;
+                wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, L"PowerToysHopperCopyHere");
+                break;
         }
         
     }
-    
+    verbCount++;
     return S_OK;
 }
 
