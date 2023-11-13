@@ -61,10 +61,12 @@ namespace PowerLauncher.Plugin
                                     {
                                         // Return a comparable product version.
                                         var fileVersion = FileVersionInfo.GetVersionInfo(x.ExecuteFilePath);
-                                        return ((uint)fileVersion.ProductMajorPart << 24)
-                                            | ((uint)fileVersion.ProductMinorPart << 16)
-                                            | ((uint)fileVersion.ProductBuildPart << 8)
-                                            | (uint)fileVersion.ProductPrivatePart;
+
+                                        // Convert each part to an unsigned 32 bit integer, then extend to 64 bit.
+                                        return ((ulong)(uint)fileVersion.ProductMajorPart << 48)
+                                            | ((ulong)(uint)fileVersion.ProductMinorPart << 32)
+                                            | ((ulong)(uint)fileVersion.ProductBuildPart << 16)
+                                            | (ulong)(uint)fileVersion.ProductPrivatePart;
                                     }
                                     catch (System.IO.FileNotFoundException)
                                     {
