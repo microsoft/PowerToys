@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
@@ -11,7 +10,6 @@ using System.Runtime.InteropServices;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
@@ -57,7 +55,8 @@ namespace PowerLauncher
             _nativeWaiterCancelToken = nativeWaiterCancelToken;
             _settings = settings;
             InitializeComponent();
-            Wpf.Ui.Appearance.Watcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Acrylic);
+
+            Wpf.Ui.Appearance.Watcher.Watch(this, !OSVersionHelper.IsWindows11() ? Wpf.Ui.Controls.WindowBackdropType.Acrylic : Wpf.Ui.Controls.WindowBackdropType.None);
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
             NativeEventWaiter.WaitForEventLoop(

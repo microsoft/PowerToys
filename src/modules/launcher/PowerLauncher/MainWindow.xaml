@@ -25,12 +25,11 @@
     SourceInitialized="OnSourceInitialized"
     Topmost="True"
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-    WindowBackdropType="Acrylic"
     WindowStartupLocation="Manual"
     WindowStyle="None"
     mc:Ignorable="d">
 
-    <Grid Background="{DynamicResource ControlOnImageFillColorDefaultBrush}" MouseDown="OnMouseDown">
+    <Grid MouseDown="OnMouseDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MaxHeight="{Binding Results.MaxHeight}" />
