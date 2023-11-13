@@ -1028,34 +1028,6 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        public void ColdStartFix()
-        {
-            // Fix Cold start for List view xaml island
-            List<Result> list = new List<Result>();
-            Result r = new Result
-            {
-                Title = "hello",
-            };
-            list.Add(r);
-            Results.AddResults(list, _updateToken);
-            Results.Clear();
-
-            // Fix Cold start for plugins, "m" is just a random string needed to query results
-            var pluginQueryPairs = QueryBuilder.Build("m");
-
-            // To execute a query corresponding to each plugin
-            foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)
-            {
-                var plugin = pluginQueryItem.Key;
-                var query = pluginQueryItem.Value;
-
-                if (!plugin.Metadata.Disabled && plugin.Metadata.Name != "Window Walker")
-                {
-                    _ = PluginManager.QueryForPlugin(plugin, query);
-                }
-            }
-        }
-
         public void HandleContextMenu(Key acceleratorKey, ModifierKeys acceleratorModifiers)
         {
             var results = SelectedResults;
@@ -1065,7 +1037,6 @@ namespace PowerLauncher.ViewModel
                 {
                     if (contextMenuItems.AcceleratorKey == acceleratorKey && contextMenuItems.AcceleratorModifiers == acceleratorModifiers)
                     {
-                        MainWindowVisibility = Visibility.Collapsed;
                         contextMenuItems.Command.Execute(null);
                     }
                 }

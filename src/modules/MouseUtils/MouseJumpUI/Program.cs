@@ -4,10 +4,16 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
+using System.Threading;
 using System.Windows.Forms;
+using System.Windows.Threading;
+using Common.UI;
+using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using MouseJumpUI.Helpers;
 
 namespace MouseJumpUI;
 
@@ -17,7 +23,7 @@ internal static class Program
     /// The main entry point for the application.
     /// </summary>
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
         Logger.InitializeLogger("\\MouseJump\\Logs");
 
@@ -38,10 +44,42 @@ internal static class Program
             return;
         }
 
-        var settings = Program.ReadSettings();
-        var mainForm = new MainForm(settings);
+        // validate command line arguments - we're expecting
+        // a single argument containing the runner pid
+        if ((args.Length != 1) || !int.TryParse(args[0], out var runnerPid))
+        {
+            var message = string.Join("\r\n", new[]
+            {
+                "Invalid command line arguments.",
+                "Expected usage is:",
+                string.Empty,
+                $"{Assembly.GetExecutingAssembly().GetName().Name} <RunnerPid>",
+            });
+            Logger.LogInfo(message);
+            throw new InvalidOperationException(message);
+        }
 
-        Application.Run(mainForm);
+        Logger.LogInfo($"Mouse Jump started from the PowerToys Runner. Runner pid={runnerPid}");
+
+        var cancellationTokenSource = new CancellationTokenSource();
+
+        RunnerHelper.WaitForPowerToysRunner(runnerPid, () =>
+        {
+            Logger.LogInfo("PowerToys Runner exited. Exiting Mouse Jump");
+            cancellationTokenSource.Cancel();
+            Application.Exit();
+        });
+
+        var settingsHelper = new SettingsHelper();
+        var mainForm = new MainForm(settingsHelper);
+
+        NativeEventWaiter.WaitForEventLoop(
+            Constants.MouseJumpShowPreviewEvent(),
+            mainForm.ShowPreview,
+            Dispatcher.CurrentDispatcher,
+            cancellationTokenSource.Token);
+
+        Application.Run();
     }
 
     private static MouseJumpSettings ReadSettings()

@@ -25,6 +25,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
         public string Description => GetTranslatedPluginDescription();
 
+        public static string PluginID => "5D69806A5A474115821C3E4C56B9C793";
+
         public IEnumerable<PluginAdditionalOption> AdditionalOptions
         {
             get

@@ -2,7 +2,7 @@
     x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeWhatsNew"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -30,9 +30,7 @@
                 Margin="0,0,0,16"
                 NavigateUri="https://github.com/microsoft/PowerToys/releases"
                 Style="{StaticResource TextButtonStyle}">
-                <TextBlock
-                    x:Uid="Oobe_WhatsNew_DetailedReleaseNotesLink"
-                    TextWrapping="Wrap" />
+                <TextBlock x:Uid="Oobe_WhatsNew_DetailedReleaseNotesLink" TextWrapping="Wrap" />
             </HyperlinkButton>
         </StackPanel>
         <InfoBar
@@ -53,9 +51,7 @@
             IsOpen="False"
             IsTabStop="True"
             Severity="Warning" />
-        <ScrollViewer
-            Grid.Row="1"
-            VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid Margin="32,24,32,24">
                 <ProgressRing
                     x:Name="LoadingProgressRing"

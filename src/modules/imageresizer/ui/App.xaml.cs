@@ -10,6 +10,7 @@ using ImageResizer.Properties;
 using ImageResizer.Utilities;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
+using ManagedCommon;
 
 namespace ImageResizer
 {
@@ -41,15 +42,7 @@ namespace ImageResizer
             mainWindow.Show();
 
             // Temporary workaround for issue #1273
-            BecomeForegroundWindow(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
-        }
-
-        private static void BecomeForegroundWindow(IntPtr hWnd)
-        {
-            NativeMethods.INPUT input = new NativeMethods.INPUT { type = NativeMethods.INPUTTYPE.INPUT_MOUSE, data = { } };
-            NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[] { input };
-            _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
-            NativeMethods.SetForegroundWindow(hWnd);
+            WindowHelpers.BringToForeground(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
         }
 
         public void Dispose()

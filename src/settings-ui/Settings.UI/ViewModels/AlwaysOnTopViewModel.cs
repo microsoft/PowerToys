@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _excludedApps = Settings.Properties.ExcludedApps.Value;
             _windows11 = Helper.Windows11();
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 

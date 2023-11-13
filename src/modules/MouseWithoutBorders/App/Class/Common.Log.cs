@@ -85,16 +85,6 @@ namespace MouseWithoutBorders
             return stack;
         }
 
-        internal static void SuspendAllThreadsBut(int threadId)
-        {
-            lock (ThreadsLock)
-            {
-#pragma warning disable 618 // Temporary
-                threads.Where(t => t.IsAlive && t.ManagedThreadId != threadId).ToList().ForEach(t => t.Suspend());
-#pragma warning restore 618
-            }
-        }
-
         internal void SetApartmentState(ApartmentState apartmentState)
         {
             thread.SetApartmentState(apartmentState);

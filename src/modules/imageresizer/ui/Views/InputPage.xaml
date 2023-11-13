@@ -25,7 +25,10 @@
             SelectedIndex="{Binding Settings.SelectedSizeIndex}">
             <ComboBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
-                    <Grid Margin="2,0,0,0" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
+                    <Grid
+                        Margin="2,0,0,0"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="{Binding Name}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -67,9 +70,7 @@
 
                 <DataTemplate DataType="{x:Type m:CustomSize}">
                     <Grid VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
-                        <TextBlock
-                            FontWeight="SemiBold"
-                            Text="{Binding Name}" />
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
                     </Grid>
                 </DataTemplate>
             </ComboBox.Resources>

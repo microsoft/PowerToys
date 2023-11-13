@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Input;
 using Common.UI;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
@@ -171,6 +172,11 @@ namespace PowerLauncher
                         _settings.GenerateThumbnailsFromFiles = overloadSettings.Properties.GenerateThumbnailsFromFiles;
                     }
 
+                    if (_settings.ShouldUsePinyin != overloadSettings.Properties.UsePinyin)
+                    {
+                        _settings.ShouldUsePinyin = overloadSettings.Properties.UsePinyin;
+                    }
+
                     retry = false;
                 }
 
@@ -237,6 +243,7 @@ namespace PowerLauncher
                 IconPathDark = GetIcon(x.Metadata, x.Metadata.IcoPathDark),
                 IconPathLight = GetIcon(x.Metadata, x.Metadata.IcoPathLight),
                 AdditionalOptions = x.Plugin is ISettingProvider ? (x.Plugin as ISettingProvider).AdditionalOptions : new List<PluginAdditionalOption>(),
+                EnabledPolicyUiState = (int)GpoRuleConfigured.NotConfigured,
             });
         }
 
@@ -251,11 +258,13 @@ namespace PowerLauncher
                 if (defaultPlugins.ContainsKey(plugin.Id))
                 {
                     var additionalOptions = CombineAdditionalOptions(defaultPlugins[plugin.Id].AdditionalOptions, plugin.AdditionalOptions);
+                    var enabledPolicyState = GPOWrapper.GetRunPluginEnabledValue(plugin.Id);
                     plugin.Name = defaultPlugins[plugin.Id].Name;
                     plugin.Description = defaultPlugins[plugin.Id].Description;
                     plugin.Author = defaultPlugins[plugin.Id].Author;
                     plugin.IconPathDark = defaultPlugins[plugin.Id].IconPathDark;
                     plugin.IconPathLight = defaultPlugins[plugin.Id].IconPathLight;
+                    plugin.EnabledPolicyUiState = (int)enabledPolicyState;
                     defaultPlugins[plugin.Id] = plugin;
                     defaultPlugins[plugin.Id].AdditionalOptions = additionalOptions;
                 }
@@ -272,6 +281,9 @@ namespace PowerLauncher
                 if (option.Key != null && defaultOptions.TryGetValue(option.Key, out PluginAdditionalOption defaultOption))
                 {
                     defaultOption.Value = option.Value;
+                    defaultOption.ComboBoxValue = option.ComboBoxValue;
+                    defaultOption.TextValue = option.TextValue;
+                    defaultOption.NumberValue = option.NumberValue;
                 }
             }
 

@@ -118,8 +118,15 @@ void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring
 
     border.Padding({ 20, 10, 20, 10 });
     border.Margin({ 0, 0, 10, 0 });
-    // Use the base low brush to be consistent with the theme
-    border.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
+
+    // Based on settings-ui\Settings.UI\SettingsXAML\Controls\KeyVisual\KeyVisual.xaml
+    border.Background(Application::Current().Resources().Lookup(box_value(L"ButtonBackground")).as<Media::Brush>());
+    border.BorderBrush(Application::Current().Resources().Lookup(box_value(L"ButtonBorderBrush")).as<Media::Brush>());
+    border.BorderThickness(unbox_value<Thickness>(Application::Current().Resources().Lookup(box_value(L"ButtonBorderThemeThickness"))));
+    border.CornerRadius(unbox_value<CornerRadius>(Application::Current().Resources().Lookup(box_value(L"ControlCornerRadius"))));
+    remapKey.Foreground(Application::Current().Resources().Lookup(box_value(L"ButtonForeground")).as<Media::Brush>());
+    remapKey.FontWeight(Text::FontWeights::SemiBold());
+
     remapKey.FontSize(20);
     border.HorizontalAlignment(HorizontalAlignment::Left);
     border.Child(remapKey);

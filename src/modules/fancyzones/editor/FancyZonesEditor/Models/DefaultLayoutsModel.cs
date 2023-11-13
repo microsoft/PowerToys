@@ -13,7 +13,7 @@ namespace FancyZonesEditor.Models
     {
         private static int Count { get; } = Enum.GetValues(typeof(MonitorConfigurationType)).Length;
 
-        public List<LayoutModel> Layouts { get; } = new List<LayoutModel>(Count);
+        public Dictionary<MonitorConfigurationType,  LayoutModel> Layouts { get; } = new Dictionary<MonitorConfigurationType, LayoutModel>(Count);
 
         public DefaultLayoutsModel()
         {
@@ -36,12 +36,12 @@ namespace FancyZonesEditor.Models
 
         public void Reset(string uuid)
         {
-            if (Layouts[(int)MonitorConfigurationType.Horizontal].Uuid == uuid)
+            if (Layouts[MonitorConfigurationType.Horizontal].Uuid == uuid)
             {
                 Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], MonitorConfigurationType.Horizontal);
             }
 
-            if (Layouts[(int)MonitorConfigurationType.Vertical].Uuid == uuid)
+            if (Layouts[MonitorConfigurationType.Vertical].Uuid == uuid)
             {
                 Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.Rows], MonitorConfigurationType.Vertical);
             }
@@ -49,23 +49,16 @@ namespace FancyZonesEditor.Models
 
         public void Set(LayoutModel layout, MonitorConfigurationType type)
         {
-            if (Layouts.Count <= (int)type)
-            {
-                Layouts.Insert((int)type, layout);
-            }
-            else
-            {
-                Layouts[(int)type] = layout;
-            }
+            Layouts[type] = layout;
 
             FirePropertyChanged();
         }
 
-        public void Restore(List<LayoutModel> layouts)
+        public void Restore(Dictionary<MonitorConfigurationType, LayoutModel> layouts)
         {
-            for (int i = 0; i < Count; i++)
+            foreach (var monitorConfigurationType in layouts.Keys)
             {
-                Set(layouts[i], (MonitorConfigurationType)i);
+                Set(layouts[monitorConfigurationType], monitorConfigurationType);
             }
         }
 
