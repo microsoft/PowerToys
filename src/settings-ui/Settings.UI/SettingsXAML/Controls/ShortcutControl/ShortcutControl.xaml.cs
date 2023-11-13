@@ -409,6 +409,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             c.Keys = null;
             c.Keys = HotkeySettings.GetKeysList();
+            c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
 
             shortcutDialog.XamlRoot = this.XamlRoot;
             shortcutDialog.RequestedTheme = this.ActualTheme;
