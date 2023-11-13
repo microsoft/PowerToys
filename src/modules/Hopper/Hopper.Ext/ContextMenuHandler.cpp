@@ -96,6 +96,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     HMENU hFetchSubMenu = CreatePopupMenu();
     HMENU hAddSubMenu = CreatePopupMenu();
 
+    wchar_t strNewFolderWithSelection[64] = { 0 };
     wchar_t strAddToHopper[64] = { 0 };
     wchar_t strFetchHopper[64] = { 0 };
     wchar_t strMoveHere[64] = { 0 };
@@ -111,6 +112,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
     // Load 'PowerToys Hopper' string
+    LoadString(g_hInst_Hopper, IDS_HOPPER_NEW_FOLDER, strNewFolderWithSelection, ARRAYSIZE(strAddToHopper));
     LoadString(g_hInst_Hopper, IDS_HOPPER, strAddToHopper, ARRAYSIZE(strAddToHopper));
     LoadString(g_hInst_Hopper, IDS_HOPPER_FETCH, strFetchHopper, ARRAYSIZE(strFetchHopper));
     LoadString(g_hInst_Hopper, IDS_HOPPER_MOVE_HERE, strMoveHere, ARRAYSIZE(strMoveHere));
@@ -174,6 +176,12 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     }
     iMenuCounter++;
 
+    mii.fMask = MIIM_STRING | MIIM_ID;
+    mii.dwTypeData = strNewFolderWithSelection;
+    if (!InsertMenuItem(hSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
     mii.fMask = MIIM_STRING | MIIM_ID;
     mii.dwTypeData = strViewHopper;
     if (!InsertMenuItem(hSubMenu, currentMenuPos++, MF_BYCOMMAND | MF_BYPOSITION, &mii))
@@ -344,7 +352,7 @@ HRESULT CContextMenuHandler::SelectedFiles(CMINVOKECOMMANDINFO* pici, IShellItem
 {
     // Set the application path based on the location of the dll
     std::wstring path = get_module_folderpath(g_hInst_Hopper);
-    path = path + L"\\Hopper.exe";
+    path = path + L"\\..\\modules\\Hopper\\Hopper.exe";
     LPTSTR lpApplicationName = &path[0];
     // Create an anonymous pipe to stream filenames
     SECURITY_ATTRIBUTES sa;

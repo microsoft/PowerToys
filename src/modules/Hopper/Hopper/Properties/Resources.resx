@@ -117,8 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Hopper_create_folder" xml:space="preserve">
+  <data name="Hopper_move_folder" xml:space="preserve">
     <value>Move files to folder</value>
+    <comment>folder means a file directrory; move like in move to a new folder"; it's a command on a button</comment>
+  </data>
+  <data name="Hopper_copy_folder" xml:space="preserve">
+    <value>Copy files to folder</value>
     <comment>folder means a file directrory; move like in move to a new folder"; it's a command on a button</comment>
   </data>
   <data name="Hopper_files_to_new_folder" xml:space="preserve">

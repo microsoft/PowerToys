@@ -162,4 +162,7 @@
   <data name="Hopper_View_Hopper" xml:space="preserve">
     <value>View Hopper</value>
   </data>
+  <data name="Hopper_New_Folder" xml:space="preserve">
+    <value>New Folder with selection</value>
+  </data>
 </root>
