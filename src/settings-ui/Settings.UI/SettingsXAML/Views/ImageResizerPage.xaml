@@ -99,7 +99,7 @@
                                                 <TextBlock x:Uid="EditTooltip" />
                                             </ToolTipService.ToolTip>
                                             <Button.Flyout>
-                                                <Flyout x:Uid="ImageResizer_EditSize">
+                                                <Flyout x:Uid="ImageResizer_EditSize" ShouldConstrainToRootBounds="False">
                                                     <StackPanel Margin="8" Spacing="12" Width="240">
                                                         <TextBox
                                                             x:Uid="ImageResizer_Name"
@@ -224,7 +224,7 @@
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Style="{StaticResource SubtleButtonStyle}">
                                 <Button.Flyout>
-                                    <Flyout>
+                                    <Flyout ShouldConstrainToRootBounds="False">
                                         <TextBlock x:Name="FileFormatTextBlock">
                                             <Run x:Uid="ImageResizer_FileFormatDescription" />
                                             <LineBreak />
