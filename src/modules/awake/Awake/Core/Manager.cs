@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
 using System.Text;
@@ -273,10 +274,12 @@ namespace Awake.Core
 
         public static Dictionary<string, int> GetDefaultTrayOptions()
         {
-            Dictionary<string, int> optionsList = new Dictionary<string, int>();
-            optionsList.Add("30 " + Resources.AWAKE_MINUTES, 1800);
-            optionsList.Add("1 " + Resources.AWAKE_HOUR, 3600);
-            optionsList.Add("2 " + Resources.AWAKE_HOURS, 7200);
+            Dictionary<string, int> optionsList = new Dictionary<string, int>
+            {
+                { string.Format(CultureInfo.InvariantCulture, Resources.AWAKE_MINUTES, 30), 1800 },
+                { Resources.AWAKE_1_HOUR, 3600 },
+                { string.Format(CultureInfo.InvariantCulture, Resources.AWAKE_HOURS, 2), 7200 },
+            };
             return optionsList;
         }
     }

@@ -134,7 +134,7 @@ namespace Awake.Core
             var awakeTimeMenu = Bridge.CreatePopupMenu();
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
-                Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, Localize(trayTimeShortcuts.ElementAt(i).Key));
+                Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
@@ -145,15 +145,6 @@ namespace Awake.Core
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | Native.Constants.MF_DISABLED | (mode == AwakeMode.EXPIRABLE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION);
 
             TrayIcon.Text = text;
-        }
-
-        private static string Localize(string text)
-        {
-            Regex.Replace(text, "hours", Resources.AWAKE_HOURS, RegexOptions.IgnoreCase);
-            Regex.Replace(text, "hour", Resources.AWAKE_HOUR, RegexOptions.IgnoreCase);
-            Regex.Replace(text, "minutes", Resources.AWAKE_MINUTES, RegexOptions.IgnoreCase);
-            Regex.Replace(text, "minute", Resources.AWAKE_MINUTE, RegexOptions.IgnoreCase);
-            return text;
         }
 
         private sealed class CheckButtonToolStripMenuItemAccessibleObject : ToolStripItem.ToolStripItemAccessibleObject

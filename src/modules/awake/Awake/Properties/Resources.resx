@@ -123,32 +123,38 @@
   <data name="AWAKE_EXIT" xml:space="preserve">
     <value>Exit</value>
   </data>
-  <data name="AWAKE_HOUR" xml:space="preserve">
-    <value>hour</value>
+  <data name="AWAKE_1_HOUR" xml:space="preserve">
+    <value>1 hour</value>
   </data>
   <data name="AWAKE_HOURS" xml:space="preserve">
-    <value>hours</value>
+    <value>{0} hours</value>
+    <comment>0: A number grater than 1</comment>
   </data>
   <data name="AWAKE_KEEP_INDEFINITELY" xml:space="preserve">
     <value>Keep awake indefinitely</value>
+    <comment>Keep the system awake forever</comment>
   </data>
   <data name="AWAKE_KEEP_ON_INTERVAL" xml:space="preserve">
     <value>Keep awake on interval</value>
+    <comment>Keep the system awake for a given time</comment>
   </data>
   <data name="AWAKE_KEEP_SCREEN_ON" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
   <data name="AWAKE_KEEP_UNTIL_EXPIRATION" xml:space="preserve">
     <value>Keep awake until expiration date and time</value>
+    <comment>Keep the system awake until expiration date and time</comment>
   </data>
-  <data name="AWAKE_MINUTE" xml:space="preserve">
-    <value>minute</value>
+  <data name="AWAKE_1_MINUTE" xml:space="preserve">
+    <value>1 minute</value>
   </data>
   <data name="AWAKE_MINUTES" xml:space="preserve">
-    <value>minutes</value>
+    <value>{0} minutes</value>
+    <comment>0: A number grater than 1</comment>
   </data>
   <data name="AWAKE_OFF" xml:space="preserve">
     <value>Off (keep using the selected power plan)</value>
+    <comment>Don't keep the system awake, use the selected system power plan</comment>
   </data>
   <data name="AWAKE_UNCHECKED" xml:space="preserve">
     <value>Unchecked</value>
