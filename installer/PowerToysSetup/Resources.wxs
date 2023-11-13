@@ -216,7 +216,7 @@
       <Component
           Id="QoiPreviewHandler_$(var.IdSafeLanguage)_Component"
           Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
-          Guid="$(var.CompGUIDPrefix)07">
+          Guid="$(var.CompGUIDPrefix)08">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="QoiPreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
