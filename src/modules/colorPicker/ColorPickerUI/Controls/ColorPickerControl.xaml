@@ -66,21 +66,37 @@
                                 </Track.DecreaseRepeatButton>
                                 <Track.Thumb>
                                     <Thumb x:Name="Thumb">
-                                        <!--<Thumb.Style>
-                                            <Style TargetType="{x:Type RepeatButton}">
-                                                <Setter Property="IsTabStop" Value="False" />
-                                                <Setter Property="Focusable" Value="False" />
+                                        <Thumb.Style>
+                                            <Style TargetType="{x:Type Thumb}">
+                                                <Setter Property="Height" Value="20" />
+                                                <Setter Property="Width" Value="20" />
                                                 <Setter Property="SnapsToDevicePixels" Value="True" />
                                                 <Setter Property="OverridesDefaultStyle" Value="True" />
+                                                <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+                                                <Setter Property="Foreground" Value="Black" />
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Setter Property="Background" Value="{DynamicResource SliderOuterThumbBackground}" />
                                                 <Setter Property="Template">
                                                     <Setter.Value>
-                                                        <ControlTemplate TargetType="{x:Type RepeatButton}">
-                                                            <Border Background="Transparent" />
+                                                        <ControlTemplate TargetType="{x:Type Thumb}">
+                                                            <Border
+                                                                Background="{TemplateBinding Background}"
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                CornerRadius="16">
+                                                                <Ellipse
+                                                                    x:Name="Ellipse"
+                                                                    Width="12"
+                                                                    Height="12"
+                                                                    Fill="{TemplateBinding Foreground}"
+                                                                    Stroke="Transparent"
+                                                                    StrokeThickness="0" />
+                                                            </Border>
                                                         </ControlTemplate>
                                                     </Setter.Value>
                                                 </Setter>
                                             </Style>
-                                        </Thumb.Style>-->
+                                        </Thumb.Style>
                                     </Thumb>
                                 </Track.Thumb>
                                 <Track.IncreaseRepeatButton>
@@ -124,10 +140,7 @@
                                 <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
                                 <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
                             </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <!--<Setter TargetName="TrackBackground" Property="Background" Value="Transparent" />-->
-                                <Setter TargetName="Thumb" Property="Foreground" Value="Transparent" />
-                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"/>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
