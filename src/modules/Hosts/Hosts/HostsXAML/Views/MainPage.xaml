@@ -80,7 +80,7 @@
                                           FontSize=16}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <Button.Flyout>
-                        <Flyout>
+                        <Flyout ShouldConstrainToRootBounds="False">
                             <StackPanel
                                 Width="320"
                                 HorizontalAlignment="Stretch"
@@ -377,7 +377,15 @@
                     IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
                     Message="{x:Bind ViewModel.ErrorMessage, Mode=TwoWay}"
                     Severity="Error"
-                    Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <InfoBar.ActionButton>
+                        <Button
+                            x:Uid="MakeWritable"
+                            HorizontalAlignment="Right"
+                            Command="{x:Bind ViewModel.OverwriteHostsCommand}"
+                            Visibility="{x:Bind ViewModel.IsReadOnly, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
                 <InfoBar
                     x:Uid="FileChanged"
                     Margin="0,8,0,0"
@@ -385,7 +393,10 @@
                     Severity="Informational"
                     Visibility="{x:Bind ViewModel.FileChanged, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <InfoBar.ActionButton>
-                        <Button x:Uid="Reload" Command="{x:Bind ViewModel.ReadHostsCommand}" />
+                        <Button
+                            x:Uid="Reload"
+                            HorizontalAlignment="Right"
+                            Command="{x:Bind ViewModel.ReadHostsCommand}" />
                     </InfoBar.ActionButton>
                 </InfoBar>
             </StackPanel>

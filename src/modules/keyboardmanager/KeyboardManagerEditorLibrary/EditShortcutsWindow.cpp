@@ -13,9 +13,10 @@
 #include "ShortcutControl.h"
 #include "Styles.h"
 #include "UIHelpers.h"
-#include "XamlBridge.h"
+#include "XamlBridge2.h"
 #include "ShortcutErrorType.h"
 #include "EditorConstants.h"
+#include <common/Themes/theme_listener.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -34,7 +35,21 @@ HWND hwndEditShortcutsNativeWindow = nullptr;
 std::mutex editShortcutsWindowMutex;
 
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
-static XamlBridge* xamlBridgePtr = nullptr;
+static XamlBridge2* xamlBridgePtr = nullptr;
+
+// Theming
+static ThemeListener theme_listener{};
+
+static void handleTheme()
+{
+    auto theme = theme_listener.AppTheme;
+    auto isDark = theme == AppTheme::Dark;
+    Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
+    if (hwndEditShortcutsNativeWindow != nullptr)
+    {
+        ThemeHelpers::SetImmersiveDarkMode(hwndEditShortcutsNativeWindow, isDark);
+    }
+}
 
 static IAsyncAction OnClickAccept(
     KBMEditor::KeyboardManagerState& keyboardManagerState,
@@ -75,7 +90,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         windowClass.lpfnWndProc = EditShortcutsWindowProc;
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
-        windowClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW);
+        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == AppTheme::Dark) ? 0x00000000 : 0x00FFFFFF);
         windowClass.hIcon = static_cast<HICON>(LoadImageW(
             windowClass.hInstance,
             MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
@@ -132,14 +147,19 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     hwndEditShortcutsNativeWindow = _hWndEditShortcutsWindow;
     hwndLock.unlock();
 
+    // Hide icon and caption from title bar
+    const DWORD windowThemeOptionsMask = WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON;
+    WTA_OPTIONS windowThemeOptions{ windowThemeOptionsMask, windowThemeOptionsMask };
+    SetWindowThemeAttribute(_hWndEditShortcutsWindow, WTA_NONCLIENT, &windowThemeOptions, sizeof(windowThemeOptions));
+
+    handleTheme();
+    theme_listener.AddChangedHandler(handleTheme);
+
     // Create the xaml bridge object
-    XamlBridge xamlBridge(_hWndEditShortcutsWindow);
-    
-    // DesktopSource needs to be declared before the RelativePanel xamlContainer object to avoid errors
-    winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource;
+    XamlBridge2 xamlBridge(_hWndEditShortcutsWindow);
     
     // Create the desktop window xaml source object and set its content
-    hWndXamlIslandEditShortcutsWindow = xamlBridge.InitDesktopWindowsXamlSource(desktopSource);
+    hWndXamlIslandEditShortcutsWindow = xamlBridge.InitBridge();
 
     // Set the pointer to the xaml bridge object
     xamlBridgePtr = &xamlBridge;
@@ -276,11 +296,8 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Add shortcut button
     Windows::UI::Xaml::Controls::Button addShortcut;
-    FontIcon plusSymbol;
-    plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
-    plusSymbol.Glyph(L"\xE710");
-    addShortcut.Content(plusSymbol);
     addShortcut.Margin({ 10, 10, 0, 25 });
+    addShortcut.Style(AccentButtonStyle());
     addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
 
@@ -291,13 +308,18 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, EditorConstants::ShortcutTableColCount);
     });
 
+    // Remap shortcut button content
+    StackPanel addShortcutContent;
+    addShortcutContent.Orientation(Orientation::Horizontal);
+    addShortcutContent.Spacing(10);
+    addShortcutContent.Children().Append(SymbolIcon(Symbol::Add));
+    TextBlock addShortcutText;
+    addShortcutText.Text(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_BUTTON));
+    addShortcutContent.Children().Append(addShortcutText);
+    addShortcut.Content(addShortcutContent);
+
     // Set accessible name for the add shortcut button
     addShortcut.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_BUTTON)));
-
-    // Add tooltip for add button which would appear on hover
-    ToolTip addShortcuttoolTip;
-    addShortcuttoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_BUTTON)));
-    ToolTipService::SetToolTip(addShortcut, addShortcuttoolTip);
 
     // Header and example text at the top of the window
     StackPanel helperText;
@@ -334,7 +356,19 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     {
     }
 
-    desktopSource.Content(xamlContainer);
+    UserControl xamlContent;
+    xamlContent.Content(xamlContainer);
+    if (Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"Windows.UI.Composition.ICompositionSupportsSystemBackdrop"))
+    {
+        // Apply Mica
+        muxc::BackdropMaterial::SetApplyToRootOrPageBackground(xamlContent, true);
+    }
+    else
+    {
+        // Mica isn't available
+        xamlContainer.Background(Application::Current().Resources().Lookup(box_value(L"ApplicationPageBackgroundThemeBrush")).as<Media::SolidColorBrush>());
+    }
+    Window::Current().Content(xamlContent);
 
     ////End XAML Island section
     if (_hWndEditShortcutsWindow)
@@ -353,9 +387,6 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     hwndEditShortcutsNativeWindow = nullptr;
     keyboardManagerState.ResetUIState();
     keyboardManagerState.ClearRegisteredKeyDelays();
-
-    // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
-    xamlBridge.ClearXamlIslands();
 }
 
 void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
