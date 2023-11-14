@@ -14,8 +14,10 @@
 
         <Border
             Margin="0"
+            Background="{DynamicResource ApplicationBackgroundBrush}"
+            BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
-            CornerRadius="{DynamicResource OverlayCornerRadius}">
+            CornerRadius="8">
             <!--  Disabled due to the poor performance of drawing shadows in WPF  -->
             <!--<Border.Effect>
                 <DropShadowEffect

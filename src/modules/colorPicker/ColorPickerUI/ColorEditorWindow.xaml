@@ -41,7 +41,7 @@
             </ui:TitleBar.Icon>-->
         </ui:TitleBar>
         <ContentPresenter
-            x:Name="Presenterrr"
+            x:Name="contentPresenter"
             Grid.Row="1"
             Content="{Binding Content}" />
     </Grid>
