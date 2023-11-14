@@ -192,4 +192,10 @@
   <data name="Stl_Thumbnail_Provider_Settings_Description" xml:space="preserve">
     <value>Stl Thumbnail Provider</value>
   </data>
+  <data name="Prevpane_Qoi_Settings_Description" xml:space="preserve">
+    <value>Qoi Previewer</value>
+  </data>
+  <data name="Qoi_Thumbnail_Provider_Settings_Description" xml:space="preserve">
+    <value>Qoi Thumbnail Provider</value>
+  </data>
 </root>
