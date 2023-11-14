@@ -9,7 +9,7 @@
   <PropertyGroup>
     <ProjectGuid>{3940AD4D-F748-4BE4-9083-85769CD553EF}</ProjectGuid>
     <RootNamespace>PdfPreviewHandlerUnitTests</RootNamespace>
-    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
