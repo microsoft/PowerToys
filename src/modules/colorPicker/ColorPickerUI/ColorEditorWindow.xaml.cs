@@ -20,7 +20,6 @@ namespace ColorPicker
         {
             InitializeComponent();
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, true, true);
-            Wpf.Ui.Appearance.ApplicationThemeManager.ApplySystemTheme();
             _appStateHandler = appStateHandler;
             Closing += ColorEditorWindow_Closing;
         }
