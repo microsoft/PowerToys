@@ -204,7 +204,7 @@
             <Button
                 x:Name="CurrentColorButton"
                 Grid.RowSpan="5"
-                Height="110"
+                Height="104"
                 Margin="0,72,0,72"
                 VerticalAlignment="Top"
                 AutomationProperties.HelpText="{x:Static p:Resources.Selected_color_helptext}"

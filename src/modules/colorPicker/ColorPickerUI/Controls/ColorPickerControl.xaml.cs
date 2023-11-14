@@ -216,7 +216,7 @@ namespace ColorPicker.Controls
                 var resizeColor = new DoubleAnimation(165, new Duration(TimeSpan.FromMilliseconds(150)));
                 resizeColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                var moveColor = new ThicknessAnimation(new Thickness(0, 92, 0, 0), new Duration(TimeSpan.FromMilliseconds(150)));
+                var moveColor = new ThicknessAnimation(new Thickness(0, 72, 0, 72), new Duration(TimeSpan.FromMilliseconds(150)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
                 CurrentColorButton.BeginAnimation(System.Windows.Controls.Button.HeightProperty, resizeColor);
@@ -227,7 +227,6 @@ namespace ColorPicker.Controls
 
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
-            HideDetails();
             SelectedColorChangedCommand.Execute(_currentColor);
             SessionEventHelper.Event.EditorColorAdjusted = true;
             DetailsFlyout.Hide();
