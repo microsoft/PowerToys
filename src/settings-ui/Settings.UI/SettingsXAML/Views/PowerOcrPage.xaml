@@ -27,7 +27,7 @@
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsWin11OrGreater}"
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsWin11OrGreater}"
-                    Severity="Warning" />
+                    Severity="Informational" />
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
