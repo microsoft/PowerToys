@@ -15,10 +15,10 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        $commit = "$(system.pullRequest.sourceCommitId)";
-        $gitHubCommit = Invoke-RestMethod -Method Get "https://api.github.com/repos/microsoft/PowerToys/commits/$commit"
+        $commit = "$(system.pullRequest.pullRequestNumber)";
+        $gitHubCommit = Invoke-RestMethod -Method Get "https://api.github.com/repos/microsoft/PowerToys/pulls/$commit/files"
         # If there are no files updated in the commit that are .md, set skipBuild variable
-        if(([array]($githubCommit.files.filename) -notmatch ".md").Length -eq 0)
+        if(([array]($githubCommit.filename) -notmatch ".md|.txt").Length -eq 0)
         {
             Write-Host '##vso[task.setvariable variable=skipBuild;isOutput=true]Yes'
             Write-Host 'Skipping Build'
