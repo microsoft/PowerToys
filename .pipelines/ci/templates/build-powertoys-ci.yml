@@ -6,6 +6,8 @@ parameters:
 jobs:
 - job: Build${{ parameters.platform }}${{ parameters.configuration }}
   displayName: Build ${{ parameters.platform }} ${{ parameters.configuration }}
+  dependsOn: Precheck
+  condition: and(succeeded(),ne(dependencies.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes'))
   variables:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
