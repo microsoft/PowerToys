@@ -401,7 +401,7 @@
     <comment>Plum color</comment>
   </data>
   <data name="New_Label" xml:space="preserve">
-    <value>New</value>
+    <value>Pick</value>
     <comment>Button label to pick a new color</comment>
   </data>
 </root>

@@ -232,7 +232,7 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New.
+        ///   Looks up a localized string similar to Pick.
         /// </summary>
         public static string New_Label {
             get {
