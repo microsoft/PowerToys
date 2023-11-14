@@ -235,7 +235,7 @@
         </custom:SettingsPageControl.PrimaryLinks>
         <custom:SettingsPageControl.SecondaryLinks>
             <custom:PageLink Link="https://blog.aaron-junker.ch" Text="Aaron Junker's work on developer file preview" />
-            <custom:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code and STL" />
+            <custom:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code, STL, and QOI" />
         </custom:SettingsPageControl.SecondaryLinks>
     </custom:SettingsPageControl>
 </Page>
