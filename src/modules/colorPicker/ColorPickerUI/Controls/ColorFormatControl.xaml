@@ -16,16 +16,8 @@
             <!--  Universal WPF UI ContextMenu  -->
             <Setter Property="ContextMenu" Value="{DynamicResource DefaultControlContextMenu}" />
             <!--  Universal WPF UI ContextMenu  -->
-            <Setter Property="Foreground">
-                <Setter.Value>
-                    <SolidColorBrush Color="{DynamicResource TextFillColorPrimary}" />
-                </Setter.Value>
-            </Setter>
-            <Setter Property="CaretBrush">
-                <Setter.Value>
-                    <SolidColorBrush Color="{DynamicResource TextFillColorPrimary}" />
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
             <Setter Property="Background">
                 <Setter.Value>
                     <SolidColorBrush Color="Transparent" />
@@ -145,7 +137,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="48" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="40" />
             </Grid.ColumnDefinitions>
             <TextBlock
                 x:Name="FormatNameTextBlock"

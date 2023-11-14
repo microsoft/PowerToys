@@ -193,7 +193,7 @@
                 TabIndex="2"
                 ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}">
                 <Button.Content>
-                    <ui:SymbolIcon FontSize="18" Symbol="Settings24" />
+                    <ui:SymbolIcon FontSize="18" Symbol="Settings20" />
                 </Button.Content>
             </Button>
         </Grid>

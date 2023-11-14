@@ -36,9 +36,9 @@
             Padding="16,0,16,0"
             ShowMaximize="False"
             ShowMinimize="False">
-            <!--<ui:TitleBar.Icon>
-                <ui:ImageIcon Source="/PowerToys.ColorPicker;component/Assets/ColorPicker/icon.ico" />
-            </ui:TitleBar.Icon>-->
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/ColorPicker/icon.ico" />
+            </ui:TitleBar.Icon>
         </ui:TitleBar>
         <ContentPresenter
             x:Name="contentPresenter"

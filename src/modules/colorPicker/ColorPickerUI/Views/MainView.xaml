@@ -48,7 +48,6 @@
                         Margin="8,5,8,8"
                         AutomationProperties.LiveSetting="Assertive"
                         AutomationProperties.Name="{Binding ColorName}"
-                        FontSize="16"
                         FontWeight="SemiBold"
                         Text="{Binding ColorText}" />
                 </Grid>
@@ -71,14 +70,13 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Background="{Binding ColorBrush}"
-                        BorderThickness="1"
+                        BorderThickness="1"       BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
                         CornerRadius="{DynamicResource ControlCornerRadius}" />
 
                     <TextBlock
                         Grid.Row="0"
                         Grid.Column="1"
                         Margin="8,5,6,0"
-                        FontSize="16"
                         FontWeight="SemiBold"
                         Text="{Binding ColorText}" />
 
@@ -88,9 +86,8 @@
                         Grid.ColumnSpan="2"
                         Height="26"
                         Margin="8,0,8,2"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        Opacity="0.6"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{Binding ColorName}" />
                 </Grid>
             </Grid>
