@@ -1,6 +1,5 @@
 # Support
 
- 
 ## How to use Microsoft PowerToys 
 
 For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://learn.microsoft.com/windows/dev-environment/overview), head over to [learn.microsoft.com][usingPowerToys-docs-link]! 
