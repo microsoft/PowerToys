@@ -15,13 +15,24 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        $pullRequestNumber = "$(system.pullRequest.pullRequestNumber)";
-        $gitHubPullRequest = Invoke-RestMethod -Method Get "https://api.github.com/repos/microsoft/PowerToys/pulls/$pullRequestNumber/files"
-        # If there are no files updated in the commit that are .md, set skipBuild variable
-        if(([array]($gitHubPullRequest.filename) -notmatch ".md|.txt").Length -eq 0)
-        {
+        try {
+          # Try based on pull request first
+          $pullRequestNumber = "$(system.pullRequest.pullRequestNumber)";
+          $gitHubPullRequest = Invoke-RestMethod -Method Get "https://api.github.com/repos/microsoft/PowerToys/pulls/$pullRequestNumber/files"
+          # If there are no files updated in the commit that are .md, set skipBuild variable
+          if(([array]($gitHubPullRequest.filename) -notmatch ".md|.txt").Length -eq 0) {
+              Write-Host '##vso[task.setvariable variable=skipBuild;isOutput=true]Yes'
+              Write-Host 'Skipping Build'
+          }
+        }
+        catch {
+          # Fall back to the latest commit otherwise.
+          $commit = "$(system.pullRequest.sourceCommitId)";
+          $gitHubCommit = Invoke-RestMethod -Method Get "https://api.github.com/repos/microsoft/PowerToys/commits/$commit"
+          if(([array]($githubCommit.files.filename) -notmatch ".md|.txt").Length -eq 0) {
             Write-Host '##vso[task.setvariable variable=skipBuild;isOutput=true]Yes'
             Write-Host 'Skipping Build'
+          }
         }
       pwsh: true
     name: verifyBuildRequest
