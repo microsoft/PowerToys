@@ -146,6 +146,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsWin11OrGreater
+        {
+            get => Library.Utilities.Helper.Windows11();
+        }
+
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
