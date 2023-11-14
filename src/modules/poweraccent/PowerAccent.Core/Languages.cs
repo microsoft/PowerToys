@@ -151,7 +151,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_L => new[] { "ļ", "₺" }, // ₺ is in VK_T for other languages, but not VK_L, so we add it here.
                 LetterKey.VK_M => new[] { "ṁ" },
                 LetterKey.VK_N => new[] { "ņ", "ṅ", "ⁿ", "ℕ" },
-                LetterKey.VK_O => new[] { "ȯ", "ω", "ώ", "ό" },
+                LetterKey.VK_O => new[] { "ȯ", "ώ", "ό" },
                 LetterKey.VK_P => new[] { "ṗ", "℗" },
                 LetterKey.VK_Q => new[] { "ℚ" },
                 LetterKey.VK_R => new[] { "ṙ", "®", "ℝ" },
