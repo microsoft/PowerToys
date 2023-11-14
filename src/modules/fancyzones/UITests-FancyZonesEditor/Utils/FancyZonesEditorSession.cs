@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 {
@@ -66,6 +67,46 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 Session.Quit();
                 Session.Dispose();
             }
+        }
+
+        private WindowsElement? GetLayout(string layoutName)
+        {
+            var listItem = Session?.FindElementByName(layoutName);
+            Assert.IsNotNull(listItem, "Layout " + layoutName + " not found");
+            return listItem;
+        }
+
+        public WindowsElement? OpenContextMenu(string layoutName)
+        {
+            RightClick_Layout(layoutName);
+            var menu = Session?.FindElementByClassName("ContextMenu");
+            Assert.IsNotNull(menu, "Context menu not found");
+            return menu;
+        }
+
+        public void Click_CreateNewLayout()
+        {
+            var button = Session?.FindElementByAccessibilityId("NewLayoutButton");
+            Assert.IsNotNull(button, "Create new layout button not found");
+            button?.Click();
+        }
+
+        public void Click_EditLayout(string layoutName)
+        {
+            var layout = GetLayout(layoutName);
+            var editButton = layout?.FindElementByAccessibilityId("EditLayoutButton");
+            Assert.IsNotNull(editButton, "Edit button not found");
+            editButton.Click();
+        }
+
+        public void RightClick_Layout(string layoutName)
+        {
+            var layout = GetLayout(layoutName);
+            Actions actions = new Actions(Session);
+            actions.MoveToElement(layout);
+            actions.MoveByOffset(30, 30);
+            actions.ContextClick();
+            actions.Build().Perform();
         }
     }
 }
