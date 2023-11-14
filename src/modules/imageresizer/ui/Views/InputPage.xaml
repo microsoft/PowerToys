@@ -74,7 +74,7 @@
                     </Grid>
                 </DataTemplate>
             </ComboBox.Resources>
-        </ui:ComboBox>
+        </ComboBox>
 
         <Grid Grid.Row="2">
             <Grid.RowDefinitions>
