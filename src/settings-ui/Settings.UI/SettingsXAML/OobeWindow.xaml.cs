@@ -109,7 +109,7 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             if (shellPage != null)
             {
-                shellPage.NavigateToModule(this.initialModule);
+                shellPage.NavigateToModule(module);
             }
         }
 
