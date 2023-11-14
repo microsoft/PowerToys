@@ -19,7 +19,7 @@ namespace ColorPicker
         public ColorEditorWindow(AppStateHandler appStateHandler)
         {
             InitializeComponent();
-            Wpf.Ui.Appearance.Watcher.Watch(this);
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
             _appStateHandler = appStateHandler;
             Closing += ColorEditorWindow_Closing;
         }

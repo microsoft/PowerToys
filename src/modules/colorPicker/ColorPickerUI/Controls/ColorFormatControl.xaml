@@ -151,11 +151,13 @@
                 x:Name="FormatNameTextBlock"
                 VerticalAlignment="Center"
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                Style="{StaticResource CaptionTextBlockStyle}" />
+                Style="{StaticResource CaptionTextBlockStyle}"
+                TextTrimming="CharacterEllipsis" />
 
             <TextBox
                 x:Name="ColorTextRepresentationTextBlock"
                 Grid.Column="1"
+                Margin="0,-2,0,0"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="{x:Static p:Resources.Color_Code}"
                 Background="Transparent"

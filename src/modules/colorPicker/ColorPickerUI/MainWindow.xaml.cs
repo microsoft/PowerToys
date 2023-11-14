@@ -19,7 +19,7 @@ namespace ColorPicker
         {
             Closing += MainWindow_Closing;
             Bootstrapper.InitializeContainer(this);
-            Wpf.Ui.Appearance.Watcher.Watch(this);
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
             InitializeComponent();
             DataContext = this;
             Show(); // Call show just to make sure source is initialized at startup.

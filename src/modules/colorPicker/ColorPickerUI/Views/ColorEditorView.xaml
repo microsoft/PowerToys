@@ -189,8 +189,8 @@
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Command="{Binding OpenSettingsCommand}"
-                TabIndex="2"
                 Style="{StaticResource SubtleButtonStyle}"
+                TabIndex="2"
                 ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}">
                 <Button.Content>
                     <ui:SymbolIcon FontSize="18" Symbol="Settings24" />
@@ -266,6 +266,8 @@
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
         </StackPanel>
+        
+        
         <Border
             x:Name="CopiedBorderIndicator"
             Grid.Row="1"
@@ -273,21 +275,20 @@
             Height="0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Bottom"
-            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0"
             Opacity="0">
-            <TextBlock
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                AutomationProperties.LiveSetting="Assertive"
-                AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}"
-                Foreground="White">
-                <Run
-                    FontFamily="Segoe Fluent Icons"
-                    FontSize="16"
-                    Text="&#xE8C8; " />
-                <Run Text="{x:Static p:Resources.Copied_to_clipboard}" />
+            <Border.Background>
+                <SolidColorBrush Color="{DynamicResource SystemAccentColorPrimary}"/>
+            </Border.Background>
+            <TextBlock FontSize="16"
+                       Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       AutomationProperties.LiveSetting="Assertive"
+                       AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}">
+                <Run Text="&#xE8C8;" FontFamily="Segoe Fluent Icons"/>
+                <Run Text="{x:Static p:Resources.Copied_to_clipboard}"/>
             </TextBlock>
         </Border>
     </Grid>

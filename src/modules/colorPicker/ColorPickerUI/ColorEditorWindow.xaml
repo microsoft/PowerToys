@@ -11,7 +11,6 @@
     Title="Color Picker"
     Width="440"
     Height="380"
-    
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
     ExtendsContentIntoTitleBar="True"

@@ -231,7 +231,7 @@
                 x:Name="CurrentColorButton"
                 Grid.RowSpan="5"
                 Height="110"
-                Margin="0,72,0,0"
+                Margin="0,72,0,72"
                 VerticalAlignment="Top"
                 AutomationProperties.HelpText="{x:Static p:Resources.Selected_color_helptext}"
                 AutomationProperties.Name="{x:Static p:Resources.Selected_color}"
@@ -253,9 +253,13 @@
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
@@ -279,7 +283,7 @@
                             ValueChanged="HueGradientSlider_ValueChanged" />
 
                         <TextBlock
-                            Grid.Row="1"
+                            Grid.Row="2"
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
@@ -288,7 +292,7 @@
 
                         <Slider
                             x:Name="SaturationGradientSlider"
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Grid.Column="1"
                             Grid.ColumnSpan="3"
                             AutomationProperties.Name="{x:Static p:Resources.Saturation_slider}"
@@ -305,7 +309,7 @@
                         </Slider>
 
                         <TextBlock
-                            Grid.Row="2"
+                            Grid.Row="4"
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
@@ -314,7 +318,7 @@
 
                         <Slider
                             x:Name="ValueGradientSlider"
-                            Grid.Row="2"
+                            Grid.Row="4"
                             Grid.Column="1"
                             Grid.ColumnSpan="3"
                             AutomationProperties.Name="{x:Static p:Resources.Value_slider}"
@@ -331,7 +335,7 @@
                         </Slider>
 
                         <TextBlock
-                            Grid.Row="3"
+                            Grid.Row="6"
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
@@ -340,7 +344,7 @@
 
                         <ui:NumberBox
                             x:Name="RNumberBox"
-                            Grid.Row="3"
+                            Grid.Row="6"
                             Grid.Column="1"
                             AutomationProperties.Name="{x:Static p:Resources.Red_value}"
                             Maximum="255"
@@ -350,7 +354,7 @@
 
                         <ui:NumberBox
                             x:Name="GNumberBox"
-                            Grid.Row="3"
+                            Grid.Row="6"
                             Grid.Column="2"
                             Margin="4,0,0,0"
                             AutomationProperties.Name="{x:Static p:Resources.Green_value}"
@@ -361,7 +365,7 @@
 
                         <ui:NumberBox
                             x:Name="BNumberBox"
-                            Grid.Row="3"
+                            Grid.Row="6"
                             Grid.Column="3"
                             Margin="4,0,0,0"
                             AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
@@ -371,7 +375,7 @@
                             TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
 
                         <TextBlock
-                            Grid.Row="4"
+                            Grid.Row="8"
                             Width="38"
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -380,7 +384,7 @@
                             TextAlignment="Center" />
                         <TextBox
                             x:Name="HexCode"
-                            Grid.Row="4"
+                            Grid.Row="8"
                             Grid.Column="1"
                             Grid.ColumnSpan="3"
                             HorizontalAlignment="Stretch"
@@ -393,7 +397,7 @@
 
                         <Button
                             x:Name="OKButton"
-                            Grid.Row="5"
+                            Grid.Row="9"
                             Grid.ColumnSpan="4"
                             Margin="0,32,0,0"
                             HorizontalAlignment="Stretch"

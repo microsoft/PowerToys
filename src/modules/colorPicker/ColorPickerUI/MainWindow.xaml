@@ -22,7 +22,6 @@
     SizeToContent="WidthAndHeight"
     SourceInitialized="MainWindowSourceInitialized"
     Topmost="True"
-    WindowBackdropType="Mica"
     WindowCornerPreference="Default"
     mc:Ignorable="d">
     <e:Interaction.Behaviors>
