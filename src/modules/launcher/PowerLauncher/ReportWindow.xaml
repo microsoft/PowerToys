@@ -4,12 +4,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:p="clr-namespace:PowerLauncher.Properties"
-        xmlns:ui="http://schemas.modernwpf.com/2019"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource SystemChromeLow}"
         Topmost="True"
-        ui:WindowHelper.UseModernWindowStyle="True"
         ResizeMode="NoResize"
         Width="760"
         Height="560"
@@ -28,13 +25,13 @@
         <TextBlock Text="{x:Static p:Resources.reportWindow_header}"
                    FontFamily="Segoe UI Light"
                    FontSize="32"
-                   Foreground="{DynamicResource ControlTextBrushKey}"/>
+                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
 
             <TextBlock FontSize="14"
                        Grid.Row="1"
                        TextWrapping="Wrap"
                       
-                       Foreground="{DynamicResource ControlTextBrushKey}">
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                 <Run Text="{x:Static p:Resources.reportWindow_file_bug}"/>
                 <Hyperlink x:Name="RepositoryHyperlink"
                            Click="RepositoryHyperlink_Click"
@@ -53,7 +50,7 @@
                  Margin="-8,16,-8,16"
                  FontSize="14"
                  FontFamily="Consolas"
-                 Foreground="{DynamicResource ControlTextBrushKey}"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                  IsReadOnly="True"
                  TextWrapping="Wrap"/>
 
@@ -62,7 +59,7 @@
                      BorderThickness="1"
                      Background="Transparent"
                      IsDocumentEnabled="True"
-                     Foreground="{DynamicResource ControlTextBrushKey}"
+                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                      VerticalAlignment="Stretch"
                      FontFamily="Consolas"
                      VerticalScrollBarVisibility="Auto" 

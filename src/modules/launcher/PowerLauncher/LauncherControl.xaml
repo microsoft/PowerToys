@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PowerLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:modernwpf="http://schemas.modernwpf.com/2019"
     xmlns:p="clr-namespace:PowerLauncher.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     d:DesignHeight="300"
@@ -21,8 +20,6 @@
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="AllowDrop" Value="true" />
-            <Setter Property="ContextMenu" Value="{DynamicResource TextControlContextMenu}" />
-            <Setter Property="modernwpf:TextContextMenu.UsingTextContextMenu" Value="True" />
             <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
             <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
             <Setter Property="Padding" Value="5,0,0,0" />
@@ -78,7 +75,7 @@
                         <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true" />
                         <Condition Property="IsSelectionActive" Value="false" />
                     </MultiTrigger.Conditions>
-                    <Setter Property="SelectionBrush" Value="{DynamicResource InactiveSelectionHighlightBrushKey}" />
+                    <Setter Property="SelectionBrush" Value="{DynamicResource TextOnAccentFillColorSelectedTextBrush}" />
                 </MultiTrigger>
             </Style.Triggers>
         </Style>
@@ -121,6 +118,5 @@
             FontSize="18"
             Foreground="{DynamicResource TextPlaceholderColorBrush}"
             Symbol="Search12" />
-
     </Grid>
 </UserControl>

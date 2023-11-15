@@ -143,7 +143,7 @@
                         Margin="0,0,0,0"
                         VerticalAlignment="Top"
                         AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
-                        Foreground="{DynamicResource TextFillColorTextBrush}"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{Binding Result.SubTitle}"
                         TextTrimming="CharacterEllipsis" />
@@ -184,7 +184,10 @@
                                     Style="{StaticResource SubtleButtonStyle}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip Opened="ToolTip_Opened">
-                                            <TextBlock AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}" Text="{Binding Title}" />
+                                            <TextBlock
+                                                AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Title}" />
                                         </ToolTip>
                                     </ToolTipService.ToolTip>
                                     <Button.Content>
