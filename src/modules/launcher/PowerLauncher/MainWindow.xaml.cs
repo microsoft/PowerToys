@@ -56,7 +56,17 @@ namespace PowerLauncher
             _settings = settings;
             InitializeComponent();
 
-            Wpf.Ui.Appearance.Watcher.Watch(this, !OSVersionHelper.IsWindows11() ? Wpf.Ui.Controls.WindowBackdropType.Acrylic : Wpf.Ui.Controls.WindowBackdropType.None);
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+
+            if (OSVersionHelper.IsWindows11())
+            {
+                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Acrylic;
+            }
+            else
+            {
+                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.None;
+            }
+
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
             NativeEventWaiter.WaitForEventLoop(

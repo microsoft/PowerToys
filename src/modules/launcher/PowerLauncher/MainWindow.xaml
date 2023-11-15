@@ -2,7 +2,6 @@
     x:Class="PowerLauncher.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="clr-namespace:PowerLauncher.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PowerLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -29,7 +28,11 @@
     WindowStyle="None"
     mc:Ignorable="d">
 
-    <Grid MouseDown="OnMouseDown">
+    <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
+        <!--  We set the background here because the Acrylic can be too translucent / background to bright on Light theme  -->
+        <Grid.Background>
+            <SolidColorBrush Opacity="0.8" Color="{DynamicResource ApplicationBackgroundColor}" />
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MaxHeight="{Binding Results.MaxHeight}" />
@@ -38,12 +41,10 @@
             x:Name="SearchBoxBorder"
             Grid.Row="0"
             Margin="12,12,12,0"
-            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            Background="{DynamicResource LayerFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
             CornerRadius="8">
-            <Border.Background>
-                <SolidColorBrush Color="{DynamicResource ControlFillColorInputActive}" />
-            </Border.Background>
             <local:LauncherControl x:Name="SearchBox" />
         </Border>
         <local:ResultList
@@ -87,11 +88,10 @@
                                 Width="32"
                                 Height="32"
                                 Margin="4,0,10,0"
-                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                Background="{DynamicResource ControlFillColorDefaultBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
                                 CornerRadius="4">
-
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
