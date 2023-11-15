@@ -40,7 +40,7 @@
                                         <Setter Property="Foreground" Value="Transparent" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderColorBrush}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>

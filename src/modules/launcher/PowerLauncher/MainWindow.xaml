@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PowerLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:p="clr-namespace:PowerLauncher.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:PowerLauncher.ViewModel"
     Title="PowerToys Run"
@@ -29,7 +30,7 @@
     mc:Ignorable="d">
 
     <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
-        <!--  We set the background here because the Acrylic can be too translucent / background to bright on Light theme  -->
+        <!--  We set the background here because the Acrylic can be too translucent / background too bright on Light theme  -->
         <Grid.Background>
             <SolidColorBrush Opacity="0.8" Color="{DynamicResource ApplicationBackgroundColor}" />
         </Grid.Background>
@@ -68,7 +69,7 @@
                 Margin="10,16,0,8"
                 FontWeight="SemiBold"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="Plugin keywords" />
+                Text="{x:Static p:Resources.PluginKeywords}" />
 
             <ListView
                 Grid.Row="1"
@@ -96,6 +97,7 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                     Text="{Binding Metadata.ActionKeyword}" />
                             </Border>
                             <TextBlock
