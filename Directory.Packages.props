@@ -38,7 +38,7 @@
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="7.0.3" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
-    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.3" />
+    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.4" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
     <PackageVersion Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.4.230913002" />

@@ -1298,7 +1298,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Web.WebView2 1.0.2088.41
 - Microsoft.Windows.Compatibility 7.0.3
 - Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.0.3
+- Microsoft.Windows.CsWinRT 2.0.4
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.756
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
 - Microsoft.WindowsAppSDK 1.4.230913002
