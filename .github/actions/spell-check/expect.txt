@@ -388,6 +388,7 @@ Deact
 debian
 debugbreak
 DECLAR
+declatory
 declspec
 decryptor
 Dedup
@@ -1158,6 +1159,8 @@ MOUSEWHEEL
 MOVESIZEEND
 MOVESIZESTART
 mozilla
+MOZILLAPL
+MOZPL
 mpmc
 MRM
 MRT
@@ -1230,6 +1233,7 @@ netcore
 netcoreapp
 netcpl
 netframework
+Netscape
 netsetup
 netsh
 Neue
@@ -1238,6 +1242,7 @@ newdev
 newitem
 newpath
 newrow
+newsgroups
 Newtonsoft
 nielslaute
 NIF
@@ -1744,6 +1749,7 @@ SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
+setvariable
 SETWORKAREA
 setzero
 sfgao
@@ -2143,6 +2149,7 @@ vsconfig
 VSCROLL
 vsetq
 VSM
+vso
 vsonline
 vstemplate
 VSTHRD

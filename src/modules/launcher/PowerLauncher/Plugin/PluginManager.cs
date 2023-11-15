@@ -13,7 +13,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using global::PowerToys.GPOWrapper;
-using ManagedCommon;
 using PowerLauncher.Properties;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -60,12 +59,14 @@ namespace PowerLauncher.Plugin
                                 {
                                     try
                                     {
-                                        // Return a comparable produce version.
+                                        // Return a comparable product version.
                                         var fileVersion = FileVersionInfo.GetVersionInfo(x.ExecuteFilePath);
-                                        return ((uint)fileVersion.ProductMajorPart << 48)
-                                        | ((uint)fileVersion.ProductMinorPart << 32)
-                                        | ((uint)fileVersion.ProductBuildPart << 16)
-                                        | ((uint)fileVersion.ProductPrivatePart);
+
+                                        // Convert each part to an unsigned 32 bit integer, then extend to 64 bit.
+                                        return ((ulong)(uint)fileVersion.ProductMajorPart << 48)
+                                            | ((ulong)(uint)fileVersion.ProductMinorPart << 32)
+                                            | ((ulong)(uint)fileVersion.ProductBuildPart << 16)
+                                            | (ulong)(uint)fileVersion.ProductPrivatePart;
                                     }
                                     catch (System.IO.FileNotFoundException)
                                     {
