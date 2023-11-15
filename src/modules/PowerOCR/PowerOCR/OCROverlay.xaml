@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:p="clr-namespace:PowerOCR.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="TextExtractor"
     Width="200"
@@ -23,12 +24,22 @@
     mc:Ignorable="d">
 
     <Window.Resources>
-        <Style TargetType="ToggleButton">
-            <Setter Property="Margin" Value="2,0" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="Width" Value="30" />
-            <Setter Property="Height" Value="30" />
+        <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource DefaultToggleButtonStyle}">
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Background" Value="Transparent" />
         </Style>
     </Window.Resources>
 
@@ -63,23 +74,24 @@
                     <MenuItem
                         Name="SingleLineMenuItem"
                         Click="SingleLineMenuItem_Click"
-                        Header="Make Result Text Single Line"
+                        Header="{x:Static p:Resources.ResultTextSingleLine}"
                         IsCheckable="True" />
                     <MenuItem
                         Name="TableMenuItem"
                         Click="TableToggleButton_Click"
-                        Header="OCR text as a table"
+                        Header="{x:Static p:Resources.ResultTextTable}"
                         IsCheckable="True" />
                     <Separator />
                     <MenuItem
                         Name="SettingsMenuItem"
                         Click="SettingsMenuItem_Click"
-                        Header="Settings" />
+                        Header="{x:Static p:Resources.Settings}" />
                     <Separator />
                     <MenuItem
                         Name="CancelMenuItem"
                         Click="CancelMenuItem_Click"
-                        Header="Cancel" />
+                        Header="{x:Static p:Resources.Cancel}"
+                       />
                 </ContextMenu>
             </Canvas.ContextMenu>
         </Canvas>
@@ -100,6 +112,7 @@
                     RenderingBias="Performance"
                     ShadowDepth="1" />
             </Border.Effect>
+     
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
@@ -108,6 +121,7 @@
                     x:Name="LanguagesComboBox"
                     Height="32"
                     Margin="4,0"
+                    AutomationProperties.Name="{x:Static p:Resources.SelectedLang}"
                     SelectionChanged="LanguagesComboBox_SelectionChanged">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
@@ -120,54 +134,33 @@
                 </ComboBox>
                 <ToggleButton
                     x:Name="SingleLineToggleButton"
-                    Width="32"
-                    Height="32"
-                    Margin="4,0"
-                    Padding="0"
                     d:IsChecked="True"
-                    BorderBrush="Transparent"
+                    AutomationProperties.Name="{x:Static p:Resources.ResultTextSingleLine}"
                     Click="SingleLineMenuItem_Click"
                     IsChecked="{Binding IsChecked, ElementName=SingleLineMenuItem, Mode=TwoWay}"
-                    Style="{StaticResource DefaultToggleButtonStyle}"
-                    ToolTip="(S) Make result a single line">
+                    ToolTip="{x:Static p:Resources.ResultTextSingleLineShortcut}">
                     <ui:SymbolIcon FontSize="16" Symbol="LineHorizontal120" />
                 </ToggleButton>
                 <ToggleButton
                     x:Name="TableToggleButton"
-                    Width="32"
-                    Height="32"
-                    Margin="2,0"
-                    Padding="0"
                     d:IsChecked="True"
-                    BorderBrush="Transparent"
                     Click="TableToggleButton_Click"
+                    AutomationProperties.Name="{x:Static p:Resources.ResultTextTable}"
                     IsChecked="{Binding IsChecked, ElementName=TableMenuItem, Mode=TwoWay}"
-                    Style="{StaticResource DefaultToggleButtonStyle}"
-                    ToolTip="(T) OCR text as a table">
+                    ToolTip="{x:Static p:Resources.ResultTextTableShortcut}">
                     <ui:SymbolIcon FontSize="16" Symbol="ScanText20" />
                 </ToggleButton>
                 <Button
                     x:Name="SettingsButton"
-                    Width="32"
-                    Height="32"
-                    Margin="2,0"
-                    Padding="0"
-                    BorderBrush="Transparent"
                     Click="SettingsMenuItem_Click"
-                    Style="{StaticResource DefaultButtonStyle}"
-                    ToolTip="Settings">
+                    AutomationProperties.Name="{x:Static p:Resources.Settings}"
+                    ToolTip="{x:Static p:Resources.Settings}">
                     <ui:SymbolIcon FontSize="16" Symbol="Settings20" />
                 </Button>
                 <Button
                     x:Name="CancelButton"
-                    Width="32"
-                    Height="32"
-                    Margin="2,0,0,0"
-                    Padding="0"
-                    BorderBrush="Transparent"
                     Click="CancelMenuItem_Click"
-                    Style="{StaticResource DefaultButtonStyle}"
-                    ToolTip="(Esc) Cancel">
+                    ToolTip="{x:Static p:Resources.CancelShortcut}">
                     <ui:SymbolIcon FontSize="16" Symbol="Dismiss24" />
                 </Button>
             </StackPanel>

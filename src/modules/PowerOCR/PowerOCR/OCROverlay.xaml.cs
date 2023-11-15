@@ -47,9 +47,9 @@ public partial class OCROverlay : Window
     {
         Left = screenRectangle.Left >= 0 ? screenRectangle.Left : screenRectangle.Left + (screenRectangle.Width / 2);
         Top = screenRectangle.Top >= 0 ? screenRectangle.Top : screenRectangle.Top + (screenRectangle.Height / 2);
-        Wpf.Ui.Appearance.Watcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
-        InitializeComponent();
 
+        InitializeComponent();
+        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
         PopulateLanguageMenu();
     }
 
