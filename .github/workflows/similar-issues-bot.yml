@@ -1,0 +1,32 @@
+name: GitGudSimilarIssues comments
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  getsimilarissues:
+    runs-on: ubuntu-latest
+    outputs:
+      message: ${{ steps.getbody.outputs.message }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: getbody
+        uses: craigloewen-msft/GitGudSimilarIssues@main
+        with:
+          issuetitle: ${{ github.event.issue.title }}
+          repo: ${{ github.repository }}
+          similaritytolerance: "0.75"
+  add-comment:
+    needs: getsimilarissues
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Add comment
+        run: gh issue comment "$NUMBER" --repo "$REPO" --body "$BODY"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          BODY: ${{ needs.getsimilarissues.outputs.message }}
