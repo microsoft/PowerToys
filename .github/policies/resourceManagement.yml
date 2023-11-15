@@ -233,5 +233,14 @@ configuration:
       - addReply:
           reply: Hi! Thanks for making us aware of the problem. We raised the issue with our internal localization team. This issue should be fixed hopefully in the next version of PowerToys.
       description: 
+    - if:
+      - payloadType: Issue_Comment
+      - commentContains:
+          pattern: 'I would [like|love] [to help|helping|to contribute|contributing|to implement|implementing|to fix|fixing]'
+          isRegex: True
+      then:
+      - addReply:
+          reply: Hi! Your last comment indicates to our system, that you might want to contribute to this feature/fix this bug. Thank you! Please make us aware on our ["Would you like to contribute to PowerToys?" thread](https://github.com/microsoft/PowerToys/issues/28769), as we don't see all the comments. <br /><br />_I'm a bot (beep!) so please excuse any mistakes I may make_
+      description: 
 onFailure: 
 onSuccess: 
