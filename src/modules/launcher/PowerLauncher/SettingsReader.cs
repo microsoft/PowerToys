@@ -94,7 +94,7 @@ namespace PowerLauncher
                     foreach (var setting in overloadSettings.Plugins)
                     {
                         var plugin = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == setting.Id);
-                        plugin?.Update(setting, App.API);
+                        plugin?.Update(setting, App.API, _refreshPluginsOverviewCallback);
                     }
 
                     var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);

@@ -55,11 +55,18 @@ namespace Wox.Plugin
             return;
         }
 
-        public void Update(PowerLauncherPluginSettings setting, IPublicAPI api)
+        public void Update(PowerLauncherPluginSettings setting, IPublicAPI api, Action refreshPluginsOverviewCallback)
         {
             if (setting == null || api == null)
             {
                 return;
+            }
+
+            bool refreshOverview = false;
+            if (Metadata.Disabled != setting.Disabled
+                || Metadata.ActionKeyword != setting.ActionKeyword)
+            {
+                refreshOverview = true;
             }
 
             // If the enabled state is policy managed then we skip the update of the disabled state as it must be a manual settings.json manipulation.
@@ -92,6 +99,11 @@ namespace Wox.Plugin
             if (IsPluginInitialized && !Metadata.Disabled)
             {
                 (Plugin as IReloadable)?.ReloadData();
+            }
+
+            if (refreshOverview)
+            {
+                refreshPluginsOverviewCallback?.Invoke();
             }
         }
 

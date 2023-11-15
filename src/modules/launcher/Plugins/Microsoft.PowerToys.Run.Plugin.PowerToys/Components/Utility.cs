@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                 {
                     Title = Resources.Action_Run_As_Administrator,
                     Glyph = "\xE7EF",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = System.Windows.Input.Key.Enter,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
