@@ -8,12 +8,14 @@
     Title="MainWindow"
     MinWidth="600"
     MinHeight="0"
-    ui:ExtendsContentIntoTitleBar="True"
+    ExtendsContentIntoTitleBar="True"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     SizeToContent="WidthAndHeight"
     Visibility="Collapsed"
+    WindowBackdropType="None"
     WindowStyle="None"
     mc:Ignorable="d">
     <ui:FluentWindow.Resources>
@@ -70,6 +72,8 @@
                                         VerticalAlignment="Stretch"
                                         RadiusX="4"
                                         RadiusY="4"
+                                        StrokeThickness="1"
+                                        Stroke="{DynamicResource AccentControlElevationBorderBrush}"
                                         Visibility="Collapsed">
                                         <Rectangle.Fill>
                                             <SolidColorBrush Color="{DynamicResource SystemAccentColorPrimary}" />
