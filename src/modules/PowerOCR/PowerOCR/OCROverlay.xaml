@@ -24,19 +24,19 @@
     mc:Ignorable="d">
 
     <Window.Resources>
-        <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource DefaultToggleButtonStyle}">
+        <Style BasedOn="{StaticResource DefaultToggleButtonStyle}" TargetType="{x:Type ToggleButton}">
             <Setter Property="Margin" Value="4,0" />
-            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Padding" Value="0" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Width" Value="32" />
             <Setter Property="Height" Value="32" />
             <Setter Property="Background" Value="Transparent" />
         </Style>
 
-        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="{x:Type Button}">
             <Setter Property="Margin" Value="4,0" />
             <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Padding" Value="0" />
             <Setter Property="Width" Value="32" />
             <Setter Property="Height" Value="32" />
             <Setter Property="Background" Value="Transparent" />
@@ -90,8 +90,7 @@
                     <MenuItem
                         Name="CancelMenuItem"
                         Click="CancelMenuItem_Click"
-                        Header="{x:Static p:Resources.Cancel}"
-                       />
+                        Header="{x:Static p:Resources.Cancel}" />
                 </ContextMenu>
             </Canvas.ContextMenu>
         </Canvas>
@@ -112,7 +111,7 @@
                     RenderingBias="Performance"
                     ShadowDepth="1" />
             </Border.Effect>
-     
+
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
@@ -144,16 +143,16 @@
                 <ToggleButton
                     x:Name="TableToggleButton"
                     d:IsChecked="True"
-                    Click="TableToggleButton_Click"
                     AutomationProperties.Name="{x:Static p:Resources.ResultTextTable}"
+                    Click="TableToggleButton_Click"
                     IsChecked="{Binding IsChecked, ElementName=TableMenuItem, Mode=TwoWay}"
                     ToolTip="{x:Static p:Resources.ResultTextTableShortcut}">
                     <ui:SymbolIcon FontSize="18" Symbol="Table24" />
                 </ToggleButton>
                 <Button
                     x:Name="SettingsButton"
-                    Click="SettingsMenuItem_Click"
                     AutomationProperties.Name="{x:Static p:Resources.Settings}"
+                    Click="SettingsMenuItem_Click"
                     ToolTip="{x:Static p:Resources.Settings}">
                     <ui:SymbolIcon FontSize="18" Symbol="Settings24" />
                 </Button>
