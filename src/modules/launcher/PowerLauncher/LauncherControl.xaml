@@ -11,7 +11,10 @@
     d:DesignWidth="720"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <Style x:Key="QueryTextBoxStyle" TargetType="{x:Type TextBox}">
+        <Style
+            x:Key="QueryTextBoxStyle"
+            BasedOn="{StaticResource DefaultTextBoxStyle}"
+            TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
@@ -65,7 +68,6 @@
                                 </ScrollViewer>
                             </Border>
                         </Grid>
-
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -87,7 +89,6 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="32" />
             <ColumnDefinition Width="*" />
-
         </Grid.ColumnDefinitions>
 
         <!--
