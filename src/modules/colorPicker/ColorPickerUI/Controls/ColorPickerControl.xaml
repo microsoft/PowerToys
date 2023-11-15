@@ -140,7 +140,7 @@
                                 <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
                                 <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
                             </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True"/>
+                            <Trigger Property="IsMouseOver" Value="True" />
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>

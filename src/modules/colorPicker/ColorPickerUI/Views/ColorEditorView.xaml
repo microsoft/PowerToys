@@ -266,8 +266,8 @@
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
         </StackPanel>
-        
-        
+
+
         <Border
             x:Name="CopiedBorderIndicator"
             Grid.Row="1"
@@ -279,16 +279,17 @@
             BorderThickness="0,1,0,0"
             Opacity="0">
             <Border.Background>
-                <SolidColorBrush Color="{DynamicResource SystemAccentColorPrimary}"/>
+                <SolidColorBrush Color="{DynamicResource SystemAccentColorPrimary}" />
             </Border.Background>
-            <TextBlock FontSize="16"
-                       Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       AutomationProperties.LiveSetting="Assertive"
-                       AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}">
-                <Run Text="&#xE8C8;" FontFamily="Segoe Fluent Icons"/>
-                <Run Text="{x:Static p:Resources.Copied_to_clipboard}"/>
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                AutomationProperties.LiveSetting="Assertive"
+                AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}"
+                FontSize="16"
+                Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}">
+                <Run FontFamily="Segoe Fluent Icons" Text="&#xE8C8;" />
+                <Run Text="{x:Static p:Resources.Copied_to_clipboard}" />
             </TextBlock>
         </Border>
     </Grid>

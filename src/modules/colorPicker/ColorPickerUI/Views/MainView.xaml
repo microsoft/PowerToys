@@ -45,11 +45,11 @@
                         x:Name="ColorTextBlock"
                         Grid.Column="1"
                         Margin="8,5,8,8"
-                        FontSize="16"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         AutomationProperties.LiveSetting="Assertive"
                         AutomationProperties.Name="{Binding ColorName}"
+                        FontSize="16"
                         FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Text="{Binding ColorText}" />
                 </Grid>
 
@@ -71,8 +71,8 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Background="{Binding ColorBrush}"
-                        BorderThickness="1"
                         BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                        BorderThickness="1"
                         CornerRadius="{DynamicResource ControlCornerRadius}" />
 
                     <TextBlock
@@ -80,8 +80,8 @@
                         Grid.Column="1"
                         Margin="8,5,6,0"
                         FontSize="16"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                         Text="{Binding ColorText}" />
 
                     <TextBlock

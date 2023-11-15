@@ -10,10 +10,10 @@
     Height="64"
     MinWidth="0"
     MinHeight="0"
-    Opacity="0.1"
     AllowsTransparency="True"
     AutomationProperties.Name="Color Picker"
     Background="Transparent"
+    Opacity="0.1"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
     SizeToContent="WidthAndHeight"
@@ -25,7 +25,5 @@
         <behaviors:ChangeWindowPositionBehavior />
         <behaviors:AppearAnimationBehavior />
     </e:Interaction.Behaviors>
-    <ContentControl
-        x:Name="MainView"
-        Content="{Binding MainViewModel}" />
+    <ContentControl x:Name="MainView" Content="{Binding MainViewModel}" />
 </Window>
