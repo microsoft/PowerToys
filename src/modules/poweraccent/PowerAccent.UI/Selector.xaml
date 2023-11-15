@@ -96,7 +96,10 @@
             </ListBox.ItemsPanel>
         </ListBox>
 
-        <Grid Grid.Row="1" Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
+        <Grid
+            Grid.Row="1"
+            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}"
+            Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
             <TextBlock
                 x:Name="characterName"
                 Margin="8"
