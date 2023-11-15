@@ -139,7 +139,7 @@
                     Click="SingleLineMenuItem_Click"
                     IsChecked="{Binding IsChecked, ElementName=SingleLineMenuItem, Mode=TwoWay}"
                     ToolTip="{x:Static p:Resources.ResultTextSingleLineShortcut}">
-                    <ui:SymbolIcon FontSize="16" Symbol="LineHorizontal120" />
+                    <ui:SymbolIcon FontSize="18" Symbol="SubtractSquare24" />
                 </ToggleButton>
                 <ToggleButton
                     x:Name="TableToggleButton"
@@ -148,20 +148,20 @@
                     AutomationProperties.Name="{x:Static p:Resources.ResultTextTable}"
                     IsChecked="{Binding IsChecked, ElementName=TableMenuItem, Mode=TwoWay}"
                     ToolTip="{x:Static p:Resources.ResultTextTableShortcut}">
-                    <ui:SymbolIcon FontSize="16" Symbol="ScanText20" />
+                    <ui:SymbolIcon FontSize="18" Symbol="Table24" />
                 </ToggleButton>
                 <Button
                     x:Name="SettingsButton"
                     Click="SettingsMenuItem_Click"
                     AutomationProperties.Name="{x:Static p:Resources.Settings}"
                     ToolTip="{x:Static p:Resources.Settings}">
-                    <ui:SymbolIcon FontSize="16" Symbol="Settings20" />
+                    <ui:SymbolIcon FontSize="18" Symbol="Settings24" />
                 </Button>
                 <Button
                     x:Name="CancelButton"
                     Click="CancelMenuItem_Click"
                     ToolTip="{x:Static p:Resources.CancelShortcut}">
-                    <ui:SymbolIcon FontSize="16" Symbol="Dismiss24" />
+                    <ui:SymbolIcon FontSize="18" Symbol="Dismiss24" />
                 </Button>
             </StackPanel>
         </Border>
