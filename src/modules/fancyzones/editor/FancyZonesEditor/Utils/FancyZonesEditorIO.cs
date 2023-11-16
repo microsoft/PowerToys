@@ -8,10 +8,10 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using FancyZonesEditor.Data;
 using FancyZonesEditor.Models;
 using ManagedCommon;
 
@@ -36,7 +36,6 @@ namespace FancyZonesEditor.Utils
         private const string LayoutTemplatesFile = "\\Microsoft\\PowerToys\\FancyZones\\layout-templates.json";
         private const string CustomLayoutsFile = "\\Microsoft\\PowerToys\\FancyZones\\custom-layouts.json";
         private const string DefaultLayoutsFile = "\\Microsoft\\PowerToys\\FancyZones\\default-layouts.json";
-        private const string ParamsFile = "\\Microsoft\\PowerToys\\FancyZones\\editor-parameters.json";
 
         // Non-localizable string: default virtual desktop id
         private const string DefaultVirtualDesktopGuid = "{00000000-0000-0000-0000-000000000000}";
@@ -75,61 +74,6 @@ namespace FancyZonesEditor.Utils
             MonitorTop,
             MonitorWidth,
             MonitorHeight,
-        }
-
-        // parsing cmd args
-        private struct NativeMonitorData
-        {
-            public string Monitor { get; set; }
-
-            public string MonitorInstanceId { get; set; }
-
-            public string MonitorSerialNumber { get; set; }
-
-            public int MonitorNumber { get; set; }
-
-            public string VirtualDesktop { get; set; }
-
-            public int Dpi { get; set; }
-
-            public int LeftCoordinate { get; set; }
-
-            public int TopCoordinate { get; set; }
-
-            public int WorkAreaWidth { get; set; }
-
-            public int WorkAreaHeight { get; set; }
-
-            public int MonitorWidth { get; set; }
-
-            public int MonitorHeight { get; set; }
-
-            public bool IsSelected { get; set; }
-
-            public override string ToString()
-            {
-                var sb = new StringBuilder();
-
-                // using CultureInfo.InvariantCulture since this is internal data
-                sb.Append("Monitor: ");
-                sb.AppendLine(Monitor);
-                sb.Append("Virtual desktop: ");
-                sb.AppendLine(VirtualDesktop);
-                sb.Append("DPI: ");
-                sb.AppendLine(Dpi.ToString(CultureInfo.InvariantCulture));
-
-                sb.Append("X: ");
-                sb.AppendLine(LeftCoordinate.ToString(CultureInfo.InvariantCulture));
-                sb.Append("Y: ");
-                sb.AppendLine(TopCoordinate.ToString(CultureInfo.InvariantCulture));
-
-                sb.Append("Width: ");
-                sb.AppendLine(MonitorWidth.ToString(CultureInfo.InvariantCulture));
-                sb.Append("Height: ");
-                sb.AppendLine(MonitorHeight.ToString(CultureInfo.InvariantCulture));
-
-                return sb.ToString();
-            }
         }
 
         // applied-layouts.json
@@ -298,31 +242,6 @@ namespace FancyZonesEditor.Utils
             public List<DefaultLayoutWrapper> DefaultLayouts { get; set; }
         }
 
-        private struct EditorParams
-        {
-            public int ProcessId { get; set; }
-
-            public bool SpanZonesAcrossMonitors { get; set; }
-
-            public List<NativeMonitorData> Monitors { get; set; }
-        }
-
-        public struct ParsingResult
-        {
-            public bool Result { get; }
-
-            public string Message { get; }
-
-            public string MalformedData { get; }
-
-            public ParsingResult(bool result, string message = "", string data = "")
-            {
-                Result = result;
-                Message = message;
-                MalformedData = data;
-            }
-        }
-
         public FancyZonesEditorIO()
         {
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -331,107 +250,13 @@ namespace FancyZonesEditor.Utils
             FancyZonesLayoutTemplatesFile = localAppDataDir + LayoutTemplatesFile;
             FancyZonesCustomLayoutsFile = localAppDataDir + CustomLayoutsFile;
             FancyZonesDefaultLayoutsFile = localAppDataDir + DefaultLayoutsFile;
-            FancyZonesEditorParamsFile = localAppDataDir + ParamsFile;
         }
 
         public ParsingResult ParseParams()
         {
             Logger.LogTrace();
-
-            if (_fileSystem.File.Exists(FancyZonesEditorParamsFile))
-            {
-                string data = string.Empty;
-
-                try
-                {
-                    data = ReadFile(FancyZonesEditorParamsFile);
-                    EditorParams editorParams = JsonSerializer.Deserialize<EditorParams>(data, _options);
-
-                    // Process ID
-                    App.PowerToysPID = editorParams.ProcessId;
-
-                    // Span zones across monitors
-                    App.Overlay.SpanZonesAcrossMonitors = editorParams.SpanZonesAcrossMonitors;
-
-                    if (!App.Overlay.SpanZonesAcrossMonitors)
-                    {
-                        string targetMonitorId = string.Empty;
-                        string targetMonitorSerialNumber = string.Empty;
-                        string targetVirtualDesktop = string.Empty;
-                        int targetMonitorNumber = 0;
-
-                        foreach (NativeMonitorData nativeData in editorParams.Monitors)
-                        {
-                            Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.WorkAreaWidth, nativeData.WorkAreaHeight);
-                            if (nativeData.IsSelected)
-                            {
-                                targetMonitorId = nativeData.Monitor;
-                                targetMonitorSerialNumber = nativeData.MonitorSerialNumber;
-                                targetMonitorNumber = nativeData.MonitorNumber;
-                                targetVirtualDesktop = nativeData.VirtualDesktop;
-                            }
-
-                            Size monitorSize = new Size(nativeData.MonitorWidth, nativeData.MonitorHeight);
-
-                            var monitor = new Monitor(workArea, monitorSize);
-                            monitor.Device.MonitorName = nativeData.Monitor;
-                            monitor.Device.MonitorInstanceId = nativeData.MonitorInstanceId;
-                            monitor.Device.MonitorSerialNumber = nativeData.MonitorSerialNumber;
-                            monitor.Device.MonitorNumber = nativeData.MonitorNumber;
-                            monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
-                            monitor.Device.Dpi = nativeData.Dpi;
-
-                            App.Overlay.AddMonitor(monitor);
-                        }
-
-                        // Set active desktop
-                        var monitors = App.Overlay.Monitors;
-                        for (int i = 0; i < monitors.Count; i++)
-                        {
-                            var monitor = monitors[i];
-                            if (monitor.Device.MonitorName == targetMonitorId &&
-                                monitor.Device.MonitorSerialNumber == targetMonitorSerialNumber &&
-                                monitor.Device.MonitorNumber == targetMonitorNumber &&
-                                monitor.Device.VirtualDesktopId == targetVirtualDesktop)
-                            {
-                                App.Overlay.CurrentDesktop = i;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (editorParams.Monitors.Count != 1)
-                        {
-                            return new ParsingResult(false);
-                        }
-
-                        var nativeData = editorParams.Monitors[0];
-                        Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.WorkAreaWidth, nativeData.WorkAreaHeight);
-                        Size monitorSize = new Size(nativeData.MonitorWidth, nativeData.MonitorHeight);
-
-                        var monitor = new Monitor(workArea, monitorSize);
-                        monitor.Device.MonitorName = nativeData.Monitor;
-                        monitor.Device.MonitorInstanceId = nativeData.MonitorInstanceId;
-                        monitor.Device.MonitorSerialNumber = nativeData.MonitorSerialNumber;
-                        monitor.Device.MonitorNumber = nativeData.MonitorNumber;
-                        monitor.Device.VirtualDesktopId = nativeData.VirtualDesktop;
-
-                        App.Overlay.AddMonitor(monitor);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Editor params parsing error", ex);
-                    return new ParsingResult(false, ex.Message, data);
-                }
-
-                return new ParsingResult(true);
-            }
-            else
-            {
-                return new ParsingResult(false);
-            }
+            EditorParameters parser = new EditorParameters();
+            return parser.Parse();
         }
 
         public ParsingResult ParseAppliedLayouts()
