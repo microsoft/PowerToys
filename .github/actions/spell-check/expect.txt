@@ -610,7 +610,6 @@ findfast
 firefox
 FIXEDFILEINFO
 flyout
-flyouts
 FOF
 FOFX
 FOLDERID
@@ -985,7 +984,6 @@ lmcons
 LMEM
 LMENU
 lnk
-lnks
 LOADFROMFILE
 LOBYTE
 LOCALAPPDATA
@@ -1628,7 +1626,6 @@ renamable
 RENAMEONCOLLISION
 Renamer
 reparent
-reparented
 reparenting
 reparse
 reportbug
@@ -1722,7 +1719,6 @@ Scode
 scoobe
 SCOPEID
 screenshot
-screenshots
 scrollviewer
 sddl
 SDKDDK
@@ -1805,7 +1801,6 @@ sia
 SIATTRIBFLAGS
 SICHINT
 sid
-SIDs
 siex
 sigdn
 SIGNINGSCENARIO
@@ -2176,7 +2171,6 @@ webpage
 websearch
 webserver
 website
-websites
 wekyb
 Wevtapi
 wgpocpl
