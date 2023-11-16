@@ -483,7 +483,7 @@ Filterkeyboard
 Filterx
 findfast
 FIXEDFILEINFO
-flyouts
+flyout
 FOF
 FOFX
 FOLDERID
@@ -780,7 +780,7 @@ llkhf
 lmcons
 LMEM
 LMENU
-lnks
+lnk
 LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
@@ -1277,7 +1277,7 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 Renamer
-reparented
+reparent
 reparenting
 reparse
 reportbug
@@ -1347,7 +1347,9 @@ SCID
 Scip
 scipbe
 Scode
-screenshots
+scoobe
+SCOPEID
+screenshot
 scrollviewer
 sddl
 SDKDDK
@@ -1420,7 +1422,7 @@ shtypes
 sia
 SIATTRIBFLAGS
 SICHINT
-SIDs
+sid
 siex
 sigdn
 SIGNINGSCENARIO
@@ -1724,7 +1726,9 @@ wdp
 wdupenv
 webcam
 webpage
-websites
+websearch
+webserver
+website
 wekyb
 Wevtapi
 WEX
