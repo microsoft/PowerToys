@@ -30,6 +30,8 @@ std::vector<std::wstring> processes =
     L"PowerToys.MonacoPreviewHandler.exe",
     L"PowerToys.PdfPreviewHandler.exe",
     L"PowerToys.PdfThumbnailProvider.exe",
+    L"PowerToys.QoiPreviewHandler.exe",
+    L"PowerToys.QoiThumbnailProvider.exe",
     L"PowerToys.StlThumbnailProvider.exe",
     L"PowerToys.SvgPreviewHandler.exe",
     L"PowerToys.SvgThumbnailProvider.exe",

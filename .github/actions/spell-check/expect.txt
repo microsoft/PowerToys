@@ -388,6 +388,7 @@ Deact
 debian
 debugbreak
 DECLAR
+declatory
 declspec
 decryptor
 Dedup
@@ -609,7 +610,6 @@ findfast
 firefox
 FIXEDFILEINFO
 flyout
-flyouts
 FOF
 FOFX
 FOLDERID
@@ -984,7 +984,6 @@ lmcons
 LMEM
 LMENU
 lnk
-lnks
 LOADFROMFILE
 LOBYTE
 LOCALAPPDATA
@@ -1158,6 +1157,8 @@ MOUSEWHEEL
 MOVESIZEEND
 MOVESIZESTART
 mozilla
+MOZILLAPL
+MOZPL
 mpmc
 MRM
 MRT
@@ -1230,6 +1231,7 @@ netcore
 netcoreapp
 netcpl
 netframework
+Netscape
 netsetup
 netsh
 Neue
@@ -1238,6 +1240,7 @@ newdev
 newitem
 newpath
 newrow
+newsgroups
 Newtonsoft
 nielslaute
 NIF
@@ -1623,7 +1626,6 @@ renamable
 RENAMEONCOLLISION
 Renamer
 reparent
-reparented
 reparenting
 reparse
 reportbug
@@ -1717,7 +1719,6 @@ Scode
 scoobe
 SCOPEID
 screenshot
-screenshots
 scrollviewer
 sddl
 SDKDDK
@@ -1744,6 +1745,7 @@ SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
+setvariable
 SETWORKAREA
 setzero
 sfgao
@@ -1799,7 +1801,6 @@ sia
 SIATTRIBFLAGS
 SICHINT
 sid
-SIDs
 siex
 sigdn
 SIGNINGSCENARIO
@@ -2143,6 +2144,7 @@ vsconfig
 VSCROLL
 vsetq
 VSM
+vso
 vsonline
 vstemplate
 VSTHRD
@@ -2169,7 +2171,6 @@ webpage
 websearch
 webserver
 website
-websites
 wekyb
 Wevtapi
 wgpocpl

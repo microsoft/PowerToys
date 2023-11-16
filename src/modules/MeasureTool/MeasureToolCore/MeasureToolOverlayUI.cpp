@@ -32,8 +32,6 @@ namespace
 winrt::com_ptr<ID2D1Bitmap> ConvertID3D11Texture2DToD2D1Bitmap(winrt::com_ptr<ID2D1RenderTarget> rt,
                                                                const MappedTextureView* capturedScreenTexture)
 {
-    capturedScreenTexture->view.pixels;
-
     D2D1_BITMAP_PROPERTIES props = { .pixelFormat = rt->GetPixelFormat() };
     rt->GetDpi(&props.dpiX, &props.dpiY);
     const auto sizeF = rt->GetSize();
