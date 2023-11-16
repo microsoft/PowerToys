@@ -1851,10 +1851,16 @@ yinyue
 YPels
 YResolution
 YStr
-Yuniardi
 YVIRTUALSCREEN
 ZEROINIT
 zonable
 zoneset
 Zoneszonabletester
 zzz
+newsgroups
+MOZILLAPL
+MOZPL
+
+# FALSE POSITIVES
+
+declatory # NOTICE.MD > MOZILLA PUBLIC LICENSE 

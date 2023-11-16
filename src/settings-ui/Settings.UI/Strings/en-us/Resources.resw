@@ -1601,7 +1601,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_Editor_GroupSettings.Header" xml:space="preserve">
     <value>Editor</value>
-    <comment>refers to the FancyZone editor</comment>
+    <comment>refers to the FancyZones editor</comment>
   </data>
   <data name="FancyZones_WindowBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Window behavior</value>
