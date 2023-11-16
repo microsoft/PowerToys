@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Common.UI;
 using ImageResizer.ViewModels;
 using Microsoft.Win32;
 using Wpf.Ui.Controls;
@@ -18,6 +19,16 @@ namespace ImageResizer.Views
         {
             DataContext = viewModel;
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+
+            if (OSVersionHelper.IsWindows11())
+            {
+                WindowBackdropType = WindowBackdropType.Mica;
+            }
+            else
+            {
+                WindowBackdropType = WindowBackdropType.None;
+            }
+
             InitializeComponent();
         }
 
