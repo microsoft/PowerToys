@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Common.UI;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -119,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            _windows11 = Helper.Windows11();
+            _windows11 = OSVersionHelper.IsWindows11();
 
             // Disable setting on windows 10
             if (!_windows11 && DisableRoundCornersOnWindowSnap)

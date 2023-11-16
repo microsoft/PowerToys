@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Common.UI;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -61,7 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _doNotActivateOnGameMode = Settings.Properties.DoNotActivateOnGameMode.Value;
             _roundCornersEnabled = Settings.Properties.RoundCornersEnabled.Value;
             _excludedApps = Settings.Properties.ExcludedApps.Value;
-            _windows11 = Helper.Windows11();
+            _windows11 = OSVersionHelper.IsWindows11();
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
