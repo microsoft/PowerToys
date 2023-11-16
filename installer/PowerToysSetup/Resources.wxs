@@ -402,6 +402,15 @@
         </RegistryKey>
         <File Id="Launcher_ValueGenerator_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\ValueGenerator\$(var.Language)\Community.PowerToys.Run.Plugin.ValueGenerator.resources.dll" />
       </Component>
+      <Component
+          Id="QoiPreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)1E">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="QoiPreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="QoiPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.QoiPreviewHandler.resources.dll" />
+      </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>

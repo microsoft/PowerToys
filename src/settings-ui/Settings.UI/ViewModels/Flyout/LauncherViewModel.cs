@@ -48,12 +48,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             AddFlyoutMenuItem(ModuleType.MeasureTool);
             AddFlyoutMenuItem(ModuleType.ShortcutGuide);
 
+            updatingSettingsConfig = UpdatingSettings.LoadSettings();
             if (updatingSettingsConfig == null)
             {
                 updatingSettingsConfig = new UpdatingSettings();
             }
-
-            updatingSettingsConfig = UpdatingSettings.LoadSettings();
 
             if (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload)
             {

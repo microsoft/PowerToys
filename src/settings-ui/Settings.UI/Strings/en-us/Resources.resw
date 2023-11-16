@@ -1135,6 +1135,21 @@
   <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
     <value>Color</value>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Header" xml:space="preserve">
+    <value>Quite Ok Image</value>
+    <comment>File type, do not translate</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Description" xml:space="preserve">
+    <value>.qoi</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Header" xml:space="preserve">
+    <value>Quite OK Image</value>
+    <comment>File type, do not translate</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
+    <value>.qoi</value>
+    <comment>File extension, should not be altered</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
     <comment>File type, do not translate</comment>
