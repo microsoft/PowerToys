@@ -100,10 +100,10 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             string registryExplorerVirtualDesktops = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops"; // Windows 11
 
             // List of all desktops
-            using RegistryKey virtualDestktopKey = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false);
-            if (virtualDestktopKey != null)
+            using RegistryKey virtualDesktopKey = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false);
+            if (virtualDesktopKey != null)
             {
-                byte[] allDeskValue = (byte[])virtualDestktopKey.GetValue("VirtualDesktopIDs", null);
+                byte[] allDeskValue = (byte[])virtualDesktopKey.GetValue("VirtualDesktopIDs", null);
                 if (allDeskValue != null)
                 {
                     // We clear only, if we can read from registry. Otherwise we keep the existing values.
