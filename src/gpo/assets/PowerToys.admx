@@ -5,7 +5,7 @@
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.5"/><!-- Last changed with PowerToys v0.75.1 -->
+  <resources minRequiredRevision="1.6"/><!-- Last changed with PowerToys v0.76.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -14,6 +14,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_70_0" displayName="$(string.SUPPORTED_POWERTOYS_0_70_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_73_0" displayName="$(string.SUPPORTED_POWERTOYS_0_73_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_75_0" displayName="$(string.SUPPORTED_POWERTOYS_0_75_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_76_0" displayName="$(string.SUPPORTED_POWERTOYS_0_76_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -181,6 +182,26 @@
     <policy name="ConfigureEnabledUtilityFileExplorerGcodeThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerGcodeThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerQOIPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerQOIPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerQOIPreview">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_76_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileExplorerQOIThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerQOIThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerQOIThumbnails">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_76_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

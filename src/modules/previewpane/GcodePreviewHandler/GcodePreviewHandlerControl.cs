@@ -30,6 +30,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         private bool _infoBarAdded;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="GcodePreviewHandlerControl"/> class.
+        /// </summary>
+        public GcodePreviewHandlerControl()
+        {
+            SetBackgroundColor(Settings.BackgroundColor);
+        }
+
+        /// <summary>
         /// Start the preview on the Control.
         /// </summary>
         /// <param name="dataSource">Stream reference to access source file.</param>
@@ -124,7 +132,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         {
             _pictureBox = new PictureBox();
             _pictureBox.BackgroundImage = image;
-            _pictureBox.BackgroundImageLayout = ImageLayout.Center;
+            _pictureBox.BackgroundImageLayout = Width >= image.Width && Height >= image.Height ? ImageLayout.Center : ImageLayout.Zoom;
             _pictureBox.Dock = DockStyle.Fill;
             Controls.Add(_pictureBox);
         }

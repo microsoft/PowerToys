@@ -62,6 +62,9 @@ namespace CommonSharedConstants
     // Path to the event used by GcodePreviewHandler
     const wchar_t GCODE_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysGcodePreviewResizeEvent-6ff1f9bd-ccbd-4b24-a79f-40a34fb0317d";
 
+    // Path to the event used by QoiPreviewHandler
+    const wchar_t QOI_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysQoiPreviewResizeEvent-579518d1-8c8b-494f-8143-04f43d761ead";
+
     // Path to the event used by DevFilesPreviewHandler
     const wchar_t DEV_FILES_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysDevFilesPreviewResizeEvent-5707a22c-2cac-4ea2-82f0-27c03ef0b5f3";
 

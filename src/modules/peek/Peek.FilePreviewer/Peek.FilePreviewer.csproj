@@ -31,6 +31,8 @@
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
       <PackageReference Include="SharpCompress" />
       <PackageReference Include="System.Drawing.Common" />
+      <PackageReference Include="System.Text.Encoding.CodePages" />
+      <PackageReference Include="UTF.Unknown" />
       <PackageReference Include="Microsoft.Windows.CsWin32">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

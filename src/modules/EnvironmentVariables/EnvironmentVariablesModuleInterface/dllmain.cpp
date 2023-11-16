@@ -53,7 +53,7 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
 
     HANDLE m_hShowEvent;
 
