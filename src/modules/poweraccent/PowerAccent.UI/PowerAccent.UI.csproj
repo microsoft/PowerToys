@@ -35,7 +35,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.CsWinRT" />
-		<PackageReference Include="ModernWpfUI" />
+		<PackageReference Include="WPF-UI" />
 	</ItemGroup>
 
 	<ItemGroup>

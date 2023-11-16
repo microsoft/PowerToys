@@ -309,9 +309,8 @@ std::wstring NtdllExtensions::pid_to_user(DWORD pid)
     }
 
     DWORD token_size = 0;
-    GetTokenInformation(token, TokenUser, nullptr, 0, &token_size);
-
-    if (token_size < 0)
+    const bool ok = GetTokenInformation(token, TokenUser, nullptr, 0, &token_size);
+    if ((!ok && GetLastError() != ERROR_INSUFFICIENT_BUFFER) || !token_size)
     {
         return user;
     }

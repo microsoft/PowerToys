@@ -238,7 +238,7 @@ void FancyZonesSettings::LoadSettings()
         if (auto val = values.get_int_value(NonLocalizable::OverlappingZonesAlgorithmID))
         {
             // Avoid undefined behavior
-            if (*val >= 0 || *val < static_cast<int>(OverlappingZonesAlgorithm::EnumElements))
+            if (*val >= 0 && *val < static_cast<int>(OverlappingZonesAlgorithm::EnumElements))
             {
                 auto algorithm = (OverlappingZonesAlgorithm)*val;
                 if (m_settings.overlappingZonesAlgorithm != algorithm)
