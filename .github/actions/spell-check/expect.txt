@@ -970,7 +970,6 @@ netcore
 netcoreapp
 netcpl
 netframework
-Netscape
 netsetup
 netsh
 newcolor
@@ -1866,4 +1865,7 @@ MOZPL
 
 # FALSE POSITIVES
 
-declatory # NOTICE.MD > MOZILLA PUBLIC LICENSE 
+## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
+declatory
+## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
+Packagemanager

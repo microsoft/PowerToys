@@ -2,6 +2,7 @@
 
 alwaysontop
 colorpicker
+fancyzones
 imageresizer
 kbm
 keyboardmanager
