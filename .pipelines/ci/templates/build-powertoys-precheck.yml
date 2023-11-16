@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json
+jobs:
+- job: Precheck
+  pool:
+    demands: ImageOverride -equals SHINE-VS17-Latest
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: SHINE-OSS-L
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: SHINE-INT-L
+  steps:
+  - checkout: none
+
+  - task: PowerShell@2
+    displayName: Verify Build Request
+    inputs:
+      targetType: 'inline'
+      script: |
+        try {
+          # Try based on pull request first
+          $pullRequestNumber = "$(system.pullRequest.pullRequestNumber)";
+          $gitHubPullRequest = Invoke-RestMethod -Method Get "https://api.github.com/repos/microsoft/PowerToys/pulls/$pullRequestNumber/files"
+          # If there are no files updated in the commit that are .md, set skipBuild variable
+          if(([array]($gitHubPullRequest.filename) -notmatch ".md|.txt").Length -eq 0) {
+              Write-Host '##vso[task.setvariable variable=skipBuild;isOutput=true]Yes'
+              Write-Host 'Skipping Build'
+          }
+        }
+        catch {
+          # Fall back to the latest commit otherwise.
+          $commit = "$(build.sourceVersion)";
+          $gitHubCommit = Invoke-RestMethod -Method Get "https://api.github.com/repos/microsoft/PowerToys/commits/$commit"
+          if(([array]($githubCommit.files.filename) -notmatch ".md|.txt").Length -eq 0) {
+            Write-Host '##vso[task.setvariable variable=skipBuild;isOutput=true]Yes'
+            Write-Host 'Skipping Build'
+          }
+        }
+      pwsh: true
+    name: verifyBuildRequest

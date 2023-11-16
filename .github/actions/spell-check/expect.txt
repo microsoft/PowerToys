@@ -970,6 +970,7 @@ netcore
 netcoreapp
 netcpl
 netframework
+Netscape
 netsetup
 netsh
 newcolor
@@ -1369,6 +1370,7 @@ SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
+setvariable
 SETWORKAREA
 setzero
 sfgao
@@ -1701,6 +1703,7 @@ vsconfig
 VSCROLL
 vsetq
 VSM
+vso
 vsonline
 vstemplate
 VSTHRD
