@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Common.UI;
 using Microsoft.Win32;
 using Wox.Plugin.Common.VirtualDesktop.Interop;
 using Wox.Plugin.Common.Win32;
@@ -29,7 +30,12 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// <summary>
         /// Are we running on Windows 11
         /// </summary>
-        private static readonly bool _IsWindowsEleven = IsWindowsElevenOrLater();
+        private readonly bool _isWindowsEleven;
+
+        /// <summary>
+        /// Terminal services session id
+        /// </summary>
+        private readonly int _userSessionId;
 
         /// <summary>
         /// Instance of "Virtual Desktop Manager"
@@ -46,12 +52,12 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// List of all available Virtual Desktop in their real order
         /// The order and list in the registry is always up to date
         /// </summary>
-        private List<Guid> availableDesktops = new List<Guid>();
+        private List<Guid> _availableDesktops = new List<Guid>();
 
         /// <summary>
         /// Id of the current visible Desktop.
         /// </summary>
-        private Guid currentDesktop;
+        private Guid _currentDesktop;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VirtualDesktopHelper"/> class.
@@ -69,6 +75,8 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 return;
             }
 
+            _isWindowsEleven = OSVersionHelper.IsWindows11();
+            _userSessionId = Process.GetCurrentProcess().SessionId;
             _desktopListAutoUpdate = desktopListUpdate;
             UpdateDesktopList();
         }
@@ -88,46 +96,51 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// <remarks>If we can not read from registry, we set the list/guid to empty values.</remarks>
         public void UpdateDesktopList()
         {
-            // Registry paths
-            int userSessionId = Process.GetCurrentProcess().SessionId;
-            string registrySessionVirtualDesktops = $"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\{userSessionId}\\VirtualDesktops";
-            string registryExplorerVirtualDesktops = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops";
+            string registrySessionVirtualDesktops = $"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\{_userSessionId}\\VirtualDesktops"; // Windows 10
+            string registryExplorerVirtualDesktops = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops"; // Windows 11
 
             // List of all desktops
-            byte[] allDeskValue = (byte[])Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false)?.GetValue("VirtualDesktopIDs", null);
-            if (allDeskValue != null)
+            using RegistryKey virtualDestktopKey = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false);
+            if (virtualDestktopKey != null)
             {
-                // We clear only, if we can read from registry. Otherwise we keep the existing values.
-                availableDesktops.Clear();
-
-                // Each guid has a length of 16 elements
-                int numberOfDesktops = allDeskValue.Length / 16;
-                for (int i = 0; i < numberOfDesktops; i++)
+                byte[] allDeskValue = (byte[])virtualDestktopKey.GetValue("VirtualDesktopIDs", null);
+                if (allDeskValue != null)
                 {
-                    byte[] guidArray = new byte[16];
-                    Array.ConstrainedCopy(allDeskValue, i * 16, guidArray, 0, 16);
-                    availableDesktops.Add(new Guid(guidArray));
+                    // We clear only, if we can read from registry. Otherwise we keep the existing values.
+                    _availableDesktops.Clear();
+
+                    // Each guid has a length of 16 elements
+                    int numberOfDesktops = allDeskValue.Length / 16;
+                    for (int i = 0; i < numberOfDesktops; i++)
+                    {
+                        byte[] guidArray = new byte[16];
+                        Array.ConstrainedCopy(allDeskValue, i * 16, guidArray, 0, 16);
+                        _availableDesktops.Add(new Guid(guidArray));
+                    }
                 }
-            }
-            else
-            {
-                Log.Debug("VirtualDesktopHelper.UpdateDesktopList() failed to read the list of existing desktops form registry.", typeof(VirtualDesktopHelper));
+                else
+                {
+                    Log.Debug("VirtualDesktopHelper.UpdateDesktopList() failed to read the list of existing desktops form registry.", typeof(VirtualDesktopHelper));
+                }
             }
 
             // Guid for current desktop
-            var currentDeskSessionValue = Registry.CurrentUser.OpenSubKey(registrySessionVirtualDesktops, false)?.GetValue("CurrentVirtualDesktop", null); // Windows 10
-            var currentDeskExplorerValue = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false)?.GetValue("CurrentVirtualDesktop", null); // Windows 11
-            var currentDeskValue = _IsWindowsEleven ? currentDeskExplorerValue : currentDeskSessionValue;
-            if (currentDeskValue != null)
+            var virtualDesktopsKeyName = _isWindowsEleven ? registryExplorerVirtualDesktops : registrySessionVirtualDesktops;
+            using RegistryKey virtualDesktopsKey = Registry.CurrentUser.OpenSubKey(virtualDesktopsKeyName, false);
+            if (virtualDesktopsKey != null)
             {
-                currentDesktop = new Guid((byte[])currentDeskValue);
-            }
-            else
-            {
-                // The registry value is missing when the user hasn't switched the desktop at least one time before reading the registry. In this case we can set it to desktop one.
-                // We can only set it to desktop one, if we have at least one desktop in the desktops list. Otherwise we keep the existing value.
-                Log.Debug("VirtualDesktopHelper.UpdateDesktopList() failed to read the id for the current desktop form registry.", typeof(VirtualDesktopHelper));
-                currentDesktop = availableDesktops.Count >= 1 ? availableDesktops[0] : currentDesktop;
+                var currentVirtualDesktopValue = virtualDesktopsKey.GetValue("CurrentVirtualDesktop", null);
+                if (currentVirtualDesktopValue != null)
+                {
+                    _currentDesktop = new Guid((byte[])currentVirtualDesktopValue);
+                }
+                else
+                {
+                    // The registry value is missing when the user hasn't switched the desktop at least one time before reading the registry. In this case we can set it to desktop one.
+                    // We can only set it to desktop one, if we have at least one desktop in the desktops list. Otherwise we keep the existing value.
+                    Log.Debug("VirtualDesktopHelper.UpdateDesktopList() failed to read the id for the current desktop form registry.", typeof(VirtualDesktopHelper));
+                    _currentDesktop = _availableDesktops.Count >= 1 ? _availableDesktops[0] : _currentDesktop;
+                }
             }
         }
 
@@ -142,7 +155,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 UpdateDesktopList();
             }
 
-            return availableDesktops;
+            return _availableDesktops;
         }
 
         /// <summary>
@@ -157,7 +170,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             List<VDesktop> list = new List<VDesktop>();
-            foreach (Guid d in availableDesktops)
+            foreach (Guid d in _availableDesktops)
             {
                 list.Add(CreateVDesktopInstance(d));
             }
@@ -176,7 +189,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 UpdateDesktopList();
             }
 
-            return availableDesktops.Count;
+            return _availableDesktops.Count;
         }
 
         /// <summary>
@@ -190,7 +203,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 UpdateDesktopList();
             }
 
-            return currentDesktop;
+            return _currentDesktop;
         }
 
         /// <summary>
@@ -204,7 +217,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 UpdateDesktopList();
             }
 
-            return CreateVDesktopInstance(currentDesktop);
+            return CreateVDesktopInstance(_currentDesktop);
         }
 
         /// <summary>
@@ -219,7 +232,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 UpdateDesktopList();
             }
 
-            return currentDesktop == desktop;
+            return _currentDesktop == desktop;
         }
 
         /// <summary>
@@ -235,7 +248,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             // Adding +1 because index starts with zero and humans start counting with one.
-            return availableDesktops.IndexOf(desktop) + 1;
+            return _availableDesktops.IndexOf(desktop) + 1;
         }
 
         /// <summary>
@@ -255,7 +268,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             var defaultName = string.Format(System.Globalization.CultureInfo.InvariantCulture, Resources.VirtualDesktopHelper_Desktop, GetDesktopNumber(desktop));
 
             string registryPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + desktop.ToString().ToUpper(System.Globalization.CultureInfo.InvariantCulture) + "}";
-            RegistryKey deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
+            using RegistryKey deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
             var desktopName = deskSubKey?.GetValue("Name");
 
             return (desktopName != null) ? (string)desktopName : defaultName;
@@ -448,7 +461,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 return false;
             }
 
-            Guid newDesktop = availableDesktops[windowDesktopNumber - 1];
+            Guid newDesktop = _availableDesktops[windowDesktopNumber - 1];
             return MoveWindowToDesktop(hWindow, newDesktop);
         }
 
@@ -479,7 +492,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 return false;
             }
 
-            Guid newDesktop = availableDesktops[windowDesktopNumber + 1];
+            Guid newDesktop = _availableDesktops[windowDesktopNumber + 1];
             return MoveWindowToDesktop(hWindow, newDesktop);
         }
 
@@ -510,22 +523,6 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 IsAllDesktopsView = isAllDesktops,
                 Position = GetDesktopPositionType(desktop),
             };
-        }
-
-        /// <summary>
-        /// Check if we running on Windows 11 or later.
-        /// </summary>
-        /// <returns><see langword="True"/> if yes and <see langword="false"/> if no.</returns>
-        private static bool IsWindowsElevenOrLater()
-        {
-            var currentBuildString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false)?.GetValue("CurrentBuild", null) ?? uint.MinValue;
-            uint currentBuild = uint.TryParse(currentBuildString as string, out var build) ? build : uint.MinValue;
-
-            var currentBuildNumberString = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", false)?.GetValue("CurrentBuildNumber", null) ?? uint.MinValue;
-            uint currentBuildNumber = uint.TryParse(currentBuildNumberString as string, out var buildNumber) ? buildNumber : uint.MinValue;
-
-            uint currentWindowsBuild = currentBuild != uint.MinValue ? currentBuild : currentBuildNumber;
-            return currentWindowsBuild >= 22000;
         }
     }
 

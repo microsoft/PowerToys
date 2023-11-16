@@ -550,6 +550,7 @@ namespace PowerLauncher.ViewModel
                 var queryTimer = new System.Diagnostics.Stopwatch();
                 queryTimer.Start();
                 _updateSource?.Cancel();
+                _updateSource?.Dispose();
                 var currentUpdateSource = new CancellationTokenSource();
                 _updateSource = currentUpdateSource;
                 var currentCancellationToken = _updateSource.Token;
