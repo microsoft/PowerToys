@@ -4,7 +4,7 @@
 
 using System.Linq;
 
-namespace FancyZonesEditor.Utils
+namespace FancyZonesEditorCommon.Utils
 {
     public static class StringUtils
     {

@@ -4,9 +4,7 @@
 
 using System.Text.Json;
 
-using FancyZonesEditor.Utils;
-
-namespace FancyZonesEditor
+namespace FancyZonesEditorCommon.Utils
 {
     public class DashCaseNamingPolicy : JsonNamingPolicy
     {
