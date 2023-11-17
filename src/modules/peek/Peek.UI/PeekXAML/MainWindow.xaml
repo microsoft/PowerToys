@@ -22,8 +22,8 @@
             <KeyboardAccelerator Key="Up" Invoked="PreviousNavigationInvoked" />
             <KeyboardAccelerator Key="Right" Invoked="NextNavigationInvoked" />
             <KeyboardAccelerator Key="Down" Invoked="NextNavigationInvoked" />
-            <KeyboardAccelerator Key="Escape" Invoked="EscKeyInvoked" />
-            <KeyboardAccelerator Key="W" Modifiers="Control" Invoked="EscKeyInvoked" />
+            <KeyboardAccelerator Key="Escape" Invoked="CloseInvoked" />
+            <KeyboardAccelerator Key="W" Modifiers="Control" Invoked="CloseInvoked" />
         </Grid.KeyboardAccelerators>
 
         <Grid.RowDefinitions>
