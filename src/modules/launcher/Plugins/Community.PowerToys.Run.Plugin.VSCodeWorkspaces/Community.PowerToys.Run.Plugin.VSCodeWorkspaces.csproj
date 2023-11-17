@@ -59,16 +59,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="Images\folder.dark.png">
+		<None Update="Images\folder.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="Images\folder.light.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Images\monitor.dark.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Images\monitor.light.png">
+		<None Update="Images\monitor.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Images\code.dark.png">

@@ -145,12 +145,12 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
                 using var vsCodeIconBitmap = vsCodeIcon.ToBitmap();
 
                 // Workspace
-                using var folderIcon = (Bitmap)Image.FromFile(Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images//folder.light.png"));
+                using var folderIcon = (Bitmap)Image.FromFile(Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images//folder.png"));
                 using var bitmapFolderIcon = BitmapOverlayToCenter(folderIcon, vsCodeIconBitmap);
                 instance.WorkspaceIconBitMap = Bitmap2BitmapImage(bitmapFolderIcon);
 
                 // Remote
-                using var monitorIcon = (Bitmap)Image.FromFile(Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images//monitor.light.png"));
+                using var monitorIcon = (Bitmap)Image.FromFile(Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images//monitor.png"));
                 using var bitmapMonitorIcon = BitmapOverlayToCenter(monitorIcon, vsCodeIconBitmap);
                 instance.RemoteIconBitMap = Bitmap2BitmapImage(bitmapMonitorIcon);
 
