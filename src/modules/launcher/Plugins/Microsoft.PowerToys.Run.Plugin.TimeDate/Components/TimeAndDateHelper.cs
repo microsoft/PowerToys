@@ -113,7 +113,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             else if (Regex.IsMatch(input, @"^ft\d+$") && long.TryParse(input.TrimStart("ft".ToCharArray()), out long secondsFt))
             {
                 // Windows file time
-                // DateTime.FromFileTime retuns as local time.
+                // DateTime.FromFileTime returns as local time.
                 timestamp = DateTime.FromFileTime(secondsFt);
                 return true;
             }
