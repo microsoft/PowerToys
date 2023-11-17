@@ -23,7 +23,10 @@
             <KeyboardAccelerator Key="Right" Invoked="NextNavigationInvoked" />
             <KeyboardAccelerator Key="Down" Invoked="NextNavigationInvoked" />
             <KeyboardAccelerator Key="Escape" Invoked="CloseInvoked" />
-            <KeyboardAccelerator Key="W" Modifiers="Control" Invoked="CloseInvoked" />
+            <KeyboardAccelerator
+                Key="W"
+                Invoked="CloseInvoked"
+                Modifiers="Control" />
         </Grid.KeyboardAccelerators>
 
         <Grid.RowDefinitions>
