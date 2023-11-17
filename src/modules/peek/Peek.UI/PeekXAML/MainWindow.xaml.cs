@@ -121,6 +121,11 @@ namespace Peek.UI
             Uninitialize();
         }
 
+        private void CtrlWInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            Uninitialize();
+        }
+
         private void Initialize(Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {
             var bootTime = new System.Diagnostics.Stopwatch();

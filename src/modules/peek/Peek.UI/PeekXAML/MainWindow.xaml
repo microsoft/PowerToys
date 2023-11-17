@@ -23,6 +23,7 @@
             <KeyboardAccelerator Key="Right" Invoked="NextNavigationInvoked" />
             <KeyboardAccelerator Key="Down" Invoked="NextNavigationInvoked" />
             <KeyboardAccelerator Key="Escape" Invoked="EscKeyInvoked" />
+            <KeyboardAccelerator Key="W" Modifiers="Control,Shift" Invoked="CtrlWInvoked" />
         </Grid.KeyboardAccelerators>
 
         <Grid.RowDefinitions>
