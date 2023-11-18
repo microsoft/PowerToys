@@ -10,7 +10,7 @@ using System.IO;
 
 //// Based on https://github.com/phoboslab/qoi/blob/master/qoi.h
 
-namespace PreviewHandlerCommon.Utilities
+namespace Microsoft.PowerToys.FilePreviewCommon
 {
     /// <summary>
     /// QOI Image helper.

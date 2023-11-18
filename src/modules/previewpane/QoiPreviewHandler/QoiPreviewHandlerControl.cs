@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using Common;
+using Microsoft.PowerToys.FilePreviewCommon;
 using Microsoft.PowerToys.PreviewHandler.Qoi.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
-using PreviewHandlerCommon.Utilities;
 
 namespace Microsoft.PowerToys.PreviewHandler.Qoi
 {
