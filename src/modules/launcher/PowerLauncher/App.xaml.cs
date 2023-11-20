@@ -141,6 +141,9 @@ namespace PowerLauncher
 
                 PluginManager.InitializePlugins(API);
 
+                _mainVM.RefreshPluginsOverview();
+                _settingsReader.SetRefreshPluginsOverviewCallback(() => _mainVM.RefreshPluginsOverview());
+
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
 
