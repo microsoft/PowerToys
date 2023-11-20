@@ -411,7 +411,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             c.Keys = HotkeySettings.GetKeysList();
 
             // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
-            // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not neccessary therefore
+            // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
             c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
 
             shortcutDialog.XamlRoot = this.XamlRoot;
