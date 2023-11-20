@@ -7,6 +7,7 @@ using System.Buffers.Binary;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Text;
 
 //// Based on https://github.com/phoboslab/qoi/blob/master/qoi.h
 
@@ -55,116 +56,115 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                 throw new ArgumentException("Not enough data for a QOI file");
             }
 
-            using var reader = new BinaryReader(stream);
+            Bitmap? bitmap = null;
 
-            var headerMagic = ReadUInt32BigEndian(reader);
-
-            if (headerMagic != QOI_MAGIC)
+            try
             {
-                throw new ArgumentException("Invalid QOI file header");
-            }
+                using var reader = new BinaryReader(stream, Encoding.UTF8, true);
 
-            var width = ReadUInt32BigEndian(reader);
-            var height = ReadUInt32BigEndian(reader);
-            var channels = reader.ReadByte();
-            var colorSpace = reader.ReadByte();
+                var headerMagic = ReadUInt32BigEndian(reader);
 
-            if (width == 0 || height == 0 || channels < 3 || channels > 4 || colorSpace > 1 || height >= QOI_PIXELS_MAX / width)
-            {
-                throw new ArgumentException("Invalid QOI file data");
-            }
-
-            var pixelsCount = width * height;
-            var pixels = new QoiPixel[pixelsCount];
-            var index = new QoiPixel[64];
-
-            var pixel = new QoiPixel(0, 0, 0, 255);
-
-            var run = 0;
-            var chunksLen = fileSize - QOI_PADDING_LENGTH;
-
-            for (var pixelIndex = 0; pixelIndex < pixelsCount; pixelIndex++)
-            {
-                if (run > 0)
+                if (headerMagic != QOI_MAGIC)
                 {
-                    run--;
-                }
-                else if (stream.Position < chunksLen)
-                {
-                    var b1 = reader.ReadByte();
-
-                    if (b1 == QOI_OP_RGB)
-                    {
-                        pixel.R = reader.ReadByte();
-                        pixel.G = reader.ReadByte();
-                        pixel.B = reader.ReadByte();
-                    }
-                    else if (b1 == QOI_OP_RGBA)
-                    {
-                        pixel.R = reader.ReadByte();
-                        pixel.G = reader.ReadByte();
-                        pixel.B = reader.ReadByte();
-                        pixel.A = reader.ReadByte();
-                    }
-                    else if ((b1 & QOI_MASK_2) == QOI_OP_INDEX)
-                    {
-                        pixel = index[b1];
-                    }
-                    else if ((b1 & QOI_MASK_2) == QOI_OP_DIFF)
-                    {
-                        pixel.R += (byte)(((b1 >> 4) & 0x03) - 2);
-                        pixel.G += (byte)(((b1 >> 2) & 0x03) - 2);
-                        pixel.B += (byte)((b1 & 0x03) - 2);
-                    }
-                    else if ((b1 & QOI_MASK_2) == QOI_OP_LUMA)
-                    {
-                        var b2 = reader.ReadByte();
-                        var vg = (b1 & 0x3f) - 32;
-                        pixel.R += (byte)(vg - 8 + ((b2 >> 4) & 0x0f));
-                        pixel.G += (byte)vg;
-                        pixel.B += (byte)(vg - 8 + (b2 & 0x0f));
-                    }
-                    else if ((b1 & QOI_MASK_2) == QOI_OP_RUN)
-                    {
-                        run = b1 & 0x3f;
-                    }
-
-                    index[pixel.GetColorHash() % 64] = pixel;
+                    throw new ArgumentException("Invalid QOI file header");
                 }
 
-                pixels[pixelIndex] = pixel;
-            }
+                var width = ReadUInt32BigEndian(reader);
+                var height = ReadUInt32BigEndian(reader);
+                var channels = reader.ReadByte();
+                var colorSpace = reader.ReadByte();
 
-            return ConvertToBitmap(width, height, channels, pixels);
-        }
-
-        private static Bitmap ConvertToBitmap(uint width, uint height, byte channels, QoiPixel[] pixels)
-        {
-            var pixelFormat = channels == 4 ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb;
-            var bitmap = new Bitmap((int)width, (int)height, pixelFormat);
-
-            var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, pixelFormat);
-
-            unsafe
-            {
-                for (var pixelIndex = 0; pixelIndex < pixels.Length; pixelIndex++)
+                if (width == 0 || height == 0 || channels < 3 || channels > 4 || colorSpace > 1 || height >= QOI_PIXELS_MAX / width)
                 {
-                    var pixel = pixels[pixelIndex];
-                    var bitmapPixel = (byte*)bitmapData.Scan0 + (pixelIndex * channels);
+                    throw new ArgumentException("Invalid QOI file data");
+                }
 
-                    bitmapPixel[0] = pixel.B;
-                    bitmapPixel[1] = pixel.G;
-                    bitmapPixel[2] = pixel.R;
-                    if (channels == 4)
+                var pixelFormat = channels == 4 ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb;
+
+                bitmap = new Bitmap((int)width, (int)height, pixelFormat);
+
+                var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, pixelFormat);
+                var dataLength = bitmapData.Height * bitmapData.Stride;
+
+                var index = new QoiPixel[64];
+                var pixel = new QoiPixel(0, 0, 0, 255);
+
+                var run = 0;
+                var chunksLen = fileSize - QOI_PADDING_LENGTH;
+
+                for (var dataIndex = 0; dataIndex < dataLength; dataIndex += channels)
+                {
+                    if (run > 0)
                     {
-                        bitmapPixel[3] = pixel.A;
+                        run--;
+                    }
+                    else if (stream.Position < chunksLen)
+                    {
+                        var b1 = reader.ReadByte();
+
+                        if (b1 == QOI_OP_RGB)
+                        {
+                            pixel.R = reader.ReadByte();
+                            pixel.G = reader.ReadByte();
+                            pixel.B = reader.ReadByte();
+                        }
+                        else if (b1 == QOI_OP_RGBA)
+                        {
+                            pixel.R = reader.ReadByte();
+                            pixel.G = reader.ReadByte();
+                            pixel.B = reader.ReadByte();
+                            pixel.A = reader.ReadByte();
+                        }
+                        else if ((b1 & QOI_MASK_2) == QOI_OP_INDEX)
+                        {
+                            pixel = index[b1];
+                        }
+                        else if ((b1 & QOI_MASK_2) == QOI_OP_DIFF)
+                        {
+                            pixel.R += (byte)(((b1 >> 4) & 0x03) - 2);
+                            pixel.G += (byte)(((b1 >> 2) & 0x03) - 2);
+                            pixel.B += (byte)((b1 & 0x03) - 2);
+                        }
+                        else if ((b1 & QOI_MASK_2) == QOI_OP_LUMA)
+                        {
+                            var b2 = reader.ReadByte();
+                            var vg = (b1 & 0x3f) - 32;
+                            pixel.R += (byte)(vg - 8 + ((b2 >> 4) & 0x0f));
+                            pixel.G += (byte)vg;
+                            pixel.B += (byte)(vg - 8 + (b2 & 0x0f));
+                        }
+                        else if ((b1 & QOI_MASK_2) == QOI_OP_RUN)
+                        {
+                            run = b1 & 0x3f;
+                        }
+
+                        index[pixel.GetColorHash() % 64] = pixel;
+                    }
+
+                    unsafe
+                    {
+                        var bitmapPixel = (byte*)bitmapData.Scan0 + dataIndex;
+
+                        bitmapPixel[0] = pixel.B;
+                        bitmapPixel[1] = pixel.G;
+                        bitmapPixel[2] = pixel.R;
+                        if (channels == 4)
+                        {
+                            bitmapPixel[3] = pixel.A;
+                        }
                     }
                 }
+
+                bitmap.UnlockBits(bitmapData);
+
+                return bitmap;
             }
+            catch
+            {
+                bitmap?.Dispose();
 
-            bitmap.UnlockBits(bitmapData);
-
-            return bitmap;
+                throw;
+            }
         }
 
         private static uint ReadUInt32BigEndian(BinaryReader reader)
