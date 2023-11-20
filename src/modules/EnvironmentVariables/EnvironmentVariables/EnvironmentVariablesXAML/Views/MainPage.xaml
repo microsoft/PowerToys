@@ -635,7 +635,8 @@
                             <Flyout
                                 x:Name="AddVariableFlyout"
                                 Closed="AddVariableFlyout_Closed"
-                                Placement="Right">
+                                Placement="Right"
+                                ShouldConstrainToRootBounds="False">
                                 <Grid Width="320" Height="480">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />

@@ -14,8 +14,8 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="#FF34424d" />
-            <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
+            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="{StaticResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SolidBackgroundBrush" Color="{StaticResource SystemColorWindowTextColor}" />
             <Color x:Key="InfoBarInformationalSeverityIconBackground">#FF5fb2f2</Color>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>

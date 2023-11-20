@@ -1135,6 +1135,21 @@
   <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
     <value>Color</value>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Header" xml:space="preserve">
+    <value>Quite Ok Image</value>
+    <comment>File type, do not translate</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Description" xml:space="preserve">
+    <value>.qoi</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Header" xml:space="preserve">
+    <value>Quite OK Image</value>
+    <comment>File type, do not translate</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
+    <value>.qoi</value>
+    <comment>File extension, should not be altered</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
     <comment>File type, do not translate</comment>
@@ -3242,6 +3257,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TextExtractor_SupportedLanguages.Title" xml:space="preserve">
     <value>Text Extractor can only recognize languages that have the OCR pack installed.</value>
   </data>
+  <data name="TextExtractor_UseSnippingToolWarning.Title" xml:space="preserve">
+    <value>It is recommended to use the Snipping Tool instead of the TextExtractor module.</value>
+  </data>
   <data name="TextExtractor_SupportedLanguages_Link.Content" xml:space="preserve">
     <value>Learn more about supported languages</value>
   </data>
@@ -3324,6 +3342,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
     <value>Czech</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Danish.Content" xml:space="preserve">
+    <value>Danish</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Gaeilge.Content" xml:space="preserve">
     <value>Gaeilge</value>
     <comment>Gaelic language spoken in Ireland</comment>
@@ -3371,8 +3392,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Portuguese.Content" xml:space="preserve">
     <value>Portuguese</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Slovakian.Content" xml:space="preserve">
-    <value>Slovakian</value>
+  <data name="QuickAccent_SelectedLanguage_Slovak.Content" xml:space="preserve">
+    <value>Slovak</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
     <value>Spanish</value>

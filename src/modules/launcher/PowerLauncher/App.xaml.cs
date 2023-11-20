@@ -9,27 +9,20 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
-
 using Common.UI;
-
 using interop;
-
 using ManagedCommon;
-
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
-
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
-
 using Wox;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
-
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -148,6 +141,9 @@ namespace PowerLauncher
 
                 PluginManager.InitializePlugins(API);
 
+                _mainVM.RefreshPluginsOverview();
+                _settingsReader.SetRefreshPluginsOverviewCallback(() => _mainVM.RefreshPluginsOverview());
+
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
 
@@ -155,8 +151,6 @@ namespace PowerLauncher
 
                 _settingsReader.ReadSettingsOnChange();
 
-                _mainVM.MainWindowVisibility = Visibility.Visible;
-                _mainVM.ColdStartFix();
                 _themeManager.ThemeChanged += OnThemeChanged;
                 textToLog.AppendLine("End PowerToys Run startup ----------------------------------------------------  ");
 
@@ -164,11 +158,6 @@ namespace PowerLauncher
 
                 Log.Info(textToLog.ToString(), GetType());
                 PowerToysTelemetry.Log.WriteEvent(new LauncherBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
-
-                // [Conditional("RELEASE")]
-                // check update every 5 hours
-
-                // check updates on startup
             });
         }
 

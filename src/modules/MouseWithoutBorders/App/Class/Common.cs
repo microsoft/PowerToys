@@ -349,8 +349,6 @@ namespace MouseWithoutBorders
                     _ = Process.Start(Application.ExecutablePath, desktop);
                     LogDebug($"Started on desktop {desktop}");
 
-                    Thread.SuspendAllThreadsBut(Thread.CurrentThread.ManagedThreadId);
-
                     Process.GetCurrentProcess().KillProcess(true);
                 },
                     $"{actionName} watchdog").Start();
