@@ -7,10 +7,9 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Accessibility;
-using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin.Logger;
 
-namespace Microsoft.Plugin.Program.Programs
+namespace Wox.Infrastructure
 {
     public class ShellLinkHelper : IShellLinkHelper
     {
@@ -142,7 +141,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (System.IO.FileNotFoundException ex)
             {
-                ProgramLogger.Exception("Path could not be retrieved", ex, GetType(), path);
+                Log.Exception("Path could not be retrieved", ex, GetType(), path);
                 return string.Empty;
             }
 
@@ -165,7 +164,7 @@ namespace Microsoft.Plugin.Program.Programs
                     ((IShellLinkW)link).GetDescription(buffer, MAX_PATH);
                     Description = buffer.ToString();
                 }
-                catch (Exception e)
+                catch (System.Exception e)
                 {
                     Log.Exception($"Failed to fetch description for {target}, {e.Message}", e, GetType());
                     Description = string.Empty;

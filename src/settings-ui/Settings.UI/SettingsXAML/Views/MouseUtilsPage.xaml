@@ -288,8 +288,8 @@
                                     <TextBlock x:Uid="EditTooltip" />
                                 </ToolTipService.ToolTip>
                                 <Button.Flyout>
-                                    <Flyout x:Uid="MouseJumpThumbnailSize_Edit">
-                                        <StackPanel Margin="0,12,0,0" Spacing="16">
+                                    <Flyout x:Uid="MouseJumpThumbnailSize_Edit" ShouldConstrainToRootBounds="False">
+                                        <StackPanel Spacing="16">
                                             <NumberBox
                                                 x:Uid="MouseUtils_MouseJump_ThumbnailSize_Edit_Width"
                                                 Width="140"

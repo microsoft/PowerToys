@@ -616,10 +616,10 @@ void close_settings_window()
 {
     if (g_settings_process_id != 0)
     {
-        HANDLE proc = OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id);
-        if (proc != INVALID_HANDLE_VALUE)
+        wil::unique_handle proc{ OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id) };
+        if (proc)
         {
-            TerminateProcess(proc, 0);
+            TerminateProcess(proc.get(), 0);
         }
     }
 }

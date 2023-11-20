@@ -99,8 +99,6 @@ std::string toMediaTypeString(GUID subtype)
         return "MFVideoFormat_D16";
     else if (subtype == MFVideoFormat_AYUV)
         return "MFVideoFormat_AYUV";
-    else if (subtype == MFVideoFormat_YUY2)
-        return "MFVideoFormat_YUY2";
     else if (subtype == MFVideoFormat_YVYU)
         return "MFVideoFormat_YVYU";
     else if (subtype == MFVideoFormat_YVU9)

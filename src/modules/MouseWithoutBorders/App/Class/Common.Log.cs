@@ -85,28 +85,6 @@ namespace MouseWithoutBorders
             return stack;
         }
 
-        internal static void SuspendAllThreadsBut(int threadId)
-        {
-            lock (ThreadsLock)
-            {
-#pragma warning disable 618 // Temporary
-                threads.Where(t => t.IsAlive && t.ManagedThreadId != threadId).ToList().ForEach(
-                    t =>
-                    {
-                        try
-                        {
-                            t.Suspend();
-                        }
-                        catch (Exception)
-                        {
-                            // This method is suspending every thread so that it can kill the process right after restarting.
-                            // Makes no sense to crash on a thread suspension fail, since we're killing the process afterwards, anyway.
-                        }
-                    });
-#pragma warning restore 618
-            }
-        }
-
         internal void SetApartmentState(ApartmentState apartmentState)
         {
             thread.SetApartmentState(apartmentState);
