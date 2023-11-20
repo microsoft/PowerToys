@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GcodePreviewHandler.h"
+#include "../powerpreview/powerpreviewConstants.h"
 
 #include <shellapi.h>
 #include <Shlwapi.h>
@@ -9,6 +10,7 @@
 #include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/process_path.h>
+#include <common/Themes/windows_colors.h>
 
 extern HINSTANCE g_hInst;
 extern long g_cDllRef;
@@ -202,6 +204,8 @@ IFACEMETHODIMP GcodePreviewHandler::Unload()
 
 IFACEMETHODIMP GcodePreviewHandler::SetBackgroundColor(COLORREF color)
 {
+    HBRUSH brush = CreateSolidBrush(WindowsColors::is_dark_mode() ? powerpreviewConstants::DARK_THEME_COLOR : powerpreviewConstants::LIGHT_THEME_COLOR);
+    SetClassLongPtr(m_hwndParent, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(brush));
     return S_OK;
 }
 

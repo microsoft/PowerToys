@@ -84,33 +84,31 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     newrow.emplace_back(std::make_unique<SingleKeyRemapControl>(parent, row, 1));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
-    row.Padding({ 10, 10, 10, 10 });
+    row.Padding({ 10, 15, 10, 5 });
+    row.Margin({ 0, 0, 0, 2 });
     row.Orientation(Orientation::Horizontal);
-    auto brush = Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundListLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>();
-    if (keyboardRemapControlObjects.size() % 2)
-    {
-        row.Background(brush);
-    }
+    row.Background(Application::Current().Resources().Lookup(box_value(L"CardBackgroundFillColorDefaultBrush")).as<Media::Brush>());
+    row.BorderBrush(Application::Current().Resources().Lookup(box_value(L"CardStrokeColorDefaultBrush")).as<Media::Brush>());
+    row.BorderThickness({ 0, 1, 0, 1 });
 
     // SingleKeyRemapControl for the original key.
     auto originalElement = keyboardRemapControlObjects.back()[0]->getSingleKeyRemapControl();
-    originalElement.Width(EditorConstants::RemapTableDropDownWidth + EditorConstants::ShortcutTableDropDownSpacing);
+    originalElement.Width(EditorConstants::RemapTableDropDownWidth + EditorConstants::RemapTableDropDownSpacing);
     row.Children().Append(originalElement);
 
     // Arrow icon
-    FontIcon arrowIcon;
-    arrowIcon.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
-    arrowIcon.Glyph(L"\xE72A");
+    SymbolIcon arrowIcon(Symbol::Forward);
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
     auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, EditorConstants::TableArrowColWidth).as<StackPanel>();
     arrowIconContainer.Orientation(Orientation::Vertical);
     arrowIconContainer.VerticalAlignment(VerticalAlignment::Center);
+    arrowIconContainer.Margin({ 0, 0, 0, 10 });
     row.Children().Append(arrowIconContainer);
 
     // SingleKeyRemapControl for the new remap key
     auto targetElement = keyboardRemapControlObjects.back()[1]->getSingleKeyRemapControl();
-    targetElement.Width(EditorConstants::ShortcutTargetColumnWidth);
+    targetElement.Width(EditorConstants::RemapTargetColumnWidth);
     row.Children().Append(targetElement);
 
     // Set the key text if the two keys are not null (i.e. default args)
@@ -135,13 +133,11 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteRemapKeys;
-    FontIcon deleteSymbol;
-    deleteSymbol.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
-    deleteSymbol.Glyph(L"\xE74D");
-    deleteRemapKeys.Content(deleteSymbol);
+    deleteRemapKeys.Content(SymbolIcon(Symbol::Delete));
     deleteRemapKeys.Background(Media::SolidColorBrush(Colors::Transparent()));
     deleteRemapKeys.HorizontalAlignment(HorizontalAlignment::Center);
-    deleteRemapKeys.Click([&, parent, row, brush, deleteRemapKeys](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    deleteRemapKeys.Margin({ 0, 0, 0, 10 });
+    deleteRemapKeys.Click([&, parent, row, deleteRemapKeys](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         uint32_t rowIndex;
         // Get index of delete button
         UIElementCollection children = parent.Children();
@@ -157,7 +153,6 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         for (uint32_t i = rowIndex + 1; i < children.Size(); i++)
         {
             StackPanel row = children.GetAt(i).as<StackPanel>();
-            row.Background(i % 2 ? brush : Media::SolidColorBrush(Colors::Transparent()));
             StackPanel sourceCol = row.Children().GetAt(0).as<StackPanel>();
             StackPanel targetCol = row.Children().GetAt(2).as<StackPanel>();
             Button delButton = row.Children().GetAt(3).as<Button>();
@@ -224,8 +219,6 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     // ContentDialog requires manually setting the XamlRoot (https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectRemapKeyBox.XamlRoot(xamlRoot);
     detectRemapKeyBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPEKEY_TITLE)));
-    detectRemapKeyBox.IsPrimaryButtonEnabled(false);
-    detectRemapKeyBox.IsSecondaryButtonEnabled(false);
 
     // Get the linked text block for the "Type Key" button that was clicked
     ComboBox linkedRemapDropDown = UIHelpers::GetSiblingElement(sender).as<ComboBox>();
@@ -269,14 +262,13 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         onReleaseEnter();
     };
 
-    TextBlock primaryButtonText;
-    primaryButtonText.Text(GET_RESOURCE_STRING(IDS_OK_BUTTON));
+    // OK button
+    detectRemapKeyBox.DefaultButton(ContentDialogButton::Primary);
+    detectRemapKeyBox.PrimaryButtonText(GET_RESOURCE_STRING(IDS_OK_BUTTON));
+    detectRemapKeyBox.PrimaryButtonClick([onAccept](winrt::Windows::Foundation::IInspectable const& sender, ContentDialogButtonClickEventArgs const& args) {
+        // Cancel default dialog events
+        args.Cancel(true);
 
-    Button primaryButton;
-    primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    primaryButton.Margin({ 2, 2, 2, 2 });
-    primaryButton.Content(primaryButtonText);
-    primaryButton.Click([onAccept](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         onAccept();
     });
 
@@ -284,12 +276,10 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
         std::bind(&KBMEditor::KeyboardManagerState::SelectDetectedRemapKey, &keyboardManagerState, std::placeholders::_1),
-        [primaryButton, onPressEnter, detectRemapKeyBox](DWORD) {
+        [onPressEnter, detectRemapKeyBox](DWORD) {
             detectRemapKeyBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [primaryButton, onPressEnter] {
-                    // Use the base medium low brush to be consistent with the theme
-                    primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
+                [onPressEnter] {
                     onPressEnter();
                 });
         },
@@ -300,9 +290,6 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
                     onReleaseEnter();
                 });
         });
-
-    TextBlock cancelButtonText;
-    cancelButtonText.Text(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
 
     auto onCancel = [&keyboardManagerState,
                      detectRemapKeyBox,
@@ -317,13 +304,12 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         unregisterKeys();
     };
 
-    Button cancelButton;
-    cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    cancelButton.Margin({ 2, 2, 2, 2 });
-    cancelButton.Content(cancelButtonText);
-
     // Cancel button
-    cancelButton.Click([onCancel](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    detectRemapKeyBox.CloseButtonText(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
+    detectRemapKeyBox.CloseButtonClick([onCancel](winrt::Windows::Foundation::IInspectable const& sender, ContentDialogButtonClickEventArgs const& args) {
+        // Cancel default dialog events
+        args.Cancel(true);
+
         onCancel();
     });
 
@@ -367,21 +353,6 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);
 
-    ColumnDefinition primaryButtonColumn;
-    ColumnDefinition cancelButtonColumn;
-
-    Grid buttonPanel;
-    buttonPanel.Margin({ 0, 20, 0, 0 });
-    buttonPanel.HorizontalAlignment(HorizontalAlignment::Stretch);
-    buttonPanel.ColumnDefinitions().Append(primaryButtonColumn);
-    buttonPanel.ColumnDefinitions().Append(cancelButtonColumn);
-    buttonPanel.SetColumn(primaryButton, 0);
-    buttonPanel.SetColumn(cancelButton, 1);
-
-    buttonPanel.Children().Append(primaryButton);
-    buttonPanel.Children().Append(cancelButton);
-
-    stackPanel.Children().Append(buttonPanel);
     try
     {
         // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.

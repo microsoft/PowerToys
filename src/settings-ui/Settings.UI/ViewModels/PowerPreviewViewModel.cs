@@ -129,6 +129,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _gcodeRenderIsEnabled = Settings.Properties.EnableGcodePreview;
             }
 
+            _qoiRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQoiPreviewEnabledValue();
+            if (_qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _qoiRenderEnabledStateIsGPOConfigured = true;
+                _qoiRenderIsEnabled = _qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _qoiRenderIsEnabled = Settings.Properties.EnableQoiPreview;
+            }
+
             _pdfThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPdfThumbnailsEnabledValue();
             if (_pdfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _pdfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -166,6 +178,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _stlThumbnailColor = Settings.Properties.StlThumbnailColor.Value;
+
+            _qoiThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQoiThumbnailsEnabledValue();
+            if (_qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _qoiThumbnailEnabledStateIsGPOConfigured = true;
+                _qoiThumbnailIsEnabled = _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _qoiThumbnailIsEnabled = Settings.Properties.EnableQoiThumbnail;
+            }
         }
 
         private GpoRuleConfigured _svgRenderEnabledGpoRuleConfiguration;
@@ -194,6 +218,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _gcodeRenderEnabledStateIsGPOConfigured;
         private bool _gcodeRenderIsEnabled;
 
+        private GpoRuleConfigured _qoiRenderEnabledGpoRuleConfiguration;
+        private bool _qoiRenderEnabledStateIsGPOConfigured;
+        private bool _qoiRenderIsEnabled;
+
         private GpoRuleConfigured _svgThumbnailEnabledGpoRuleConfiguration;
         private bool _svgThumbnailEnabledStateIsGPOConfigured;
         private bool _svgThumbnailIsEnabled;
@@ -210,6 +238,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _stlThumbnailEnabledStateIsGPOConfigured;
         private bool _stlThumbnailIsEnabled;
         private string _stlThumbnailColor;
+
+        private GpoRuleConfigured _qoiThumbnailEnabledGpoRuleConfiguration;
+        private bool _qoiThumbnailEnabledStateIsGPOConfigured;
+        private bool _qoiThumbnailIsEnabled;
 
         public bool SVGRenderIsEnabled
         {
@@ -614,6 +646,64 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     RaisePropertyChanged();
                 }
             }
+        }
+
+        public bool QOIRenderIsEnabled
+        {
+            get
+            {
+                return _qoiRenderIsEnabled;
+            }
+
+            set
+            {
+                if (_qoiRenderEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (value != _qoiRenderIsEnabled)
+                {
+                    _qoiRenderIsEnabled = value;
+                    Settings.Properties.EnableQoiPreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool IsQOIRenderEnabledGpoConfigured
+        {
+            get => _qoiRenderEnabledStateIsGPOConfigured;
+        }
+
+        public bool QOIThumbnailIsEnabled
+        {
+            get
+            {
+                return _qoiThumbnailIsEnabled;
+            }
+
+            set
+            {
+                if (_qoiThumbnailEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (value != _qoiThumbnailIsEnabled)
+                {
+                    _qoiThumbnailIsEnabled = value;
+                    Settings.Properties.EnableQoiThumbnail = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool IsQOIThumbnailEnabledGpoConfigured
+        {
+            get => _qoiThumbnailEnabledStateIsGPOConfigured;
         }
 
         public string GetSettingsSubPath()

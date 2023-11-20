@@ -56,6 +56,8 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_WITHOUT_BORDERS = L"ConfigureEnabledUtilityMouseWithoutBorders";
     const std::wstring POLICY_CONFIGURE_ENABLED_PEEK = L"ConfigureEnabledUtilityPeek";
     const std::wstring POLICY_CONFIGURE_ENABLED_ENVIRONMENT_VARIABLES = L"ConfigureEnabledUtilityEnvironmentVariables";
+    const std::wstring POLICY_CONFIGURE_ENABLED_QOI_PREVIEW = L"ConfigureEnabledUtilityFileExplorerQOIPreview";
+    const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
 
     // The registry value names for PowerToys installer and update policies.
     const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
@@ -366,7 +368,7 @@ namespace powertoys_gpo {
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MOUSE_WITHOUT_BORDERS);
     }
-    
+
     inline gpo_rule_configured_t getConfiguredPeekEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PEEK);
@@ -445,5 +447,15 @@ namespace powertoys_gpo {
             // If no individual plugin policy exists, we check the policy with the setting for all plugins.
             return getConfiguredValue(POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS);
         }        
+    }
+
+    inline gpo_rule_configured_t getConfiguredQoiPreviewEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_PREVIEW);
+    }
+
+    inline gpo_rule_configured_t getConfiguredQoiThumbnailsEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS);
     }
 }

@@ -49,6 +49,9 @@ namespace Microsoft.Interop.Tests
                     serverPipe.Start();
                     ClientPipe.Start();
 
+                    // Test can be flaky as the pipes are still being set up and we end up receiving no message. Wait for a bit to avoid that.
+                    Thread.Sleep(100);
+
                     ClientPipe.Send(testString);
                     reset.WaitOne();
 

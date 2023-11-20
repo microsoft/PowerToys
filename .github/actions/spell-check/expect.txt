@@ -174,6 +174,7 @@ BTNFACE
 Bto
 buf
 bugreport
+BUILDARCH
 BUILDNUMBER
 buildtask
 buildtransitive
@@ -387,6 +388,7 @@ Deact
 debian
 debugbreak
 DECLAR
+declatory
 declspec
 decryptor
 Dedup
@@ -608,7 +610,6 @@ findfast
 firefox
 FIXEDFILEINFO
 flyout
-flyouts
 FOF
 FOFX
 FOLDERID
@@ -983,7 +984,6 @@ lmcons
 LMEM
 LMENU
 lnk
-lnks
 LOADFROMFILE
 LOBYTE
 LOCALAPPDATA
@@ -1055,6 +1055,7 @@ majortype
 MAJORVERSION
 makecab
 MAKEINTRESOURCE
+MAKEINTRESOURCEA
 MAKEINTRESOURCEW
 makepri
 manifestdependency
@@ -1156,6 +1157,8 @@ MOUSEWHEEL
 MOVESIZEEND
 MOVESIZESTART
 mozilla
+MOZILLAPL
+MOZPL
 mpmc
 MRM
 MRT
@@ -1182,10 +1185,12 @@ msrc
 msstore
 mst
 msvc
+msvcp
 MTND
 Mul
 MULTIPLEUSE
 multizone
+muxc
 mvvm
 mwb
 MWBEx
@@ -1226,6 +1231,7 @@ netcore
 netcoreapp
 netcpl
 netframework
+Netscape
 netsetup
 netsh
 Neue
@@ -1234,6 +1240,7 @@ newdev
 newitem
 newpath
 newrow
+newsgroups
 Newtonsoft
 nielslaute
 NIF
@@ -1251,6 +1258,8 @@ NOCOPYBITS
 nodeca
 nodiscard
 nodoc
+NODRAWCAPTION
+NODRAWICON
 NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
@@ -1617,7 +1626,6 @@ renamable
 RENAMEONCOLLISION
 Renamer
 reparent
-reparented
 reparenting
 reparse
 reportbug
@@ -1711,7 +1719,6 @@ Scode
 scoobe
 SCOPEID
 screenshot
-screenshots
 scrollviewer
 sddl
 SDKDDK
@@ -1738,6 +1745,7 @@ SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
+setvariable
 SETWORKAREA
 setzero
 sfgao
@@ -1793,7 +1801,6 @@ sia
 SIATTRIBFLAGS
 SICHINT
 sid
-SIDs
 siex
 sigdn
 SIGNINGSCENARIO
@@ -2094,6 +2101,7 @@ VCINSTALLDIR
 vcm
 Vcpkg
 VCRT
+vcruntime
 vcvars
 VDesktop
 vdi
@@ -2136,6 +2144,7 @@ vsconfig
 VSCROLL
 vsetq
 VSM
+vso
 vsonline
 vstemplate
 VSTHRD
@@ -2162,7 +2171,6 @@ webpage
 websearch
 webserver
 website
-websites
 wekyb
 Wevtapi
 wgpocpl
@@ -2276,6 +2284,8 @@ wsl
 wss
 wstr
 wsz
+WTA
+WTNCA
 wtoi
 WTS
 wtsapi
