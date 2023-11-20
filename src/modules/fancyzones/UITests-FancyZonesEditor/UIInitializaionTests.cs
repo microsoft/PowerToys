@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,7 +7,10 @@ using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static FancyZonesEditorCommon.Data.AppliedLayouts;
+using static FancyZonesEditorCommon.Data.DefaultLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
+using static FancyZonesEditorCommon.Data.LayoutTemplates;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -16,7 +19,10 @@ namespace Microsoft.FancyZonesEditor.UITests
     {
         private static TestContext? _context;
         private static FancyZonesEditorSession? _session;
-        private static IOTestHelper? _ioHelper;
+        private static IOTestHelper? _editorParamsIOHelper;
+        private static IOTestHelper? _templatesIOHelper;
+        private static IOTestHelper? _defaultLayoutsIOHelper;
+        private static IOTestHelper? _appliedLayoutsIOHelper;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
@@ -34,14 +40,17 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void TestCleanup()
         {
             _session?.Close(_context!);
-            _ioHelper?.RestoreData();
+
+            _editorParamsIOHelper?.RestoreData();
+            _templatesIOHelper?.RestoreData();
+            _defaultLayoutsIOHelper?.RestoreData();
+            _appliedLayoutsIOHelper?.RestoreData();
         }
 
         [TestMethod]
         public void EditorParams_VerifySelectedMonitor()
         {
             EditorParameters editorParameters = new EditorParameters();
-            _ioHelper = new IOTestHelper(editorParameters.File);
             ParamsWrapper parameters = new ParamsWrapper
             {
                 ProcessId = 1,
@@ -82,7 +91,8 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            _ioHelper.WriteData(editorParameters.Serialize(parameters));
+            _editorParamsIOHelper = new IOTestHelper(editorParameters.File);
+            _editorParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             _session = new FancyZonesEditorSession(_context!);
 
@@ -94,7 +104,6 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void EditorParams_VerifyMonitorScaling()
         {
             EditorParameters editorParameters = new EditorParameters();
-            _ioHelper = new IOTestHelper(editorParameters.File);
             ParamsWrapper parameters = new ParamsWrapper
             {
                 ProcessId = 1,
@@ -119,7 +128,8 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            _ioHelper.WriteData(editorParameters.Serialize(parameters));
+            _editorParamsIOHelper = new IOTestHelper(editorParameters.File);
+            _editorParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             _session = new FancyZonesEditorSession(_context!);
             var monitor = _session.GetMonitorItem(1);
@@ -131,7 +141,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void EditorParams_VerifyMonitorResolution()
         {
             EditorParameters editorParameters = new EditorParameters();
-            _ioHelper = new IOTestHelper(editorParameters.File);
+            _editorParamsIOHelper = new IOTestHelper(editorParameters.File);
             ParamsWrapper parameters = new ParamsWrapper
             {
                 ProcessId = 1,
@@ -156,7 +166,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            _ioHelper.WriteData(editorParameters.Serialize(parameters));
+            _editorParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             _session = new FancyZonesEditorSession(_context!);
             var monitor = _session.GetMonitorItem(1);
@@ -168,7 +178,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void EditorParams_SpanAcrossMonitors()
         {
             EditorParameters editorParameters = new EditorParameters();
-            _ioHelper = new IOTestHelper(editorParameters.File);
+            _editorParamsIOHelper = new IOTestHelper(editorParameters.File);
             ParamsWrapper parameters = new ParamsWrapper
             {
                 ProcessId = 1,
@@ -193,7 +203,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            _ioHelper.WriteData(editorParameters.Serialize(parameters));
+            _editorParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             _session = new FancyZonesEditorSession(_context!);
             var monitor = _session.GetMonitorItem(1);
