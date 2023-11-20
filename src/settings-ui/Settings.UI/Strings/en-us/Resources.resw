@@ -3249,6 +3249,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TextExtractor_SupportedLanguages.Title" xml:space="preserve">
     <value>Text Extractor can only recognize languages that have the OCR pack installed.</value>
   </data>
+  <data name="TextExtractor_UseSnippingToolWarning.Title" xml:space="preserve">
+    <value>It is recommended to use the Snipping Tool instead of the TextExtractor module.</value>
+  </data>
   <data name="TextExtractor_SupportedLanguages_Link.Content" xml:space="preserve">
     <value>Learn more about supported languages</value>
   </data>
