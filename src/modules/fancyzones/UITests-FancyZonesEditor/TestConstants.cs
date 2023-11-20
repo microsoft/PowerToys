@@ -16,7 +16,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             { TemplateLayout.Rows, "Rows" },
             { TemplateLayout.Columns, "Columns" },
             { TemplateLayout.Grid, "Grid" },
-            { TemplateLayout.PriorityGrid, "PriorityGrid" },
+            { TemplateLayout.PriorityGrid, "Priority Grid" },
         };
     }
 }
