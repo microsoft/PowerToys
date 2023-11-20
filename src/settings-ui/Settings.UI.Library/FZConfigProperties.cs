@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesNextTabHotkey = new KeyboardKeysProperty(DefaultNextTabHotkeyValue);
             FancyzonesPrevTabHotkey = new KeyboardKeysProperty(DefaultPrevTabHotkeyValue);
             FancyzonesMakeDraggedWindowTransparent = new BoolProperty();
+            FancyzonesAllowPopupWindowSnap = new BoolProperty();
             FancyzonesAllowChildWindowSnap = new BoolProperty();
             FancyzonesDisableRoundCornersOnSnap = new BoolProperty();
             FancyzonesExcludedApps = new StringProperty();
@@ -107,6 +108,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("fancyzones_makeDraggedWindowTransparent")]
         public BoolProperty FancyzonesMakeDraggedWindowTransparent { get; set; }
+
+        [JsonPropertyName("fancyzones_allowPopupWindowSnap")]
+        public BoolProperty FancyzonesAllowPopupWindowSnap { get; set; }
 
         [JsonPropertyName("fancyzones_allowChildWindowSnap")]
         public BoolProperty FancyzonesAllowChildWindowSnap { get; set; }
