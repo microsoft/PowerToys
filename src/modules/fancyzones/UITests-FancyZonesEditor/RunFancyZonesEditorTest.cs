@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,13 +7,15 @@ using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static FancyZonesEditorCommon.Data.EditorParameters;
 
-namespace UITests_FancyZonesEditor
+namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
     public class RunFancyZonesEditorTest
     {
         private static FancyZonesEditorSession? _session;
+        private static IOTestHelper? _ioHelper;
         private static TestContext? _context;
 
         [ClassInitialize]
@@ -172,6 +174,23 @@ namespace UITests_FancyZonesEditor
         public void OpenContextMenu() // verify the context menu is opened
         {
             Assert.IsNotNull(_session?.OpenContextMenu(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Columns]));
+        }
+
+        [TestMethod]
+        public void ClickMonitor()
+        {
+            Assert.IsNotNull(_session?.GetMonitorItem(1));
+            Assert.IsNotNull(_session?.GetMonitorItem(2));
+
+            // verify that the monitor 1 is selected initially
+            Assert.IsTrue(_session?.GetMonitorItem(1)?.Selected);
+            Assert.IsFalse(_session?.GetMonitorItem(2)?.Selected);
+
+            _session?.Click_Monitor(2);
+
+            // verify that the monitor 2 is selected after click
+            Assert.IsFalse(_session?.GetMonitorItem(1)?.Selected);
+            Assert.IsTrue(_session?.GetMonitorItem(2)?.Selected);
         }
     }
 }
