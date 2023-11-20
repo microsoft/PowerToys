@@ -14,26 +14,6 @@ namespace UITests_FancyZonesEditor
         private static FancyZonesEditorSession? _session;
         private static TestContext? _context;
 
-        private enum Layouts
-        {
-            Empty,
-            Focus,
-            Rows,
-            Columns,
-            Grid,
-            PriorityGrid,
-        }
-
-        private static readonly Dictionary<Layouts, string> LayoutNames = new Dictionary<Layouts, string>()
-        {
-            { Layouts.Empty, "No layout" },
-            { Layouts.Focus, "Focus" },
-            { Layouts.Rows, "Rows" },
-            { Layouts.Columns, "Columns" },
-            { Layouts.Grid, "Grid" },
-            { Layouts.PriorityGrid, "PriorityGrid" },
-        };
-
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
@@ -74,7 +54,7 @@ namespace UITests_FancyZonesEditor
         [TestMethod]
         public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
         {
-            _session?.Click_EditLayout(LayoutNames[Layouts.Grid]);
+            _session?.Click_EditLayout(Constants.LayoutNames[Constants.Layouts.Grid]);
             Assert.IsNotNull(_session?.Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
             Assert.IsNotNull(_session?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
         }
@@ -82,7 +62,7 @@ namespace UITests_FancyZonesEditor
         [TestMethod]
         public void OpenContextMenu() // verify the context menu is opened
         {
-            Assert.IsNotNull(_session?.OpenContextMenu(LayoutNames[Layouts.Columns]));
+            Assert.IsNotNull(_session?.OpenContextMenu(Constants.LayoutNames[Constants.Layouts.Columns]));
         }
     }
 }
