@@ -260,7 +260,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [TestMethod]
-        public void UnixTimestampFormat()
+        public void UnixTimestampSecondsFormat()
         {
             // Setup
             string formatLabel = "Unix epoch time";
@@ -276,13 +276,29 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [TestMethod]
+        public void UnixTimestampMillisecondsFormat()
+        {
+            // Setup
+            string formatLabel = "Unix epoch time in milliseconds";
+            DateTime timeValue = DateTime.Now.ToUniversalTime();
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
+            var expectedResult = (long)timeValue.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
+
+            // Act
+            var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.AreEqual(expectedResult.ToString(CultureInfo.CurrentCulture), result?.Value);
+        }
+
+        [TestMethod]
         public void WindowsFileTimeFormat()
         {
             // Setup
             string formatLabel = "Windows file time (Int64 number)";
             DateTime timeValue = DateTime.Now;
             var helperResults = AvailableResultsList.GetList(true, false, false, timeValue);
-            var expectedResult = timeValue.Ticks.ToString(CultureInfo.CurrentCulture);
+            var expectedResult = timeValue.ToFileTime().ToString(CultureInfo.CurrentCulture);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
