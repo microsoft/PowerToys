@@ -217,7 +217,7 @@
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         Visibility="{Binding ElementName=checkBox_regex, Path=IsChecked}">
                         <Button.Flyout>
-                            <Flyout x:Name="RegExFlyout">
+                            <Flyout x:Name="RegExFlyout" ShouldConstrainToRootBounds="False">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="28" />

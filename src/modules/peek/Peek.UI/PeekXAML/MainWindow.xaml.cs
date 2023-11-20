@@ -116,7 +116,7 @@ namespace Peek.UI
             ViewModel.AttemptNextNavigation();
         }
 
-        private void EscKeyInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        private void CloseInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             Uninitialize();
         }

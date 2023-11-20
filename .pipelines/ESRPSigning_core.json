@@ -73,6 +73,12 @@
                 "PowerToys.PdfThumbnailProviderCpp.dll",
                 "PowerToys.powerpreview.dll",
                 "PowerToys.PreviewHandlerCommon.dll",
+                "PowerToys.QoiPreviewHandler.dll",
+                "PowerToys.QoiPreviewHandler.exe",
+                "PowerToys.QoiPreviewHandlerCpp.dll",
+                "PowerToys.QoiThumbnailProvider.dll",
+                "PowerToys.QoiThumbnailProvider.exe",
+                "PowerToys.QoiThumbnailProviderCpp.dll",
                 "PowerToys.StlThumbnailProvider.dll",
                 "PowerToys.StlThumbnailProvider.exe",
                 "PowerToys.StlThumbnailProviderCpp.dll",
@@ -289,6 +295,7 @@
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",
+                "UtfUnknown.dll",
                 "Wpf.Ui.dll"
             ],
             "SigningInfo": {

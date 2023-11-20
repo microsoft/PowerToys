@@ -38,7 +38,7 @@
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="7.0.3" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
-    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.3" />
+    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.4" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
     <PackageVersion Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.4.230913002" />
@@ -67,12 +67,14 @@
     <PackageVersion Include="System.Reactive" Version="6.0.0-preview.9" />
     <PackageVersion Include="System.Runtime.Caching" Version="7.0.0" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="7.0.1" />
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="7.0.0" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="4.145.0" />
+    <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Vanara.PInvoke.User32" Version="3.4.11" />
     <PackageVersion Include="Vanara.PInvoke.Shell32" Version="3.4.11" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
-    <PackageVersion Include="WPF-UI" Version="3.0.0-preview.4" />
+    <PackageVersion Include="WPF-UI" Version="3.0.0-preview.9" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->

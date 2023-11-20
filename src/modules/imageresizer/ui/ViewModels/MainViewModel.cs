@@ -44,7 +44,7 @@ namespace ImageResizer.ViewModels
         {
             if (_batch.Files.Count == 0)
             {
-                _batch.Files.AddRange(view?.OpenPictureFiles());
+                _batch.Files.AddRange(view.OpenPictureFiles());
             }
 
             CurrentPage = new InputViewModel(_settings, this, view, _batch);

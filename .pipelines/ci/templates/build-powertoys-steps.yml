@@ -195,8 +195,10 @@ steps:
       **\UnitTests-GcodeThumbnailProvider.dll
       **\UnitTests-StlThumbnailProvider.dll
       **\UnitTests-PdfThumbnailProvider.dll
+      **\UnitTests-QoiThumbnailProvider.dll
       **\Settings.UI.UnitTests.dll
       **\UnitTests-GcodePreviewHandler.dll
+      **\UnitTests-QoiPreviewHandler.dll
       **\UnitTests-FancyZonesEditor.dll
       **\UnitTests-PdfPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll

@@ -198,7 +198,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_P => new[] { "£", "₽" },
                 LetterKey.VK_R => new[] { "₹", "៛", "﷼" },
                 LetterKey.VK_S => new[] { "$", "₪" },
-                LetterKey.VK_T => new[] { "₮", "₺" },
+                LetterKey.VK_T => new[] { "₮", "₺", "₸" },
                 LetterKey.VK_W => new[] { "₩" },
                 LetterKey.VK_Y => new[] { "¥" },
                 LetterKey.VK_Z => new[] { "z" },
