@@ -145,7 +145,7 @@ namespace Microsoft.Plugin.Program.Programs
                             PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                             Title = Properties.Resources.wox_plugin_program_run_as_administrator,
                             Glyph = "\xE7EF",
-                            FontFamily = "Segoe MDL2 Assets",
+                            FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                             AcceleratorKey = Key.Enter,
                             AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                             Action = _ =>
@@ -170,7 +170,7 @@ namespace Microsoft.Plugin.Program.Programs
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.wox_plugin_program_open_containing_folder,
                     Glyph = "\xE838",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.E,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
@@ -186,7 +186,7 @@ namespace Microsoft.Plugin.Program.Programs
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = Properties.Resources.wox_plugin_program_open_in_console,
                 Glyph = "\xE756",
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = Key.C,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = (context) =>

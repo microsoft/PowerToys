@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
                 {
                     Title = Resources.run_as_administrator,
                     Glyph = "\xE7EF",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -30,6 +31,7 @@ namespace PowerLauncher
         private static readonly object _readSyncObject = new object();
         private readonly PowerToysRunSettings _settings;
         private readonly ThemeManager _themeManager;
+        private Action _refreshPluginsOverviewCallback;
 
         private IFileSystemWatcher _watcher;
 
@@ -92,7 +94,7 @@ namespace PowerLauncher
                     foreach (var setting in overloadSettings.Plugins)
                     {
                         var plugin = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == setting.Id);
-                        plugin?.Update(setting, App.API);
+                        plugin?.Update(setting, App.API, _refreshPluginsOverviewCallback);
                     }
 
                     var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);
@@ -215,6 +217,11 @@ namespace PowerLauncher
             }
 
             Monitor.Exit(_readSyncObject);
+        }
+
+        public void SetRefreshPluginsOverviewCallback(Action callback)
+        {
+            _refreshPluginsOverviewCallback = callback;
         }
 
         private static string ConvertHotkey(HotkeySettings hotkey)
