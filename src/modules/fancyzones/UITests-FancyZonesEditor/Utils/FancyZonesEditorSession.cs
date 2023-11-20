@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -127,8 +127,13 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public void RightClick_Layout(string layoutName)
         {
             var layout = GetLayout(layoutName);
+            ClickItem(layout!);
+        }
+
+        private void ClickItem(WindowsElement element)
+        {
             Actions actions = new Actions(Session);
-            actions.MoveToElement(layout);
+            actions.MoveToElement(element);
             actions.MoveByOffset(30, 30);
             actions.ContextClick();
             actions.Build().Perform();
