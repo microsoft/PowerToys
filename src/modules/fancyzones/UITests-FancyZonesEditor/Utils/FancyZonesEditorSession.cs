@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -94,7 +94,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
-        private WindowsElement? GetLayout(string layoutName)
+        public WindowsElement? GetLayout(string layoutName)
         {
             var listItem = Session?.FindElementByName(layoutName);
             Assert.IsNotNull(listItem, "Layout " + layoutName + " not found");
@@ -107,6 +107,15 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             var menu = Session?.FindElementByClassName("ContextMenu");
             Assert.IsNotNull(menu, "Context menu not found");
             return menu;
+        }
+
+        public WindowsElement GetMonitorItem(int monitorNumber)
+        {
+            var monitorsListView = Session?.FindElementByAccessibilityId("Monitors");
+            Assert.IsNotNull(monitorsListView, "Monitors list not found");
+            var listItem = monitorsListView?.FindElementByName($"{monitorNumber}");
+            Assert.IsNotNull(listItem, "Monitor " + monitorNumber + " not found");
+            return (WindowsElement)listItem;
         }
 
         public void Click_CreateNewLayout()
@@ -128,6 +137,12 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             var layout = GetLayout(layoutName);
             ClickItem(layout!);
+        }
+
+        public void Click_Monitor(int monitorNumber)
+        {
+            var monitor = GetMonitorItem(monitorNumber);
+            ClickItem(monitor!);
         }
 
         private void ClickItem(WindowsElement element)
