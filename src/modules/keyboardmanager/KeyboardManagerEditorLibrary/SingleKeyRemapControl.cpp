@@ -21,8 +21,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
     typeKey.as<Button>().Content(winrt::box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
 
     singleKeyRemapControlLayout = StackPanel();
-    singleKeyRemapControlLayout.as<StackPanel>().Spacing(10);
-    singleKeyRemapControlLayout.as<StackPanel>().Children().Append(typeKey.as<Button>());
+    singleKeyRemapControlLayout.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
 
     // Key column (From key)
     if (colIndex == 0)
@@ -36,14 +35,27 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
     // Hybrid column (To Key/Shortcut/Text)
     else
     {
+        StackPanel keyComboAndSelectStackPanel;
+        keyComboAndSelectStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+        keyComboAndSelectStackPanel.Spacing(EditorConstants::ShortcutTableDropDownSpacing);
+
         hybridDropDownVariableSizedWrapGrid = VariableSizedWrapGrid();
         auto grid = hybridDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>();
         grid.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+        auto gridMargin = Windows::UI::Xaml::Thickness();
+        gridMargin.Bottom = -EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed textInput
+        grid.Margin(gridMargin);
+
         KeyDropDownControl::AddDropDown(table, row, grid, colIndex, singleKeyRemapBuffer, keyDropDownControlObjects, nullptr, true, true);
 
         singleKeyRemapControlLayout.as<StackPanel>().Children().Append(grid);
 
         auto textInput = TextBox();
+
+        auto textBoxMargin = Windows::UI::Xaml::Thickness();
+        textBoxMargin.Top = -EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed grid
+        textBoxMargin.Bottom = EditorConstants::ShortcutTableDropDownSpacing;
+        textInput.Margin(textBoxMargin);
         textInput.AcceptsReturn(false);
         textInput.Visibility(Visibility::Collapsed);
         textInput.Width(EditorConstants::TableDropDownHeight);
@@ -64,7 +76,10 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
         auto typeCombo = ComboBox();
         typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeKey()));
         typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
-        singleKeyRemapControlLayout.as<StackPanel>().Children().InsertAt(0, typeCombo);
+        keyComboAndSelectStackPanel.Children().Append(typeCombo);
+        keyComboAndSelectStackPanel.Children().Append(typeKey.as<Button>());
+        singleKeyRemapControlLayout.as<StackPanel>().Children().InsertAt(0, keyComboAndSelectStackPanel);
+
         typeCombo.SelectedIndex(0);
         typeCombo.SelectionChanged([this, typeCombo, grid, textInput](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
             const bool textSelected = typeCombo.SelectedIndex() == 1;
@@ -173,9 +188,11 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         {
             auto& singleKeyRemapControl = keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1];
 
-            singleKeyRemapControl->singleKeyRemapControlLayout.as<StackPanel>().Children().GetAt(0).as<ComboBox>().SelectedIndex(1);
+            const auto& firstLineStackPanel = singleKeyRemapControl->singleKeyRemapControlLayout.as<StackPanel>().Children().GetAt(0).as<StackPanel>();
 
-            singleKeyRemapControl->singleKeyRemapControlLayout.as<StackPanel>().Children().GetAt(3).as<TextBox>().Text(std::get<std::wstring>(newKey));
+            firstLineStackPanel.Children().GetAt(0).as<ComboBox>().SelectedIndex(1);
+
+            singleKeyRemapControl->singleKeyRemapControlLayout.as<StackPanel>().Children().GetAt(2).as<TextBox>().Text(std::get<std::wstring>(newKey));
         }
     }
     else

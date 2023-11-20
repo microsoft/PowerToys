@@ -41,7 +41,13 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
 
     shortcutControlLayout.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
 
-    shortcutControlLayout.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
+    keyComboAndSelectStackPanel = StackPanel();
+    keyComboAndSelectStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    keyComboAndSelectStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownWidth);
+
+    keyComboAndSelectStackPanel.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
+    shortcutControlLayout.as<StackPanel>().Children().InsertAt(0, keyComboAndSelectStackPanel.as<StackPanel>());
+
     shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
     KeyDropDownControl::AddDropDown(table, row, shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, false);
     try
@@ -120,7 +126,8 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeShortcut()));
     typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
     auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
-    controlStackPanel.Children().InsertAt(0, typeCombo);
+    auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
+    firstLineStackPanel.Children().InsertAt(0, typeCombo);
 
     auto textInput = TextBox();
     textInput.AcceptsReturn(false);
@@ -322,10 +329,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         else if (newKeys.index() == 2)
         {
             shortcutRemapBuffer.back().first[1] = std::get<std::wstring>(newKeys);
-            auto& remapControl = keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1];
-            auto& children = remapControl->GetShortcutControl().Children();
-            children.GetAt(0).as<ComboBox>().SelectedIndex(1);
-            children.GetAt(3).as<TextBox>().Text(std::get<std::wstring>(newKeys));
+            const auto& remapControl = keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1];
+            const auto& controlChildren = remapControl->GetShortcutControl().Children();
+            const auto& topLineChildren = controlChildren.GetAt(0).as<StackPanel>();
+            topLineChildren.Children().GetAt(0).as<ComboBox>().SelectedIndex(1);
+            controlChildren.GetAt(2).as<TextBox>().Text(std::get<std::wstring>(newKeys));
         }
     }
     else

@@ -31,6 +31,9 @@ private:
     // StackPanel to parent the above controls
     winrt::Windows::Foundation::IInspectable shortcutControlLayout;
 
+    // StackPanel to parent the first line of "To" Column
+    winrt::Windows::Foundation::IInspectable keyComboAndSelectStackPanel;
+
     // Function to set the accessible name of the target app text box
     static void SetAccessibleNameForTextBox(TextBox targetAppTextBox, int rowIndex);
 
