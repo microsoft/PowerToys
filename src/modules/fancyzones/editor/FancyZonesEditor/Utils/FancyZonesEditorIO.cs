@@ -25,8 +25,6 @@ namespace FancyZonesEditor.Utils
         private const string GridJsonTag = "grid";
         private const string PriorityGridJsonTag = "priority-grid";
         private const string CustomJsonTag = "custom";
-        private const string HorizontalJsonTag = "horizontal";
-        private const string VerticalJsonTag = "vertical";
 
         // Non-localizable string: default virtual desktop id
         private const string DefaultVirtualDesktopGuid = "{00000000-0000-0000-0000-000000000000}";
@@ -512,7 +510,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Horizontal),
+                            MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal),
                             Layout = layoutWrapper,
                         };
 
@@ -523,7 +521,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Vertical),
+                            MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Vertical),
                             Layout = layoutWrapper,
                         };
 
@@ -553,7 +551,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Horizontal),
+                            MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal),
                             Layout = layoutWrapper,
                         };
 
@@ -564,7 +562,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Vertical),
+                            MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Vertical),
                             Layout = layoutWrapper,
                         };
 
@@ -780,7 +778,7 @@ namespace FancyZonesEditor.Utils
             foreach (var layout in layouts)
             {
                 LayoutModel defaultLayoutModel = null;
-                MonitorConfigurationType type = JsonTagToMonitorConfigurationType(layout.MonitorConfiguration);
+                MonitorConfigurationType type = MonitorConfigurationTypeEnumExtensions.GetTypeFromString(layout.MonitorConfiguration);
 
                 if (layout.Layout.Uuid != null && layout.Layout.Uuid != string.Empty)
                 {
@@ -943,32 +941,6 @@ namespace FancyZonesEditor.Utils
                 default:
                     return string.Empty;
             }
-        }
-
-        private MonitorConfigurationType JsonTagToMonitorConfigurationType(string tag)
-        {
-            switch (tag)
-            {
-                case HorizontalJsonTag:
-                    return MonitorConfigurationType.Horizontal;
-                case VerticalJsonTag:
-                    return MonitorConfigurationType.Vertical;
-            }
-
-            return MonitorConfigurationType.Horizontal;
-        }
-
-        private string MonitorConfigurationTypeToJsonTag(MonitorConfigurationType type)
-        {
-            switch (type)
-            {
-                case MonitorConfigurationType.Horizontal:
-                    return HorizontalJsonTag;
-                case MonitorConfigurationType.Vertical:
-                    return VerticalJsonTag;
-            }
-
-            return HorizontalJsonTag;
         }
     }
 }
