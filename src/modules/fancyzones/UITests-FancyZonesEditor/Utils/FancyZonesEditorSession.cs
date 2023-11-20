@@ -96,9 +96,16 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public WindowsElement? GetLayout(string layoutName)
         {
-            var listItem = Session?.FindElementByName(layoutName);
-            Assert.IsNotNull(listItem, "Layout " + layoutName + " not found");
-            return listItem;
+            try
+            {
+                var listItem = Session?.FindElementByName(layoutName);
+                return listItem;
+            }
+            catch (Exception)
+            {
+                Assert.Fail("Layout " + layoutName + " not found");
+                return null;
+            }
         }
 
         public WindowsElement? OpenContextMenu(string layoutName)
