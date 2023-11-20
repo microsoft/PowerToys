@@ -2355,6 +2355,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Awake</value>
     <comment>Awake is a product name, do not loc</comment>
   </data>
+  <data name="SecondaryLink_Awake.Text" xml:space="preserve">
+    <value>Den Delimarsky's work on creating Awake</value>
+    <comment>Awake is a product name, do not loc</comment>
+  </data>
   <data name="LearnMore_ColorPicker.Text" xml:space="preserve">
     <value>Learn more about Color Picker</value>
     <comment>Color Picker is a product name, do not loc</comment>

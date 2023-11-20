@@ -6,12 +6,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using Awake.Core.Models;
 using Awake.Core.Native;
+using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
@@ -274,9 +276,9 @@ namespace Awake.Core
         {
             Dictionary<string, int> optionsList = new Dictionary<string, int>
             {
-                { "30 minutes", 1800 },
-                { "1 hour", 3600 },
-                { "2 hours", 7200 },
+                { string.Format(CultureInfo.InvariantCulture, Resources.AWAKE_MINUTES, 30), 1800 },
+                { Resources.AWAKE_1_HOUR, 3600 },
+                { string.Format(CultureInfo.InvariantCulture, Resources.AWAKE_HOURS, 2), 7200 },
             };
             return optionsList;
         }
