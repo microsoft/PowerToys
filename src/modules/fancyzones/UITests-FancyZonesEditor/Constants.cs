@@ -25,7 +25,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             { Layouts.Rows, "Rows" },
             { Layouts.Columns, "Columns" },
             { Layouts.Grid, "Grid" },
-            { Layouts.PriorityGrid, "PriorityGrid" },
+            { Layouts.PriorityGrid, "Priority Grid" },
         };
 
         public static readonly Dictionary<Layouts, string> LayoutTypes = new Dictionary<Layouts, string>()
