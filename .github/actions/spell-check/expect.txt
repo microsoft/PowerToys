@@ -388,7 +388,6 @@ Deact
 debian
 debugbreak
 DECLAR
-declatory
 declspec
 decryptor
 Dedup
