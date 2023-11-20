@@ -65,6 +65,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();
             UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
+
+            App.UpdateUIThemeMethod(generalSettingsConfig.Theme);
         }
 
         private void AddDashboardListItem(ModuleType moduleType)
