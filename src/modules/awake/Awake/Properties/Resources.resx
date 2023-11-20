@@ -128,7 +128,7 @@
   </data>
   <data name="AWAKE_HOURS" xml:space="preserve">
     <value>{0} hours</value>
-    <comment>0: A number grater than 1</comment>
+    <comment>{0} shouldn't be removed. It will be replaced by a number greater than 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
   </data>
   <data name="AWAKE_KEEP_INDEFINITELY" xml:space="preserve">
     <value>Keep awake indefinitely</value>
@@ -150,7 +150,7 @@
   </data>
   <data name="AWAKE_MINUTES" xml:space="preserve">
     <value>{0} minutes</value>
-    <comment>0: A number grater than 1</comment>
+    <comment>{0} shouldn't be removed. It will be replaced by a number greater than 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
   </data>
   <data name="AWAKE_OFF" xml:space="preserve">
     <value>Off (keep using the selected power plan)</value>
