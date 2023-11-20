@@ -152,6 +152,20 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             ClickItem(monitor!);
         }
 
+        public void Click_Save()
+        {
+            var button = Session?.FindElementByName("Save");
+            Assert.IsNotNull(button, "No Save button");
+            button.Click();
+        }
+
+        public void Click_Cancel()
+        {
+            var button = Session?.FindElementByName("Cancel");
+            Assert.IsNotNull(button, "No Cancel button");
+            button.Click();
+        }
+
         private void ClickItem(WindowsElement element)
         {
             Actions actions = new Actions(Session);
