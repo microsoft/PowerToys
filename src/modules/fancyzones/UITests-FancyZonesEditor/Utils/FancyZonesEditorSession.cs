@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -116,6 +116,13 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             var listItem = monitorsListView?.FindElementByName($"{monitorNumber}");
             Assert.IsNotNull(listItem, "Monitor " + monitorNumber + " not found");
             return (WindowsElement)listItem;
+        }
+
+        public WindowsElement GetZoneCountSlider()
+        {
+            var element = Session?.FindElementByAccessibilityId("TemplateZoneCount");
+            Assert.IsNotNull(element, "Template zone count slider not found");
+            return element;
         }
 
         public void Click_CreateNewLayout()
