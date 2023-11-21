@@ -160,7 +160,6 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
-Chinh
 CHT
 cidl
 cim
@@ -228,7 +227,6 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 copiedcolorrepresentation
-Coplen
 cotaskmem
 COULDNOT
 countof
@@ -362,7 +360,6 @@ drf
 drivedetectionwarning
 dshow
 DSTINVERT
-ductdo
 DUMMYUNIONNAME
 dutil
 DVASPECT
@@ -425,7 +422,6 @@ ERRORTITLE
 ESettings
 esize
 esrp
-Essey
 etl
 ETW
 EUQ
@@ -500,17 +496,13 @@ FZE
 gacutil
 Gaeilge
 Gaidhlig
-Garside
 GBarm
-Gbits
-Gbps
 GCLP
 gdi
 gdiplus
 GDISCALED
 gdnbaselines
 GEmoji
-Gershaft
 GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
 GETDLGCODE
@@ -545,7 +537,6 @@ Hanzi
 Hardlines
 hardlinks
 HARDWAREINPUT
-Harmath
 hashcode
 Hashset
 hashtag
@@ -720,7 +711,6 @@ IWIC
 iwr
 IYUV
 JArray
-Jaswal
 jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -828,7 +818,6 @@ lstrcmpi
 lstrlen
 LTRB
 LTRREADING
-Luecking
 luid
 LUMA
 lusrmgr
@@ -1305,8 +1294,6 @@ ringbuffer
 RKey
 RNumber
 roadmap
-robmensching
-robmikh
 rop
 roundf
 ROUNDSMALL
@@ -1423,7 +1410,6 @@ siex
 sigdn
 SIGNINGSCENARIO
 Signtool
-sinclairinat
 SINGLEKEY
 singlekeyremapcontrol
 sipolicy
@@ -1571,7 +1557,6 @@ THISCOMPONENT
 THotkey
 thumbcache
 TILEDWINDOW
-tilovell
 timedate
 timediff
 timeunion
@@ -1725,7 +1710,6 @@ webpage
 websites
 wekyb
 Wevtapi
-WEX
 wgpocpl
 WIC
 wifi
@@ -1825,7 +1809,6 @@ WTSAT
 Wubi
 WVC
 Wwanpp
-WWL
 XAxis
 XDocument
 XElement

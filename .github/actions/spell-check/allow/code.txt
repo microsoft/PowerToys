@@ -27,6 +27,8 @@ AYUV
 bak
 exa
 exabyte
+Gbits
+Gbps
 gcode
 Mbits
 MBs
@@ -45,6 +47,7 @@ YUYV
 YVU
 YVYU
 zipfolder
+
 
 # FONTS
 
@@ -65,9 +68,11 @@ joefinapps
 lepo
 linkedin
 oblitum
-yinwang
+robmensching
+sinclairinat
 stylecop
 uipi
+yinwang
 
 
 # KEYS
