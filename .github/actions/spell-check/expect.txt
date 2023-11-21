@@ -483,7 +483,7 @@ Filterkeyboard
 Filterx
 findfast
 FIXEDFILEINFO
-flyout
+flyouts
 FOF
 FOFX
 FOLDERID
@@ -648,7 +648,6 @@ IFACEMETHODIMP
 IFile
 IFilter
 IGraphics
-IGT
 iid
 Iindex
 iiq
@@ -780,7 +779,7 @@ llkhf
 lmcons
 LMEM
 LMENU
-lnk
+lnks
 LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
@@ -1069,7 +1068,6 @@ OUTOFCONTEXT
 outpin
 Outptr
 outputtype
-outro
 outsettings
 OVERLAPPEDWINDOW
 overlaywindow
@@ -1222,7 +1220,7 @@ qit
 QITAB
 QITABENT
 qoi
-Quarternary
+qps
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
@@ -1277,7 +1275,7 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 Renamer
-reparent
+reparented
 reparenting
 reparse
 reportbug
@@ -1347,9 +1345,7 @@ SCID
 Scip
 scipbe
 Scode
-scoobe
-SCOPEID
-screenshot
+screenshots
 scrollviewer
 sddl
 SDKDDK
@@ -1422,7 +1418,7 @@ shtypes
 sia
 SIATTRIBFLAGS
 SICHINT
-sid
+SIDs
 siex
 sigdn
 SIGNINGSCENARIO
@@ -1726,9 +1722,7 @@ wdp
 wdupenv
 webcam
 webpage
-websearch
-webserver
-website
+websites
 wekyb
 Wevtapi
 WEX
