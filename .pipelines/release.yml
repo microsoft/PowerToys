@@ -378,14 +378,11 @@ extends:
               Remove-Item vc143.pdb
               Remove-Item *test*
 
-        - task: PublishSymbols@2
-          displayName: Publish symbols path
-          continueOnError: True
+        - task: 1ES.PublishPipelineArtifact@1
+          displayName: 'Publish Artifact: GPO Files'
           inputs:
-            SearchPattern: |
-              $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/**/*.*
-            IndexSources: false
-            SymbolServerType: TeamServices
+            targetPath: $(Build.ArtifactStagingDirectory)/Symbols-$(BuildPlatform)/
+            artifactName: Symbols-$(BuildPlatform)
             
         - template: .pipelines/installer-steps.yml@self
           parameters:
@@ -444,9 +441,10 @@ extends:
             pwsh: true
 
         # Publishing the GPO files
-        - pwsh: |-
-            New-Item "$(Build.ArtifactStagingDirectory)/gpo" -Type Directory
-            Copy-Item src\gpo\assets\* "$(Build.ArtifactStagingDirectory)/gpo" -Recurse
-          displayName: Stage the GPO files
+        - task: 1ES.PublishPipelineArtifact@1
+          displayName: 'Publish Artifact: GPO Files'
+          inputs:
+            targetPath: src\gpo\assets
+            artifactName: GroupPolicyObjectsFiles-${{ parameters.versionNumber }}
 
 ...
