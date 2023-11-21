@@ -150,9 +150,6 @@
                                 <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind ViewModel.MakeDraggedWindowsTransparent, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left">
-                                <custom:CheckBoxWithDescriptionControl x:Uid="FancyZones_AllowPopupWindowSnap" IsChecked="{x:Bind ViewModel.AllowPopupWindowSnap, Mode=TwoWay}" />
-                            </toolkitcontrols:SettingsCard>
-                            <toolkitcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind ViewModel.AllowChildWindowSnap, Mode=TwoWay}" />
                             </toolkitcontrols:SettingsCard>
                             <toolkitcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.Windows11, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">

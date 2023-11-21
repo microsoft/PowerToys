@@ -15,13 +15,15 @@
 
 namespace FancyZonesWindowUtils
 {
-    bool IsSplashScreen(HWND window);
     bool IsWindowMaximized(HWND window) noexcept;
     bool HasVisibleOwner(HWND window) noexcept;
-    bool IsStandardWindow(HWND window);
-    bool IsPopupWindow(HWND window) noexcept;
-    bool HasThickFrame(HWND window) noexcept;
-    bool HasThickFrameAndMinimizeMaximizeButtons(HWND window) noexcept;
+    bool IsRoot(HWND window) noexcept;
+    
+    constexpr bool HasStyle(LONG style, LONG styleToCheck) noexcept
+    {
+        return ((style & styleToCheck) == styleToCheck);
+    }
+
     bool IsProcessOfWindowElevated(HWND window); // If HWND is already dead, we assume it wasn't elevated
     
     bool IsExcluded(HWND window);
