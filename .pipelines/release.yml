@@ -92,7 +92,12 @@ extends:
           inputs:
             packageType: sdk
             version: '8.x'
-            includePreviewVersions: true
+
+        - task: PowerShell@2
+          displayName: Verify Latest VCToolsVersion Usage
+          inputs:
+            filePath: '$(build.sourcesdirectory)\.pipelines\verifyLatestVCToolsVersion.ps1'
+            pwsh: true
 
         - task: NuGetAuthenticate@1
             
