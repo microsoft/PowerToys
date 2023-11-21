@@ -15,6 +15,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition MinHeight="110" />
+            <RowDefinition MinHeight="64" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -50,8 +51,7 @@
         <StackPanel
             Grid.Row="2"
             VerticalAlignment="Top"
-            Orientation="Vertical"
-            Spacing="8">
+            Orientation="Vertical">
 
             <InfoBar
                 x:Uid="InvalidShortcut"
@@ -65,11 +65,13 @@
                 IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                 IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                 Severity="Warning" />
-            <toolkitcontrols:MarkdownTextBlock
-                x:Uid="InvalidShortcutWarningLabel"
-                Background="Transparent"
-                FontSize="12"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </StackPanel>
+
+        <toolkitcontrols:MarkdownTextBlock
+            x:Uid="InvalidShortcutWarningLabel"
+            Grid.Row="3"
+            Background="Transparent"
+            FontSize="12"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
     </Grid>
 </UserControl>
