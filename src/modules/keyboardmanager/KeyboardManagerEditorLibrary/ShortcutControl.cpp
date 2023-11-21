@@ -359,8 +359,8 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     detectShortcutBox.XamlRoot(xamlRoot);
     detectShortcutBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPESHORTCUT_TITLE)));
 
-    // Get the linked stack panel for the "Type shortcut" button that was clicked
-    VariableSizedWrapGrid linkedShortcutVariableSizedWrapGrid = UIHelpers::GetSiblingElement(sender).as<VariableSizedWrapGrid>();
+    // Get the parent linked stack panel for the "Type shortcut" button that was clicked
+    VariableSizedWrapGrid linkedShortcutVariableSizedWrapGrid = UIHelpers::GetSiblingElement(sender.as<FrameworkElement>().Parent()).as<VariableSizedWrapGrid>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
         keyboardManagerState.ClearRegisteredKeyDelays();
