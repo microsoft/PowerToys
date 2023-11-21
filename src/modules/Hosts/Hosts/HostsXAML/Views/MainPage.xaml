@@ -80,7 +80,7 @@
                                           FontSize=16}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <Button.Flyout>
-                        <Flyout>
+                        <Flyout ShouldConstrainToRootBounds="False">
                             <StackPanel
                                 Width="320"
                                 HorizontalAlignment="Stretch"

@@ -37,17 +37,27 @@ const CLSID CLSID_SHIMActivateGcodePreviewHandler = { 0x516cb24f, 0x562f, 0x422f
 // ec52dea8-7c9f-4130-a77b-1737d0418507
 const CLSID CLSID_GcodePreviewHandler = { 0xec52dea8, 0x7c9f, 0x4130, { 0xa7, 0x7b, 0x17, 0x37, 0xd0, 0x41, 0x85, 0x07 } };
 
+// F498BE36-5C94-4EC9-A65A-AD1CF4C38271
+const GUID CLSID_SHIMActivateQoiPreviewHandler = { 0xf498be36, 0x5c94, 0x4ec9, { 0xa6, 0x5a, 0xad, 0x1c, 0xf4, 0xc3, 0x82, 0x71 } };
+
+// 8AA07897-C30B-4543-865B-00A0E5A1B32D
+const GUID CLSID_QoiPreviewHandler = { 0x8aa07897, 0xc30b, 0x4543, { 0x86, 0x5b, 0x0, 0xa0, 0xe5, 0xa1, 0xb3, 0x2d } };
+
 // BFEE99B4-B74D-4348-BCA5-E757029647FF
 const GUID CLSID_GcodeThumbnailProvider = { 0xbfee99b4, 0xb74d, 0x4348, { 0xbc, 0xa5, 0xe7, 0x57, 0x02, 0x96, 0x47, 0xff } };
 
 // 8BC8AFC2-4E7C-4695-818E-8C1FFDCEA2AF
 const GUID CLSID_StlThumbnailProvider = { 0x8bc8afc2, 0x4e7c, 0x4695, { 0x81, 0x8e, 0x8c, 0x1f, 0xfd, 0xce, 0xa2, 0xaf } };
  
+// 907B7E38-38ED-42E7-A276-9EF0ECABB003
+const GUID CLSID_QoiThumbnailProvider = { 0x907b7e38, 0x38ed, 0x42e7, { 0xa2, 0x76, 0x9e, 0xf0, 0xec, 0xab, 0xb0, 0x3 } };
+
 // Pairs of NativeClsid vs ManagedClsid used for preview handlers.
 const std::vector<std::pair<CLSID, CLSID>> NativeToManagedClsid({ 
     { CLSID_SHIMActivateMdPreviewHandler, CLSID_MdPreviewHandler },
     { CLSID_SHIMActivatePdfPreviewHandler, CLSID_PdfPreviewHandler },
     { CLSID_SHIMActivateGcodePreviewHandler, CLSID_GcodePreviewHandler },
+    { CLSID_SHIMActivateQoiPreviewHandler, CLSID_QoiPreviewHandler },
     { CLSID_SHIMActivateSvgPreviewHandler, CLSID_SvgPreviewHandler },
     { CLSID_SHIMActivateSvgThumbnailProvider, CLSID_SvgThumbnailProvider }
 });

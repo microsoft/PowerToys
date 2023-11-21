@@ -98,7 +98,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 PluginName = Name,
                 Title = Properties.Resources.context_menu_copy,
                 Glyph = "\xE8C8",
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
                 Action = _ =>
                 {

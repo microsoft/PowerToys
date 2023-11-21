@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     AcceleratorKey = Key.F4,
                     AcceleratorModifiers = ModifierKeys.Control,
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE8BB",                       // E8B8 => Symbol: ChromeClose
                     Title = $"{Resources.wox_plugin_windowwalker_Close} (Ctrl+F4)",
                     Action = _ =>
@@ -58,7 +58,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     AcceleratorKey = Key.Delete,
                     AcceleratorModifiers = ModifierKeys.Control,
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE74D",                       // E74D => Symbol: Delete
                     Title = $"{Resources.wox_plugin_windowwalker_Kill} (Ctrl+Delete)",
                     Action = _ => KillProcessCommand(windowData),
