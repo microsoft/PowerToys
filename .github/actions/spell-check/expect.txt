@@ -541,6 +541,7 @@ hashcode
 Hashset
 hashtag
 HASHVAL
+HASSTRINGS
 hbitmap
 hbm
 hbmp
