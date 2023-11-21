@@ -1135,6 +1135,21 @@
   <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
     <value>Color</value>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Header" xml:space="preserve">
+    <value>Quite Ok Image</value>
+    <comment>File type, do not translate</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Description" xml:space="preserve">
+    <value>.qoi</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Header" xml:space="preserve">
+    <value>Quite OK Image</value>
+    <comment>File type, do not translate</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
+    <value>.qoi</value>
+    <comment>File extension, should not be altered</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
     <comment>File type, do not translate</comment>
@@ -2340,6 +2355,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Awake</value>
     <comment>Awake is a product name, do not loc</comment>
   </data>
+  <data name="SecondaryLink_Awake.Text" xml:space="preserve">
+    <value>Den Delimarsky's work on creating Awake</value>
+    <comment>Awake is a product name, do not loc</comment>
+  </data>
   <data name="LearnMore_ColorPicker.Text" xml:space="preserve">
     <value>Learn more about Color Picker</value>
     <comment>Color Picker is a product name, do not loc</comment>
@@ -2514,6 +2533,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+    <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
+  </data>
+  <data name="WarningShortcutAltGr.Title" xml:space="preserve">
+    <value>Possible shortcut interference with Alt Gr</value>
+    <comment>Alt Gr refers to the right alt key on some international keyboards</comment>
+  </data>
+  <data name="WarningShortcutAltGr.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
@@ -3234,6 +3261,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TextExtractor_SupportedLanguages.Title" xml:space="preserve">
     <value>Text Extractor can only recognize languages that have the OCR pack installed.</value>
   </data>
+  <data name="TextExtractor_UseSnippingToolWarning.Title" xml:space="preserve">
+    <value>It is recommended to use the Snipping Tool instead of the TextExtractor module.</value>
+  </data>
   <data name="TextExtractor_SupportedLanguages_Link.Content" xml:space="preserve">
     <value>Learn more about supported languages</value>
   </data>
@@ -3316,6 +3346,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
     <value>Czech</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Danish.Content" xml:space="preserve">
+    <value>Danish</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Gaeilge.Content" xml:space="preserve">
     <value>Gaeilge</value>
     <comment>Gaelic language spoken in Ireland</comment>
@@ -3327,11 +3360,17 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_German.Content" xml:space="preserve">
     <value>German</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
+  <value>Greek</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
     <value>Hebrew</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
     <value>French</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Finnish.Content" xml:space="preserve">
+    <value>Finnish</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Estonian.Content" xml:space="preserve">
     <value>Estonian</value>
@@ -3360,8 +3399,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Portuguese.Content" xml:space="preserve">
     <value>Portuguese</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Slovakian.Content" xml:space="preserve">
-    <value>Slovakian</value>
+  <data name="QuickAccent_SelectedLanguage_Slovak.Content" xml:space="preserve">
+    <value>Slovak</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
     <value>Spanish</value>
@@ -3837,5 +3876,23 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="EnabledModules.Text" xml:space="preserve">
     <value>Enabled modules</value>
+  </data>
+  <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="Peek_SourceCode_Header.Description" xml:space="preserve">
+    <value>.cpp, .py, .json, .xml, .csproj, ...</value>
+  </data>
+  <data name="Peek_SourceCode_Header.Header" xml:space="preserve">
+    <value>Source code files (Monaco)</value>
+  </data>
+  <data name="Peek_SourceCode_TryFormat.Description" xml:space="preserve">
+    <value>Applies to json and xml. Files remain unchanged.</value>
+  </data>
+  <data name="Peek_SourceCode_TryFormat.Header" xml:space="preserve">
+    <value>Try to format the source for preview</value>
+  </data>
+  <data name="Peek_SourceCode_WrapText.Content" xml:space="preserve">
+    <value>Wrap text</value>
   </data>
 </root>

@@ -3,12 +3,13 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:PowerOCR"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:p="clr-namespace:PowerOCR.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="TextExtractor"
     Width="200"
     Height="200"
+    ui:Design.Background="Transparent"
     AllowsTransparency="True"
     Background="Transparent"
     Loaded="Window_Loaded"
@@ -23,19 +24,22 @@
     mc:Ignorable="d">
 
     <Window.Resources>
-        <Style x:Key="SymbolTextStyle" TargetType="TextBlock">
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="Margin" Value="4" />
+        <Style BasedOn="{StaticResource DefaultToggleButtonStyle}" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Background" Value="Transparent" />
         </Style>
-        <Style TargetType="ToggleButton">
-            <Setter Property="Margin" Value="2,0" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="Width" Value="30" />
-            <Setter Property="Height" Value="30" />
+
+        <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="{x:Type Button}">
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Background" Value="Transparent" />
         </Style>
     </Window.Resources>
 
@@ -70,23 +74,23 @@
                     <MenuItem
                         Name="SingleLineMenuItem"
                         Click="SingleLineMenuItem_Click"
-                        Header="Make Result Text Single Line"
+                        Header="{x:Static p:Resources.ResultTextSingleLine}"
                         IsCheckable="True" />
                     <MenuItem
                         Name="TableMenuItem"
                         Click="TableToggleButton_Click"
-                        Header="OCR text as a table"
+                        Header="{x:Static p:Resources.ResultTextTable}"
                         IsCheckable="True" />
                     <Separator />
                     <MenuItem
                         Name="SettingsMenuItem"
                         Click="SettingsMenuItem_Click"
-                        Header="Settings" />
+                        Header="{x:Static p:Resources.Settings}" />
                     <Separator />
                     <MenuItem
                         Name="CancelMenuItem"
                         Click="CancelMenuItem_Click"
-                        Header="Cancel" />
+                        Header="{x:Static p:Resources.Cancel}" />
                 </ContextMenu>
             </Canvas.ContextMenu>
         </Canvas>
@@ -96,7 +100,6 @@
             Padding="4,8,12,8"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
-            d:Background="White"
             d:Visibility="Visible"
             Background="{DynamicResource ApplicationBackgroundBrush}"
             CornerRadius="8"
@@ -104,75 +107,60 @@
             <Border.Effect>
                 <DropShadowEffect
                     BlurRadius="32"
-                    Direction="-90"
-                    Opacity="0.6"
-                    RenderingBias="Performance" />
+                    Opacity="0.28"
+                    RenderingBias="Performance"
+                    ShadowDepth="1" />
             </Border.Effect>
+
             <StackPanel
-                Margin="2,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Orientation="Horizontal">
                 <ComboBox
                     x:Name="LanguagesComboBox"
-                    Margin="2,0"
-                    Padding="4,2,0,2"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Height="32"
+                    Margin="4,0"
+                    AutomationProperties.Name="{x:Static p:Resources.SelectedLang}"
                     SelectionChanged="LanguagesComboBox_SelectionChanged">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                FontFamily="Segoe UI"
-                                Style="{StaticResource SymbolTextStyle}"
                                 Text="{Binding NativeName}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
                 <ToggleButton
                     x:Name="SingleLineToggleButton"
-                    Width="34"
-                    Height="34"
-                    Margin="2,0"
                     d:IsChecked="True"
+                    AutomationProperties.Name="{x:Static p:Resources.ResultTextSingleLine}"
                     Click="SingleLineMenuItem_Click"
                     IsChecked="{Binding IsChecked, ElementName=SingleLineMenuItem, Mode=TwoWay}"
-                    Style="{StaticResource ToggleSymbolButton}"
-                    ToolTip="(S) Make result a single line">
-                    <TextBlock Style="{StaticResource SymbolTextStyle}" Text="" />
+                    ToolTip="{x:Static p:Resources.ResultTextSingleLineShortcut}">
+                    <ui:SymbolIcon FontSize="18" Symbol="SubtractSquare24" />
                 </ToggleButton>
                 <ToggleButton
                     x:Name="TableToggleButton"
-                    Width="34"
-                    Height="34"
-                    Margin="2,0"
                     d:IsChecked="True"
+                    AutomationProperties.Name="{x:Static p:Resources.ResultTextTable}"
                     Click="TableToggleButton_Click"
                     IsChecked="{Binding IsChecked, ElementName=TableMenuItem, Mode=TwoWay}"
-                    Style="{StaticResource ToggleSymbolButton}"
-                    ToolTip="(T) OCR text as a table">
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="" />
+                    ToolTip="{x:Static p:Resources.ResultTextTableShortcut}">
+                    <ui:SymbolIcon FontSize="18" Symbol="Table24" />
                 </ToggleButton>
                 <Button
                     x:Name="SettingsButton"
-                    Width="34"
-                    Height="34"
-                    Margin="2,0"
+                    AutomationProperties.Name="{x:Static p:Resources.Settings}"
                     Click="SettingsMenuItem_Click"
-                    Style="{StaticResource SymbolButton}"
-                    ToolTip="Settings">
-                    <TextBlock Style="{StaticResource SymbolTextStyle}" Text="" />
+                    ToolTip="{x:Static p:Resources.Settings}">
+                    <ui:SymbolIcon FontSize="18" Symbol="Settings24" />
                 </Button>
                 <Button
                     x:Name="CancelButton"
-                    Width="34"
-                    Height="34"
-                    Margin="2,0,0,0"
                     Click="CancelMenuItem_Click"
-                    Style="{StaticResource SymbolButton}"
-                    ToolTip="(Esc) Cancel">
-                    <TextBlock Style="{StaticResource SymbolTextStyle}" Text="" />
+                    ToolTip="{x:Static p:Resources.CancelShortcut}">
+                    <ui:SymbolIcon FontSize="18" Symbol="Dismiss24" />
                 </Button>
             </StackPanel>
         </Border>

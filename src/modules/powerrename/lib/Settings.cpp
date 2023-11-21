@@ -13,6 +13,7 @@
 namespace
 {
     const wchar_t c_powerRenameDataFilePath[] = L"\\power-rename-settings.json";
+    const wchar_t c_powerRenameLastRunFilePath[] = L"\\power-rename-last-run-data.json";
     const wchar_t c_powerRenameUIFlagsFilePath[] = L"\\power-rename-ui-flags";
 
     const wchar_t c_enabled[] = L"Enabled";
@@ -48,11 +49,7 @@ void CSettings::Save()
     jsonData.SetNamedValue(c_persistState, json::value(settings.persistState));
     jsonData.SetNamedValue(c_mruEnabled, json::value(settings.MRUEnabled));
     jsonData.SetNamedValue(c_maxMRUSize, json::value(settings.maxMRUSize));
-    jsonData.SetNamedValue(c_searchText, json::value(settings.searchText));
-    jsonData.SetNamedValue(c_replaceText, json::value(settings.replaceText));
     jsonData.SetNamedValue(c_useBoostLib, json::value(settings.useBoostLib));
-    jsonData.SetNamedValue(c_lastWindowWidth, json::value(settings.lastWindowWidth));
-    jsonData.SetNamedValue(c_lastWindowHeight, json::value(settings.lastWindowHeight));
 
     json::to_file(jsonFilePath, jsonData);
     GetSystemTimeAsFileTime(&lastLoadedTime);
@@ -94,8 +91,10 @@ void CSettings::MigrateFromRegistry()
     settings.MRUEnabled = GetRegBoolean(c_mruEnabled, true);
     settings.maxMRUSize = GetRegNumber(c_maxMRUSize, 10);
     settings.flags = GetRegNumber(c_flags, 0);
-    settings.searchText = GetRegString(c_searchText, L"");
-    settings.replaceText = GetRegString(c_replaceText, L"");
+
+    LastRunSettingsInstance().SetSearchText(GetRegString(c_searchText, L""));
+    LastRunSettingsInstance().SetReplaceText(GetRegString(c_replaceText, L""));
+
     settings.useBoostLib = false; // Never existed in registry, disabled by default.
 }
 
@@ -131,21 +130,10 @@ void CSettings::ParseJson()
             {
                 settings.maxMRUSize = static_cast<unsigned int>(jsonSettings.GetNamedNumber(c_maxMRUSize));
             }
-            if (json::has(jsonSettings, c_searchText, json::JsonValueType::String))
-            {
-                settings.searchText = jsonSettings.GetNamedString(c_searchText);
-            }
-            if (json::has(jsonSettings, c_replaceText, json::JsonValueType::String))
-            {
-                settings.replaceText = jsonSettings.GetNamedString(c_replaceText);
-            }
             if (json::has(jsonSettings, c_useBoostLib, json::JsonValueType::Boolean))
             {
                 settings.useBoostLib = jsonSettings.GetNamedBoolean(c_useBoostLib);
             }
-
-            settings.lastWindowWidth = static_cast<int>(jsonSettings.GetNamedNumber(c_lastWindowWidth, DEFAULT_WINDOW_WIDTH));
-            settings.lastWindowHeight = static_cast<int>(jsonSettings.GetNamedNumber(c_lastWindowHeight, DEFAULT_WINDOW_HEIGHT));
         }
         catch (const winrt::hresult_error&)
         {
@@ -176,4 +164,36 @@ CSettings& CSettingsInstance()
 {
     static CSettings instance;
     return instance;
+}
+
+LastRunSettings& LastRunSettingsInstance()
+{
+    static LastRunSettings instance;
+    return instance;
+}
+
+void LastRunSettings::Load()
+{
+    const auto lastRunSettingsFilePath = PTSettingsHelper::get_module_save_folder_location(PowerRenameConstants::ModuleKey) + c_powerRenameLastRunFilePath;
+    auto json = json::from_file(lastRunSettingsFilePath);
+    if (!json)
+        return;
+
+    json::get(*json, c_searchText, searchText, L"");
+    json::get(*json, c_replaceText, replaceText, L"");
+    json::get(*json, c_lastWindowWidth, lastWindowWidth, DEFAULT_WINDOW_WIDTH);
+    json::get(*json, c_lastWindowHeight, lastWindowHeight, DEFAULT_WINDOW_HEIGHT);
+}
+
+void LastRunSettings::Save()
+{
+    json::JsonObject json;
+
+    json.SetNamedValue(c_searchText, json::value(searchText));
+    json.SetNamedValue(c_replaceText, json::value(replaceText));
+    json.SetNamedValue(c_lastWindowWidth, json::value(lastWindowWidth));
+    json.SetNamedValue(c_lastWindowHeight, json::value(lastWindowHeight));
+
+    const auto lastRunSettingsFilePath = PTSettingsHelper::get_module_save_folder_location(PowerRenameConstants::ModuleKey) + c_powerRenameLastRunFilePath;
+    json::to_file(lastRunSettingsFilePath, json);
 }

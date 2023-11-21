@@ -152,4 +152,12 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredEnvironmentVariablesEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredQoiPreviewEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredQoiPreviewEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredQoiThumbnailsEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue());
+    }
 }

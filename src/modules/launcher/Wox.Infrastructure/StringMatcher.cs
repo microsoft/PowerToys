@@ -226,9 +226,7 @@ namespace Wox.Infrastructure
             }
             else
             {
-                int? ind = spaceIndices.OrderBy(item => (firstMatchIndex - item)).Where(item => firstMatchIndex > item).FirstOrDefault();
-                int closestSpaceIndex = ind ?? -1;
-                return closestSpaceIndex;
+                return spaceIndices.OrderBy(item => (firstMatchIndex - item)).Where(item => firstMatchIndex > item).FirstOrDefault(-1);
             }
         }
 

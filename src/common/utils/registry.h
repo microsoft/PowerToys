@@ -395,6 +395,7 @@ namespace registry
                                                           std::wstring className,
                                                           std::wstring displayName,
                                                           std::vector<std::wstring> fileTypes,
+                                                          std::wstring perceivedType = L"",
                                                           std::wstring fileKindType = L"")
         {
             const HKEY scope = perUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
@@ -436,9 +437,8 @@ namespace registry
 
             for (const auto& fileType : fileTypes)
             {
-                std::wstring fileAssociationPath = L"Software\\Classes\\";
-                fileAssociationPath += fileType;
-                fileAssociationPath += L"\\shellex\\";
+                std::wstring fileTypePath = L"Software\\Classes\\" + fileType;
+                std::wstring fileAssociationPath = fileTypePath + L"\\shellex\\";
                 fileAssociationPath += handlerType == PreviewHandlerType::preview ? IPREVIEW_HANDLER_CLSID : ITHUMBNAIL_PROVIDER_CLSID;
                 changes.push_back({ scope, fileAssociationPath, std::nullopt, handlerClsid });
                 if (!fileKindType.empty())
@@ -447,6 +447,10 @@ namespace registry
                     // Make it optional as well so that we don't fail registering the handler if we can't write to HKEY_LOCAL_MACHINE.
                     std::wstring kindMapPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
                     changes.push_back({ HKEY_LOCAL_MACHINE, kindMapPath, fileType, fileKindType, false});
+                }
+                if (!perceivedType.empty())
+                {
+                    changes.push_back({ scope, fileTypePath, L"PerceivedType", perceivedType });
                 }
                 if (handlerType == PreviewHandlerType::preview && fileType == L".reg")
                 {

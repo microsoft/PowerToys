@@ -235,6 +235,10 @@ public
             return gcnew String(CommonSharedConstants::GCODE_PREVIEW_RESIZE_EVENT);
         }
 
+        static String ^ QoiPreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::QOI_PREVIEW_RESIZE_EVENT);
+        }
+
         static String ^ DevFilesPreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::DEV_FILES_PREVIEW_RESIZE_EVENT);
         }

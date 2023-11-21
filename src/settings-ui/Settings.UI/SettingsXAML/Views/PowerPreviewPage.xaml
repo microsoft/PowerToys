@@ -131,6 +131,18 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsGCODERenderEnabledGpoConfigured}"
                         Severity="Informational" />
+                    <controls:SettingsCard
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Preview_QOI"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIRenderEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QOIRenderIsEnabled}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIRenderEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIRenderEnabledGpoConfigured}"
+                        Severity="Informational" />
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
@@ -201,6 +213,19 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsSTLThumbnailEnabledGpoConfigured}"
                         Severity="Informational" />
+
+                    <controls:SettingsCard
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIThumbnailEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QOIThumbnailIsEnabled}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIThumbnailEnabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIThumbnailEnabledGpoConfigured}"
+                        Severity="Informational" />
                 </custom:SettingsGroup>
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>
@@ -210,7 +235,7 @@
         </custom:SettingsPageControl.PrimaryLinks>
         <custom:SettingsPageControl.SecondaryLinks>
             <custom:PageLink Link="https://blog.aaron-junker.ch" Text="Aaron Junker's work on developer file preview" />
-            <custom:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code and STL" />
+            <custom:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code, STL, and QOI" />
         </custom:SettingsPageControl.SecondaryLinks>
     </custom:SettingsPageControl>
 </Page>
