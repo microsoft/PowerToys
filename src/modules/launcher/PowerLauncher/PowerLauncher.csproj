@@ -86,6 +86,7 @@
     <PackageReference Include="System.Data.OleDb" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="UnitsNet" />
+    <PackageReference Include="WPF-UI" />
     <!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since OneNote uses the LazyCache and NLog dependencies, which references older assemblies. -->
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>

@@ -59,6 +59,12 @@
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                     Severity="Error" />
 
+                <InfoBar
+                    x:Uid="WarningShortcutAltGr"
+                    IsClosable="False"
+                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
+                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
+                    Severity="Warning" />
             </Grid>
             <toolkitcontrols:MarkdownTextBlock
                 x:Uid="InvalidShortcutWarningLabel"

@@ -1616,7 +1616,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_Editor_GroupSettings.Header" xml:space="preserve">
     <value>Editor</value>
-    <comment>refers to the FancyZone editor</comment>
+    <comment>refers to the FancyZones editor</comment>
   </data>
   <data name="FancyZones_WindowBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Window behavior</value>
@@ -2355,6 +2355,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Awake</value>
     <comment>Awake is a product name, do not loc</comment>
   </data>
+  <data name="SecondaryLink_Awake.Text" xml:space="preserve">
+    <value>Den Delimarsky's work on creating Awake</value>
+    <comment>Awake is a product name, do not loc</comment>
+  </data>
   <data name="LearnMore_ColorPicker.Text" xml:space="preserve">
     <value>Learn more about Color Picker</value>
     <comment>Color Picker is a product name, do not loc</comment>
@@ -2529,6 +2533,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+    <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
+  </data>
+  <data name="WarningShortcutAltGr.Title" xml:space="preserve">
+    <value>Possible shortcut interference with Alt Gr</value>
+    <comment>Alt Gr refers to the right alt key on some international keyboards</comment>
+  </data>
+  <data name="WarningShortcutAltGr.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
@@ -3249,6 +3261,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TextExtractor_SupportedLanguages.Title" xml:space="preserve">
     <value>Text Extractor can only recognize languages that have the OCR pack installed.</value>
   </data>
+  <data name="TextExtractor_UseSnippingToolWarning.Title" xml:space="preserve">
+    <value>It is recommended to use the Snipping Tool instead of the TextExtractor module.</value>
+  </data>
   <data name="TextExtractor_SupportedLanguages_Link.Content" xml:space="preserve">
     <value>Learn more about supported languages</value>
   </data>
@@ -3344,6 +3359,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_German.Content" xml:space="preserve">
     <value>German</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
+  <value>Greek</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
     <value>Hebrew</value>
