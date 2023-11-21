@@ -105,7 +105,7 @@
             <custom:PageLink x:Uid="LearnMore_Awake" Link="https://aka.ms/PowerToysOverview_Awake" />
         </custom:SettingsPageControl.PrimaryLinks>
         <custom:SettingsPageControl.SecondaryLinks>
-            <custom:PageLink Link="https://awake.den.dev" Text="Den Delimarsky's work on creating Awake" />
+            <custom:PageLink x:Uid="SecondaryLink_Awake" Link="https://awake.den.dev" />
         </custom:SettingsPageControl.SecondaryLinks>
     </custom:SettingsPageControl>
 </Page>

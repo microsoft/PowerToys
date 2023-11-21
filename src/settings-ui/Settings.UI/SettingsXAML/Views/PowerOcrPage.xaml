@@ -23,6 +23,12 @@
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
                 <InfoBar
+                    x:Uid="TextExtractor_UseSnippingToolWarning"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsWin11OrGreater}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsWin11OrGreater}"
+                    Severity="Informational" />
+                <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
