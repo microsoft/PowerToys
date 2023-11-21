@@ -118,7 +118,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 ContextData = request.Result,
                 Title = request.ResultToString(),
-                IcoPath = _isLightTheme ? "Images/ValueGenerator.dark.png" : "Images/ValueGenerator.light.png",
+                IcoPath = _isLightTheme ? "Images/ValueGenerator.light.png" : "Images/ValueGenerator.dark.png",
                 Score = 300,
                 SubTitle = request.Description,
                 Action = c =>

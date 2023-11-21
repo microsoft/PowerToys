@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -14,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Common.UI;
 using interop;
+using Mages.Core.Runtime.Converters;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
@@ -79,7 +81,6 @@ namespace PowerLauncher.ViewModel
             Results = new ResultsViewModel(_settings, this);
             History = new ResultsViewModel(_settings, this);
             _selectedResults = Results;
-
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
         }
@@ -345,6 +346,15 @@ namespace PowerLauncher.ViewModel
                 if (_queryText != value)
                 {
                     _queryText = value;
+                    if (string.IsNullOrEmpty(_queryText) || string.IsNullOrWhiteSpace(_queryText))
+                    {
+                        PluginsOverviewVisibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        PluginsOverviewVisibility = Visibility.Collapsed;
+                    }
+
                     OnPropertyChanged(nameof(QueryText));
                 }
             }
@@ -1028,34 +1038,6 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        public void ColdStartFix()
-        {
-            // Fix Cold start for List view xaml island
-            List<Result> list = new List<Result>();
-            Result r = new Result
-            {
-                Title = "hello",
-            };
-            list.Add(r);
-            Results.AddResults(list, _updateToken);
-            Results.Clear();
-
-            // Fix Cold start for plugins, "m" is just a random string needed to query results
-            var pluginQueryPairs = QueryBuilder.Build("m");
-
-            // To execute a query corresponding to each plugin
-            foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)
-            {
-                var plugin = pluginQueryItem.Key;
-                var query = pluginQueryItem.Value;
-
-                if (!plugin.Metadata.Disabled && plugin.Metadata.Name != "Window Walker")
-                {
-                    _ = PluginManager.QueryForPlugin(plugin, query);
-                }
-            }
-        }
-
         public void HandleContextMenu(Key acceleratorKey, ModifierKeys acceleratorModifiers)
         {
             var results = SelectedResults;
@@ -1226,6 +1208,39 @@ namespace PowerLauncher.ViewModel
             {
                 action.Invoke();
             }
+        }
+
+        public ObservableCollection<PluginPair> Plugins { get; } = new();
+
+        private Visibility _pluginsOverviewVisibility = Visibility.Visible;
+
+        public Visibility PluginsOverviewVisibility
+        {
+            get => _pluginsOverviewVisibility;
+
+            set
+            {
+                if (_pluginsOverviewVisibility != value)
+                {
+                    _pluginsOverviewVisibility = value;
+                    OnPropertyChanged(nameof(PluginsOverviewVisibility));
+                }
+            }
+        }
+
+        public void RefreshPluginsOverview()
+        {
+            Log.Info("Refresh plugins overview", GetType());
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Plugins.Clear();
+
+                foreach (var p in PluginManager.AllPlugins.Where(a => a.IsPluginInitialized && !a.Metadata.Disabled && a.Metadata.ActionKeyword != string.Empty))
+                {
+                    Plugins.Add(p);
+                }
+            });
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Timers;
+using Common.UI;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -144,6 +145,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(outgoing.ToString());
                 }
             }
+        }
+
+        public bool IsWin11OrGreater
+        {
+            get => OSVersionHelper.IsWindows11();
         }
 
         public bool IsEnabledGpoConfigured

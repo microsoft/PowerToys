@@ -64,5 +64,7 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getSuspendNewUpdateToastValue: " << gpo_rule_configured_to_string(powertoys_gpo::getSuspendNewUpdateToastValue()) << std::endl;
     report << "getDisablePeriodicUpdateCheckValue: " << gpo_rule_configured_to_string(powertoys_gpo::getDisablePeriodicUpdateCheckValue()) << std::endl;
     report << "getAllowExperimentationValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowExperimentationValue()) << std::endl;
+    report << "getConfiguredQoiPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiPreviewEnabledValue()) << std::endl;
+    report << "getConfiguredQoiThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue()) << std::endl;
 
 }

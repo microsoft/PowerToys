@@ -71,6 +71,16 @@ PowerPreviewModule::PowerPreviewModule() :
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredStlThumbnailsEnabledValue,
                                       .registryChanges = getStlThumbnailHandlerChangeSet(installationDir, installPerUser) });
 
+    m_fileExplorerModules.push_back({ .settingName = L"qoi-previewer-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_QOI_SETTINGS_DESCRIPTION),
+                                      .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredQoiPreviewEnabledValue,
+                                      .registryChanges = getQoiPreviewHandlerChangeSet(installationDir, installPerUser) });
+
+    m_fileExplorerModules.push_back({ .settingName = L"qoi-thumbnail-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_QOI_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+                                      .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue,
+                                      .registryChanges = getQoiThumbnailHandlerChangeSet(installationDir, installPerUser) });
+
     try
     {
         PowerToysSettings::PowerToyValues settings =

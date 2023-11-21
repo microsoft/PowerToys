@@ -48,6 +48,8 @@ namespace PowerToys
             static GpoRuleConfigured GetAllowExperimentationValue();
             static GpoRuleConfigured GetRunPluginEnabledValue(String pluginID);
             static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();
+            static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
+            static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
         }
     }
 }

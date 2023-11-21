@@ -50,9 +50,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.SWVersionButtonClicked();
         }
 
-        private void SettingsButtonClicked(object sender, RoutedEventArgs e)
+        private void DashboardListItemClick(object sender, RoutedEventArgs e)
         {
-            ViewModel.SettingsButtonClicked(sender);
+            ViewModel.DashboardListItemClick(sender);
         }
     }
 }
