@@ -21,12 +21,9 @@
             Source="{x:Bind HeroImage}"
             Stretch="UniformToFill" />
 
-        <ScrollViewer
-            Grid.Row="1"
-            Padding="36,0"
-            VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel
-                Margin="0,12,0,24"
+                Margin="36,12,36,24"
                 VerticalAlignment="Top"
                 Orientation="Vertical"
                 Spacing="12">

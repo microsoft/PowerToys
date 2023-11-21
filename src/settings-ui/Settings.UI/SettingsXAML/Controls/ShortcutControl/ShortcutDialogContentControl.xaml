@@ -8,14 +8,11 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
-    <Grid
-        MinWidth="480"
-        MinHeight="200"
-        RowSpacing="24">
+    <Grid RowSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition MinHeight="110" />
-            <RowDefinition MinHeight="64" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition MinHeight="56" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -24,8 +21,7 @@
         <ItemsControl
             x:Name="KeysControl"
             Grid.Row="1"
-            Height="56"
-            Margin="0,40,0,0"
+            Margin="0,24,0,0"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             HorizontalContentAlignment="Center"

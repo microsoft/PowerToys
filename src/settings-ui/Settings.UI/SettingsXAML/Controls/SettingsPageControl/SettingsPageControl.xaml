@@ -36,7 +36,7 @@
 
         <ScrollViewer Grid.Row="1">
             <Grid
-                x:Name="ContentGrid"
+                Name="ContentGrid"
                 Padding="24,0,24,24"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 RowSpacing="24">
@@ -48,7 +48,7 @@
 
                 <!--  Top panel  -->
                 <Grid
-                    x:Name="TopGrid"
+                    Name="TopGrid"
                     MaxWidth="{StaticResource PageMaxWidth}"
                     ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -154,8 +154,8 @@
                         <Setter Target="DescriptionPanel.(Grid.Row)" Value="1" />
                         <Setter Target="DescriptionPanel.(Grid.Column)" Value="0" />
                         <Setter Target="DescriptionPanel.(Grid.ColumnSpan)" Value="2" />
-                        <Setter Target="Header.Padding" Value="12,0" />
-                        <Setter Target="ContentGrid.Padding" Value="12,0,12,24" />
+                        <Setter Target="Header.Padding" Value="16,0" />
+                        <Setter Target="ContentGrid.Padding" Value="16,0,16,24" />
                         <Setter Target="TopGrid.RowSpacing" Value="12" />
                     </VisualState.Setters>
                 </VisualState>
