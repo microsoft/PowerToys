@@ -53,6 +53,7 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaeilge" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Gaidhlig" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Dutch" />
+                            <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Greek" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Estonian" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Finnish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_French" />
