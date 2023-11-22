@@ -76,6 +76,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
         });
 
         auto typeCombo = ComboBox();
+        typeCombo.Width(EditorConstants::RemapTableDropDownWidth);
         typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeKey()));
         typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
         keyComboAndSelectStackPanel.Children().Append(typeCombo);

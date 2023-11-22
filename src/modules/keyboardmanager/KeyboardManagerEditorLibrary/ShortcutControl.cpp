@@ -43,7 +43,7 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
 
     keyComboAndSelectStackPanel = StackPanel();
     keyComboAndSelectStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-    keyComboAndSelectStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownWidth);
+    keyComboAndSelectStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
 
     keyComboAndSelectStackPanel.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
     shortcutControlLayout.as<StackPanel>().Children().InsertAt(0, keyComboAndSelectStackPanel.as<StackPanel>());
@@ -123,6 +123,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     target.Width(EditorConstants::ShortcutTargetColumnWidth);
 
     auto typeCombo = ComboBox();
+    typeCombo.Width(EditorConstants::RemapTableDropDownWidth);
     typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeShortcut()));
     typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
     auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
