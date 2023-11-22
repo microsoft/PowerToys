@@ -61,7 +61,10 @@ namespace LoadingAndSavingRemappingHelper
             DWORD ogKey = std::get<DWORD>(remappings[i].first[0]);
             KeyShortcutTextUnion newKey = remappings[i].first[1];
 
-            if (ogKey != NULL && ((newKey.index() == 0 && std::get<DWORD>(newKey) != 0) || (newKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey)))))
+            const bool hasValidKeyRemapping = newKey.index() == 0 && std::get<DWORD>(newKey) != 0;
+            const bool hasValidShortcutRemapping = newKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey));
+            const bool hasValidTextRemapping = newKey.index() == 2 && !std::get<std::wstring>(newKey).empty();
+            if (ogKey != NULL && (hasValidKeyRemapping || hasValidShortcutRemapping || hasValidTextRemapping))
             {
                 ogKeys.insert(ogKey);
 
@@ -125,7 +128,7 @@ namespace LoadingAndSavingRemappingHelper
             const DWORD originalKey = std::get<DWORD>(remappings[i].first[0]);
             KeyShortcutTextUnion newKey = remappings[i].first[1];
 
-            if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey))))
+            if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey))) && !(newKey.index() == 2 && std::get<std::wstring>(newKey).empty()))
             {
                 // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
                 bool result = false;
