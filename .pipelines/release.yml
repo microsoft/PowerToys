@@ -94,9 +94,9 @@ extends:
             version: '8.x'
 
         - task: PowerShell@2
-          displayName: Verify Latest VCToolsVersion Usage
+          displayName: Verify and set latest VCToolsVersion usage
           inputs:
-            filePath: '$(build.sourcesdirectory)\.pipelines\verifyLatestVCToolsVersion.ps1'
+            filePath: '$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1'
             pwsh: true
 
         - task: NuGetAuthenticate@1
