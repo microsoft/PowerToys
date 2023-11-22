@@ -620,24 +620,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool AllowPopupWindowSnap
-        {
-            get
-            {
-                return _allowPopupWindowSnap;
-            }
-
-            set
-            {
-                if (value != _allowPopupWindowSnap)
-                {
-                    _allowPopupWindowSnap = value;
-                    Settings.Properties.FancyzonesAllowPopupWindowSnap.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
         public bool AllowChildWindowSnap
         {
             get

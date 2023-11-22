@@ -2183,6 +2183,9 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Welcome to PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
   </data>
+	<data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
+    <value>What's New</value>
+  </data>
   <data name="Feedback_NavViewItem.Content" xml:space="preserve">
     <value>Give feedback</value>
   </data>

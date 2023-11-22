@@ -15,7 +15,7 @@
 namespace NonLocalizable
 {
     const wchar_t PowerToysAppFZEditor[] = L"POWERTOYS.FANCYZONESEDITOR.EXE";
-    const wchar_t SplashClassName[] = L"MsoSplash";
+    const char SplashClassName[] = "MsoSplash";
     const wchar_t CoreWindow[] = L"Windows.UI.Core.CoreWindow";
     const wchar_t SearchUI[] = L"SearchUI.exe";
     const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
@@ -122,17 +122,6 @@ namespace
     }
 }
 
-bool FancyZonesWindowUtils::IsSplashScreen(HWND window)
-{
-    wchar_t className[MAX_PATH];
-    if (GetClassName(window, className, MAX_PATH) == 0)
-    {
-        return false;
-    }
-
-    return wcscmp(NonLocalizable::SplashClassName, className) == 0;
-}
-
 bool FancyZonesWindowUtils::IsWindowMaximized(HWND window) noexcept
 {
     WINDOWPLACEMENT placement{};
@@ -164,44 +153,9 @@ bool FancyZonesWindowUtils::HasVisibleOwner(HWND window) noexcept
     return rect.top != rect.bottom && rect.left != rect.right;
 }
 
-bool FancyZonesWindowUtils::IsStandardWindow(HWND window)
+bool FancyZonesWindowUtils::IsRoot(HWND window) noexcept
 {
-    // True if from the styles the window looks like a standard window
-
-    if (GetAncestor(window, GA_ROOT) != window)
-    {
-        return false;
-    }
-
-    auto style = GetWindowLong(window, GWL_STYLE);
-    auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
-
-    bool isToolWindow = (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW;
-    bool isVisible = (style & WS_VISIBLE) == WS_VISIBLE;
-    if (isToolWindow || !isVisible)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool FancyZonesWindowUtils::IsPopupWindow(HWND window) noexcept
-{
-    auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_POPUP) == WS_POPUP);
-}
-
-bool FancyZonesWindowUtils::HasThickFrame(HWND window) noexcept
-{
-    auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_THICKFRAME) == WS_THICKFRAME);
-}
-
-bool FancyZonesWindowUtils::HasThickFrameAndMinimizeMaximizeButtons(HWND window) noexcept
-{
-    auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_THICKFRAME) == WS_THICKFRAME && (style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX && (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX);
+    return GetAncestor(window, GA_ROOT) == window;
 }
 
 bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
@@ -261,9 +215,14 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, std::wstring& 
         return true;
     }
 
-    std::array<char, 256> class_name;
-    GetClassNameA(hwnd, class_name.data(), static_cast<int>(class_name.size()));
-    if (is_system_window(hwnd, class_name.data()))
+    std::array<char, 256> className;
+    GetClassNameA(hwnd, className.data(), static_cast<int>(className.size()));
+    if (is_system_window(hwnd, className.data()))
+    {
+        return true;
+    }
+
+    if (strcmp(NonLocalizable::SplashClassName, className.data()) == 0)
     {
         return true;
     }
