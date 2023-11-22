@@ -1286,7 +1286,7 @@ EXHIBIT A -Mozilla Public License.
 - LazyCache 2.4.0
 - Mages 2.0.1
 - Markdig.Signed 0.27.0
-- Microsoft.CodeAnalysis.NetAnalyzers 8.0.0-preview.23525.2
+- Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
 - Microsoft.Data.Sqlite 8.0.0
 - Microsoft.Extensions.DependencyInjection 8.0.0
 - Microsoft.Extensions.Hosting 8.0.0
