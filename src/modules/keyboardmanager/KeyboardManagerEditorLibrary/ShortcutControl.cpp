@@ -130,6 +130,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     firstLineStackPanel.Children().InsertAt(0, typeCombo);
 
     auto textInput = TextBox();
+    auto textInputMargin = Windows::UI::Xaml::Thickness();
+    textInputMargin.Top = -EditorConstants::ShortcutTableDropDownSpacing;
+    textInputMargin.Bottom = EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed UIElement
+    textInput.Margin(textInputMargin);
+
     textInput.AcceptsReturn(false);
     textInput.Visibility(Visibility::Collapsed);
     textInput.Width(EditorConstants::TableDropDownHeight);
@@ -149,6 +154,9 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     });
 
     auto grid = keyboardRemapControlObjects.back()[1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>();
+    auto gridMargin = Windows::UI::Xaml::Thickness();
+    gridMargin.Bottom = -EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed textInput
+    grid.Margin(gridMargin);
     auto button = keyboardRemapControlObjects.back()[1]->typeShortcut.as<Button>();
 
     typeCombo.SelectionChanged([typeCombo, grid, button, textInput](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
