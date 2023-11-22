@@ -26,6 +26,8 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
     // Key column (From key)
     if (colIndex == 0)
     {
+        singleKeyRemapControlLayout.as<StackPanel>().Children().Append(typeKey.as<Button>());
+        
         keyDropDownControlObjects.emplace_back(std::make_unique<KeyDropDownControl>(false));
         singleKeyRemapControlLayout.as<StackPanel>().Children().Append(keyDropDownControlObjects[0]->GetComboBox());
         // Set selection handler for the drop down
