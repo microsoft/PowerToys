@@ -34,6 +34,21 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
+        public static class AccessibilityId
+        {
+            // main window
+            public const string MainWindow = "MainWindow1";
+            public const string Monitors = "Monitors";
+            public const string NewLayoutButton = "NewLayoutButton";
+
+            // layout card
+            public const string EditLayoutButton = "EditLayoutButton";
+
+            // edit layout window
+            public const string TemplateZoneSlider = "TemplateZoneCount";
+            public const string SensitivitySlider = "SensitivityInput";
+        }
+
         public WindowsDriver<WindowsElement>? Session { get; }
 
         public WindowsElement? MainEditorWindow { get; }
@@ -116,25 +131,41 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             return menu;
         }
 
-        public WindowsElement GetMonitorItem(int monitorNumber)
+        public WindowsElement? GetMonitorsList()
         {
-            var monitorsListView = Session?.FindElementByAccessibilityId("Monitors");
-            Assert.IsNotNull(monitorsListView, "Monitors list not found");
-            var listItem = monitorsListView?.FindElementByName($"{monitorNumber}");
-            Assert.IsNotNull(listItem, "Monitor " + monitorNumber + " not found");
-            return (WindowsElement)listItem;
+            return FindByAccessibilityId(AccessibilityId.Monitors);
         }
 
-        public WindowsElement GetZoneCountSlider()
+        public WindowsElement GetMonitorItem(int monitorNumber)
         {
-            var element = Session?.FindElementByAccessibilityId("TemplateZoneCount");
-            Assert.IsNotNull(element, "Template zone count slider not found");
-            return element;
+            try
+            {
+                var monitorsList = GetMonitorsList();
+                Assert.IsNotNull(monitorsList, "Monitors list not found");
+                var listItem = monitorsList?.FindElementByName($"{monitorNumber}");
+                Assert.IsNotNull(listItem, "Monitor " + monitorNumber + " not found");
+                return (WindowsElement)listItem;
+            }
+            catch (Exception)
+            {
+                Assert.Fail("Monitor " + monitorNumber + " not found");
+                return null;
+            }
+        }
+
+        public WindowsElement? GetZoneCountSlider()
+        {
+            return FindByAccessibilityId(AccessibilityId.TemplateZoneSlider);
+        }
+
+        public WindowsElement? GetSensitivitySlider()
+        {
+            return FindByAccessibilityId(AccessibilityId.SensitivitySlider);
         }
 
         public void Click_CreateNewLayout()
         {
-            var button = Session?.FindElementByAccessibilityId("NewLayoutButton");
+            var button = FindByAccessibilityId(AccessibilityId.NewLayoutButton);
             Assert.IsNotNull(button, "Create new layout button not found");
             button?.Click();
         }
@@ -142,7 +173,8 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public void Click_EditLayout(string layoutName)
         {
             var layout = GetLayout(layoutName);
-            var editButton = layout?.FindElementByAccessibilityId("EditLayoutButton");
+            Assert.IsNotNull(layout, $"Layout {layoutName} not found");
+            var editButton = layout?.FindElementByAccessibilityId(AccessibilityId.EditLayoutButton);
             Assert.IsNotNull(editButton, "Edit button not found");
             editButton.Click();
         }
@@ -171,6 +203,19 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             var button = Session?.FindElementByName("Cancel");
             Assert.IsNotNull(button, "No Cancel button");
             button.Click();
+        }
+
+        private WindowsElement? FindByAccessibilityId(string name)
+        {
+            try
+            {
+                return Session?.FindElementByAccessibilityId(name);
+            }
+            catch (Exception)
+            {
+                Assert.Fail($"{name} not found");
+                return null;
+            }
         }
 
         private void ClickItem(WindowsElement element)
