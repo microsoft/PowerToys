@@ -156,7 +156,7 @@ extends:
           inputs:
             solution: '**\PowerToys.sln'
             vsVersion: 17.0
-            msbuildArgs: -verbosity:detailed -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
