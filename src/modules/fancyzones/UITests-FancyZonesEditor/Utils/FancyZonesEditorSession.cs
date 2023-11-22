@@ -11,6 +11,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
 
 namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 {
@@ -177,6 +178,26 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             var editButton = layout?.FindElementByAccessibilityId(AccessibilityId.EditLayoutButton);
             Assert.IsNotNull(editButton, "Edit button not found");
             editButton.Click();
+
+            // wait until the dialog is opened
+            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
+            wait.Until(pred =>
+            {
+                bool displayed = false;
+                try
+                {
+                    var element = Session?.FindElementByName($"Edit '{layoutName}'");
+                    if (element != null)
+                    {
+                        displayed = element.Displayed;
+                    }
+                }
+                catch
+                {
+                }
+
+                return displayed;
+            });
         }
 
         public void RightClick_Layout(string layoutName)
