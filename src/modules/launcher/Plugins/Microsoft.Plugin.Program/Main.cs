@@ -157,10 +157,7 @@ namespace Microsoft.Plugin.Program
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            if (selectedResult == null)
-            {
-                throw new ArgumentNullException(nameof(selectedResult));
-            }
+            ArgumentNullException.ThrowIfNull(selectedResult);
 
             var menuOptions = new List<ContextMenuResult>();
             if (selectedResult.ContextData is IProgram program)
@@ -175,15 +172,9 @@ namespace Microsoft.Plugin.Program
         {
             try
             {
-                if (runProcess == null)
-                {
-                    throw new ArgumentNullException(nameof(runProcess));
-                }
+                ArgumentNullException.ThrowIfNull(runProcess);
 
-                if (info == null)
-                {
-                    throw new ArgumentNullException(nameof(info));
-                }
+                ArgumentNullException.ThrowIfNull(info);
 
                 runProcess(info);
             }

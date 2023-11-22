@@ -16,10 +16,7 @@ internal static class LayoutHelper
     public static LayoutInfo CalculateLayoutInfo(
         LayoutConfig layoutConfig)
     {
-        if (layoutConfig is null)
-        {
-            throw new ArgumentNullException(nameof(layoutConfig));
-        }
+        ArgumentNullException.ThrowIfNull(layoutConfig);
 
         var builder = new LayoutInfo.Builder
         {

@@ -1013,15 +1013,9 @@ namespace PowerLauncher.ViewModel
         /// </summary>
         public void UpdateResultView(List<Result> list, string originQuery, CancellationToken ct)
         {
-            if (list == null)
-            {
-                throw new ArgumentNullException(nameof(list));
-            }
+            ArgumentNullException.ThrowIfNull(list);
 
-            if (originQuery == null)
-            {
-                throw new ArgumentNullException(nameof(originQuery));
-            }
+            ArgumentNullException.ThrowIfNull(originQuery);
 
             foreach (var result in list)
             {
@@ -1062,7 +1056,7 @@ namespace PowerLauncher.ViewModel
             else
             {
                 // Using Ordinal this is internal
-                return string.IsNullOrEmpty(queryText) || autoCompleteText.IndexOf(queryText, StringComparison.Ordinal) != 0;
+                return string.IsNullOrEmpty(queryText) || !autoCompleteText.StartsWith(queryText, StringComparison.Ordinal);
             }
         }
 
@@ -1073,7 +1067,7 @@ namespace PowerLauncher.ViewModel
                 if (index == 0)
                 {
                     // Using OrdinalIgnoreCase because we want the characters to be exact in autocomplete text and the query
-                    if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
+                    if (input.StartsWith(query, StringComparison.OrdinalIgnoreCase))
                     {
                         // Use the same case as the input query for the matched portion of the string
                         return string.Concat(query, input.AsSpan(query.Length));
@@ -1091,7 +1085,7 @@ namespace PowerLauncher.ViewModel
                 if (index == 0 && !string.IsNullOrEmpty(query))
                 {
                     // Using OrdinalIgnoreCase since this is internal
-                    if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
+                    if (input.StartsWith(query, StringComparison.OrdinalIgnoreCase))
                     {
                         return string.Concat(query, input.AsSpan(query.Length));
                     }

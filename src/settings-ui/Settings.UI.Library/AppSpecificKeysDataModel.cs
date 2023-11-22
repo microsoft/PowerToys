@@ -25,10 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public bool Compare(AppSpecificKeysDataModel arg)
         {
-            if (arg == null)
-            {
-                throw new ArgumentNullException(nameof(arg));
-            }
+            ArgumentNullException.ThrowIfNull(arg);
 
             // Using Ordinal comparison for internal text
             return OriginalKeys.Equals(arg.OriginalKeys, StringComparison.Ordinal) &&

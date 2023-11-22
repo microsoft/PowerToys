@@ -25,17 +25,17 @@
     <PackageVersion Include="LazyCache" Version="2.4.0" />
     <PackageVersion Include="Mages" Version="2.0.1" />
     <PackageVersion Include="Markdig.Signed" Version="0.27.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.0" />
     <PackageVersion Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
-    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.4" />
@@ -57,17 +57,17 @@
     <PackageVersion Include="StreamJsonRpc" Version="2.14.24" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.507" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="System.ComponentModel.Composition" Version="7.0.0" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
-    <PackageVersion Include="System.Data.OleDb" Version="7.0.0" />
-    <PackageVersion Include="System.Drawing.Common" Version="7.0.0" />
+    <PackageVersion Include="System.ComponentModel.Composition" Version="8.0.0" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageVersion Include="System.Data.OleDb" Version="8.0.0" />
+    <PackageVersion Include="System.Drawing.Common" Version="8.0.0" />
     <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
-    <PackageVersion Include="System.Management" Version="7.0.2" />
+    <PackageVersion Include="System.Management" Version="8.0.0" />
     <PackageVersion Include="System.Reactive" Version="6.0.0-preview.9" />
-    <PackageVersion Include="System.Runtime.Caching" Version="7.0.0" />
-    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="7.0.1" />
-    <PackageVersion Include="System.Text.Encoding.CodePages" Version="7.0.0" />
+    <PackageVersion Include="System.Runtime.Caching" Version="8.0.0" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="4.145.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />

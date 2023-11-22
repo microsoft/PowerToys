@@ -98,10 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 IncludeFields = true,
             };
 
-            if (settingsUtils == null)
-            {
-                throw new ArgumentNullException(nameof(settingsUtils));
-            }
+            ArgumentNullException.ThrowIfNull(settingsUtils);
 
             settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }

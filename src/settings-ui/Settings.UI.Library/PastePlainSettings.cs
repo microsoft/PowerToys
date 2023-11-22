@@ -31,10 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 WriteIndented = true,
             };
 
-            if (settingsUtils == null)
-            {
-                throw new ArgumentNullException(nameof(settingsUtils));
-            }
+            ArgumentNullException.ThrowIfNull(settingsUtils);
 
             settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }

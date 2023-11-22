@@ -86,10 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 
         public static void VerifyModuleIOProviderWasRead(Mock<IFile> provider, string module, int expectedCallCount)
         {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
+            ArgumentNullException.ThrowIfNull(provider);
 
             Expression<Func<string, bool>> filterExpression = ModuleFilterExpression(module);
 
@@ -110,10 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 
         public static void VerifyGeneralSettingsIOProviderWasRead(Mock<IFile> provider, int expectedCallCount)
         {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
+            ArgumentNullException.ThrowIfNull(provider);
 
             IIOProviderMocks.VerifyIOReadWithStubFile(provider, SettingsFilterExpression, expectedCallCount);
         }
