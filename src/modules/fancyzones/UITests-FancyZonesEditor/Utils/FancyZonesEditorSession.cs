@@ -45,9 +45,11 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             // layout card
             public const string EditLayoutButton = "EditLayoutButton";
 
-            // edit layout window
+            // edit template layout window
             public const string TemplateZoneSlider = "TemplateZoneCount";
             public const string SensitivitySlider = "SensitivityInput";
+            public const string SpacingSlider = "Spacing";
+            public const string SpacingToggle = "spaceAroundSetting";
         }
 
         public WindowsDriver<WindowsElement>? Session { get; }
@@ -162,6 +164,16 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public WindowsElement? GetSensitivitySlider()
         {
             return FindByAccessibilityId(AccessibilityId.SensitivitySlider);
+        }
+
+        public WindowsElement? GetSpaceAroudZonesSlider()
+        {
+            return FindByAccessibilityId(AccessibilityId.SpacingSlider);
+        }
+
+        public WindowsElement? GetSpaceAroundZonesToggle()
+        {
+            return FindByAccessibilityId(AccessibilityId.SpacingToggle);
         }
 
         public void Click_CreateNewLayout()
