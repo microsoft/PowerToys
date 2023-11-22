@@ -6,6 +6,5 @@
 
     <!-- Forcing for every DLL on by default -->
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
-    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
 </Project>

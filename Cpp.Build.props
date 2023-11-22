@@ -112,6 +112,7 @@
     <PlatformToolset Condition="'$(OverridePlatformToolset)'!='True'">v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
+	<SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
 
   <!-- Debug/Release props -->
