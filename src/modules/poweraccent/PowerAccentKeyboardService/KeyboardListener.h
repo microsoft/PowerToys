@@ -3,7 +3,6 @@
 #include "KeyboardListener.g.h"
 #include <mutex>
 #include <spdlog/stopwatch.h>
-#include <mutex>
 
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 {
