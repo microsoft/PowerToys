@@ -102,6 +102,7 @@
 
         <Grid
             Grid.Row="1"
+            MinWidth="600"
             Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}"
             Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
             <TextBlock
