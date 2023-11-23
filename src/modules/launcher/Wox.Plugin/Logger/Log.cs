@@ -77,50 +77,35 @@ namespace Wox.Plugin.Logger
 
         public static void Info(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            if (fullClassName == null)
-            {
-                throw new ArgumentNullException(nameof(fullClassName));
-            }
+            ArgumentNullException.ThrowIfNull(fullClassName);
 
             LogInternal(LogLevel.Info, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
         public static void Debug(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            if (fullClassName == null)
-            {
-                throw new ArgumentNullException(nameof(fullClassName));
-            }
+            ArgumentNullException.ThrowIfNull(fullClassName);
 
             LogInternal(LogLevel.Debug, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
         public static void Warn(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            if (fullClassName == null)
-            {
-                throw new ArgumentNullException(nameof(fullClassName));
-            }
+            ArgumentNullException.ThrowIfNull(fullClassName);
 
             LogInternal(LogLevel.Warn, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
         public static void Error(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            if (fullClassName == null)
-            {
-                throw new ArgumentNullException(nameof(fullClassName));
-            }
+            ArgumentNullException.ThrowIfNull(fullClassName);
 
             LogInternal(LogLevel.Error, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
         public static void Exception(string message, System.Exception ex, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            if (fullClassName == null)
-            {
-                throw new ArgumentNullException(nameof(fullClassName));
-            }
+            ArgumentNullException.ThrowIfNull(fullClassName);
 
             LogInternalException(message, ex, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }

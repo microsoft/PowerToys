@@ -24,8 +24,6 @@ private:
 
     struct WindowProperties
     {
-        // True if from the styles the window looks like a standard window
-        bool isStandardWindow = false;
         // True if the window is a top-level window that does not have a visible owner
         bool hasNoVisibleOwner = false;
         // Properties to restore after dragging

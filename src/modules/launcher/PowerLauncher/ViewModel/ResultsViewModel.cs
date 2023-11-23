@@ -263,10 +263,7 @@ namespace PowerLauncher.ViewModel
         /// </summary>
         public void AddResults(List<Result> newRawResults, CancellationToken ct)
         {
-            if (newRawResults == null)
-            {
-                throw new ArgumentNullException(nameof(newRawResults));
-            }
+            ArgumentNullException.ThrowIfNull(newRawResults);
 
             List<ResultViewModel> newResults = new List<ResultViewModel>(newRawResults.Count);
             foreach (Result r in newRawResults)

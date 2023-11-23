@@ -8,8 +8,7 @@ namespace Mocks
     class HwndCreator
     {
     public:
-        HwndCreator(const std::wstring& title = L"");
-
+        HwndCreator(const std::wstring& title, const std::wstring& className, DWORD exStyle, DWORD style, HWND parentWindow);
         ~HwndCreator();
 
         HWND operator()(HINSTANCE hInst);
@@ -20,23 +19,30 @@ namespace Mocks
         inline HINSTANCE getHInstance() const { return m_hInst; }
         inline const std::wstring& getTitle() const { return m_windowTitle; }
         inline const std::wstring& getWindowClassName() const { return m_windowClassName; }
+        inline DWORD getExStyle() const noexcept { return m_exStyle; }
+        inline DWORD getStyle() const noexcept { return m_style; }
+        inline HWND getParentWindow() const noexcept { return m_parentWindow; }
 
     private:
         std::wstring m_windowTitle;
         std::wstring m_windowClassName;
+        DWORD m_exStyle{ 0 };
+        DWORD m_style{ 0 };
+        HWND m_parentWindow{ NULL };
 
         std::mutex m_mutex;
         std::condition_variable m_conditionVar;
         bool m_conditionFlag;
         HANDLE m_thread;
 
-        HINSTANCE m_hInst;
+        HINSTANCE m_hInst{};
         HWND m_hWnd;
     };
 
-    HWND WindowCreate(HINSTANCE hInst)
+    HWND WindowCreate(HINSTANCE hInst, const std::wstring& title /*= L""*/, const std::wstring& className /*= L""*/, 
+        DWORD exStyle, DWORD style, HWND parentWindow)
     {
-        return HwndCreator()(hInst);
+        return HwndCreator(title, className, exStyle, style, parentWindow)(hInst);
     }
 }
 
@@ -85,8 +91,21 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 
     if (RegisterDLLWindowClass(creator->getWindowClassName().c_str(), creator) != 0)
     {
-        auto hWnd = CreateWindowEx(0, creator->getWindowClassName().c_str(), creator->getTitle().c_str(), WS_EX_APPWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, nullptr, nullptr, creator->getHInstance(), NULL);
-        SetWindowPos(hWnd, HWND_TOPMOST, 10, 10, 100, 100, SWP_SHOWWINDOW);
+        auto hWnd = CreateWindowEx(creator->getExStyle(), 
+            creator->getWindowClassName().c_str(), 
+            creator->getTitle().c_str(), 
+            creator->getStyle(), 
+            CW_USEDEFAULT, CW_USEDEFAULT, 
+            CW_USEDEFAULT, CW_USEDEFAULT, 
+            creator->getParentWindow(),
+            nullptr, 
+            creator->getHInstance(), 
+            NULL);
+
+        ShowWindow(hWnd, SW_SHOW);
+        // wait after ShowWindow to make sure that it's finished and shown
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
+
         creator->setHwnd(hWnd);
         creator->setCondition(true);
 
@@ -95,8 +114,6 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
             TranslateMessage(&messages);
             DispatchMessage(&messages);
         }
-
-        creator->setHwnd(hWnd);
     }
     else
     {
@@ -108,8 +125,16 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 
 namespace Mocks
 {
-    HwndCreator::HwndCreator(const std::wstring& title) :
-        m_windowTitle(title), m_windowClassName(std::to_wstring(++s_classId)), m_conditionFlag(false), m_thread(nullptr), m_hInst(HINSTANCE{}), m_hWnd(nullptr)
+    HwndCreator::HwndCreator(const std::wstring& title, const std::wstring& className, DWORD exStyle, DWORD style, HWND parentWindow) :
+        m_windowTitle(title), 
+        m_windowClassName(className.empty() ? std::to_wstring(++s_classId) : className), 
+        m_exStyle(exStyle),
+        m_style(style),
+        m_parentWindow(parentWindow),
+        m_conditionFlag(false), 
+        m_thread(nullptr), 
+        m_hInst(HINSTANCE{}), 
+        m_hWnd(nullptr)
     {
     }
 

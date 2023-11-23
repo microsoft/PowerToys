@@ -2,7 +2,7 @@
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ProjectGuid>{D095BE44-1F2E-463E-A494-121892A75EA2}</ProjectGuid>
     <UseWPF>true</UseWPF>
     <Version>$(Version).0</Version>

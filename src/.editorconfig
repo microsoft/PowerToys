@@ -97,3 +97,48 @@ dotnet_diagnostic.IDE0065.severity = none
 
 # IDE0009: Add this or Me qualification
 dotnet_diagnostic.IDE0009.severity = none
+
+# CA1859: Change type for improved performance
+dotnet_diagnostic.CA1859.severity = none
+
+# CA1716: Identifiers should not match keywords
+dotnet_diagnostic.CA1716.severity = none
+
+# SYSLIB1096: Convert to 'GeneratedComInterface'
+dotnet_diagnostic.SYSLIB1096.severity = silent
+
+# CA1309: Use ordinal StringComparison
+dotnet_diagnostic.CA1309.severity = suggestion
+
+# CS1615: Argument may not be passed with the ref keyword
+dotnet_diagnostic.CS1615.severity = none
+
+# CA1854: Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup
+dotnet_diagnostic.CA1854.severity = suggestion
+
+# CA1860: Avoid using 'Enumerable.Any()' extension method
+dotnet_diagnostic.CA1860.severity = suggestion
+
+# CA1861: Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array 
+dotnet_diagnostic.CA1861.severity = suggestion
+
+# CA1862: Prefer using 'StringComparer'/'StringComparison' to perform case-insensitive string comparisons
+dotnet_diagnostic.CA1862.severity = suggestion
+
+# CA1863: Cache a CompositeFormat for repeated use in this formatting operation
+dotnet_diagnostic.CA1863.severity = none
+
+# CA1864: Prefer the 'IDictionary.TryAdd(TKey, TValue)' method
+dotnet_diagnostic.CA1864.severity = suggestion
+
+# CA1865: Use 'string.Method(char)' instead of 'string.Method(string)' for string with single char
+dotnet_diagnostic.CA1865.severity = suggestion
+
+# CA1869: Cache and reuse 'JsonSerializerOptions' instances
+dotnet_diagnostic.CA1869.severity = none
+
+# CA2208: Instantiate argument exceptions correctly
+dotnet_diagnostic.CA2208.severity = none
+
+# CS9191: The 'ref' modifier for argument corresponding to 'in' is equivalent to 'in'. Consider using 'in' instead.
+dotnet_diagnostic.CS9191.severity = none

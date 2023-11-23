@@ -28,10 +28,7 @@ namespace ColorPicker.Common
 
         public void AddRange(IEnumerable<T> list)
         {
-            if (list == null)
-            {
-                throw new ArgumentNullException(nameof(list));
-            }
+            ArgumentNullException.ThrowIfNull(list);
 
             _suppressNotification = true;
 

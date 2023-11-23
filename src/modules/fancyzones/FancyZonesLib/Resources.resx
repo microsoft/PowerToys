@@ -215,7 +215,7 @@
   </data>
   <data name="FancyZones" xml:space="preserve">
     <value>FancyZones</value>
-    <comment>FancyZone is a product name, keep as is.</comment>
+    <comment>FancyZones is a product name, keep as is.</comment>
   </data>
   <data name="Cant_Drag_Elevated" xml:space="preserve">
     <value>We've detected an application running with administrator privileges. This will prevent certain interactions with these applications.</value>
@@ -243,19 +243,19 @@
   </data>
   <data name="FancyZones_Data_Error" xml:space="preserve">
     <value>FancyZones persisted data path not found. Please report the bug to</value>
-    <comment>"Report bug to" will have a URL after. FancyZone is a product name, keep as is.</comment>
+    <comment>"Report bug to" will have a URL after. FancyZones is a product name, keep as is.</comment>
   </data>
   <data name="FancyZones_Editor_Launch_Error" xml:space="preserve">
     <value>The FancyZones editor failed to start. Please report the bug to</value>
-    <comment>"Report bug to" will have a URL after. FancyZone is a product name, keep as is.</comment>
+    <comment>"Report bug to" will have a URL after. FancyZones is a product name, keep as is.</comment>
   </data>
   <data name="FancyZones_Settings_Load_Error" xml:space="preserve">
     <value>Failed to load the FancyZones settings. Default settings will be used.</value>
-    <comment>FancyZone is a product name, keep as is.</comment>
+    <comment>FancyZones is a product name, keep as is.</comment>
   </data>
   <data name="FancyZones_Settings_Save_Error" xml:space="preserve">
     <value>Failed to save the FancyZones settings. Please retry again later, if the problem persists report the bug to</value>
-    <comment>"Report bug to" will have a URL after. FancyZone is a product name, keep as is.</comment>
+    <comment>"Report bug to" will have a URL after. FancyZones is a product name, keep as is.</comment>
   </data>
   <data name="Setting_Description_QuickLayoutSwitch" xml:space="preserve">
     <value>Enable quick layout switch</value>

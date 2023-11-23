@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -30,6 +31,7 @@ namespace PowerLauncher
         private static readonly object _readSyncObject = new object();
         private readonly PowerToysRunSettings _settings;
         private readonly ThemeManager _themeManager;
+        private Action _refreshPluginsOverviewCallback;
 
         private IFileSystemWatcher _watcher;
 
@@ -92,7 +94,7 @@ namespace PowerLauncher
                     foreach (var setting in overloadSettings.Plugins)
                     {
                         var plugin = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == setting.Id);
-                        plugin?.Update(setting, App.API);
+                        plugin?.Update(setting, App.API, _refreshPluginsOverviewCallback);
                     }
 
                     var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);
@@ -217,6 +219,11 @@ namespace PowerLauncher
             Monitor.Exit(_readSyncObject);
         }
 
+        public void SetRefreshPluginsOverviewCallback(Action callback)
+        {
+            _refreshPluginsOverviewCallback = callback;
+        }
+
         private static string ConvertHotkey(HotkeySettings hotkey)
         {
             Key key = KeyInterop.KeyFromVirtualKey(hotkey.Code);
@@ -255,15 +262,15 @@ namespace PowerLauncher
             var defaultPlugins = GetDefaultPluginsSettings().ToDictionary(x => x.Id);
             foreach (PowerLauncherPluginSettings plugin in settings.Plugins)
             {
-                if (defaultPlugins.ContainsKey(plugin.Id))
+                if (defaultPlugins.TryGetValue(plugin.Id, out PowerLauncherPluginSettings value))
                 {
-                    var additionalOptions = CombineAdditionalOptions(defaultPlugins[plugin.Id].AdditionalOptions, plugin.AdditionalOptions);
+                    var additionalOptions = CombineAdditionalOptions(value.AdditionalOptions, plugin.AdditionalOptions);
                     var enabledPolicyState = GPOWrapper.GetRunPluginEnabledValue(plugin.Id);
-                    plugin.Name = defaultPlugins[plugin.Id].Name;
-                    plugin.Description = defaultPlugins[plugin.Id].Description;
-                    plugin.Author = defaultPlugins[plugin.Id].Author;
-                    plugin.IconPathDark = defaultPlugins[plugin.Id].IconPathDark;
-                    plugin.IconPathLight = defaultPlugins[plugin.Id].IconPathLight;
+                    plugin.Name = value.Name;
+                    plugin.Description = value.Description;
+                    plugin.Author = value.Author;
+                    plugin.IconPathDark = value.IconPathDark;
+                    plugin.IconPathLight = value.IconPathLight;
                     plugin.EnabledPolicyUiState = (int)enabledPolicyState;
                     defaultPlugins[plugin.Id] = plugin;
                     defaultPlugins[plugin.Id].AdditionalOptions = additionalOptions;
