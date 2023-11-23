@@ -203,12 +203,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
         {
             var aumid = terminal.AppUserModelId;
 
-            if (!_logoCache.ContainsKey(aumid))
+            if (!_logoCache.TryGetValue(aumid, out BitmapImage value))
             {
-                _logoCache.Add(aumid, terminal.GetLogo());
+                value = terminal.GetLogo();
+                _logoCache.Add(aumid, value);
             }
 
-            return _logoCache[aumid];
+            return value;
         }
     }
 }

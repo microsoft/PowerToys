@@ -379,10 +379,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _uiDispatcherQueue = uiDispatcherQueue;
 
             // To obtain the general settings configurations of PowerToys Settings.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
@@ -470,10 +467,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void LoadViewModelFromSettings(MouseWithoutBordersSettings moduleSettings)
         {
-            if (moduleSettings == null)
-            {
-                throw new ArgumentNullException(nameof(moduleSettings));
-            }
+            ArgumentNullException.ThrowIfNull(moduleSettings);
 
             Settings = moduleSettings;
             /* TODO: Error handling */

@@ -97,6 +97,14 @@ namespace Microsoft.PowerToys.Settings.UI
             });
         }
 
+        public void SetAppWindow(PowerToysModules module)
+        {
+            if (shellPage != null)
+            {
+                shellPage.NavigateToModule(module);
+            }
+        }
+
         private void OobeWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
             var dpi = NativeMethods.GetDpiForWindow(_hWnd);

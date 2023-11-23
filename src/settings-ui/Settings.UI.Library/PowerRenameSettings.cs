@@ -24,10 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public PowerRenameSettings(PowerRenameLocalProperties localProperties)
         {
-            if (localProperties == null)
-            {
-                throw new ArgumentNullException(nameof(localProperties));
-            }
+            ArgumentNullException.ThrowIfNull(localProperties);
 
             Properties = new PowerRenameProperties();
             Properties.PersistState.Value = localProperties.PersistState;

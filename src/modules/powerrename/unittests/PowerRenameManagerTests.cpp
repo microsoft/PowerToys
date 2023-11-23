@@ -306,7 +306,7 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$YYYY-$MM-$DD-$hh-$mm-$ss-$fff", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
 
-        TEST_METHOD (VerifyFileAttributesMonthandDayNames)
+        TEST_METHOD (VerifyFileAttributesMonthAndDayNames)
         {
             std::locale::global(std::locale(""));
             SYSTEMTIME fileTime = { 2020, 1, 3, 1, 15, 6, 42, 453 };

@@ -108,7 +108,7 @@ public:
     int GetCommonModifiersCount(const Shortcut& input) const;
 };
 
-using KeyShortcutUnion = std::variant<DWORD, Shortcut>;
-using RemapBufferItem = std::vector<KeyShortcutUnion>;
+using KeyShortcutTextUnion = std::variant<DWORD, Shortcut, std::wstring>;
+using RemapBufferItem = std::vector<KeyShortcutTextUnion>;
 using RemapBufferRow = std::pair<RemapBufferItem, std::wstring>;
 using RemapBuffer = std::vector<RemapBufferRow>;

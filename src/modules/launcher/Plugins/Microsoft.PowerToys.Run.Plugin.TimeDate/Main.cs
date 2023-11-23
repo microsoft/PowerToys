@@ -65,10 +65,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             return SearchController.ExecuteSearch(query, IconTheme);
         }
