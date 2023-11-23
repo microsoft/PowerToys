@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private IntPtr _hWnd;
         private AppWindow _appWindow;
 
-        public OobeWindow(PowerToysModules initialModule, bool isDark)
+        public OobeWindow(PowerToysModules initialModule)
         {
             this.InitializeComponent();
 
@@ -41,14 +41,6 @@ namespace Microsoft.PowerToys.Settings.UI
             _windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
             _appWindow = AppWindow.GetFromWindowId(_windowId);
             _appWindow.SetIcon("Assets\\Settings\\icon.ico");
-
-            // Passed by parameter, as it needs to be evaluated ASAP, otherwise there is a white flash
-            if (isDark)
-            {
-                ThemeHelpers.SetImmersiveDarkMode(_hWnd, isDark);
-            }
-
-            SetTheme(isDark);
 
             OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsMinimizable = false;
@@ -139,11 +131,6 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 mainWindow.CloseHiddenWindow();
             }
-        }
-
-        public void SetTheme(bool isDark)
-        {
-            shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
     }
 }

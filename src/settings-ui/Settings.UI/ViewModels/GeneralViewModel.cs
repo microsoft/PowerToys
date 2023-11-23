@@ -100,8 +100,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback function value to update the UI theme.
             UpdateUIThemeCallBack = updateTheme;
 
-            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
-
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
