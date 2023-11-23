@@ -17,7 +17,7 @@ using static FancyZonesEditorCommon.Data.LayoutTemplates;
 namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
-    public class UIInitializationTests_TemplateLayouts
+    public class TemplateLayoutsTests
     {
         private static readonly TemplateLayoutsListWrapper Layouts = new TemplateLayoutsListWrapper
         {
