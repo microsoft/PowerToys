@@ -165,7 +165,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
         {
-            _session?.Click_EditLayout(Constants.LayoutNames[Constants.Layouts.Grid]);
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
             Assert.IsNotNull(_session?.Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
             Assert.IsNotNull(_session?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
         }
@@ -173,7 +173,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void OpenContextMenu() // verify the context menu is opened
         {
-            Assert.IsNotNull(_session?.OpenContextMenu(Constants.LayoutNames[Constants.Layouts.Columns]));
+            Assert.IsNotNull(_session?.OpenContextMenu(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Columns]));
         }
 
         [TestMethod]

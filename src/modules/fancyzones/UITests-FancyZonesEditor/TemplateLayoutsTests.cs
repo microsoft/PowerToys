@@ -25,16 +25,16 @@ namespace Microsoft.FancyZonesEditor.UITests
             {
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.LayoutTypes[Constants.Layouts.Empty],
+                    Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Empty],
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.LayoutTypes[Constants.Layouts.Focus],
+                    Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Focus],
                     ZoneCount = 10,
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.LayoutTypes[Constants.Layouts.Rows],
+                    Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
                     ZoneCount = 2,
                     ShowSpacing = true,
                     Spacing = 10,
@@ -42,7 +42,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.LayoutTypes[Constants.Layouts.Columns],
+                    Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Columns],
                     ZoneCount = 2,
                     ShowSpacing = true,
                     Spacing = 20,
@@ -50,7 +50,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.LayoutTypes[Constants.Layouts.Grid],
+                    Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Grid],
                     ZoneCount = 4,
                     ShowSpacing = false,
                     Spacing = 10,
@@ -58,7 +58,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.LayoutTypes[Constants.Layouts.PriorityGrid],
+                    Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
                     ZoneCount = 3,
                     ShowSpacing = true,
                     Spacing = 1,
@@ -122,7 +122,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                         MonitorConfiguration = MonitorConfigurationType.Vertical.ToString(),
                         Layout = new DefaultLayoutWrapper.LayoutWrapper
                         {
-                            Type = Constants.LayoutTypes[Constants.Layouts.Rows],
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
                             ZoneCount = 2,
                             ShowSpacing = true,
                             Spacing = 10,
@@ -134,7 +134,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                         MonitorConfiguration = MonitorConfigurationType.Horizontal.ToString(),
                         Layout = new DefaultLayoutWrapper.LayoutWrapper
                         {
-                            Type = Constants.LayoutTypes[Constants.Layouts.PriorityGrid],
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
                             ZoneCount = 3,
                             ShowSpacing = true,
                             Spacing = 1,
@@ -164,7 +164,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                         },
                         AppliedLayout = new AppliedLayoutWrapper.LayoutWrapper
                         {
-                            Type = Constants.LayoutTypes[Constants.Layouts.PriorityGrid],
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
                             ZoneCount = 3,
                             ShowSpacing = true,
                             Spacing = 1,
@@ -203,9 +203,9 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void ZoneNumber()
         {
-            foreach (var (key, name) in Constants.LayoutNames)
+            foreach (var (key, name) in Constants.TemplateLayoutNames)
             {
-                if (key == Constants.Layouts.Empty)
+                if (key == Constants.TemplateLayouts.Empty)
                 {
                     continue;
                 }
@@ -213,7 +213,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 _session?.Click_EditLayout(name);
 
                 var slider = _session?.GetZoneCountSlider();
-                var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.LayoutTypes[key]).ZoneCount;
+                var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).ZoneCount;
                 Assert.AreEqual($"{expected}", slider?.Text);
 
                 _session?.Click_Cancel();
@@ -227,9 +227,9 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void HighlightDistance()
         {
-            foreach (var (key, name) in Constants.LayoutNames)
+            foreach (var (key, name) in Constants.TemplateLayoutNames)
             {
-                if (key == Constants.Layouts.Empty)
+                if (key == Constants.TemplateLayouts.Empty)
                 {
                     continue;
                 }
@@ -237,7 +237,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 _session?.Click_EditLayout(name);
 
                 var slider = _session?.GetSensitivitySlider();
-                var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.LayoutTypes[key]).SensitivityRadius;
+                var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).SensitivityRadius;
                 Assert.AreEqual($"{expected}", slider?.Text);
 
                 _session?.Click_Cancel();
@@ -251,9 +251,9 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void SpaceAroundZones()
         {
-            foreach (var (key, name) in Constants.LayoutNames)
+            foreach (var (key, name) in Constants.TemplateLayoutNames)
             {
-                if (key == Constants.Layouts.Empty || key == Constants.Layouts.Focus)
+                if (key == Constants.TemplateLayouts.Empty || key == Constants.TemplateLayouts.Focus)
                 {
                     // only for grid layouts
                     continue;
@@ -264,10 +264,10 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var toggle = _session?.GetSpaceAroundZonesToggle();
                 var slider = _session?.GetSpaceAroudZonesSlider();
 
-                var spacingEnabled = Layouts.LayoutTemplates.Find(x => x.Type == Constants.LayoutTypes[key]).ShowSpacing;
+                var spacingEnabled = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).ShowSpacing;
                 Assert.AreEqual(spacingEnabled, slider?.Enabled);
 
-                var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.LayoutTypes[key]).Spacing;
+                var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).Spacing;
                 Assert.AreEqual($"{expected}", slider?.Text);
 
                 _session?.Click_Cancel();

@@ -8,7 +8,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 {
     public static class Constants
     {
-        public enum Layouts
+        public enum TemplateLayouts
         {
             Empty,
             Focus,
@@ -18,24 +18,24 @@ namespace Microsoft.FancyZonesEditor.UITests
             PriorityGrid,
         }
 
-        public static readonly Dictionary<Layouts, string> LayoutNames = new Dictionary<Layouts, string>()
+        public static readonly Dictionary<TemplateLayouts, string> TemplateLayoutNames = new Dictionary<TemplateLayouts, string>()
         {
-            { Layouts.Empty, "No layout" },
-            { Layouts.Focus, "Focus" },
-            { Layouts.Rows, "Rows" },
-            { Layouts.Columns, "Columns" },
-            { Layouts.Grid, "Grid" },
-            { Layouts.PriorityGrid, "Priority Grid" },
+            { TemplateLayouts.Empty, "No layout" },
+            { TemplateLayouts.Focus, "Focus" },
+            { TemplateLayouts.Rows, "Rows" },
+            { TemplateLayouts.Columns, "Columns" },
+            { TemplateLayouts.Grid, "Grid" },
+            { TemplateLayouts.PriorityGrid, "Priority Grid" },
         };
 
-        public static readonly Dictionary<Layouts, string> LayoutTypes = new Dictionary<Layouts, string>()
+        public static readonly Dictionary<TemplateLayouts, string> TemplateLayoutTypes = new Dictionary<TemplateLayouts, string>()
         {
-            { Layouts.Empty, "blank" },
-            { Layouts.Focus, "focus" },
-            { Layouts.Rows, "rows" },
-            { Layouts.Columns, "columns" },
-            { Layouts.Grid, "grid" },
-            { Layouts.PriorityGrid, "priority-grid" },
+            { TemplateLayouts.Empty, "blank" },
+            { TemplateLayouts.Focus, "focus" },
+            { TemplateLayouts.Rows, "rows" },
+            { TemplateLayouts.Columns, "columns" },
+            { TemplateLayouts.Grid, "grid" },
+            { TemplateLayouts.PriorityGrid, "priority-grid" },
         };
     }
 }
