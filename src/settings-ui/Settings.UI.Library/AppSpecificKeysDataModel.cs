@@ -28,9 +28,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ArgumentNullException.ThrowIfNull(arg);
 
             // Using Ordinal comparison for internal text
-            return OriginalKeys.Equals(arg.OriginalKeys, StringComparison.Ordinal) &&
-                NewRemapKeys.Equals(arg.NewRemapKeys, StringComparison.Ordinal) &&
-                TargetApp.Equals(arg.TargetApp, StringComparison.Ordinal);
+            return string.Equals(OriginalKeys, arg.OriginalKeys, StringComparison.Ordinal) &&
+                   string.Equals(NewRemapKeys, arg.NewRemapKeys, StringComparison.Ordinal) &&
+                   string.Equals(NewRemapString, arg.NewRemapString, StringComparison.Ordinal) &&
+                   string.Equals(TargetApp, arg.TargetApp, StringComparison.Ordinal);
         }
     }
 }

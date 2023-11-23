@@ -21,7 +21,7 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
     shortcutDropDownVariableSizedWrapGrid = VariableSizedWrapGrid();
     typeShortcut = Button();
     shortcutControlLayout = StackPanel();
-    bool isHybridControl = colIndex == 1 ? true : false;
+    const bool isHybridControl = colIndex == 1;
 
     // TODO: Check if there is a VariableSizedWrapGrid equivalent.
     // shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
@@ -41,7 +41,13 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
 
     shortcutControlLayout.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
 
-    shortcutControlLayout.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
+    keyComboAndSelectStackPanel = StackPanel();
+    keyComboAndSelectStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    keyComboAndSelectStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
+
+    keyComboAndSelectStackPanel.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
+    shortcutControlLayout.as<StackPanel>().Children().InsertAt(0, keyComboAndSelectStackPanel.as<StackPanel>());
+
     shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
     KeyDropDownControl::AddDropDown(table, row, shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, false);
     try
@@ -63,7 +69,7 @@ void ShortcutControl::SetAccessibleNameForTextBox(TextBox targetAppTextBox, int 
     {
         targetAppTextBoxAccessibleName += GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
     }
-    
+
     targetAppTextBox.SetValue(Automation::AutomationProperties::NameProperty(), box_value(targetAppTextBoxAccessibleName));
 }
 
@@ -77,7 +83,7 @@ void ShortcutControl::UpdateAccessibleNames(StackPanel sourceColumn, StackPanel 
 }
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutUnion& newKeys, const std::wstring& targetAppName)
+void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutTextUnion& newKeys, const std::wstring& targetAppName)
 {
     // Textbox for target application
     TextBox targetAppTextBox;
@@ -115,6 +121,60 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     // ShortcutControl for the new shortcut
     auto target = keyboardRemapControlObjects.back()[1]->GetShortcutControl();
     target.Width(EditorConstants::ShortcutTargetColumnWidth);
+
+    auto typeCombo = ComboBox();
+    typeCombo.Width(EditorConstants::RemapTableDropDownWidth);
+    typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeShortcut()));
+    typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
+    auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
+    auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
+    firstLineStackPanel.Children().InsertAt(0, typeCombo);
+
+    auto textInput = TextBox();
+    auto textInputMargin = Windows::UI::Xaml::Thickness();
+    textInputMargin.Top = -EditorConstants::ShortcutTableDropDownSpacing;
+    textInputMargin.Bottom = EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed UIElement
+    textInput.Margin(textInputMargin);
+
+    textInput.AcceptsReturn(false);
+    textInput.Visibility(Visibility::Collapsed);
+    textInput.Width(EditorConstants::TableDropDownHeight);
+    controlStackPanel.Children().Append(textInput);
+    textInput.HorizontalAlignment(HorizontalAlignment::Left);
+    textInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+        auto textbox = sender.as<TextBox>();
+        auto text = textbox.Text();
+        uint32_t rowIndex = -1;
+
+        if (!parent.Children().IndexOf(row, rowIndex))
+        {
+            return;
+        }
+
+        shortcutRemapBuffer[rowIndex].first[1] = text.c_str();
+    });
+
+    auto grid = keyboardRemapControlObjects.back()[1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>();
+    auto gridMargin = Windows::UI::Xaml::Thickness();
+    gridMargin.Bottom = -EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed textInput
+    grid.Margin(gridMargin);
+    auto button = keyboardRemapControlObjects.back()[1]->typeShortcut.as<Button>();
+
+    typeCombo.SelectionChanged([typeCombo, grid, button, textInput](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
+        const bool textSelected = typeCombo.SelectedIndex() == 1;
+
+        const auto shortcutInputVisibility = textSelected ? Visibility::Collapsed : Visibility::Visible;
+
+        grid.Visibility(shortcutInputVisibility);
+        button.Visibility(shortcutInputVisibility);
+
+        const auto textInputVisibility = textSelected ? Visibility::Visible : Visibility::Collapsed;
+        textInput.Visibility(textInputVisibility);
+    });
+
+    const bool textSelected = newKeys.index() == 2;
+    typeCombo.SelectedIndex(textSelected);
+
     row.Children().Append(target);
 
     targetAppTextBox.Width(EditorConstants::ShortcutTableDropDownWidth);
@@ -129,7 +189,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     });
 
     // LostFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)
-    targetAppTextBox.LostFocus([&keyboardRemapControlObjects, parent, row, targetAppTextBox](auto const& sender, auto const& e) {
+    targetAppTextBox.LostFocus([&keyboardRemapControlObjects, parent, row, targetAppTextBox, typeCombo, textInput](auto const& sender, auto const& e) {
         // Get index of targetAppTextBox button
         uint32_t rowIndex;
         if (!parent.Children().IndexOf(row, rowIndex))
@@ -151,19 +211,27 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>()));
         // second column is a hybrid column
 
-        std::vector<int32_t> selectedKeyCodes = KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
-
-        // If exactly one key is selected consider it to be a key remap
-        if (selectedKeyCodes.size() == 1)
+        const bool textSelected = typeCombo.SelectedIndex() == 1;
+        if (textSelected)
         {
-            shortcutRemapBuffer[rowIndex].first[1] = (DWORD)selectedKeyCodes[0];
+            shortcutRemapBuffer[rowIndex].first[1] = textInput.Text().c_str();
         }
         else
         {
-            Shortcut tempShortcut;
-            tempShortcut.SetKeyCodes(selectedKeyCodes);
-            // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-            shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+            std::vector<int32_t> selectedKeyCodes = KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
+
+            // If exactly one key is selected consider it to be a key remap
+            if (selectedKeyCodes.size() == 1)
+            {
+                shortcutRemapBuffer[rowIndex].first[1] = (DWORD)selectedKeyCodes[0];
+            }
+            else
+            {
+                Shortcut tempShortcut;
+                tempShortcut.SetKeyCodes(selectedKeyCodes);
+                // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
+                shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+            }
         }
         std::wstring newText = targetAppTextBox.Text().c_str();
         std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName();
@@ -263,9 +331,18 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         {
             keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects[0]->SetSelectedValue(std::to_wstring(std::get<DWORD>(newKeys)));
         }
-        else
+        else if (newKeys.index() == 1)
         {
             KeyDropDownControl::AddShortcutToControl(std::get<Shortcut>(newKeys), parent, keyboardRemapControlObjects.back()[1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 1, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects, shortcutRemapBuffer, row, targetAppTextBox, true, false);
+        }
+        else if (newKeys.index() == 2)
+        {
+            shortcutRemapBuffer.back().first[1] = std::get<std::wstring>(newKeys);
+            const auto& remapControl = keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1];
+            const auto& controlChildren = remapControl->GetShortcutControl().Children();
+            const auto& topLineChildren = controlChildren.GetAt(0).as<StackPanel>();
+            topLineChildren.Children().GetAt(0).as<ComboBox>().SelectedIndex(1);
+            controlChildren.GetAt(2).as<TextBox>().Text(std::get<std::wstring>(newKeys));
         }
     }
     else
@@ -291,8 +368,8 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     detectShortcutBox.XamlRoot(xamlRoot);
     detectShortcutBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPESHORTCUT_TITLE)));
 
-    // Get the linked stack panel for the "Type shortcut" button that was clicked
-    VariableSizedWrapGrid linkedShortcutVariableSizedWrapGrid = UIHelpers::GetSiblingElement(sender).as<VariableSizedWrapGrid>();
+    // Get the parent linked stack panel for the "Type shortcut" button that was clicked
+    VariableSizedWrapGrid linkedShortcutVariableSizedWrapGrid = UIHelpers::GetSiblingElement(sender.as<FrameworkElement>().Parent()).as<VariableSizedWrapGrid>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
         keyboardManagerState.ClearRegisteredKeyDelays();

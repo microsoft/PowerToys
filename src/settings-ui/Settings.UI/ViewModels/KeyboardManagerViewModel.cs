@@ -158,7 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_profile != null)
                 {
-                    return _profile.RemapKeys.InProcessRemapKeys;
+                    return _profile.RemapKeys.InProcessRemapKeys.Concat(_profile.RemapKeysToText.InProcessRemapKeys).ToList();
                 }
                 else
                 {
@@ -190,11 +190,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else if (appSpecificShortcutList == null)
             {
-                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = allAppsDescription }).ToList();
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, NewRemapString = x.NewRemapString, TargetApp = allAppsDescription }).ToList();
             }
             else
             {
-                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = allAppsDescription }).Concat(appSpecificShortcutList).ToList();
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, NewRemapString = x.NewRemapString, TargetApp = allAppsDescription }).Concat(appSpecificShortcutList).ToList();
             }
         }
 
@@ -204,7 +204,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_profile != null)
                 {
-                    return CombineShortcutLists(_profile.RemapShortcuts.GlobalRemapShortcuts, _profile.RemapShortcuts.AppSpecificRemapShortcuts);
+                    return CombineShortcutLists(_profile.RemapShortcuts.GlobalRemapShortcuts, _profile.RemapShortcuts.AppSpecificRemapShortcuts).Concat(CombineShortcutLists(_profile.RemapShortcutsToText.GlobalRemapShortcuts, _profile.RemapShortcutsToText.AppSpecificRemapShortcuts)).ToList();
                 }
                 else
                 {
@@ -333,6 +333,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (readSuccessfully)
                 {
                     FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
+                    FilterRemapKeysList(_profile?.RemapKeysToText?.InProcessRemapKeys);
                 }
                 else
                 {
