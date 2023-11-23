@@ -33,11 +33,6 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         private readonly bool _isWindowsEleven;
 
         /// <summary>
-        /// Terminal services session id
-        /// </summary>
-        private readonly int _userSessionId;
-
-        /// <summary>
         /// Instance of "Virtual Desktop Manager"
         /// </summary>
         private readonly IVirtualDesktopManager _virtualDesktopManager;
@@ -76,7 +71,6 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             _isWindowsEleven = OSVersionHelper.IsWindows11();
-            _userSessionId = Process.GetCurrentProcess().SessionId;
             _desktopListAutoUpdate = desktopListUpdate;
             UpdateDesktopList();
         }
@@ -96,7 +90,8 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// <remarks>If we can not read from registry, we set the list/guid to empty values.</remarks>
         public void UpdateDesktopList()
         {
-            string registrySessionVirtualDesktops = $"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\{_userSessionId}\\VirtualDesktops"; // Windows 10
+            int userSessionId = Process.GetCurrentProcess().SessionId;
+            string registrySessionVirtualDesktops = $"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\{userSessionId}\\VirtualDesktops"; // Windows 10
             string registryExplorerVirtualDesktops = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops"; // Windows 11
 
             // List of all desktops
