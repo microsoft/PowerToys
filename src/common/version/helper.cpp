@@ -34,6 +34,7 @@ struct Constants<wchar_t>
 template<typename CharT>
 std::optional<VersionHelper> fromString(std::basic_string_view<CharT> str)
 {
+    // Trigger CI build by changing some .cpp 
     try
     {
         str = left_trim<CharT>(trim<CharT>(str), Constants<CharT>::V);
