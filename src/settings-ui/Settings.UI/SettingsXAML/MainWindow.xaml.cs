@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.WhatsNew, App.IsDarkTheme()));
+                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.WhatsNew));
                 }
                 else
                 {
