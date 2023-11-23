@@ -1300,7 +1300,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Windows.CsWinRT 2.0.4
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.756
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
-- Microsoft.WindowsAppSDK 1.4.230913002
+- Microsoft.WindowsAppSDK 1.4.231115000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
