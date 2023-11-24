@@ -46,11 +46,21 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             // layout card
             public const string EditLayoutButton = "EditLayoutButton";
 
-            // edit template layout window
-            public const string TemplateZoneSlider = "TemplateZoneCount";
+            // edit layout window: common for template and custom layouts
             public const string SensitivitySlider = "SensitivityInput";
             public const string SpacingSlider = "Spacing";
             public const string SpacingToggle = "spaceAroundSetting";
+
+            // edit template layout window
+            public const string CopyTemplate = "createFromTemplateLayoutButton";
+            public const string TemplateZoneSlider = "TemplateZoneCount";
+
+            // edit custom layout window
+            public const string DuplicateLayoutButton = "duplicateLayoutButton";
+            public const string DeleteLayoutButton = "deleteLayoutButton";
+            public const string KeySelectionComboBox = "quickKeySelectionComboBox";
+            public const string EditZonesButton = "editZoneLayoutButton";
+            public const string DeleteTextButton = "DeleteButton";
         }
 
         public WindowsDriver<WindowsElement>? Session { get; }
@@ -177,6 +187,19 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public WindowsElement? GetSpaceAroundZonesToggle()
         {
             return FindByAccessibilityId(AccessibilityId.SpacingToggle);
+        }
+
+        public WindowsElement? GetNameInput()
+        {
+            try
+            {
+                return Session?.FindElementByClassName("TextBox");
+            }
+            catch
+            {
+                Assert.Fail($"Name TextBox not found");
+                return null;
+            }
         }
 
         public void Click_CreateNewLayout()
