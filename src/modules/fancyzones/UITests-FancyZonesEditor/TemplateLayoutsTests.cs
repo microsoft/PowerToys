@@ -261,7 +261,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 _session?.Click_EditLayout(name);
 
                 var toggle = _session?.GetSpaceAroundZonesToggle();
-                var slider = _session?.GetSpaceAroudZonesSlider();
+                var slider = _session?.GetSpaceAroundZonesSlider();
 
                 var spacingEnabled = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).ShowSpacing;
                 Assert.AreEqual(spacingEnabled, slider?.Enabled);
