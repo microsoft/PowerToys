@@ -24,10 +24,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public IEnumerable<IItemResult> Query(string querySearch)
         {
-            if (querySearch == null)
-            {
-                throw new ArgumentNullException(nameof(querySearch));
-            }
+            ArgumentNullException.ThrowIfNull(querySearch);
 
             return GetEnvironmentVariables(querySearch)
                 .OrderBy(v => v.Title)

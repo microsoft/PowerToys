@@ -7,6 +7,12 @@ steps:
   submodules: true
   clean: true
 
+- task: UseDotNet@2
+  displayName: 'Use .NET 6 SDK'
+  inputs:
+    packageType: sdk
+    version: '6.x'
+
 - task: PowerShell@2
   displayName: Verify XAML formatting
   inputs:
@@ -56,11 +62,18 @@ steps:
     arguments: -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
     pwsh: true
 
+- task: PowerShell@2
+  displayName: Verify and set latest VCToolsVersion usage
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1'
+    pwsh: true
+
 - task: UseDotNet@2
-  displayName: 'Use .NET 7 SDK'
+  displayName: 'Use .NET 8 SDK'
   inputs:
     packageType: sdk
-    version: '7.x'
+    version: '8.x'
+    includePreviewVersions: true
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform

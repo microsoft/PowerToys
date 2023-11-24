@@ -285,10 +285,17 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
 
     // Load existing remaps into UI
     SingleKeyRemapTable singleKeyRemapCopy = mappingConfiguration.singleKeyReMap;
+    SingleKeyToTextRemapTable singleKeyToTextRemapCopy = mappingConfiguration.singleKeyToTextReMap;
 
     LoadingAndSavingRemappingHelper::PreProcessRemapTable(singleKeyRemapCopy);
+    LoadingAndSavingRemappingHelper::PreProcessRemapTable(singleKeyToTextRemapCopy);
 
     for (const auto& it : singleKeyRemapCopy)
+    {
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, it.second);
+    }
+
+    for (const auto& it : singleKeyToTextRemapCopy)
     {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, it.second);
     }

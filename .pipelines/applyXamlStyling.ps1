@@ -39,7 +39,7 @@ param(
 Write-Output "Use 'Help .\applyXamlStyling.ps1' for more info or '-Main' to run against all files."
 Write-Output ""
 Write-Output "Restoring dotnet tools..."
-dotnet tool restore
+dotnet tool restore --disable-parallel --no-cache
 
 if (-not $Passive)
 {

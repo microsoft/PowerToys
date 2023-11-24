@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -135,7 +136,8 @@ namespace Peek.FilePreviewer.Controls
                 // Storing the original background color so it can be reset later for specific file types like HTML.
                 if (!_originalBackgroundColor.HasValue)
                 {
-                    _originalBackgroundColor = PreviewBrowser.DefaultBackgroundColor;
+                    // HACK: We used to store PreviewBrowser.DefaultBackgroundColor here, but WebView started returning transparent when running without a debugger attached. We want html files to be seen as in the browser, which has white as a default background color.
+                    _originalBackgroundColor = Colors.White;
                 }
 
                 // Setting the background color to transparent when initially loading the WebView2 component.

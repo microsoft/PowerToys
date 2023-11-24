@@ -858,10 +858,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         private static JsonArray GetPTRunIgnoredSettings(JsonNode backupRestoreSettings)
         {
-            if (backupRestoreSettings == null)
-            {
-                throw new ArgumentNullException(nameof(backupRestoreSettings));
-            }
+            ArgumentNullException.ThrowIfNull(backupRestoreSettings);
 
             if (backupRestoreSettings["IgnoredPTRunSettings"] != null)
             {
@@ -876,10 +873,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         private static string[] GetIgnoredSettings(JsonNode backupRestoreSettings, string settingFileKey)
         {
-            if (backupRestoreSettings == null)
-            {
-                throw new ArgumentNullException(nameof(backupRestoreSettings));
-            }
+            ArgumentNullException.ThrowIfNull(backupRestoreSettings);
 
             if (settingFileKey.StartsWith("\\", StringComparison.OrdinalIgnoreCase))
             {
