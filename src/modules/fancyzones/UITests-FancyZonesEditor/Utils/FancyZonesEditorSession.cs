@@ -169,7 +169,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             return FindByAccessibilityId(AccessibilityId.SensitivitySlider);
         }
 
-        public WindowsElement? GetSpaceAroudZonesSlider()
+        public WindowsElement? GetSpaceAroundZonesSlider()
         {
             return FindByAccessibilityId(AccessibilityId.SpacingSlider);
         }
