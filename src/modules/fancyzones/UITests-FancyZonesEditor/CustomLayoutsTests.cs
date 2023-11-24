@@ -181,7 +181,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify new name
             _session?.Click_Save();
             Assert.IsNull(_session?.GetLayout(oldName)); // previous name isn't presented
-            Assert.IsNotNull(newName); // new name is presented
+            Assert.IsNotNull(_session?.GetLayout(newName)); // new name is presented
         }
 
         [TestMethod]
@@ -199,7 +199,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify new name
             _session?.Click_Cancel();
             Assert.IsNotNull(_session?.GetLayout(oldName));
-            Assert.IsNull(newName);
+            Assert.IsNull(_session?.GetLayout(newName));
         }
 
         [TestMethod]
