@@ -40,13 +40,26 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
             }
             else
             {
-                _fileSystem.File.Delete(_fileName);
+                DeleteFile();
             }
         }
 
         public void WriteData(string data)
         {
-            _fileSystem.File.WriteAllText(_fileName, data);
+            var attempts = 0;
+            while (attempts < 10)
+            {
+                try
+                {
+                    _fileSystem.File.WriteAllText(_fileName, data);
+                }
+                catch (Exception)
+                {
+                    Task.Delay(10).Wait();
+                }
+
+                attempts++;
+            }
         }
 
         private string ReadFile(string fileName)
@@ -73,6 +86,24 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
             }
 
             return string.Empty;
+        }
+
+        public void DeleteFile()
+        {
+            var attempts = 0;
+            while (attempts < 10)
+            {
+                try
+                {
+                    _fileSystem.File.Delete(_fileName);
+                }
+                catch (Exception)
+                {
+                    Task.Delay(10).Wait();
+                }
+
+                attempts++;
+            }
         }
     }
 }
