@@ -192,24 +192,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             editButton.Click();
 
             // wait until the dialog is opened
-            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
-            wait.Until(pred =>
-            {
-                bool displayed = false;
-                try
-                {
-                    var element = Session?.FindElementByName($"Edit '{layoutName}'");
-                    if (element != null)
-                    {
-                        displayed = element.Displayed;
-                    }
-                }
-                catch
-                {
-                }
-
-                return displayed;
-            });
+            WaitElementDisplayedByName($"Edit '{layoutName}'");
         }
 
         public void RightClick_Layout(string layoutName)
@@ -249,6 +232,56 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 Assert.Fail($"{name} not found");
                 return null;
             }
+        }
+
+        public void WaitElementDisplayedByName(string name)
+        {
+            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
+            wait.Until(pred =>
+            {
+                bool displayed = false;
+                try
+                {
+                    var element = Session?.FindElementByName(name);
+                    if (element != null)
+                    {
+                        displayed = element.Displayed;
+                    }
+                }
+                catch
+                {
+                }
+
+                return displayed;
+            });
+        }
+
+        public void WaitElementDisplayedById(string id)
+        {
+            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
+            wait.Until(pred =>
+            {
+                bool displayed = false;
+                try
+                {
+                    var element = Session?.FindElementByAccessibilityId(id);
+                    if (element != null)
+                    {
+                        displayed = element.Displayed;
+                    }
+                }
+                catch
+                {
+                }
+
+                return displayed;
+            });
+        }
+
+        public void WaitFor(float seconds)
+        {
+            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(seconds * 2));
+            wait.Timeout = TimeSpan.FromSeconds(seconds);
         }
 
         private void ClickItem(WindowsElement element)

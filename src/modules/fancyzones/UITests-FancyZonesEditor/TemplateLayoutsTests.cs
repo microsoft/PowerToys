@@ -243,8 +243,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 _session?.Click_Cancel();
 
                 // let the dialog window close
-                WebDriverWait wait = new WebDriverWait(_session?.Session, TimeSpan.FromSeconds(1));
-                wait.Timeout = TimeSpan.FromSeconds(0.5);
+                _session?.WaitFor(0.5f);
             }
         }
 
@@ -273,8 +272,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 _session?.Click_Cancel();
 
                 // let the dialog window close
-                WebDriverWait wait = new WebDriverWait(_session?.Session, TimeSpan.FromSeconds(1));
-                wait.Timeout = TimeSpan.FromSeconds(0.5);
+                _session?.WaitFor(0.5f);
             }
         }
     }
