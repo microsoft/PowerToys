@@ -344,6 +344,7 @@ namespace FancyZonesEditor.Models
         {
             layout.SensitivityRadius = SensitivityRadius;
             layout.TemplateZoneCount = TemplateZoneCount;
+            layout.Name = Name;
         }
 
         // Adds new custom Layout
