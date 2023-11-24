@@ -130,18 +130,12 @@ namespace Microsoft.FancyZonesEditor.UITests
             };
             _editorParamsIOHelper = new IOTestHelper(editorParameters.File);
             _editorParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
-
-            CustomLayouts customLayouts = new CustomLayouts();
-            _customLayoutsIOHelper = new IOTestHelper(customLayouts.File);
-            _customLayoutsIOHelper.WriteData(customLayouts.Serialize(Layouts));
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
             _editorParamsIOHelper?.RestoreData();
-            _customLayoutsIOHelper?.RestoreData();
-
             _context = null;
         }
 
@@ -149,12 +143,17 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void TestInitialize()
         {
             _session = new FancyZonesEditorSession(_context!);
+
+            CustomLayouts customLayouts = new CustomLayouts();
+            _customLayoutsIOHelper = new IOTestHelper(customLayouts.File);
+            _customLayoutsIOHelper.WriteData(customLayouts.Serialize(Layouts));
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
             _session?.Close(_context!);
+            _customLayoutsIOHelper?.RestoreData();
         }
 
         [TestMethod]
