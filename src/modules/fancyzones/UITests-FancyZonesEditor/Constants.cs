@@ -37,5 +37,17 @@ namespace Microsoft.FancyZonesEditor.UITests
             { TemplateLayouts.Grid, "grid" },
             { TemplateLayouts.PriorityGrid, "priority-grid" },
         };
+
+        public enum CustomLayoutType
+        {
+            Canvas,
+            Grid,
+        }
+
+        public static readonly Dictionary<CustomLayoutType, string> CustomLayoutTypeNames = new Dictionary<CustomLayoutType, string>()
+        {
+            { CustomLayoutType.Canvas, "canvas" },
+            { CustomLayoutType.Grid, "grid" },
+        };
     }
 }
