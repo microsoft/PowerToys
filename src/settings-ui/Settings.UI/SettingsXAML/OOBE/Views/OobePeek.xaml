@@ -9,7 +9,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
 
     <custom:OOBEPageControl x:Uid="Oobe_Peek" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Peek.gif">
