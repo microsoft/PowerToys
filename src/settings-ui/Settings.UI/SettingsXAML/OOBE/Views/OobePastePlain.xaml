@@ -11,7 +11,7 @@
     <custom:OOBEPageControl x:Uid="Oobe_PastePlain" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PastePlain.gif">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Oobe_HowToUse" Style="{StaticResource OobeSubtitleStyle}" />
 
                 <custom:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_PastePlain_HowToUse" />
 

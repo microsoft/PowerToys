@@ -11,11 +11,11 @@
     <custom:OOBEPageControl x:Uid="Oobe_ImageResizer" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ImageResizer.gif">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{StaticResource OobeSubtitleStyle}" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_ImageResizer_HowToLaunch" Background="Transparent" />
 
-                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{StaticResource OobeSubtitleStyle}" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_ImageResizer_TipsAndTricks" Background="Transparent" />
 

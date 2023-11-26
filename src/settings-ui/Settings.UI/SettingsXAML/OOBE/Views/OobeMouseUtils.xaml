@@ -11,16 +11,16 @@
     <custom:OOBEPageControl x:Uid="Oobe_MouseUtils" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.gif">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_MouseUtils_FindMyMouse" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Oobe_MouseUtils_FindMyMouse" Style="{StaticResource OobeSubtitleStyle}" />
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_FindMyMouse_Description" Background="Transparent" />
 
-                <TextBlock x:Uid="Oobe_MouseUtils_MouseHighlighter" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Oobe_MouseUtils_MouseHighlighter" Style="{StaticResource OobeSubtitleStyle}" />
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_MouseHighlighter_Description" Background="Transparent" />
 
-                <TextBlock x:Uid="Oobe_MouseUtils_MousePointerCrosshairs" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Oobe_MouseUtils_MousePointerCrosshairs" Style="{StaticResource OobeSubtitleStyle}" />
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_MousePointerCrosshairs_Description" Background="Transparent" />
 
-                <TextBlock x:Uid="Oobe_MouseUtils_MouseJump" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Oobe_MouseUtils_MouseJump" Style="{StaticResource OobeSubtitleStyle}" />
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_MouseJump_Description" Background="Transparent" />
 
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />

@@ -66,8 +66,9 @@
                 VerticalSpacing="4" />
         </ItemsPanelTemplate>
     </UserControl.Resources>
+
     <Grid>
-        <StackPanel Spacing="12">
+        <StackPanel Spacing="8">
             <TextBox
                 x:Name="NewColorName"
                 x:Uid="NewColorName"
@@ -87,7 +88,10 @@
                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                 Text="{Binding ElementName=NewColorFormatTextBox, Path=Text, Converter={StaticResource ColorFormatConverter}}" />
 
-            <TextBlock x:Uid="ColorFormatEditorHelpline1" TextWrapping="Wrap" />
+            <TextBlock
+                x:Uid="ColorFormatEditorHelpline1"
+                Margin="0,4,0,0"
+                TextWrapping="Wrap" />
 
             <ItemsControl
                 x:Name="ParametersItemsControl"
@@ -96,6 +100,7 @@
 
             <TextBlock
                 x:Uid="ColorFormatEditorHelpline2"
+                Margin="0,4,0,0"
                 VerticalAlignment="Bottom"
                 TextWrapping="Wrap" />
 
@@ -106,6 +111,7 @@
 
             <TextBlock
                 x:Uid="ColorFormatEditorHelpline3"
+                Margin="0,4,0,0"
                 VerticalAlignment="Bottom"
                 TextWrapping="Wrap" />
         </StackPanel>

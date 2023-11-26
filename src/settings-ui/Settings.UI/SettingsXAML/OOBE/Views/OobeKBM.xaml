@@ -11,11 +11,11 @@
     <custom:OOBEPageControl x:Uid="Oobe_KBM" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/KBM.gif">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_HowToCreateMappings" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Oobe_HowToCreateMappings" Style="{ThemeResource OobeSubtitleStyle}" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_KBM_HowToCreateMappings" Background="Transparent" />
 
-                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_KBM_TipsAndTricks" Background="Transparent" />
 
