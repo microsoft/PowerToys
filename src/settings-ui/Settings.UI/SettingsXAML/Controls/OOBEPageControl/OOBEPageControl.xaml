@@ -18,6 +18,7 @@
             x:Name="HeaderImage"
             Height="{x:Bind HeroImageHeight}"
             HorizontalAlignment="Center"
+            VerticalAlignment="Center"
             Source="{x:Bind HeroImage}"
             Stretch="UniformToFill" />
 
