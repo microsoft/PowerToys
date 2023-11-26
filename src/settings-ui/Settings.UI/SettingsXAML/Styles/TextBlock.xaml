@@ -15,9 +15,9 @@
 
     <Style x:Key="OobeSubtitleStyle" TargetType="TextBlock">
         <Setter Property="Margin" Value="0,0,0,-12" />
-        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="AutomationProperties.HeadingLevel" Value="Level3" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-        <Setter Property="TextWrapping" Value="Wrap" />    
+        <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 </ResourceDictionary>
