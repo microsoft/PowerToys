@@ -177,7 +177,7 @@
     <value>Some of the shortcuts could not be remapped. Continue anyway?</value>
   </data>
   <data name="EditKeyboard_Info" xml:space="preserve">
-    <value>Select the key you want to change ("Select") and then the key, shortcut or text you want it to send ("To send").</value>
+    <value>Select the key you want to change ("Select") and then configure the key, shortcut or text you want it to send ("To send").</value>
   </data>
   <data name="EditKeyboard_InfoExample" xml:space="preserve">
     <value>Example of a remapping: Select A and send "Ctrl+C", "A" would be your "Select" and "Ctrl+C" would be your "To send" command.</value>
