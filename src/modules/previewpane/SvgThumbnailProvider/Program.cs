@@ -25,16 +25,23 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 {
                     if (mutex.WaitOne(TimeSpan.Zero, true))
                     {
-                        // do the app code
-                        string filePath = args[0];
-                        uint cx = Convert.ToUInt32(args[1], 10);
-
-                        _thumbnailProvider = new SvgThumbnailProvider(filePath);
-                        Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
-                        if (thumbnail != null)
+                        try
                         {
-                            filePath = filePath.Replace(".svg", ".bmp");
-                            thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                            // do the app code
+                            string filePath = args[0];
+                            uint cx = Convert.ToUInt32(args[1], 10);
+
+                            _thumbnailProvider = new SvgThumbnailProvider(filePath);
+                            Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                            if (thumbnail != null)
+                            {
+                                filePath = filePath.Replace(".svg", ".bmp");
+                                thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                            }
+                        }
+                        catch
+                        {
+                            // To ensure mutex is released if some unexpected exception happens.
                         }
 
                         mutex.ReleaseMutex();
