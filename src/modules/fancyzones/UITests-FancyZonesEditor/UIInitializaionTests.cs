@@ -17,16 +17,21 @@ namespace Microsoft.FancyZonesEditor.UITests
         private static TestContext? _context;
         private static FancyZonesEditorSession? _session;
         private static IOTestHelper? _editorParamsIOHelper;
+        private static IOTestHelper? _appliedLayoutsIOHelper;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
             _context = testContext;
+
+            _appliedLayoutsIOHelper = new IOTestHelper(new AppliedLayouts().File);
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            _appliedLayoutsIOHelper?.RestoreData();
+
             _context = null;
         }
 

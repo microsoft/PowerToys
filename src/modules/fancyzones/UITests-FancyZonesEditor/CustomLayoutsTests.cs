@@ -96,6 +96,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         private static TestContext? _context;
         private static FancyZonesEditorSession? _session;
         private static IOTestHelper? _editorParamsIOHelper;
+        private static IOTestHelper? _appliedLayoutsIOHelper;
         private static IOTestHelper? _customLayoutsIOHelper;
 
         [ClassInitialize]
@@ -130,12 +131,15 @@ namespace Microsoft.FancyZonesEditor.UITests
             };
             _editorParamsIOHelper = new IOTestHelper(editorParameters.File);
             _editorParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
+            _appliedLayoutsIOHelper = new IOTestHelper(new AppliedLayouts().File);
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
             _editorParamsIOHelper?.RestoreData();
+            _appliedLayoutsIOHelper?.RestoreData();
             _context = null;
         }
 
