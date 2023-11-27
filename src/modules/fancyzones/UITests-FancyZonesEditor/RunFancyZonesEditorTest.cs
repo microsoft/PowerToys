@@ -15,7 +15,8 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class RunFancyZonesEditorTest
     {
         private static FancyZonesEditorSession? _session;
-        private static IOTestHelper? _ioHelper;
+        private static IOTestHelper? _editorParamsIOHelper;
+        private static IOTestHelper? _appliedLayoutsIOHelper;
         private static TestContext? _context;
 
         [ClassInitialize]
