@@ -1495,10 +1495,10 @@
     <value>Encoding</value>
   </data>
   <data name="KeyboardManager_RemapKeyboardButton.Description" xml:space="preserve">
-    <value>Remap keys to other keys or shortcuts</value>
+    <value>Remap keys to other keys, shortcuts or text snippets</value>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Description" xml:space="preserve">
-    <value>Remap shortcuts to other shortcuts or keys for all or specific applications</value>
+    <value>Remap shortcuts to other shortcuts, keys or text snippets for all or specific applications</value>
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
