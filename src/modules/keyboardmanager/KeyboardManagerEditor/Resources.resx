@@ -184,7 +184,7 @@
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_Info" xml:space="preserve">
-    <value>Select the shortcut you want to change ("Select") and then the key, shortcut or text you want it to invoke ("To send").</value>
+    <value>Select the shortcut you want to change ("Select") and then configure the key, shortcut or text you want it to send ("To send").</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_InfoExample" xml:space="preserve">
