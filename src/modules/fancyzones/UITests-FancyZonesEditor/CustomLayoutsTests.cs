@@ -146,11 +146,11 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
-            _session = new FancyZonesEditorSession(_context!);
-
             CustomLayouts customLayouts = new CustomLayouts();
             _customLayoutsIOHelper = new IOTestHelper(customLayouts.File);
             _customLayoutsIOHelper.WriteData(customLayouts.Serialize(Layouts));
+
+            _session = new FancyZonesEditorSession(_context!);
         }
 
         [TestCleanup]
