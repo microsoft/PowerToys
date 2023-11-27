@@ -1,0 +1,7 @@
+{
+    "window.closeWhenEmpty": false,
+    "window.commandCenter": false,
+    "mingw32.root": "C:\\tools\\msys64\\mingw32",
+    "mingw64.root": "C:\\tools\\msys64\\mingw64",
+    "msys2.root": "C:\\tools\\msys64"
+}
