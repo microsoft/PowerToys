@@ -278,6 +278,11 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 {
                 }
 
+                if (!displayed)
+                {
+                    context.WriteLine($"{name} not displayed");
+                }
+
                 return displayed;
             });
         }
@@ -298,6 +303,11 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 }
                 catch
                 {
+                }
+
+                if (!displayed)
+                {
+                    context.WriteLine($"{id} not displayed");
                 }
 
                 return displayed;
