@@ -124,7 +124,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
     auto typeCombo = ComboBox();
     typeCombo.Width(EditorConstants::RemapTableDropDownWidth);
-    typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeShortcut()));
+    typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeKeyShortcut()));
     typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
     auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
     auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
