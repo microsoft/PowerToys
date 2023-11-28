@@ -15,10 +15,11 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
 
-#include <wtsapi32.h>
 #include <processthreadsapi.h>
+#include <sddl.h>
 #include <UserEnv.h>
 #include <winnt.h>
+#include <wtsapi32.h>
 
 using namespace std;
 
@@ -91,6 +92,65 @@ BOOL IsLocalSystem()
     FreeSid(pSystemSid);
 
     return bSystem;
+}
+
+bool GetUserSid(const wchar_t* username, PSID& sid)
+{
+    DWORD sidSize = 0;
+    DWORD domainNameSize = 0;
+    SID_NAME_USE sidNameUse;
+
+    LookupAccountName(nullptr, username, nullptr, &sidSize, nullptr, &domainNameSize, &sidNameUse);
+    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+    {
+        Logger::error("Failed to get buffer sizes");
+        return false;
+    }
+
+    sid = LocalAlloc(LPTR, sidSize);
+    LPWSTR domainName = static_cast<LPWSTR>(LocalAlloc(LPTR, domainNameSize * sizeof(wchar_t)));
+
+    if (!LookupAccountNameW(nullptr, username, sid, &sidSize, domainName, &domainNameSize, &sidNameUse))
+    {
+        Logger::error("Failed to lookup account name");
+        LocalFree(sid);
+        LocalFree(domainName);
+        return false;
+    }
+
+    LocalFree(domainName);
+    return true;
+}
+
+std::wstring GetCurrentUserSid()
+{
+    wchar_t username[UNLEN + 1];
+    DWORD usernameSize = UNLEN + 1;
+
+    std::wstring result;
+    if (!GetUserNameW(username, &usernameSize))
+    {
+        Logger::error("Failed to get the current user name");
+        return result;
+    }
+
+    PSID sid;
+    if (GetUserSid(username, sid))
+    {
+        LPWSTR sidString;
+        if (ConvertSidToStringSid(sid, &sidString))
+        {
+            result = sidString;
+            LocalFree(sidString);
+        }
+        LocalFree(sid);
+    }
+    else
+    {
+        Logger::error(L"Failed to get SID for user \"");
+    }
+
+    return result;
 }
 
 BOOL ImpersonateLoggedInUserAndDoSomething(std::function<bool(HANDLE userToken)> action)
@@ -256,6 +316,29 @@ UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
             hr = E_ABORT;
         }
     }
+
+LExit:
+    UINT er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall CheckAdministratorConstraintsCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    std::wstring asd;
+
+    hr = WcaInitialize(hInstall, "CheckAdministratorConstraintsCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    LPWSTR currentScope = nullptr;
+    hr = WcaGetProperty(L"InstallScope", &currentScope);
+
+    if (std::wstring{ currentScope } == L"perUser")
+    {
+    }
+
+    asd = GetCurrentUserSid();
+    MessageBox(NULL, asd.c_str(), asd.c_str(), NULL);
 
 LExit:
     UINT er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;

@@ -138,6 +138,9 @@
       <Custom Action="CheckGPO" After="InstallInitialize">
         NOT Installed
       </Custom>
+      <Custom Action="CheckAdministratorConstraints" After="InstallInitialize">
+        NOT Installed
+      </Custom>
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
         NOT Installed
       </Custom>
@@ -345,6 +348,13 @@
                   Impersonate="yes"
                   BinaryKey="PTCustomActions"
                   DllEntry="CheckGPOCA"
+                  />
+
+    <CustomAction Id="CheckAdministratorConstraints"
+                  Return="check"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="CheckAdministratorConstraintsCA"
                   />
 
     <!-- Close 'PowerToys.exe' before uninstall-->
