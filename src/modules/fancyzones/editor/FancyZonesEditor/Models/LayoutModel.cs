@@ -221,7 +221,7 @@ namespace FancyZonesEditor.Models
                 List<string> result = new List<string>();
                 foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
                 {
-                    if (string.IsNullOrEmpty(pair.Value) || pair.Value == Uuid)
+                    if (pair.Key == Properties.Resources.Quick_Key_None || string.IsNullOrEmpty(pair.Value) || pair.Value == Uuid)
                     {
                         result.Add(pair.Key);
                     }
