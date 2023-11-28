@@ -116,6 +116,12 @@ extends:
             targetType: filePath
             filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
 
+        - task: PowerShell@2
+          displayName: (Hack)Omit WiX3.14 disabling of warning 4996
+          inputs:
+            targetType: filePath
+            filePath: '$(build.sourcesdirectory)\.pipelines\modifyWixLibFiles.ps1'
+
         - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
           displayName: 'Download Localization Files -- PowerToys 37400'
           inputs:
