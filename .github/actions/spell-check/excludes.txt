@@ -95,6 +95,7 @@
 \.zip$
 ^\.github/actions/spell-check/
 ^\.gitmodules$
+(?:^|/)deps_copy/
 ^\Q.github/workflows/spelling2.yml\E$
 ^\Q.pipelines/ESRPSigning_core.json\E$
 ^\Q.pipelines/sdl.gdnbaselines\E$
