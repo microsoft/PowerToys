@@ -224,7 +224,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public void RightClick_Layout(string layoutName)
         {
             var layout = GetLayout(layoutName);
-            ClickItem(layout!);
+            ContextClick(layout!);
         }
 
         public void Click_Monitor(int monitorNumber)
@@ -320,7 +320,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             wait.Timeout = TimeSpan.FromSeconds(seconds);
         }
 
-        private void ClickItem(WindowsElement element)
+        public void ContextClick(WindowsElement element)
         {
             Actions actions = new Actions(Session);
             actions.MoveToElement(element);
