@@ -37,7 +37,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\deps\cziplib\src\zip.c">
+    <ClCompile Include="..\..\..\deps_copy\cziplib\src\zip.c">
       <!-- Disabling warnings for external code -->
       <DisableSpecificWarnings>4706;26451;4267;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
@@ -61,8 +61,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\deps\cziplib\src\miniz.h" />
-    <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
+    <ClInclude Include="..\..\..\deps_copy\cziplib\src\miniz.h" />
+    <ClInclude Include="..\..\..\deps_copy\cziplib\src\zip.h" />
     <ClInclude Include="EventViewer.h" />
     <ClInclude Include="InstallationFolder.h" />
     <ClInclude Include="Package.h" />

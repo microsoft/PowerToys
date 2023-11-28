@@ -1,5 +1,5 @@
 #include "ZipFolder.h"
-#include "..\..\..\..\deps\cziplib\src\zip.h"
+#include "..\..\..\..\deps_copy\cziplib\src\zip.h"
 #include <common/utils/timeutil.h>
 
 void ZipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
