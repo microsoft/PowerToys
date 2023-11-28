@@ -1,4 +1,8 @@
 #define MINIZ_EXPORT
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4127)
+#endif // _MSC_VER
 /* miniz.c 2.2.0 - public domain deflate/inflate, zlib-subset, ZIP
    reading/writing/appending, PNG writing See "unlicense" statement at the end
    of this file. Rich Geldreich <richgel99@gmail.com>, last updated Oct. 13,
@@ -10128,3 +10132,6 @@ mz_bool mz_zip_end(mz_zip_archive *pZip) {
 #endif
 
 #endif /*#ifndef MINIZ_NO_ARCHIVE_APIS*/
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif // _MSC_VER
