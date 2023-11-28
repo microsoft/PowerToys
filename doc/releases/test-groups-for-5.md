@@ -29,82 +29,85 @@ All:
 - Peek
 - MWB
 - Crop And Lock
+- Environment Variables
 ```
 
 ```
 Group 1:
-- Install
-- Functional
-- Localization
-- General
-- Color Picker
 - Keyboard Manager
 - PowerRename
-- VCM
-- Screen Ruler
-- Hosts File Editor
-- Peek
-- MWB
-```
-
-```
-Group 2:
-- FZ Editor
-- FZ
 - PowerToys Run
 - Shortcut Guide
 - OOBE
 - Mouse Utils
-- Awake
+- VCM
 - AlwaysOnTop
-- Screen Ruler
-- Paste as plain text
+- Hosts File Editor
+- File Locksmith
+- Registry Preview
+- Peek
+- Environment Variables
+```
+
+```
+Group 2:
+- Image Resizer
+- PowerRename
+- PowerToys Run
+- OOBE
+- Mouse Utils
+- Awake
+- Text Extractor
+- File Locksmith
+- GPO
+- Paste As Plain Text
+- MWB
 - Crop And Lock
+- Environment Variables
 ```
 
 ```
 Group 3:
+- Localization
+- General
 - Color Picker
 - Image Resizer
-- PowerToys Run
-- OOBE
-- Mouse Utils
+- Keyboard Manager
+- Shortcut Guide
 - VCM
-- Text Extractor
+- AlwaysOnTop
+- Screen Ruler
+- Quick Accent
 - Hosts File Editor
-- File Locksmith
 - GPO
-- Registry Preview
 - Peek
+- MWB
 ```
 
 ```
 Group 4:
 - Install
+- Functional
 - General
+- FZ Editor
+- FZ
 - File Explorer Add-ons
-- Image Resizer
-- Keyboard Manager
 - Awake
-- Quick Accent
-- Text Extractor
-- File Locksmith
-- GPO
-- Paste as plain text
-- MWB
+- Screen Ruler
+- Paste As Plain Text
+- Crop And Lock
 ```
 
 ```
 Group 5:
+- Install
 - Functional
 - Localization
+- Color Picker
 - FZ Editor
 - FZ
 - File Explorer Add-ons
-- PowerRename
-- Shortcut Guide
-- AlwaysOnTop
 - Quick Accent
+- Text Extractor
 - Registry Preview
-- Crop And Lock
 ```
