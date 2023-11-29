@@ -240,7 +240,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public void Click_Monitor(int monitorNumber)
         {
             var monitor = GetMonitorItem(monitorNumber);
-            ClickItem(monitor!);
+            Click(monitor!);
         }
 
         public void Click_Save()
@@ -313,8 +313,17 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             Actions actions = new Actions(Session);
             actions.MoveToElement(element);
-            actions.MoveByOffset(30, 30);
+            actions.MoveByOffset(10, 10);
             actions.ContextClick();
+            actions.Build().Perform();
+        }
+
+        public void Click(AppiumWebElement element)
+        {
+            Actions actions = new Actions(Session);
+            actions.MoveToElement(element);
+            actions.MoveByOffset(10, 10);
+            actions.Click();
             actions.Build().Perform();
         }
     }
