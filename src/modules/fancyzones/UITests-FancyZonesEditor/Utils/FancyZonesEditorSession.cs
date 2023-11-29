@@ -222,7 +222,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public void Click_EditLayout(string layoutName)
         {
             var layout = GetLayout(layoutName);
-            Assert.IsNotNull(layout, $"Layout {layoutName} not found");
+            Assert.IsNotNull(layout, $"Layout \"{layoutName}\" not found");
             var editButton = layout?.FindElementByAccessibilityId(AccessibilityId.EditLayoutButton);
             Assert.IsNotNull(editButton, "Edit button not found");
             editButton.Click();
