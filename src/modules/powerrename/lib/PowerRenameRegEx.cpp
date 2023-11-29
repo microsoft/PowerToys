@@ -5,8 +5,9 @@
 #include <regex>
 #include <string>
 #include <algorithm>
-#include <boost/regex.hpp>
 #include <helpers.h>
+
+#include <boost_regex/include/boost/regex.hpp>
 
 using std::conditional_t;
 using std::regex_error;
