@@ -258,9 +258,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 Assert.AreEqual($"{expected}", slider?.Text);
 
                 _session?.Click_Cancel();
-
-                // let the dialog window close
-                _session?.WaitFor(0.5f);
+                _session?.WaitUntilHidden(slider!); // let the dialog window close
             }
         }
 
@@ -278,9 +276,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual($"{expected}", slider?.Text);
 
             _session?.Click_Save();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -301,9 +297,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             slider?.SendKeys(Keys.Left);
 
             _session?.Click_Cancel();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -329,9 +323,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 Assert.AreEqual($"{expected}", slider?.Text);
 
                 _session?.Click_Cancel();
-
-                // let the dialog window close
-                _session?.WaitFor(0.5f);
+                _session?.WaitUntilHidden(slider!); // let the dialog window close
             }
         }
 
@@ -350,9 +342,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual($"{expected}", slider?.Text);
 
             _session?.Click_Save();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -372,9 +362,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var slider = _session?.GetSensitivitySlider();
             slider?.SendKeys(Keys.Right);
             _session?.Click_Cancel();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -406,9 +394,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 Assert.AreEqual($"{expected}", slider?.Text);
 
                 _session?.Click_Cancel();
-
-                // let the dialog window close
-                _session?.WaitFor(0.5f);
+                _session?.WaitUntilHidden(slider!); // let the dialog window close
             }
         }
 
@@ -425,9 +411,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual($"{expected}", slider?.Text);
 
             _session?.Click_Save();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -449,9 +433,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual($"{expected + 1}", slider?.Text);
 
             _session?.Click_Cancel();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -474,9 +456,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
 
             _session?.Click_Save();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(toggle!); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -499,9 +479,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreNotEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
 
             _session?.Click_Cancel();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(toggle!); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();

@@ -220,9 +220,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 Assert.AreEqual($"{expected}", slider?.Text);
 
                 _session?.Click_Cancel();
-
-                // let the dialog window close
-                _session?.WaitFor(0.5f);
+                _session?.WaitUntilHidden(slider!);
             }
         }
 
@@ -244,9 +242,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual($"{expected}", slider?.Text);
 
             _session?.Click_Save();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var customLayouts = new CustomLayouts();
@@ -272,9 +268,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).SensitivityRadius;
 
             _session?.Click_Cancel();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var customLayouts = new CustomLayouts();
@@ -309,9 +303,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 Assert.AreEqual($"{expected}", slider?.Text);
 
                 _session?.Click_Cancel();
-
-                // let the dialog window close
-                _session?.WaitFor(0.5f);
+                _session?.WaitUntilHidden(slider!); // let the dialog window close
             }
         }
 
@@ -327,9 +319,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual($"{expected}", slider?.Text);
 
             _session?.Click_Save();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var customLayouts = new CustomLayouts();
@@ -348,9 +338,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var slider = _session?.GetSpaceAroundZonesSlider();
             slider?.SendKeys(Keys.Right);
             _session?.Click_Cancel();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
             var customLayouts = new CustomLayouts();
@@ -373,9 +361,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
 
             _session?.Click_Save();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(toggle!); // let the dialog window close
 
             // verify the file
             var customLayouts = new CustomLayouts();
@@ -397,9 +383,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreNotEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
 
             _session?.Click_Cancel();
-
-            // let the dialog window close
-            _session?.WaitFor(0.5f);
+            _session?.WaitUntilHidden(toggle!); // let the dialog window close
 
             // verify the file
             var customLayouts = new CustomLayouts();

@@ -275,25 +275,13 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
             wait.Until(pred =>
             {
-                bool displayed = false;
-                try
+                var element = Session?.FindElementByName(name);
+                if (element != null)
                 {
-                    var element = Session?.FindElementByName(name);
-                    if (element != null)
-                    {
-                        displayed = element.Displayed;
-                    }
-                }
-                catch
-                {
+                    return element.Displayed;
                 }
 
-                if (!displayed)
-                {
-                    context.WriteLine($"{name} not displayed");
-                }
-
-                return displayed;
+                return false;
             });
         }
 
@@ -302,32 +290,23 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
             wait.Until(pred =>
             {
-                bool displayed = false;
-                try
+                var element = Session?.FindElementByAccessibilityId(id);
+                if (element != null)
                 {
-                    var element = Session?.FindElementByAccessibilityId(id);
-                    if (element != null)
-                    {
-                        displayed = element.Displayed;
-                    }
-                }
-                catch
-                {
+                    return element.Displayed;
                 }
 
-                if (!displayed)
-                {
-                    context.WriteLine($"{id} not displayed");
-                }
-
-                return displayed;
+                return false;
             });
         }
 
-        public void WaitFor(float seconds)
+        public void WaitUntilHidden(WindowsElement element)
         {
-            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(seconds * 2));
-            wait.Timeout = TimeSpan.FromSeconds(seconds);
+            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(0.5));
+            wait.Until(pred =>
+            {
+                return !element.Displayed;
+            });
         }
 
         public void ContextClick(WindowsElement element)
