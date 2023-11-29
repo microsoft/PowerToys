@@ -94,6 +94,12 @@ extends:
             version: '8.x'
 
         - task: PowerShell@2
+          displayName: Remove deps/boost_regex/example
+          inputs:
+            filePath: '$(build.sourcesdirectory)\.pipelines\RemoveBoostRegexExamplesDir.ps1'
+            pwsh: true
+
+        - task: PowerShell@2
           displayName: Verify and set latest VCToolsVersion usage
           inputs:
             filePath: '$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1'

@@ -14,6 +14,12 @@ steps:
     version: '6.x'
 
 - task: PowerShell@2
+  displayName: Remove deps/boost_regex/example
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\RemoveBoostRegexExamplesDir.ps1'
+    pwsh: true
+
+- task: PowerShell@2
   displayName: Verify XAML formatting
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\applyXamlStyling.ps1'
