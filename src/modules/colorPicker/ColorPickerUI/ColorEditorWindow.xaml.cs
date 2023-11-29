@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using ColorPicker.Helpers;
+using Common.UI;
 using Wpf.Ui.Controls;
 
 namespace ColorPicker
@@ -19,7 +20,9 @@ namespace ColorPicker
         public ColorEditorWindow(AppStateHandler appStateHandler)
         {
             InitializeComponent();
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, true, true);
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+            WindowBackdropType = OSVersionHelper.IsWindows11() ? WindowBackdropType.Mica : WindowBackdropType = WindowBackdropType.None;
+
             _appStateHandler = appStateHandler;
             Closing += ColorEditorWindow_Closing;
         }
@@ -33,7 +36,6 @@ namespace ColorPicker
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            NativeMethods.SetToolWindowStyle(this);
         }
     }
 }

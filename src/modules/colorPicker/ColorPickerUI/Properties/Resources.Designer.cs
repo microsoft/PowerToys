@@ -142,6 +142,15 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Color Picker.
+        /// </summary>
+        public static string CP_Title {
+            get {
+                return ResourceManager.GetString("CP_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Color dark 1.
         /// </summary>
         public static string Darker_color {

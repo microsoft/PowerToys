@@ -8,15 +8,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:ColorPicker.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="Color Picker"
     Width="440"
     Height="380"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
     ExtendsContentIntoTitleBar="True"
     ResizeMode="NoResize"
     Topmost="True"
-    WindowBackdropType="Mica"
     WindowCornerPreference="Default"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
@@ -30,7 +29,7 @@
         </Grid.RowDefinitions>
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="Color Picker"
+            Title="{x:Static p:Resources.CP_Title}"
             Grid.Row="0"
             Height="32"
             Padding="16,0,16,0"
