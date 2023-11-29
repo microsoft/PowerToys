@@ -8,7 +8,6 @@
     xmlns:p="clr-namespace:ColorPicker.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     x:Name="colorEditorControl"
-    WindowChrome.IsHitTestVisibleInChrome="True"
     mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
