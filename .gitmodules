@@ -7,3 +7,6 @@
 [submodule "deps/cziplib"]
 	path = deps/cziplib
 	url = https://github.com/kuba--/zip.git
+[submodule "deps/boost_regex"]
+	path = deps/boost_regex
+	url = https://github.com/boostorg/regex.git
