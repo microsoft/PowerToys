@@ -106,7 +106,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _editorParamsIOHelper = new IOTestHelper(editorParameters.File);
             _editorParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
-            // Make sure applied layouts don't replate template settings
+            // Make sure applied layouts don't replace template settings
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             AppliedLayoutsListWrapper appliedLayoutsList = new AppliedLayoutsListWrapper
             {
