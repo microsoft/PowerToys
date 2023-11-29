@@ -235,7 +235,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestCleanup]
         public void TestCleanup()
         {
-            _session?.Close(_context!);
+            _session?.Close();
 
             _templatesIOHelper?.RestoreData();
             _defaultLayoutsIOHelper?.RestoreData();

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -156,7 +156,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestCleanup]
         public void TestCleanup()
         {
-            _session?.Close(_context!);
+            _session?.Close();
             _customLayoutsIOHelper?.RestoreData();
         }
 
