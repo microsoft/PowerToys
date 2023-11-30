@@ -183,7 +183,7 @@ In this release, we focused on new features, stability and improvements.
  - Fixed a rare startup initialization error and removed cold start operations that were no longer needed. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Improved calculations for Windows File Time and Unix Epoch Time in the DateTime plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fixed a crash when trying to get the icon for a link that pointed to no file.
- - Fixed clean up in the WindowWalker plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Cleaned up code in the WindowWalker plugin improving the logic. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
