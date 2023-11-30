@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 using System.Text;
-using Peek.Common.Helpers;
+using ManagedCommon;
 using Peek.Common.Models;
 using Peek.UI.Native;
 
@@ -30,7 +30,7 @@ namespace Peek.UI.Helpers
             ret = NativeMethods.AssocQueryString(NativeMethods.AssocF.Verify, NativeMethods.AssocStr.FriendlyAppName, extension, null, sb, ref length);
             if (ret != HResult.Ok)
             {
-                Logger.LogError($"Error when getting accessString for {extension} file: {Marshal.GetExceptionForHR((int)ret)!.Message}" );
+                Logger.LogError($"Error when getting accessString for {extension} file: {Marshal.GetExceptionForHR((int)ret)!.Message}");
                 return appName;
             }
 
