@@ -215,6 +215,7 @@ In this release, we focused on new features, stability and improvements.
 ### Documentation
 
  - Fixed some typos in the README. Thanks [@Asymtode712](https://github.com/Asymtode712)!
+ - Reworked the gpo docs on learn.microsoft.com, adding .admx, registry and Intune information. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Development
 
