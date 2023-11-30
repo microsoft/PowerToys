@@ -167,7 +167,7 @@ In this release, we focused on new features, stability and improvements.
 
 ### Peek
 
- - Added the possibility to pause/resume videos with the spacebar. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added the possibility to pause/resume videos with the space bar. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed high CPU usage when idle before initializing the main window. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Implemented Ctrl+W as a shortcut to close Peek. Thanks [@Physalis2](https://github.com/Physalis2)!
  - Solved an issue incorrectly detecting encoding when previewing code files.
@@ -193,7 +193,7 @@ In this release, we focused on new features, stability and improvements.
  - Added a missing Latin letter ꝡ. Thanks [@cubedhuang](https://github.com/cubedhuang)!
  - Added fraction characters. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Added support to the Danish language character set. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Added the Kazakhstani Tenge character to the Currencies charaters set. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added the Kazakhstani Tenge character to the Currencies characters set. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Renamed Slovakian to Slovak, which is the correct term. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Added the Greek language character set. Thanks [@mcbabo](https://github.com/mcbabo)!
 
@@ -210,7 +210,7 @@ In this release, we focused on new features, stability and improvements.
 ### Text Extractor
 
  - Move to WPF-UI, localization and light theme support. Thanks [@niels9001](https://github.com/niels9001)!
- - Disabled by default on Windows 11, with a infobox on Settings to prefer using the Windows Snipping Tool, which now supports OCR.
+ - Disabled by default on Windows 11, with a information box on Settings to prefer using the Windows Snipping Tool, which now supports OCR.
 
 ### Documentation
 
