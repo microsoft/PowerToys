@@ -125,6 +125,10 @@ In this release, we focused on new features, stability and improvements.
 
  - Fixed restoring windows that were reparented while maximized.
 
+### Environment Variables
+
+ - Fixed crash caused by WinAppSDK version bump by replacing ListView elements with ItemsControl.
+
 ### FancyZones
 
  - Reverted a change that caused some applications, like the Windows Calculator, to not snap correctly. (This was a hotfix for 0.75)
