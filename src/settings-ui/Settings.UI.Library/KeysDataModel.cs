@@ -21,6 +21,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("unicodeText")]
         public string NewRemapString { get; set; }
 
+        [JsonPropertyName("runProgramFilePath")]
+        public string RunProgramFilePath { get; set; }
+
         private static List<string> MapKeys(string stringOfKeys)
         {
             return stringOfKeys

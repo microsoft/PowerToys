@@ -40,6 +40,13 @@ private:
     // Function to set the accessible names for all the controls in a row
     static void UpdateAccessibleNames(StackPanel sourceColumn, StackPanel mappedToColumn, TextBox targetAppTextBox, Button deleteButton, int rowIndex);
 
+    enum class ShortcutType
+    {
+        Shortcut,
+        Text,
+        RunProgram
+    };
+
 public:
     // Handle to the current Edit Shortcuts Window
     static HWND editShortcutsWindowHandle;
@@ -50,6 +57,9 @@ public:
     // Stores the current list of remappings
     static RemapBuffer shortcutRemapBuffer;
 
+    // Stores the current list of runProgram... things?
+    static RemapBuffer runProgramRemapBuffer;
+
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
 
@@ -58,6 +68,8 @@ public:
 
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
     static void AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"");
+
+    static ShortcutType GetShortcutType(const winrt::Windows::UI::Xaml::Controls::ComboBox& typeCombo);
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel GetShortcutControl();

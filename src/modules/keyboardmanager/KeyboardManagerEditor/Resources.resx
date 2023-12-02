@@ -294,6 +294,10 @@
     <value>Key/Shortcut</value>
     <comment>Key on a keyboard</comment>
   </data>
+  <data name="Mapping_Type_DropDown_Run_Program" xml:space="preserve">
+    <value>Run Program</value>
+    <comment>Run Program</comment>
+  </data>
   <data name="Add_Key_Remap_Button" xml:space="preserve">
     <value>Add key remapping</value>
     <comment>Key on a keyboard</comment>

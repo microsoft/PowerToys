@@ -268,8 +268,19 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                         auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
                         auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName, {});
                         auto newRemapText = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewTextSettingName, {});
+                        auto isRunProgram = it.GetObjectW().GetNamedBoolean(KeyboardManagerConstants::IsRunProgramSettingName, false);
 
-                        if (!newRemapKeys.empty())
+                        if (isRunProgram)
+                        {
+                            while (!true)
+                            {
+                                // debugger wait
+                                Sleep(1000);
+                            }
+                            auto runProgram = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramSettingName, L"");
+                            AddOSLevelShortcut(Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str(), isRunProgram, runProgram.c_str()));
+                        }
+                        else if (!newRemapKeys.empty())
                         {
                             // If remapped to a shortcut
                             if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
@@ -416,7 +427,18 @@ bool MappingConfiguration::SaveSettingsToFile()
         // For shortcut to shortcut remapping
         else if (it.second.targetShortcut.index() == 1)
         {
-            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second.targetShortcut).ToHstringVK()));
+            auto targetShortcut = std::get<Shortcut>(it.second.targetShortcut);
+
+            keys.SetNamedValue(KeyboardManagerConstants::IsRunProgramSettingName, json::value(targetShortcut.isRunProgram));
+
+            if (targetShortcut.isRunProgram)
+            {
+                keys.SetNamedValue(KeyboardManagerConstants::RunProgramSettingName, json::value(targetShortcut.ToHstring___()));
+            }
+            else
+            {
+                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(targetShortcut.ToHstringVK()));
+            }
         }
         // For shortcut to text remapping
         else if (it.second.targetShortcut.index() == 2)

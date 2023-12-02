@@ -87,7 +87,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
         auto child0 = Media::VisualTreeHelper::GetChild(combo, 0);
         if (!child0)
             return;
-        
+
         auto grid = child0.as<Grid>();
         if (!grid)
             return;
@@ -95,7 +95,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
         auto& gridChildren = grid.Children();
         if (!gridChildren)
             return;
-        
+
         gridChildren.Append(warningTip);
     });
 
@@ -432,7 +432,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
     // Remove references to the old drop down objects to destroy them
     keyDropDownControlObjects.clear();
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
-    if (shortcutKeyCodes.size() != 0)
+    if (shortcutKeyCodes.size() != 0 || shortcut.isRunProgram)
     {
         bool ignoreWarning = false;
 

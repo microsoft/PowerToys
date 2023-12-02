@@ -27,12 +27,18 @@ public:
     ModifierKey ctrlKey = ModifierKey::Disabled;
     ModifierKey altKey = ModifierKey::Disabled;
     ModifierKey shiftKey = ModifierKey::Disabled;
+
+    bool isRunProgram = false;
+    std::wstring runProgramPath;
+
     DWORD actionKey = {};
 
     Shortcut() = default;
 
     // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
+
+    Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgram);
 
     // Constructor to initialize shortcut from a list of keys
     Shortcut(const std::vector<int32_t>& keys);
@@ -91,6 +97,8 @@ public:
 
     // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
     winrt::hstring ToHstringVK() const;
+
+    winrt::hstring ToHstring___() const;
 
     // Function to return a vector of key codes in the display order
     std::vector<DWORD> GetKeyCodes();
