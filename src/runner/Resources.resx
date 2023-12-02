@@ -106,8 +106,8 @@
   <data name="TOAST_TITLE" xml:space="preserve">
     <value>PowerToys Update</value>
   </data>
-  <data name="SHOW_SHORTCUTS_MENU_TEXT" xml:space="preserve">
-    <value>Show Shortcuts</value>
+  <data name="QUICK_ACCESS_MENU_TEXT" xml:space="preserve">
+    <value>Quick access</value>
   </data>
   <data name="SETTINGS_MENU_TEXT" xml:space="preserve">
     <value>Settings</value>
