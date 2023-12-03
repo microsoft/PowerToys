@@ -8,7 +8,7 @@ resources:
   - repository: 1ESPipelineTemplates
     type: git
     name: 1ESPipelineTemplates/1ESPipelineTemplates
-    ref: refs/tags/release
+    ref: refs/tags/release-2023-11-13-4
 
 parameters:
   - name: buildConfigurations
