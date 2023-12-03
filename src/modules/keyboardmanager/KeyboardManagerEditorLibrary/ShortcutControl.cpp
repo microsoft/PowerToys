@@ -235,6 +235,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     }
 
     const bool textSelected = newKeys.index() == 2;
+    bool isRunProgram = false;
     if (textSelected)
     {
         typeCombo.SelectedIndex(1);
@@ -244,6 +245,12 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         auto shortCut = std::get<Shortcut>(newKeys);
         if (shortCut.isRunProgram)
         {
+            Shortcut tempShortcut;
+            isRunProgram = true;
+            tempShortcut.isRunProgram = true;
+            tempShortcut.runProgramPath = runProgramPathInput.Text().c_str();
+            // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
+            //shortcutRemapBuffer[index].first[1] = tempShortcut;
             runProgramPathInput.Text(shortCut.runProgramPath);
             typeCombo.SelectedIndex(2);
         }
@@ -424,7 +431,17 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     if (EditorHelpers::IsValidShortcut(originalKeys) && !(newKeys.index() == 0 && std::get<DWORD>(newKeys) == NULL) && !(newKeys.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKeys))))
     {
         // change to load app name
-        shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
+
+        if (isRunProgram)
+        {
+            auto newShortcut = std::get<Shortcut>(newKeys);
+            shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), newShortcut }, std::wstring(targetAppName)));
+        }
+        else
+        {
+            shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
+        }
+
         KeyDropDownControl::AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 0, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects, shortcutRemapBuffer, row, targetAppTextBox, false, false);
 
         if (newKeys.index() == 0)

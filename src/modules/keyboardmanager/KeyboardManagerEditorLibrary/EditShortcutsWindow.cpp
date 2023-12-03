@@ -129,13 +129,13 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         NULL,
         hInst,
         NULL);
-    
+
     if (_hWndEditShortcutsWindow == NULL)
     {
         MessageBox(NULL, GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORMESSAGE).c_str(), GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORTITLE).c_str(), NULL);
         return;
     }
-    
+
     // Ensures the window is in foreground on first startup. If this is not done, the window appears behind because the thread is not on the foreground.
     if (_hWndEditShortcutsWindow)
     {
@@ -157,7 +157,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Create the xaml bridge object
     XamlBridge2 xamlBridge(_hWndEditShortcutsWindow);
-    
+
     // Create the desktop window xaml source object and set its content
     hWndXamlIslandEditShortcutsWindow = xamlBridge.InitBridge();
 
@@ -227,15 +227,15 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Store handle of edit shortcuts window
     ShortcutControl::editShortcutsWindowHandle = _hWndEditShortcutsWindow;
-    
+
     // Store keyboard manager state
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::mappingConfiguration = &mappingConfiguration;
-    
+
     // Clear the shortcut remap buffer
     ShortcutControl::shortcutRemapBuffer.clear();
-    
+
     // Vector to store dynamically allocated control objects to avoid early destruction
     std::vector<std::vector<std::unique_ptr<ShortcutControl>>> keyboardRemapControlObjects;
 
@@ -459,8 +459,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
             rect->top,
             rect->right - rect->left,
             rect->bottom - rect->top,
-            SWP_NOZORDER | SWP_NOACTIVATE
-        );
+            SWP_NOZORDER | SWP_NOACTIVATE);
 
         Logger::trace(L"WM_DPICHANGED: new dpi {} rect {} {} ", newDPI, rect->right - rect->left, rect->bottom - rect->top);
     }

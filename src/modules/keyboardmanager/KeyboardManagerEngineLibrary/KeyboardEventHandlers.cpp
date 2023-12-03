@@ -233,7 +233,15 @@ namespace KeyboardEventHandlers
                     if (remapToShortcut)
                     {
                         // Get the common keys between the two shortcuts
-                        int commonKeys = it->first.GetCommonModifiersCount(std::get<Shortcut>(it->second.targetShortcut));
+
+                        auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
+                        if (shortcut.isRunProgram)
+                        {
+                            // we don't need to do anything here, since we'll handle it in CentralizedKeyboardHook
+                            continue;
+                        }
+
+                        int commonKeys = it->first.GetCommonModifiersCount(shortcut);
 
                         // If the original shortcut modifiers are a subset of the new shortcut
                         if (commonKeys == src_size - 1)

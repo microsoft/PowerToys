@@ -46,14 +46,19 @@ bool MappingConfiguration::AddOSLevelShortcut(const Shortcut& originalSC, const 
         return false;
     }
 
-    auto shortCut = std::get<Shortcut>(newSC);
-
-    if (!shortCut.isRunProgram)
+    /*if (newSC.index() == 1 && (std::get<Shortcut>(newSC)).isRunProgram)
     {
         osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
-        osLevelShortcutReMapSortedKeys.push_back(originalSC);
-        Helpers::SortShortcutVectorBasedOnSize(osLevelShortcutReMapSortedKeys);
     }
+    else
+    {
+        
+    }*/
+
+
+    osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
+    osLevelShortcutReMapSortedKeys.push_back(originalSC);
+    Helpers::SortShortcutVectorBasedOnSize(osLevelShortcutReMapSortedKeys);
 
     return true;
 }
