@@ -169,6 +169,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     runProgramPathInput.Margin(textInputMargin);
 
     runProgramPathInput.AcceptsReturn(false);
+    runProgramPathInput.IsSpellCheckEnabled(false);
     runProgramPathInput.Visibility(Visibility::Collapsed);
     runProgramPathInput.Width(EditorConstants::TableDropDownHeight);
     controlStackPanel.Children().Append(runProgramPathInput);
@@ -179,12 +180,14 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     runProgramArgsForProgramInput.Margin(textInputMargin);
 
     runProgramArgsForProgramInput.AcceptsReturn(false);
+    runProgramArgsForProgramInput.IsSpellCheckEnabled(false);
     runProgramArgsForProgramInput.Visibility(Visibility::Collapsed);
     runProgramArgsForProgramInput.Width(EditorConstants::TableDropDownHeight);
     controlStackPanel.Children().Append(runProgramArgsForProgramInput);
     runProgramArgsForProgramInput.HorizontalAlignment(HorizontalAlignment::Left);
 
     auto runProgramStartInDirInput = TextBox();
+    runProgramStartInDirInput.IsSpellCheckEnabled(false);
     runProgramStartInDirInput.PlaceholderText(KeyboardManagerEditorStrings::EditShortcutsStartInDirForProgram());
     runProgramStartInDirInput.Margin(textInputMargin);
 
@@ -202,9 +205,9 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         }
         Shortcut tempShortcut;
         tempShortcut.isRunProgram = true;
-        tempShortcut.runProgramFilePath = runProgramPathInput.Text().c_str();
-        tempShortcut.runProgramArgs = runProgramArgsForProgramInput.Text().c_str();
-        tempShortcut.runProgramStartInDir = runProgramStartInDirInput.Text().c_str();
+        tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
+        tempShortcut.runProgramArgs = ShortcutControl::RemoveExtraQuotes(runProgramArgsForProgramInput.Text().c_str());
+        tempShortcut.runProgramStartInDir = ShortcutControl::RemoveExtraQuotes(runProgramStartInDirInput.Text().c_str());
         // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
         shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
 
@@ -219,9 +222,9 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         }
         Shortcut tempShortcut;
         tempShortcut.isRunProgram = true;
-        tempShortcut.runProgramFilePath = runProgramPathInput.Text().c_str();
-        tempShortcut.runProgramArgs = runProgramArgsForProgramInput.Text().c_str();
-        tempShortcut.runProgramStartInDir = runProgramStartInDirInput.Text().c_str();
+        tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
+        tempShortcut.runProgramArgs = ShortcutControl::RemoveExtraQuotes(runProgramArgsForProgramInput.Text().c_str());
+        tempShortcut.runProgramStartInDir = ShortcutControl::RemoveExtraQuotes(runProgramStartInDirInput.Text().c_str());
         // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
         shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
         //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
@@ -236,15 +239,14 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
         Shortcut tempShortcut;
         tempShortcut.isRunProgram = true;
-        tempShortcut.runProgramFilePath = runProgramPathInput.Text().c_str();
-        tempShortcut.runProgramArgs = runProgramArgsForProgramInput.Text().c_str();
-        tempShortcut.runProgramStartInDir = runProgramStartInDirInput.Text().c_str();
+        tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
+        tempShortcut.runProgramArgs = ShortcutControl::RemoveExtraQuotes(runProgramArgsForProgramInput.Text().c_str());
+        tempShortcut.runProgramStartInDir = ShortcutControl::RemoveExtraQuotes(runProgramStartInDirInput.Text().c_str());
         // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
         shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
 
         //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
     });
-
 
     // add grid for when it's a key/shortcut
     auto shortcutGrid = keyboardRemapControlObjects.back()[1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>();
@@ -530,15 +532,14 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     }
 }
 
-void ShortcutControl::RunProgramTextOnChange(const int rowIndex, RemapBuffer shortcutRemapBuffer, const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramPathInput, const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramArgsForProgramInput, const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramStartInDirInput)
+std::wstring ShortcutControl::RemoveExtraQuotes(const std::wstring& str)
 {
-    Shortcut tempShortcut;
-    tempShortcut.isRunProgram = true;
-    tempShortcut.runProgramFilePath = runProgramPathInput.Text().c_str();
-    tempShortcut.runProgramArgs = runProgramArgsForProgramInput.Text().c_str();
-    tempShortcut.runProgramStartInDir = runProgramStartInDirInput.Text().c_str();
-    // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-    shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+    if (!str.empty() && str.front() == L'"' && str.back() == L'"')
+    {
+        return str.substr(1, str.size() - 2);
+    }
+
+    return str;
 }
 
 ShortcutControl::ShortcutType ShortcutControl::GetShortcutType(const winrt::Windows::UI::Xaml::Controls::ComboBox& typeCombo)

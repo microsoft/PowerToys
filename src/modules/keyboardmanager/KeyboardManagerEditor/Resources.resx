@@ -161,7 +161,7 @@
     <value>To send:</value>
   </data>
   <data name="EditShortcuts_TargetHeader" xml:space="preserve">
-    <value>To send:</value>
+    <value>To:</value>
   </data>
   <data name="EditShortcuts_TargetAppHeader" xml:space="preserve">
     <value>Target app:</value>
@@ -297,10 +297,10 @@
     <comment>Key on a keyboard</comment>
   </data>
   <data name="Mapping_Type_DropDown_Text" xml:space="preserve">
-    <value>Text</value>
+    <value>Send Text</value>
   </data>
   <data name="Mapping_Type_DropDown_Key_Shortcut" xml:space="preserve">
-    <value>Key/Shortcut</value>
+    <value>Send Key/Shortcut</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="Mapping_Type_DropDown_Run_Program" xml:space="preserve">

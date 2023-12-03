@@ -194,7 +194,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
-                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, NewRemapString = x.NewRemapString, TargetApp = allAppsDescription }).Concat(appSpecificShortcutList).ToList();
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, NewRemapString = x.NewRemapString, RunProgramFilePath = x.RunProgramFilePath, IsRunProgram = x.IsRunProgram, RunProgramArgs = x.RunProgramArgs, TargetApp = allAppsDescription }).Concat(appSpecificShortcutList).ToList();
             }
         }
 
