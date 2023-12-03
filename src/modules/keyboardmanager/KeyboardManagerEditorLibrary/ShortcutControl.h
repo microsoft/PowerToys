@@ -71,13 +71,7 @@ public:
 
     static ShortcutType GetShortcutType(const winrt::Windows::UI::Xaml::Controls::ComboBox& typeCombo);
 
-    void ShortcutControl::RunProgramTextOnChange(
-        StackPanel& parent,
-        const winrt::Windows::UI::Xaml::Controls::StackPanel& row,
-        RemapBuffer shortcutRemapBuffer,
-        const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramPathInput,
-        const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramArgsForProgramInput,
-        const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramStartInDirInput);
+    static void ShortcutControl::RunProgramTextOnChange(const int rowIndex, RemapBuffer shortcutRemapBuffer, const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramPathInput, const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramArgsForProgramInput, const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramStartInDirInput);
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel GetShortcutControl();
