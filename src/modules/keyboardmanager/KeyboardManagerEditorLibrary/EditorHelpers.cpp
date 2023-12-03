@@ -52,7 +52,7 @@ namespace EditorHelpers
     // Function to return true if the shortcut is valid. A valid shortcut has atleast one modifier, as well as an action key
     bool IsValidShortcut(Shortcut shortcut)
     {
-        if (shortcut.isRunProgram)
+        if (shortcut.isRunProgram && shortcut.runProgramFilePath.length() > 0)
         {
             return true;
         }

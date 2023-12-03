@@ -246,12 +246,6 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     // Create copy of the remaps to avoid concurrent access
     ShortcutRemapTable osLevelShortcutReMapCopy = mappingConfiguration.osLevelShortcutReMap;
 
-    while (!true)
-    {
-        // debugger wait
-        Sleep(1000);
-    }
-
     for (const auto& it : osLevelShortcutReMapCopy)
     {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, it.second.targetShortcut);
@@ -459,7 +453,8 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
             rect->top,
             rect->right - rect->left,
             rect->bottom - rect->top,
-            SWP_NOZORDER | SWP_NOACTIVATE);
+            SWP_NOZORDER | SWP_NOACTIVATE
+        );
 
         Logger::trace(L"WM_DPICHANGED: new dpi {} rect {} {} ", newDPI, rect->right - rect->left, rect->bottom - rect->top);
     }

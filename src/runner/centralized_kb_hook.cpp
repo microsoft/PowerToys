@@ -8,13 +8,13 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <modules/keyboardmanager/common/KeyboardManagerConstants.h>
+#include <tlhelp32.h>
 
 // For GetProcessIdByName
-#include <windows.h>
-#include <tlhelp32.h>
-#include <iostream>
-#include <string>
-#include <filesystem>
+//#include <windows.h>
+//#include <iostream>
+//#include <string>
+//#include <filesystem>
 
 namespace CentralizedKeyboardHook
 {
@@ -22,10 +22,6 @@ namespace CentralizedKeyboardHook
     class RunProgramSpec
     {
     private:
-        // Function to split a wstring based on a delimiter and return a vector of split strings
-
-        std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
-
         inline auto comparator() const
         {
             return std::make_tuple(winKey, ctrlKey, altKey, shiftKey, actionKey);
@@ -248,6 +244,9 @@ namespace CentralizedKeyboardHook
     std::multiset<PressedKeyDescriptor> pressedKeyDescriptors;
     std::mutex pressedKeyMutex;
     long lastKeyInChord = 0;
+    bool getConfigInit = false;
+    bool runProgramEnabled = true;
+    std::vector<RunProgramSpec> runProgramSpecs;
 
     // keep track of last pressed key, to detect repeated keys and if there are more keys pressed.
     const DWORD VK_DISABLED = CommonSharedConstants::VK_DISABLED;
@@ -412,10 +411,6 @@ namespace CentralizedKeyboardHook
         return CallNextHookEx(hHook, nCode, wParam, lParam);
     }
 
-    bool getConfigInit = false;
-    bool runProgramEnabled = true;
-    std::vector<RunProgramSpec> runProgramSpecs;
-
     void SetRunProgramEnabled(bool enabled)
     {
         runProgramEnabled = enabled;
@@ -427,7 +422,10 @@ namespace CentralizedKeyboardHook
         runProgramSpecs.clear();
     }
 
-    void setupConfig()
+    // SetupConfig get the config from the settings file that we need to monitor and convert to programs to run or actions to do that are not handled
+    // by just shortcut remaps to other shortcuts.
+    // It would be nice to not duplicate this code, but it's not clear how to do that and we just need some parts of the file and for different reasons.
+    void SetupConfig()
     {
         if (!getConfigInit)
         {
@@ -447,21 +445,6 @@ namespace CentralizedKeyboardHook
             }
 
             auto keyboardManagerConfig = jsonData->GetNamedObject(KeyboardManagerConstants::RemapShortcutsSettingName);
-            /*
-            
-                        auto newRemapText = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewTextSettingName, {});
-                        auto isRunProgram = it.GetObjectW().GetNamedBoolean(KeyboardManagerConstants::IsRunProgramSettingName, false);
-
-                        if (isRunProgram)
-                        {
-                            while (!true)
-                            {
-                                // debugger wait
-                                Sleep(1000);
-                            }
-                            
-                            
-                            */
             if (keyboardManagerConfig)
             {
                 auto global = keyboardManagerConfig.GetNamedArray(KeyboardManagerConstants::GlobalRemapShortcutsSettingName);
@@ -493,7 +476,8 @@ namespace CentralizedKeyboardHook
         }
     }
 
-    bool isPartOfAnyRunProgramSpec2(DWORD key)
+    // This checks to see if the key is part of any run program spec
+    bool IsPartOfAnyRunProgramSpec(DWORD key)
     {
         for (RunProgramSpec runProgramSpec : runProgramSpecs)
         {
@@ -501,19 +485,12 @@ namespace CentralizedKeyboardHook
             {
                 return true;
             }
-
-            /*for (unsigned char c : runProgramSpec.keys)
-            {
-                if (c == key)
-                {
-                    return true;
-                }
-            }*/
         }
         return false;
     }
 
-    bool isPartOfThisRunProgramSpec2(RunProgramSpec runProgramSpec, DWORD key)
+    // this check to see if this is part of a specific runProgramSpec
+    bool IsPartOfThisRunProgramSpec(RunProgramSpec runProgramSpec, DWORD key)
     {
         for (DWORD c : runProgramSpec.keys)
         {
@@ -525,6 +502,8 @@ namespace CentralizedKeyboardHook
         return false;
     }
 
+    // Check and do the action for the RunProgramSpec if found
+    // Chrods are handled here, but there is no interface for them yet.
     void HandleCreateProcessHotKeysAndChords(LocalKey hotkey)
     {
         if (!runProgramEnabled)
@@ -534,9 +513,9 @@ namespace CentralizedKeyboardHook
 
         if (hotkey.win || hotkey.shift || hotkey.control || hotkey.alt)
         {
-            setupConfig();
+            SetupConfig();
 
-            if (!isPartOfAnyRunProgramSpec2(hotkey.key))
+            if (!IsPartOfAnyRunProgramSpec(hotkey.key))
             {
                 lastKeyInChord = 0;
                 return;
@@ -597,7 +576,7 @@ namespace CentralizedKeyboardHook
                             // https://github.com/ritchielawrence/cmdow
 
                             // try by main window.
-                            HWND hwnd = find_main_window(targetPid);
+                            HWND hwnd = FindMainWindow(targetPid);
                             if (hwnd != NULL)
                             {
                                 if (hwnd == GetForegroundWindow())
@@ -703,27 +682,33 @@ namespace CentralizedKeyboardHook
         HWND window_handle;
     };
 
-    HWND find_main_window(unsigned long process_id)
+    // used for reactivating a window for a program we already started.
+    HWND FindMainWindow(unsigned long process_id)
     {
         handle_data data;
         data.process_id = process_id;
         data.window_handle = 0;
-        EnumWindows(enum_windows_callback, reinterpret_cast<LPARAM>(&data));
+        EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&data));
         return data.window_handle;
     }
 
-    BOOL CALLBACK enum_windows_callback(HWND handle, LPARAM lParam)
+    // used by FindMainWindow
+    BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam)
     {
-        //handle_data& data = *(handle_data*)lParam;
         handle_data& data = *reinterpret_cast<handle_data*>(lParam);
         unsigned long process_id = 0;
         GetWindowThreadProcessId(handle, &process_id);
+        
         if (data.process_id != process_id || !(GetWindow(handle, GW_OWNER) == static_cast<HWND>(0) && IsWindowVisible(handle)))
+        {
             return TRUE;
+        }
+
         data.window_handle = handle;
         return FALSE;
     }
 
+    // Use to find a process by its name
     std::wstring GetFileNameFromPath(const std::wstring& fullPath)
     {
         size_t found = fullPath.find_last_of(L"\\");
@@ -734,6 +719,7 @@ namespace CentralizedKeyboardHook
         return fullPath;
     }
 
+    // GetProcessIdByName also used by HandleCreateProcessHotKeysAndChords
     DWORD GetProcessIdByName(const std::wstring& processName)
     {
         DWORD pid = 0;

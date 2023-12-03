@@ -232,8 +232,7 @@ namespace KeyboardEventHandlers
 
                     if (remapToShortcut)
                     {
-                        // Get the common keys between the two shortcuts
-
+                        // Get the common keys between the two shortcuts if this is not a runProgram shortcut
                         auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
                         if (shortcut.isRunProgram)
                         {

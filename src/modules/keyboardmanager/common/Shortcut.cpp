@@ -438,11 +438,6 @@ void Shortcut::ResetKey(const DWORD input)
     }
 }
 
-winrt::hstring Shortcut::ToHstring___() const
-{
-    return runProgramFilePath.c_str();
-}
-
 // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
 winrt::hstring Shortcut::ToHstringVK() const
 {

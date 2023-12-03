@@ -91,6 +91,7 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
 }
 
+// since I don't know a better way, we need to watch the keyboard manager config, since it could be changed anywhere
 DWORD WINAPI WatchKeyboardManagerConfigs(LPVOID lpParameter)
 {
     // don't need but can't not use

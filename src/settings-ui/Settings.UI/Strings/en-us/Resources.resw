@@ -2356,7 +2356,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Starts.Text" xml:space="preserve">
     <value>starts</value>
-    <comment>as in: doing x start y</comment>
+    <comment>as in: doing x will start y</comment>
   </data>
 	<data name="LearnMore_Awake.Text" xml:space="preserve">
     <value>Learn more about Awake</value>

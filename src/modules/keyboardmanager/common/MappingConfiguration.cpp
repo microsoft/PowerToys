@@ -281,12 +281,7 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                         auto isRunProgram = it.GetObjectW().GetNamedBoolean(KeyboardManagerConstants::IsRunProgramSettingName, false);
 
                         if (isRunProgram)
-                        {
-                            while (!true)
-                            {
-                                // debugger wait
-                                Sleep(1000);
-                            }
+                        {                            
                             auto runProgramFilePath = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramFilePathSettingName, L"");
                             auto runProgramArgs = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramArgsSettingName, L"");
                             auto runProgramStartInDir = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramStartInDirSettingName, L"");
