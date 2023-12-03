@@ -18,13 +18,12 @@
 
 namespace CentralizedKeyboardHook
 {
-    
 
-    class RunProgramSpec2
+    class RunProgramSpec
     {
     private:
         // Function to split a wstring based on a delimiter and return a vector of split strings
-       
+
         std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
 
         inline auto comparator() const
@@ -32,7 +31,7 @@ namespace CentralizedKeyboardHook
             return std::make_tuple(winKey, ctrlKey, altKey, shiftKey, actionKey);
         }
 
-        std::vector<std::wstring> RunProgramSpec2::splitwstringOnChar(const std::wstring& input, wchar_t delimiter)
+        std::vector<std::wstring> RunProgramSpec::splitwstringOnChar(const std::wstring& input, wchar_t delimiter)
         {
             std::wstringstream ss(input);
             std::wstring item;
@@ -45,7 +44,7 @@ namespace CentralizedKeyboardHook
             return splittedStrings;
         }
 
-        bool RunProgramSpec2::SetKey(const DWORD input)
+        bool RunProgramSpec::SetKey(const DWORD input)
         {
             // Since there isn't a key for a common Win key we use the key code defined by us
             if (input == CommonSharedConstants::VK_WIN_BOTH)
@@ -188,7 +187,6 @@ namespace CentralizedKeyboardHook
         }
 
     public:
-
         ModifierKey winKey = ModifierKey::Disabled;
         ModifierKey ctrlKey = ModifierKey::Disabled;
         ModifierKey altKey = ModifierKey::Disabled;
@@ -201,7 +199,7 @@ namespace CentralizedKeyboardHook
         std::vector<DWORD> keys;
         DWORD actionKey = {};
 
-        RunProgramSpec2::RunProgramSpec2(const std::wstring& shortcutVK, const std::wstring& targetAppSpec) :
+        RunProgramSpec::RunProgramSpec(const std::wstring& shortcutVK, const std::wstring& runProgram, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir) :
             winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
         {
             auto _keys = splitwstringOnChar(shortcutVK, ';');
@@ -211,12 +209,9 @@ namespace CentralizedKeyboardHook
                 SetKey(vkKeyCode);
             }
 
-            //auto KBM_RUN_PROGRAM_DELIMITER = L"<|||>";
-            //auto targetParts = splitwStringOnString(targetAppSpec, KBM_RUN_PROGRAM_DELIMITER, false);
-
-            path = targetAppSpec;
-            //args = targetParts[1];
-            //dir = targetParts[2];
+            path = runProgram;
+            args = runProgramArgs;
+            dir = runProgramStartInDir;
         }
     };
 
@@ -419,7 +414,7 @@ namespace CentralizedKeyboardHook
 
     bool getConfigInit = false;
     bool runProgramEnabled = true;
-    std::vector<RunProgramSpec2> runProgramSpecs;
+    std::vector<RunProgramSpec> runProgramSpecs;
 
     void SetRunProgramEnabled(bool enabled)
     {
@@ -479,8 +474,11 @@ namespace CentralizedKeyboardHook
 
                         if (isRunProgram)
                         {
-                            auto runProgram = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramSettingName, L"");
-                            auto runProgramSpec = RunProgramSpec2(originalKeys.c_str(), runProgram.c_str());
+                            auto runProgram = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramFilePathSettingName, L"");
+                            auto runProgramArgs = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramArgsSettingName, L"");
+                            auto runProgramStartInDir = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramStartInDirSettingName, L"");
+
+                            auto runProgramSpec = RunProgramSpec(originalKeys.c_str(), runProgram.c_str(), runProgramArgs.c_str(), runProgramStartInDir.c_str());
                             runProgramSpecs.push_back(runProgramSpec);
                         }
                     }
@@ -497,7 +495,7 @@ namespace CentralizedKeyboardHook
 
     bool isPartOfAnyRunProgramSpec2(DWORD key)
     {
-        for (RunProgramSpec2 runProgramSpec : runProgramSpecs)
+        for (RunProgramSpec runProgramSpec : runProgramSpecs)
         {
             if (runProgramSpec.actionKey == key)
             {
@@ -515,7 +513,7 @@ namespace CentralizedKeyboardHook
         return false;
     }
 
-    bool isPartOfThisRunProgramSpec2(RunProgramSpec2 runProgramSpec, DWORD key)
+    bool isPartOfThisRunProgramSpec2(RunProgramSpec runProgramSpec, DWORD key)
     {
         for (DWORD c : runProgramSpec.keys)
         {
@@ -528,8 +526,7 @@ namespace CentralizedKeyboardHook
     }
 
     void HandleCreateProcessHotKeysAndChords(LocalKey hotkey)
-    {        
-
+    {
         if (!runProgramEnabled)
         {
             return;
@@ -550,7 +547,7 @@ namespace CentralizedKeyboardHook
             return;
         }
 
-        for (RunProgramSpec2 runProgramSpec : runProgramSpecs)
+        for (RunProgramSpec runProgramSpec : runProgramSpecs)
         {
             if (
                 (runProgramSpec.winKey == ModifierKey::Disabled || (runProgramSpec.winKey == ModifierKey::Left && hotkey.l_win)) && (runProgramSpec.shiftKey == ModifierKey::Disabled || (runProgramSpec.shiftKey == ModifierKey::Left && hotkey.l_shift)) && (runProgramSpec.altKey == ModifierKey::Disabled || (runProgramSpec.altKey == ModifierKey::Left && hotkey.l_alt)) && (runProgramSpec.ctrlKey == ModifierKey::Disabled || (runProgramSpec.ctrlKey == ModifierKey::Left && hotkey.l_control)))

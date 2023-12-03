@@ -29,7 +29,9 @@ public:
     ModifierKey shiftKey = ModifierKey::Disabled;
 
     bool isRunProgram = false;
-    std::wstring runProgramPath;
+    std::wstring runProgramFilePath;
+    std::wstring runProgramArgs;
+    std::wstring runProgramStartInDir;
 
     DWORD actionKey = {};
 
@@ -38,8 +40,8 @@ public:
     // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
 
-    Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgram);
-
+    Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir);
+    
     // Constructor to initialize shortcut from a list of keys
     Shortcut(const std::vector<int32_t>& keys);
 

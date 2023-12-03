@@ -46,8 +46,14 @@ namespace KeyboardManagerConstants
     // Name of the property use to store new remapped string.
     inline const std::wstring NewTextSettingName = L"unicodeText";
 
+    // Name of the property use to store runProgramStartInDir.
+    inline const std::wstring RunProgramStartInDirSettingName = L"runProgramStartInDir";
+
+    // Name of the property use to store runProgramArgs.
+    inline const std::wstring RunProgramArgsSettingName = L"runProgramArgs";
+
     // Name of the property use to store runProgramFilePath.
-    inline const std::wstring RunProgramSettingName = L"runProgram";
+    inline const std::wstring RunProgramFilePathSettingName = L"runProgramFilePath";
 
     // Name of the property use to store runProgramFilePath.
     inline const std::wstring IsRunProgramSettingName = L"isRunProgram";

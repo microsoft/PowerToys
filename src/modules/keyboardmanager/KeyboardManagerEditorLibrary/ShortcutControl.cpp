@@ -158,11 +158,14 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         shortcutRemapBuffer[rowIndex].first[1] = text.c_str();
     });
 
-    // add textbox for when it's a runProgram
-    auto runProgramPathInput = TextBox();
+    // add textbox for when it's a runProgramPath
+
     auto runProgramPathInputMargin = Windows::UI::Xaml::Thickness();
     runProgramPathInputMargin.Top = -EditorConstants::ShortcutTableDropDownSpacing;
     runProgramPathInputMargin.Bottom = EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed UIElement
+
+    auto runProgramPathInput = TextBox();
+    runProgramPathInput.PlaceholderText(KeyboardManagerEditorStrings::EditShortcutsPathToProgram());
     runProgramPathInput.Margin(runProgramPathInputMargin);
 
     runProgramPathInput.AcceptsReturn(false);
@@ -171,11 +174,28 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     controlStackPanel.Children().Append(runProgramPathInput);
     runProgramPathInput.HorizontalAlignment(HorizontalAlignment::Left);
 
-    runProgramPathInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
-        auto textbox = sender.as<TextBox>();
-        auto text = textbox.Text();
-        uint32_t rowIndex = -1;
+    auto runProgramArgsForProgramInput = TextBox();
+    //runProgramArgsForProgramInput.PlaceholderText(KeyboardManagerEditorStrings::EditShortcutsArgsForProgram());
+    //runProgramArgsForProgramInput.Margin(runProgramPathInputMargin);
 
+    //runProgramArgsForProgramInput.AcceptsReturn(false);
+    //runProgramArgsForProgramInput.Visibility(Visibility::Collapsed);
+    //runProgramArgsForProgramInput.Width(EditorConstants::TableDropDownHeight);
+    //controlStackPanel.Children().Append(runProgramArgsForProgramInput);
+    //runProgramArgsForProgramInput.HorizontalAlignment(HorizontalAlignment::Left);
+
+    //auto runProgramStartInDirInput = TextBox();
+    //runProgramPathInput.PlaceholderText(KeyboardManagerEditorStrings::EditShortcutsStartInDirForProgram());
+    //runProgramStartInDirInput.Margin(runProgramPathInputMargin);
+
+    //runProgramStartInDirInput.AcceptsReturn(false);
+    //runProgramStartInDirInput.Visibility(Visibility::Collapsed);
+    //runProgramStartInDirInput.Width(EditorConstants::TableDropDownHeight);
+    //controlStackPanel.Children().Append(runProgramStartInDirInput);
+    //runProgramStartInDirInput.HorizontalAlignment(HorizontalAlignment::Left);
+
+    runProgramPathInput.TextChanged([parent, row, runProgramPathInput, runProgramArgsForProgramInput](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+        uint32_t rowIndex = -1;
         if (!parent.Children().IndexOf(row, rowIndex))
         {
             return;
@@ -183,10 +203,50 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
         Shortcut tempShortcut;
         tempShortcut.isRunProgram = true;
-        tempShortcut.runProgramPath = text.c_str();
+        tempShortcut.runProgramFilePath = runProgramPathInput.Text().c_str();
+        tempShortcut.runProgramArgs = runProgramArgsForProgramInput.Text().c_str();
+        //tempShortcut.runProgramStartInDir = runProgramStartInDirInput.Text().c_str();
         // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
         shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+
+        //ShortcutControl::RunProgramTextOnChange(parent, row, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
     });
+
+    //runProgramArgsForProgramInput.TextChanged([parent, row, runProgramPathInput, runProgramArgsForProgramInput](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+    //    uint32_t rowIndex = -1;
+    //    if (!parent.Children().IndexOf(row, rowIndex))
+    //    {
+    //        return;
+    //    }
+
+    //    Shortcut tempShortcut;
+    //    tempShortcut.isRunProgram = true;
+    //    tempShortcut.runProgramFilePath = runProgramPathInput.Text().c_str();
+    //    tempShortcut.runProgramArgs = runProgramArgsForProgramInput.Text().c_str();
+    //    //tempShortcut.runProgramStartInDir = runProgramStartInDirInput.Text().c_str();
+    //    // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
+    //    shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+
+    //    //ShortcutControl::RunProgramTextOnChange(parent, row, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
+    //});
+
+    //runProgramStartInDirInput.TextChanged([parent, row, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+    //    uint32_t rowIndex = -1;
+    //    if (!parent.Children().IndexOf(row, rowIndex))
+    //    {
+    //        return;
+    //    }
+
+    //    Shortcut tempShortcut;
+    //    tempShortcut.isRunProgram = true;
+    //    tempShortcut.runProgramFilePath = runProgramPathInput.Text().c_str();
+    //    tempShortcut.runProgramArgs = runProgramArgsForProgramInput.Text().c_str();
+    //    tempShortcut.runProgramStartInDir = runProgramStartInDirInput.Text().c_str();
+    //    // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
+    //    shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+
+    //    //ShortcutControl::RunProgramTextOnChange(parent, row, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
+    //});
 
     // add grid for when it's a key/shortcut
     auto shortcutGrid = keyboardRemapControlObjects.back()[1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>();
@@ -245,13 +305,9 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         auto shortCut = std::get<Shortcut>(newKeys);
         if (shortCut.isRunProgram)
         {
-            Shortcut tempShortcut;
             isRunProgram = true;
-            tempShortcut.isRunProgram = true;
-            tempShortcut.runProgramPath = runProgramPathInput.Text().c_str();
-            // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-            //shortcutRemapBuffer[index].first[1] = tempShortcut;
-            runProgramPathInput.Text(shortCut.runProgramPath);
+            runProgramPathInput.Text(shortCut.runProgramFilePath);
+            runProgramArgsForProgramInput.Text(shortCut.runProgramArgs);
             typeCombo.SelectedIndex(2);
         }
         else
@@ -467,6 +523,29 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         // Initialize both shortcuts as empty shortcuts
         shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
     }
+}
+
+void ShortcutControl::RunProgramTextOnChange(
+    StackPanel& parent,
+    const winrt::Windows::UI::Xaml::Controls::StackPanel& row,
+    RemapBuffer shortcutRemapBuffer,
+    const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramPathInput,
+    const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramArgsForProgramInput,
+    const winrt::Windows::UI::Xaml::Controls::TextBox& runProgramStartInDirInput)
+{
+    uint32_t rowIndex = -1;
+    if (!parent.Children().IndexOf(row, rowIndex))
+    {
+        return;
+    }
+
+    Shortcut tempShortcut;
+    tempShortcut.isRunProgram = true;
+    tempShortcut.runProgramFilePath = runProgramPathInput.Text().c_str();
+    tempShortcut.runProgramArgs = runProgramArgsForProgramInput.Text().c_str();
+    tempShortcut.runProgramStartInDir = runProgramStartInDirInput.Text().c_str();
+    // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
+    shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
 }
 
 ShortcutControl::ShortcutType ShortcutControl::GetShortcutType(const winrt::Windows::UI::Xaml::Controls::ComboBox& typeCombo)

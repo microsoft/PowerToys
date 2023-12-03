@@ -220,6 +220,15 @@
   <data name="EditShortcuts_AllApps" xml:space="preserve">
     <value>All apps</value>
   </data>
+  <data name="EditShortcuts_PathToProgram" xml:space="preserve">
+    <value>Path to program</value>
+  </data>
+  <data name="EditShortcuts_ArgsForProgram" xml:space="preserve">
+    <value>Arguments for program</value>
+  </data>
+  <data name="EditShortcuts_StartInDirForProgram" xml:space="preserve">
+    <value>Start in direcotry</value>
+  </data>
   <data name="ErrorMessage_RemapSuccessful" xml:space="preserve">
     <value>Remapping successful</value>
   </data>

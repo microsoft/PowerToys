@@ -287,8 +287,10 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                                 // debugger wait
                                 Sleep(1000);
                             }
-                            auto runProgram = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramSettingName, L"");
-                            AddOSLevelShortcut(Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str(), isRunProgram, runProgram.c_str()));
+                            auto runProgramFilePath = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramFilePathSettingName, L"");
+                            auto runProgramArgs = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramArgsSettingName, L"");
+                            auto runProgramStartInDir = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramStartInDirSettingName, L"");
+                            AddOSLevelShortcut(Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str(), isRunProgram, runProgramFilePath.c_str(), runProgramArgs.c_str(), runProgramStartInDir.c_str()));
                         }
                         else if (!newRemapKeys.empty())
                         {
@@ -443,7 +445,9 @@ bool MappingConfiguration::SaveSettingsToFile()
 
             if (targetShortcut.isRunProgram)
             {
-                keys.SetNamedValue(KeyboardManagerConstants::RunProgramSettingName, json::value(targetShortcut.ToHstring___()));
+                keys.SetNamedValue(KeyboardManagerConstants::RunProgramFilePathSettingName, json::value(targetShortcut.runProgramFilePath));
+                keys.SetNamedValue(KeyboardManagerConstants::RunProgramArgsSettingName, json::value(targetShortcut.runProgramArgs));
+                keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));
             }
             else
             {

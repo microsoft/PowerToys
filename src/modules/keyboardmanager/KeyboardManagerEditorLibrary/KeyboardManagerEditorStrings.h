@@ -27,6 +27,21 @@ namespace KeyboardManagerEditorStrings
         return GET_RESOURCE_STRING(IDS_MAPPING_TYPE_DROPDOWN_RUN_PROGRAM);
     }
 
+    inline std::wstring EditShortcutsPathToProgram()
+    {
+        return GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_PATHTOPROGRAM);
+    }
+
+    inline std::wstring EditShortcutsArgsForProgram()
+    {
+        return GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ARGSFORPROGRAM);
+    }
+
+    inline std::wstring EditShortcutsStartInDirForProgram()
+    {
+        return GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_STARTINDIRFORPROGRAM);
+    }
+
     // Function to return the error message
     winrt::hstring GetErrorMessage(ShortcutErrorType errorType);
 }

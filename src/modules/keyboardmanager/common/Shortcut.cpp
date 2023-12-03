@@ -33,13 +33,15 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
     }
 }
 
-Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgram) :
+Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& _runProgramFilePath, const std::wstring& _runProgramArgs, const std::wstring& _runProgramStartInDir) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     Shortcut::isRunProgram = isRunProgram;
     if (Shortcut::isRunProgram)
     {
-        runProgramPath = runProgram;
+        runProgramFilePath = _runProgramFilePath;
+        runProgramArgs = _runProgramArgs;
+        runProgramStartInDir = _runProgramStartInDir;
     }
 
     auto keys = splitwstring(shortcutVK, ';');
@@ -438,7 +440,7 @@ void Shortcut::ResetKey(const DWORD input)
 
 winrt::hstring Shortcut::ToHstring___() const
 {
-    return runProgramPath.c_str();
+    return runProgramFilePath.c_str();
 }
 
 // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
