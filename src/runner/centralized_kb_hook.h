@@ -34,6 +34,7 @@ namespace CentralizedKeyboardHook
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept;
     void RegisterWindow(HWND hwnd) noexcept;
     void RefreshConfig();
+    void SetRunProgramEnabled(bool enabled);
     DWORD GetProcessIdByName(const std::wstring& processName);
     std::wstring GetFileNameFromPath(const std::wstring& fullPath);
     HWND find_main_window(unsigned long process_id);
