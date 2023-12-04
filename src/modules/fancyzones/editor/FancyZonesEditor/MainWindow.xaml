@@ -866,6 +866,7 @@
                 </StackPanel>
             </Grid>
         </ui:ContentDialog>
+<<<<<<< Updated upstream
 
         <ui:ContentDialog
             x:Name="NewLayoutDialog"
@@ -886,5 +887,8 @@
             </ui:ContentDialog.TitleTemplate>
 
         </ui:ContentDialog>
+=======
+     
+>>>>>>> Stashed changes
     </Grid>
 </ui:FluentWindow>
