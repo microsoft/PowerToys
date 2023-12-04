@@ -39,19 +39,19 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F49
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F48
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.75.1/PowerToysUserSetup-0.75.1-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.75.1/PowerToysUserSetup-0.75.1-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.75.1/PowerToysSetup-0.75.1-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.75.1/PowerToysSetup-0.75.1-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F50
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F49
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysUserSetup-0.76.0-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysUserSetup-0.76.0-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysSetup-0.76.0-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysSetup-0.76.0-arm64.exe
 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.75.1-x64.exe][ptUserX64] | CFDAE52607689A695F4E4DDD7C1FE68400359AEF0D2B23C86122835E9D32A20F |
-| Per user - ARM64     | [PowerToysUserSetup-0.75.1-arm64.exe][ptUserArm64] | 9BAD3EF71DEDE70445416AC7369D115FAE095152722BC4F23EE393D8A10F45CA |
-| Machine wide - x64   | [PowerToysSetup-0.75.1-x64.exe][ptMachineX64] | 18FEB9377B0BA45189FFF4F89627B152DD794CCC15F005592B34A40A3EA62EA8 |
-| Machine wide - ARM64 | [PowerToysSetup-0.75.1-arm64.exe][ptMachineArm64] | F5CDF5A35876A0B581F446BF728B7AC52B6B701C0850D9CEA9A1874523745CFD |
+| Per user - x64       | [PowerToysUserSetup-0.76.0-x64.exe][ptUserX64] | 627F60BF3F04583A2ECE7ACE7E6F09ABDE92493E1FFFAC5705CC83009781CD8D |
+| Per user - ARM64     | [PowerToysUserSetup-0.76.0-arm64.exe][ptUserArm64] | 79D11CDDBDD87DF8A69A5B2FC28869B3085392E5F45FEE6560D278E48F8B0673 |
+| Machine wide - x64   | [PowerToysSetup-0.76.0-x64.exe][ptMachineX64] | 4F24A288AC92DD0AB74EF52CFE3D66FA744BDC6889CB4E3ED088763D9134C06D |
+| Machine wide - ARM64 | [PowerToysSetup-0.76.0-arm64.exe][ptMachineArm64] | 1BD9CD9C696D8898AAEE5A6D6A7122F053202CF1865C511BFC91FCFD0D767864 |
 
 This is our preferred method.
 
@@ -97,142 +97,158 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.75 - October 2023 Update
+### 0.76 - November 2023 Update
 
 In this release, we focused on new features, stability and improvements.
 
 **Highlights**
 
- - New utility: An environment variables editor with the functionality to configure profiles that can be enabled/disabled. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
- - Settings has a new Dashboard home page, with quick access for enabling modules, short descriptions and activation methods. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
- - Added a previewer to Peek that hosts File Explorer previewers to support every file type that a machine is currently able to preview. For example, this means that if Microsoft Office handlers are installed, Peek can preview Office files. Thanks [@dillydylann](https://github.com/dillydylann)!
+ - Upgrade to .NET 8. Thanks [@snickler](https://github.com/snickler)!
+ - Keyboard Manager can now remap keys and shortcuts to send sequences of unicode text.
+ - Modernized the Keyboard Manager Editor UI. Thanks [@dillydylann](https://github.com/dillydylann)!
+ - Modernized the PowerToys Run, Quick Accent and Text Extractor UIs. Thanks [@niels9001](https://github.com/niels9001)!
+ - New File Explorer Add-ons: QOI image Preview Handler and Thumbnail Provider. Thanks [@pedrolamas](https://github.com/pedrolamas)!
 
 ### General
+ - Updated the WebView 2 dependency to 1.0.2088.41. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed unreadable color brushes used across WinUI3 applications for improved accessibility. Thanks [@niels9001](https://github.com/niels9001)!
+ - Flyouts used across WinUI3 applications are no longer constrained to the application's bounds. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+ - Upgraded the WPF-UI dependency to preview.9 and then preview.11. Thanks [@niels9001](https://github.com/niels9001) and [@pomianowski](https://github.com/pomianowski)!
+ - Upgraded to .NET 8. Thanks [@snickler](https://github.com/snickler)!
+ - Updated the WinAppSDK dependency to 1.4.3.
 
- - Many typo fixes through the projects and documentation. Thanks [@brianteeman](https://github.com/brianteeman)!
- - Refactored and improved the logic across utilities for bringing a window to the foreground after activation.
+### Awake
 
-### Color Picker
+ - Added localization to the tray icon context menu.
 
- - After activating Color Picker, it's now possible to cancel the session by clicking the right mouse button. Thanks [@fredso90](https://github.com/fredso90)!
+### Crop And Lock
+
+ - Fixed restoring windows that were reparented while maximized.
 
 ### Environment Variables
- - Added a new utility: An environment variables editor that has the functionality to configure profiles that can be enabled/disabled. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
- - Shows in the title bar if it's running as an administrator. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+ - Fixed crash caused by WinAppSDK version bump by replacing ListView elements with ItemsControl.
 
 ### FancyZones
 
- - Fixed an issue causing context menu pop-ups from some apps to automatically snap to a zone. (This was a hotfix for 0.74)
- - Applied the fix for the context menu pop-ups to the logic that decides which windows can be snapped.
- - Reworked the "Keep windows in their zones" option to include the work area and turn it on by default, fixing an incompatibility with the Copilot flyout.
- - Fixed an issue causing windows to be snapped while moving to a different virtual desktop.
+ - Reverted a change that caused some applications, like the Windows Calculator, to not snap correctly. (This was a hotfix for 0.75)
+ - FancyZones Editor will no longer apply a layout to the current monitor after editing it.
+ - Fixed and refactored the code that detected if a window can be snapped. Added tests to it with known application window styles to avoid regressions in the future.
 
 ### File Explorer add-ons
 
- - Fixed an issue blocking some SVG files from being previewed correctly. (This was a hotfix for 0.74)
- - Fixed crashes on invalid files in the STL Thumbnail generator.
+ - Solved an issue incorrectly detecting encoding when previewing code files preview.
+ - Fixed the background color for Gcode preview handler on dark theme. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+ - New utilities: Preview Handler and Thumbnail Provider for QOI image files. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+ - GCode Thumbnails are now in the 32 bit ARGB format. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+ - Added the perceived type to SVG and QOI file thumbnails. Thanks [@pedrolamas](https://github.com/pedrolamas)!
 
 ### GPO
 
- - Added a global GPO rule that applies for all utilities unless it's overridden. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added GPO rules to control which PowerToys Run plugins should be enabled/disabled by policy. Thanks [@htcfreek](https://github.com/htcfreek)!
-   * All plugins have to provide its plugin ID as static property in its Main method.
+ - Added the missing Environment Variables utility policy to the .admx and .adml files. (This was a hotfix for 0.75)
+ - Fixed some typos and text improvements in the .adml file. Thanks [@htcfreek](https://github.com/htcfreek)!
+
+### Hosts File Editor
+
+ - Added a proper warning when the hosts file is read-only and a button to make it writable. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Image Resizer
+ 
+ - Fixed a WPF-UI issue regarding the application's background brushes. Thanks [@niels9001](https://github.com/niels9001)!
 
- - Fixed wrong .bmp file association in the registry. Thanks [@meitinger](https://github.com/meitinger)!
+### Installer
+
+ - Included the Text Extractor and Awake localization files in the install process.
 
 ### Keyboard Manager
 
- - Visually distinguish between the Numpad and regular period characters in the UI.
- - This utility is now disabled by default on new installations, since it requires user configuration to affect keyboard behavior.
- - Fixed a typo in the Numpad Subtract key in the editor.
+ - Modernized the UI with the Fluent design. Thanks [@dillydylann](https://github.com/dillydylann)!
+ - Added the feature to remap keys and shortcuts to arbitrary unicode text sequences.
 
-### Mouse Highlighter
+### Mouse Without Borders
 
- - Removed the lower limit of fade delay and duration, to allow better signaling of doing a double click. Thanks [@fredso90](https://github.com/fredso90)!
-
-### Mouse Jump
-
- - The process now runs in the background, for a faster activation time. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+ - Removed Thread.Suspend calls when exiting the utility. That call is deprecated, unneeded and was causing a silent crash.
 
 ### Peek
 
- - Reported file sizes will now more closely match what's reported by File Explorer. Thanks [@Deepak-Sangle](https://github.com/Deepak-Sangle)!
- - Added a previewer that hosts File Explorer previewers to support every file type that a machine is currently able to preview. Thanks [@dillydylann](https://github.com/dillydylann)!
- - Fixed an issue causing the preview of the first file to be stuck loading. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed showing the previously previewed video file when invoking Peek with a new file. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Added the wrap and file formatting options to the Monaco previewer. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-
-### PowerRename
-
- - Save data from the last run in a different file to avoid conflicting with changing settings in the Settings application.
+ - Added the possibility to pause/resume videos with the space bar. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed high CPU usage when idle before initializing the main window. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Implemented Ctrl+W as a shortcut to close Peek. Thanks [@Physalis2](https://github.com/Physalis2)!
+ - Solved an issue incorrectly detecting encoding when previewing code files.
+ - Fixed background issues when peeking into HTML files after the WebView 2 upgrade.
 
 ### PowerToys Run
 
- - Fixed a case where the query wasn't being cleared after invoking a result action through the keyboard. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Improved the shell selection option for Windows Terminal in the Shell plugin and improved the backend code for adding combo box options to plugins. Thanks [@htcfreek](https://github.com/htcfreek)!
-   * The implementation of the combo box items has changed and isn't backward compatible. (Old plugins won't crash, but the combo box setting isn't shown in settings ui anymore.)
- - Added Unix time in milliseconds, fixed negative unix time input and improved error messages in the TimeDate plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
- - The PowerToys plugin allows calling the new Environment Variables utility. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Refactored and added support to VSCodium Stable, VSCodium Insider and Remote Tunnels workspaces. Thanks [@eternalphane](https://github.com/eternalphane)!
+ - Moved to WPF-UI and redesigned according to Fluent UX principles. Thanks [@niels9001](https://github.com/niels9001)!
+ - Fixed an issue causing 3rd party plugins to not have their custom settings correctly initialized with default values. (This was a hotfix for 0.75) Thanks [@waaverecords](https://github.com/waaverecords)!
+ - Fixed a crash in the VSCode plugin when the VSCode path had trailing backspaces. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed a crash when trying to load invalid image icons.
+ - Fixed a crash in the Programs plugin when getting images for some .lnk files.
+ - Fixed a rare startup initialization error and removed cold start operations that were no longer needed. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Improved calculations for Windows File Time and Unix Epoch Time in the DateTime plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Fixed a crash when trying to get the icon for a link that pointed to no file.
+ - Cleaned up code in the WindowWalker plugin improving the logic. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
- - Fixed characters that were removed from "All languages" because they were not in any single language. (This was a hotfix for 0.74)
- - Added Asturian characters to the Spanish character set. Thanks [@blakestack](https://github.com/blakestack)!
- - Added Greek characters with tonos. Thanks [@PesBandi](https://github.com/PesBandi)! 
-
-### Registry Preview
-
- - Fixed a parsing error that crashed the Application. (This was a hotfix for 0.74)
- - Fixed opening file names with non-ASCII characters. Thanks [@randyrants](https://github.com/randyrants)!
- - Fixed wrong parsing when the file contained an assignment with spaces around the equals sign. Thanks [@randyrants](https://github.com/randyrants)!
- - Fixed key transversal issues when a key was a substring of a parent key. Thanks [@randyrants](https://github.com/randyrants)!
-
-### Runner
-
- - Fixed the update notification toast to show a Unicode arrow. Thanks [@TheJoeFin](https://github.com/TheJoeFin)!
+ - Moved from ModernWPF to WPF-UI. Thanks [@niels9001](https://github.com/niels9001)!
+ - Added support to the Finnish language character set. Thanks [@davidtlascelles](https://github.com/davidtlascelles)!
+ - Added currency symbols for Croatian, Gaeilge, Gàidhlig and Welsh. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added a missing Latin letter ꝡ. Thanks [@cubedhuang](https://github.com/cubedhuang)!
+ - Added fraction characters. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added support to the Danish language character set. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added the Kazakhstani Tenge character to the Currencies characters set. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Renamed Slovakian to Slovak, which is the correct term. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added the Greek language character set. Thanks [@mcbabo](https://github.com/mcbabo)!
 
 ### Settings
 
- - Added a new Dashboard home page, with quick access for enabling modules, short descriptions and activation methods. Thanks [@niels9001](https://github.com/niels9001) for the design and UI work that made this possible!
- - Fixed a typo in the Hosts File Editor page. Thanks [@Deepak-Sangle](https://github.com/Deepak-Sangle)!
- - Added a lock icon to the flyout listing of all modules when its enabled state is controlled by policy.
- - The "All apps" list in the flyout will now list all apps even if their enabled state is controlled by policy.
+ - When clicking a module's name on the Dashboard, it will navigate to that module's page.
+ - Fixed the clipping of information in the Backup and Restore section of the General Settings page. Thanks [@niels9001](https://github.com/niels9001)!
+ - Updated the File Explorer Add-ons fluent icon. Thanks [@niels9001](https://github.com/niels9001)!
+ - Added a warning when trying to set a shortcut that might conflict with "Alt Gr" key combinations.
+ - Added a direct link to the OOBE's "What's New page" from the main Settings window. Thanks [@iakrayna](https://github.com/iakrayna)!
+ - Changed mentions from Microsoft Docs to Microsoft Learn.
+ - Fixed the slow reaction to system theme changes.
 
-### Video Conference Mute
+### Text Extractor
 
- - Added an option to allow for the toolbar to hide after some time passed. Thanks [@quyenvsp](https://github.com/quyenvsp)!
- - Added an option to select to mute or unmute at startup. Thanks [@quyenvsp](https://github.com/quyenvsp)!
- - Fixed an issue causing a cascade of mute/unmute triggers.
+ - Move to WPF-UI, localization and light theme support. Thanks [@niels9001](https://github.com/niels9001)!
+ - Disabled by default on Windows 11, with a information box on Settings to prefer using the Windows Snipping Tool, which now supports OCR.
 
 ### Documentation
 
- - Updated the Group Policy documentation on learn.microsoft.com, removed the Group Policy documentation from the repository and linked to the published documentation on learn.microsoft.com instead.
+ - Fixed some typos in the README. Thanks [@Asymtode712](https://github.com/Asymtode712)!
+ - Reworked the gpo docs on learn.microsoft.com, adding .admx, registry and Intune information. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Development
 
- - Added project dependencies to the version project and headers to avoid building errors. Thanks [@johnterickson](https://github.com/johnterickson)!
- - Enabled Control Flow Guard in the C++ projects. Thanks [@DHowett](https://github.com/DHowett)!
- - Switched the release pipeline to the 1ES governed template. Thanks [@DHowett](https://github.com/DHowett)!
- - Styled XAML files and added a XAML Style checker to the solution, with a CI action to check if code being contributed is compliant. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Suppressed redundant midl file warnings in PowerRename.
- - Add unit tests to FancyZones Editor. Thanks [@garv5014](https://github.com/garv5014), [@andrewbengordon](https://github.com/andrewbengordon) and [@Cwighty](https://github.com/Cwighty)!
- - Improved the Default Layouts internal structure in FancyZones Editor. Thanks [@garv5014](https://github.com/garv5014)!
- - Fixed code issues to allow building in Visual Studio 17.8 Preview 4.
+ - Updated the check-spelling ci action to 0.22. Thanks [@jsoref](https://github.com/jsoref)!
+ - Refactored the modules data model used between the Settings Dashboard and Flyout.
+ - Fixed a flaky interop test that was causing automated CI to hang occasionally.
+ - Increased the WebView 2 loading timeout to reduce flakiness in those tests. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added support for building with the Dev Drive CopyOnWrite feature, increasing build speed. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+ - Addressed the C# static analyzers suggestions. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Addressed the C++ static analyzers suggestions.
+ - PRs that only contain Markdown or text files changes no longer trigger the full CI. Thanks [@snickler](https://github.com/snickler)!
+ - Updated the Microsoft.Windows.CsWinRT to 2.0.4 to fix building with the official Visual Studio 17.8 release.
+ - Fixed new code quality issues caught by the official Visual Studio 17.8 release.
+ - Added a bot trigger to point contributors to the main new contribution issue on GitHub. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Removed unneeded entries from expect.txt.
+ - Turned off a new feature from Visual Studio that was adding the commit hash to the binary files Product Version.
+ - Refactored and reviewed the spellcheck entries into different files. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+ - Added Spectre mitigation and SHA256 hash creation for some DLLs.
+ - Reverted the release pipeline template to a previous release that's stable for shipping PowerToys.
 
-#### What is being planned for version 0.76
+#### What is being planned for version 0.77
 
-For [v0.76][github-next-release-work], we'll work on the items below:
+For [v0.77][github-next-release-work], we'll work on the items below:
 
+ - New utility: Command Not Found
  - Language selection
- - .NET 8 upgrade
- - Allowing Keyboard Manager to output arbitrary Unicode sequences
  - Automated UI testing through WinAppDriver
- - Modernize and refresh the UX of PowerToys based on WPF. Here's Work in Progress previews for the modules "PowerToys Run" and "Color Picker":
-
-![PowerToys Run UI refresh WIP](https://github.com/microsoft/PowerToys/assets/9866362/16903bcb-c18e-49fb-93ca-738b81957055)
+ - Develop support for Desired State Configuration
+ - Modernize and refresh the UX of PowerToys based on WPF. Here's the Work in Progress preview for "Color Picker":
 
 ![ColorPicker UI refresh WIP](https://github.com/microsoft/PowerToys/assets/9866362/ceebe54b-de63-4ce7-afcb-2cd4280bf4d1)
 
