@@ -59,6 +59,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="ModernWpfUI" />
+	<PackageReference Include="WPF-UI" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
   <ItemGroup>

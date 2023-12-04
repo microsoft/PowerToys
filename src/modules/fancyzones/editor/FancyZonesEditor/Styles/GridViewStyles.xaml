@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:FancyZonesEditor.Controls"
     xmlns:ui="http://schemas.modernwpf.com/2019">
 
     <Style x:Key="UWPFocusVisualStyle">
@@ -23,7 +24,7 @@
         Opacity="0.24"
         ShadowDepth="1" />
 
-    <Style x:Key="MonitorItemContainerStyle" TargetType="ui:GridViewItem">
+    <Style x:Key="MonitorItemContainerStyle" TargetType="controls:GridViewItem">
         <Setter Property="Background" Value="{DynamicResource LayoutItemBackgroundBrush}" />
         <Setter Property="IsSelected" Value="{Binding Selected, Mode=OneWay}" />
         <Setter Property="AutomationProperties.Name" Value="{Binding Index}" />
@@ -31,14 +32,14 @@
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="0" />
         <!--<Setter Property="IsHoldingEnabled" Value="True" />-->
-        <Setter Property="CornerRadius" Value="4" />
+        <!--<Setter Property="CornerRadius" Value="4" />-->
         <Setter Property="Margin" Value="8" />
-        <Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
-        <Setter Property="FocusVisualMargin" Value="-2" />
-        <Setter Property="FocusVisualStyle" Value="{DynamicResource UWPFocusVisualStyle}" />
+        <!--<Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />-->
+        <!--<Setter Property="FocusVisualMargin" Value="-2" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource UWPFocusVisualStyle}" />-->
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ui:GridViewItem">
+                <ControlTemplate TargetType="controls:GridViewItem">
                     <Border
                         x:Name="ContentBorder"
                         Width="{Binding DisplayWidth}"
@@ -46,7 +47,6 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
                         Effect="{StaticResource CardDropShadow}"
                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                         <VisualStateManager.CustomVisualStateManager>
@@ -141,26 +141,25 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style x:Key="LayoutItemContainerStyle" TargetType="ui:GridViewItem">
+    <Style x:Key="LayoutItemContainerStyle" TargetType="controls:GridViewItem">
         <Setter Property="Background" Value="{DynamicResource LayoutItemBackgroundBrush}" />
         <Setter Property="IsSelected" Value="{Binding IsApplied, Mode=OneWay}" />
         <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
         <!--<Setter Property="IsHoldingEnabled" Value="True" />-->
-        <Setter Property="CornerRadius" Value="4" />
+        <!--<Setter Property="CornerRadius" Value="4" />-->
         <Setter Property="Margin" Value="8" />
-        <Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
+        <!--<Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="-2" />
-        <Setter Property="FocusVisualStyle" Value="{DynamicResource UWPFocusVisualStyle}" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource UWPFocusVisualStyle}" />-->
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ui:GridViewItem">
+                <ControlTemplate TargetType="controls:GridViewItem">
                     <Border
                         x:Name="ContentBorder"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
                         Effect="{StaticResource CardDropShadow}"
                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                         <VisualStateManager.CustomVisualStateManager>

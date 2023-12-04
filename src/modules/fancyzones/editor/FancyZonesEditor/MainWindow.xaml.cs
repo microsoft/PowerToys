@@ -16,14 +16,17 @@ using Common.UI;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
-using ModernWpf.Controls;
+using Wpf.Ui.Controls;
+using Button = System.Windows.Controls.Button;
+using TextBlock = System.Windows.Controls.TextBlock;
+using TextBox = System.Windows.Controls.TextBox;
 
 namespace FancyZonesEditor
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : FluentWindow
     {
         private const int DefaultWrapPanelItemSize = 164;
         private const int SmallWrapPanelItemSize = 164;
@@ -364,45 +367,6 @@ namespace FancyZonesEditor
             e.Handled = true;
         }
 
-        private void NewLayoutDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
-        {
-            Logger.LogTrace();
-
-            LayoutModel selectedLayoutModel;
-
-            if (GridLayoutRadioButton.IsChecked == true)
-            {
-                GridLayoutModel gridModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Custom)
-                {
-                    Rows = 1,
-                    RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
-                };
-                selectedLayoutModel = gridModel;
-            }
-            else
-            {
-                var area = App.Overlay.WorkArea;
-                CanvasLayoutModel canvasModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Custom, (int)area.Width, (int)area.Height);
-                canvasModel.AddZone();
-                selectedLayoutModel = canvasModel;
-            }
-
-            selectedLayoutModel.InitTemplateZones();
-
-            try
-            {
-                Hide();
-            }
-            catch
-            {
-                // See https://github.com/microsoft/PowerToys/issues/9396
-                Hide();
-            }
-
-            App.Overlay.CurrentDataContext = selectedLayoutModel;
-            App.Overlay.OpenEditor(selectedLayoutModel);
-        }
-
         // This is required to fix a WPF rendering bug when using custom chrome
         private void OnContentRendered(object sender, EventArgs e)
         {
@@ -414,42 +378,44 @@ namespace FancyZonesEditor
             InvalidateVisual();
         }
 
-        // EditLayout: Cancel changes
-        private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void EditLayoutDialog_ButtonClicked(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            App.Overlay.EndEditing(_settings.SelectedModel);
-            Select(_settings.AppliedModel);
-        }
-
-        // EditLayout: Save changes
-        private void EditLayoutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-        {
-            Logger.LogTrace();
-
-            App.Overlay.EndEditing(null);
-            LayoutModel model = _settings.SelectedModel;
-
-            // update current settings
-            if (model == _settings.AppliedModel)
+            // EditLayout: Save changes
+            if (args.Button == ContentDialogButton.Primary)
             {
-                App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(model);
+                Logger.LogTrace();
+
+                App.Overlay.EndEditing(null);
+                LayoutModel model = _settings.SelectedModel;
+
+                // update current settings
+                if (model == _settings.AppliedModel)
+                {
+                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(model);
+                }
+
+                App.FancyZonesEditorIO.SerializeAppliedLayouts();
+                App.FancyZonesEditorIO.SerializeCustomLayouts();
+                App.FancyZonesEditorIO.SerializeLayoutTemplates();
+                App.FancyZonesEditorIO.SerializeLayoutHotkeys();
+                App.FancyZonesEditorIO.SerializeDefaultLayouts();
+
+                // reset selected model
+                Select(_settings.AppliedModel);
             }
-
-            App.FancyZonesEditorIO.SerializeAppliedLayouts();
-            App.FancyZonesEditorIO.SerializeCustomLayouts();
-            App.FancyZonesEditorIO.SerializeLayoutTemplates();
-            App.FancyZonesEditorIO.SerializeLayoutHotkeys();
-            App.FancyZonesEditorIO.SerializeDefaultLayouts();
-
-            // reset selected model
-            Select(_settings.AppliedModel);
+            else
+            {
+                // EditLayout: Cancel changes
+                App.Overlay.EndEditing(_settings.SelectedModel);
+                Select(_settings.AppliedModel);
+            }
         }
 
         private async void DeleteLayout(FrameworkElement element)
         {
             Logger.LogTrace();
-
-            var dialog = new ContentDialog()
+            Wpf.Ui.Controls.ContentDialog x = new Wpf.Ui.Controls.ContentDialog(new ContentPresenter());
+            var dialog = new Wpf.Ui.Controls.ContentDialog(new ContentPresenter())
             {
                 Title = Properties.Resources.Are_You_Sure,
                 Content = Properties.Resources.Are_You_Sure_Description,
@@ -460,7 +426,7 @@ namespace FancyZonesEditor
             Announce(FancyZonesEditor.Properties.Resources.Delete_Layout_Dialog_Announce, dialog.Content.ToString());
             var result = await dialog.ShowAsync();
 
-            if (result == ContentDialogResult.Primary)
+            if (result == Wpf.Ui.Controls.ContentDialogResult.Primary)
             {
                 LayoutModel model = element.DataContext as LayoutModel;
                 MainWindowSettingsModel.DefaultLayouts.Reset(model.Uuid);
@@ -486,13 +452,13 @@ namespace FancyZonesEditor
             }
         }
 
-        private void Dialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+        private void Dialog_Opened(Wpf.Ui.Controls.ContentDialog sender, RoutedEventArgs args)
         {
             Announce(sender.Name, FancyZonesEditor.Properties.Resources.Edit_Layout_Open_Announce);
             _openedDialog = sender;
         }
 
-        private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
+        private void Dialog_Closed(Wpf.Ui.Controls.ContentDialog sender, Wpf.Ui.Controls.ContentDialogClosedEventArgs args)
         {
             _openedDialog = null;
         }
@@ -506,13 +472,13 @@ namespace FancyZonesEditor
             }
         }
 
-        private void Layout_ItemClick(object sender, ItemClickEventArgs e)
+        private void Layout_ItemClick(object sender, Controls.ItemClickEventArgs e)
         {
             Select(e.ClickedItem as LayoutModel);
             Apply();
         }
 
-        private void Monitor_ItemClick(object sender, ItemClickEventArgs e)
+        private void Monitor_ItemClick(object sender, FancyZonesEditor.Controls.ItemClickEventArgs e)
         {
             monitorViewModel.SelectCommand.Execute(e.ClickedItem as MonitorInfoModel);
         }
@@ -655,6 +621,48 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Vertical);
+            }
+        }
+
+        private void NewLayoutDialog_ButtonClicked(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            if (args.Button == ContentDialogButton.Primary)
+            {
+                Logger.LogTrace();
+
+                LayoutModel selectedLayoutModel;
+
+                if (GridLayoutRadioButton.IsChecked == true)
+                {
+                    GridLayoutModel gridModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Custom)
+                    {
+                        Rows = 1,
+                        RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
+                    };
+                    selectedLayoutModel = gridModel;
+                }
+                else
+                {
+                    var area = App.Overlay.WorkArea;
+                    CanvasLayoutModel canvasModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Custom, (int)area.Width, (int)area.Height);
+                    canvasModel.AddZone();
+                    selectedLayoutModel = canvasModel;
+                }
+
+                selectedLayoutModel.InitTemplateZones();
+
+                try
+                {
+                    Hide();
+                }
+                catch
+                {
+                    // See https://github.com/microsoft/PowerToys/issues/9396
+                    Hide();
+                }
+
+                App.Overlay.CurrentDataContext = selectedLayoutModel;
+                App.Overlay.OpenEditor(selectedLayoutModel);
             }
         }
     }

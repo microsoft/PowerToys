@@ -1,0 +1,183 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:local="clr-namespace:FancyZonesEditor.Controls">
+
+    <Style TargetType="local:GridViewItem">
+        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+        <Setter Property="Background" Value="{DynamicResource GridViewItemBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource GridViewItemForeground}" />
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
+        <!--<Setter Property="IsHoldingEnabled" Value="True" />-->
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,4,4" />
+        <Setter Property="MinWidth" Value="{DynamicResource GridViewItemMinWidth}" />
+        <Setter Property="MinHeight" Value="{DynamicResource GridViewItemMinHeight}" />
+        <Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-2" />
+        <Setter Property="FocusVisualPrimaryBrush" Value="{DynamicResource GridViewItemFocusVisualPrimaryBrush}" />
+        <Setter Property="FocusVisualPrimaryThickness" Value="2" />
+        <Setter Property="FocusVisualSecondaryBrush" Value="{DynamicResource GridViewItemFocusVisualSecondaryBrush}" />
+        <Setter Property="FocusVisualSecondaryThickness" Value="1" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:GridViewItem">
+                    <ControlTemplate.Resources>
+                        <StreamGeometry x:Key="CheckMark">M 17.939453 5.439453 L 7.5 15.888672 L 2.060547 10.439453 L 2.939453 9.560547 L 7.5 14.111328 L 17.060547 4.560547 Z</StreamGeometry>
+                    </ControlTemplate.Resources>
+                    <Border
+                        x:Name="ContentBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                        <VisualStateManager.CustomVisualStateManager>
+                            <ui:SimpleVisualStateManager />
+                        </VisualStateManager.CustomVisualStateManager>
+                   
+                        <Grid>
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Margin="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            <Rectangle
+                                x:Name="BorderRectangle"
+                                IsHitTestVisible="False"
+                                Stroke="{DynamicResource SystemControlHighlightListAccentLowBrush}"
+                                StrokeThickness="2"
+                                Opacity="0" />
+                            <Border
+                                x:Name="MultiSelectSquare"
+                                Background="{DynamicResource GridViewItemCheckBoxBrush}"
+                                Width="20"
+                                Height="20"
+                                Margin="0,2,2,0"
+                                VerticalAlignment="Top"
+                                HorizontalAlignment="Right"
+                                Visibility="Collapsed">
+                                <!--<ui:FontIconFallback
+                                    x:Name="MultiSelectCheck"
+                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                    Data="{StaticResource CheckMark}"
+                                    FontSize="16"
+                                    Foreground="{DynamicResource GridViewItemCheckBrush}"
+                                    Opacity="0" />-->
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Focused -->
+                        <!--<Trigger Property="ui:FocusVisualHelper.ShowFocusVisual" Value="True">
+                            <Setter TargetName="BorderRectangle" Property="Visibility" Value="Collapsed" />
+                        </Trigger>-->
+                        <!-- PointerOver -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsSelected" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="BorderRectangle" Property="Opacity" Value="1" />
+                            <Setter TargetName="BorderRectangle" Property="Stroke" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource GridViewItemForegroundPointerOver}" />
+                            <Setter Property="FocusVisualSecondaryBrush" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+                            <Setter Property="FocusVisualSecondaryThickness" Value="2" />
+                        </MultiTrigger>
+                        <!-- Selected -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="False" />
+                                <Condition Property="IsSelected" Value="True" />
+                            </MultiTrigger.Conditions>
+                    
+                            <Setter TargetName="BorderRectangle" Property="Opacity" Value="1" />
+                            <Setter TargetName="BorderRectangle" Property="Stroke" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource GridViewItemForegroundSelected}" />
+                            <Setter Property="FocusVisualSecondaryBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                            <Setter Property="FocusVisualSecondaryThickness" Value="2" />
+                            <Setter TargetName="MultiSelectSquare" Property="Background" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                        </MultiTrigger>
+                        <!-- PointerOverSelected -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsSelected" Value="True" />
+                            </MultiTrigger.Conditions>
+                     
+                            <Setter TargetName="BorderRectangle" Property="Opacity" Value="1" />
+                            <Setter TargetName="BorderRectangle" Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentMediumBrush}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource GridViewItemForegroundSelected}" />
+                            <Setter Property="FocusVisualSecondaryBrush" Value="{DynamicResource SystemControlHighlightListAccentMediumBrush}" />
+                            <Setter Property="FocusVisualSecondaryThickness" Value="2" />
+                            <Setter TargetName="MultiSelectSquare" Property="Background" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                        </MultiTrigger>
+                        <!-- Disabled -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="ContentBorder" Property="Opacity" Value="{DynamicResource ListViewItemDisabledThemeOpacity}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <Style TargetType="local:GridView">
+        <Setter Property="Padding" Value="0,0,0,10" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+        <Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-2" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:GridView">
+                    <Border
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        Background="{TemplateBinding Background}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        SnapsToDevicePixels="True">
+                        <ScrollViewer
+                            x:Name="ScrollViewer"
+                            KeyboardNavigation.TabNavigation="{TemplateBinding KeyboardNavigation.TabNavigation}"
+                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                            IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                            Focusable="false">
+                            <ItemsPresenter
+                                Margin="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </ScrollViewer>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsGrouping" Value="true" />
+                                <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="false" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="ScrollViewer.CanContentScroll" Value="false" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
