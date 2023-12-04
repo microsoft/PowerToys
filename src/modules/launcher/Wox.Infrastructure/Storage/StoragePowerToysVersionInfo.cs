@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.IO.Abstractions;
+using System.Text.Json;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -25,6 +27,13 @@ namespace Wox.Infrastructure.Storage
         {
             BINARY_STORAGE = 0,
             JSON_STORAGE = 1,
+        }
+
+        private class StorageObject
+        {
+            public string Version { get; set; }
+
+            public string DefaultContent { get; set; }
         }
 
         // To compare the version numbers
@@ -74,32 +83,47 @@ namespace Wox.Infrastructure.Storage
         {
             if (File.Exists(FilePath))
             {
-                return File.ReadAllText(FilePath);
+                if (Path.GetExtension(FilePath).Equals(".json", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Read and deserialize the JSON file
+                    string json = File.ReadAllText(FilePath);
+                    var versionObject = JsonSerializer.Deserialize<StorageObject>(json);
+                    return versionObject?.Version ?? "v0.0.0"; // Returns "v0.0.0" if version is null
+                }
+                else if (Path.GetExtension(FilePath).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Read the txt file content directly
+                    return File.ReadAllText(FilePath);
+                }
             }
-            else
-            {
-                // which means it's an old version of PowerToys
-                string oldVersion = "v0.0.0";
-                return oldVersion;
-            }
+
+            // If the file doesn't exist or is not a recognized format, assume an old version
+            return "v0.0.0";
         }
 
-        private static string GetFilePath(string associatedFilePath, int type)
+        public string GetFilePath(string associatedFilePath, int type)
         {
             string suffix = string.Empty;
+            string fileType = string.Empty;
+
             string cacheSuffix = ".cache";
             string jsonSuffix = ".json";
+
+            string cachceFileType = "_version.txt";
+            string jsonFileType = "_information.json";
 
             if (type == (uint)StorageType.BINARY_STORAGE)
             {
                 suffix = cacheSuffix;
+                fileType = cachceFileType;
             }
             else if (type == (uint)StorageType.JSON_STORAGE)
             {
                 suffix = jsonSuffix;
+                fileType = jsonFileType;
             }
 
-            string filePath = string.Concat(associatedFilePath.AsSpan(0, associatedFilePath.Length - suffix.Length), "_version.txt");
+            string filePath = string.Concat(associatedFilePath.AsSpan(0, associatedFilePath.Length - suffix.Length), fileType);
             return filePath;
         }
 
@@ -124,10 +148,28 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        public void Close()
+        public void Close(string defaultContent)
         {
-            // Update the Version file to the current version of powertoys
-            File.WriteAllText(FilePath, currentPowerToysVersion);
+            if (Path.GetExtension(FilePath).Equals(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                // Create an object that includes both the current version and default content
+                var dataToSerialize = new StorageObject
+                {
+                    Version = currentPowerToysVersion,
+                    DefaultContent = defaultContent,
+                };
+
+                // Serialize the StorageObject to a JSON string
+                string json = JsonSerializer.Serialize(dataToSerialize, new JsonSerializerOptions { WriteIndented = true });
+
+                // Write the JSON string to the file
+                File.WriteAllText(FilePath, json);
+            }
+            else if (Path.GetExtension(FilePath).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+            {
+                // For a txt file, just write the version as plain text
+                File.WriteAllText(FilePath, currentPowerToysVersion);
+            }
         }
     }
 }

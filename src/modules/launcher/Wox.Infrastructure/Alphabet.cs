@@ -24,9 +24,8 @@ public class Alphabet : IAlphabet
         PinyinFormat.WITHOUT_TONE;
 
     private ConcurrentDictionary<string, string[][]> _pinyinCache;
-    private WoxJsonStorage<Dictionary<string, string[][]>> _pinyinStorage;
+    private WoxJsonStorage<ConcurrentDictionary<string, string[][]>> _pinyinStorage;
     private PowerToysRunSettings _settings;
-    private Dictionary<string, string[][]> __cache;
 
     public void Initialize(PowerToysRunSettings settings)
     {
@@ -38,8 +37,8 @@ public class Alphabet : IAlphabet
     {
         Stopwatch.Normal("|Wox.Infrastructure.Alphabet.Initialize|Preload pinyin cache", () =>
         {
-            _pinyinStorage = new WoxJsonStorage<Dictionary<string, string[][]>>("Pinyin");
-            SetPinyinCacheAsDictionary(__cache = _pinyinStorage.Load());
+            _pinyinStorage = new WoxJsonStorage<ConcurrentDictionary<string, string[][]>>("Pinyin");
+            _pinyinCache = _pinyinStorage.Load();
 
             // force pinyin library static constructor initialize
             Pinyin4Net.GetPinyin('一', _pinyinFormat);

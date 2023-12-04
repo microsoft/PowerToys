@@ -5,8 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -25,6 +27,7 @@ using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+using static Wox.Plugin.UserSelectedRecord;
 
 namespace PowerLauncher.ViewModel
 {
@@ -37,7 +40,7 @@ namespace PowerLauncher.ViewModel
         private static bool _disposed;
 
         private readonly WoxJsonStorage<QueryHistory> _historyItemsStorage;
-        private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
+        private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage = new WoxJsonStorage<UserSelectedRecord>();
         private readonly PowerToysRunSettings _settings;
         private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
@@ -206,6 +209,50 @@ namespace PowerLauncher.ViewModel
                         if (hideWindow)
                         {
                             Hide();
+                        }
+
+                        // Check information file for version mismatch
+                        try
+                        {
+                            // UserSelectedRecord
+                            var userSelectedRecordItemData = JsonSerializer.Deserialize<UserSelectedRecordItem>("{}", _userSelectedRecordStorage.GetJsonSerializerOptions());
+                            var userSelectedRecordItemStorage = new WoxJsonStorage<UserSelectedRecordItem>(_userSelectedRecordStorage.GetFileName());
+                            userSelectedRecordItemStorage.Load();
+
+                            var userSelectedRecordItemfields = userSelectedRecordItemStorage.ExtractFields(userSelectedRecordItemData, string.Empty);
+                            if (userSelectedRecordItemfields != null)
+                            {
+                                if (userSelectedRecordItemStorage.CheckVersionMismatch(userSelectedRecordItemfields, _userSelectedRecordStorage.GetVersionMismatch()))
+                                {
+                                    if (!userSelectedRecordItemStorage.CheckWithInformatonFiletoClear(userSelectedRecordItemData))
+                                    {
+                                        userSelectedRecordItemStorage.Clear();
+                                        userSelectedRecordItemStorage.SaveInformationFile(userSelectedRecordItemData);
+                                    }
+                                }
+                            }
+
+                            // History
+                            var historyItemdata = JsonSerializer.Deserialize<HistoryItem>("{}", _historyItemsStorage.GetJsonSerializerOptions());
+                            var historyItemStorage = new WoxJsonStorage<HistoryItem>(_historyItemsStorage.GetFileName());
+                            historyItemStorage.Load();
+
+                            var fields = historyItemStorage.ExtractFields(historyItemdata, string.Empty);
+                            if (fields != null)
+                            {
+                                if (historyItemStorage.CheckVersionMismatch(fields, _historyItemsStorage.GetVersionMismatch()))
+                                {
+                                    if (!historyItemStorage.CheckWithInformatonFiletoClear(historyItemdata))
+                                    {
+                                        historyItemStorage.Clear();
+                                        historyItemStorage.SaveInformationFile(historyItemdata);
+                                    }
+                                }
+                            }
+                        }
+                        catch (JsonException e)
+                        {
+                            Log.Exception($"Error in Load of PluginJsonStorage: {e.Message}", e, GetType());
                         }
 
                         if (SelectedIsFromQueryResults())
