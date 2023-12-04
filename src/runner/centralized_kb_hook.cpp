@@ -418,6 +418,7 @@ namespace CentralizedKeyboardHook
 
     void RefreshConfig()
     {
+        // just do this lazy style, mark as dirty
         getConfigInit = false;
         runProgramSpecs.clear();
     }
@@ -429,6 +430,7 @@ namespace CentralizedKeyboardHook
     {
         if (!getConfigInit)
         {
+            Logger::trace(L"CKBH:SetupConfig running");
             PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
             auto current_config = settings.get_string_value(KeyboardManagerConstants::ActiveConfigurationSettingName);
 
@@ -467,12 +469,14 @@ namespace CentralizedKeyboardHook
                     }
                     catch (...)
                     {
-                        Logger::error(L"Improper Key Data JSON. Try the next remap.");
+                        Logger::error(L"CKBH:Improper Key Data JSON. Try the next remap.");
                     }
                 }
             }
 
             getConfigInit = true;
+
+            Logger::trace(L"CKBH:SetupConfig done, found {} runPrograms.", runProgramSpecs.size());
         }
     }
 
@@ -553,123 +557,134 @@ namespace CentralizedKeyboardHook
 
                 if (runProgram)
                 {
-                    Logger::trace(L"runProgram {}", runProgram);
+                    auto fileNamePart = GetFileNameFromPath(runProgramSpec.path);
+
+                    Logger::trace(L"CKBH:{}, trying to run {}", fileNamePart, runProgramSpec.path);
                     lastKeyInChord = 0;
 
-                    if (runProgramSpec.path.compare(L"RefreshConfig") == 0)
+                    DWORD targetPid = 0;
+
+                    if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe")
                     {
-                        RefreshConfig();
+                        targetPid = GetProcessIdByName(fileNamePart);
                     }
-                    else
+
+                    if (targetPid != 0)
                     {
-                        auto fileNamePart = GetFileNameFromPath(runProgramSpec.path);
-                        DWORD targetPid = 0;
+                        Logger::trace(L"CKBH:{}, already running, pid:{}", fileNamePart, targetPid);
 
-                        if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe")
+                        // a good place to look for this...
+                        // https://github.com/ritchielawrence/cmdow
+
+                        // try by main window.
+                        HWND hwnd = FindMainWindow(targetPid);
+                        if (hwnd != NULL)
                         {
-                            targetPid = GetProcessIdByName(fileNamePart);
-                        }
+                            Logger::trace(L"CKBH:{}, got hwnd from FindMainWindow", fileNamePart);
 
-                        if (targetPid != 0)
-                        {
-                            // a good place to look for this...
-                            // https://github.com/ritchielawrence/cmdow
-
-                            // try by main window.
-                            HWND hwnd = FindMainWindow(targetPid);
-                            if (hwnd != NULL)
+                            if (hwnd == GetForegroundWindow())
                             {
-                                if (hwnd == GetForegroundWindow())
+                                Logger::trace(L"CKBH:{}, got GetForegroundWindow, doing SW_MINIMIZE", fileNamePart);
+                                ShowWindow(hwnd, SW_MINIMIZE);
+                                return;
+                            }
+                            else
+                            {
+                                Logger::trace(L"CKBH:{}, no GetForegroundWindow, doing SW_RESTORE", fileNamePart);
+                                ShowWindow(hwnd, SW_RESTORE);
+
+                                if (!SetForegroundWindow(hwnd))
                                 {
-                                    ShowWindow(hwnd, SW_MINIMIZE);
-                                    return;
+                                    auto errorCode = GetLastError();
+                                    Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", fileNamePart, errorCode);
                                 }
                                 else
                                 {
-                                    ShowWindow(hwnd, SW_RESTORE);
-
-                                    if (!SetForegroundWindow(hwnd))
-                                    {
-                                        auto errorCode = GetLastError();
-                                        Logger::error(L"SetForegroundWindow", errorCode, L"PowerToys - Interop");
-                                    }
-                                    else
-                                    {
-                                        return;
-                                    }
-                                }
-                            }
-
-                            // try by console.
-                            hwnd = FindWindow(nullptr, nullptr);
-                            if (AttachConsole(targetPid))
-                            {
-                                // Get the console window handle
-                                hwnd = GetConsoleWindow();
-                                auto showByConsoleSuccess = false;
-                                if (hwnd != NULL)
-                                {
-                                    ShowWindow(hwnd, SW_RESTORE);
-
-                                    if (!SetForegroundWindow(hwnd))
-                                    {
-                                        auto errorCode = GetLastError();
-                                        Logger::error(L"SetForegroundWindow", errorCode, L"PowerToys - Interop");
-                                    }
-                                    else
-                                    {
-                                        showByConsoleSuccess = true;
-                                    }
-                                }
-
-                                // Detach from the console
-                                FreeConsole();
-                                if (showByConsoleSuccess)
-                                {
+                                    Logger::trace(L"CKBH:{}, success on SetForegroundWindow", fileNamePart);
                                     return;
                                 }
                             }
+                        }
 
-                            // try to just show them all (if they have a title)!.
-                            hwnd = FindWindow(nullptr, nullptr);
+                        // try by console.
 
-                            while (hwnd)
+                        hwnd = FindWindow(nullptr, nullptr);
+                        if (AttachConsole(targetPid))
+                        {
+                            Logger::trace(L"CKBH:{}, success on AttachConsole", fileNamePart);
+
+                            // Get the console window handle
+                            hwnd = GetConsoleWindow();
+                            auto showByConsoleSuccess = false;
+                            if (hwnd != NULL)
                             {
-                                DWORD pidForHwnd;
-                                GetWindowThreadProcessId(hwnd, &pidForHwnd);
-                                if (targetPid == pidForHwnd)
+                                Logger::trace(L"CKBH:{}, success on GetConsoleWindow, doing SW_RESTORE", fileNamePart);
+
+                                ShowWindow(hwnd, SW_RESTORE);
+
+                                if (!SetForegroundWindow(hwnd))
                                 {
-                                    int length = GetWindowTextLength(hwnd);
+                                    auto errorCode = GetLastError();
+                                    Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", fileNamePart, errorCode);
+                                }
+                                else
+                                {
+                                    Logger::trace(L"CKBH:{}, success on SetForegroundWindow", fileNamePart);
+                                    showByConsoleSuccess = true;
+                                }
+                            }
 
-                                    if (length > 0)
+                            // Detach from the console
+                            FreeConsole();
+                            if (showByConsoleSuccess)
+                            {
+                                return;
+                            }
+                        }
+
+                        // try to just show them all (if they have a title)!.
+                        hwnd = FindWindow(nullptr, nullptr);
+
+                        while (hwnd)
+                        {
+                            DWORD pidForHwnd;
+                            GetWindowThreadProcessId(hwnd, &pidForHwnd);
+                            if (targetPid == pidForHwnd)
+                            {
+                                Logger::trace(L"CKBH:{}:{}, FindWindow (show all mode)", fileNamePart, targetPid);
+
+                                int length = GetWindowTextLength(hwnd);
+
+                                if (length > 0)
+                                {
+                                    ShowWindow(hwnd, SW_RESTORE);
+
+                                    // hwnd is the window handle with targetPid
+                                    if (!SetForegroundWindow(hwnd))
                                     {
-                                        ShowWindow(hwnd, SW_RESTORE);
-
-                                        // hwnd is the window handle with targetPid
-                                        if (!SetForegroundWindow(hwnd))
-                                        {
-                                            auto errorCode = GetLastError();
-                                            Logger::error(L"SetForegroundWindow", errorCode, L"PowerToys - Interop");
-                                        }
+                                        auto errorCode = GetLastError();
+                                        Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", fileNamePart, errorCode);
                                     }
                                 }
-                                hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
                             }
+                            hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
                         }
-                        else
+                    }
+                    else
+                    {
+                        std::wstring executable_and_args = fmt::format(L"\"{}\" {}", runProgramSpec.path, runProgramSpec.args);
+                        STARTUPINFO startup_info = { sizeof(startup_info) };
+                        PROCESS_INFORMATION process_info = { 0 };
+
+                        auto currentDir = runProgramSpec.dir.c_str();
+                        if (runProgramSpec.dir == L"")
                         {
-                            std::wstring executable_and_args = fmt::format(L"\"{}\" {}", runProgramSpec.path, runProgramSpec.args);
-                            STARTUPINFO startup_info = { sizeof(startup_info) };
-                            PROCESS_INFORMATION process_info = { 0 };
-
-                            auto currentDir = runProgramSpec.dir.c_str();
-                            if (runProgramSpec.dir == L"")
-                            {
-                                currentDir = nullptr;
-                            }
-
-                            CreateProcessW(nullptr, executable_and_args.data(), nullptr, nullptr, FALSE, 0, nullptr, currentDir, &startup_info, &process_info);
+                            currentDir = nullptr;
                         }
+
+                        Logger::trace(L"CKBH:{}, CreateProcessW starting {}", fileNamePart, executable_and_args);
+
+                        CreateProcessW(nullptr, executable_and_args.data(), nullptr, nullptr, FALSE, 0, nullptr, currentDir, &startup_info, &process_info);
                     }
                 }
             }
@@ -698,7 +713,7 @@ namespace CentralizedKeyboardHook
         handle_data& data = *reinterpret_cast<handle_data*>(lParam);
         unsigned long process_id = 0;
         GetWindowThreadProcessId(handle, &process_id);
-        
+
         if (data.process_id != process_id || !(GetWindow(handle, GW_OWNER) == static_cast<HWND>(0) && IsWindowVisible(handle)))
         {
             return TRUE;
@@ -750,7 +765,7 @@ namespace CentralizedKeyboardHook
 
     void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<bool()>&& action) noexcept
     {
-        Logger::trace(L"Register hotkey action for {}", moduleName);
+        Logger::trace(L"CKBH:Register hotkey action for {}", moduleName);
         std::unique_lock lock{ mutex };
         hotkeyDescriptors.insert({ .hotkey = hotkey, .moduleName = moduleName, .action = std::move(action) });
     }
@@ -768,7 +783,7 @@ namespace CentralizedKeyboardHook
 
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
     {
-        Logger::trace(L"UnRegister hotkey action for {}", moduleName);
+        Logger::trace(L"CKBH:UnRegister hotkey action for {}", moduleName);
         {
             std::unique_lock lock{ mutex };
             auto it = hotkeyDescriptors.begin();
