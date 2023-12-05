@@ -725,6 +725,7 @@ Jsons
 jsonval
 junja
 jxr
+Kazakhstani
 kdc
 keybd
 KEYBDDATA
@@ -1545,6 +1546,7 @@ TDevice
 telem
 telephon
 templatenamespace
+Tenge
 testhost
 testprocess
 TEXCOORD
