@@ -217,12 +217,12 @@ namespace PowerLauncher.ViewModel
                             var userSelectedRecordItemStorage = new WoxJsonStorage<UserSelectedRecord.UserSelectedRecordItem>(_userSelectedRecordStorage.GetFileName());
                             userSelectedRecordItemStorage.Load();
 
-                            var userSelectedRecordItemfields = userSelectedRecordItemStorage.ExtractFields(userSelectedRecordItemData, string.Empty);
-                            if (userSelectedRecordItemfields != null)
+                            var userSelectedRecordItemFields = userSelectedRecordItemStorage.ExtractFields(userSelectedRecordItemData, string.Empty);
+                            if (userSelectedRecordItemFields != null)
                             {
-                                if (userSelectedRecordItemStorage.CheckVersionMismatch(userSelectedRecordItemfields, _userSelectedRecordStorage.GetVersionMismatch()))
+                                if (userSelectedRecordItemStorage.CheckVersionMismatch(userSelectedRecordItemFields, _userSelectedRecordStorage.GetVersionMismatch()))
                                 {
-                                    if (!userSelectedRecordItemStorage.CheckWithInformatonFiletoClear(userSelectedRecordItemData))
+                                    if (!userSelectedRecordItemStorage.CheckWithInformationFileToClear(userSelectedRecordItemData))
                                     {
                                         userSelectedRecordItemStorage.Clear();
                                         userSelectedRecordItemStorage.SaveInformationFile(userSelectedRecordItemData);
@@ -231,19 +231,19 @@ namespace PowerLauncher.ViewModel
                             }
 
                             // History
-                            var historyItemdata = JsonSerializer.Deserialize<HistoryItem>("{}", _historyItemsStorage.GetJsonSerializerOptions());
+                            var historyItemData = JsonSerializer.Deserialize<HistoryItem>("{}", _historyItemsStorage.GetJsonSerializerOptions());
                             var historyItemStorage = new WoxJsonStorage<HistoryItem>(_historyItemsStorage.GetFileName());
                             historyItemStorage.Load();
 
-                            var fields = historyItemStorage.ExtractFields(historyItemdata, string.Empty);
-                            if (fields != null)
+                            var historyItemFields = historyItemStorage.ExtractFields(historyItemData, string.Empty);
+                            if (historyItemFields != null)
                             {
-                                if (historyItemStorage.CheckVersionMismatch(fields, _historyItemsStorage.GetVersionMismatch()))
+                                if (historyItemStorage.CheckVersionMismatch(historyItemFields, _historyItemsStorage.GetVersionMismatch()))
                                 {
-                                    if (!historyItemStorage.CheckWithInformatonFiletoClear(historyItemdata))
+                                    if (!historyItemStorage.CheckWithInformationFileToClear(historyItemData))
                                     {
                                         historyItemStorage.Clear();
-                                        historyItemStorage.SaveInformationFile(historyItemdata);
+                                        historyItemStorage.SaveInformationFile(historyItemData);
                                     }
                                 }
                             }

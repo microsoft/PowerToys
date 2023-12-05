@@ -28,7 +28,7 @@ namespace PowerLauncher.ViewModel
                     if (_storage.CheckVersionMismatch(fields))
                     {
                         Settings = JsonSerializer.Deserialize<PowerToysRunSettings>("{}", _storage.GetJsonSerializerOptions());
-                        if (!_storage.CheckWithInformatonFiletoClear(Settings))
+                        if (!_storage.CheckWithInformationFileToClear(Settings))
                         {
                             _storage.Clear();
                             _storage.SaveInformationFile(Settings);

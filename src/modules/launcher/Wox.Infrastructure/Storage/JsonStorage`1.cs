@@ -173,7 +173,7 @@ namespace Wox.Infrastructure.Storage
             return true;
         }
 
-        public bool CheckWithInformatonFiletoClear(T actualData)
+        public bool CheckWithInformationFileToClear(T actualData)
         {
             var infoFilePath = _storageHelper.GetFilePath(FilePath, _jsonStorage);
 
@@ -255,7 +255,7 @@ namespace Wox.Infrastructure.Storage
             }
             catch (JsonException e)
             {
-                Log.Exception($"Error in CheckWithInformatonFiletoClear at <{FilePath}>", e, GetType());
+                Log.Exception($"Error in CheckWithInformationFileToClear at <{FilePath}>", e, GetType());
                 return true;
             }
         }

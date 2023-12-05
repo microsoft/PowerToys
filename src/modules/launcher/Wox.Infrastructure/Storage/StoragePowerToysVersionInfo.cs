@@ -109,13 +109,13 @@ namespace Wox.Infrastructure.Storage
             string cacheSuffix = ".cache";
             string jsonSuffix = ".json";
 
-            string cachceFileType = "_version.txt";
+            string cacheFileType = "_version.txt";
             string jsonFileType = "_information.json";
 
             if (type == (uint)StorageType.BINARY_STORAGE)
             {
                 suffix = cacheSuffix;
-                fileType = cachceFileType;
+                fileType = cacheFileType;
             }
             else if (type == (uint)StorageType.JSON_STORAGE)
             {

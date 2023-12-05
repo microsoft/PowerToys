@@ -39,7 +39,7 @@ namespace Wox.Infrastructure.Storage
                     if (CheckVersionMismatch(fields))
                     {
                         data = JsonSerializer.Deserialize<T>("{}", GetJsonSerializerOptions());
-                        if (!CheckWithInformatonFiletoClear(data))
+                        if (!CheckWithInformationFileToClear(data))
                         {
                             Clear();
                             SaveInformationFile(data);
