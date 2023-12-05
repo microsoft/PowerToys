@@ -23,6 +23,21 @@ private:
     }
 
 public:
+    enum ElevationLevel
+    {
+        Same = 0,
+        Elevated = 1,
+        NonElevated = 2
+    };
+
+    struct RunProgramDescriptor
+    {
+        std::wstring runProgramFilePath;
+        std::wstring runProgramArgs;
+        std::wstring runProgramStartInDir;
+        Shortcut::ElevationLevel elevationLevel = ElevationLevel::Same;
+    };
+
     ModifierKey winKey = ModifierKey::Disabled;
     ModifierKey ctrlKey = ModifierKey::Disabled;
     ModifierKey altKey = ModifierKey::Disabled;
@@ -33,6 +48,8 @@ public:
     std::wstring runProgramArgs;
     std::wstring runProgramStartInDir;
 
+    RunProgramDescriptor runProgramDescriptor;
+
     DWORD actionKey = {};
 
     Shortcut() = default;
@@ -40,8 +57,10 @@ public:
     // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
 
+    Shortcut(const std::wstring& shortcutVK, RunProgramDescriptor runProgramDescriptor);
+
     Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir);
-    
+
     // Constructor to initialize shortcut from a list of keys
     Shortcut(const std::vector<int32_t>& keys);
 

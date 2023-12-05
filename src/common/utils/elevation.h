@@ -71,7 +71,7 @@ namespace
         }
 
         result = spView->QueryInterface(riid, ppv);
-        if (result != S_OK || ppv == nullptr || *ppv == nullptr )
+        if (result != S_OK || ppv == nullptr || *ppv == nullptr)
         {
             Logger::warn(L"Failed to query interface. {}", GetErrorString(result));
             return false;
@@ -83,7 +83,7 @@ namespace
     inline bool GetDesktopAutomationObject(REFIID riid, void** ppv)
     {
         CComPtr<IShellView> spsv;
-        
+
         // Desktop may not be available on startup
         auto attempts = 5;
         for (auto i = 1; i <= attempts; i++)
@@ -208,7 +208,7 @@ inline bool drop_elevated_privileges()
 }
 
 // Run command as elevated user, returns true if succeeded
-inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params)
+inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr)
 {
     Logger::info(L"run_elevated with params={}", params);
     SHELLEXECUTEINFOW exec_info = { 0 };
@@ -218,7 +218,7 @@ inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params)
     exec_info.lpParameters = params.c_str();
     exec_info.hwnd = 0;
     exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
-    exec_info.lpDirectory = 0;
+    exec_info.lpDirectory = workingDir;
     exec_info.hInstApp = 0;
     exec_info.nShow = SW_SHOWDEFAULT;
 
@@ -341,7 +341,8 @@ inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& param
     catch (...)
     {
     }
-    if (SUCCEEDED(co_init)) CoUninitialize();
+    if (SUCCEEDED(co_init))
+        CoUninitialize();
 
     return success;
 }
@@ -372,7 +373,7 @@ inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& fil
         }
     }
 
-    auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE | handleAccess );
+    auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE | handleAccess);
 
     if (handles.empty())
         return std::nullopt;
@@ -385,7 +386,7 @@ inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& fil
 }
 
 // Run command with the same elevation, returns true if succeeded
-inline bool run_same_elevation(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
+inline bool run_same_elevation(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr)
 {
     auto executable_args = L"\"" + file + L"\"";
     if (!params.empty())
@@ -403,7 +404,7 @@ inline bool run_same_elevation(const std::wstring& file, const std::wstring& par
                                     FALSE,
                                     0,
                                     nullptr,
-                                    nullptr,
+                                    workingDir,
                                     &si,
                                     &pi);
 

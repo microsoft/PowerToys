@@ -3,6 +3,7 @@
 #include <common/debug_control.h>
 #include <common/utils/winapi_error.h>
 #include <common/logger/logger.h>
+#include <common/utils/elevation.h>
 #include <common/interop/shared_constants.h>
 #include <modules/keyboardmanager/common/ModifierKey.h>
 #include <common/SettingsAPI/settings_objects.h>
@@ -183,6 +184,15 @@ namespace CentralizedKeyboardHook
         }
 
     public:
+        enum ElevationLevel
+        {
+            same = 0,
+            elevated = 1,
+            non_elevated = 2
+        };
+
+        ElevationLevel elevationLevel = ElevationLevel::same;
+
         ModifierKey winKey = ModifierKey::Disabled;
         ModifierKey ctrlKey = ModifierKey::Disabled;
         ModifierKey altKey = ModifierKey::Disabled;
@@ -673,8 +683,10 @@ namespace CentralizedKeyboardHook
                     else
                     {
                         std::wstring executable_and_args = fmt::format(L"\"{}\" {}", runProgramSpec.path, runProgramSpec.args);
-                        STARTUPINFO startup_info = { sizeof(startup_info) };
-                        PROCESS_INFORMATION process_info = { 0 };
+
+                        //runProgramSpec.elevationLevel = RunProgramSpec::ElevationLevel::same;
+                        runProgramSpec.elevationLevel = RunProgramSpec::ElevationLevel::elevated;
+                        //runProgramSpec.elevationLevel = RunProgramSpec::ElevationLevel::non_elevated;
 
                         auto currentDir = runProgramSpec.dir.c_str();
                         if (runProgramSpec.dir == L"")
@@ -682,9 +694,29 @@ namespace CentralizedKeyboardHook
                             currentDir = nullptr;
                         }
 
-                        Logger::trace(L"CKBH:{}, CreateProcessW starting {}", fileNamePart, executable_and_args);
+                        if (true)
+                        {
+                            Logger::trace(L"CKBH:{}, CreateProcessW starting {}", fileNamePart, executable_and_args);
 
-                        CreateProcessW(nullptr, executable_and_args.data(), nullptr, nullptr, FALSE, 0, nullptr, currentDir, &startup_info, &process_info);
+                            if (runProgramSpec.elevationLevel == RunProgramSpec::ElevationLevel::elevated)
+                            {
+                                run_elevated(runProgramSpec.path, runProgramSpec.args, currentDir);
+                            }
+                            else if (runProgramSpec.elevationLevel == RunProgramSpec::ElevationLevel::non_elevated)
+                            {
+                                run_non_elevated(runProgramSpec.path, runProgramSpec.args, nullptr, currentDir);
+                            }
+                            else
+                            {
+                                run_same_elevation(runProgramSpec.path, runProgramSpec.args, nullptr, currentDir);
+                            }
+                        }
+                        else
+                        {
+                            STARTUPINFO startupInfo = { sizeof(startupInfo) };
+                            PROCESS_INFORMATION processInfo = { 0 };
+                            CreateProcessW(nullptr, executable_and_args.data(), nullptr, nullptr, FALSE, 0, nullptr, currentDir, &startupInfo, &processInfo);
+                        }
                     }
                 }
             }
