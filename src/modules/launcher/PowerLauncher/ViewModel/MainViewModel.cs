@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -27,7 +26,6 @@ using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
-using static Wox.Plugin.UserSelectedRecord;
 
 namespace PowerLauncher.ViewModel
 {
@@ -40,7 +38,7 @@ namespace PowerLauncher.ViewModel
         private static bool _disposed;
 
         private readonly WoxJsonStorage<QueryHistory> _historyItemsStorage;
-        private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage = new WoxJsonStorage<UserSelectedRecord>();
+        private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
         private readonly PowerToysRunSettings _settings;
         private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
@@ -215,8 +213,8 @@ namespace PowerLauncher.ViewModel
                         try
                         {
                             // UserSelectedRecord
-                            var userSelectedRecordItemData = JsonSerializer.Deserialize<UserSelectedRecordItem>("{}", _userSelectedRecordStorage.GetJsonSerializerOptions());
-                            var userSelectedRecordItemStorage = new WoxJsonStorage<UserSelectedRecordItem>(_userSelectedRecordStorage.GetFileName());
+                            var userSelectedRecordItemData = JsonSerializer.Deserialize<UserSelectedRecord.UserSelectedRecordItem>("{}", _userSelectedRecordStorage.GetJsonSerializerOptions());
+                            var userSelectedRecordItemStorage = new WoxJsonStorage<UserSelectedRecord.UserSelectedRecordItem>(_userSelectedRecordStorage.GetFileName());
                             userSelectedRecordItemStorage.Load();
 
                             var userSelectedRecordItemfields = userSelectedRecordItemStorage.ExtractFields(userSelectedRecordItemData, string.Empty);
