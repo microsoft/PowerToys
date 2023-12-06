@@ -44,6 +44,8 @@ namespace EnvironmentVariables
             var handle = this.GetWindowHandle();
 
             oldWndProc = NativeMethods.SetWindowLongPtr(handle, NativeMethods.WindowLongIndexFlags.GWL_WNDPROC, newWndProc);
+
+            NativeMethods.SetForegroundWindow(handle);
         }
 
         private static IntPtr WndProc(IntPtr hWnd, NativeMethods.WindowMessage msg, IntPtr wParam, IntPtr lParam)

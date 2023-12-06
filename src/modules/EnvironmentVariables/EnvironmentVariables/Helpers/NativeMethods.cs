@@ -28,6 +28,10 @@ namespace EnvironmentVariables.Helpers.Win32
         [DllImport("user32.dll")]
         internal static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam);
 
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetForegroundWindow(IntPtr hWnd);
+
         [Flags]
         internal enum WindowLongIndexFlags : int
         {
