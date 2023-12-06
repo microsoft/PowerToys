@@ -268,13 +268,19 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_COLOR);
             auto spotlightColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
             uint8_t r, g, b;
+            //save previous alpha value, if needed
+            auto alpha = findMyMouseSettings.spotlightColor.A;
             if (!checkValidRGB(spotlightColor, &r, &g, &b))
             {
                 Logger::error("Spotlight color RGB value is invalid. Will use default value");
             }
             else
             {
-                findMyMouseSettings.spotlightColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+                //changed to defualt to partial transparency, requested from issue board
+                findMyMouseSettings.spotlightColor.A = 128;
+
+                //update JSON to reflect new alpha value
+                jsonPropertiesObject.Insert(JSON_KEY_VALUE, winrt::to_hstring(L"rgba(" + std::to_wstring(r) + L"," + std::to_wstring(g) + L"," + std::to_wstring(b) + L"," + std::to_wstring(findMyMouseSettings.spotlightColor.A) + L")"));
             }
         }
         catch (...)
