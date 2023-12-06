@@ -157,10 +157,13 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles">
+                    <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard ContentAlignment="Left" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
+                        <CheckBox x:Uid="PowerLauncher_ShowPluginKeywords" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowPluginsOverview}" />
+                    </controls:SettingsCard>
                 </custom:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"

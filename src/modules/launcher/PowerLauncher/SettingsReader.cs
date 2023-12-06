@@ -179,6 +179,11 @@ namespace PowerLauncher
                         _settings.ShouldUsePinyin = overloadSettings.Properties.UsePinyin;
                     }
 
+                    if (_settings.ShowPluginsOverview != overloadSettings.Properties.ShowPluginsOverview)
+                    {
+                        _settings.ShowPluginsOverview = overloadSettings.Properties.ShowPluginsOverview;
+                    }
+
                     retry = false;
                 }
 

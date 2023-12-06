@@ -346,7 +346,8 @@ namespace PowerLauncher.ViewModel
                 if (_queryText != value)
                 {
                     _queryText = value;
-                    if (string.IsNullOrEmpty(_queryText) || string.IsNullOrWhiteSpace(_queryText))
+
+                    if (_settings.ShowPluginsOverview && (string.IsNullOrEmpty(_queryText) || string.IsNullOrWhiteSpace(_queryText)))
                     {
                         PluginsOverviewVisibility = Visibility.Visible;
                     }

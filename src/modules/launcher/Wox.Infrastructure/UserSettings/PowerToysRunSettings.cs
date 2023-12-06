@@ -319,6 +319,8 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool RememberLastLaunchLocation { get; set; }
 
+        public bool ShowPluginsOverview { get; set; }
+
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
         public bool StartedFromPowerToysRunner { get; set; }
