@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using EnvironmentVariables.Helpers;
 using EnvironmentVariables.Helpers.Win32;
 using EnvironmentVariables.ViewModels;
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using WinUIEx;
 
@@ -45,7 +46,7 @@ namespace EnvironmentVariables
 
             oldWndProc = NativeMethods.SetWindowLongPtr(handle, NativeMethods.WindowLongIndexFlags.GWL_WNDPROC, newWndProc);
 
-            NativeMethods.SetForegroundWindow(handle);
+            WindowHelpers.BringToForeground(handle);
         }
 
         private static IntPtr WndProc(IntPtr hWnd, NativeMethods.WindowMessage msg, IntPtr wParam, IntPtr lParam)
