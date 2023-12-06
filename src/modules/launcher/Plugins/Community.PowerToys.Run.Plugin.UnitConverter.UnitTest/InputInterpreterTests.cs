@@ -83,5 +83,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
             var convertModel = InputInterpreter.Parse(query);
             Assert.AreEqual(result, convertModel.Value);
         }
+
+        [DataTestMethod]
+        [DataRow(new string[] { "5", "nmi", "in", "km" }, new string[] { "5", "nauticalmiles", "in", "km" })]
+        [DataRow(new string[] { "1", "km", "in", "nmi" }, new string[] { "1", "km", "in", "nauticalmiles" })]
+        public void TestnmiNotation(string[] input, string[] expectedResult)
+        {
+            InputInterpreter.NauticalMileTonmi(ref input);
+            CollectionAssert.AreEqual(expectedResult, input);
+        }
     }
 }
