@@ -48,6 +48,7 @@ public:
     std::wstring runProgramArgs;
     std::wstring runProgramStartInDir;
 
+    Shortcut::ElevationLevel elevationLevel = ElevationLevel::Same;
     RunProgramDescriptor runProgramDescriptor;
 
     DWORD actionKey = {};

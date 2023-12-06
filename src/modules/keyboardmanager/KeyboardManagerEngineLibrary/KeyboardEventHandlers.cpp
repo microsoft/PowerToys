@@ -7,6 +7,9 @@
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
 
+//#include <common/utils/elevation.h>
+#include <tlhelp32.h>
+
 namespace
 {
     bool GeneratedByKBM(const LowlevelKeyboardEvent* data)
@@ -236,7 +239,16 @@ namespace KeyboardEventHandlers
                         auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
                         if (shortcut.isRunProgram)
                         {
-                            // we don't need to do anything here, since we'll handle it in CentralizedKeyboardHook
+                            // false because we can't use this here since we can't include <common/utils/elevation.h> yet
+                            if (false)
+                            {
+                                HandleCreateProcessHotKeysAndChords(shortcut);
+                            }
+                            else
+                            {
+                                // we don't need to do anything here, since we'll handle it in CentralizedKeyboardHook
+                            }
+
                             continue;
                         }
 
@@ -827,6 +839,234 @@ namespace KeyboardEventHandlers
         }
 
         return 0;
+    }
+
+    struct handle_data
+    {
+        unsigned long process_id;
+        HWND window_handle;
+    };
+
+    // used for reactivating a window for a program we already started.
+    HWND FindMainWindow(unsigned long process_id)
+    {
+        handle_data data;
+        data.process_id = process_id;
+        data.window_handle = 0;
+        EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&data));
+        return data.window_handle;
+    }
+
+    // used by FindMainWindow
+    BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam)
+    {
+        handle_data& data = *reinterpret_cast<handle_data*>(lParam);
+        unsigned long process_id = 0;
+        GetWindowThreadProcessId(handle, &process_id);
+
+        if (data.process_id != process_id || !(GetWindow(handle, GW_OWNER) == static_cast<HWND>(0) && IsWindowVisible(handle)))
+        {
+            return TRUE;
+        }
+
+        data.window_handle = handle;
+        return FALSE;
+    }
+
+    // GetProcessIdByName also used by HandleCreateProcessHotKeysAndChords
+    DWORD GetProcessIdByName(const std::wstring& processName)
+    {
+        DWORD pid = 0;
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+        if (snapshot != INVALID_HANDLE_VALUE)
+        {
+            PROCESSENTRY32 processEntry;
+            processEntry.dwSize = sizeof(PROCESSENTRY32);
+
+            if (Process32First(snapshot, &processEntry))
+            {
+                do
+                {
+                    if (_wcsicmp(processEntry.szExeFile, processName.c_str()) == 0)
+                    {
+                        pid = processEntry.th32ProcessID;
+                        break;
+                    }
+                } while (Process32Next(snapshot, &processEntry));
+            }
+
+            CloseHandle(snapshot);
+        }
+
+        return pid;
+    }
+
+    // Use to find a process by its name
+    std::wstring GetFileNameFromPath(const std::wstring& fullPath)
+    {
+        size_t found = fullPath.find_last_of(L"\\");
+        if (found != std::wstring::npos)
+        {
+            return fullPath.substr(found + 1);
+        }
+        return fullPath;
+    }
+
+    void HandleCreateProcessHotKeysAndChords(Shortcut shortcut) noexcept
+    {
+        auto fileNamePart = GetFileNameFromPath(shortcut.runProgramFilePath);
+
+        Logger::trace(L"CKBH:{}, trying to run {}", fileNamePart, shortcut.runProgramFilePath);
+        //lastKeyInChord = 0;
+
+        DWORD targetPid = 0;
+
+        if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe")
+        {
+            targetPid = GetProcessIdByName(fileNamePart);
+        }
+
+        if (targetPid != 0)
+        {
+            Logger::trace(L"CKBH:{}, already running, pid:{}", fileNamePart, targetPid);
+
+            // a good place to look for this...
+            // https://github.com/ritchielawrence/cmdow
+
+            // try by main window.
+            HWND hwnd = FindMainWindow(targetPid);
+            if (hwnd != NULL)
+            {
+                Logger::trace(L"CKBH:{}, got hwnd from FindMainWindow", fileNamePart);
+
+                if (hwnd == GetForegroundWindow())
+                {
+                    Logger::trace(L"CKBH:{}, got GetForegroundWindow, doing SW_MINIMIZE", fileNamePart);
+                    ShowWindow(hwnd, SW_MINIMIZE);
+                    return;
+                }
+                else
+                {
+                    Logger::trace(L"CKBH:{}, no GetForegroundWindow, doing SW_RESTORE", fileNamePart);
+                    ShowWindow(hwnd, SW_RESTORE);
+
+                    if (!SetForegroundWindow(hwnd))
+                    {
+                        auto errorCode = GetLastError();
+                        Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", fileNamePart, errorCode);
+                    }
+                    else
+                    {
+                        Logger::trace(L"CKBH:{}, success on SetForegroundWindow", fileNamePart);
+                        return;
+                    }
+                }
+            }
+
+            // try by console.
+
+            hwnd = FindWindow(nullptr, nullptr);
+            if (AttachConsole(targetPid))
+            {
+                Logger::trace(L"CKBH:{}, success on AttachConsole", fileNamePart);
+
+                // Get the console window handle
+                hwnd = GetConsoleWindow();
+                auto showByConsoleSuccess = false;
+                if (hwnd != NULL)
+                {
+                    Logger::trace(L"CKBH:{}, success on GetConsoleWindow, doing SW_RESTORE", fileNamePart);
+
+                    ShowWindow(hwnd, SW_RESTORE);
+
+                    if (!SetForegroundWindow(hwnd))
+                    {
+                        auto errorCode = GetLastError();
+                        Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", fileNamePart, errorCode);
+                    }
+                    else
+                    {
+                        Logger::trace(L"CKBH:{}, success on SetForegroundWindow", fileNamePart);
+                        showByConsoleSuccess = true;
+                    }
+                }
+
+                // Detach from the console
+                FreeConsole();
+                if (showByConsoleSuccess)
+                {
+                    return;
+                }
+            }
+
+            // try to just show them all (if they have a title)!.
+            hwnd = FindWindow(nullptr, nullptr);
+
+            while (hwnd)
+            {
+                DWORD pidForHwnd;
+                GetWindowThreadProcessId(hwnd, &pidForHwnd);
+                if (targetPid == pidForHwnd)
+                {
+                    Logger::trace(L"CKBH:{}:{}, FindWindow (show all mode)", fileNamePart, targetPid);
+
+                    int length = GetWindowTextLength(hwnd);
+
+                    if (length > 0)
+                    {
+                        ShowWindow(hwnd, SW_RESTORE);
+
+                        // hwnd is the window handle with targetPid
+                        if (!SetForegroundWindow(hwnd))
+                        {
+                            auto errorCode = GetLastError();
+                            Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", fileNamePart, errorCode);
+                        }
+                    }
+                }
+                hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
+            }
+        }
+        else
+        {
+            std::wstring executable_and_args = fmt::format(L"\"{}\" {}", shortcut.runProgramFilePath, shortcut.runProgramArgs);
+
+            //runProgramSpec.elevationLevel = RunProgramSpec::ElevationLevel::same;
+            shortcut.elevationLevel = Shortcut::ElevationLevel::Elevated;
+            //runProgramSpec.elevationLevel = RunProgramSpec::ElevationLevel::non_elevated;
+
+            auto currentDir = shortcut.runProgramStartInDir.c_str();
+            if (currentDir == L"")
+            {
+                currentDir = nullptr;
+            }
+
+            if (true)
+            {
+                Logger::trace(L"CKBH:{}, CreateProcessW starting {}", fileNamePart, executable_and_args);
+
+                if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
+                {
+                    //run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                }
+                else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
+                {
+                    //run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
+                }
+                else
+                {
+                    //run_same_elevation(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
+                }
+            }
+            else
+            {
+                STARTUPINFO startupInfo = { sizeof(startupInfo) };
+                PROCESS_INFORMATION processInfo = { 0 };
+                CreateProcessW(nullptr, executable_and_args.data(), nullptr, nullptr, FALSE, 0, nullptr, currentDir, &startupInfo, &processInfo);
+            }
+        }
+        return;
     }
 
     // Function to a handle an os-level shortcut remap

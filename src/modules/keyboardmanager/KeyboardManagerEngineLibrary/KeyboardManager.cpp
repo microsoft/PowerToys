@@ -7,7 +7,6 @@
 #include <common/utils/winapi_error.h>
 #include <common/logger/logger_settings.h>
 
-#include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Helpers.h>
@@ -20,6 +19,7 @@
 HHOOK KeyboardManager::hookHandleCopy;
 HHOOK KeyboardManager::hookHandle;
 KeyboardManager* KeyboardManager::keyboardManagerObjectPtr;
+static std::vector<Shortcut> shortcuts;
 
 KeyboardManager::KeyboardManager()
 {
@@ -41,11 +41,15 @@ KeyboardManager::KeyboardManager()
         try
         {
             LoadSettings();
+
+            UpdateRunProgramShortcuts();
         }
         catch (...)
         {
             Logger::error("Failed to load settings");
         }
+
+        //CentralizedKeyboardHook::RefreshConfig();
 
         loadingSettings = false;
     };
@@ -65,6 +69,46 @@ void KeyboardManager::LoadSettings()
         state.LoadSettings();
     }
 }
+
+void KeyboardManager::UpdateRunProgramShortcuts()
+{
+
+
+    ShortcutRemapTable& reMap = state.GetShortcutRemapTable(L"");
+
+    // Iterate through the shortcut remaps and apply whichever has been pressed
+    for (auto& itShortcut : state.GetSortedShortcutRemapVector(L""))
+    {
+        const auto it = reMap.find(itShortcut);
+
+        // Check if the remap is to a a shortcut
+        const bool remapToShortcut = it->second.targetShortcut.index() == 1;
+
+        if (remapToShortcut)
+        {
+            auto a = it->first;
+            auto b = std::get<Shortcut>(it->second.targetShortcut);
+            if (b.isRunProgram)
+            {
+                a.runProgramFilePath = b.runProgramFilePath;
+                a.runProgramArgs = b.runProgramArgs;
+                a.runProgramStartInDir = b.runProgramStartInDir;
+                a.runProgramDescriptor = b.runProgramDescriptor;
+                a.elevationLevel = b.elevationLevel;
+
+                shortcuts.push_back(a);
+            }
+        }
+    }
+
+
+}
+
+std::vector<Shortcut> KeyboardManager::GetRunProgramShortcuts()
+{
+    return shortcuts;
+}
+
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
 {

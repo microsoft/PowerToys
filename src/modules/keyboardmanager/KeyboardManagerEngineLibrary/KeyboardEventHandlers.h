@@ -21,6 +21,16 @@ namespace KeyboardEventHandlers
     // Function to a handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
 
+    void HandleCreateProcessHotKeysAndChords(Shortcut shortcut) noexcept;
+
+    BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam);
+
+    HWND FindMainWindow(unsigned long process_id);
+
+    DWORD GetProcessIdByName(const std::wstring& processName);
+
+    std::wstring GetFileNameFromPath(const std::wstring& fullPath);
+
     // Function to a handle an os-level shortcut remap
     intptr_t HandleOSLevelShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 

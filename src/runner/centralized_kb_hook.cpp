@@ -10,12 +10,9 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <modules/keyboardmanager/common/KeyboardManagerConstants.h>
 #include <tlhelp32.h>
+//#include "modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h"
 
-// For GetProcessIdByName
-//#include <windows.h>
-//#include <iostream>
-//#include <string>
-//#include <filesystem>
+
 
 namespace CentralizedKeyboardHook
 {
@@ -361,34 +358,48 @@ namespace CentralizedKeyboardHook
             return CallNextHookEx(hHook, nCode, wParam, lParam);
         }
 
-        LocalKey lHotkey;
+        Hotkey hotkey;
+        if (true)
+        {
+            LocalKey lHotkey;
 
-        lHotkey.win = (GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000);
-        lHotkey.control = static_cast<bool>(GetAsyncKeyState(VK_CONTROL) & 0x8000);
-        lHotkey.shift = static_cast<bool>(GetAsyncKeyState(VK_SHIFT) & 0x8000);
-        lHotkey.alt = static_cast<bool>(GetAsyncKeyState(VK_MENU) & 0x8000);
+            lHotkey.win = (GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000);
+            lHotkey.control = static_cast<bool>(GetAsyncKeyState(VK_CONTROL) & 0x8000);
+            lHotkey.shift = static_cast<bool>(GetAsyncKeyState(VK_SHIFT) & 0x8000);
+            lHotkey.alt = static_cast<bool>(GetAsyncKeyState(VK_MENU) & 0x8000);
 
-        lHotkey.l_win = (GetAsyncKeyState(VK_LWIN) & 0x8000);
-        lHotkey.l_control = static_cast<bool>(GetAsyncKeyState(VK_LCONTROL) & 0x8000);
-        lHotkey.l_shift = static_cast<bool>(GetAsyncKeyState(VK_LSHIFT) & 0x8000);
-        lHotkey.l_alt = static_cast<bool>(GetAsyncKeyState(VK_LMENU) & 0x8000);
+            lHotkey.l_win = (GetAsyncKeyState(VK_LWIN) & 0x8000);
+            lHotkey.l_control = static_cast<bool>(GetAsyncKeyState(VK_LCONTROL) & 0x8000);
+            lHotkey.l_shift = static_cast<bool>(GetAsyncKeyState(VK_LSHIFT) & 0x8000);
+            lHotkey.l_alt = static_cast<bool>(GetAsyncKeyState(VK_LMENU) & 0x8000);
 
-        lHotkey.r_win = (GetAsyncKeyState(VK_RWIN) & 0x8000);
-        lHotkey.r_control = static_cast<bool>(GetAsyncKeyState(VK_RCONTROL) & 0x8000);
-        lHotkey.r_shift = static_cast<bool>(GetAsyncKeyState(VK_RSHIFT) & 0x8000);
-        lHotkey.r_alt = static_cast<bool>(GetAsyncKeyState(VK_RMENU) & 0x8000);
+            lHotkey.r_win = (GetAsyncKeyState(VK_RWIN) & 0x8000);
+            lHotkey.r_control = static_cast<bool>(GetAsyncKeyState(VK_RCONTROL) & 0x8000);
+            lHotkey.r_shift = static_cast<bool>(GetAsyncKeyState(VK_RSHIFT) & 0x8000);
+            lHotkey.r_alt = static_cast<bool>(GetAsyncKeyState(VK_RMENU) & 0x8000);
 
-        lHotkey.key = static_cast<unsigned char>(keyPressInfo.vkCode);
+            lHotkey.key = static_cast<unsigned char>(keyPressInfo.vkCode);
 
-        Hotkey hotkey{
-            .win = lHotkey.win,
-            .ctrl = lHotkey.control,
-            .shift = lHotkey.shift,
-            .alt = lHotkey.alt,
-            .key = static_cast<UCHAR>(lHotkey.key)
-        };
+            hotkey = {
+                .win = lHotkey.win,
+                .ctrl = lHotkey.control,
+                .shift = lHotkey.shift,
+                .alt = lHotkey.alt,
+                .key = static_cast<UCHAR>(lHotkey.key)
+            };
 
-        HandleCreateProcessHotKeysAndChords(lHotkey);
+            HandleCreateProcessHotKeysAndChords(lHotkey);
+        }
+        else
+        {
+            hotkey = {
+                .win = (GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000),
+                .ctrl = static_cast<bool>(GetAsyncKeyState(VK_CONTROL) & 0x8000),
+                .shift = static_cast<bool>(GetAsyncKeyState(VK_SHIFT) & 0x8000),
+                .alt = static_cast<bool>(GetAsyncKeyState(VK_MENU) & 0x8000),
+                .key = static_cast<unsigned char>(keyPressInfo.vkCode)
+            };
+        }
 
         std::function<bool()> action;
         {
@@ -539,6 +550,12 @@ namespace CentralizedKeyboardHook
         {
             return;
         }
+
+        //auto shortcuts = KeyboardManager::GetRunProgramShortcuts();
+        //auto countOfShortcuts = shortcuts.size();
+        //Logger::trace(L"CKBH:countOfShortcuts {}", countOfShortcuts);
+
+        //KeyboardManager::(L"CKBH:HandleCreateProcessHotKeysAndChords key {}", hotkey.key);
 
         for (RunProgramSpec runProgramSpec : runProgramSpecs)
         {
