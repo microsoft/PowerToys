@@ -218,6 +218,17 @@ namespace PowerLauncher
         /// <param name="newTheme">Current Theme</param>
         private void OnThemeChanged(Theme oldTheme, Theme newTheme)
         {
+            if (oldTheme == newTheme)
+            {
+                return;
+            }
+
+            // If OS theme is high contrast, don't change theme.
+            if (SystemParameters.HighContrast)
+            {
+                return;
+            }
+
             ApplicationTheme theme = ApplicationTheme.Unknown;
 
             switch (newTheme)
@@ -237,7 +248,10 @@ namespace PowerLauncher
 
             _mainWindow?.Dispatcher.Invoke(() =>
             {
-                ApplicationThemeManager.Apply(theme);
+                if (theme != ApplicationTheme.Unknown)
+                {
+                    ApplicationThemeManager.Apply(theme);
+                }
             });
 
             ImageLoader.UpdateIconPath(newTheme);
