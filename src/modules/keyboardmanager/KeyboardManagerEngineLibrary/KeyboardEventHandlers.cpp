@@ -184,6 +184,8 @@ namespace KeyboardEventHandlers
     // Function to a handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp) noexcept
     {
+        auto resetChordsResults = ResetChordsIfNeeded(data, state, activatedApp);
+
         // Check if any shortcut is currently in the invoked state
         bool isShortcutInvoked = state.CheckShortcutRemapInvoked(activatedApp);
 
@@ -191,6 +193,10 @@ namespace KeyboardEventHandlers
         ShortcutRemapTable& reMap = state.GetShortcutRemapTable(activatedApp);
 
         // Iterate through the shortcut remaps and apply whichever has been pressed
+
+        //int a = static_cast<int>(data->lParam->vkCode);
+        //Logger::trace(L"CKBH:1 {}", a);
+
         for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
         {
             const auto it = reMap.find(itShortcut);
@@ -209,11 +215,58 @@ namespace KeyboardEventHandlers
             const size_t src_size = it->first.Size();
             const size_t dest_size = remapToShortcut ? std::get<Shortcut>(it->second.targetShortcut).Size() : 1;
 
+            bool isMatchOnChordEnd = false;
+            bool isMatchOnChordStart = false;
+
             // If the shortcut has been pressed down
             if (!it->second.isShortcutInvoked && it->first.CheckModifiersKeyboardState(ii))
             {
-                if (data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                // if not a mod key, check for chord stuff
+                if (!resetChordsResults.CurrentKeyIsModifierKey && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
+                    //Logger::trace(L"CKBH: 1 {}, this-IsChordStarted: {}, AnyChordStarted:{}", data->lParam->vkCode, itShortcut.IsChordStarted(), resetChordsResults.AnyChordStarted);
+
+                    if (data->lParam->vkCode == itShortcut.GetActionKey() && itShortcut.IsChordStarted() && itShortcut.HasChord())
+                    {
+                        // same chord started
+                        Logger::trace(L"CKBH: same chord start repeated");
+                        isMatchOnChordStart = true;
+                        break;
+                    }
+
+                    
+                    if (!resetChordsResults.AnyChordStarted && data->lParam->vkCode == itShortcut.GetActionKey() && !itShortcut.IsChordStarted() && itShortcut.HasChord())
+                    {
+                        // start new chord
+                        Logger::trace(L"CKBH: new chord started");
+                        isMatchOnChordStart = true;
+                        ResetAllStartedChords(state, activatedApp);
+                        itShortcut.SetChordStarted(true);
+                        break;
+                    }
+                    
+                    //Logger::trace(L"CKBH: 2 {}, this-IsChordStarted: {}", data->lParam->vkCode, itShortcut.IsChordStarted());
+
+                    if (data->lParam->vkCode == itShortcut.GetSecondKey() && itShortcut.IsChordStarted() && itShortcut.HasChord())
+                    {
+                        Logger::trace(L"CKBH: found chord match {}, {}", itShortcut.GetActionKey(), itShortcut.GetSecondKey());
+                        isMatchOnChordEnd = true;
+                    }
+
+                    if (resetChordsResults.AnyChordStarted && !isMatchOnChordEnd)
+                    {
+                        Logger::trace(L"CKBH: waiting on second key of chord");
+                        // this is a key and there is a mod, but it's not the second key of a chord.
+                        // we can't do anything with this key, we're waiting.
+                        continue;
+                    }
+                }
+
+                if (isMatchOnChordEnd || (!resetChordsResults.AnyChordStarted && !itShortcut.HasChord() && (data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))))
+                {
+                    ResetAllStartedChords(state, activatedApp);
+                    resetChordsResults.AnyChordStarted = false;
+
                     // Check if any other keys have been pressed apart from the shortcut. If true, then check for the next shortcut. This is to be done only for shortcut to shortcut remaps
                     if (!it->first.IsKeyboardStateClearExceptShortcut(ii) && (remapToShortcut || (remapToKey && std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)))
                     {
@@ -239,6 +292,14 @@ namespace KeyboardEventHandlers
                         auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
                         if (shortcut.isRunProgram)
                         {
+                            Logger::trace(L"\r\nCKBH: !!!!!!!!!!!!!!!!!!!!!!!!!   isMatchOnChord:{}, prog:{}", isMatchOnChordEnd, shortcut.runProgramFilePath);
+
+                            /*if (itShortcut.IsChordStarted())
+                            {
+                                ResetAllStartedChords(state, activatedApp);
+                                itShortcut.SetChordStarted(false);
+                            }*/
+
                             // false because we can't use this here since we can't include <common/utils/elevation.h> yet
                             if (false)
                             {
@@ -838,7 +899,82 @@ namespace KeyboardEventHandlers
             }
         }
 
+        /*if (!isMatchOnChordStart && !isMatchOnChordEnd && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+        {
+            Logger::trace(L"CKBH: abandoned chord!");
+            ResetAllStartedChords(state, activatedApp);
+        }*/
+
         return 0;
+    }
+
+    void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp)
+    {
+        for (auto& itShortcut_2 : state.GetSortedShortcutRemapVector(activatedApp))
+        {
+            itShortcut_2.SetChordStarted(false);
+        }
+    }
+
+    void ResetOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, Shortcut& itShortcut)
+    {
+        for (auto& itShortcut_2 : state.GetSortedShortcutRemapVector(activatedApp))
+        {
+            if (itShortcut != itShortcut_2)
+            {
+                itShortcut_2.SetChordStarted(false);
+            }
+        }
+    }
+
+    ResetChordsResults ResetChordsIfNeeded(LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp)
+    {
+        ResetChordsResults result;
+        result.AnyChordStarted = false;
+        result.CurrentKeyIsModifierKey = false;
+
+        bool isNewControlKey = false;
+        bool anyChordStarted = false;
+        if (VK_LWIN == data->lParam->vkCode || VK_RWIN == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+        if (VK_LSHIFT == data->lParam->vkCode || VK_RSHIFT == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+        if (VK_LMENU == data->lParam->vkCode || VK_RMENU == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+        if (VK_LCONTROL == data->lParam->vkCode || VK_RCONTROL == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+
+        if (isNewControlKey)
+        {
+            //Logger::trace(L"CKBH: reset");
+
+            for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
+            {
+                itShortcut.SetChordStarted(false);
+            }
+            result.CurrentKeyIsModifierKey = true;
+        }
+        else
+        {
+            for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
+            {
+                if (itShortcut.IsChordStarted())
+                {
+                    result.AnyChordStarted = true;
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
     struct handle_data

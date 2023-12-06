@@ -10,6 +10,13 @@ namespace KeyboardManagerInput
 
 namespace KeyboardEventHandlers
 {
+
+    struct ResetChordsResults
+    {
+        bool CurrentKeyIsModifierKey;
+        bool AnyChordStarted;
+    };
+
     // Function to a handle a single key remap
     intptr_t HandleSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
@@ -20,6 +27,12 @@ namespace KeyboardEventHandlers
 
     // Function to a handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
+
+    void ResetOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, Shortcut& itShortcut);
+
+    void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp);
+
+    ResetChordsResults ResetChordsIfNeeded(LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp);
 
     void HandleCreateProcessHotKeysAndChords(Shortcut shortcut) noexcept;
 

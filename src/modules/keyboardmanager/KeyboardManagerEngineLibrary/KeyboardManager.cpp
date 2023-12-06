@@ -118,7 +118,7 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
         event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
-
+        
         if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
         {
             // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
@@ -197,7 +197,7 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         // Remap a key to behave like a modifier instead of a toggle
         intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
     */
-
+    
     // Handle an app-specific shortcut remapping
     intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, state);
 

@@ -125,12 +125,45 @@ void Shortcut::Reset()
     altKey = ModifierKey::Disabled;
     shiftKey = ModifierKey::Disabled;
     actionKey = NULL;
+    secondKey = NULL;
+    chordStarted = false;
 }
 
 // Function to return the action key
 DWORD Shortcut::GetActionKey() const
 {
     return actionKey;
+}
+
+DWORD Shortcut::GetSecondKey()
+{
+    if (actionKey == 78)
+    {
+        secondKey = 77;
+    }
+
+    return secondKey;
+}
+
+bool Shortcut::HasChord() const
+{
+
+    if (actionKey == 78)
+    {
+        return true;
+    }
+
+    return secondKey != NULL;
+}
+
+void Shortcut::SetChordStarted(bool started)
+{
+    chordStarted = started;
+}
+
+bool Shortcut::IsChordStarted() const
+{
+    return chordStarted;
 }
 
 // Function to return the virtual key code of the win key state expected in the shortcut. Argument is used to decide which win key to return in case of both. If the current shortcut doesn't use both win keys then arg is ignored. Return NULL if it is not a part of the shortcut

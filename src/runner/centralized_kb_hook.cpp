@@ -12,8 +12,6 @@
 #include <tlhelp32.h>
 //#include "modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h"
 
-
-
 namespace CentralizedKeyboardHook
 {
 
@@ -359,7 +357,7 @@ namespace CentralizedKeyboardHook
         }
 
         Hotkey hotkey;
-        if (true)
+        if (!true)
         {
             LocalKey lHotkey;
 

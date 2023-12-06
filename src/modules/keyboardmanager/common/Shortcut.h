@@ -52,6 +52,8 @@ public:
     RunProgramDescriptor runProgramDescriptor;
 
     DWORD actionKey = {};
+    DWORD secondKey = {}; // of the chord
+    bool chordStarted = false;
 
     Shortcut() = default;
 
@@ -86,6 +88,14 @@ public:
 
     // Function to return the action key
     DWORD GetActionKey() const;
+
+    DWORD Shortcut::GetSecondKey();
+
+    bool Shortcut::IsChordStarted() const;
+
+    bool Shortcut::HasChord() const;
+
+    void Shortcut::SetChordStarted(bool started);
 
     // Function to return the virtual key code of the win key state expected in the shortcut. Argument is used to decide which win key to return in case of both. If the current shortcut doesn't use both win keys then arg is ignored. Return NULL if it is not a part of the shortcut
     DWORD GetWinKey(const ModifierKey& input) const;
