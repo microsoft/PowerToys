@@ -18,7 +18,15 @@ namespace ImageResizer.Views
         public MainWindow(MainViewModel viewModel)
         {
             DataContext = viewModel;
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+
+            // workaround for #30177
+            try
+            {
+                Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+            }
+            catch (Exception)
+            {
+            }
 
             if (OSVersionHelper.IsWindows11())
             {
