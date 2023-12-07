@@ -261,9 +261,9 @@ namespace Microsoft.Plugin.Program.Programs
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, result.Title).MatchData;
 
             // Using CurrentCulture since this is user facing
-            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
+            var toolTipTitle = result.Title;
             string filePath = !string.IsNullOrEmpty(FullPathLocalized) ? FullPathLocalized : FullPath;
-            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, filePath);
+            var toolTipText = filePath;
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
