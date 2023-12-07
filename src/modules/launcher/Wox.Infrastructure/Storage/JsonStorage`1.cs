@@ -28,6 +28,14 @@ namespace Wox.Infrastructure.Storage
         // easier and flexible for default value of object
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            IncludeFields = true,
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = true,
+        };
+
+        private static readonly JsonSerializerOptions _informationSerializerOptions = new JsonSerializerOptions
+        {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never,
             IncludeFields = true,
             PropertyNameCaseInsensitive = true,
@@ -50,9 +58,9 @@ namespace Wox.Infrastructure.Storage
 
         private string DefaultFileContent { get; set; }
 
-        public JsonSerializerOptions GetJsonSerializerOptions()
+        public JsonSerializerOptions GetInformationSerializerOptions()
         {
-            return _serializerOptions;
+            return _informationSerializerOptions;
         }
 
         public virtual T Load()
@@ -153,7 +161,7 @@ namespace Wox.Infrastructure.Storage
         {
             lock (_saveLock)
             {
-                DefaultFileContent = JsonSerializer.Serialize(data, _serializerOptions);
+                DefaultFileContent = JsonSerializer.Serialize(data, _informationSerializerOptions);
                 _storageHelper.Close(DefaultFileContent);
             }
         }
@@ -165,7 +173,7 @@ namespace Wox.Infrastructure.Storage
             // is already up to date, enhancing performance and reducing IO operations
             if (!_storageHelper.ClearCache && !versionMismatch)
             {
-                DefaultFileContent = JsonSerializer.Serialize(actualData, _serializerOptions);
+                DefaultFileContent = JsonSerializer.Serialize(actualData, _informationSerializerOptions);
                 _storageHelper.Close(DefaultFileContent);
                 return false;
             }
@@ -184,7 +192,7 @@ namespace Wox.Infrastructure.Storage
             else if (!File.Exists(infoFilePath))
             {
                 // Check if information file exist
-                DefaultFileContent = JsonSerializer.Serialize(actualData, _serializerOptions);
+                DefaultFileContent = JsonSerializer.Serialize(actualData, _informationSerializerOptions);
 
                 _storageHelper.Close(DefaultFileContent);
                 return true;
@@ -192,15 +200,15 @@ namespace Wox.Infrastructure.Storage
 
             try
             {
-                var infoFields = JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(infoFilePath), _serializerOptions);
+                var infoFields = JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(infoFilePath), _informationSerializerOptions);
 
                 if (infoFields != null && infoFields.TryGetValue("DefaultContent", out var defaultContent))
                 {
                     // Check if defaultContent is neither null nor an empty string
                     if (!string.IsNullOrEmpty(defaultContent?.ToString()))
                     {
-                        var defaultContentFields = JsonSerializer.Deserialize<Dictionary<string, object>>(defaultContent?.ToString(), _serializerOptions);
-                        var actualFields = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(actualData), _serializerOptions);
+                        var defaultContentFields = JsonSerializer.Deserialize<Dictionary<string, object>>(defaultContent?.ToString(), _informationSerializerOptions);
+                        var actualFields = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(actualData), _informationSerializerOptions);
 
                         if (defaultContentFields != null && actualFields != null)
                         {
@@ -213,23 +221,23 @@ namespace Wox.Infrastructure.Storage
                             bool isFieldNamesMatching = areFieldNamesMatching(defaultContentFields, actualFields);
 
                             // If there is a mismatch, update DefaultFileContent with the contents of filePath
-                            DefaultFileContent = isFieldNamesMatching ? defaultContent?.ToString() : JsonSerializer.Serialize(actualData, _serializerOptions);
+                            DefaultFileContent = isFieldNamesMatching ? defaultContent?.ToString() : JsonSerializer.Serialize(actualData, _informationSerializerOptions);
 
                             _storageHelper.Close(DefaultFileContent);
                             return isFieldNamesMatching;
                         }
                         else if (defaultContentFields == null)
                         {
-                            DefaultFileContent = JsonSerializer.Serialize(actualData, _serializerOptions);
+                            DefaultFileContent = JsonSerializer.Serialize(actualData, _informationSerializerOptions);
                             _storageHelper.Close(DefaultFileContent);
                             return true;
                         }
                         else if (actualFields == null)
                         {
-                            DefaultFileContent = JsonSerializer.Serialize(defaultContentFields, _serializerOptions);
+                            DefaultFileContent = JsonSerializer.Serialize(defaultContentFields, _informationSerializerOptions);
                             _storageHelper.Close(DefaultFileContent);
 
-                            _data = JsonSerializer.Deserialize<T>(defaultContent.ToString(), _serializerOptions);
+                            _data = JsonSerializer.Deserialize<T>(defaultContent.ToString(), _informationSerializerOptions);
                             return false;
                         }
 
@@ -238,7 +246,7 @@ namespace Wox.Infrastructure.Storage
                     else
                     {
                         // Check if information file exist
-                        DefaultFileContent = JsonSerializer.Serialize(actualData, _serializerOptions);
+                        DefaultFileContent = JsonSerializer.Serialize(actualData, _informationSerializerOptions);
                         _storageHelper.Close(DefaultFileContent);
 
                         return true;
@@ -247,7 +255,7 @@ namespace Wox.Infrastructure.Storage
                 else
                 {
                     // Check if information file exist
-                    DefaultFileContent = JsonSerializer.Serialize(actualData, _serializerOptions);
+                    DefaultFileContent = JsonSerializer.Serialize(actualData, _informationSerializerOptions);
                     _storageHelper.Close(DefaultFileContent);
 
                     return true;

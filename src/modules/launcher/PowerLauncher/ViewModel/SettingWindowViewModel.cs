@@ -22,12 +22,12 @@ namespace PowerLauncher.ViewModel
             // Check information file for version mismatch
             try
             {
-                PowerToysRunSettings fields = _storage.ExtractFields(Settings, string.Empty);
+                PowerToysRunSettings data = JsonSerializer.Deserialize<PowerToysRunSettings>("{}", _storage.GetInformationSerializerOptions());
+                PowerToysRunSettings fields = _storage.ExtractFields(data, string.Empty);
                 if (fields != null)
                 {
                     if (_storage.CheckVersionMismatch(fields))
                     {
-                        Settings = JsonSerializer.Deserialize<PowerToysRunSettings>("{}", _storage.GetJsonSerializerOptions());
                         if (!_storage.CheckWithInformationFileToClear(Settings))
                         {
                             _storage.Clear();

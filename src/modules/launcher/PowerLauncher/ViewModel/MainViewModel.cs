@@ -213,7 +213,7 @@ namespace PowerLauncher.ViewModel
                         try
                         {
                             // UserSelectedRecord
-                            var userSelectedRecordItemData = JsonSerializer.Deserialize<UserSelectedRecord.UserSelectedRecordItem>("{}", _userSelectedRecordStorage.GetJsonSerializerOptions());
+                            var userSelectedRecordItemData = JsonSerializer.Deserialize<UserSelectedRecord.UserSelectedRecordItem>("{}", _userSelectedRecordStorage.GetInformationSerializerOptions());
                             var userSelectedRecordItemStorage = new WoxJsonStorage<UserSelectedRecord.UserSelectedRecordItem>(_userSelectedRecordStorage.GetFileName());
                             userSelectedRecordItemStorage.Load();
 
@@ -231,7 +231,7 @@ namespace PowerLauncher.ViewModel
                             }
 
                             // History
-                            var historyItemData = JsonSerializer.Deserialize<HistoryItem>("{}", _historyItemsStorage.GetJsonSerializerOptions());
+                            var historyItemData = JsonSerializer.Deserialize<HistoryItem>("{}", _historyItemsStorage.GetInformationSerializerOptions());
                             var historyItemStorage = new WoxJsonStorage<HistoryItem>(_historyItemsStorage.GetFileName());
                             historyItemStorage.Load();
 

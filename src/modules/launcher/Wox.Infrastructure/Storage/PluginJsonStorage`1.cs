@@ -33,16 +33,16 @@ namespace Wox.Infrastructure.Storage
             // Check information file for version mismatch
             try
             {
-                T fields = ExtractFields(data, string.Empty);
+                var informationData = JsonSerializer.Deserialize<T>("{}", GetInformationSerializerOptions());
+                T fields = ExtractFields(informationData, string.Empty);
                 if (fields != null)
                 {
                     if (CheckVersionMismatch(fields))
                     {
-                        data = JsonSerializer.Deserialize<T>("{}", GetJsonSerializerOptions());
-                        if (!CheckWithInformationFileToClear(data))
+                        if (!CheckWithInformationFileToClear(informationData))
                         {
                             Clear();
-                            SaveInformationFile(data);
+                            SaveInformationFile(informationData);
                         }
                     }
                 }
