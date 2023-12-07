@@ -47,7 +47,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, RunProgramDescriptor _runProg
     }
 }
 
-Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& _runProgramFilePath, const std::wstring& _runProgramArgs, const std::wstring& _runProgramStartInDir) :
+Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& _runProgramFilePath, const std::wstring& _runProgramArgs, const std::wstring& _runProgramStartInDir, const Shortcut::ElevationLevel _elevationLevel) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     Shortcut::isRunProgram = isRunProgram;
@@ -56,6 +56,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, cons
         runProgramFilePath = _runProgramFilePath;
         runProgramArgs = _runProgramArgs;
         runProgramStartInDir = _runProgramStartInDir;
+        elevationLevel = _elevationLevel;
 
         Shortcut::runProgramDescriptor.runProgramFilePath = _runProgramFilePath;
         Shortcut::runProgramDescriptor.runProgramArgs = _runProgramArgs;
@@ -137,21 +138,22 @@ DWORD Shortcut::GetActionKey() const
 
 DWORD Shortcut::GetSecondKey()
 {
-    if (actionKey == 78)
-    {
-        secondKey = 77;
-    }
+    // fakeChord
+    //if (actionKey == 78)
+    //{
+    //    secondKey = 77;
+    //}
 
     return secondKey;
 }
 
 bool Shortcut::HasChord() const
 {
-
-    if (actionKey == 78)
-    {
-        return true;
-    }
+    // fakeChord
+    //if (actionKey == 78)
+    //{
+    //    return true;
+    //}
 
     return secondKey != NULL;
 }

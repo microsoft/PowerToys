@@ -16,10 +16,10 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
                     _In_ PWSTR lpCmdLine,
                     _In_ int /*nCmdShow*/)
 {
-    //while (true)
-    //{        
-    //    std::this_thread::sleep_for(std::chrono::seconds(1));
-    //}
+    /*while (true)
+    {        
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }*/
 
     winrt::init_apartment();
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);

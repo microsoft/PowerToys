@@ -55,7 +55,6 @@ bool MappingConfiguration::AddOSLevelShortcut(const Shortcut& originalSC, const 
         
     }*/
 
-
     osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
     osLevelShortcutReMapSortedKeys.push_back(originalSC);
     Helpers::SortShortcutVectorBasedOnSize(osLevelShortcutReMapSortedKeys);
@@ -281,11 +280,19 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                         auto isRunProgram = it.GetObjectW().GetNamedBoolean(KeyboardManagerConstants::IsRunProgramSettingName, false);
 
                         if (isRunProgram)
-                        {                            
+                        {
                             auto runProgramFilePath = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramFilePathSettingName, L"");
                             auto runProgramArgs = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramArgsSettingName, L"");
                             auto runProgramStartInDir = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramStartInDirSettingName, L"");
-                            AddOSLevelShortcut(Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str(), isRunProgram, runProgramFilePath.c_str(), runProgramArgs.c_str(), runProgramStartInDir.c_str()));
+                            auto runProgramElevationLevel = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramElevationLevelSettingName, 0);
+
+                            auto elevationLevel = Shortcut::ElevationLevel::NonElevated;
+                            if (runProgramElevationLevel > 0)
+                            {
+                                elevationLevel = Shortcut::ElevationLevel::Elevated;
+                            }
+
+                            AddOSLevelShortcut(Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str(), isRunProgram, runProgramFilePath.c_str(), runProgramArgs.c_str(), runProgramStartInDir.c_str(), elevationLevel));
                         }
                         else if (!newRemapKeys.empty())
                         {
@@ -443,6 +450,9 @@ bool MappingConfiguration::SaveSettingsToFile()
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramFilePathSettingName, json::value(targetShortcut.runProgramFilePath));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramArgsSettingName, json::value(targetShortcut.runProgramArgs));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));
+                keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
+
+                //ElevationLevel
             }
             else
             {

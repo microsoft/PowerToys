@@ -1,7 +1,9 @@
 #include "pch.h"
+#include <shellapi.h>
 #include "KeyboardEventHandlers.h"
 
 #include <common/interop/shared_constants.h>
+#include <common/utils/winapi_error.h>
 
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
@@ -234,7 +236,6 @@ namespace KeyboardEventHandlers
                         break;
                     }
 
-                    
                     if (!resetChordsResults.AnyChordStarted && data->lParam->vkCode == itShortcut.GetActionKey() && !itShortcut.IsChordStarted() && itShortcut.HasChord())
                     {
                         // start new chord
@@ -244,7 +245,7 @@ namespace KeyboardEventHandlers
                         itShortcut.SetChordStarted(true);
                         break;
                     }
-                    
+
                     //Logger::trace(L"CKBH: 2 {}, this-IsChordStarted: {}", data->lParam->vkCode, itShortcut.IsChordStarted());
 
                     if (data->lParam->vkCode == itShortcut.GetSecondKey() && itShortcut.IsChordStarted() && itShortcut.HasChord())
@@ -301,7 +302,7 @@ namespace KeyboardEventHandlers
                             }*/
 
                             // false because we can't use this here since we can't include <common/utils/elevation.h> yet
-                            if (false)
+                            if (true)
                             {
                                 HandleCreateProcessHotKeysAndChords(shortcut);
                             }
@@ -1173,7 +1174,8 @@ namespace KeyboardEventHandlers
             //runProgramSpec.elevationLevel = RunProgramSpec::ElevationLevel::non_elevated;
 
             auto currentDir = shortcut.runProgramStartInDir.c_str();
-            if (currentDir == L"")
+
+            if (shortcut.runProgramStartInDir == L"")
             {
                 currentDir = nullptr;
             }
@@ -1184,15 +1186,11 @@ namespace KeyboardEventHandlers
 
                 if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
                 {
-                    //run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                    run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
                 }
                 else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
                 {
-                    //run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
-                }
-                else
-                {
-                    //run_same_elevation(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
+                    run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
                 }
             }
             else
@@ -1274,6 +1272,134 @@ namespace KeyboardEventHandlers
         }
 
         return 0;
+    }
+
+    std::wstring get_last_error_or_default(const DWORD dw)
+    {
+        auto message = get_last_error_message(dw);
+        return message.has_value() ? *message : L"";
+    }
+
+    // temp local copy of this from elevated.h
+    HANDLE run_elevated(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir)
+    {
+        Logger::info(L"run_elevated with params={}", params);
+        SHELLEXECUTEINFOW exec_info = { 0 };
+        exec_info.cbSize = sizeof(SHELLEXECUTEINFOW);
+        exec_info.lpVerb = L"runas";
+        exec_info.lpFile = file.c_str();
+        exec_info.lpParameters = params.c_str();
+        exec_info.hwnd = 0;
+        exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
+        exec_info.lpDirectory = workingDir;
+        exec_info.hInstApp = 0;
+        exec_info.nShow = SW_SHOWDEFAULT;
+
+        return ShellExecuteExW(&exec_info) ? exec_info.hProcess : nullptr;
+    }
+
+    // temp local copy of this from elevated.h
+    bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir)
+    {
+        Logger::info(L"run_non_elevated with params={}", params);
+        auto executable_args = L"\"" + file + L"\"";
+        if (!params.empty())
+        {
+            executable_args += L" " + params;
+        }
+
+        HWND hwnd = GetShellWindow();
+        if (!hwnd)
+        {
+            if (GetLastError() == ERROR_SUCCESS)
+            {
+                Logger::warn(L"GetShellWindow() returned null. Shell window is not available");
+            }
+            else
+            {
+                Logger::error(L"GetShellWindow() failed. {}", get_last_error_or_default(GetLastError()));
+            }
+
+            return false;
+        }
+        DWORD pid;
+        GetWindowThreadProcessId(hwnd, &pid);
+
+        winrt::handle process{ OpenProcess(PROCESS_CREATE_PROCESS, FALSE, pid) };
+        if (!process)
+        {
+            Logger::error(L"OpenProcess() failed. {}", get_last_error_or_default(GetLastError()));
+            return false;
+        }
+
+        SIZE_T size = 0;
+
+        InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
+        auto pproc_buffer = std::make_unique<char[]>(size);
+        auto pptal = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(pproc_buffer.get());
+        if (!pptal)
+        {
+            Logger::error(L"pptal failed to initialize. {}", get_last_error_or_default(GetLastError()));
+            return false;
+        }
+
+        if (!InitializeProcThreadAttributeList(pptal, 1, 0, &size))
+        {
+            Logger::error(L"InitializeProcThreadAttributeList() failed. {}", get_last_error_or_default(GetLastError()));
+            return false;
+        }
+
+        HANDLE process_handle = process.get();
+        if (!UpdateProcThreadAttribute(pptal,
+                                       0,
+                                       PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
+                                       &process_handle,
+                                       sizeof(process_handle),
+                                       nullptr,
+                                       nullptr))
+        {
+            Logger::error(L"UpdateProcThreadAttribute() failed. {}", get_last_error_or_default(GetLastError()));
+            return false;
+        }
+
+        STARTUPINFOEX siex = { 0 };
+        siex.lpAttributeList = pptal;
+        siex.StartupInfo.cb = sizeof(siex);
+
+        PROCESS_INFORMATION pi = { 0 };
+
+        auto succeeded = CreateProcessW(file.c_str(),
+                                        &executable_args[0],
+                                        nullptr,
+                                        nullptr,
+                                        FALSE,
+                                        EXTENDED_STARTUPINFO_PRESENT,
+                                        nullptr,
+                                        workingDir,
+                                        &siex.StartupInfo,
+                                        &pi);
+        if (succeeded)
+        {
+            if (pi.hProcess)
+            {
+                if (returnPid)
+                {
+                    *returnPid = GetProcessId(pi.hProcess);
+                }
+
+                CloseHandle(pi.hProcess);
+            }
+            if (pi.hThread)
+            {
+                CloseHandle(pi.hThread);
+            }
+        }
+        else
+        {
+            Logger::error(L"CreateProcessW() failed. {}", get_last_error_or_default(GetLastError()));
+        }
+
+        return succeeded;
     }
 
     // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
