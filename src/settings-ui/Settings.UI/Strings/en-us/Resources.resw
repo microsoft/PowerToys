@@ -2996,8 +2996,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
     <value>Wait on slower plugin results before selecting top item in results</value>
   </data>
-	<data name="PowerLauncher_ShowPluginKeywords.Content" xml:space="preserve">
-    <value>Show plugin keywords when searchbox is empty</value>
+	<data name="PowerLauncher_ShowPluginKeywords.Header" xml:space="preserve">
+    <value>Plugin hints</value>
+  </data>
+		<data name="PowerLauncher_ShowPluginKeywords.Description" xml:space="preserve">
+    <value>A list of plugin keywords is shown when the searchbox is empty</value>
   </data>
   <data name="PowerLauncher_PluginWeightBoost.Description" xml:space="preserve">
     <value>Use a higher number to have this plugin's result show higher in the global results. Default is 0.</value>
