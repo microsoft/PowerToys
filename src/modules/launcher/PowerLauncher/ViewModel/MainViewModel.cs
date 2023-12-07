@@ -347,15 +347,7 @@ namespace PowerLauncher.ViewModel
                 {
                     _queryText = value;
 
-                    if (_settings.ShowPluginsOverview && (string.IsNullOrEmpty(_queryText) || string.IsNullOrWhiteSpace(_queryText)))
-                    {
-                        PluginsOverviewVisibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        PluginsOverviewVisibility = Visibility.Collapsed;
-                    }
-
+                    SetPluginsOverviewVisibility();
                     OnPropertyChanged(nameof(QueryText));
                 }
             }
@@ -379,6 +371,18 @@ namespace PowerLauncher.ViewModel
             }
         }
 
+        public void SetPluginsOverviewVisibility()
+        {
+            if (_settings.ShowPluginsOverview && (string.IsNullOrEmpty(_queryText) || string.IsNullOrWhiteSpace(_queryText)))
+            {
+                PluginsOverviewVisibility = Visibility.Visible;
+            }
+            else
+            {
+                PluginsOverviewVisibility = Visibility.Collapsed;
+            }
+        }
+
         public bool LastQuerySelected { get; set; }
 
         private ResultsViewModel _selectedResults;
@@ -395,17 +399,17 @@ namespace PowerLauncher.ViewModel
                 _selectedResults = value;
                 if (SelectedIsFromQueryResults())
                 {
-                    ContextMenu.Visibility = Visibility.Hidden;
-                    History.Visibility = Visibility.Hidden;
+                    ContextMenu.Visibility = Visibility.Collapsed;
+                    History.Visibility = Visibility.Collapsed;
                     ChangeQueryText(_queryTextBeforeLeaveResults);
                 }
                 else
                 {
-                    Results.Visibility = Visibility.Hidden;
+                    Results.Visibility = Visibility.Collapsed;
                     _queryTextBeforeLeaveResults = QueryText;
                 }
 
-                _selectedResults.Visibility = Visibility.Visible;
+                _selectedResults.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -733,7 +737,7 @@ namespace PowerLauncher.ViewModel
                 _updateSource?.Cancel();
                 _currentQuery = _emptyQuery;
                 Results.SelectedItem = null;
-                Results.Visibility = Visibility.Hidden;
+                Results.Visibility = Visibility.Collapsed;
                 Task.Run(() =>
                 {
                     lock (_addResultsLock)
@@ -770,7 +774,7 @@ namespace PowerLauncher.ViewModel
                     }
                     else
                     {
-                        Results.Visibility = Visibility.Hidden;
+                        Results.Visibility = Visibility.Collapsed;
                     }
                 }
             }));

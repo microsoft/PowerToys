@@ -97,7 +97,7 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        private Visibility _visibility = Visibility.Hidden;
+        private Visibility _visibility = Visibility.Collapsed;
 
         public Visibility Visibility
         {

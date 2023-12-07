@@ -10,6 +10,7 @@
     xmlns:vm="clr-namespace:PowerLauncher.ViewModel"
     Title="PowerToys Run"
     Width="640"
+    MinHeight="0"
     d:DataContext="{d:DesignInstance vm:MainViewModel}"
     ui:ExtendsContentIntoTitleBar="True"
     AllowDrop="True"
@@ -27,8 +28,7 @@
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     WindowStartupLocation="Manual"
     WindowStyle="None"
-    mc:Ignorable="d"
-    MinHeight="0">
+    mc:Ignorable="d">
 
     <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
         <!--  We set the background here because the Acrylic can be too translucent / background too bright on Light theme  -->
@@ -42,7 +42,7 @@
         <Border
             x:Name="SearchBoxBorder"
             Grid.Row="0"
-            Margin="12,12,12,0"
+            Margin="12"
             Background="{DynamicResource LayerFillColorDefaultBrush}"
             BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
@@ -52,6 +52,7 @@
         <local:ResultList
             x:Name="ListBox"
             Grid.Row="1"
+            Margin="12,0,0,0"
             VerticalAlignment="Stretch"
             PreviewMouseDown="ListBox_PreviewMouseDown"
             Visibility="{Binding Results.Visibility}" />
@@ -60,14 +61,14 @@
         <Grid
             x:Name="KeywordsOverviewGrid"
             Grid.Row="1"
-            Margin="12,0,0,0"
+            Margin="8,0,0,0"
             Visibility="{Binding PluginsOverviewVisibility}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock
-                Margin="10,16,0,8"
+                Margin="6,4,0,4"
                 FontWeight="SemiBold"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Text="{x:Static p:Resources.PluginKeywords}" />
@@ -81,7 +82,7 @@
                 SelectionMode="Single">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Height="36">
+                        <Grid Height="32">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
@@ -89,7 +90,6 @@
                             <Border
                                 Width="32"
                                 Height="32"
-                                Margin="4,0,10,0"
                                 Background="{DynamicResource ControlFillColorDefaultBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
@@ -103,6 +103,7 @@
                             </Border>
                             <TextBlock
                                 Grid.Column="1"
+                                Margin="12,0,0,0"
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="{Binding Plugin.Description}"

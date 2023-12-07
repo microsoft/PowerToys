@@ -143,6 +143,7 @@ namespace PowerLauncher
 
             // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
             _ = NativeMethods.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
+            _viewModel.SetPluginsOverviewVisibility();
             Activate();
         }
 
