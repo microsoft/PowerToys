@@ -41,17 +41,17 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F50
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F49
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysUserSetup-0.76.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysUserSetup-0.76.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysSetup-0.76.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysSetup-0.76.0-arm64.exe
-
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.1/PowerToysUserSetup-0.76.1-x64.exe 
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.1/PowerToysUserSetup-0.76.1-arm64.exe 
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.1/PowerToysSetup-0.76.1-x64.exe 
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.1/PowerToysSetup-0.76.1-arm64.exe
+ 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.76.0-x64.exe][ptUserX64] | 627F60BF3F04583A2ECE7ACE7E6F09ABDE92493E1FFFAC5705CC83009781CD8D |
-| Per user - ARM64     | [PowerToysUserSetup-0.76.0-arm64.exe][ptUserArm64] | 79D11CDDBDD87DF8A69A5B2FC28869B3085392E5F45FEE6560D278E48F8B0673 |
-| Machine wide - x64   | [PowerToysSetup-0.76.0-x64.exe][ptMachineX64] | 4F24A288AC92DD0AB74EF52CFE3D66FA744BDC6889CB4E3ED088763D9134C06D |
-| Machine wide - ARM64 | [PowerToysSetup-0.76.0-arm64.exe][ptMachineArm64] | 1BD9CD9C696D8898AAEE5A6D6A7122F053202CF1865C511BFC91FCFD0D767864 |
+| Per user - x64       | [PowerToysUserSetup-0.76.1-x64.exe][ptUserX64] | 876FB94098A50E5954D8FF6D1E8D5372AFD5AFA0C5456AD6E5DF2F6BCD4FC49B |
+| Per user - ARM64     | [PowerToysUserSetup-0.76.1-arm64.exe][ptUserArm64] | 3D0E943A8F147EE5C794FF17FB98A490A8E7E72F4B312B441332CF0C65823420 |
+| Machine wide - x64   | [PowerToysSetup-0.76.1-x64.exe][ptMachineX64] | A31F89B1E697C77D09337FD4B4A69DCA304944702A03D664846756ED98342F9A |
+| Machine wide - ARM64 | [PowerToysSetup-0.76.1-arm64.exe][ptMachineArm64] | CFA2E1F2BC38E1A5B9B0F91060391DE98F42F286FFCA9185D9EA26552F16D38A |
 
 This is our preferred method.
 
