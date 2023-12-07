@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Common.UI;
 using ImageResizer.ViewModels;
+using ManagedCommon;
 using Microsoft.Win32;
 using Wpf.Ui.Controls;
 using AppResources = ImageResizer.Properties.Resources;
@@ -18,7 +19,8 @@ namespace ImageResizer.Views
         public MainWindow(MainViewModel viewModel)
         {
             DataContext = viewModel;
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+
+            InitializeComponent();
 
             if (OSVersionHelper.IsWindows11())
             {
@@ -29,7 +31,15 @@ namespace ImageResizer.Views
                 WindowBackdropType = WindowBackdropType.None;
             }
 
-            InitializeComponent();
+            // workaround for #30177
+            try
+            {
+                Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Exception in SystemThemeWatcher.Watch, issue 30177. {ex.Message}");
+            }
         }
 
         public IEnumerable<string> OpenPictureFiles()

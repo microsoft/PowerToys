@@ -27,7 +27,8 @@
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     WindowStartupLocation="Manual"
     WindowStyle="None"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    MinHeight="0">
 
     <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
         <!--  We set the background here because the Acrylic can be too translucent / background too bright on Light theme  -->

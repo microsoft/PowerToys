@@ -50,7 +50,7 @@ namespace PowerLauncher.ViewModel
         {
             get
             {
-                return _settings.MaxResultsToShow * 75;
+                return (_settings.MaxResultsToShow * 50) + 40;
             }
         }
 
