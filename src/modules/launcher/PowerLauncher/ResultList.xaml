@@ -48,7 +48,6 @@
     </UserControl.Resources>
     <ListView
         x:Name="SuggestionsList"
-        Margin="0,12,0,0"
         x:FieldModifier="public"
         AutomationProperties.Name="{x:Static p:Resources.Results}"
         ItemsSource="{Binding Results.Results, Mode=OneWay}"
@@ -59,10 +58,7 @@
         SelectionMode="Single">
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
-                <VirtualizingStackPanel
-                    Margin="12,6,0,0"
-                    IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}"
-                    VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
+                <VirtualizingStackPanel IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}" VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
             </ItemsPanelTemplate>
         </ListView.ItemsPanel>
         <!--
@@ -73,7 +69,7 @@
         <ListView.ItemTemplate>
             <DataTemplate>
                 <Grid
-                    Height="40"
+                    Height="48"
                     Background="Transparent"
                     ToolTipService.BetweenShowDelay="0"
                     ToolTipService.InitialShowDelay="1000">
@@ -95,10 +91,10 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid.ToolTip>
-                        <ToolTip Opened="ToolTip_Opened" Visibility="{Binding Result.ToolTipVisibility}">
+                        <ToolTip Opened="ToolTip_Opened" Visibility="{Binding Result.ToolTipVisibility}" MaxWidth="480">
                             <StackPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
+                                    FontWeight="SemiBold"
                                     Style="{DynamicResource CollapsableTextblock}"
                                     Text="{Binding Result.ToolTipData.Title}"
                                     TextWrapping="Wrap" />
@@ -123,9 +119,9 @@
                     <TextBlock
                         x:Name="Title"
                         Grid.Column="1"
+                        FontSize="16"
                         VerticalAlignment="Bottom"
                         AutomationProperties.Name="{x:Static p:Resources.Title}"
-                        FontSize="14"
                         IsHitTestVisible="False"
                         TextTrimming="CharacterEllipsis">
                         <viewmodel:ResultsViewModel.FormattedText>
@@ -140,7 +136,6 @@
                         x:Name="Path"
                         Grid.Row="1"
                         Grid.Column="1"
-                        Margin="0,0,0,0"
                         VerticalAlignment="Top"
                         AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
