@@ -153,6 +153,9 @@ namespace PowerLauncher
                 _settingsReader.ReadSettingsOnChange();
 
                 _themeManager.ThemeChanged += OnThemeChanged;
+
+                OnThemeChanged(_settings.Theme, _settings.Theme);
+
                 textToLog.AppendLine("End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
@@ -218,11 +221,6 @@ namespace PowerLauncher
         /// <param name="newTheme">Current Theme</param>
         private void OnThemeChanged(Theme oldTheme, Theme newTheme)
         {
-            if (oldTheme == newTheme)
-            {
-                return;
-            }
-
             // If OS theme is high contrast, don't change theme.
             if (SystemParameters.HighContrast)
             {
