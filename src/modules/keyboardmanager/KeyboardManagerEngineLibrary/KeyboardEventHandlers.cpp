@@ -2,6 +2,7 @@
 #include "KeyboardEventHandlers.h"
 
 #include <common/interop/shared_constants.h>
+#include <common/utils/elevation.h>
 
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
