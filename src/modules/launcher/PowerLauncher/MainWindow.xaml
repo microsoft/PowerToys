@@ -10,6 +10,7 @@
     xmlns:vm="clr-namespace:PowerLauncher.ViewModel"
     Title="PowerToys Run"
     Width="640"
+    MinHeight="0"
     d:DataContext="{d:DesignInstance vm:MainViewModel}"
     ui:ExtendsContentIntoTitleBar="True"
     AllowDrop="True"
@@ -27,8 +28,7 @@
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     WindowStartupLocation="Manual"
     WindowStyle="None"
-    mc:Ignorable="d"
-    MinHeight="0">
+    mc:Ignorable="d">
 
     <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
         <!--  We set the background here because the Acrylic can be too translucent / background too bright on Light theme  -->
