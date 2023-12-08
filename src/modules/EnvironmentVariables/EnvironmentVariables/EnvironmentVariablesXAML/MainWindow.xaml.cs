@@ -32,21 +32,22 @@ namespace EnvironmentVariables
             AppTitleTextBlock.Text = title;
 
             RegisterWindow();
+
+            WindowHelpers.BringToForeground(handle);
         }
 
         private static readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         private static NativeMethods.WinProc newWndProc;
         private static IntPtr oldWndProc = IntPtr.Zero;
+        private static IntPtr handle = IntPtr.Zero;
 
         private void RegisterWindow()
         {
             newWndProc = new NativeMethods.WinProc(WndProc);
 
-            var handle = this.GetWindowHandle();
+            handle = this.GetWindowHandle();
 
             oldWndProc = NativeMethods.SetWindowLongPtr(handle, NativeMethods.WindowLongIndexFlags.GWL_WNDPROC, newWndProc);
-
-            WindowHelpers.BringToForeground(handle);
         }
 
         private static IntPtr WndProc(IntPtr hWnd, NativeMethods.WindowMessage msg, IntPtr wParam, IntPtr lParam)
