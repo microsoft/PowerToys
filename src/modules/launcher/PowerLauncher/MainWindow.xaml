@@ -37,23 +37,21 @@
         </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MaxHeight="{Binding Results.MaxHeight}" />
         </Grid.RowDefinitions>
         <Border
             x:Name="SearchBoxBorder"
             Grid.Row="0"
-            Margin="12"
-            Background="{DynamicResource LayerFillColorDefaultBrush}"
-            BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="8">
+            Padding="12,4,12,4">
             <local:LauncherControl x:Name="SearchBox" />
         </Border>
         <local:ResultList
             x:Name="ListBox"
-            Grid.Row="1"
-            Margin="12,0,0,0"
+            Grid.Row="2"
             VerticalAlignment="Stretch"
+            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
             PreviewMouseDown="ListBox_PreviewMouseDown"
             Visibility="{Binding Results.Visibility}" />
 
@@ -61,20 +59,27 @@
         <Grid
             x:Name="KeywordsOverviewGrid"
             Grid.Row="1"
-            Margin="8,0,0,0"
+            MaxHeight="256"
             Visibility="{Binding PluginsOverviewVisibility}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
+            <Rectangle
+                Height="1"
+                VerticalAlignment="Top"
+                Fill="{DynamicResource DividerStrokeColorDefaultBrush}" />
             <TextBlock
-                Margin="6,4,0,4"
+                Margin="22,12,0,4"
                 FontWeight="SemiBold"
+                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Text="{x:Static p:Resources.PluginKeywords}" />
 
             <ListView
+                x:Name="pluginsHintsList"
                 Grid.Row="1"
+                Margin="16,0,0,0"
                 ItemContainerStyle="{StaticResource PluginsListViewItemStyle}"
                 ItemsSource="{Binding Plugins}"
                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -107,7 +112,8 @@
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="{Binding Plugin.Description}"
-                                TextTrimming="CharacterEllipsis" />
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

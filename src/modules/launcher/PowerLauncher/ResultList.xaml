@@ -17,23 +17,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:HighlightTextConverter x:Key="highlightTextConverter" />
-
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <Style x:Key="FocusVisual">
-                <Setter Property="Control.Template">
-                    <Setter.Value>
-                        <ControlTemplate>
-                            <Rectangle
-                                Margin="2"
-                                SnapsToDevicePixels="true"
-                                Stroke="{DynamicResource FocusStrokeColorOuterBrush}"
-                                StrokeDashArray="1 2"
-                                StrokeThickness="1" />
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
             <Style
                 x:Key="CollapsableTextblock"
                 BasedOn="{StaticResource CaptionTextBlockStyle}"
@@ -58,18 +42,18 @@
         SelectionMode="Single">
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
-                <VirtualizingStackPanel IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}" VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
+                <VirtualizingStackPanel Margin="12,12,0,0" IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}" VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
             </ItemsPanelTemplate>
         </ListView.ItemsPanel>
         <!--
             AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"
         -->
-        <!--  Style="{StaticResource ListViewNoAnimations}"  -->
+        <!--  Style="{StaticResource ListViewNoAnimations}"  --> 
         <ListView.ItemTemplate>
             <DataTemplate>
                 <Grid
-                    Height="48"
+                    Height="44"
                     Background="Transparent"
                     ToolTipService.BetweenShowDelay="0"
                     ToolTipService.InitialShowDelay="1000">
@@ -111,8 +95,8 @@
                         x:Name="AppIcon"
                         Grid.RowSpan="2"
                         Height="24"
-                        MaxWidth="56"
                         Margin="-6,-2,0,0"
+                        VerticalAlignment="Center"
                         HorizontalAlignment="Center"
                         AutomationProperties.Name="{x:Static p:Resources.AppIcon}"
                         Source="{Binding Image}" />
@@ -172,17 +156,19 @@
                                     Name="commandButton"
                                     Width="42"
                                     Height="42"
+                                    Style="{StaticResource SubtleButtonStyle}"
                                     VerticalAlignment="Center"
                                     AutomationProperties.Name="{x:Static p:Resources.ContextMenuItem}"
                                     BorderThickness="1"
-                                    Command="{Binding Command}"
-                                    Style="{StaticResource SubtleButtonStyle}">
+                                    Command="{Binding Command}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip Opened="ToolTip_Opened">
                                             <TextBlock
                                                 AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="{Binding Title}" />
+                                                Text="{Binding Title}"
+                                                TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
+                                            />
                                         </ToolTip>
                                     </ToolTipService.ToolTip>
                                     <Button.Content>
