@@ -177,14 +177,14 @@
     <value>Some of the shortcuts could not be remapped. Continue anyway?</value>
   </data>
   <data name="EditKeyboard_Info" xml:space="preserve">
-    <value>Select the key you want to change ("Select") and then the key or shortcut you want it to send ("To send").</value>
+    <value>Select the key you want to change ("Select") and then configure the key, shortcut or text you want it to send ("To send").</value>
   </data>
   <data name="EditKeyboard_InfoExample" xml:space="preserve">
     <value>Example of a remapping: Select A and send "Ctrl+C", "A" would be your "Select" and "Ctrl+C" would be your "To send" command.</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_Info" xml:space="preserve">
-    <value>Select the shortcut you want to change ("Select") and then the key or shortcut you want it to invoke ("To send").</value>
+    <value>Select the shortcut you want to change ("Select") and then configure the key, shortcut or text you want it to send ("To send").</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_InfoExample" xml:space="preserve">
@@ -290,11 +290,8 @@
   <data name="Mapping_Type_DropDown_Text" xml:space="preserve">
     <value>Text</value>
   </data>
-  <data name="Mapping_Type_DropDown_Shortcut" xml:space="preserve">
-    <value>Shortcut</value>
-  </data>
-  <data name="Mapping_Type_DropDown_Key" xml:space="preserve">
-    <value>Key</value>
+  <data name="Mapping_Type_DropDown_Key_Shortcut" xml:space="preserve">
+    <value>Key/Shortcut</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="Add_Key_Remap_Button" xml:space="preserve">

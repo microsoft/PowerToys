@@ -56,8 +56,6 @@ namespace PowerLauncher
             _settings = settings;
             InitializeComponent();
 
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
-
             if (OSVersionHelper.IsWindows11())
             {
                 WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Acrylic;
@@ -65,6 +63,16 @@ namespace PowerLauncher
             else
             {
                 WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.None;
+            }
+
+            // workaround for #30217
+            try
+            {
+                Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
+            }
+            catch (Exception ex)
+            {
+                Log.Exception("Exception in SystemThemeWatcher.Watch, issue 30217.", ex, GetType());
             }
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;

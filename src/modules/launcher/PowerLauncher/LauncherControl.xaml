@@ -108,7 +108,7 @@
         <TextBlock
             x:Name="AutoCompleteTextBlock"
             Grid.Column="1"
-            Margin="7,0,14,0"
+            Margin="7,0,7,0"
             VerticalAlignment="Center"
             x:FieldModifier="public"
             Canvas.ZIndex="-1"

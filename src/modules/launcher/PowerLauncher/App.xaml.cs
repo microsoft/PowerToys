@@ -23,6 +23,7 @@ using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+using Wpf.Ui.Appearance;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -152,6 +153,9 @@ namespace PowerLauncher
                 _settingsReader.ReadSettingsOnChange();
 
                 _themeManager.ThemeChanged += OnThemeChanged;
+
+                OnThemeChanged(_settings.Theme, _settings.Theme);
+
                 textToLog.AppendLine("End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
@@ -217,6 +221,37 @@ namespace PowerLauncher
         /// <param name="newTheme">Current Theme</param>
         private void OnThemeChanged(Theme oldTheme, Theme newTheme)
         {
+            // If OS theme is high contrast, don't change theme.
+            if (SystemParameters.HighContrast)
+            {
+                return;
+            }
+
+            ApplicationTheme theme = ApplicationTheme.Unknown;
+
+            switch (newTheme)
+            {
+                case Theme.Dark:
+                    theme = ApplicationTheme.Dark; break;
+                case Theme.Light:
+                    theme = ApplicationTheme.Light; break;
+                case Theme.HighContrastWhite:
+                case Theme.HighContrastBlack:
+                case Theme.HighContrastOne:
+                case Theme.HighContrastTwo:
+                    theme = ApplicationTheme.HighContrast; break;
+                default:
+                    break;
+            }
+
+            _mainWindow?.Dispatcher.Invoke(() =>
+            {
+                if (theme != ApplicationTheme.Unknown)
+                {
+                    ApplicationThemeManager.Apply(theme);
+                }
+            });
+
             ImageLoader.UpdateIconPath(newTheme);
             _mainVM.Query();
         }
