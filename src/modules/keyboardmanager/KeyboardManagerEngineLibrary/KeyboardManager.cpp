@@ -41,15 +41,11 @@ KeyboardManager::KeyboardManager()
         try
         {
             LoadSettings();
-
-            UpdateRunProgramShortcuts();
         }
         catch (...)
         {
             Logger::error("Failed to load settings");
         }
-
-        //CentralizedKeyboardHook::RefreshConfig();
 
         loadingSettings = false;
     };
@@ -70,46 +66,6 @@ void KeyboardManager::LoadSettings()
     }
 }
 
-void KeyboardManager::UpdateRunProgramShortcuts()
-{
-
-
-    ShortcutRemapTable& reMap = state.GetShortcutRemapTable(L"");
-
-    // Iterate through the shortcut remaps and apply whichever has been pressed
-    for (auto& itShortcut : state.GetSortedShortcutRemapVector(L""))
-    {
-        const auto it = reMap.find(itShortcut);
-
-        // Check if the remap is to a a shortcut
-        const bool remapToShortcut = it->second.targetShortcut.index() == 1;
-
-        if (remapToShortcut)
-        {
-            auto a = it->first;
-            auto b = std::get<Shortcut>(it->second.targetShortcut);
-            if (b.isRunProgram)
-            {
-                a.runProgramFilePath = b.runProgramFilePath;
-                a.runProgramArgs = b.runProgramArgs;
-                a.runProgramStartInDir = b.runProgramStartInDir;
-                a.runProgramDescriptor = b.runProgramDescriptor;
-                a.elevationLevel = b.elevationLevel;
-
-                shortcuts.push_back(a);
-            }
-        }
-    }
-
-
-}
-
-std::vector<Shortcut> KeyboardManager::GetRunProgramShortcuts()
-{
-    return shortcuts;
-}
-
-
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
 {
     LowlevelKeyboardEvent event{};
@@ -118,7 +74,7 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
         event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
-        
+
         if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
         {
             // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
@@ -197,7 +153,7 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         // Remap a key to behave like a modifier instead of a toggle
         intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
     */
-    
+
     // Handle an app-specific shortcut remapping
     intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, state);
 

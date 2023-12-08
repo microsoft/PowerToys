@@ -46,15 +46,6 @@ bool MappingConfiguration::AddOSLevelShortcut(const Shortcut& originalSC, const 
         return false;
     }
 
-    /*if (newSC.index() == 1 && (std::get<Shortcut>(newSC)).isRunProgram)
-    {
-        osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
-    }
-    else
-    {
-        
-    }*/
-
     osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
     osLevelShortcutReMapSortedKeys.push_back(originalSC);
     Helpers::SortShortcutVectorBasedOnSize(osLevelShortcutReMapSortedKeys);
@@ -451,8 +442,6 @@ bool MappingConfiguration::SaveSettingsToFile()
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramArgsSettingName, json::value(targetShortcut.runProgramArgs));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
-
-                //ElevationLevel
             }
             else
             {

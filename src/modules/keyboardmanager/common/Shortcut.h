@@ -29,6 +29,7 @@ public:
         Elevated = 1
     };
 
+    /*
     struct RunProgramDescriptor
     {
         std::wstring runProgramFilePath;
@@ -36,6 +37,7 @@ public:
         std::wstring runProgramStartInDir;
         Shortcut::ElevationLevel elevationLevel = ElevationLevel::NonElevated;
     };
+    */
 
     ModifierKey winKey = ModifierKey::Disabled;
     ModifierKey ctrlKey = ModifierKey::Disabled;
@@ -46,10 +48,8 @@ public:
     std::wstring runProgramFilePath;
     std::wstring runProgramArgs;
     std::wstring runProgramStartInDir;
-
     Shortcut::ElevationLevel elevationLevel = ElevationLevel::NonElevated;
-    RunProgramDescriptor runProgramDescriptor;
-
+    
     DWORD actionKey = {};
     DWORD secondKey = {}; // of the chord
     bool chordStarted = false;
@@ -58,8 +58,6 @@ public:
 
     // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
-
-    Shortcut(const std::wstring& shortcutVK, RunProgramDescriptor runProgramDescriptor);
 
     Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir, const Shortcut::ElevationLevel elevationLevel);
 

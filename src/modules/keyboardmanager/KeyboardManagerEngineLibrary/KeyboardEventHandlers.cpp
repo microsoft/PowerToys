@@ -195,9 +195,6 @@ namespace KeyboardEventHandlers
 
         // Iterate through the shortcut remaps and apply whichever has been pressed
 
-        //int a = static_cast<int>(data->lParam->vkCode);
-        //Logger::trace(L"CKBH:1 {}", a);
-
         for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
         {
             const auto it = reMap.find(itShortcut);
@@ -292,13 +289,7 @@ namespace KeyboardEventHandlers
                         auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
                         if (shortcut.isRunProgram)
                         {
-                            Logger::trace(L"\r\nCKBH: !!!!!!!!!!!!!!!!!!!!!!!!!   isMatchOnChord:{}, prog:{}", isMatchOnChordEnd, shortcut.runProgramFilePath);
-
-                            /*if (itShortcut.IsChordStarted())
-                            {
-                                ResetAllStartedChords(state, activatedApp);
-                                itShortcut.SetChordStarted(false);
-                            }*/
+                            //Logger::trace(L"\r\nCKBH: !!!!!!!!!!!!!!!!!!!!!!!!!   isMatchOnChord:{}, prog:{}", isMatchOnChordEnd, shortcut.runProgramFilePath);
 
                             // false because we can't use this here since we can't include <common/utils/elevation.h> yet
                             if (true)
@@ -899,12 +890,6 @@ namespace KeyboardEventHandlers
             }
         }
 
-        /*if (!isMatchOnChordStart && !isMatchOnChordEnd && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
-        {
-            Logger::trace(L"CKBH: abandoned chord!");
-            ResetAllStartedChords(state, activatedApp);
-        }*/
-
         return 0;
     }
 
@@ -1175,24 +1160,13 @@ namespace KeyboardEventHandlers
                 currentDir = nullptr;
             }
 
-            if (true)
+            if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
             {
-                Logger::trace(L"CKBH:{}, CreateProcessW starting {}", fileNamePart, executable_and_args);
-
-                if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
-                {
-                    run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
-                }
-                else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
-                {
-                    run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
-                }
+                run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
             }
-            else
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
             {
-                STARTUPINFO startupInfo = { sizeof(startupInfo) };
-                PROCESS_INFORMATION processInfo = { 0 };
-                CreateProcessW(nullptr, executable_and_args.data(), nullptr, nullptr, FALSE, 0, nullptr, currentDir, &startupInfo, &processInfo);
+                run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
             }
         }
         return;

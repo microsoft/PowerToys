@@ -33,19 +33,19 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
     }
 }
 
-Shortcut::Shortcut(const std::wstring& shortcutVK, RunProgramDescriptor _runProgramDescriptor) :
-    winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
-{
-    runProgramDescriptor = _runProgramDescriptor;
-    Shortcut::isRunProgram = true;
-
-    auto keys = splitwstring(shortcutVK, ';');
-    for (auto it : keys)
-    {
-        auto vkKeyCode = std::stoul(it);
-        SetKey(vkKeyCode);
-    }
-}
+//Shortcut::Shortcut(const std::wstring& shortcutVK, RunProgramDescriptor _runProgramDescriptor) :
+//    winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
+//{
+//    runProgramDescriptor = _runProgramDescriptor;
+//    Shortcut::isRunProgram = true;
+//
+//    auto keys = splitwstring(shortcutVK, ';');
+//    for (auto it : keys)
+//    {
+//        auto vkKeyCode = std::stoul(it);
+//        SetKey(vkKeyCode);
+//    }
+//}
 
 Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& _runProgramFilePath, const std::wstring& _runProgramArgs, const std::wstring& _runProgramStartInDir, const Shortcut::ElevationLevel _elevationLevel) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
@@ -57,10 +57,6 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, cons
         runProgramArgs = _runProgramArgs;
         runProgramStartInDir = _runProgramStartInDir;
         elevationLevel = _elevationLevel;
-
-        Shortcut::runProgramDescriptor.runProgramFilePath = _runProgramFilePath;
-        Shortcut::runProgramDescriptor.runProgramArgs = _runProgramArgs;
-        Shortcut::runProgramDescriptor.runProgramStartInDir = _runProgramStartInDir;
     }
 
     auto keys = splitwstring(shortcutVK, ';');

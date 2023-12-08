@@ -2,7 +2,6 @@
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include <common/utils/EventWaiter.h>
 #include <keyboardmanager/common/Input.h>
-#include <keyboardmanager/common/Shortcut.h>
 #include "State.h"
 
 class KeyboardManager
@@ -21,8 +20,6 @@ public:
 
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
-
-    static std::vector<Shortcut> KeyboardManager::GetRunProgramShortcuts();
 
 private:
     // Contains the non localized module name
@@ -56,8 +53,6 @@ private:
 
     // Load settings from the file.
     void LoadSettings();
-
-    void KeyboardManager::UpdateRunProgramShortcuts();
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

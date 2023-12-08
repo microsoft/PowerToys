@@ -47,8 +47,6 @@
 #include <common/version/version.h>
 #include <common/utils/string_utils.h>
 
-#include <modules/keyboardmanager/common/KeyboardManagerConstants.h>
-
 // disabling warning 4458 - declaration of 'identifier' hides class member
 // to avoid warnings from GDI files - can't add winRT directory to external code
 // in the Cpp.Build.props
@@ -89,72 +87,6 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
         msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
     }
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
-}
-
-// since I don't know a better way, we need to watch the keyboard manager config, since it could be changed anywhere
-DWORD WINAPI WatchKeyboardManagerConfigs(LPVOID lpParameter)
-{
-    // don't need but can't not use
-    if (lpParameter)
-    {
-    }
-
-    //HANDLE PowertoyModule::hWatchDirectory = nullptr;
-
-    //// make sure we don't have more than one
-    //if (PowertoyModule::hWatchDirectory != nullptr)
-    //{
-    //    return 1;
-    //}
-
-    auto directoryPath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName);
-
-    auto hWatchDirectory = CreateFile(
-        directoryPath.c_str(),
-        FILE_LIST_DIRECTORY,
-        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        NULL,
-        OPEN_EXISTING,
-        FILE_FLAG_BACKUP_SEMANTICS,
-        NULL);
-
-    if (hWatchDirectory == INVALID_HANDLE_VALUE)
-    {
-        Logger::trace(L"Error: Unable to open directory  {}", directoryPath);
-        return 1;
-    }
-
-    DWORD dwBufferSize = 4096;
-    BYTE* pbBuffer = new BYTE[dwBufferSize];
-    DWORD bytesReturned;
-
-    while (true)
-    {
-        // ReadDirectoryChangesW is fired twice per write and in this case it does not matter since we're just doing a reset of data, no real work.
-        if (ReadDirectoryChangesW(
-                hWatchDirectory,
-                pbBuffer,
-                sizeof(pbBuffer),
-                FALSE,
-                FILE_NOTIFY_CHANGE_LAST_WRITE,
-                &bytesReturned,
-                NULL,
-                NULL))
-        {
-            // we don't really care what changed, just refresh
-            CentralizedKeyboardHook::RefreshConfig();
-            continue;
-        }
-        else
-        {
-            Logger::trace(L"Error: Unable to read directory changes.");
-            break;
-        }
-    }
-
-    CloseHandle(hWatchDirectory);
-
-    return 0;
 }
 
 int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe)
@@ -278,10 +210,6 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         }
 
         settings_telemetry::init();
-
-        // start WatchKeyboardManagerConfigs
-        CreateThread(NULL, 0, WatchKeyboardManagerConfigs, 0, 0, NULL);
-
         result = run_message_loop();
     }
     catch (std::runtime_error& err)

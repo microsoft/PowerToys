@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "general_settings.h"
-#include "centralized_kb_hook.h"
 #include "auto_start_helper.h"
 #include "Generated files/resource.h"
 
@@ -158,13 +157,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             {
                 // Apply the GPO Rule.
                 target_enabled = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
-            }
-
-            // since we might be signalled to enable or disable, we need to ensure that the keyboard manager knows. 
-            if (name == L"Keyboard Manager")
-            {
-                CentralizedKeyboardHook::SetRunProgramEnabled(target_enabled);
-            }
+            }            
 
             if (module_inst_enabled == target_enabled)
             {

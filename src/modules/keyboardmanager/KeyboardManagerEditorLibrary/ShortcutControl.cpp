@@ -426,51 +426,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             }
         }
 
-        //// Validate both set of drop downs
-        //KeyDropDownControl::ValidateShortcutFromDropDownList(parent, row, keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), 0, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][0]->keyDropDownControlObjects, targetAppTextBox, false, false);
-
-        //auto shortcutType = ShortcutControl::GetShortcutType(typeCombo);
-        //if (shortcutType == ShortcutControl::ShortcutType::Text || shortcutType == ShortcutControl::ShortcutType::Shortcut)
-        //{
-        //    KeyDropDownControl::ValidateShortcutFromDropDownList(parent, row, keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), 1, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][1]->keyDropDownControlObjects, targetAppTextBox, true, false);
-        //}
-
-        //// Reset the buffer based on the selected drop down items
-        //std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>()));
-        //// second column is a hybrid column
-
-        //if (shortcutType == ShortcutControl::ShortcutType::Text)
-        //{
-        //    shortcutRemapBuffer[rowIndex].first[1] = textInput.Text().c_str();
-        //}
-        //else if (shortcutType == ShortcutControl::ShortcutType::Shortcut)
-        //{
-        //    std::vector<int32_t> selectedKeyCodes = KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
-
-        //    // If exactly one key is selected consider it to be a key remap
-        //    if (selectedKeyCodes.size() == 1)
-        //    {
-        //        shortcutRemapBuffer[rowIndex].first[1] = (DWORD)selectedKeyCodes[0];
-        //    }
-        //    else
-        //    {
-        //        Shortcut tempShortcut;
-        //        tempShortcut.isRunProgram = false;
-        //        tempShortcut.SetKeyCodes(selectedKeyCodes);
-        //        // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-        //        shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
-        //    }
-        //}
-        //else if (shortcutType == ShortcutControl::ShortcutType::RunProgram)
-        //{
-        //    Shortcut tempShortcut;
-        //    tempShortcut.isRunProgram = true;
-        //    // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-        //    shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
-
-        //    //shortcutRemapBuffer[rowIndex].first[1] = textInput.Text().c_str();
-        //}
-
         std::wstring newText = targetAppTextBox.Text().c_str();
         std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName();
         std::transform(newText.begin(), newText.end(), newText.begin(), towlower);

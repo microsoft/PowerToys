@@ -210,8 +210,6 @@ namespace LoadingAndSavingRemappingHelper
             {
                 if (remappings[i].second == L"")
                 {
-                    
-
                     bool result = mappingConfiguration.AddOSLevelShortcut(originalShortcut, newShortcut);
                     if (result)
                     {
