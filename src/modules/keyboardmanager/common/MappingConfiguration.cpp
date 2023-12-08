@@ -287,7 +287,7 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             auto runProgramElevationLevel = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramElevationLevelSettingName, 0);
 
                             auto elevationLevel = Shortcut::ElevationLevel::NonElevated;
-                            if (runProgramElevationLevel > 0)
+                            if (runProgramElevationLevel == 1)
                             {
                                 elevationLevel = Shortcut::ElevationLevel::Elevated;
                             }

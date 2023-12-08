@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <ProjectTelemetry.h>
 #include <shlwapi.h>
+#include <shellapi.h>
 #include <stdexcept>
 #include <unordered_set>
 #include <winrt/base.h>

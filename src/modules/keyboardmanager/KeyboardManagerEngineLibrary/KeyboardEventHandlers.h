@@ -42,12 +42,6 @@ namespace KeyboardEventHandlers
 
     DWORD GetProcessIdByName(const std::wstring& processName);
 
-    HANDLE run_elevated(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir);
-
-    bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir);
-
-    std::wstring get_last_error_or_default(const DWORD dw);
-
     std::wstring GetFileNameFromPath(const std::wstring& fullPath);
 
     // Function to a handle an os-level shortcut remap
