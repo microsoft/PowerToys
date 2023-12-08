@@ -158,7 +158,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         shortcutRemapBuffer[rowIndex].first[1] = text.c_str();
     });
 
-    // add textboxes for when it's a runProgram fields
+    // add TextBoxes for when it's a runProgram fields
     auto runProgramPathInput = TextBox();
     runProgramPathInput.PlaceholderText(KeyboardManagerEditorStrings::EditShortcutsPathToProgram());
     runProgramPathInput.Margin(textInputMargin);
@@ -201,7 +201,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     //auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
     controlStackPanel.Children().Append(runProgramElevationTypeCombo);
 
-    // add events to textboxes for runProgram fields
+    // add events to TextBoxes for runProgram fields
     runProgramPathInput.TextChanged([parent, row, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;
         if (!parent.Children().IndexOf(row, rowIndex))

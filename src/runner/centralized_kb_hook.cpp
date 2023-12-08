@@ -185,7 +185,7 @@ namespace CentralizedKeyboardHook
 
     void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<bool()>&& action) noexcept
     {
-        Logger::trace(L"CKBH:Register hotkey action for {}", moduleName);
+        Logger::trace(L"Register hotkey action for {}", moduleName);
         std::unique_lock lock{ mutex };
         hotkeyDescriptors.insert({ .hotkey = hotkey, .moduleName = moduleName, .action = std::move(action) });
     }
@@ -203,7 +203,7 @@ namespace CentralizedKeyboardHook
 
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
     {
-        Logger::trace(L"CKBH:UnRegister hotkey action for {}", moduleName);
+        Logger::trace(L"UnRegister hotkey action for {}", moduleName);
         {
             std::unique_lock lock{ mutex };
             auto it = hotkeyDescriptors.begin();

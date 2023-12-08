@@ -227,7 +227,7 @@
     <value>Arguments for program</value>
   </data>
   <data name="EditShortcuts_StartInDirForProgram" xml:space="preserve">
-    <value>Start in direcotry</value>
+    <value>Start in directory</value>
   </data>
   <data name="ErrorMessage_RemapSuccessful" xml:space="preserve">
     <value>Remapping successful</value>

@@ -69,7 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         // Instead of doing something fancy pants, we 'll just display the RunProgramFilePath data when it's IsRunProgram
         // It truncates the start of the program to run, if it's long and truncates the end of the args if it's long
-        // e.g.: c:\mycool\pathis\long\software.exe myarg1 myarg2 myarg3 -> (something like) "...ng\software.exe myarg1 myar..."
+        // e.g.: c:\MyCool\PathIs\Long\software.exe myArg1 myArg2 myArg3 -> (something like) "...ng\software.exe myArg1..."
         // the idea is you get the most important part of the program to run and some of the args in case that the only thing thats different,
         // e.g: "...path\software.exe cool1.txt" and "...path\software.exe cool3.txt"
         private string FormatFakeKeyForDisplay()
