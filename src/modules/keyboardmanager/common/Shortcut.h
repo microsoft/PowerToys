@@ -29,16 +29,6 @@ public:
         Elevated = 1
     };
 
-    /*
-    struct RunProgramDescriptor
-    {
-        std::wstring runProgramFilePath;
-        std::wstring runProgramArgs;
-        std::wstring runProgramStartInDir;
-        Shortcut::ElevationLevel elevationLevel = ElevationLevel::NonElevated;
-    };
-    */
-
     ModifierKey winKey = ModifierKey::Disabled;
     ModifierKey ctrlKey = ModifierKey::Disabled;
     ModifierKey altKey = ModifierKey::Disabled;
@@ -49,7 +39,7 @@ public:
     std::wstring runProgramArgs;
     std::wstring runProgramStartInDir;
     Shortcut::ElevationLevel elevationLevel = ElevationLevel::NonElevated;
-    
+
     DWORD actionKey = {};
     DWORD secondKey = {}; // of the chord
     bool chordStarted = false;
@@ -59,6 +49,7 @@ public:
     // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
 
+    // Constructor to initialize shortcut from a list of keys and a runProgram data
     Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir, const Shortcut::ElevationLevel elevationLevel);
 
     // Constructor to initialize shortcut from a list of keys
@@ -86,12 +77,16 @@ public:
     // Function to return the action key
     DWORD GetActionKey() const;
 
+    // Function to return the second key (of the chord)
     DWORD Shortcut::GetSecondKey();
 
+    // Function to check if a chord is started for this shortcut
     bool Shortcut::IsChordStarted() const;
 
+    // Function to check if this shortcut has a chord
     bool Shortcut::HasChord() const;
 
+    // Function to set that we started a chord
     void Shortcut::SetChordStarted(bool started);
 
     // Function to return the virtual key code of the win key state expected in the shortcut. Argument is used to decide which win key to return in case of both. If the current shortcut doesn't use both win keys then arg is ignored. Return NULL if it is not a part of the shortcut

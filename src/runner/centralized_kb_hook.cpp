@@ -7,7 +7,6 @@
 
 namespace CentralizedKeyboardHook
 {
-
     struct HotkeyDescriptor
     {
         Hotkey hotkey;
