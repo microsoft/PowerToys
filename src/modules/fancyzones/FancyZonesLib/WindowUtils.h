@@ -27,8 +27,8 @@ namespace FancyZonesWindowUtils
     bool IsProcessOfWindowElevated(HWND window); // If HWND is already dead, we assume it wasn't elevated
     
     bool IsExcluded(HWND window);
-    bool IsExcludedByUser(const HWND& hwnd, std::wstring& processPath) noexcept;
-    bool IsExcludedByDefault(const HWND& hwnd, std::wstring& processPath) noexcept;
+    bool IsExcludedByUser(const HWND& hwnd, const std::wstring& processPath) noexcept;
+    bool IsExcludedByDefault(const HWND& hwnd, const std::wstring& processPath) noexcept;
 
     void SwitchToWindow(HWND window) noexcept;
     void SizeWindowToRect(HWND window, RECT rect) noexcept; // Parameter rect must be in screen coordinates (e.g. obtained from GetWindowRect)

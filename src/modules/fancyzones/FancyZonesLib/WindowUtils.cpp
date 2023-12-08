@@ -202,12 +202,12 @@ bool FancyZonesWindowUtils::IsExcluded(HWND window)
     return false;
 }
 
-bool FancyZonesWindowUtils::IsExcludedByUser(const HWND& hwnd, std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcludedByUser(const HWND& hwnd, const std::wstring& processPath) noexcept
 {
     return (check_excluded_app(hwnd, processPath, FancyZonesSettings::settings().excludedAppsArray));
 }
 
-bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, const std::wstring& processPath) noexcept
 {
     static std::vector<std::wstring> defaultExcludedFolders = { NonLocalizable::SystemAppsFolder };
     if (find_folder_in_path(processPath, defaultExcludedFolders))
