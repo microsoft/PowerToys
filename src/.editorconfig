@@ -98,17 +98,11 @@ dotnet_diagnostic.IDE0065.severity = none
 # IDE0009: Add this or Me qualification
 dotnet_diagnostic.IDE0009.severity = none
 
-# CA1859: Change type for improved performance
-dotnet_diagnostic.CA1859.severity = none
-
 # CA1716: Identifiers should not match keywords
 dotnet_diagnostic.CA1716.severity = none
 
 # SYSLIB1096: Convert to 'GeneratedComInterface'
 dotnet_diagnostic.SYSLIB1096.severity = silent
-
-# CA1309: Use ordinal StringComparison
-dotnet_diagnostic.CA1309.severity = suggestion
 
 # CS1615: Argument may not be passed with the ref keyword
 dotnet_diagnostic.CS1615.severity = none
@@ -133,9 +127,6 @@ dotnet_diagnostic.CA1864.severity = suggestion
 
 # CA1865: Use 'string.Method(char)' instead of 'string.Method(string)' for string with single char
 dotnet_diagnostic.CA1865.severity = suggestion
-
-# CA1869: Cache and reuse 'JsonSerializerOptions' instances
-dotnet_diagnostic.CA1869.severity = none
 
 # CA2208: Instantiate argument exceptions correctly
 dotnet_diagnostic.CA2208.severity = none

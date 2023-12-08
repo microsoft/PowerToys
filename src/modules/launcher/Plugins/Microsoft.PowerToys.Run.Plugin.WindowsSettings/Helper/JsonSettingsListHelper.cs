@@ -22,6 +22,10 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// </summary>
         private const string _settingsFile = "WindowsSettings.json";
 
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+        };
+
         /// <summary>
         /// Read all possible Windows settings.
         /// </summary>
@@ -42,7 +46,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     throw new ArgumentNullException(nameof(stream), "stream is null");
                 }
 
-                var options = new JsonSerializerOptions();
+                var options = _serializerOptions;
                 options.Converters.Add(new JsonStringEnumConverter());
 
                 using var reader = new StreamReader(stream);

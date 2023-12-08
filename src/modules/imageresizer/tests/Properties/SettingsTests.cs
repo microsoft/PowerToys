@@ -16,6 +16,11 @@ namespace ImageResizer.Properties
     [TestClass]
     public class SettingsTests
     {
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
+
         private static App _imageResizerApp;
 
         public SettingsTests()
@@ -355,9 +360,9 @@ namespace ImageResizer.Properties
 
             // Execute readFile/writefile twice and see if serialized string is still correct
             var resultWrapper = JsonSerializer.Deserialize<SettingsWrapper>(defaultInput);
-            var serializedInput = JsonSerializer.Serialize(resultWrapper, new JsonSerializerOptions() { WriteIndented = true });
+            var serializedInput = JsonSerializer.Serialize(resultWrapper, _serializerOptions);
             var resultWrapper2 = JsonSerializer.Deserialize<SettingsWrapper>(serializedInput);
-            var serializedInput2 = JsonSerializer.Serialize(resultWrapper2, new JsonSerializerOptions() { WriteIndented = true });
+            var serializedInput2 = JsonSerializer.Serialize(resultWrapper2, _serializerOptions);
 
             Assert.AreEqual(serializedInput, serializedInput2);
             Assert.AreEqual("Image Resizer", resultWrapper2.Name);

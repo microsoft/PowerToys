@@ -14,6 +14,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string ModuleName = "Hosts";
 
         [JsonPropertyName("properties")]
+
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
+
         public HostsProperties Properties { get; set; }
 
         public HostsSettings()
@@ -26,10 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public virtual void Save(ISettingsUtils settingsUtils)
         {
             // Save settings to file
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
+            var options = _serializerOptions;
 
             ArgumentNullException.ThrowIfNull(settingsUtils);
 

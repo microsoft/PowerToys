@@ -36,6 +36,11 @@ namespace ColorPicker.Settings
 
         private bool _loadingColorsHistory;
 
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
+
         [ImportingConstructor]
         public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
         {
@@ -58,7 +63,7 @@ namespace ColorPicker.Settings
         {
             if (!_loadingColorsHistory)
             {
-                _settingsUtils.SaveSettings(JsonSerializer.Serialize(ColorHistory, new JsonSerializerOptions { WriteIndented = true }), ColorPickerModuleName, ColorPickerHistoryFilename);
+                _settingsUtils.SaveSettings(JsonSerializer.Serialize(ColorHistory, _serializerOptions), ColorPickerModuleName, ColorPickerHistoryFilename);
             }
         }
 
