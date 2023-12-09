@@ -197,6 +197,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     runProgramElevationTypeCombo.Width(EditorConstants::RemapTableDropDownWidth);
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(L"Normal"));
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(L"Elevated"));
+    runProgramElevationTypeCombo.Items().Append(winrt::box_value(L"Different User"));
     //auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
     //auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
     controlStackPanel.Children().Append(runProgramElevationTypeCombo);
@@ -327,9 +328,13 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             {
                 runProgramElevationTypeCombo.SelectedIndex(0);
             }
-            else
+            else if (shortCut.elevationLevel == Shortcut::ElevationLevel::Elevated)
             {
                 runProgramElevationTypeCombo.SelectedIndex(1);
+            }
+            else if (shortCut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
+            {
+                runProgramElevationTypeCombo.SelectedIndex(2);
             }
 
             typeCombo.SelectedIndex(2);
@@ -357,6 +362,10 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         else if (runProgramElevationTypeCombo.SelectedIndex() == 1)
         {
             tempShortcut.elevationLevel = Shortcut::ElevationLevel::Elevated;
+        }
+        else if (runProgramElevationTypeCombo.SelectedIndex() == 2)
+        {
+            tempShortcut.elevationLevel = Shortcut::ElevationLevel::DifferentUser;
         }
 
         tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());

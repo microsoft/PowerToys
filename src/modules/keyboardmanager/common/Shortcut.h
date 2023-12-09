@@ -26,7 +26,8 @@ public:
     enum ElevationLevel
     {
         NonElevated = 0,
-        Elevated = 1
+        Elevated = 1,
+        DifferentUser = 2
     };
 
     ModifierKey winKey = ModifierKey::Disabled;

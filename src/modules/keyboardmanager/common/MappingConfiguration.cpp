@@ -282,6 +282,10 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             {
                                 elevationLevel = Shortcut::ElevationLevel::Elevated;
                             }
+                            else if (runProgramElevationLevel == 2)
+                            {
+                                elevationLevel = Shortcut::ElevationLevel::DifferentUser;
+                            }
 
                             AddOSLevelShortcut(Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str(), isRunProgram, runProgramFilePath.c_str(), runProgramArgs.c_str(), runProgramStartInDir.c_str(), elevationLevel));
                         }

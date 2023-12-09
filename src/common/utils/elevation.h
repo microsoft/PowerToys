@@ -208,6 +208,24 @@ inline bool drop_elevated_privileges()
 }
 
 // Run command as elevated user, returns true if succeeded
+inline HANDLE run_as_different_user(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr)
+{
+    Logger::info(L"run_elevated with params={}", params);
+    SHELLEXECUTEINFOW exec_info = { 0 };
+    exec_info.cbSize = sizeof(SHELLEXECUTEINFOW);
+    exec_info.lpVerb = L"runasuser";
+    exec_info.lpFile = file.c_str();
+    exec_info.lpParameters = params.c_str();
+    exec_info.hwnd = 0;
+    exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
+    exec_info.lpDirectory = workingDir;
+    exec_info.hInstApp = 0;
+    exec_info.nShow = SW_SHOWDEFAULT;
+
+    return ShellExecuteExW(&exec_info) ? exec_info.hProcess : nullptr;
+}
+
+// Run command as elevated user, returns true if succeeded
 inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr)
 {
     Logger::info(L"run_elevated with params={}", params);

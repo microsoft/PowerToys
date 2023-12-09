@@ -1168,6 +1168,10 @@ namespace KeyboardEventHandlers
             {
                 run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
             }
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
+            {
+                run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+            }
         }
         return;
     }
