@@ -602,6 +602,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 {
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
+    ToggleSwitch allowChordSwitch;
 
     // ContentDialog requires manually setting the XamlRoot (https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectShortcutBox.XamlRoot(xamlRoot);
@@ -614,7 +615,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         keyboardManagerState.ClearRegisteredKeyDelays();
     };
 
-    auto selectDetectedShortcutAndResetKeys = [&keyboardManagerState](DWORD key) {
+    auto selectDetectedShortcutAndResetKeys = [&keyboardManagerState](DWORD key) {        
         keyboardManagerState.SelectDetectedShortcut(key);
         keyboardManagerState.ResetDetectedShortcutKey(key);
     };
@@ -763,6 +764,36 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     keyStackPanel2.Margin({ 0, 20, 0, 0 });
     keyStackPanel2.Visibility(Visibility::Collapsed);
     stackPanel.Children().Append(keyStackPanel2);
+
+    // Detect Chord
+    stackPanel.Children().Append(allowChordSwitch);
+
+    auto toggleHandler = [&allowChordSwitch, &keyboardManagerState](auto const& sender, auto const& e) {
+        //KeyboardManagerEditor::AllowChord = !KeyboardManagerEditor::AllowChord;
+
+        keyboardManagerState.AllowChord = !keyboardManagerState.AllowChord;
+
+        //keyboardManagerState->AllowChord = !keyboardManagerState->AllowChord;
+
+        //KeyboardManager::AllowChords = KeyboardManager::AllowChords;
+
+        //try
+        //{
+        //    KeyboardManagerEditor::AllowChord = allowChordSwitch.IsOn();
+        //}
+        //catch (...)
+        //{
+        //}
+
+        //KeyboardManagerEditor::AllowChord =
+        /*allowChordSwitch.Dispatcher().RunAsync(
+            Windows::UI::Core::CoreDispatcherPriority::Normal,
+            [] {
+                KeyboardManagerEditor::AllowChord = true;
+            });*/
+    };
+
+    allowChordSwitch.Toggled(toggleHandler);
 
     TextBlock holdEscInfo;
     holdEscInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDESC));

@@ -51,7 +51,7 @@ public:
     Shortcut(const std::wstring& shortcutVK);
 
     // Constructor to initialize shortcut from a list of keys and a runProgram data
-    Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir, const Shortcut::ElevationLevel elevationLevel);
+    Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir, const Shortcut::ElevationLevel elevationLevel, const DWORD runProgramSecondKeyOfChord);
 
     // Constructor to initialize shortcut from a list of keys
     Shortcut(const std::vector<int32_t>& keys);
@@ -115,7 +115,12 @@ public:
     bool CheckShiftKey(const DWORD input) const;
 
     // Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
+    bool SetKey(const DWORD input, const bool allowChord);
+
+    // Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
     bool SetKey(const DWORD input);
+
+    bool SetSecondKey(const DWORD input);
 
     // Function to reset the state of a shortcut key based on the passed key code argument
     void ResetKey(const DWORD input);

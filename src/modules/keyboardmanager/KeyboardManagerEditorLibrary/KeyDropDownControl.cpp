@@ -432,6 +432,9 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
     // Remove references to the old drop down objects to destroy them
     keyDropDownControlObjects.clear();
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
+
+    auto secondKey = shortcut.GetSecondKey();
+
     if (shortcutKeyCodes.size() != 0 || shortcut.isRunProgram)
     {
         bool ignoreWarning = false;
@@ -453,6 +456,14 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
                 currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcutKeyCodes[i])));
             }
         }
+
+        /*if (shortcut.HasChord())
+        {
+            KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
+            auto nextI = static_cast<int>(shortcutKeyCodes.size());
+            ComboBox currentDropDown = parent.Children().GetAt(nextI).as<ComboBox>();
+            currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcut.GetSecondKey())));
+        }*/
     }
 }
 

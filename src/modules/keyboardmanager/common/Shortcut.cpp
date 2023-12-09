@@ -34,7 +34,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
 }
 
 // Constructor to initialize shortcut from a list of keys and runProgram data
-Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& _runProgramFilePath, const std::wstring& _runProgramArgs, const std::wstring& _runProgramStartInDir, const Shortcut::ElevationLevel _elevationLevel) :
+Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& _runProgramFilePath, const std::wstring& _runProgramArgs, const std::wstring& _runProgramStartInDir, const Shortcut::ElevationLevel _elevationLevel, const DWORD _runProgramSecondKeyOfChord) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     Shortcut::isRunProgram = isRunProgram;
@@ -44,6 +44,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, cons
         runProgramArgs = _runProgramArgs;
         runProgramStartInDir = _runProgramStartInDir;
         elevationLevel = _elevationLevel;
+        secondKey = _runProgramSecondKeyOfChord;
     }
 
     auto keys = splitwstring(shortcutVK, ';');
@@ -121,23 +122,11 @@ DWORD Shortcut::GetActionKey() const
 
 DWORD Shortcut::GetSecondKey()
 {
-    // fakeChord
-    //if (actionKey == 78)
-    //{
-    //    secondKey = 77;
-    //}
-
     return secondKey;
 }
 
 bool Shortcut::HasChord() const
 {
-    // fakeChord
-    //if (actionKey == 78)
-    //{
-    //    return true;
-    //}
-
     return secondKey != NULL;
 }
 
@@ -336,8 +325,24 @@ bool Shortcut::CheckShiftKey(const DWORD input) const
     }
 }
 
+bool Shortcut::SetSecondKey(const DWORD input)
+{
+    if (secondKey == input)
+    {
+        return false;
+    }
+    secondKey = input;
+    return true;
+}
+
 // Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
+
 bool Shortcut::SetKey(const DWORD input)
+{
+    return SetKey(input, false);
+}
+
+bool Shortcut::SetKey(const DWORD input, const bool allowChord)
 {
     // Since there isn't a key for a common Win key we use the key code defined by us
     if (input == CommonSharedConstants::VK_WIN_BOTH)
@@ -438,11 +443,23 @@ bool Shortcut::SetKey(const DWORD input)
     }
     else
     {
-        if (actionKey == input)
+        if (allowChord && actionKey != NULL)
         {
-            return false;
+            if (secondKey == input)
+            {
+                return false;
+            }
+            secondKey = input;
         }
-        actionKey = input;
+        else
+        {
+            secondKey = {};
+            if (actionKey == input)
+            {
+                return false;
+            }
+            actionKey = input;
+        }
     }
 
     return true;
@@ -470,7 +487,19 @@ void Shortcut::ResetKey(const DWORD input)
     }
     else
     {
+        /*
+        if (input == actionKey)
+        {
+            actionKey = {};
+        }
+
+        if (input == actionKey)
+        {
+            secondKey = {};
+        }
+        */
         actionKey = {};
+        secondKey = {};
     }
 }
 

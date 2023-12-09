@@ -84,6 +84,8 @@ namespace KBMEditor
         void AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
 
     public:
+        bool AllowChord = false;
+
         // Stores the keyboard layout
         LayoutMap keyboardMap;
 
