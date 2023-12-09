@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="using:Peek.UI.Views"
     xmlns:winuiex="using:WinUIEx"
+    Title="{x:Bind ViewModel.WindowTitle, Mode=OneWay}"
     MinWidth="450"
     MinHeight="400"
     mc:Ignorable="d">
