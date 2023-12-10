@@ -222,16 +222,6 @@ namespace KeyboardEventHandlers
                 // if not a mod key, check for chord stuff
                 if (!resetChordsResults.CurrentKeyIsModifierKey && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
-                    //Logger::trace(L"CKBH: 1 {}, this-IsChordStarted: {}, AnyChordStarted:{}", data->lParam->vkCode, itShortcut.IsChordStarted(), resetChordsResults.AnyChordStarted);
-
-                    if (data->lParam->vkCode == itShortcut.GetActionKey() && itShortcut.IsChordStarted() && itShortcut.HasChord())
-                    {
-                        // same chord started
-                        Logger::trace(L"CKBH: same chord start repeated");
-                        isMatchOnChordStart = true;
-                        break;
-                    }
-
                     if (!resetChordsResults.AnyChordStarted && data->lParam->vkCode == itShortcut.GetActionKey() && !itShortcut.IsChordStarted() && itShortcut.HasChord())
                     {
                         // start new chord
@@ -241,8 +231,6 @@ namespace KeyboardEventHandlers
                         itShortcut.SetChordStarted(true);
                         break;
                     }
-
-                    //Logger::trace(L"CKBH: 2 {}, this-IsChordStarted: {}", data->lParam->vkCode, itShortcut.IsChordStarted());
 
                     if (data->lParam->vkCode == itShortcut.GetSecondKey() && itShortcut.IsChordStarted() && itShortcut.HasChord())
                     {
@@ -1043,7 +1031,7 @@ namespace KeyboardEventHandlers
 
         DWORD targetPid = 0;
 
-        if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe")
+        if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe" && fileNamePart != L"msedge.exe")
         {
             targetPid = GetProcessIdByName(fileNamePart);
         }
@@ -1052,102 +1040,7 @@ namespace KeyboardEventHandlers
         {
             Logger::trace(L"CKBH:{}, already running, pid:{}", fileNamePart, targetPid);
 
-            // a good place to look for this...
-            // https://github.com/ritchielawrence/cmdow
-
-            // try by main window.
-            HWND hwnd = FindMainWindow(targetPid);
-            if (hwnd != NULL)
-            {
-                Logger::trace(L"CKBH:{}, got hwnd from FindMainWindow", fileNamePart);
-
-                if (hwnd == GetForegroundWindow())
-                {
-                    Logger::trace(L"CKBH:{}, got GetForegroundWindow, doing SW_MINIMIZE", fileNamePart);
-                    ShowWindow(hwnd, SW_MINIMIZE);
-                    return;
-                }
-                else
-                {
-                    Logger::trace(L"CKBH:{}, no GetForegroundWindow, doing SW_RESTORE", fileNamePart);
-                    ShowWindow(hwnd, SW_RESTORE);
-
-                    if (!SetForegroundWindow(hwnd))
-                    {
-                        auto errorCode = GetLastError();
-                        Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", fileNamePart, errorCode);
-                    }
-                    else
-                    {
-                        Logger::trace(L"CKBH:{}, success on SetForegroundWindow", fileNamePart);
-                        return;
-                    }
-                }
-            }
-
-            // try by console.
-
-            hwnd = FindWindow(nullptr, nullptr);
-            if (AttachConsole(targetPid))
-            {
-                Logger::trace(L"CKBH:{}, success on AttachConsole", fileNamePart);
-
-                // Get the console window handle
-                hwnd = GetConsoleWindow();
-                auto showByConsoleSuccess = false;
-                if (hwnd != NULL)
-                {
-                    Logger::trace(L"CKBH:{}, success on GetConsoleWindow, doing SW_RESTORE", fileNamePart);
-
-                    ShowWindow(hwnd, SW_RESTORE);
-
-                    if (!SetForegroundWindow(hwnd))
-                    {
-                        auto errorCode = GetLastError();
-                        Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", fileNamePart, errorCode);
-                    }
-                    else
-                    {
-                        Logger::trace(L"CKBH:{}, success on SetForegroundWindow", fileNamePart);
-                        showByConsoleSuccess = true;
-                    }
-                }
-
-                // Detach from the console
-                FreeConsole();
-                if (showByConsoleSuccess)
-                {
-                    return;
-                }
-            }
-
-            // try to just show them all (if they have a title)!.
-            hwnd = FindWindow(nullptr, nullptr);
-
-            while (hwnd)
-            {
-                DWORD pidForHwnd;
-                GetWindowThreadProcessId(hwnd, &pidForHwnd);
-                if (targetPid == pidForHwnd)
-                {
-                    Logger::trace(L"CKBH:{}:{}, FindWindow (show all mode)", fileNamePart, targetPid);
-
-                    int length = GetWindowTextLength(hwnd);
-
-                    if (length > 0)
-                    {
-                        ShowWindow(hwnd, SW_RESTORE);
-
-                        // hwnd is the window handle with targetPid
-                        if (!SetForegroundWindow(hwnd))
-                        {
-                            auto errorCode = GetLastError();
-                            Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", fileNamePart, errorCode);
-                        }
-                    }
-                }
-                hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
-            }
+            ShowProgram(targetPid, fileNamePart);
         }
         else
         {
@@ -1160,20 +1053,137 @@ namespace KeyboardEventHandlers
                 currentDir = nullptr;
             }
 
-            if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
+            if (!true)
             {
-                run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                STARTUPINFO startup_info = { sizeof(startup_info) };
+                PROCESS_INFORMATION process_info = { 0 };
+
+                auto currentDir = shortcut.runProgramStartInDir.c_str();
+                if (shortcut.runProgramStartInDir == L"")
+                {
+                    currentDir = nullptr;
+                }
+
+                CreateProcessW(nullptr, executable_and_args.data(), nullptr, nullptr, FALSE, 0, nullptr, currentDir, &startup_info, &process_info);
             }
-            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
+            else
             {
-                run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
-            }
-            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
-            {
-                run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
+                {
+                    run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                }
+                else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
+                {
+                    run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
+                }
+                else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
+                {
+                    run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                }
+            
             }
         }
         return;
+    }
+
+    void ShowProgram(DWORD pid, std::wstring programName)
+    {
+        // a good place to look for this...
+        // https://github.com/ritchielawrence/cmdow
+
+        // try by main window.
+        HWND hwnd = FindMainWindow(pid);
+        if (hwnd != NULL)
+        {
+            Logger::trace(L"CKBH:{}, got hwnd from FindMainWindow", programName);
+
+            if (hwnd == GetForegroundWindow())
+            {
+                Logger::trace(L"CKBH:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
+                ShowWindow(hwnd, SW_MINIMIZE);
+                return;
+            }
+            else
+            {
+                Logger::trace(L"CKBH:{}, no GetForegroundWindow, doing SW_RESTORE", programName);
+                ShowWindow(hwnd, SW_RESTORE);
+
+                if (!SetForegroundWindow(hwnd))
+                {
+                    auto errorCode = GetLastError();
+                    Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                }
+                else
+                {
+                    Logger::trace(L"CKBH:{}, success on SetForegroundWindow", programName);
+                    return;
+                }
+            }
+        }
+
+        // try by console.
+
+        hwnd = FindWindow(nullptr, nullptr);
+        if (AttachConsole(pid))
+        {
+            Logger::trace(L"CKBH:{}, success on AttachConsole", programName);
+
+            // Get the console window handle
+            hwnd = GetConsoleWindow();
+            auto showByConsoleSuccess = false;
+            if (hwnd != NULL)
+            {
+                Logger::trace(L"CKBH:{}, success on GetConsoleWindow, doing SW_RESTORE", programName);
+
+                ShowWindow(hwnd, SW_RESTORE);
+
+                if (!SetForegroundWindow(hwnd))
+                {
+                    auto errorCode = GetLastError();
+                    Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                }
+                else
+                {
+                    Logger::trace(L"CKBH:{}, success on SetForegroundWindow", programName);
+                    showByConsoleSuccess = true;
+                }
+            }
+
+            // Detach from the console
+            FreeConsole();
+            if (showByConsoleSuccess)
+            {
+                return;
+            }
+        }
+
+        // try to just show them all (if they have a title)!.
+        hwnd = FindWindow(nullptr, nullptr);
+
+        while (hwnd)
+        {
+            DWORD pidForHwnd;
+            GetWindowThreadProcessId(hwnd, &pidForHwnd);
+            if (pid == pidForHwnd)
+            {
+                Logger::trace(L"CKBH:{}:{}, FindWindow (show all mode)", programName, pid);
+
+                int length = GetWindowTextLength(hwnd);
+
+                if (length > 0)
+                {
+                    ShowWindow(hwnd, SW_RESTORE);
+
+                    // hwnd is the window handle with targetPid
+                    if (!SetForegroundWindow(hwnd))
+                    {
+                        auto errorCode = GetLastError();
+                        Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                    }
+                }
+            }
+            hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
+        }
     }
 
     // Function to a handle an os-level shortcut remap

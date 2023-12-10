@@ -198,6 +198,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(L"Normal"));
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(L"Elevated"));
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(L"Different User"));
+    runProgramElevationTypeCombo.SelectedIndex(0);
     //auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
     //auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
     controlStackPanel.Children().Append(runProgramElevationTypeCombo);

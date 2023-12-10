@@ -44,6 +44,8 @@ namespace KeyboardEventHandlers
 
     std::wstring GetFileNameFromPath(const std::wstring& fullPath);
 
+    void ShowProgram(DWORD pid, std::wstring programName);
+
     // Function to a handle an os-level shortcut remap
     intptr_t HandleOSLevelShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
