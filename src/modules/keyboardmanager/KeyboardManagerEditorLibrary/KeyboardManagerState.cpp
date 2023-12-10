@@ -189,8 +189,7 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
 
         if (detectedShortcut.HasChord())
         {
-
-            //TextBlock 
+            //TextBlock, to show what shortcut in text, e.g.: "CRTL+j, k" OR "CRTL+j, CRTL+k".
             AddKeyToLayout(lastStackPanel, EditorHelpers::GetKeyVector(Shortcut(detectedShortcutCopy.secondKey), keyboardMap)[0]);
         }
 
@@ -263,52 +262,42 @@ void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
 {
     // Set the new key and store if a change occurred
     bool updateUI = false;
-    if (!false)
+
+    if (AllowChord)
     {
-        if (AllowChord)
+        // Code to determine if we're building/updating a chord.
+        auto currentFirstKey = detectedShortcut.GetActionKey();
+        auto currentSecondKey = detectedShortcut.GetSecondKey();
+
+        Shortcut tempShortcut = Shortcut(key);
+        bool isKeyActionTypeKey = (tempShortcut.actionKey != NULL);
+
+        if (isKeyActionTypeKey)
         {
-            auto currentFirstKey = detectedShortcut.GetActionKey();
-            auto currentSecondKey = detectedShortcut.GetSecondKey();
+            // we want a chord and already have the first key set
+            std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
 
-            Shortcut tempShortcut = Shortcut(key);
-            bool isKeyActionTypeKey = (tempShortcut.actionKey != NULL);
-
-            if (isKeyActionTypeKey)
+            if (currentFirstKey == NULL)
             {
-                // we want a chord and already have the first key set
-
-                std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
-
-                if (currentFirstKey == NULL)
-                {
-                    Logger::trace(L"AllowChord AND NO first");
-                    updateUI = detectedShortcut.SetKey(key);
-                }
-                else if (currentSecondKey == NULL)
-                {
-                    Logger::trace(L"AllowChord AND we have first key of  {}", currentFirstKey);
-                    Logger::trace(L"NO secondKey YET will use {}", key);
-                    // we don't have the second key, set it now
-                    updateUI = detectedShortcut.SetSecondKey(key);
-                }
-                else
-                {
-                    Logger::trace(L"DO HAVE secondKey, will make first {} ", currentSecondKey);
-                    Logger::trace(L"DO HAVE secondKey, will make second {} ", key);
-                    // we already have the second key, swap it to first, and use new as second
-                    detectedShortcut.actionKey = currentSecondKey;
-                    detectedShortcut.secondKey = key;
-                    updateUI = true;
-                }
-                updateUI = true;
-                lock.unlock();
+                Logger::trace(L"AllowChord AND no first");
+                updateUI = detectedShortcut.SetKey(key);
+            }
+            else if (currentSecondKey == NULL)
+            {
+                // we don't have the second key, set it now
+                Logger::trace(L"AllowChord AND we have first key of {}, will use {}", currentFirstKey, key);
+                updateUI = detectedShortcut.SetSecondKey(key);
             }
             else
             {
-                std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
-                updateUI = detectedShortcut.SetKey(key);
-                lock.unlock();
+                // we already have the second key, swap it to first, and use new as second
+                Logger::trace(L"DO have secondKey, will make first {} and second {}", currentSecondKey, key);
+                detectedShortcut.actionKey = currentSecondKey;
+                detectedShortcut.secondKey = key;
+                updateUI = true;
             }
+            updateUI = true;
+            lock.unlock();
         }
         else
         {
@@ -335,13 +324,8 @@ void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
 void KeyboardManagerState::ResetDetectedShortcutKey(DWORD key)
 {
     std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
-
-    // check to see if this is an action key or mod key
-    Shortcut tempShortcut = Shortcut(key);
-    bool isKeyActionTypeKey = (tempShortcut.actionKey != NULL);
-
     // only clear if mod, not if action, since we need to keek actionKey and secondKey for chord
-    if (!isKeyActionTypeKey)
+    if (Shortcut::IsModifier(key))
     {
         detectedShortcut.ResetKey(key);
     }

@@ -28,22 +28,28 @@ namespace KeyboardEventHandlers
     // Function to a handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
 
-    void ResetOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, Shortcut& itShortcut);
-
+    // Function to reset chord matching
     void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp);
 
+    // Function to reset chord matching if needed
     ResetChordsResults ResetChordsIfNeeded(LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp);
 
-    void HandleCreateProcessHotKeysAndChords(Shortcut shortcut) noexcept;
+    // Function to handle (start or show) programs for shortcuts
+    void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept;
 
+    // Function to help FindMainWindow
     BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam);
 
+    // Function to FindMainWindow
     HWND FindMainWindow(unsigned long process_id);
 
+    // Function to GetProcessIdByName
     DWORD GetProcessIdByName(const std::wstring& processName);
 
+    // Function to get just the file name from a fill path
     std::wstring GetFileNameFromPath(const std::wstring& fullPath);
 
+    // Function to a find and show a running program
     void ShowProgram(DWORD pid, std::wstring programName);
 
     // Function to a handle an os-level shortcut remap

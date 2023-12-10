@@ -272,11 +272,6 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
                 ValidateShortcutFromDropDownList(table, row, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
             }
 
-            //while (true)
-            //{
-            //    std::this_thread::sleep_for(std::chrono::seconds(1));
-            //}
-
             // Reset the buffer based on the new selected drop down items. Use static key code list since the KeyDropDownControl object might be deleted
             std::vector<int32_t> selectedKeyCodes = GetSelectedCodesFromStackPanel(parent);
             if (!isHybridControl)
@@ -292,11 +287,8 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
                 }
                 else
                 {
-                    Shortcut tempShortcut;
-                    tempShortcut.SetKeyCodes(selectedKeyCodes);
-
                     // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-                    shortcutRemapBuffer[validationResult.second].first[colIndex] = tempShortcut;
+                    shortcutRemapBuffer[validationResult.second].first[colIndex] = Shortcut(selectedKeyCodes);
                 }
             }
 
@@ -435,12 +427,6 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
     // Delete the existing drop down menus
     parent.Children().Clear();
 
-    /*hile (true)
-    {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }*/
-    
-
     // Remove references to the old drop down objects to destroy them
     keyDropDownControlObjects.clear();
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
@@ -471,6 +457,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
 
         if (shortcut.HasChord())
         {
+            // if this has a chord, render it last
             KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
             auto nextI = static_cast<int>(shortcutKeyCodes.size());
             ComboBox currentDropDown = parent.Children().GetAt(nextI).as<ComboBox>();

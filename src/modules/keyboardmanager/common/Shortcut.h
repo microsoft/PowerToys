@@ -75,9 +75,9 @@ public:
         return lhs.comparator() == rhs.comparator();
     }
 
-    static bool Shortcut::IsActionKey(const std::vector<int32_t>& keys);
+    static bool Shortcut::IsActionKey(const DWORD input);
 
-    static bool Shortcut::IsModifier(const std::vector<int32_t>& keys);
+    static bool Shortcut::IsModifier(const DWORD input);
 
     // Function to return the number of keys in the shortcut
     int Size() const;

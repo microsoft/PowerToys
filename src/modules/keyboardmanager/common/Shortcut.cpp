@@ -558,15 +558,17 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     return keys;
 }
 
-bool Shortcut::IsActionKey(const std::vector<int32_t>& keys)
+bool Shortcut::IsActionKey(const DWORD input)
 {
-    auto shortcut = Shortcut(keys);
+    auto shortcut = Shortcut();
+    shortcut.SetKey(input);
     return (shortcut.actionKey != NULL);
 }
 
-bool Shortcut::IsModifier(const std::vector<int32_t>& keys)
+bool Shortcut::IsModifier(const DWORD input)
 {
-    auto shortcut = Shortcut(keys);
+    auto shortcut = Shortcut();
+    shortcut.SetKey(input);
     return (shortcut.actionKey == NULL);
 }
 

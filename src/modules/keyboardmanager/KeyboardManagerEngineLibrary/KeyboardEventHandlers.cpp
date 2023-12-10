@@ -194,7 +194,6 @@ namespace KeyboardEventHandlers
         ShortcutRemapTable& reMap = state.GetShortcutRemapTable(activatedApp);
 
         // Iterate through the shortcut remaps and apply whichever has been pressed
-
         for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
         {
             const auto it = reMap.find(itShortcut);
@@ -277,18 +276,9 @@ namespace KeyboardEventHandlers
                         auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
                         if (shortcut.isRunProgram)
                         {
-                            //Logger::trace(L"\r\nCKBH: !!!!!!!!!!!!!!!!!!!!!!!!!   isMatchOnChord:{}, prog:{}", isMatchOnChordEnd, shortcut.runProgramFilePath);
+                            CreateOrShowProcessForShortcut(shortcut);
 
-                            // false because we can't use this here since we can't include <common/utils/elevation.h> yet
-                            if (true)
-                            {
-                                HandleCreateProcessHotKeysAndChords(shortcut);
-                            }
-                            else
-                            {
-                                // we don't need to do anything here, since we'll handle it in CentralizedKeyboardHook
-                            }
-
+                            // skip the test since we stared a prog, but maybe we need to do something else to "release"?
                             continue;
                         }
 
@@ -889,17 +879,6 @@ namespace KeyboardEventHandlers
         }
     }
 
-    void ResetOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, Shortcut& itShortcut)
-    {
-        for (auto& itShortcut_2 : state.GetSortedShortcutRemapVector(activatedApp))
-        {
-            if (itShortcut != itShortcut_2)
-            {
-                itShortcut_2.SetChordStarted(false);
-            }
-        }
-    }
-
     ResetChordsResults ResetChordsIfNeeded(LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp)
     {
         ResetChordsResults result;
@@ -1022,7 +1001,7 @@ namespace KeyboardEventHandlers
         return fullPath;
     }
 
-    void HandleCreateProcessHotKeysAndChords(Shortcut shortcut) noexcept
+    void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept
     {
         auto fileNamePart = GetFileNameFromPath(shortcut.runProgramFilePath);
 
@@ -1053,34 +1032,17 @@ namespace KeyboardEventHandlers
                 currentDir = nullptr;
             }
 
-            if (!true)
+            if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
             {
-                STARTUPINFO startup_info = { sizeof(startup_info) };
-                PROCESS_INFORMATION process_info = { 0 };
-
-                auto currentDir = shortcut.runProgramStartInDir.c_str();
-                if (shortcut.runProgramStartInDir == L"")
-                {
-                    currentDir = nullptr;
-                }
-
-                CreateProcessW(nullptr, executable_and_args.data(), nullptr, nullptr, FALSE, 0, nullptr, currentDir, &startup_info, &process_info);
+                run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
             }
-            else
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
             {
-                if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
-                {
-                    run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
-                }
-                else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
-                {
-                    run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
-                }
-                else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
-                {
-                    run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
-                }
-            
+                run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
+            }
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
+            {
+                run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
             }
         }
         return;
