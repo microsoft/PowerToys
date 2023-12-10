@@ -220,6 +220,9 @@
   <data name="EditShortcuts_AllApps" xml:space="preserve">
     <value>All apps</value>
   </data>
+  <data name="EditShortcuts_AllowChords" xml:space="preserve">
+    <value>Allow chords</value>
+  </data>	
   <data name="EditShortcuts_PathToProgram" xml:space="preserve">
     <value>Path to program</value>
   </data>

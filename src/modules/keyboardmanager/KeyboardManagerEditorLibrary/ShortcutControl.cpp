@@ -766,7 +766,22 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     stackPanel.Children().Append(keyStackPanel2);
 
     // Detect Chord
-    stackPanel.Children().Append(allowChordSwitch);
+    Windows::UI::Xaml::Controls::StackPanel chordStackPanel;
+    TextBlock allowChordText;
+    allowChordText.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLOWCHORDS));
+    allowChordText.FontSize(12);
+    allowChordText.Margin({ 0, 20, 0, 0 });
+    chordStackPanel.VerticalAlignment(VerticalAlignment::Center);
+    allowChordText.TextAlignment(TextAlignment::Center);
+    chordStackPanel.Orientation(Orientation::Horizontal);
+
+    allowChordSwitch.OnContent(nullptr);
+    allowChordSwitch.OffContent(nullptr);
+
+    chordStackPanel.Children().Append(allowChordText);
+    chordStackPanel.Children().Append(allowChordSwitch);
+
+    stackPanel.Children().Append(chordStackPanel);
 
     allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
 
