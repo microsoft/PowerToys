@@ -59,7 +59,7 @@ namespace KeyboardManagerConstants
     inline const std::wstring RunProgramFilePathSettingName = L"runProgramFilePath";
 
     // Name of the property use to store secondKeyOfChord.
-    inline const std::wstring RunProgramSecondKeyOfChordSettingName = L"secondKeyOfChord";
+    inline const std::wstring ShortcutSecondKeyOfChordSettingName = L"secondKeyOfChord";
 
     // Name of the property use to store runProgramFilePath.
     inline const std::wstring IsRunProgramSettingName = L"isRunProgram";

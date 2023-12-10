@@ -47,16 +47,16 @@ Shortcut::Shortcut(const DWORD key)
 }
 
 // Constructor to initialize Shortcut from it's virtual key code string representation.
-Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD _runProgramSecondKeyOfChord) :
+Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD _secondKeyOfChord) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     auto keys = splitwstring(shortcutVK, ';');
     SetKeyCodes(ConvertToNumbers(keys));
-    secondKey = _runProgramSecondKeyOfChord;
+    secondKey = _secondKeyOfChord;
 }
 
 // Constructor to initialize shortcut from a list of keys and runProgram data
-Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& _runProgramFilePath, const std::wstring& _runProgramArgs, const std::wstring& _runProgramStartInDir, const Shortcut::ElevationLevel _elevationLevel, const DWORD _runProgramSecondKeyOfChord) :
+Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& _runProgramFilePath, const std::wstring& _runProgramArgs, const std::wstring& _runProgramStartInDir, const Shortcut::ElevationLevel _elevationLevel, const DWORD _secondKeyOfChord) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     Shortcut::isRunProgram = isRunProgram;
@@ -66,7 +66,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, cons
         runProgramArgs = _runProgramArgs;
         runProgramStartInDir = _runProgramStartInDir;
         elevationLevel = _elevationLevel;
-        secondKey = _runProgramSecondKeyOfChord;
+        secondKey = _secondKeyOfChord;
     }
 
     auto keys = splitwstring(shortcutVK, ';');

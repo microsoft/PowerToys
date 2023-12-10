@@ -57,10 +57,10 @@ public:
     Shortcut(const std::wstring& shortcutVK);
 
     // Constructor to initialize Shortcut from it's virtual key code string representation.
-    Shortcut(const std::wstring& shortcutVK, const DWORD _runProgramSecondKeyOfChord);
+    Shortcut(const std::wstring& shortcutVK, const DWORD _secondKeyOfChord);
 
     // Constructor to initialize shortcut from a list of keys and a runProgram data
-    Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir, const Shortcut::ElevationLevel elevationLevel, const DWORD runProgramSecondKeyOfChord);
+    Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir, const Shortcut::ElevationLevel elevationLevel, const DWORD secondKeyOfChord);
 
     // Constructor to initialize shortcut from a list of keys
     Shortcut(const std::vector<int32_t>& keys);
