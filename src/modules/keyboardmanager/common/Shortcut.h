@@ -22,6 +22,9 @@ private:
         return std::make_tuple(winKey, ctrlKey, altKey, shiftKey, actionKey);
     }
 
+    // helper to use the same code in more places.
+    std::vector<int32_t> Shortcut::ConvertToNumbers(std::vector<std::wstring>& keys);
+
 public:
     enum ElevationLevel
     {
@@ -71,6 +74,10 @@ public:
     {
         return lhs.comparator() == rhs.comparator();
     }
+
+    static bool Shortcut::IsActionKey(const std::vector<int32_t>& keys);
+
+    static bool Shortcut::IsModifier(const std::vector<int32_t>& keys);
 
     // Function to return the number of keys in the shortcut
     int Size() const;

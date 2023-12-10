@@ -26,13 +26,18 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     auto keys = splitwstring(shortcutVK, ';');
+    SetKeyCodes(ConvertToNumbers(keys));
+}
+
+std::vector<int32_t> Shortcut::ConvertToNumbers(std::vector<std::wstring>& keys)
+{
     std::vector<int32_t> keysAsNumbers;
     for (auto it : keys)
     {
         auto vkKeyCode = std::stoul(it);
         keysAsNumbers.push_back(vkKeyCode);
     }
-    SetKeyCodes(keysAsNumbers);
+    return keysAsNumbers;
 }
 
 // Constructor to initialize Shortcut from single key
@@ -46,14 +51,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD _runProgramSecond
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     auto keys = splitwstring(shortcutVK, ';');
-    std::vector<int32_t> keysAsNumbers;
-    for (auto it : keys)
-    {
-        auto vkKeyCode = std::stoul(it);
-        keysAsNumbers.push_back(vkKeyCode);
-    }
-    SetKeyCodes(keysAsNumbers);
-
+    SetKeyCodes(ConvertToNumbers(keys));
     secondKey = _runProgramSecondKeyOfChord;
 }
 
@@ -72,14 +70,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, cons
     }
 
     auto keys = splitwstring(shortcutVK, ';');
-    std::vector<int32_t> keysAsNumbers;
-    for (auto it : keys)
-    {
-        auto vkKeyCode = std::stoul(it);
-        keysAsNumbers.push_back(vkKeyCode);
-    }
-
-    SetKeyCodes(keysAsNumbers);
+    SetKeyCodes(ConvertToNumbers(keys));
 }
 
 // Constructor to initialize shortcut from a list of keys
@@ -567,6 +558,18 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     return keys;
 }
 
+bool Shortcut::IsActionKey(const std::vector<int32_t>& keys)
+{
+    auto shortcut = Shortcut(keys);
+    return (shortcut.actionKey != NULL);
+}
+
+bool Shortcut::IsModifier(const std::vector<int32_t>& keys)
+{
+    auto shortcut = Shortcut(keys);
+    return (shortcut.actionKey == NULL);
+}
+
 // Function to set a shortcut from a vector of key codes
 void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
 {
@@ -577,8 +580,7 @@ void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
     {
         if (keys[i] != -1 && keys[i] != 0)
         {
-            Shortcut tempShortcut;
-            tempShortcut.SetKey(keys[i]);
+            Shortcut tempShortcut = Shortcut(keys[i]);
 
             if (!foundActionKey && tempShortcut.actionKey != NULL)
             {

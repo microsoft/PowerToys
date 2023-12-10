@@ -207,7 +207,7 @@ inline bool drop_elevated_privileges()
     return result;
 }
 
-// Run command as elevated user, returns true if succeeded
+// Run command as different user, returns true if succeeded
 inline HANDLE run_as_different_user(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr)
 {
     Logger::info(L"run_elevated with params={}", params);

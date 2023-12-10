@@ -294,6 +294,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
                 {
                     Shortcut tempShortcut;
                     tempShortcut.SetKeyCodes(selectedKeyCodes);
+
                     // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
                     shortcutRemapBuffer[validationResult.second].first[colIndex] = tempShortcut;
                 }
