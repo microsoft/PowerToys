@@ -189,10 +189,9 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
 
         if (detectedShortcut.HasChord())
         {
-            Shortcut tempShortcut;
-            tempShortcut.SetKey(detectedShortcutCopy.secondKey);
-            std::vector<hstring> x2222 = EditorHelpers::GetKeyVector(tempShortcut, keyboardMap);
-            AddKeyToLayout(lastStackPanel, EditorHelpers::GetKeyVector(tempShortcut, keyboardMap)[0]);
+
+            //TextBlock 
+            AddKeyToLayout(lastStackPanel, EditorHelpers::GetKeyVector(Shortcut(detectedShortcutCopy.secondKey), keyboardMap)[0]);
         }
 
         try
@@ -271,8 +270,7 @@ void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
             auto currentFirstKey = detectedShortcut.GetActionKey();
             auto currentSecondKey = detectedShortcut.GetSecondKey();
 
-            Shortcut tempShortcut;
-            tempShortcut.SetKey(key);
+            Shortcut tempShortcut = Shortcut(key);
             bool isKeyActionTypeKey = (tempShortcut.actionKey != NULL);
 
             if (isKeyActionTypeKey)
@@ -338,10 +336,11 @@ void KeyboardManagerState::ResetDetectedShortcutKey(DWORD key)
 {
     std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
 
-    Shortcut tempShortcut;
-    tempShortcut.SetKey(key);
+    // check to see if this is an action key or mod key
+    Shortcut tempShortcut = Shortcut(key);
     bool isKeyActionTypeKey = (tempShortcut.actionKey != NULL);
 
+    // only clear if mod, not if action, since we need to keek actionKey and secondKey for chord
     if (!isKeyActionTypeKey)
     {
         detectedShortcut.ResetKey(key);

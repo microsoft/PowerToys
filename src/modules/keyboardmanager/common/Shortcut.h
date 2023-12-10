@@ -47,6 +47,9 @@ public:
 
     Shortcut() = default;
 
+    // Constructor to initialize Shortcut from single key
+    Shortcut(const DWORD key);
+
     // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
 

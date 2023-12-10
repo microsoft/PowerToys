@@ -33,12 +33,12 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
         keysAsNumbers.push_back(vkKeyCode);
     }
     SetKeyCodes(keysAsNumbers);
+}
 
-    //for (auto it : keys)
-    //{
-    //    auto vkKeyCode = std::stoul(it);
-    //    SetKey(vkKeyCode);
-    //}
+// Constructor to initialize Shortcut from single key
+Shortcut::Shortcut(const DWORD key)
+{
+    SetKey(key);
 }
 
 // Constructor to initialize Shortcut from it's virtual key code string representation.
@@ -54,12 +54,6 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD _runProgramSecond
     }
     SetKeyCodes(keysAsNumbers);
 
-    /*
-    for (auto it : keys)
-    {
-        auto vkKeyCode = std::stoul(it);
-        SetKey(vkKeyCode);
-    }*/
     secondKey = _runProgramSecondKeyOfChord;
 }
 
@@ -86,13 +80,6 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, cons
     }
 
     SetKeyCodes(keysAsNumbers);
-
-    /*for (auto it : keys)
-    {
-        auto vkKeyCode = std::stoul(it);
-        SetKey(vkKeyCode);
-        
-    }*/
 }
 
 // Constructor to initialize shortcut from a list of keys

@@ -768,6 +768,8 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     // Detect Chord
     stackPanel.Children().Append(allowChordSwitch);
 
+    allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
+
     auto toggleHandler = [allowChordSwitch, &keyboardManagerState](auto const& sender, auto const& e) {
         keyboardManagerState.AllowChord = allowChordSwitch.IsOn();
     };
