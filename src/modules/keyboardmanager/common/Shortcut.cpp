@@ -354,7 +354,6 @@ bool Shortcut::SetSecondKey(const DWORD input)
 }
 
 // Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
-
 bool Shortcut::SetKey(const DWORD input)
 {
     // Since there isn't a key for a common Win key we use the key code defined by us

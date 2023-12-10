@@ -195,10 +195,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     // add shortcut type choice
     auto runProgramElevationTypeCombo = ComboBox();
     runProgramElevationTypeCombo.Width(EditorConstants::RemapTableDropDownWidth);
-    runProgramElevationTypeCombo.Items().Append(winrt::box_value(L"Normal"));
-    runProgramElevationTypeCombo.Items().Append(winrt::box_value(L"Elevated"));
-    runProgramElevationTypeCombo.Items().Append(winrt::box_value(L"Different User"));
+    runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPENORMAL)));
+    runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPEELEVATED)));
+    runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPEDIFFERENTUSER)));
     runProgramElevationTypeCombo.SelectedIndex(0);
+
     //auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
     //auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
     controlStackPanel.Children().Append(runProgramElevationTypeCombo);

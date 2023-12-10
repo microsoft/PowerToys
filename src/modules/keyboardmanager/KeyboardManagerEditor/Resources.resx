@@ -320,7 +320,16 @@
   <data name="Delete_Remapping_Button" xml:space="preserve">
     <value>Delete remapping</value>
   </data>
-  <data name="Delete_Remapping_Event" xml:space="preserve">
+  <data name="ElevationTypeNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="ElevationTypeElevated" xml:space="preserve">
+    <value>Elevated</value>
+  </data>
+  <data name="ElevationTypeDifferentUser" xml:space="preserve">
+    <value>Different User</value>
+  </data>
+	<data name="Delete_Remapping_Event" xml:space="preserve">
     <value>Remapping deleted</value>
   </data>
   <data name="AutomationProperties_Row" xml:space="preserve">
