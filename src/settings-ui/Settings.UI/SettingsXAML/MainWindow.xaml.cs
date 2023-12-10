@@ -7,6 +7,7 @@ using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -22,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
-        public MainWindow(bool isDark, bool createHidden = false)
+        public MainWindow(bool createHidden = false)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
@@ -36,12 +37,6 @@ namespace Microsoft.PowerToys.Settings.UI
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("Assets\\Settings\\icon.ico");
 
-            // Passed by parameter, as it needs to be evaluated ASAP, otherwise there is a white flash
-            if (isDark)
-            {
-                ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
-            }
-
             var placement = Utils.DeserializePlacementOrDefault(hWnd);
             if (createHidden)
             {
@@ -50,8 +45,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
-            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            Title = loader.GetString("SettingsWindow_Title");
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
 
             // send IPC Message
             ShellPage.SetDefaultSndMessageCallback(msg =>
@@ -81,92 +76,15 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             // open main window
-            ShellPage.SetUpdatingGeneralSettingsCallback((string module, bool isEnabled) =>
+            ShellPage.SetUpdatingGeneralSettingsCallback((ModuleType moduleType, bool isEnabled) =>
             {
                 SettingsRepository<GeneralSettings> repository = SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils());
                 GeneralSettings generalSettingsConfig = repository.SettingsConfig;
-                bool needToUpdate = false;
-                switch (module)
-                {
-                    case "AlwaysOnTop":
-                        needToUpdate = generalSettingsConfig.Enabled.AlwaysOnTop != isEnabled;
-                        generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
-                    case "Awake":
-                        needToUpdate = generalSettingsConfig.Enabled.Awake != isEnabled;
-                        generalSettingsConfig.Enabled.Awake = isEnabled; break;
-                    case "CmdNotFound":
-                        needToUpdate = generalSettingsConfig.Enabled.CmdNotFound != isEnabled;
-                        generalSettingsConfig.Enabled.CmdNotFound = isEnabled; break;
-                    case "ColorPicker":
-                        needToUpdate = generalSettingsConfig.Enabled.ColorPicker != isEnabled;
-                        generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
-                    case "CropAndLock":
-                        needToUpdate = generalSettingsConfig.Enabled.CropAndLock != isEnabled;
-                        generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
-                    case "FancyZones":
-                        needToUpdate = generalSettingsConfig.Enabled.FancyZones != isEnabled;
-                        generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
-                    case "FileLocksmith":
-                        needToUpdate = generalSettingsConfig.Enabled.FileLocksmith != isEnabled;
-                        generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
-                    case "FindMyMouse":
-                        needToUpdate = generalSettingsConfig.Enabled.FindMyMouse != isEnabled;
-                        generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
-                    case "Hosts":
-                        needToUpdate = generalSettingsConfig.Enabled.Hosts != isEnabled;
-                        generalSettingsConfig.Enabled.Hosts = isEnabled; break;
-                    case "ImageResizer":
-                        needToUpdate = generalSettingsConfig.Enabled.ImageResizer != isEnabled;
-                        generalSettingsConfig.Enabled.ImageResizer = isEnabled; break;
-                    case "KeyboardManager":
-                        needToUpdate = generalSettingsConfig.Enabled.KeyboardManager != isEnabled;
-                        generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
-                    case "MouseHighlighter":
-                        needToUpdate = generalSettingsConfig.Enabled.MouseHighlighter != isEnabled;
-                        generalSettingsConfig.Enabled.MouseHighlighter = isEnabled; break;
-                    case "MouseJump":
-                        needToUpdate = generalSettingsConfig.Enabled.MouseJump != isEnabled;
-                        generalSettingsConfig.Enabled.MouseJump = isEnabled; break;
-                    case "MousePointerCrosshairs":
-                        needToUpdate = generalSettingsConfig.Enabled.MousePointerCrosshairs != isEnabled;
-                        generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
-                    case "MouseWithoutBorders":
-                        needToUpdate = generalSettingsConfig.Enabled.MouseWithoutBorders != isEnabled;
-                        generalSettingsConfig.Enabled.MouseWithoutBorders = isEnabled; break;
-                    case "PastePlain":
-                        needToUpdate = generalSettingsConfig.Enabled.PastePlain != isEnabled;
-                        generalSettingsConfig.Enabled.PastePlain = isEnabled; break;
-                    case "Peek":
-                        needToUpdate = generalSettingsConfig.Enabled.Peek != isEnabled;
-                        generalSettingsConfig.Enabled.Peek = isEnabled; break;
-                    case "PowerRename":
-                        needToUpdate = generalSettingsConfig.Enabled.PowerRename != isEnabled;
-                        generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
-                    case "PowerLauncher":
-                        needToUpdate = generalSettingsConfig.Enabled.PowerLauncher != isEnabled;
-                        generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
-                    case "PowerAccent":
-                        needToUpdate = generalSettingsConfig.Enabled.PowerAccent != isEnabled;
-                        generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
-                    case "RegistryPreview":
-                        needToUpdate = generalSettingsConfig.Enabled.RegistryPreview != isEnabled;
-                        generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
-                    case "MeasureTool":
-                        needToUpdate = generalSettingsConfig.Enabled.MeasureTool != isEnabled;
-                        generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
-                    case "ShortcutGuide":
-                        needToUpdate = generalSettingsConfig.Enabled.ShortcutGuide != isEnabled;
-                        generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
-                    case "PowerOCR":
-                        needToUpdate = generalSettingsConfig.Enabled.PowerOCR != isEnabled;
-                        generalSettingsConfig.Enabled.PowerOCR = isEnabled; break;
-                    case "VideoConference":
-                        needToUpdate = generalSettingsConfig.Enabled.VideoConference != isEnabled;
-                        generalSettingsConfig.Enabled.VideoConference = isEnabled; break;
-                }
+                bool needToUpdate = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType) != isEnabled;
 
                 if (needToUpdate)
                 {
+                    ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, moduleType, isEnabled);
                     var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
                     this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
                     {
@@ -183,7 +101,22 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.Overview, App.IsDarkTheme()));
+                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.Overview));
+                }
+
+                App.GetOobeWindow().Activate();
+            });
+
+            // open whats new window
+            ShellPage.SetOpenWhatIsNewCallback(() =>
+            {
+                if (App.GetOobeWindow() == null)
+                {
+                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.WhatsNew));
+                }
+                else
+                {
+                    App.GetOobeWindow().SetAppWindow(OOBE.Enums.PowerToysModules.WhatsNew);
                 }
 
                 App.GetOobeWindow().Activate();
@@ -205,7 +138,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
                     // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
                     // Need to call SetForegroundWindow to actually gain focus.
-                    Utils.BecomeForegroundWindow(flyout.GetWindowHandle());
+                    WindowHelpers.BringToForeground(flyout.GetWindowHandle());
                 });
             });
 
@@ -224,8 +157,6 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             this.InitializeComponent();
-
-            SetTheme(isDark);
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
@@ -285,11 +216,6 @@ namespace Microsoft.PowerToys.Settings.UI
         internal void EnsurePageIsSelected()
         {
             ShellPage.EnsurePageIsSelected();
-        }
-
-        private void SetTheme(bool isDark)
-        {
-            shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
     }
 }

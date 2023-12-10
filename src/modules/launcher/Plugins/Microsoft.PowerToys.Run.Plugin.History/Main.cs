@@ -22,6 +22,8 @@ namespace Microsoft.PowerToys.Run.Plugin.History
 
         public string Description => Resources.wox_plugin_history_plugin_description;
 
+        public static string PluginID => "C88512156BB74580AADF7252E130BA8D";
+
         private bool _disposed;
 
         public List<Result> Query(Query query)
@@ -203,7 +205,7 @@ namespace Microsoft.PowerToys.Run.Plugin.History
                 menuItems.Add(new ContextMenuResult
                 {
                     // https://learn.microsoft.com/windows/apps/design/style/segoe-ui-symbol-font
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xF739",   // ECC9 => Symbol: RemoveFrom, or F739 => SetHistoryStatus2
                     Title = $"Remove this from history",
                     Action = _ =>

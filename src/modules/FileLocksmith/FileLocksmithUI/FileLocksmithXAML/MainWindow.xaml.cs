@@ -5,8 +5,8 @@
 using System;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using PowerToys.FileLocksmithUI.Helpers;
 using WinUIEx;
 
 namespace FileLocksmithUI
@@ -21,6 +21,11 @@ namespace FileLocksmithUI
             SetTitleBar(AppTitleBar);
             Activated += MainWindow_Activated;
             AppWindow.SetIcon("Assets/FileLocksmith/Icon.ico");
+
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            var title = isElevated ? loader.GetString("AppAdminTitle") : loader.GetString("AppTitle");
+            Title = title;
+            AppTitleTextBlock.Text = title;
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)

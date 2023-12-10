@@ -44,6 +44,8 @@ namespace Microsoft.Plugin.Folder
 
         public string Description => Properties.Resources.wox_plugin_folder_plugin_description;
 
+        public static string PluginID => "B4D3B69656E14D44865C8D818EAE47C4";
+
         public void Save()
         {
             _storage.Save();
@@ -56,10 +58,7 @@ namespace Microsoft.Plugin.Folder
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var expandedName = FolderHelper.Expand(query.Search);
 
@@ -80,10 +79,7 @@ namespace Microsoft.Plugin.Folder
 
         public static IEnumerable<Result> GetFolderPluginResults(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var expandedName = FolderHelper.Expand(query.Search);
 

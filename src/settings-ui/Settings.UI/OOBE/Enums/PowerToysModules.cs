@@ -12,6 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         CmdNotFound,
         ColorPicker,
         CropAndLock,
+        EnvironmentVariables,
         FancyZones,
         FileLocksmith,
         FileExplorer,

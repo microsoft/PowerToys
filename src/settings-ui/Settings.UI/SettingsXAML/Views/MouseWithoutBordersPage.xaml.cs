@@ -3,14 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO.Abstractions;
-using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Xml.Linq;
-using CommunityToolkit.Labs.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;

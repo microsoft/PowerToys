@@ -30,6 +30,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public string Description => Resources.wox_plugin_calculator_plugin_description;
 
+        public static string PluginID => "CEA0FDFC6D3B4085823D60DC76F28855";
+
         private bool _disposed;
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
@@ -53,14 +55,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public List<Result> Query(Query query)
         {
+            ArgumentNullException.ThrowIfNull(query);
+
             bool isGlobalQuery = string.IsNullOrEmpty(query.ActionKeyword);
             CultureInfo inputCulture = _inputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
             CultureInfo outputCulture = _outputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
-
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
 
             // Happens if the user has only typed the action key so far
             if (string.IsNullOrEmpty(query.Search))

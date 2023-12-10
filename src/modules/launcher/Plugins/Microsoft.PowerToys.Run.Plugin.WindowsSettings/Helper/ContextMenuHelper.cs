@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// Return a list with all context menu entries for the given <see cref="Result"/>
         /// <para>Symbols taken from <see href="https://learn.microsoft.com/windows/uwp/design/style/segoe-ui-symbol-font"/></para>
         /// </summary>
-        /// <param name="result">The result for the context menu entires</param>
+        /// <param name="result">The result for the context menu entries</param>
         /// <param name="assemblyName">The name of the this assembly</param>
         /// <returns>A list with context menu entries</returns>
         internal static List<ContextMenuResult> GetContextMenu(in Result result, in string assemblyName)
@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ => TryToCopyToClipBoard(entry.Command),
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
                     Title = $"{Resources.CopyCommand} (Ctrl+C)",

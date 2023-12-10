@@ -3,12 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using interop;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
+using Peek.Common;
 using Peek.FilePreviewer;
+using Peek.FilePreviewer.Models;
+using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
 
@@ -17,7 +21,7 @@ namespace Peek.UI
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : Application
+    public partial class App : Application, IApp
     {
         public static int PowerToysPID { get; set; }
 
@@ -26,7 +30,7 @@ namespace Peek.UI
             get;
         }
 
-        private Window? Window { get; set; }
+        private MainWindow? Window { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -46,6 +50,7 @@ namespace Peek.UI
                 // Core Services
                 services.AddTransient<NeighboringItemsQuery>();
                 services.AddSingleton<IUserSettings, UserSettings>();
+                services.AddSingleton<IPreviewSettings, PreviewSettings>();
 
                 // Views and ViewModels
                 services.AddTransient<TitleBar>();
@@ -57,7 +62,7 @@ namespace Peek.UI
             UnhandledException += App_UnhandledException;
         }
 
-        public static T GetService<T>()
+        public T GetService<T>()
             where T : class
         {
             if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
@@ -93,12 +98,32 @@ namespace Peek.UI
                 }
             }
 
-            Window = new MainWindow();
+            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)e.Exception.HResult, Failure = ErrorEvent.FailureType.AppCrash });
+        }
+
+        /// <summary>
+        /// Handle Peek hotkey
+        /// </summary>
+        private void OnPeekHotkey()
+        {
+            // Need to read the foreground HWND before activating Peek to avoid focus stealing
+            // Foreground HWND must always be Explorer or Desktop
+            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+
+            bool firstActivation = false;
+
+            if (Window == null)
+            {
+                firstActivation = true;
+                Window = new MainWindow();
+            }
+
+            Window.Toggle(firstActivation, foregroundWindowHandle);
         }
     }
 }

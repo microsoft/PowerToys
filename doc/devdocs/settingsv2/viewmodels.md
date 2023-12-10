@@ -22,5 +22,5 @@ The viewmodels are located within the [`Settings.UI.Library`](/src/settings-ui/S
     - Some viewmodels expect the runner to create the file instead of creating the file themselves, like in keyboard manager.
     - The colorpicker powertoy creates the `settings.json` within the module. This must be taken care of when encapsulated within the settingsRepository.
 - Currently, all modules use the `SettingsRepository` to access the General Settings config. 
-- However, only Fancyzones, ShortcutGuide and PowerPreview use the `SettingsRepository` to access the module properties.
+- However, only FancyZones, ShortcutGuide and PowerPreview use the `SettingsRepository` to access the module properties.
 

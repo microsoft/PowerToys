@@ -36,6 +36,8 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
         public string Description => Properties.Resources.plugin_description;
 
+        public static string PluginID => "9F1B49201C3F4BF781CAAD5CD88EA4DC";
+
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             new PluginAdditionalOption()
@@ -53,10 +55,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
 
         public List<Result> Query(Query query)
         {
-            if (query is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var results = new List<Result>();
 

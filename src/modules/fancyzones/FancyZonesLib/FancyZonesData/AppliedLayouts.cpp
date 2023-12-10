@@ -279,29 +279,7 @@ void AppliedLayouts::LoadData()
 
 void AppliedLayouts::SaveData()
 {
-    bool dirtyFlag = false;
-    TAppliedLayoutsMap updatedMap;
-    
-    for (const auto& [id, data] : m_layouts)
-    {
-        auto updatedId = id;
-        if (!VirtualDesktop::instance().IsVirtualDesktopIdSavedInRegistry(id.virtualDesktopId))
-        {
-            updatedId.virtualDesktopId = GUID_NULL;
-            dirtyFlag = true;
-        }
-
-        updatedMap.insert({ updatedId, data });
-    }
-
-    if (dirtyFlag)
-    {
-        json::to_file(AppliedLayoutsFileName(), JsonUtils::SerializeJson(updatedMap));
-    }
-    else
-    {
-        json::to_file(AppliedLayoutsFileName(), JsonUtils::SerializeJson(m_layouts));
-    }
+    json::to_file(AppliedLayoutsFileName(), JsonUtils::SerializeJson(m_layouts));
 }
 
 void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids)
@@ -344,86 +322,75 @@ void AppliedLayouts::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
     }
 }
 
-void AppliedLayouts::SyncVirtualDesktops()
+void AppliedLayouts::SyncVirtualDesktops(const GUID& currentVirtualDesktop, const GUID& lastUsedVirtualDesktop, std::optional<std::vector<GUID>> desktops)
 {
-    // Explorer persists current virtual desktop identifier to registry on a per session basis,
-    // but only after first virtual desktop switch happens. If the user hasn't switched virtual
-    // desktops in this session value in registry will be empty and we will use default GUID in
-    // that case (00000000-0000-0000-0000-000000000000).
+    TAppliedLayoutsMap layouts;
 
-    auto savedInRegistryVirtualDesktopID = VirtualDesktop::instance().GetCurrentVirtualDesktopIdFromRegistry();
-    if (!savedInRegistryVirtualDesktopID.has_value() || savedInRegistryVirtualDesktopID.value() == GUID_NULL)
+    auto findCurrentVirtualDesktopInSavedLayouts = [&](const std::pair<FancyZonesDataTypes::WorkAreaId, LayoutData>& val) -> bool { return val.first.virtualDesktopId == currentVirtualDesktop; };
+    bool replaceLastUsedWithCurrent = !desktops.has_value() || currentVirtualDesktop == GUID_NULL ||
+        std::find_if(m_layouts.begin(), m_layouts.end(), findCurrentVirtualDesktopInSavedLayouts) == m_layouts.end();
+    bool copyToOtherVirtualDesktops = lastUsedVirtualDesktop == GUID_NULL && currentVirtualDesktop != GUID_NULL && desktops.has_value();
+
+    for (const auto& [workAreaId, layout] : m_layouts)
     {
-        return;
-    }
-
-    auto currentVirtualDesktopStr = FancyZonesUtils::GuidToString(savedInRegistryVirtualDesktopID.value());
-    if (!currentVirtualDesktopStr.has_value())
-    {
-        Logger::error(L"Failed to convert virtual desktop GUID to string");
-        return;
-    }
-
-    Logger::info(L"AppliedLayouts Sync virtual desktops: current {}", currentVirtualDesktopStr.value());
-
-    bool dirtyFlag = false;
-
-    std::vector<FancyZonesDataTypes::WorkAreaId> replaceWithCurrentId{};
-
-    for (const auto& [id, data] : m_layouts)
-    {
-        if (id.virtualDesktopId == GUID_NULL)
+        if (replaceLastUsedWithCurrent && workAreaId.virtualDesktopId == lastUsedVirtualDesktop)
         {
-            replaceWithCurrentId.push_back(id);
-            dirtyFlag = true;
-        }
-    }
+            // replace "lastUsedVirtualDesktop" with "currentVirtualDesktop"
+            auto updatedWorkAreaId = workAreaId;
+            updatedWorkAreaId.virtualDesktopId = currentVirtualDesktop;
+            layouts.insert({ updatedWorkAreaId, layout });
 
-    for (const auto& id : replaceWithCurrentId)
-    {
-        auto mapEntry = m_layouts.extract(id);
-        mapEntry.key().virtualDesktopId = savedInRegistryVirtualDesktopID.value();
-        m_layouts.insert(std::move(mapEntry));
-    }
-
-    if (dirtyFlag)
-    {
-        Logger::info(L"Update Virtual Desktop id to {}", currentVirtualDesktopStr.value());
-        SaveData();
-    }
-}
-
-void AppliedLayouts::RemoveDeletedVirtualDesktops(const std::vector<GUID>& activeDesktops)
-{
-    std::unordered_set<GUID> active(std::begin(activeDesktops), std::end(activeDesktops));
-    bool dirtyFlag = false;
-
-    for (auto it = std::begin(m_layouts); it != std::end(m_layouts);)
-    {
-        GUID desktopId = it->first.virtualDesktopId;
-
-        if (desktopId != GUID_NULL)
-        {
-            auto foundId = active.find(desktopId);
-            if (foundId == std::end(active))
+            if (copyToOtherVirtualDesktops)
             {
-                wil::unique_cotaskmem_string virtualDesktopIdStr;
-                if (SUCCEEDED(StringFromCLSID(desktopId, &virtualDesktopIdStr)))
+                // Copy to other virtual desktops on the 1st VD creation.
+                // If we just replace the id, we'll lose the layout on the other desktops.
+                // Usage scenario: 
+                // apply the layout to the single virtual desktop with id = GUID_NULL, 
+                // create the 2nd virtual desktop and switch to it, 
+                // so virtual desktop id changes from GUID_NULL to a valid value of the 2nd VD.
+                // Then change the layout on the 2nd VD and switch back to the 1st VD. 
+                // Layout on the initial VD will be changed too without initializing it beforehand.
+                for (const auto& id : desktops.value())
                 {
-                    Logger::info(L"Remove Virtual Desktop id {}", virtualDesktopIdStr.get());
+                    if (id != currentVirtualDesktop)
+                    {
+                        auto copyWorkAreaId = workAreaId;
+                        copyWorkAreaId.virtualDesktopId = id;
+                        layouts.insert({ copyWorkAreaId, layout });
+                    }
                 }
-
-                it = m_layouts.erase(it);
-                dirtyFlag = true;
-                continue;
             }
         }
-        ++it;
+
+        if (workAreaId.virtualDesktopId == currentVirtualDesktop || (desktops.has_value() && 
+            std::find(desktops.value().begin(), desktops.value().end(), workAreaId.virtualDesktopId) != desktops.value().end()))
+        {
+            // keep only actual virtual desktop values
+            layouts.insert({ workAreaId, layout });
+        }
     }
 
-    if (dirtyFlag)
+    if (layouts != m_layouts)
     {
+        m_layouts = layouts;
         SaveData();
+
+        std::wstring currentStr = FancyZonesUtils::GuidToString(currentVirtualDesktop).value_or(L"incorrect guid");
+        std::wstring lastUsedStr = FancyZonesUtils::GuidToString(lastUsedVirtualDesktop).value_or(L"incorrect guid");
+        std::wstring registryStr{};
+        if (desktops.has_value())
+        {
+            for (const auto& id : desktops.value())
+            {
+                registryStr += FancyZonesUtils::GuidToString(id).value_or(L"incorrect guid") + L" ";
+            }
+        }
+        else
+        {
+            registryStr = L"empty";
+        }
+
+        Logger::info(L"Synced virtual desktops. Current: {}, last used: {}, registry: {}", currentStr, lastUsedStr, registryStr);
     }
 }
 
@@ -449,9 +416,9 @@ bool AppliedLayouts::IsLayoutApplied(const FancyZonesDataTypes::WorkAreaId& id) 
     return iter != m_layouts.end();
 }
 
-bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& deviceId, LayoutData layout)
+bool AppliedLayouts::ApplyLayout(const FancyZonesDataTypes::WorkAreaId& workAreaId, LayoutData layout)
 {
-    m_layouts[deviceId] = std::move(layout);
+    m_layouts[workAreaId] = layout;
     return true;
 }
 
@@ -496,9 +463,5 @@ bool AppliedLayouts::CloneLayout(const FancyZonesDataTypes::WorkAreaId& srcId, c
     }
 
     Logger::info(L"Clone layout from {} to {}", dstId.toString(), srcId.toString());
-    m_layouts[dstId] = m_layouts[srcId];
-
-    SaveData();
-
-    return true;
+    return ApplyLayout(dstId, m_layouts[srcId]);
 }

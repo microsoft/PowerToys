@@ -43,6 +43,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredPeekEnabledValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
         static GpoRuleConfigured GetAllowExperimentationValue();
+        static GpoRuleConfigured GetRunPluginEnabledValue(winrt::hstring const& pluginID);
+        static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();
+        static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
+        static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
     };
 }
 

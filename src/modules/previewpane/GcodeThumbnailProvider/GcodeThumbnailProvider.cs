@@ -2,7 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System.Drawing.Drawing2D;
-using System.Text;
+using System.Drawing.Imaging;
+using Common.Utilities;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 {
@@ -45,62 +46,32 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
                 return null;
             }
 
+            var gcodeThumbnail = GcodeHelper.GetBestThumbnail(reader);
+
             Bitmap thumbnail = null;
 
-            var bitmapBase64 = GetBase64Thumbnails(reader)
-                .OrderByDescending(x => x.Length)
-                .FirstOrDefault();
-
-            if (!string.IsNullOrEmpty(bitmapBase64))
+            try
             {
-                var bitmapBytes = Convert.FromBase64String(bitmapBase64);
+                thumbnail = gcodeThumbnail?.GetBitmap();
+            }
+            catch (Exception)
+            {
+                // TODO: add logger
+            }
 
-                thumbnail = new Bitmap(new MemoryStream(bitmapBytes));
-
-                if (thumbnail.Width != cx && thumbnail.Height != cx)
-                {
-                    // We are not the appropriate size for caller.  Resize now while
-                    // respecting the aspect ratio.
-                    float scale = Math.Min((float)cx / thumbnail.Width, (float)cx / thumbnail.Height);
-                    int scaleWidth = (int)(thumbnail.Width * scale);
-                    int scaleHeight = (int)(thumbnail.Height * scale);
-                    thumbnail = ResizeImage(thumbnail, scaleWidth, scaleHeight);
-                }
+            if (thumbnail != null && (
+                ((thumbnail.Width != cx || thumbnail.Height > cx) && (thumbnail.Height != cx || thumbnail.Width > cx)) ||
+                thumbnail.PixelFormat != PixelFormat.Format32bppArgb))
+            {
+                // We are not the appropriate size for caller.  Resize now while
+                // respecting the aspect ratio.
+                float scale = Math.Min((float)cx / thumbnail.Width, (float)cx / thumbnail.Height);
+                int scaleWidth = (int)(thumbnail.Width * scale);
+                int scaleHeight = (int)(thumbnail.Height * scale);
+                thumbnail = ResizeImage(thumbnail, scaleWidth, scaleHeight);
             }
 
             return thumbnail;
-        }
-
-        /// <summary>
-        /// Gets all thumbnails in base64 format found on the G-code data.
-        /// </summary>
-        /// <param name="reader">The TextReader instance for the G-code content.</param>
-        /// <returns>An enumeration of thumbnails in base64 format found on the G-code.</returns>
-        private static IEnumerable<string> GetBase64Thumbnails(TextReader reader)
-        {
-            string line;
-            StringBuilder capturedText = null;
-
-            while ((line = reader.ReadLine()) != null)
-            {
-                if (line.StartsWith("; thumbnail begin", StringComparison.InvariantCulture))
-                {
-                    capturedText = new StringBuilder();
-                }
-                else if (line == "; thumbnail end")
-                {
-                    if (capturedText != null)
-                    {
-                        yield return capturedText.ToString();
-
-                        capturedText = null;
-                    }
-                }
-                else if (capturedText != null)
-                {
-                    capturedText.Append(line[2..]);
-                }
-            }
         }
 
         /// <summary>
@@ -121,7 +92,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
                 return null;
             }
 
-            Bitmap destImage = new Bitmap(width, height);
+            Bitmap destImage = new Bitmap(width, height, PixelFormat.Format32bppArgb);
 
             destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
 
@@ -135,6 +106,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 
                 graphics.DrawImage(image, 0, 0, width, height);
             }
+
+            image.Dispose();
 
             return destImage;
         }

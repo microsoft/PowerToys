@@ -20,6 +20,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
         public string Description => Resources.plugin_description;
 
+        public static string PluginID => "a26b1bb4dbd911edafa10242ac120002";
+
         private PluginInitContext _context;
         private static bool _isLightTheme = true;
         private bool _disposed;
@@ -85,10 +87,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var results = new List<Result>();
             try
@@ -116,7 +115,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 ContextData = request.Result,
                 Title = request.ResultToString(),
-                IcoPath = _isLightTheme ? "Images/ValueGenerator.dark.png" : "Images/ValueGenerator.light.png",
+                IcoPath = _isLightTheme ? "Images/ValueGenerator.light.png" : "Images/ValueGenerator.dark.png",
                 Score = 300,
                 SubTitle = request.Description,
                 Action = c =>

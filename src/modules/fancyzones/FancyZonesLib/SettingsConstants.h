@@ -9,7 +9,7 @@ enum class SettingId
     MoveWindowAcrossMonitors,
     MoveWindowsBasedOnPosition,
     OverlappingZonesAlgorithm,
-    DisplayChangeMoveWindows,
+    DisplayOrWorkAreaChangeMoveWindows,
     ZoneSetChangeMoveWindows,
     AppLastZoneMoveWindows,
     OpenWindowOnActiveMonitor,
@@ -32,7 +32,6 @@ enum class SettingId
     NextTabHotkey,
     PrevTabHotkey,
     ExcludedApps,
-    AllowSnapPopupWindows,
     AllowSnapChildWindows,
     DisableRoundCornersOnSnapping,
 };

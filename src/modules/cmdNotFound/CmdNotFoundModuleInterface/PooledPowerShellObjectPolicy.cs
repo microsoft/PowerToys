@@ -17,12 +17,12 @@ namespace WinGetCommandNotFound
             return PowerShell.Create(iss);
         }
 
-        public bool Return(PowerShell ps)
+        public bool Return(PowerShell obj)
         {
-            if (ps != null)
+            if (obj != null)
             {
-                ps.Commands.Clear();
-                ps.Streams.ClearStreams();
+                obj.Commands.Clear();
+                obj.Streams.ClearStreams();
                 return true;
             }
 

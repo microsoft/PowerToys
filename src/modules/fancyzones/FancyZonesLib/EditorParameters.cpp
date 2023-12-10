@@ -6,6 +6,7 @@
 #include <FancyZonesLib/on_thread_executor.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/VirtualDesktop.h>
+#include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/util.h>
 
 #include <common/Display/dpi_aware.h>
@@ -35,6 +36,31 @@ namespace JsonUtils
         int monitorWidth{};
         int monitorHeight{};
         bool isSelected = false;
+
+        bool FillFromWorkArea(const WorkArea* const workArea)
+        {
+            const auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(workArea->UniqueId().virtualDesktopId);
+            if (!virtualDesktopIdStr)
+            {
+                return false;
+            }
+
+            const auto& monitorId = workArea->UniqueId().monitorId;
+            monitorName = monitorId.deviceId.id;
+            monitorInstanceId = monitorId.deviceId.instanceId;
+            monitorNumber = monitorId.deviceId.number;
+            monitorSerialNumber = monitorId.serialNumber;
+
+            const auto& rect = workArea->GetWorkAreaRect();
+            top = rect.top();
+            left = rect.left();
+            workAreaWidth = rect.width();
+            workAreaHeight = rect.height();
+
+            virtualDesktop = virtualDesktopIdStr.value();
+
+            return true;
+        }
 
         static json::JsonObject ToJson(const MonitorInfo& monitor)
         {
@@ -84,21 +110,8 @@ namespace JsonUtils
     };
 }
 
-bool EditorParameters::Save() noexcept
+bool EditorParameters::Save(const WorkAreaConfiguration& configuration, OnThreadExecutor& dpiUnawareThread) noexcept
 {
-    const auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(VirtualDesktop::instance().GetCurrentVirtualDesktopId());
-    if (!virtualDesktopIdStr)
-    {
-        Logger::error(L"Save editor params: invalid virtual desktop id");
-        return false;
-    }
-
-    OnThreadExecutor dpiUnawareThread;
-    dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
-        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
-        SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
-    } }).wait();
-
     const bool spanZonesAcrossMonitors = FancyZonesSettings::settings().spanZonesAcrossMonitors;
 
     JsonUtils::EditorArgs argsJson;
@@ -107,23 +120,31 @@ bool EditorParameters::Save() noexcept
 
     if (spanZonesAcrossMonitors)
     {
-        RECT combinedWorkArea;
-        dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&]() {
-            combinedWorkArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
-            
-        } }).wait();
-
-        RECT combinedMonitorArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcMonitor>();
+        const auto& workArea = configuration.GetWorkArea(nullptr);
+        if (!workArea)
+        {
+            return false;
+        }
 
         JsonUtils::MonitorInfo monitorJson;
-        monitorJson.monitorName = ZonedWindowProperties::MultiMonitorName;
-        monitorJson.monitorInstanceId = ZonedWindowProperties::MultiMonitorInstance;
-        monitorJson.monitorNumber = 0;
-        monitorJson.virtualDesktop = virtualDesktopIdStr.value();
+        if (!monitorJson.FillFromWorkArea(workArea))
+        {
+            return false;
+        }
+
+        RECT combinedWorkArea;
+        dpiUnawareThread.submit(OnThreadExecutor::task_t{
+            [&]() {
+                combinedWorkArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
+        } }).wait();
+        RECT combinedMonitorArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcMonitor>();
+
+        // use dpi-unaware values
         monitorJson.top = combinedWorkArea.top;
         monitorJson.left = combinedWorkArea.left;
         monitorJson.workAreaWidth = combinedWorkArea.right - combinedWorkArea.left;
         monitorJson.workAreaHeight = combinedWorkArea.bottom - combinedWorkArea.top;
+
         monitorJson.monitorWidth = combinedMonitorArea.right - combinedMonitorArea.left;
         monitorJson.monitorHeight = combinedMonitorArea.bottom - combinedMonitorArea.top;
         monitorJson.isSelected = true;
@@ -133,8 +154,6 @@ bool EditorParameters::Save() noexcept
     }
     else
     {
-        auto monitors = MonitorUtils::IdentifyMonitors();
-
         HMONITOR targetMonitor{};
         if (FancyZonesSettings::settings().use_cursorpos_editor_startupscreen)
         {
@@ -153,10 +172,25 @@ bool EditorParameters::Save() noexcept
             return false;
         }
 
-        for (auto& monitorData : monitors)
+        const auto& config = configuration.GetAllWorkAreas();
+        for (auto& [monitor, workArea] : config)
         {
-            HMONITOR monitor = monitorData.monitor;
+            JsonUtils::MonitorInfo monitorJson;
+            if (!monitorJson.FillFromWorkArea(workArea.get()))
+            {
+                continue;
+            }
 
+            monitorJson.isSelected = monitor == targetMonitor; /* Is monitor selected for the main editor window opening */
+
+            UINT dpi = 0;
+            if (DPIAware::GetScreenDPIForMonitor(monitor, dpi) != S_OK)
+            {
+                continue;
+            }
+
+            monitorJson.dpi = dpi;
+            
             MONITORINFOEX monitorInfo{};
             dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
                 monitorInfo.cbSize = sizeof(monitorInfo);
@@ -166,37 +200,18 @@ bool EditorParameters::Save() noexcept
                 }
             } }).wait();
 
-            JsonUtils::MonitorInfo monitorJson;
-
-            if (monitor == targetMonitor)
-            {
-                monitorJson.isSelected = true; /* Is monitor selected for the main editor window opening */
-            }
-
-            monitorJson.monitorName = monitorData.deviceId.id;
-            monitorJson.monitorInstanceId = monitorData.deviceId.instanceId;
-            monitorJson.monitorNumber = monitorData.deviceId.number;
-            monitorJson.monitorSerialNumber = monitorData.serialNumber;
-            monitorJson.virtualDesktop = virtualDesktopIdStr.value();
-
-            UINT dpi = 0;
-            if (DPIAware::GetScreenDPIForMonitor(monitor, dpi) != S_OK)
-            {
-                continue;
-            }
-
-            monitorJson.dpi = dpi;
-            monitorJson.top = monitorInfo.rcWork.top;
-            monitorJson.left = monitorInfo.rcWork.left;
-            monitorJson.workAreaWidth = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
-            monitorJson.workAreaHeight = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
-
             float width = static_cast<float>(monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left);
             float height = static_cast<float>(monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top);
             DPIAware::Convert(monitor, width, height);
 
             monitorJson.monitorWidth = static_cast<int>(std::roundf(width));
             monitorJson.monitorHeight = static_cast<int>(std::roundf(height));
+
+            // use dpi-unaware values
+            monitorJson.top = monitorInfo.rcWork.top;
+            monitorJson.left = monitorInfo.rcWork.left;
+            monitorJson.workAreaWidth = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
+            monitorJson.workAreaHeight = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
 
             argsJson.monitors.emplace_back(std::move(monitorJson));
         }

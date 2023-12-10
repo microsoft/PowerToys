@@ -4,6 +4,7 @@
 
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Management.Automation;
 using System.Management.Automation.Subsystem.Feedback;
 using System.Management.Automation.Subsystem.Prediction;
@@ -21,7 +22,7 @@ namespace WinGetCommandNotFound
 
         private List<string>? _candidates;
 
-        private bool _warmedUp = false;
+        private bool _warmedUp;
 
         public static WinGetCommandNotFoundFeedbackPredictor Singleton { get; } = new WinGetCommandNotFoundFeedbackPredictor(Init.Id);
 
@@ -79,12 +80,12 @@ namespace WinGetCommandNotFound
                 _candidates = new List<string>();
                 foreach (var pkg in pkgList)
                 {
-                    _candidates.Add(string.Format("winget install --id {0}", pkg.Members["Id"].Value.ToString()));
+                    _candidates.Add(string.Format(CultureInfo.InvariantCulture, "winget install --id {0}", pkg.Members["Id"].Value.ToString()));
                 }
 
                 // Build footer message
                 var footerMessage = tooManySuggestions ?
-                    string.Format("Additional results can be found using \"winget search --{0} {1}\"", packageMatchFilterField, target) :
+                    string.Format(CultureInfo.InvariantCulture, "Additional results can be found using \"winget search --{0} {1}\"", packageMatchFilterField, target) :
                     null;
 
                 return new FeedbackItem(

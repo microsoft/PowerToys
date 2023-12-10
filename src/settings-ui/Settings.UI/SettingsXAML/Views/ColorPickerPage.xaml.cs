@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Input;
-using CommunityToolkit.Labs.WinUI;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -112,7 +112,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatModel colorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
             string oldName = ((KeyValuePair<string, string>)ColorFormatDialog.Tag).Key;
             ViewModel.UpdateColorFormat(oldName, colorFormat);
-            ColorFormatDialog.Hide();
         }
 
         private async void NewFormatClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -125,19 +124,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatSave");
             ColorFormatDialog.PrimaryButtonCommand = AddCommand;
             await ColorFormatDialog.ShowAsync();
-        }
-
-        private void ColorFormatDialog_CancelButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-        {
-            if (ColorFormatDialog.Tag is KeyValuePair<string, string>)
-            {
-                ColorFormatModel modifiedColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
-                KeyValuePair<string, string> oldProperties = (KeyValuePair<string, string>)ColorFormatDialog.Tag;
-                modifiedColorFormat.Name = oldProperties.Key;
-                modifiedColorFormat.Format = oldProperties.Value;
-            }
-
-            ColorFormatDialog.Hide();
         }
 
         private async void EditButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -161,6 +147,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
+        }
+
+        private void ColorFormatDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
+        {
+            if (args.Result != ContentDialogResult.Primary && ColorFormatDialog.Tag is KeyValuePair<string, string>)
+            {
+                ColorFormatModel modifiedColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
+                KeyValuePair<string, string> oldProperties = (KeyValuePair<string, string>)ColorFormatDialog.Tag;
+                modifiedColorFormat.Name = oldProperties.Key;
+                modifiedColorFormat.Format = oldProperties.Value;
+            }
         }
     }
 }

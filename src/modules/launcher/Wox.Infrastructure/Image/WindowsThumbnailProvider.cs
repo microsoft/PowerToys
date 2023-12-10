@@ -82,7 +82,16 @@ namespace Wox.Infrastructure.Image
 
         public static BitmapSource GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
         {
-            IntPtr hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, options);
+            IntPtr hBitmap = IntPtr.Zero;
+
+            if (Path.GetExtension(fileName).Equals(".lnk", StringComparison.OrdinalIgnoreCase))
+            {
+                hBitmap = ExtractIconToHBitmap(fileName);
+            }
+            else
+            {
+                hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, options);
+            }
 
             try
             {
@@ -97,36 +106,66 @@ namespace Wox.Infrastructure.Image
 
         private static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
         {
-            Guid shellItem2Guid = new Guid(IShellItem2Guid);
-            int retCode = NativeMethods.SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out IShellItem nativeShellItem);
+            IntPtr hBitmap = IntPtr.Zero;
+            IShellItem nativeShellItem = null;
 
-            if (retCode != 0)
+            try
             {
-                throw Marshal.GetExceptionForHR(retCode);
-            }
+                Guid shellItem2Guid = new Guid(IShellItem2Guid);
+                int retCode = NativeMethods.SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out nativeShellItem);
 
-            NativeSize nativeSize = new NativeSize
-            {
-                Width = width,
-                Height = height,
-            };
+                if (retCode != 0)
+                {
+                    Log.Error($"Error while creating item. retCode:{retCode} ", MethodBase.GetCurrentMethod().DeclaringType);
+                    throw Marshal.GetExceptionForHR(retCode);
+                }
 
-            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out IntPtr hBitmap);
+                NativeSize nativeSize = new NativeSize
+                {
+                    Width = width,
+                    Height = height,
+                };
 
-            // if extracting image thumbnail and failed, extract shell icon
-            if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
-            {
-                hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
-            }
+                HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
 
-            Marshal.ReleaseComObject(nativeShellItem);
+                // if extracting image thumbnail and failed, extract shell icon
+                if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
+                {
+                    hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
+                }
 
-            if (hr == HResult.Ok)
-            {
+                if (hr != HResult.Ok)
+                {
+                    throw Marshal.GetExceptionForHR((int)hr);
+                }
+
                 return hBitmap;
             }
+            catch (System.Exception ex)
+            {
+                Log.Exception($"Error while extracting thumbnail for {fileName}", ex, MethodBase.GetCurrentMethod().DeclaringType);
+                throw;
+            }
+            finally
+            {
+                if (nativeShellItem != null)
+                {
+                    Marshal.ReleaseComObject(nativeShellItem);
+                }
+            }
+        }
 
-            throw new InvalidComObjectException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
+        public static IntPtr ExtractIconToHBitmap(string fileName)
+        {
+            // Extracts the icon associated with the file
+            using (System.Drawing.Icon thumbnailIcon = System.Drawing.Icon.ExtractAssociatedIcon(fileName))
+            {
+                // Convert to Bitmap
+                using (System.Drawing.Bitmap bitmap = thumbnailIcon.ToBitmap())
+                {
+                    return bitmap.GetHbitmap();
+                }
+            }
         }
 
         private static bool logReportedAdobeReaderDetected; // Keep track if Adobe Reader detection has been logged yet.

@@ -75,6 +75,9 @@
     <ClInclude Include="EditorConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="XamlBridge2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -126,6 +129,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KeyDelay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XamlBridge2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
