@@ -167,30 +167,32 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
             currentShortcutUI2.as<StackPanel>().Visibility(Visibility::Collapsed);
         }
 
+        auto lastStackPanel = currentShortcutUI2.as<StackPanel>();
         for (int i = 0; i < shortcut.size(); i++)
         {
             if (i < 3)
             {
                 AddKeyToLayout(currentShortcutUI1.as<StackPanel>(), shortcut[i]);
+                lastStackPanel = currentShortcutUI1.as<StackPanel>();
             }
             else
             {
                 AddKeyToLayout(currentShortcutUI2.as<StackPanel>(), shortcut[i]);
+                lastStackPanel = currentShortcutUI2.as<StackPanel>();
             }
         }
 
-        if (detectedShortcut.HasChord())
-        {            
-            std::wstring wideString(1, static_cast<wchar_t>(detectedShortcut.GetSecondKey()));
+        if (!AllowChord)
+        {
+            detectedShortcut.secondKey = NULL;
+        }
 
-            if (shortcut.size() > 3)
-            {
-                AddKeyToLayout(currentShortcutUI1.as<StackPanel>(), wideString.c_str());
-            }
-            else
-            {
-                AddKeyToLayout(currentShortcutUI2.as<StackPanel>(), wideString.c_str());
-            }
+        if (detectedShortcut.HasChord())
+        {
+            Shortcut tempShortcut;
+            tempShortcut.SetKey(detectedShortcutCopy.secondKey);
+            std::vector<hstring> x2222 = EditorHelpers::GetKeyVector(tempShortcut, keyboardMap);
+            AddKeyToLayout(lastStackPanel, EditorHelpers::GetKeyVector(tempShortcut, keyboardMap)[0]);
         }
 
         try
@@ -262,40 +264,53 @@ void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
 {
     // Set the new key and store if a change occurred
     bool updateUI = false;
-    if (false)
+    if (!false)
     {
-        if (!AllowChord)
+        if (AllowChord)
         {
             auto currentFirstKey = detectedShortcut.GetActionKey();
             auto currentSecondKey = detectedShortcut.GetSecondKey();
 
-            if (currentFirstKey != NULL)
-            {
-            }
+            Shortcut tempShortcut;
+            tempShortcut.SetKey(key);
+            bool isKeyActionTypeKey = (tempShortcut.actionKey != NULL);
 
-            Logger::trace(L"AllowChord AND we have first key of  {}", currentFirstKey);
-
-            // we want a chord and already have the first key set
-            std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
-            if (currentSecondKey == NULL)
+            if (isKeyActionTypeKey)
             {
-                Logger::trace(L"NO secondKey YET will use {}", key);
-                // we don't have the second key, set it now
-                updateUI = detectedShortcut.SetSecondKey(key);
+                // we want a chord and already have the first key set
+
+                std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
+
+                if (currentFirstKey == NULL)
+                {
+                    Logger::trace(L"AllowChord AND NO first");
+                    updateUI = detectedShortcut.SetKey(key);
+                }
+                else if (currentSecondKey == NULL)
+                {
+                    Logger::trace(L"AllowChord AND we have first key of  {}", currentFirstKey);
+                    Logger::trace(L"NO secondKey YET will use {}", key);
+                    // we don't have the second key, set it now
+                    updateUI = detectedShortcut.SetSecondKey(key);
+                }
+                else
+                {
+                    Logger::trace(L"DO HAVE secondKey, will make first {} ", currentSecondKey);
+                    Logger::trace(L"DO HAVE secondKey, will make second {} ", key);
+                    // we already have the second key, swap it to first, and use new as second
+                    detectedShortcut.actionKey = currentSecondKey;
+                    detectedShortcut.secondKey = key;
+                    updateUI = true;
+                }
+                updateUI = true;
+                lock.unlock();
             }
             else
             {
-                Logger::trace(L"DO HAVE secondKey, will make first {} ", currentSecondKey);
-                Logger::trace(L"DO HAVE secondKey, will make second {} ", key);
-
-                // we already have the second key, swap it to first, and use new as second
-                updateUI = detectedShortcut.SetKey(currentSecondKey);
-                if (updateUI)
-                {
-                    updateUI = detectedShortcut.SetSecondKey(key);
-                }
+                std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
+                updateUI = detectedShortcut.SetKey(key);
+                lock.unlock();
             }
-            lock.unlock();
         }
         else
         {
@@ -304,10 +319,12 @@ void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
             lock.unlock();
         }
     }
-
-    std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
-    updateUI = detectedShortcut.SetKey(key, AllowChord);
-    lock.unlock();
+    else
+    {
+        std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
+        updateUI = detectedShortcut.SetKey(key);
+        lock.unlock();
+    }
 
     if (updateUI)
     {
@@ -320,7 +337,15 @@ void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
 void KeyboardManagerState::ResetDetectedShortcutKey(DWORD key)
 {
     std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
-    detectedShortcut.ResetKey(key);
+
+    Shortcut tempShortcut;
+    tempShortcut.SetKey(key);
+    bool isKeyActionTypeKey = (tempShortcut.actionKey != NULL);
+
+    if (!isKeyActionTypeKey)
+    {
+        detectedShortcut.ResetKey(key);
+    }
 }
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
 Helpers::KeyboardHookDecision KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data)

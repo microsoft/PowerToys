@@ -26,11 +26,41 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     auto keys = splitwstring(shortcutVK, ';');
+    std::vector<int32_t> keysAsNumbers;
+    for (auto it : keys)
+    {
+        auto vkKeyCode = std::stoul(it);
+        keysAsNumbers.push_back(vkKeyCode);
+    }
+    SetKeyCodes(keysAsNumbers);
+
+    //for (auto it : keys)
+    //{
+    //    auto vkKeyCode = std::stoul(it);
+    //    SetKey(vkKeyCode);
+    //}
+}
+
+// Constructor to initialize Shortcut from it's virtual key code string representation.
+Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD _runProgramSecondKeyOfChord) :
+    winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
+{
+    auto keys = splitwstring(shortcutVK, ';');
+    std::vector<int32_t> keysAsNumbers;
+    for (auto it : keys)
+    {
+        auto vkKeyCode = std::stoul(it);
+        keysAsNumbers.push_back(vkKeyCode);
+    }
+    SetKeyCodes(keysAsNumbers);
+
+    /*
     for (auto it : keys)
     {
         auto vkKeyCode = std::stoul(it);
         SetKey(vkKeyCode);
-    }
+    }*/
+    secondKey = _runProgramSecondKeyOfChord;
 }
 
 // Constructor to initialize shortcut from a list of keys and runProgram data
@@ -48,11 +78,21 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, cons
     }
 
     auto keys = splitwstring(shortcutVK, ';');
+    std::vector<int32_t> keysAsNumbers;
     for (auto it : keys)
     {
         auto vkKeyCode = std::stoul(it);
-        SetKey(vkKeyCode);
+        keysAsNumbers.push_back(vkKeyCode);
     }
+
+    SetKeyCodes(keysAsNumbers);
+
+    /*for (auto it : keys)
+    {
+        auto vkKeyCode = std::stoul(it);
+        SetKey(vkKeyCode);
+        
+    }*/
 }
 
 // Constructor to initialize shortcut from a list of keys
@@ -120,7 +160,7 @@ DWORD Shortcut::GetActionKey() const
     return actionKey;
 }
 
-DWORD Shortcut::GetSecondKey()
+DWORD Shortcut::GetSecondKey() const
 {
     return secondKey;
 }
@@ -339,11 +379,6 @@ bool Shortcut::SetSecondKey(const DWORD input)
 
 bool Shortcut::SetKey(const DWORD input)
 {
-    return SetKey(input, false);
-}
-
-bool Shortcut::SetKey(const DWORD input, const bool allowChord)
-{
     // Since there isn't a key for a common Win key we use the key code defined by us
     if (input == CommonSharedConstants::VK_WIN_BOTH)
     {
@@ -443,23 +478,11 @@ bool Shortcut::SetKey(const DWORD input, const bool allowChord)
     }
     else
     {
-        if (allowChord && actionKey != NULL)
+        if (actionKey == input)
         {
-            if (secondKey == input)
-            {
-                return false;
-            }
-            secondKey = input;
+            return false;
         }
-        else
-        {
-            secondKey = {};
-            if (actionKey == input)
-            {
-                return false;
-            }
-            actionKey = input;
-        }
+        actionKey = input;
     }
 
     return true;
@@ -487,20 +510,9 @@ void Shortcut::ResetKey(const DWORD input)
     }
     else
     {
-        /*
-        if (input == actionKey)
-        {
-            actionKey = {};
-        }
-
-        if (input == actionKey)
-        {
-            secondKey = {};
-        }
-        */
-        actionKey = {};
-        secondKey = {};
     }
+    actionKey = {};
+    secondKey = {};
 }
 
 // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
@@ -526,6 +538,11 @@ winrt::hstring Shortcut::ToHstringVK() const
     if (actionKey != NULL)
     {
         output = output + winrt::to_hstring(static_cast<unsigned int>(GetActionKey())) + winrt::to_hstring(L";");
+    }
+
+    if (secondKey != NULL)
+    {
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetSecondKey())) + winrt::to_hstring(L";");
     }
 
     if (!output.empty())
@@ -567,11 +584,31 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
 void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
 {
     Reset();
+
+    bool foundActionKey = false;
     for (int i = 0; i < keys.size(); i++)
     {
         if (keys[i] != -1 && keys[i] != 0)
         {
-            SetKey(keys[i]);
+            Shortcut tempShortcut;
+            tempShortcut.SetKey(keys[i]);
+
+            if (!foundActionKey && tempShortcut.actionKey != NULL)
+            {
+                // last key was an action key, next key is secondKey
+                foundActionKey = true;
+                SetKey(keys[i]);
+            }
+            else if (foundActionKey && tempShortcut.actionKey != NULL)
+            {
+                // already found actionKey, and we found another, add this as the secondKey
+                secondKey = keys[i];
+            }
+            else
+            {
+                // just add whatever it is.
+                SetKey(keys[i]);
+            }
         }
     }
 }

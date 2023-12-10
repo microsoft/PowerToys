@@ -615,7 +615,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         keyboardManagerState.ClearRegisteredKeyDelays();
     };
 
-    auto selectDetectedShortcutAndResetKeys = [&keyboardManagerState](DWORD key) {        
+    auto selectDetectedShortcutAndResetKeys = [&keyboardManagerState](DWORD key) {
         keyboardManagerState.SelectDetectedShortcut(key);
         keyboardManagerState.ResetDetectedShortcutKey(key);
     };
@@ -768,29 +768,8 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     // Detect Chord
     stackPanel.Children().Append(allowChordSwitch);
 
-    auto toggleHandler = [&allowChordSwitch, &keyboardManagerState](auto const& sender, auto const& e) {
-        //KeyboardManagerEditor::AllowChord = !KeyboardManagerEditor::AllowChord;
-
-        keyboardManagerState.AllowChord = !keyboardManagerState.AllowChord;
-
-        //keyboardManagerState->AllowChord = !keyboardManagerState->AllowChord;
-
-        //KeyboardManager::AllowChords = KeyboardManager::AllowChords;
-
-        //try
-        //{
-        //    KeyboardManagerEditor::AllowChord = allowChordSwitch.IsOn();
-        //}
-        //catch (...)
-        //{
-        //}
-
-        //KeyboardManagerEditor::AllowChord =
-        /*allowChordSwitch.Dispatcher().RunAsync(
-            Windows::UI::Core::CoreDispatcherPriority::Normal,
-            [] {
-                KeyboardManagerEditor::AllowChord = true;
-            });*/
+    auto toggleHandler = [allowChordSwitch, &keyboardManagerState](auto const& sender, auto const& e) {
+        keyboardManagerState.AllowChord = allowChordSwitch.IsOn();
     };
 
     allowChordSwitch.Toggled(toggleHandler);
