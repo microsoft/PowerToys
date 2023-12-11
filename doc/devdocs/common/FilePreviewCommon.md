@@ -12,7 +12,7 @@ This previewer is used for the File Explorer Dev File Previewer, as well as Powe
 
 1. Download Monaco editor with [npm](https://www.npmjs.com/): Run `npm i monaco-editor` in the command prompt.
 2. Delete everything except the `min` folder (the minimised code) from the downloaded files.
-3. Copy the `min` folder into the `src/common/FilePreviewCommon/monacoSRC` folder of the PowerToys project.
+3. Copy the `min` folder into the `src/common/FilePreviewCommon/Assets/Monaco/monacoSRC` folder of the PowerToys project.
 4. Generate the JSON file as described in the generate [monaco_languages.json file](#monaco_languagesjson) section.
 
 ### Add a new language definition
