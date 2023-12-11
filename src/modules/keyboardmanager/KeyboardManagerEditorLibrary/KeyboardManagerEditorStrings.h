@@ -11,7 +11,17 @@ namespace KeyboardManagerEditorStrings
     {
         return GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
     }
-        
+
+    inline std::wstring MappingTypeText()
+    {
+        return GET_RESOURCE_STRING(IDS_MAPPING_TYPE_DROPDOWN_TEXT);
+    }
+
+    inline std::wstring MappingTypeKeyShortcut()
+    {
+        return GET_RESOURCE_STRING(IDS_MAPPING_TYPE_DROPDOWN_KEY_SHORTCUT);
+    }
+
     // Function to return the error message
     winrt::hstring GetErrorMessage(ShortcutErrorType errorType);
 }

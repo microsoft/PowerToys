@@ -188,10 +188,7 @@ namespace PowerLauncher.Plugin
 
         public static List<Result> QueryForPlugin(PluginPair pair, Query query, bool delayedExecution = false)
         {
-            if (pair == null)
-            {
-                throw new ArgumentNullException(nameof(pair));
-            }
+            ArgumentNullException.ThrowIfNull(pair);
 
             if (!pair.IsPluginInitialized)
             {
@@ -272,15 +269,9 @@ namespace PowerLauncher.Plugin
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)
         {
-            if (results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
+            ArgumentNullException.ThrowIfNull(results);
 
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
+            ArgumentNullException.ThrowIfNull(metadata);
 
             foreach (var r in results)
             {

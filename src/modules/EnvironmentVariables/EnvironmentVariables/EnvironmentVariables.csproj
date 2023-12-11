@@ -3,12 +3,12 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RootNamespace>EnvironmentVariables</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
@@ -34,10 +34,10 @@
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->

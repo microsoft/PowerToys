@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
                 {
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     Title = Resources.Microsoft_plugin_timedate_CopyToClipboard,
                     Action = _ => ResultHelper.CopyToClipBoard(data.Value),
@@ -65,10 +65,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             return SearchController.ExecuteSearch(query, IconTheme);
         }

@@ -2,7 +2,7 @@
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ProjectGuid>{03276a39-d4e9-417c-8ffd-200b0ee5e871}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Plugin.Uri</RootNamespace>

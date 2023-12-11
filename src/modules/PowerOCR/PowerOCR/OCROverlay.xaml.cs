@@ -50,6 +50,16 @@ public partial class OCROverlay : Window
 
         InitializeComponent();
 
+        // workaround for #30177
+        try
+        {
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Exception in SystemThemeWatcher.Watch, issue 30177. {ex.Message}");
+        }
+
         PopulateLanguageMenu();
     }
 

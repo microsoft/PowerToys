@@ -465,14 +465,13 @@
                         TextChanged="EditVariableDialogValueTxtBox_TextChanged"
                         TextWrapping="Wrap" />
                     <MenuFlyoutSeparator Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <ListView
+                    <ItemsControl
                         x:Name="EditVariableValuesList"
-                        Margin="-16,-8,0,12"
+                        Margin="0,-8,0,12"
                         HorizontalAlignment="Stretch"
                         ItemsSource="{Binding ValuesList, Mode=TwoWay}"
-                        SelectionMode="None"
                         Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ListView.ItemTemplate>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -523,8 +522,8 @@
                                     </Button>
                                 </Grid>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
         </ContentDialog>
@@ -583,15 +582,14 @@
                             HorizontalAlignment="Right"
                             Visibility="Collapsed" />
 
-                        <ListView
+                        <ItemsControl
                             x:Name="NewProfileVariablesListView"
                             Grid.Row="1"
                             Grid.ColumnSpan="2"
-                            Margin="-16,-8,0,12"
+                            Margin="0,-8,0,12"
                             HorizontalAlignment="Stretch"
-                            ItemsSource="{Binding Variables, Mode=TwoWay}"
-                            SelectionMode="None">
-                            <ListView.ItemTemplate>
+                            ItemsSource="{Binding Variables, Mode=TwoWay}">
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="models:Variable">
                                     <Grid Height="48" ColumnSpacing="8">
                                         <Grid.ColumnDefinitions>
@@ -617,8 +615,8 @@
                                             Visibility="Collapsed" />
                                     </Grid>
                                 </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
                     </Grid>
 

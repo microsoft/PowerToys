@@ -21,10 +21,7 @@ namespace Wox.Plugin
 
         public static bool IsAllowed(string language)
         {
-            if (language == null)
-            {
-                throw new ArgumentNullException(nameof(language));
-            }
+            ArgumentNullException.ThrowIfNull(language);
 
             // Using InvariantCulture since this is a command line arg
             return language.ToUpper(CultureInfo.InvariantCulture) == CSharp.ToUpper(CultureInfo.InvariantCulture)

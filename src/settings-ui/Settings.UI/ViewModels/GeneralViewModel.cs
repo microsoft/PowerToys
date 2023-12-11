@@ -83,10 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ResourceLoader = resourceLoader;
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
@@ -102,8 +99,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback function value to update the UI theme.
             UpdateUIThemeCallBack = updateTheme;
-
-            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
