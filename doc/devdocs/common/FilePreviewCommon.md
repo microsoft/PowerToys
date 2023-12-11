@@ -51,7 +51,7 @@ registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
 
 ### Add a new file extension to an existing language
 
-1. In the [`monacoSpecialLanguages.js`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js) file add the following line to the `registerAdditionalLanguages` function. (`existingId` is the id of the language you want to add the extension to. You can find these id's in the [`monaco_languages.json`](/src/common/FilePreviewCommon/monaco_languages.json) file):
+1. In the [`monacoSpecialLanguages.js`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js) file add the following line to the `registerAdditionalLanguages` function. (`existingId` is the id of the language you want to add the extension to. You can find these id's in the [`monaco_languages.json`](/src/common/FilePreviewCommon/Assets/Monaco/monaco_languages.json) file):
 
 ```javascript
 registerAdditionalLanguage("id", [".fileExtension"], "existingId", monaco)
