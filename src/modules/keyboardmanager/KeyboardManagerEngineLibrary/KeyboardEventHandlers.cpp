@@ -227,22 +227,22 @@ namespace KeyboardEventHandlers
                     if (!resetChordsResults.AnyChordStarted && data->lParam->vkCode == itShortcut.GetActionKey() && !itShortcut.IsChordStarted() && itShortcut.HasChord())
                     {
                         // start new chord
-                        Logger::trace(L"CKBH: new chord started");
+                        Logger::trace(L"CKBH:new chord started for {}", data->lParam->vkCode);
                         isMatchOnChordStart = true;
-                        ResetAllStartedChords(state, activatedApp);
+                        ResetAllOtherStartedChords(state, activatedApp, data->lParam->vkCode);
                         itShortcut.SetChordStarted(true);
-                        break;
+                        continue;
                     }
 
                     if (data->lParam->vkCode == itShortcut.GetSecondKey() && itShortcut.IsChordStarted() && itShortcut.HasChord())
                     {
-                        Logger::trace(L"CKBH: found chord match {}, {}", itShortcut.GetActionKey(), itShortcut.GetSecondKey());
+                        Logger::trace(L"CKBH:found chord match {}, {}", itShortcut.GetActionKey(), itShortcut.GetSecondKey());
                         isMatchOnChordEnd = true;
                     }
 
                     if (resetChordsResults.AnyChordStarted && !isMatchOnChordEnd)
                     {
-                        Logger::trace(L"CKBH: waiting on second key of chord");
+                        Logger::trace(L"CKBH:waiting on second key of chord, checked {} for {}", itShortcut.GetSecondKey(), data->lParam->vkCode);
                         // this is a key and there is a mod, but it's not the second key of a chord.
                         // we can't do anything with this key, we're waiting.
                         continue;
@@ -874,12 +874,20 @@ namespace KeyboardEventHandlers
         return 0;
     }
 
-    void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp)
+    void ResetAllOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, DWORD keyToKeep)
     {
         for (auto& itShortcut_2 : state.GetSortedShortcutRemapVector(activatedApp))
         {
-            itShortcut_2.SetChordStarted(false);
+            if (keyToKeep == NULL || itShortcut_2.actionKey != keyToKeep)
+            {
+                itShortcut_2.SetChordStarted(false);
+            }
         }
+    }
+
+    void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp)
+    {
+        ResetAllOtherStartedChords(state, activatedApp, NULL);
     }
 
     ResetChordsResults ResetChordsIfNeeded(LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp)
@@ -909,7 +917,7 @@ namespace KeyboardEventHandlers
 
         if (isNewControlKey)
         {
-            //Logger::trace(L"CKBH: reset");
+            //Logger::trace(L"CKBH:reset");
 
             for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
             {
@@ -1146,29 +1154,31 @@ namespace KeyboardEventHandlers
         // try to just show them all (if they have a title)!.
         hwnd = FindWindow(nullptr, nullptr);
 
-        while (hwnd)
+        if (hwnd)
         {
-            DWORD pidForHwnd;
-            GetWindowThreadProcessId(hwnd, &pidForHwnd);
-            if (pid == pidForHwnd)
+            Logger::trace(L"CKBH:{}:{}, FindWindow (show all mode)", programName, pid);
+            while (hwnd)
             {
-                Logger::trace(L"CKBH:{}:{}, FindWindow (show all mode)", programName, pid);
-
-                int length = GetWindowTextLength(hwnd);
-
-                if (length > 0)
+                DWORD pidForHwnd;
+                GetWindowThreadProcessId(hwnd, &pidForHwnd);
+                if (pid == pidForHwnd)
                 {
-                    ShowWindow(hwnd, SW_RESTORE);
+                    int length = GetWindowTextLength(hwnd);
 
-                    // hwnd is the window handle with targetPid
-                    if (!SetForegroundWindow(hwnd))
+                    if (length > 0)
                     {
-                        auto errorCode = GetLastError();
-                        Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                        ShowWindow(hwnd, SW_RESTORE);
+
+                        // hwnd is the window handle with targetPid
+                        if (!SetForegroundWindow(hwnd))
+                        {
+                            auto errorCode = GetLastError();
+                            Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                        }
                     }
                 }
+                hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
             }
-            hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
         }
     }
 

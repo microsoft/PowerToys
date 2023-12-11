@@ -31,6 +31,9 @@ namespace KeyboardEventHandlers
     // Function to reset chord matching
     void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp);
 
+    // Function to reset chord matching
+    void ResetAllOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, DWORD keyToKeep);
+
     // Function to reset chord matching if needed
     ResetChordsResults ResetChordsIfNeeded(LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp);
 

@@ -19,7 +19,7 @@ private:
 
     inline auto comparator() const
     {
-        return std::make_tuple(winKey, ctrlKey, altKey, shiftKey, actionKey);
+        return std::make_tuple(winKey, ctrlKey, altKey, shiftKey, actionKey, secondKey);
     }
 
     // helper to use the same code in more places.
