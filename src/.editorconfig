@@ -98,12 +98,6 @@ dotnet_diagnostic.IDE0065.severity = none
 # IDE0009: Add this or Me qualification
 dotnet_diagnostic.IDE0009.severity = none
 
-# CA1716: Identifiers should not match keywords
-dotnet_diagnostic.CA1716.severity = none
-
-# SYSLIB1096: Convert to 'GeneratedComInterface'
-dotnet_diagnostic.SYSLIB1096.severity = silent
-
 # CS1615: Argument may not be passed with the ref keyword
 dotnet_diagnostic.CS1615.severity = none
 

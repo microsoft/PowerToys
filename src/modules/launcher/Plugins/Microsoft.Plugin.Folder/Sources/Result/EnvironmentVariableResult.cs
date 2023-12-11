@@ -10,7 +10,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class EnvironmentVariableResult : IItemResult
     {
-        private readonly IShellAction _shellAction = new ShellAction();
+        private readonly ShellAction _shellAction = new ShellAction();
 
         public string Search { get; set; }
 

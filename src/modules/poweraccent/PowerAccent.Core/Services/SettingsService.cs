@@ -15,7 +15,7 @@ namespace PowerAccent.Core.Services;
 public class SettingsService
 {
     private const string PowerAccentModuleName = "QuickAccent";
-    private readonly ISettingsUtils _settingsUtils;
+    private readonly SettingsUtils _settingsUtils;
     private readonly IFileSystemWatcher _watcher;
     private readonly object _loadingSettingsLock = new object();
     private KeyboardListener _keyboardListener;

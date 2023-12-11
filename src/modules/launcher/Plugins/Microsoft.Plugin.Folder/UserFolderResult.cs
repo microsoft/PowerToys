@@ -12,7 +12,7 @@ namespace Microsoft.Plugin.Folder
 {
     public class UserFolderResult : IItemResult
     {
-        private readonly IShellAction _shellAction = new ShellAction();
+        private readonly ShellAction _shellAction = new ShellAction();
 
         public string Search { get; set; }
 

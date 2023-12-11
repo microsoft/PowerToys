@@ -11,7 +11,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class FileItemResult : IItemResult
     {
-        private static readonly IShellAction ShellAction = new ShellAction();
+        private static readonly ShellAction ShellAction = new ShellAction();
 
         private readonly IPath _path;
 

@@ -91,7 +91,7 @@ namespace ColorPicker.Helpers
             ShowZoomWindow(point);
         }
 
-        private static BitmapSource BitmapToImageSource(Bitmap bitmap)
+        private static BitmapImage BitmapToImageSource(Bitmap bitmap)
         {
             using (MemoryStream memory = new MemoryStream())
             {

@@ -22,7 +22,7 @@ namespace ColorPicker.Settings
     [Export(typeof(IUserSettings))]
     public class UserSettings : IUserSettings
     {
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private const string ColorPickerModuleName = "ColorPicker";
         private const string ColorPickerHistoryFilename = "colorHistory.json";
         private const string DefaultActivationShortcut = "Ctrl + Break";

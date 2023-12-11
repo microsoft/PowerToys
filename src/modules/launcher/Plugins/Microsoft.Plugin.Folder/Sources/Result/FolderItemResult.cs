@@ -10,7 +10,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class FolderItemResult : IItemResult
     {
-        private static readonly IShellAction ShellAction = new ShellAction();
+        private static readonly ShellAction ShellAction = new ShellAction();
 
         public FolderItemResult()
         {

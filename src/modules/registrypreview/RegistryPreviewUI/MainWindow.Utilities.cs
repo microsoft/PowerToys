@@ -988,7 +988,7 @@ namespace RegistryPreview
             {
                 try
                 {
-                    TextReader reader = new StreamReader(storageFile);
+                    StreamReader reader = new StreamReader(storageFile);
                     fileContents = reader.ReadToEnd();
                     reader.Close();
                 }
