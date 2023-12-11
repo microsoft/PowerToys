@@ -216,8 +216,20 @@
     <value>Hosts file was modified externally.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
-  <data name="FileSaveError.Message" xml:space="preserve">
-    <value>Failed to save hosts file.</value>
+  <data name="FileSaveError_FileInUse" xml:space="preserve">
+    <value>The hosts file cannot be saved because it is being used by another process.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FileSaveError_Generic" xml:space="preserve">
+    <value>Unable to save the hosts file.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FileSaveError_NotElevated" xml:space="preserve">
+    <value>The hosts file cannot be saved because the program isn't running as administrator.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FileSaveError_ReadOnly" xml:space="preserve">
+    <value>The hosts file cannot be saved because it is read-only.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="FilterBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -231,12 +243,15 @@
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Seperate multiple hosts by space (e.g. server server.local). Maximum 9 hosts per entry.</value>
+    <value>Separate multiple hosts by space (e.g. server server.local). Maximum 9 hosts per entry.</value>
     <comment>Do not localize "server" and "server.local"</comment>
   </data>
   <data name="HostsFilter.Header" xml:space="preserve">
     <value>Hosts</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="MakeWritable.Content" xml:space="preserve">
+    <value>Make writable</value>
   </data>
   <data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
@@ -299,8 +314,12 @@
   <data name="WarningDialog_Title" xml:space="preserve">
     <value>Warning</value>
   </data>
+  <data name="WindowAdminTitle" xml:space="preserve">
+    <value>Administrator: Hosts File Editor</value>
+    <comment>Title of the window when running as administrator. "Hosts File Editor" is the name of the utility. "Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
   <data name="WindowTitle" xml:space="preserve">
     <value>Hosts File Editor</value>
-    <comment>"Hosts File Editor" is the name of the utility. "Hosts" refers to the system hosts file, do not loc</comment>
+    <comment>Title of the window when running as user. "Hosts File Editor" is the name of the utility. "Hosts" refers to the system hosts file, do not loc</comment>
   </data>
 </root>

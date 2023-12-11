@@ -5,6 +5,7 @@
 #include "start_visible.h"
 #include <common/utils/resources.h>
 #include <common/utils/window.h>
+#include <common/utils/MsWindowsSettings.h>
 
 #include "shortcut_guide.h"
 #include "trace.h"
@@ -269,11 +270,12 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_right() const
 
 D2DOverlayWindow::D2DOverlayWindow() :
     total_screen({}),
-    background_animation(0.3),
-    global_windows_shortcuts_animation(0.3),
-    taskbar_icon_shortcuts_animation(0.3),
     D2DWindow()
 {
+    BOOL isEnabledAnimations = GetAnimationsEnabled();
+    background_animation = isEnabledAnimations? 0.3f : 0.f;
+    global_windows_shortcuts_animation = isEnabledAnimations ? 0.3f : 0.f;
+    taskbar_icon_shortcuts_animation = isEnabledAnimations ? 0.3f : 0.f;
     tasklist_thread = std::thread([&] {
         while (running)
         {
@@ -703,7 +705,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
                 {
                     continue;
                 }
-                render_arrow(arrows[(size_t)(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_device_context, taskbar_icon_shortcuts_x_offset, taskbar_icon_shortcuts_y_offset);
+                render_arrow(arrows[static_cast<size_t>(button.keynum) - 1], button, window_rect, use_overlay->get_scale(), d2d_device_context, taskbar_icon_shortcuts_x_offset, taskbar_icon_shortcuts_y_offset);
             }
         }
     }

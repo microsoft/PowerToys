@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -17,7 +18,7 @@ namespace Common.Utilities
     /// </remarks>
     public class ReadonlyStream : Stream
     {
-        private IStream _stream;
+        private IStream? _stream;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReadonlyStream"/> class.
@@ -238,12 +239,10 @@ namespace Common.Utilities
             }
         }
 
+        [MemberNotNull(nameof(_stream))]
         private void CheckDisposed()
         {
-            if (_stream == null)
-            {
-                throw new ObjectDisposedException(nameof(ReadonlyStream));
-            }
+            ObjectDisposedException.ThrowIf(_stream == null, this);
         }
     }
 }

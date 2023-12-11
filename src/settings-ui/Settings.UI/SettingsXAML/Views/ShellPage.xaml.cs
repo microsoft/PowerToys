@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -34,12 +35,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Declaration for the updating the general settings callback function.
         /// </summary>
-        public delegate bool UpdatingGeneralSettingsCallback(string module, bool isEnabled);
+        public delegate bool UpdatingGeneralSettingsCallback(ModuleType moduleType, bool isEnabled);
 
         /// <summary>
         /// Declaration for the opening oobe window callback function.
         /// </summary>
         public delegate void OobeOpeningCallback();
+
+        /// <summary>
+        /// Declaration for the opening whats new window callback function.
+        /// </summary>
+        public delegate void WhatIsNewOpeningCallback();
 
         /// <summary>
         /// Declaration for the opening flyout window callback function.
@@ -85,6 +91,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets callback function for opening oobe window
         /// </summary>
         public static OobeOpeningCallback OpenOobeWindowCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for opening oobe window
+        /// </summary>
+        public static WhatIsNewOpeningCallback OpenWhatIsNewWindowCallback { get; set; }
 
         /// <summary>
         /// Gets or sets callback function for opening flyout window
@@ -202,6 +213,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
+        /// Set whats new opening callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetOpenWhatIsNewCallback(WhatIsNewOpeningCallback implementation)
+        {
+            OpenWhatIsNewWindowCallback = implementation;
+        }
+
+        /// <summary>
         /// Set flyout opening callback function
         /// </summary>
         /// <param name="implementation">delegate function implementation.</param>
@@ -236,7 +256,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public void Refresh()
         {
-            shellFrame.Navigate(typeof(GeneralPage));
+            shellFrame.Navigate(typeof(DashboardPage));
         }
 
         // Tell the current page view model to update
@@ -316,6 +336,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
         }
 
+        private void WhatIsNewItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            OpenWhatIsNewWindowCallback();
+        }
+
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             NavigationViewItem selectedItem = args.SelectedItem as NavigationViewItem;
@@ -361,7 +386,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         internal static void EnsurePageIsSelected()
         {
-            NavigationService.EnsurePageIsSelected(typeof(GeneralPage));
+            NavigationService.EnsurePageIsSelected(typeof(DashboardPage));
         }
 
         private void SetTitleBar()
@@ -373,6 +398,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
                 u.ExtendsContentIntoTitleBar = true;
                 u.SetTitleBar(AppTitleBar);
+                var loader = ResourceLoaderInstance.ResourceLoader;
+                AppTitleBarText.Text = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
 #if DEBUG
                 DebugMessage.Visibility = Visibility.Visible;
 #endif

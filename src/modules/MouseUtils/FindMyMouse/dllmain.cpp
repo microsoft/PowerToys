@@ -3,6 +3,7 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
 #include "FindMyMouse.h"
+#include "WinHookEventIDs.h"
 #include <thread>
 #include <common/utils/logger_helper.h>
 #include <common/utils/color.h>
@@ -22,6 +23,7 @@ namespace
     const wchar_t JSON_KEY_SPOTLIGHT_INITIAL_ZOOM[] = L"spotlight_initial_zoom";
     const wchar_t JSON_KEY_EXCLUDED_APPS[] = L"excluded_apps";
     const wchar_t JSON_KEY_SHAKING_MINIMUM_DISTANCE[] = L"shaking_minimum_distance";
+    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -57,6 +59,9 @@ class FindMyMouse : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
+
+    // Hotkey to invoke the module
+    HotkeyEx m_hotkey;
 
     // Find My Mouse specific settings
     FindMyMouseSettings m_findMyMouseSettings;
@@ -157,6 +162,27 @@ public:
     {
         return m_enabled;
     }
+
+    virtual std::optional<HotkeyEx> GetHotkeyEx() override
+    {
+        Logger::trace("GetHotkeyEx()");
+        if (m_findMyMouseSettings.activationMethod == FindMyMouseActivationMethod::Shortcut)
+        {
+            return m_hotkey;
+        }
+
+        return std::nullopt;
+    }
+
+    virtual void OnHotkeyEx() override
+    {
+        Logger::trace("OnHotkeyEx()");
+        HWND hwnd = GetSonarHwnd();
+        if (hwnd != nullptr)
+        {
+            PostMessageW(hwnd, WM_PRIV_SHORTCUT, NULL, NULL);
+        }
+    }
 };
 
 // Load the settings file.
@@ -188,7 +214,15 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
             if (value < static_cast<int>(FindMyMouseActivationMethod::EnumElements) && value >= 0)
             {
-                findMyMouseSettings.activationMethod = static_cast<FindMyMouseActivationMethod>(value);
+                std::wstring version = (std::wstring)settingsObject.GetNamedString(L"version");
+                if (version == L"1.0" && value == 1)
+                {
+                    findMyMouseSettings.activationMethod = FindMyMouseActivationMethod::ShakeMouse;
+                }
+                else
+                {
+					findMyMouseSettings.activationMethod = static_cast<FindMyMouseActivationMethod>(value);
+				}
             }
             else
             {
@@ -361,6 +395,46 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         catch (...)
         {
             Logger::warn("Failed to initialize Shaking Minimum Distance from settings. Will use default value");
+        }
+
+        try
+        {
+            // Parse HotKey
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
+            auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
+            m_hotkey = HotkeyEx();
+            if (hotkey.win_pressed())
+            {
+                m_hotkey.modifiersMask |= MOD_WIN;
+            }
+
+            if (hotkey.ctrl_pressed())
+            {
+                m_hotkey.modifiersMask |= MOD_CONTROL;
+            }
+
+            if (hotkey.shift_pressed())
+            {
+                m_hotkey.modifiersMask |= MOD_SHIFT;
+            }
+
+            if (hotkey.alt_pressed())
+            {
+                m_hotkey.modifiersMask |= MOD_ALT;
+            }
+
+            m_hotkey.vkCode = static_cast<WORD>(hotkey.get_code());
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Activation Shortcut from settings. Will use default value");
+        }
+
+        if (!m_hotkey.modifiersMask)
+        {
+            Logger::info("Using default Activation Shortcut");
+            m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
+            m_hotkey.vkCode = 0x46; // F key
         }
     }
     else

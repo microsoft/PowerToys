@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using CommunityToolkit.WinUI.UI;
+using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
@@ -332,6 +332,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     EnableKeys();
                 }
             }
+
+            c.IsWarningAltGr = internalSettings.Ctrl && internalSettings.Alt && !internalSettings.Win && (internalSettings.Code > 0);
         }
 
         private void EnableKeys()
@@ -407,6 +409,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             c.Keys = null;
             c.Keys = HotkeySettings.GetKeysList();
+
+            // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
+            // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
+            c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
 
             shortcutDialog.XamlRoot = this.XamlRoot;
             shortcutDialog.RequestedTheme = this.ActualTheme;

@@ -34,6 +34,8 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
 
         public string Description => Resources.plugin_description;
 
+        public static string PluginID => "F59BA85006B14389A72A0EA756695F1D";
+
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             new PluginAdditionalOption()
@@ -116,7 +118,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
                 {
                     Title = Resources.run_as_administrator,
                     Glyph = "\xE7EF",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
@@ -201,12 +203,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
         {
             var aumid = terminal.AppUserModelId;
 
-            if (!_logoCache.ContainsKey(aumid))
+            if (!_logoCache.TryGetValue(aumid, out BitmapImage value))
             {
-                _logoCache.Add(aumid, terminal.GetLogo());
+                value = terminal.GetLogo();
+                _logoCache.Add(aumid, value);
             }
 
-            return _logoCache[aumid];
+            return value;
         }
     }
 }

@@ -49,11 +49,11 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
 
-    HANDLE m_hShowEvent;
+    HANDLE m_hShowEvent{};
 
-    HANDLE m_hShowAdminEvent;
+    HANDLE m_hShowAdminEvent{};
 
     bool is_process_running()
     {
@@ -132,7 +132,7 @@ public:
         }
 
         m_hShowAdminEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT);
-        if (!m_hShowEvent)
+        if (!m_hShowAdminEvent)
         {
             Logger::error(L"Failed to create show hosts admin event");
             auto message = get_last_error_message(GetLastError());

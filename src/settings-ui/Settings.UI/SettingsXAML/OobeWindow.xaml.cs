@@ -13,6 +13,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using WinUIEx;
+using WinUIEx.Messaging;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
@@ -31,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private IntPtr _hWnd;
         private AppWindow _appWindow;
 
-        public OobeWindow(PowerToysModules initialModule, bool isDark)
+        public OobeWindow(PowerToysModules initialModule)
         {
             this.InitializeComponent();
 
@@ -40,14 +41,6 @@ namespace Microsoft.PowerToys.Settings.UI
             _windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
             _appWindow = AppWindow.GetFromWindowId(_windowId);
             _appWindow.SetIcon("Assets\\Settings\\icon.ico");
-
-            // Passed by parameter, as it needs to be evaluated ASAP, otherwise there is a white flash
-            if (isDark)
-            {
-                ThemeHelpers.SetImmersiveDarkMode(_hWnd, isDark);
-            }
-
-            SetTheme(isDark);
 
             OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsMinimizable = false;
@@ -65,6 +58,18 @@ namespace Microsoft.PowerToys.Settings.UI
             _appWindow.Resize(size);
 
             this.initialModule = initialModule;
+
+            var msgMonitor = new WindowMessageMonitor(this);
+            msgMonitor.WindowMessageReceived += (_, e) =>
+            {
+                const int WM_NCLBUTTONDBLCLK = 0x00A3;
+                if (e.Message.MessageId == WM_NCLBUTTONDBLCLK)
+                {
+                    // Disable double click on title bar to maximize window
+                    e.Result = 0;
+                    e.Handled = true;
+                }
+            };
 
             this.SizeChanged += OobeWindow_SizeChanged;
 
@@ -90,6 +95,14 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 App.OpenSettingsWindow(type);
             });
+        }
+
+        public void SetAppWindow(PowerToysModules module)
+        {
+            if (shellPage != null)
+            {
+                shellPage.NavigateToModule(module);
+            }
         }
 
         private void OobeWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
@@ -118,11 +131,6 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 mainWindow.CloseHiddenWindow();
             }
-        }
-
-        private void SetTheme(bool isDark)
-        {
-            shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
     }
 }

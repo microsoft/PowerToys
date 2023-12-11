@@ -11,7 +11,7 @@ private:
     constexpr static size_t MaxResultBufferSize = 1024 * 1024 * 1024;
 
     constexpr static int ObjectNameInformation = 1;
-    constexpr static int SystemHandleInformation = 16;
+    constexpr static int SystemExtendedHandleInformation = 64;
 
     struct MemoryLoopResult
     {
@@ -35,8 +35,8 @@ public:
 
     struct HandleInfo
     {
-        DWORD pid;
-        USHORT handle;
+        ULONG_PTR pid;
+        ULONG_PTR handle;
         std::wstring type_name;
         std::wstring kernel_file_name;
     };

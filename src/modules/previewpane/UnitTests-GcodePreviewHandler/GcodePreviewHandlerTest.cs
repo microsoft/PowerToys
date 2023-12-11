@@ -19,14 +19,17 @@ namespace GcodePreviewHandlerUnitTests
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "new Exception() is fine in test projects.")]
     public class GcodePreviewHandlerTest
     {
-        [TestMethod]
-        public void GcodePreviewHandlerControlAddsControlsToFormWhenDoPreviewIsCalled()
+        [DataTestMethod]
+        [DataRow("HelperFiles/sample.gcode")]
+        [DataRow("HelperFiles/sample_JPG.gcode")]
+        [DataRow("HelperFiles/sample_QOI.gcode")]
+        public void GcodePreviewHandlerControlAddsControlsToFormWhenDoPreviewIsCalled(string filePath)
         {
             // Arrange
             using (var gcodePreviewHandlerControl = new GcodePreviewHandlerControl())
             {
                 // Act
-                var file = File.ReadAllBytes("HelperFiles/sample.gcode");
+                var file = File.ReadAllBytes(filePath);
 
                 gcodePreviewHandlerControl.DoPreview<IStream>(GetMockStream(file));
 

@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public bool ShowScoobe { get; set; }
 
-        public Type StartupPage { get; set; } = typeof(Views.GeneralPage);
+        public Type StartupPage { get; set; } = typeof(Views.DashboardPage);
 
         public static Action<string> IPCMessageReceivedCallback { get; set; }
 
@@ -106,7 +106,6 @@ namespace Microsoft.PowerToys.Settings.UI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
-            var isDark = IsDarkTheme();
 
             if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
             {
@@ -163,26 +162,26 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 if (!ShowOobe && !ShowScoobe && !ShowFlyout)
                 {
-                    settingsWindow = new MainWindow(isDark);
+                    settingsWindow = new MainWindow();
                     settingsWindow.Activate();
                     settingsWindow.ExtendsContentIntoTitleBar = true;
                     settingsWindow.NavigateToSection(StartupPage);
 
                     // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
                     // Need to call SetForegroundWindow to actually gain focus.
-                    Utils.BecomeForegroundWindow(settingsWindow.GetWindowHandle());
+                    WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
                 }
                 else
                 {
                     // Create the Settings window hidden so that it's fully initialized and
                     // it will be ready to receive the notification if the user opens
                     // the Settings from the tray icon.
-                    settingsWindow = new MainWindow(isDark, true);
+                    settingsWindow = new MainWindow(true);
 
                     if (ShowOobe)
                     {
                         PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-                        OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview, isDark);
+                        OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
                         oobeWindow.Activate();
                         oobeWindow.ExtendsContentIntoTitleBar = true;
                         SetOobeWindow(oobeWindow);
@@ -190,7 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     else if (ShowScoobe)
                     {
                         PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                        OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew, isDark);
+                        OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
                         scoobeWindow.Activate();
                         scoobeWindow.ExtendsContentIntoTitleBar = true;
                         SetOobeWindow(scoobeWindow);
@@ -206,20 +205,26 @@ namespace Microsoft.PowerToys.Settings.UI
                         ShellPage.OpenFlyoutCallback(p);
                     }
                 }
+
+                if (SelectedTheme() == ElementTheme.Default)
+                {
+                    themeListener = new ThemeListener();
+                    themeListener.ThemeChanged += (_) => HandleThemeChange();
+                }
             }
             else
             {
 #if DEBUG
                 // For debugging purposes
                 // Window is also needed to show MessageDialog
-                settingsWindow = new MainWindow(isDark);
+                settingsWindow = new MainWindow();
                 settingsWindow.ExtendsContentIntoTitleBar = true;
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
                 ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
 #else
-                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the General page. */
-                SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Overview, true);
+                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
+                SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Dashboard, true);
                 Exit();
 #endif
             }
@@ -281,15 +286,15 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(settingsWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
-                    SetContentTheme(isDark, settingsWindow);
                 }
 
                 if (oobeWindow != null)
                 {
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(oobeWindow);
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
-                    SetContentTheme(isDark, oobeWindow);
                 }
+
+                SetContentTheme(isDark);
 
                 if (SelectedTheme() == ElementTheme.Default)
                 {
@@ -312,19 +317,40 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
-        public static void SetContentTheme(bool isDark, WindowEx window)
+        public static int UpdateUIThemeMethod(string themeName)
         {
-            var rootGrid = (FrameworkElement)window.Content;
-            if (rootGrid != null)
+            switch (themeName?.ToUpperInvariant())
             {
-                if (isDark)
-                {
-                    rootGrid.RequestedTheme = ElementTheme.Dark;
-                }
-                else
-                {
-                    rootGrid.RequestedTheme = ElementTheme.Light;
-                }
+                case "LIGHT":
+                    // OobeShellPage.OobeShellHandler.RequestedTheme = ElementTheme.Light;
+                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    break;
+                case "DARK":
+                    // OobeShellPage.OobeShellHandler.RequestedTheme = ElementTheme.Dark;
+                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    break;
+                case "SYSTEM":
+                    // OobeShellPage.OobeShellHandler.RequestedTheme = ElementTheme.Default;
+                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    break;
+                default:
+                    Logger.LogError($"Unexpected theme name: {themeName}");
+                    break;
+            }
+
+            HandleThemeChange();
+            return 0;
+        }
+
+        public static void SetContentTheme(bool isDark)
+        {
+            if (isDark)
+            {
+                App.Current.RequestedTheme = ApplicationTheme.Dark;
+            }
+            else
+            {
+                App.Current.RequestedTheme = ApplicationTheme.Light;
             }
         }
 
@@ -379,6 +405,7 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             switch (settingWindow)
             {
+                case "Dashboard": return typeof(DashboardPage);
                 case "Overview": return typeof(GeneralPage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
@@ -402,10 +429,11 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "PastePlain": return typeof(PastePlainPage);
                 case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
+                case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
                 default:
-                    // Fallback to general
+                    // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");
-                    return typeof(GeneralPage);
+                    return typeof(DashboardPage);
             }
         }
     }

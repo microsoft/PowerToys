@@ -33,10 +33,7 @@ namespace Wox.Plugin
 
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
+                ArgumentNullException.ThrowIfNull(value);
 
                 // Using Ordinal since this is used internally
                 _title = value.Replace("\n", " ", StringComparison.Ordinal);

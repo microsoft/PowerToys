@@ -107,6 +107,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         public static string ReadIndexHtml()
         {
             string html;
+
             using (StreamReader htmlFileReader = new StreamReader(new FileStream(MonacoDirectory + "\\index.html", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 html = htmlFileReader.ReadToEnd();

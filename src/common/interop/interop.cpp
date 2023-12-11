@@ -203,6 +203,10 @@ public
             return gcnew String(CommonSharedConstants::SHOW_POWEROCR_SHARED_EVENT);
         }
 
+        static String ^ MouseJumpShowPreviewEvent() {
+            return gcnew String(CommonSharedConstants::MOUSE_JUMP_SHOW_PREVIEW_EVENT);
+        }
+
         static String ^ AwakeExitEvent() {
             return gcnew String(CommonSharedConstants::AWAKE_EXIT_EVENT);
         }
@@ -229,6 +233,10 @@ public
 
         static String ^ GcodePreviewResizeEvent() {
             return gcnew String(CommonSharedConstants::GCODE_PREVIEW_RESIZE_EVENT);
+        }
+
+        static String ^ QoiPreviewResizeEvent() {
+            return gcnew String(CommonSharedConstants::QOI_PREVIEW_RESIZE_EVENT);
         }
 
         static String ^ DevFilesPreviewResizeEvent() {
@@ -261,6 +269,14 @@ public
 
         static String ^ CropAndLockReparentEvent() {
             return gcnew String(CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
+        }
+
+        static String ^ ShowEnvironmentVariablesSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_EVENT);
+        }
+
+        static String ^ ShowEnvironmentVariablesAdminSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT);
         }
     };
 }

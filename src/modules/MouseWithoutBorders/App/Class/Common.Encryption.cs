@@ -115,7 +115,7 @@ namespace MouseWithoutBorders
             byte[] rv;
             string myKey = Common.MyKey;
 
-            if (!LegalKeyDictionary.ContainsKey(myKey))
+            if (!LegalKeyDictionary.TryGetValue(myKey, out byte[] value))
             {
                 Rfc2898DeriveBytes key = new(
                     myKey,
@@ -127,7 +127,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                rv = LegalKeyDictionary[myKey];
+                rv = value;
             }
 
             return rv;

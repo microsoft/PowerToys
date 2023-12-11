@@ -72,6 +72,7 @@ namespace ColorPicker.ViewModels
                 mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
                 mouseInfoProvider.OnMouseDown += MouseInfoProvider_OnMouseDown;
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
+                mouseInfoProvider.OnSecondaryMouseUp += MouseInfoProvider_OnSecondaryMouseUp;
             }
 
             _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
@@ -164,6 +165,11 @@ namespace ColorPicker.ViewModels
             }
 
             _appStateHandler.OnColorPickerMouseDown();
+        }
+
+        private void MouseInfoProvider_OnSecondaryMouseUp(object sender, IntPtr wParam)
+        {
+            _appStateHandler.EndUserSession();
         }
 
         private string GetColorString()

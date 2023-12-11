@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -561,6 +561,9 @@
   <data name="VideoConference_ToolbarHideUnmuted.Content" xml:space="preserve">
     <value>When both camera and microphone are unmuted</value>
   </data>
+  <data name="VideoConference_ToolbarHideTimeout.Content" xml:space="preserve">
+    <value>After timeout</value>
+  </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference Mute</value>
   </data>
@@ -575,6 +578,21 @@
   </data>
   <data name="VideoConference_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
+  </data>
+  <data name="VideoConference_Behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="VideoConference_StartupAction.Header" xml:space="preserve">
+    <value>Startup action</value>
+  </data>
+  <data name="VideoConference_StartupActionNothing.Content" xml:space="preserve">
+    <value>Nothing</value>
+  </data>
+  <data name="VideoConference_StartupActionUnmute.Content" xml:space="preserve">
+    <value>Unmute</value>
+  </data>
+  <data name="VideoConference_StartupActionMute.Content" xml:space="preserve">
+    <value>Mute</value>
   </data>
   <data name="VideoConference_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
@@ -736,6 +754,12 @@
   <data name="PowerLauncher_SearchResultPreference.Header" xml:space="preserve">
     <value>Search result preference</value>
   </data>
+  <data name="PowerLauncher_UsePinyin.Header" xml:space="preserve">
+    <value>Use Pinyin</value>
+  </data>
+  <data name="PowerLauncher_UsePinyin.Description" xml:space="preserve">
+    <value>Experimental: Use Pinyin on the search query. May not work for every plugin.</value>
+  </data>
   <data name="PowerLauncher_SearchResultPreference_MostRecentlyUsed" xml:space="preserve">
     <value>Most recently used</value>
   </data>
@@ -841,8 +865,8 @@
     <value>Create window layouts to help make multi-tasking easy.</value>
     <comment>windows refers to application windows</comment>
   </data>
-  <data name="FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
-    <value>Keep windows in their zones when the screen resolution changes</value>
+  <data name="FancyZones_DisplayOrWorkAreaChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
+    <value>Keep windows in their zones when the screen resolution or work area changes</value>
     <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
@@ -904,7 +928,10 @@
     <value>This overrides the Windows Snap shortcut (Win + arrow) to move windows between zones</value>
   </data>
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
-    <value>Hold Shift key to activate zones while dragging</value>
+    <value>Hold Shift key to activate zones while dragging a window</value>
+  </data>
+  <data name="FancyZones_ActivationNoShiftDrag" xml:space="preserve">
+    <value>Drag windows to activate zones</value>
   </data>
   <data name="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Show zones on all monitors while dragging a window</value>
@@ -1108,6 +1135,21 @@
   <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
     <value>Color</value>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Header" xml:space="preserve">
+    <value>Quite Ok Image</value>
+    <comment>File type, do not translate</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Description" xml:space="preserve">
+    <value>.qoi</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Header" xml:space="preserve">
+    <value>Quite OK Image</value>
+    <comment>File type, do not translate</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
+    <value>.qoi</value>
+    <comment>File extension, should not be altered</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
     <comment>File type, do not translate</comment>
@@ -1148,7 +1190,7 @@
     <value>Use a shortcut or press the Windows key for some time to activate</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
-    <value>Customized shortcut</value>
+    <value>Custom shortcut</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" xml:space="preserve">
     <value>Hold down Windows key</value>
@@ -1453,10 +1495,10 @@
     <value>Encoding</value>
   </data>
   <data name="KeyboardManager_RemapKeyboardButton.Description" xml:space="preserve">
-    <value>Remap keys to other keys or shortcuts</value>
+    <value>Remap keys to other keys, shortcuts or text snippets</value>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Description" xml:space="preserve">
-    <value>Remap shortcuts to other shortcuts or keys for all or specific applications</value>
+    <value>Remap shortcuts to other shortcuts, keys or text snippets for all or specific applications</value>
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
@@ -1574,7 +1616,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_Editor_GroupSettings.Header" xml:space="preserve">
     <value>Editor</value>
-    <comment>refers to the FancyZone editor</comment>
+    <comment>refers to the FancyZones editor</comment>
   </data>
   <data name="FancyZones_WindowBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Window behavior</value>
@@ -1973,7 +2015,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
 Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Documentation on Microsoft Docs</value>
+    <value>Documentation on Microsoft Learn</value>
   </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
@@ -2141,6 +2183,9 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Welcome to PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
   </data>
+	<data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
+    <value>What's New</value>
+  </data>
   <data name="Feedback_NavViewItem.Content" xml:space="preserve">
     <value>Give feedback</value>
   </data>
@@ -2152,6 +2197,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
+    <comment>Title of the settings window when running as user</comment>
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
@@ -2312,6 +2358,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Awake</value>
     <comment>Awake is a product name, do not loc</comment>
   </data>
+  <data name="SecondaryLink_Awake.Text" xml:space="preserve">
+    <value>Den Delimarsky's work on creating Awake</value>
+    <comment>Awake is a product name, do not loc</comment>
+  </data>
   <data name="LearnMore_ColorPicker.Text" xml:space="preserve">
     <value>Learn more about Color Picker</value>
     <comment>Color Picker is a product name, do not loc</comment>
@@ -2384,7 +2434,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Shake the mouse or press the left Ctrl key twice to focus the mouse pointer.</value>
+    <value>Focus the mouse pointer pressing the Ctrl key twice, using a custom shortcut or shaking the mouse.</value>
     <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
@@ -2488,6 +2538,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
+  <data name="WarningShortcutAltGr.Title" xml:space="preserve">
+    <value>Possible shortcut interference with Alt Gr</value>
+    <comment>Alt Gr refers to the right alt key on some international keyboards</comment>
+  </data>
+  <data name="WarningShortcutAltGr.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
+    <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
+  </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
   </data>
@@ -2512,7 +2570,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when shaking the mouse or pressing the left Ctrl key twice.</value>
+    <value>Find My Mouse highlights the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
@@ -2569,6 +2627,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Description" xml:space="preserve">
     <value>Time before the spotlight appears (ms)</value>
     <comment>ms = milliseconds</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled.Message" xml:space="preserve">
+    <value>Animations are disabled by OS. See Settings &gt; Accessibility &gt; Visual effects</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
     <value>Shake minimum distance</value>
@@ -2686,6 +2747,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>VCM is moving into legacy mode (maintenance only).</value>
   </data>
   <data name="VideoConference_DeprecationWarningButton.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+  <data name="LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
   <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
@@ -2963,6 +3027,78 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
   </data>
+  <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
+    <value>Pin a window</value>
+  </data>
+  <data name="Awake_ShortDescription" xml:space="preserve">
+    <value>Keep your PC awake</value>
+  </data>
+  <data name="ColorPicker_ShortDescription" xml:space="preserve">
+    <value>Pick a color</value>
+  </data>
+  <data name="CropAndLock_Thumbnail" xml:space="preserve">
+    <value>Thumbnail</value>
+  </data>
+  <data name="CropAndLock_Reparent" xml:space="preserve">
+    <value>Reparent</value>
+  </data>
+  <data name="FancyZones_OpenEditor" xml:space="preserve">
+    <value>Open editor</value>
+  </data>
+  <data name="FileLocksmith_ShortDescription" xml:space="preserve">
+    <value>Right-click on files or directories to show running processes</value>
+  </data>
+  <data name="FindMyMouse_ShortDescription" xml:space="preserve">
+    <value>Find the mouse</value>
+  </data>
+  <data name="ImageResizer_ShortDescription" xml:space="preserve">
+    <value>Resize images from right-click context menu</value>
+  </data>
+  <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
+    <value>Highlight clicks</value>
+  </data>
+  <data name="MouseJump_ShortDescription" xml:space="preserve">
+    <value>Quickly move the mouse pointer</value>
+  </data>
+  <data name="MouseCrosshairs_ShortDescription" xml:space="preserve">
+    <value>Draw crosshairs centered on the mouse pointer</value>
+  </data>
+  <data name="MouseWithoutBorders_ShortDescription" xml:space="preserve">
+    <value>Move your cursor across multiple devices</value>
+  </data>
+  <data name="PastePlain_ShortDescription" xml:space="preserve">
+    <value>Paste clipboard content without formatting</value>
+  </data>
+  <data name="Peek_ShortDescription" xml:space="preserve">
+    <value>Quick and easy previewer</value>
+  </data>
+  <data name="PowerRename_ShortDescription" xml:space="preserve">
+    <value>Rename files and folders from right-click context menu</value>
+  </data>
+  <data name="Run_ShortDescription" xml:space="preserve">
+    <value>A quick launcher</value>
+  </data>
+  <data name="PowerAccent_ShortDescription" xml:space="preserve">
+    <value>An alternative way to type accented characters</value>
+  </data>
+  <data name="RegistryPreview_ShortDescription" xml:space="preserve">
+    <value>Visualize and edit Windows Registry files</value>
+  </data>
+  <data name="ScreenRuler_ShortDescription" xml:space="preserve">
+    <value>Measure pixels on your screen</value>
+  </data>
+  <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
+    <value>Show a help overlay with Windows shortcuts</value>
+  </data>
+  <data name="PowerOcr_ShortDescription" xml:space="preserve">
+    <value>A convenient way to copy text from anywhere on screen</value>
+  </data>
+  <data name="Dashboard_Activation" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="DashboardKBMShowMappingsButton.Content" xml:space="preserve">
+    <value>Show remappings</value>
+  </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
     <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
   </data>
@@ -3128,6 +3264,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TextExtractor_SupportedLanguages.Title" xml:space="preserve">
     <value>Text Extractor can only recognize languages that have the OCR pack installed.</value>
   </data>
+  <data name="TextExtractor_UseSnippingToolWarning.Title" xml:space="preserve">
+    <value>It is recommended to use the Snipping Tool instead of the TextExtractor module.</value>
+  </data>
   <data name="TextExtractor_SupportedLanguages_Link.Content" xml:space="preserve">
     <value>Learn more about supported languages</value>
   </data>
@@ -3210,6 +3349,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
     <value>Czech</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Danish.Content" xml:space="preserve">
+    <value>Danish</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Gaeilge.Content" xml:space="preserve">
     <value>Gaeilge</value>
     <comment>Gaelic language spoken in Ireland</comment>
@@ -3221,11 +3363,17 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_German.Content" xml:space="preserve">
     <value>German</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
+  <value>Greek</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
     <value>Hebrew</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
     <value>French</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Finnish.Content" xml:space="preserve">
+    <value>Finnish</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Estonian.Content" xml:space="preserve">
     <value>Estonian</value>
@@ -3254,8 +3402,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Portuguese.Content" xml:space="preserve">
     <value>Portuguese</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Slovakian.Content" xml:space="preserve">
-    <value>Slovakian</value>
+  <data name="QuickAccent_SelectedLanguage_Slovak.Content" xml:space="preserve">
+    <value>Slovak</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
     <value>Spanish</value>
@@ -3355,6 +3503,48 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
   </data>
+  <data name="EnvironmentVariables.ModuleDescription" xml:space="preserve">
+    <value>A quick utility for managing environment variables.</value>
+  </data>
+  <data name="EnvironmentVariables.ModuleTitle" xml:space="preserve">
+    <value>Environment Variables</value>
+  </data>
+  <data name="Shell_EnvironmentVariables.Content" xml:space="preserve">
+    <value>Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="EnvironmentVariables_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Manage your environment variables</value>
+  </data>
+  <data name="EnvironmentVariables_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Launch Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch Environment Variables</value>
+  </data>
+  <data name="Launch_EnvironmentVariables.Content" xml:space="preserve">
+    <value>Launch Environment Variables</value>
+  </data>
+  <data name="LearnMore_EnvironmentVariables.Text" xml:space="preserve">
+    <value>Learn more about Environment Variables</value>
+  </data>
+  <data name="Oobe_EnvironmentVariables.Description" xml:space="preserve">
+    <value>Environment Variables is a quick utility for managing environment variables.</value>
+  </data>
+  <data name="Oobe_EnvironmentVariables.Title" xml:space="preserve">
+    <value>Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Description" xml:space="preserve">
+    <value>Needs to be launched as administrator in order to make changes to the system environment variables</value>
+  </data>
+  <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
+    <value>Launch as administrator</value>
+  </data>
   <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
     <value>Press duration before showing taskbar icon shortcuts (ms)</value>
     <comment>ms = milliseconds</comment>
@@ -3387,7 +3577,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
   <data name="GPO_IsSettingForced.Title" xml:space="preserve">
-    <value>The system administrator is forcing this setting.</value>
+    <value>This setting is enforced by your System Administrator.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
@@ -3609,9 +3799,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Maximum width (px)</value>
     <comment>px = pixels</comment>
   </data>
-  <data name="SettingsWindow_TitleTxt.Text" xml:space="preserve">
-    <value>PowerToys Settings</value>
-  </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
   </data>
@@ -3628,7 +3815,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Security key</value>
   </data>
   <data name="Hosts_Encoding.Description" xml:space="preserve">
-    <value>Chose the encoding of the hosts file</value>
+    <value>Choose the encoding of the hosts file</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_Encoding.Header" xml:space="preserve">
@@ -3655,7 +3842,60 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
     <value>Find more plugins</value>
   </data>
+  <data name="Run_SomePluginsAreGpoManaged.Title" xml:space="preserve">
+    <value>The system administrator is managing the enabled state of some plugins.</value>
+  </data>
   <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationCustomizedShortcut.Content" xml:space="preserve">
+    <value>Custom shortcut</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationDoubleRightControlPress.Content" xml:space="preserve">
+    <value>Press Right Control twice</value>
+    <comment>Right control is the physical key on the keyboard.</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to turn on or off this mode</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="SettingsWindow_AdminTitle" xml:space="preserve">
+    <value>Administrator: PowerToys Settings</value>
+    <comment>Title of the settings window when running as administrator</comment>
+  </data>
+  <data name="DashboardTitle.Text" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Shell_Dashboard.Content" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="GPO_IsSettingForcedText.Text" xml:space="preserve">
+    <value>This setting is enforced by your System Administrator.</value>
+  </data>
+  <data name="DisabledModules.Text" xml:space="preserve">
+    <value>Disabled modules</value>
+  </data>
+  <data name="EnabledModules.Text" xml:space="preserve">
+    <value>Enabled modules</value>
+  </data>
+  <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="Peek_SourceCode_Header.Description" xml:space="preserve">
+    <value>.cpp, .py, .json, .xml, .csproj, ...</value>
+  </data>
+  <data name="Peek_SourceCode_Header.Header" xml:space="preserve">
+    <value>Source code files (Monaco)</value>
+  </data>
+  <data name="Peek_SourceCode_TryFormat.Description" xml:space="preserve">
+    <value>Applies to json and xml. Files remain unchanged.</value>
+  </data>
+  <data name="Peek_SourceCode_TryFormat.Header" xml:space="preserve">
+    <value>Try to format the source for preview</value>
+  </data>
+  <data name="Peek_SourceCode_WrapText.Content" xml:space="preserve">
+    <value>Wrap text</value>
   </data>
 </root>

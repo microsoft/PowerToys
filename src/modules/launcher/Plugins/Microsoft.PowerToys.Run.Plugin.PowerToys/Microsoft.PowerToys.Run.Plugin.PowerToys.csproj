@@ -3,7 +3,7 @@
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.PowerToys</RootNamespace>
@@ -103,6 +103,10 @@
     </Content>
     <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsShortcutGuide.png">
       <Link>Images\ShortcutGuide.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsEnvironmentVariables.png">
+      <Link>Images\EnvironmentVariables.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

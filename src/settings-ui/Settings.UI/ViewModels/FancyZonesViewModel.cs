@@ -4,11 +4,11 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Common.UI;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -46,27 +46,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
-            if (settingsUtils == null)
-            {
-                throw new ArgumentNullException(nameof(settingsUtils));
-            }
+            ArgumentNullException.ThrowIfNull(settingsUtils);
 
             SettingsUtils = settingsUtils;
 
             // To obtain the general settings configurations of PowerToys Settings.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             settingsConfigFileFolder = configFileSubfolder;
 
             // To obtain the settings configurations of Fancy zones.
-            if (moduleSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(moduleSettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(moduleSettingsRepository);
 
             Settings = moduleSettingsRepository.SettingsConfig;
 
@@ -79,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             _moveWindowBehaviour = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value ? MoveWindowBehaviour.MoveWindowBasedOnPosition : MoveWindowBehaviour.MoveWindowBasedOnZoneIndex;
             _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value;
-            _displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
+            _displayOrWorkAreaChangeMoveWindows = Settings.Properties.FancyzonesDisplayOrWorkAreaChangeMoveWindows.Value;
             _zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
             _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
             _openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
@@ -102,7 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
             PrevTabHotkey = Settings.Properties.FancyzonesPrevTabHotkey.Value;
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
             string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
@@ -119,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            _windows11 = Helper.Windows11();
+            _windows11 = OSVersionHelper.IsWindows11();
 
             // Disable setting on windows 10
             if (!_windows11 && DisableRoundCornersOnWindowSnap)
@@ -153,7 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _moveWindowsAcrossMonitors;
         private MoveWindowBehaviour _moveWindowBehaviour;
         private OverlappingZonesAlgorithm _overlappingZonesAlgorithm;
-        private bool _displayChangemoveWindows;
+        private bool _displayOrWorkAreaChangeMoveWindows;
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
         private bool _openWindowOnActiveMonitor;
@@ -394,19 +385,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool DisplayChangeMoveWindows
+        public bool DisplayOrWorkAreaChangeMoveWindows
         {
             get
             {
-                return _displayChangemoveWindows;
+                return _displayOrWorkAreaChangeMoveWindows;
             }
 
             set
             {
-                if (value != _displayChangemoveWindows)
+                if (value != _displayOrWorkAreaChangeMoveWindows)
                 {
-                    _displayChangemoveWindows = value;
-                    Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value = value;
+                    _displayOrWorkAreaChangeMoveWindows = value;
+                    Settings.Properties.FancyzonesDisplayOrWorkAreaChangeMoveWindows.Value = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -624,24 +615,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _showZoneNumber = value;
                     Settings.Properties.FancyzonesShowZoneNumber.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public bool AllowPopupWindowSnap
-        {
-            get
-            {
-                return _allowPopupWindowSnap;
-            }
-
-            set
-            {
-                if (value != _allowPopupWindowSnap)
-                {
-                    _allowPopupWindowSnap = value;
-                    Settings.Properties.FancyzonesAllowPopupWindowSnap.Value = value;
                     NotifyPropertyChanged();
                 }
             }

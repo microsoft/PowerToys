@@ -37,6 +37,8 @@ namespace Microsoft.Plugin.Program
 
         public string Description => Properties.Resources.wox_plugin_program_plugin_description;
 
+        public static string PluginID => "791FC278BA414111B8D1886DFE447410";
+
         private static PluginInitContext _context;
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed;
@@ -155,10 +157,7 @@ namespace Microsoft.Plugin.Program
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            if (selectedResult == null)
-            {
-                throw new ArgumentNullException(nameof(selectedResult));
-            }
+            ArgumentNullException.ThrowIfNull(selectedResult);
 
             var menuOptions = new List<ContextMenuResult>();
             if (selectedResult.ContextData is IProgram program)
@@ -173,15 +172,9 @@ namespace Microsoft.Plugin.Program
         {
             try
             {
-                if (runProcess == null)
-                {
-                    throw new ArgumentNullException(nameof(runProcess));
-                }
+                ArgumentNullException.ThrowIfNull(runProcess);
 
-                if (info == null)
-                {
-                    throw new ArgumentNullException(nameof(info));
-                }
+                ArgumentNullException.ThrowIfNull(info);
 
                 runProcess(info);
             }

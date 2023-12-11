@@ -37,6 +37,7 @@
     "selected_camera": { "value": "USB Video Device" },
     "theme": { "value": "light" },
     "toolbar_monitor": { "value": "All monitors" },
-    "toolbar_position": { "value": "Bottom center" }
+    "toolbar_position": { "value": "Bottom center" },
+    "startup_action": { "value": "Nothing" }
   }
 }

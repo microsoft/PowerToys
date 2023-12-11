@@ -106,6 +106,15 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Environment Variables.
+        /// </summary>
+        internal static string Environment_Variables {
+            get {
+                return ResourceManager.GetString("Environment_Variables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to FancyZones Editor.
         /// </summary>
         internal static string FancyZones_Editor {

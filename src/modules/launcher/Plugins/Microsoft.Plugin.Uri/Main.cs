@@ -37,6 +37,8 @@ namespace Microsoft.Plugin.Uri
 
         public string Description => Properties.Resources.Microsoft_plugin_uri_plugin_description;
 
+        public static string PluginID => "03276A39D4E9417C8FFD200B0EE5E871";
+
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             return new List<ContextMenuResult>(0);

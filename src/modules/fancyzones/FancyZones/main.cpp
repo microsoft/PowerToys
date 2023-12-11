@@ -48,6 +48,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         return 0;
     }
 
+    auto process = GetCurrentProcess();
+    if (!SetPriorityClass(process, NORMAL_PRIORITY_CLASS))
+    {
+        std::wstring err = get_last_error_or_default(GetLastError());
+        Logger::warn(L"Failed to set priority to FancyZones: {}", err);
+    }
+
     std::wstring pid = std::wstring(lpCmdLine);
     if (!pid.empty())
     {

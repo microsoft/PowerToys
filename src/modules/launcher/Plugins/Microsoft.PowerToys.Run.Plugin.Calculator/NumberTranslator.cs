@@ -36,15 +36,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// <returns>Number translator for target culture</returns>
         public static NumberTranslator Create(CultureInfo sourceCulture, CultureInfo targetCulture)
         {
-            if (sourceCulture == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(sourceCulture));
-            }
+            ArgumentNullException.ThrowIfNull(sourceCulture);
 
-            if (targetCulture == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(targetCulture));
-            }
+            ArgumentNullException.ThrowIfNull(targetCulture);
 
             return new NumberTranslator(sourceCulture, targetCulture);
         }
@@ -76,10 +70,30 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             string[] tokens = splitRegex.Split(input);
             foreach (string token in tokens)
             {
+                int leadingZeroCount = 0;
+
+                // Count leading zero characters.
+                foreach (char c in token)
+                {
+                    if (c != '0')
+                    {
+                        break;
+                    }
+
+                    leadingZeroCount++;
+                }
+
+                // number is all zero characters. no need to add zero characters at the end.
+                if (token.Length == leadingZeroCount)
+                {
+                    leadingZeroCount = 0;
+                }
+
                 decimal number;
+
                 outputBuilder.Append(
                     decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
-                    ? number.ToString(cultureTo)
+                    ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
                     : token);
             }
 

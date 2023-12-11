@@ -154,21 +154,21 @@ std::wstring NtdllExtensions::path_to_kernel_name(LPCWSTR path)
 
 std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 {
-    auto get_info_result = NtQuerySystemInformationMemoryLoop(SystemHandleInformation);
+    auto get_info_result = NtQuerySystemInformationMemoryLoop(SystemExtendedHandleInformation);
     if (NT_ERROR(get_info_result.status))
     {
         return {};
     }
 
-    auto info_ptr = (SYSTEM_HANDLE_INFORMATION*)get_info_result.memory.data();
+    auto info_ptr = (SYSTEM_HANDLE_INFORMATION_EX*)get_info_result.memory.data();
 
-    std::map<DWORD, HANDLE> pid_to_handle;
+    std::map<ULONG_PTR, HANDLE> pid_to_handle;
     std::vector<HandleInfo> result;
 
     std::vector<BYTE> object_info_buffer(DefaultResultBufferSize);
 
     std::atomic<ULONG> i = 0;
-    std::atomic<ULONG> handle_count = info_ptr->HandleCount;
+    std::atomic<ULONG_PTR> handle_count = info_ptr->NumberOfHandles;
     std::atomic<HANDLE> process_handle = NULL;
     std::atomic<HANDLE> handle_copy = NULL;
     ULONG previous_i;
@@ -188,7 +188,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
                 handle_copy = NULL;
 
                 auto handle_info = info_ptr->Handles + i;
-                DWORD pid = handle_info->ProcessId;
+                auto pid = handle_info->UniqueProcessId;
 
                 auto iter = pid_to_handle.find(pid);
                 if (iter != pid_to_handle.end())
@@ -197,7 +197,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
                 }
                 else
                 {
-                    process_handle = OpenProcess(PROCESS_DUP_HANDLE, FALSE, pid);
+                    process_handle = OpenProcess(PROCESS_DUP_HANDLE, FALSE, (DWORD)pid);
                     if (!process_handle)
                     {
                         continue;
@@ -215,7 +215,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
                 // }
 
                 HANDLE local_handle_copy;
-                auto dh_result = DuplicateHandle(process_handle, (HANDLE)handle_info->Handle, GetCurrentProcess(), &local_handle_copy, 0, 0, DUPLICATE_SAME_ACCESS);
+                auto dh_result = DuplicateHandle(process_handle, (HANDLE)handle_info->HandleValue, GetCurrentProcess(), &local_handle_copy, 0, 0, DUPLICATE_SAME_ACCESS);
                 if (dh_result == 0)
                 {
                     // Ignore this handle.
@@ -241,7 +241,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
                 if (type_name == L"File")
                 {
                     file_name = file_handle_to_kernel_name(handle_copy, object_info_buffer);
-                    result.push_back(HandleInfo{ pid, handle_info->Handle, type_name, file_name });
+                    result.push_back(HandleInfo{ pid, handle_info->HandleValue, type_name, file_name });
                 }
 
                 CloseHandle(handle_copy);
@@ -309,9 +309,8 @@ std::wstring NtdllExtensions::pid_to_user(DWORD pid)
     }
 
     DWORD token_size = 0;
-    GetTokenInformation(token, TokenUser, nullptr, 0, &token_size);
-
-    if (token_size < 0)
+    const bool ok = GetTokenInformation(token, TokenUser, nullptr, 0, &token_size);
+    if ((!ok && GetLastError() != ERROR_INSUFFICIENT_BUFFER) || !token_size)
     {
         return user;
     }

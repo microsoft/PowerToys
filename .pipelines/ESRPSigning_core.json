@@ -14,7 +14,7 @@
                 "PowerToys.exe",
                 "PowerToys.FilePreviewCommon.dll",
                 "PowerToys.Interop.dll",
-                "BugReportTool\\PowerToys.BugReportTool.exe",
+                "Tools\\PowerToys.BugReportTool.exe",
                 "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
                 "StylesReportTool\\PowerToys.StylesReportTool.exe",
                 "Telemetry.dll",
@@ -73,6 +73,12 @@
                 "PowerToys.PdfThumbnailProviderCpp.dll",
                 "PowerToys.powerpreview.dll",
                 "PowerToys.PreviewHandlerCommon.dll",
+                "PowerToys.QoiPreviewHandler.dll",
+                "PowerToys.QoiPreviewHandler.exe",
+                "PowerToys.QoiPreviewHandlerCpp.dll",
+                "PowerToys.QoiThumbnailProvider.dll",
+                "PowerToys.QoiThumbnailProvider.exe",
+                "PowerToys.QoiThumbnailProviderCpp.dll",
                 "PowerToys.StlThumbnailProvider.dll",
                 "PowerToys.StlThumbnailProvider.exe",
                 "PowerToys.StlThumbnailProviderCpp.dll",
@@ -97,6 +103,10 @@
                 "WinUI3Apps\\Powertoys.Peek.UI.dll",
                 "WinUI3Apps\\Powertoys.Peek.UI.exe",
                 "WinUI3Apps\\Powertoys.Peek.dll",
+
+                "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
                 "PowerToys.ImageResizer.exe",
                 "PowerToys.ImageResizer.dll",
@@ -285,6 +295,7 @@
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",
+                "UtfUnknown.dll",
                 "Wpf.Ui.dll"
             ],
             "SigningInfo": {

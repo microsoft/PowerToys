@@ -13,6 +13,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Hosts.Exceptions;
 using Hosts.Models;
 using Hosts.Settings;
 using ManagedCommon;
@@ -122,11 +123,16 @@ namespace Hosts.Helpers
             return new HostsData(entries, unparsedBuilder.ToString(), splittedEntries);
         }
 
-        public async Task<bool> WriteAsync(string additionalLines, IEnumerable<Entry> entries)
+        public async Task WriteAsync(string additionalLines, IEnumerable<Entry> entries)
         {
             if (!_elevationHelper.IsElevated)
             {
-                return false;
+                throw new NotRunningElevatedException();
+            }
+
+            if (_fileSystem.FileInfo.FromFileName(HostsFilePath).IsReadOnly)
+            {
+                throw new ReadOnlyHostsException();
             }
 
             var lines = new List<string>();
@@ -195,18 +201,11 @@ namespace Hosts.Helpers
 
                 await _fileSystem.File.WriteAllLinesAsync(HostsFilePath, lines, Encoding);
             }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to write hosts file", ex);
-                return false;
-            }
             finally
             {
                 _fileSystemWatcher.EnableRaisingEvents = true;
                 _asyncLock.Release();
             }
-
-            return true;
         }
 
         public async Task<bool> PingAsync(string address)
@@ -292,6 +291,15 @@ namespace Hosts.Helpers
                 {
                     Logger.LogError("Failed to open notepad", ex);
                 }
+            }
+        }
+
+        public void RemoveReadOnly()
+        {
+            var fileInfo = _fileSystem.FileInfo.FromFileName(HostsFilePath);
+            if (fileInfo.IsReadOnly)
+            {
+                fileInfo.IsReadOnly = false;
             }
         }
 

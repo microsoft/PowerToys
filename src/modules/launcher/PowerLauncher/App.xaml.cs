@@ -9,27 +9,21 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
-
 using Common.UI;
-
 using interop;
-
 using ManagedCommon;
-
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
-
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
-
 using Wox;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
-
+using Wpf.Ui.Appearance;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -148,6 +142,9 @@ namespace PowerLauncher
 
                 PluginManager.InitializePlugins(API);
 
+                _mainVM.RefreshPluginsOverview();
+                _settingsReader.SetRefreshPluginsOverviewCallback(() => _mainVM.RefreshPluginsOverview());
+
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
 
@@ -155,20 +152,16 @@ namespace PowerLauncher
 
                 _settingsReader.ReadSettingsOnChange();
 
-                _mainVM.MainWindowVisibility = Visibility.Visible;
-                _mainVM.ColdStartFix();
                 _themeManager.ThemeChanged += OnThemeChanged;
+
+                OnThemeChanged(_settings.Theme, _settings.Theme);
+
                 textToLog.AppendLine("End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
 
                 Log.Info(textToLog.ToString(), GetType());
                 PowerToysTelemetry.Log.WriteEvent(new LauncherBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
-
-                // [Conditional("RELEASE")]
-                // check update every 5 hours
-
-                // check updates on startup
             });
         }
 
@@ -228,6 +221,37 @@ namespace PowerLauncher
         /// <param name="newTheme">Current Theme</param>
         private void OnThemeChanged(Theme oldTheme, Theme newTheme)
         {
+            // If OS theme is high contrast, don't change theme.
+            if (SystemParameters.HighContrast)
+            {
+                return;
+            }
+
+            ApplicationTheme theme = ApplicationTheme.Unknown;
+
+            switch (newTheme)
+            {
+                case Theme.Dark:
+                    theme = ApplicationTheme.Dark; break;
+                case Theme.Light:
+                    theme = ApplicationTheme.Light; break;
+                case Theme.HighContrastWhite:
+                case Theme.HighContrastBlack:
+                case Theme.HighContrastOne:
+                case Theme.HighContrastTwo:
+                    theme = ApplicationTheme.HighContrast; break;
+                default:
+                    break;
+            }
+
+            _mainWindow?.Dispatcher.Invoke(() =>
+            {
+                if (theme != ApplicationTheme.Unknown)
+                {
+                    ApplicationThemeManager.Apply(theme);
+                }
+            });
+
             ImageLoader.UpdateIconPath(newTheme);
             _mainVM.Query();
         }

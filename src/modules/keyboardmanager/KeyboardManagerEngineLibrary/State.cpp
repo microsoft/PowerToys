@@ -14,6 +14,18 @@ std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyRemap(const DWOR
     return std::nullopt;
 }
 
+std::optional<std::wstring> State::GetSingleKeyToTextRemapEvent(const DWORD originalKey) const
+{
+    if (auto it = singleKeyToTextReMap.find(originalKey); it != end(singleKeyToTextReMap))
+    {
+        return std::get<std::wstring>(it->second);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
 bool State::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
 {
     // Assumes appName exists in the app-specific remap table

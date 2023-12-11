@@ -188,7 +188,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     m_reparent_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
     m_thumbnail_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT);
     m_exit_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_EXIT_EVENT);
-    if (!m_reparent_event_handle || !m_reparent_event_handle || !m_exit_event_handle)
+    if (!m_reparent_event_handle || !m_thumbnail_event_handle || !m_exit_event_handle)
     {
         Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
         return 1;
