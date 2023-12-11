@@ -10,6 +10,9 @@
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
 
 #include <tlhelp32.h>
+#include <thread>
+#include <future>
+#include <chrono>
 
 namespace
 {
@@ -1019,12 +1022,12 @@ namespace KeyboardEventHandlers
         {
             Logger::trace(L"CKBH:{}, already running, pid:{}", fileNamePart, targetPid);
 
-            ShowProgram(targetPid, fileNamePart);
+            ShowProgram(targetPid, fileNamePart, false);
         }
         else
         {
             std::wstring executable_and_args = fmt::format(L"\"{}\" {}", shortcut.runProgramFilePath, shortcut.runProgramArgs);
-            
+
             auto currentDir = shortcut.runProgramStartInDir.c_str();
 
             if (shortcut.runProgramStartInDir == L"")
@@ -1032,23 +1035,40 @@ namespace KeyboardEventHandlers
                 currentDir = nullptr;
             }
 
+            DWORD processId = 1;
+            HANDLE newProcessHandle;
+
             if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
             {
-                run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                newProcessHandle = run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                processId = GetProcessId(newProcessHandle);
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
             {
-                run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, nullptr, currentDir);
+                run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, &processId, currentDir);
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
             {
-                run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                newProcessHandle = run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                processId = GetProcessId(newProcessHandle);
             }
+
+            auto future = std::async(std::launch::async, [=] {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                ShowProgram(processId, fileNamePart, true);
+            });
+
+            //auto job = [processId, fileNamePart]() {
+            //    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+            //    ShowProgram(processId, fileNamePart);
+            //};
+
+            //std::thread thread(job);
         }
         return;
     }
 
-    void ShowProgram(DWORD pid, std::wstring programName)
+    void ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess)
     {
         // a good place to look for this...
         // https://github.com/ritchielawrence/cmdow
@@ -1061,8 +1081,12 @@ namespace KeyboardEventHandlers
 
             if (hwnd == GetForegroundWindow())
             {
-                Logger::trace(L"CKBH:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
-                ShowWindow(hwnd, SW_MINIMIZE);
+                // only hide if this was a call from a already open program, don't make small if we just opened it.
+                if (!isNewProcess)
+                {
+                    Logger::trace(L"CKBH:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
+                    ShowWindow(hwnd, SW_MINIMIZE);
+                }
                 return;
             }
             else
