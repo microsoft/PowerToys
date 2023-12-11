@@ -93,9 +93,9 @@ namespace PowerAccent.Core
         // All
         private static string[] GetDefaultLetterKeyALL(LetterKey letter)
         {
-            if (!_allLanguagesCache.ContainsKey(letter))
+            if (!_allLanguagesCache.TryGetValue(letter, out string[] cachedValue))
             {
-                _allLanguagesCache[letter] = GetDefaultLetterKeyCA(letter)
+                cachedValue = GetDefaultLetterKeyCA(letter)
                 .Union(GetDefaultLetterKeyCUR(letter))
                 .Union(GetDefaultLetterKeyCY(letter))
                 .Union(GetDefaultLetterKeyCZ(letter))
@@ -129,9 +129,11 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyTK(letter))
                 .Union(GetDefaultLetterKeyAllLanguagesOnly(letter))
                 .ToArray();
+
+                _allLanguagesCache[letter] = cachedValue;
             }
 
-            return _allLanguagesCache[letter];
+            return cachedValue;
         }
 
         // Contains all characters that should be shown in all languages but currently don't belong to any of the single languages available for that letter.
