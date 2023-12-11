@@ -37,7 +37,7 @@ import { idDefinition } from './customLanguages/file.js';
 
 > Replace file.js with the name of your definition file from step 1. Please replace idDefinition with the string you used in step 1.
 
-3. In the [`monacoSpecialLanguages.js`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js) file add the following line in to the `registerAdditionalLanguages` function:
+3. In the [`monacoSpecialLanguages.js`](/src/common/FilePreviewCommon/Assets/Monaco/monacoSpecialLanguages.js) file add the following line into the `registerAdditionalLanguages` function:
 
 ```javascript
 registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
