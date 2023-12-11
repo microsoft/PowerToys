@@ -1024,7 +1024,7 @@ namespace KeyboardEventHandlers
         else
         {
             std::wstring executable_and_args = fmt::format(L"\"{}\" {}", shortcut.runProgramFilePath, shortcut.runProgramArgs);
-
+            
             auto currentDir = shortcut.runProgramStartInDir.c_str();
 
             if (shortcut.runProgramStartInDir == L"")

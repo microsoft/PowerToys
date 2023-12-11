@@ -602,6 +602,9 @@ StackPanel ShortcutControl::GetShortcutControl()
 // Function to create the detect shortcut UI window
 void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KBMEditor::KeyboardManagerState& keyboardManagerState, const int colIndex, StackPanel table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer)
 {
+    // check to see if this orig or map-to shortcut;
+    bool isOrigShortcut = (colIndex == 0);
+
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
     ToggleSwitch allowChordSwitch;
@@ -769,29 +772,33 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     // Detect Chord
     Windows::UI::Xaml::Controls::StackPanel chordStackPanel;
-    TextBlock allowChordText;
-    allowChordText.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLOWCHORDS));
-    allowChordText.FontSize(12);
-    allowChordText.Margin({ 0, 20, 0, 0 });
-    chordStackPanel.VerticalAlignment(VerticalAlignment::Center);
-    allowChordText.TextAlignment(TextAlignment::Center);
-    chordStackPanel.Orientation(Orientation::Horizontal);
+    
+    if (isOrigShortcut)
+    {
+        TextBlock allowChordText;
+        allowChordText.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLOWCHORDS));
+        allowChordText.FontSize(12);
+        allowChordText.Margin({ 0, 20, 0, 0 });
+        chordStackPanel.VerticalAlignment(VerticalAlignment::Center);
+        allowChordText.TextAlignment(TextAlignment::Center);
+        chordStackPanel.Orientation(Orientation::Horizontal);
 
-    allowChordSwitch.OnContent(nullptr);
-    allowChordSwitch.OffContent(nullptr);
+        allowChordSwitch.OnContent(nullptr);
+        allowChordSwitch.OffContent(nullptr);
 
-    chordStackPanel.Children().Append(allowChordText);
-    chordStackPanel.Children().Append(allowChordSwitch);
+        chordStackPanel.Children().Append(allowChordText);
+        chordStackPanel.Children().Append(allowChordSwitch);
 
-    stackPanel.Children().Append(chordStackPanel);
 
-    allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
+        stackPanel.Children().Append(chordStackPanel);
+        allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
 
-    auto toggleHandler = [allowChordSwitch, &keyboardManagerState](auto const& sender, auto const& e) {
-        keyboardManagerState.AllowChord = allowChordSwitch.IsOn();
-    };
+        auto toggleHandler = [allowChordSwitch, &keyboardManagerState](auto const& sender, auto const& e) {
+            keyboardManagerState.AllowChord = allowChordSwitch.IsOn();
+        };
 
-    allowChordSwitch.Toggled(toggleHandler);
+        allowChordSwitch.Toggled(toggleHandler);
+    }       
 
     TextBlock holdEscInfo;
     holdEscInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDESC));
