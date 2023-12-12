@@ -160,7 +160,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ft&apos; for Windows file time.
+        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time.
         /// </summary>
         internal static string Microsoft_plugin_timedate_ErrorResultSubTitle {
             get {
@@ -552,6 +552,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_Unix {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_Unix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unix epoch time in milliseconds.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Unix_Milliseconds {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Unix_Milliseconds", resourceCulture);
             }
         }
         

@@ -29,4 +29,9 @@ namespace UIHelpers
 
     // Function to return the list of key name in the order for the drop down based on the key codes
     winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::pair<DWORD, std::wstring>>& list);
+
+#ifndef NDEBUG
+    // Useful For debugging issues
+    std::vector<std::wstring> GetChildrenNames(StackPanel& s);
+#endif
 }

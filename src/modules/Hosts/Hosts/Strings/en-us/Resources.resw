@@ -228,6 +228,10 @@
     <value>The hosts file cannot be saved because the program isn't running as administrator.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
+  <data name="FileSaveError_ReadOnly" xml:space="preserve">
+    <value>The hosts file cannot be saved because it is read-only.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
   <data name="FilterBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Filters</value>
   </data>
@@ -245,6 +249,9 @@
   <data name="HostsFilter.Header" xml:space="preserve">
     <value>Hosts</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="MakeWritable.Content" xml:space="preserve">
+    <value>Make writable</value>
   </data>
   <data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>

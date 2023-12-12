@@ -62,6 +62,9 @@ namespace CommonSharedConstants
     // Path to the event used by GcodePreviewHandler
     const wchar_t GCODE_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysGcodePreviewResizeEvent-6ff1f9bd-ccbd-4b24-a79f-40a34fb0317d";
 
+    // Path to the event used by QoiPreviewHandler
+    const wchar_t QOI_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysQoiPreviewResizeEvent-579518d1-8c8b-494f-8143-04f43d761ead";
+
     // Path to the event used by DevFilesPreviewHandler
     const wchar_t DEV_FILES_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysDevFilesPreviewResizeEvent-5707a22c-2cac-4ea2-82f0-27c03ef0b5f3";
 
@@ -81,6 +84,10 @@ namespace CommonSharedConstants
     const wchar_t CROP_AND_LOCK_REPARENT_EVENT[] = L"Local\\PowerToysCropAndLockReparentEvent-6060860a-76a1-44e8-8d0e-6355785e9c36";
     const wchar_t CROP_AND_LOCK_THUMBNAIL_EVENT[] = L"Local\\PowerToysCropAndLockThumbnailEvent-1637be50-da72-46b2-9220-b32b206b2434";
     const wchar_t CROP_AND_LOCK_EXIT_EVENT[] = L"Local\\PowerToysCropAndLockExitEvent-d995d409-7b70-482b-bad6-e7c8666f375a";
+
+    // Path to the events used by EnvironmentVariables
+    const wchar_t SHOW_ENVIRONMENT_VARIABLES_EVENT[] = L"Local\\PowerToysEnvironmentVariables-ShowEnvironmentVariablesEvent-1021f616-e951-4d64-b231-a8f972159978";
+    const wchar_t SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT[] = L"Local\\PowerToysEnvironmentVariables-EnvironmentVariablesAdminEvent-8c95d2ad-047c-49a2-9e8b-b4656326cfb2";
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;

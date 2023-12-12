@@ -11,8 +11,8 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows;
 using global::PowerToys.GPOWrapper;
-using ManagedCommon;
 using PowerLauncher.Properties;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -59,12 +59,14 @@ namespace PowerLauncher.Plugin
                                 {
                                     try
                                     {
-                                        // Return a comparable produce version.
+                                        // Return a comparable product version.
                                         var fileVersion = FileVersionInfo.GetVersionInfo(x.ExecuteFilePath);
-                                        return ((uint)fileVersion.ProductMajorPart << 48)
-                                        | ((uint)fileVersion.ProductMinorPart << 32)
-                                        | ((uint)fileVersion.ProductBuildPart << 16)
-                                        | ((uint)fileVersion.ProductPrivatePart);
+
+                                        // Convert each part to an unsigned 32 bit integer, then extend to 64 bit.
+                                        return ((ulong)(uint)fileVersion.ProductMajorPart << 48)
+                                            | ((ulong)(uint)fileVersion.ProductMinorPart << 32)
+                                            | ((ulong)(uint)fileVersion.ProductBuildPart << 16)
+                                            | (ulong)(uint)fileVersion.ProductPrivatePart;
                                     }
                                     catch (System.IO.FileNotFoundException)
                                     {
@@ -180,16 +182,13 @@ namespace PowerLauncher.Plugin
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
                 var description = string.Format(CultureInfo.CurrentCulture, Resources.FailedToInitializePluginsDescription, failed);
-                API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false);
+                Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false));
             }
         }
 
         public static List<Result> QueryForPlugin(PluginPair pair, Query query, bool delayedExecution = false)
         {
-            if (pair == null)
-            {
-                throw new ArgumentNullException(nameof(pair));
-            }
+            ArgumentNullException.ThrowIfNull(pair);
 
             if (!pair.IsPluginInitialized)
             {
@@ -270,15 +269,9 @@ namespace PowerLauncher.Plugin
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)
         {
-            if (results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
+            ArgumentNullException.ThrowIfNull(results);
 
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
+            ArgumentNullException.ThrowIfNull(metadata);
 
             foreach (var r in results)
             {

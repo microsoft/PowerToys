@@ -56,16 +56,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this.isDark = isDark;
 
             // To obtain the general Settings configurations of PowerToys
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
             callback = (PowerLauncherSettings s) =>
             {

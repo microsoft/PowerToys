@@ -26,15 +26,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>returns the index location of each of the letters of the matches</returns>
         internal static List<int> FindBestFuzzyMatch(string text, string searchText)
         {
-            if (searchText == null)
-            {
-                throw new ArgumentNullException(nameof(searchText));
-            }
+            ArgumentNullException.ThrowIfNull(searchText);
 
-            if (text == null)
-            {
-                throw new ArgumentNullException(nameof(text));
-            }
+            ArgumentNullException.ThrowIfNull(text);
 
             // Using CurrentCulture since this is user facing
             searchText = searchText.ToLower(CultureInfo.CurrentCulture);
@@ -86,10 +80,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>a list of the possible combinations that match the search text</returns>
         internal static List<List<int>> GetAllMatchIndexes(bool[,] matches)
         {
-            if (matches == null)
-            {
-                throw new ArgumentNullException(nameof(matches));
-            }
+            ArgumentNullException.ThrowIfNull(matches);
 
             List<List<int>> results = new List<List<int>>();
 
@@ -127,10 +118,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>an integer representing the score</returns>
         internal static int CalculateScoreForMatches(List<int> matches)
         {
-            if (matches == null)
-            {
-                throw new ArgumentNullException(nameof(matches));
-            }
+            ArgumentNullException.ThrowIfNull(matches);
 
             var score = 0;
 

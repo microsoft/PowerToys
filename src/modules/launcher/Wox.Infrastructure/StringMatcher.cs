@@ -90,10 +90,7 @@ namespace Wox.Infrastructure
                 return new MatchResult(false, UserSettingSearchPrecision);
             }
 
-            if (opt == null)
-            {
-                throw new ArgumentNullException(nameof(opt));
-            }
+            ArgumentNullException.ThrowIfNull(opt);
 
             query = query.Trim();
 
@@ -226,9 +223,7 @@ namespace Wox.Infrastructure
             }
             else
             {
-                int? ind = spaceIndices.OrderBy(item => (firstMatchIndex - item)).Where(item => firstMatchIndex > item).FirstOrDefault();
-                int closestSpaceIndex = ind ?? -1;
-                return closestSpaceIndex;
+                return spaceIndices.OrderBy(item => (firstMatchIndex - item)).Where(item => firstMatchIndex > item).FirstOrDefault(-1);
             }
         }
 

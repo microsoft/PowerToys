@@ -2,6 +2,9 @@
 
 #include <keyboardmanager/common/Shortcut.h>
 
+// Enables the WinUI teaching tip to show as the new warning flyout
+#define USE_NEW_DROPDOWN_WARNING_TIP
+
 namespace KBMEditor
 {
     class KeyboardManagerState;
@@ -38,11 +41,16 @@ private:
     // Stores the previous layout
     HKL previousLayout = 0;
 
+#ifdef USE_NEW_DROPDOWN_WARNING_TIP
+    // Stores the teaching tip attached to the current drop down
+    muxc::TeachingTip warningTip;
+#else
     // Stores the flyout warning message
     winrt::Windows::Foundation::IInspectable warningMessage;
 
     // Stores the flyout attached to the current drop down
     winrt::Windows::Foundation::IInspectable warningFlyout;
+#endif
 
     // Stores whether a key to shortcut warning has to be ignored
     bool ignoreKeyToShortcutWarning;

@@ -4,7 +4,7 @@ The Settings v2 process uses two way IPC to communicate with the runner process.
 
 ## Initialization
 - On the settings' side, the two way IPC delegates are contained with the [`ShellPage.xaml.cs`](/src/settings-ui/Settings.UI/Views/ShellPage.xaml.cs) file. The delegates are static and the views for all the powerToys send the ipc information to the viewmodels as `ShellPage.DefaultSndMSGCallBack`.
-- These delegates are initialized within the [`Mainwindow.xaml.cs`](/src/settings-ui/Settings.UI/MainWindow.xaml.cs) file in the `Settings.Runner` project.
+- These delegates are initialized within the [`MainWindow.xaml.cs`](/src/settings-ui/Settings.UI/MainWindow.xaml.cs) file in the `Settings.Runner` project.
 
 
 ## Types of IPC delegates

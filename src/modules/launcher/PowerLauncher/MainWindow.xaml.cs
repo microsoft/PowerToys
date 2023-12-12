@@ -54,8 +54,26 @@ namespace PowerLauncher
             _viewModel = mainVM;
             _nativeWaiterCancelToken = nativeWaiterCancelToken;
             _settings = settings;
-
             InitializeComponent();
+
+            if (OSVersionHelper.IsWindows11())
+            {
+                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Acrylic;
+            }
+            else
+            {
+                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.None;
+            }
+
+            // workaround for #30217
+            try
+            {
+                Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
+            }
+            catch (Exception ex)
+            {
+                Log.Exception("Exception in SystemThemeWatcher.Watch, issue 30217.", ex, GetType());
+            }
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
@@ -395,7 +413,6 @@ namespace PowerLauncher
         {
             if (_settings.HideWhenDeactivated)
             {
-                // (this.FindResource("OutroStoryboard") as Storyboard).Begin();
                 _viewModel.Hide();
             }
         }
@@ -560,7 +577,7 @@ namespace PowerLauncher
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
-            if (_viewModel.Results != null && !string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+            if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
             {
                 SearchBox.AutoCompleteTextBlock.Text = MainViewModel.GetAutoCompleteText(
                     _viewModel.Results.SelectedIndex,
@@ -724,11 +741,6 @@ namespace PowerLauncher
                     _firstDeleteTimer.Stop();
                 }
             }
-        }
-
-        private void OutroStoryboard_Completed(object sender, EventArgs e)
-        {
-            Hide();
         }
 
         private void SearchBox_UpdateFlowDirection()
