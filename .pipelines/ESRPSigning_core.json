@@ -30,6 +30,7 @@
                 "PowerToys.AlwaysOnTopModuleInterface.dll",
 
                 "PowerToys.CmdNotFoundModuleInterface.dll",
+                "PowerToys.CommandNotFound.dll",
 
                 "PowerToys.ColorPicker.dll",
                 "PowerToys.ColorPickerUI.dll",

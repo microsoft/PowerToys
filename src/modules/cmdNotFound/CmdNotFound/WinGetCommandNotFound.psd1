@@ -6,6 +6,6 @@
     Copyright = "Copyright (c) Microsoft Corporation."
     Description = 'Enable suggestions on how to install missing commands via winget'
     PowerShellVersion = '7.4'
-    NestedModules = @('WinGetCommandNotFound.dll')
+    NestedModules = @('PowerToys.CommandNotFound.dll')
     RequiredModules   = @(@{ModuleName = 'Microsoft.WinGet.Client';  ModuleVersion = "0.2.1"; })
 }
