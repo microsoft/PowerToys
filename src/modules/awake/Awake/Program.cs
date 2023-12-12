@@ -47,6 +47,11 @@ namespace Awake
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
+        internal static readonly string[] AliasesConfigOption = new[] { "--use-pt-config", "-c" };
+        internal static readonly string[] AliasesDisplayOption = new[] { "--display-on", "-d" };
+        internal static readonly string[] AliasesTimeOption = new[] { "--time-limit", "-t" };
+        internal static readonly string[] AliasesPidOption = new[] { "--pid", "-p" };
+        internal static readonly string[] AliasesExpireAtOption = new[] { "--expire-at", "-e" };
 
         private static int Main(string[] args)
         {
@@ -86,7 +91,7 @@ namespace Awake
             Logger.LogInfo("Parsing parameters...");
 
             Option<bool> configOption = new(
-                    aliases: new[] { "--use-pt-config", "-c" },
+                    aliases: AliasesConfigOption,
                     getDefaultValue: () => false,
                     description: $"Specifies whether {Core.Constants.AppName} will be using the PowerToys configuration file for managing the state.")
             {
@@ -95,7 +100,7 @@ namespace Awake
             };
 
             Option<bool> displayOption = new(
-                    aliases: new[] { "--display-on", "-d" },
+                    aliases: AliasesDisplayOption,
                     getDefaultValue: () => true,
                     description: "Determines whether the display should be kept awake.")
             {
@@ -104,7 +109,7 @@ namespace Awake
             };
 
             Option<uint> timeOption = new(
-                    aliases: new[] { "--time-limit", "-t" },
+                    aliases: AliasesTimeOption,
                     getDefaultValue: () => 0,
                     description: "Determines the interval, in seconds, during which the computer is kept awake.")
             {
@@ -113,7 +118,7 @@ namespace Awake
             };
 
             Option<int> pidOption = new(
-                    aliases: new[] { "--pid", "-p" },
+                    aliases: AliasesPidOption,
                     getDefaultValue: () => 0,
                     description: $"Bind the execution of {Core.Constants.AppName} to another process. When the process ends, the system will resume managing the current sleep and display state.")
             {
@@ -122,7 +127,7 @@ namespace Awake
             };
 
             Option<string> expireAtOption = new(
-                    aliases: new[] { "--expire-at", "-e" },
+                    aliases: AliasesExpireAtOption,
                     getDefaultValue: () => string.Empty,
                     description: $"Determines the end date/time when {Core.Constants.AppName} will back off and let the system manage the current sleep and display state.")
             {

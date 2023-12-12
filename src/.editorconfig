@@ -98,9 +98,6 @@ dotnet_diagnostic.IDE0065.severity = none
 # IDE0009: Add this or Me qualification
 dotnet_diagnostic.IDE0009.severity = none
 
-# CA1861: Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array 
-dotnet_diagnostic.CA1861.severity = suggestion
-
 # CA1862: Prefer using 'StringComparer'/'StringComparison' to perform case-insensitive string comparisons
 dotnet_diagnostic.CA1862.severity = suggestion
 

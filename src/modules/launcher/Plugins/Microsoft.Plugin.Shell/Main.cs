@@ -71,6 +71,7 @@ namespace Microsoft.Plugin.Shell
         };
 
         private PluginInitContext _context;
+        private static readonly char[] Separator = new[] { ' ' };
 
         public Main()
         {
@@ -285,7 +286,7 @@ namespace Microsoft.Plugin.Shell
                 }
                 else
                 {
-                    var parts = command.Split(new[] { ' ' }, 2);
+                    var parts = command.Split(Separator, 2);
                     if (parts.Length == 2)
                     {
                         var filename = parts[0];
