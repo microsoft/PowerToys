@@ -24,8 +24,8 @@ namespace Wox.Plugin
             ArgumentNullException.ThrowIfNull(language);
 
             // Using InvariantCulture since this is a command line arg
-            return language.ToUpper(CultureInfo.InvariantCulture) == CSharp.ToUpper(CultureInfo.InvariantCulture)
-                || language.ToUpper(CultureInfo.InvariantCulture) == Executable.ToUpper(CultureInfo.InvariantCulture);
+            return string.Equals(language, CSharp, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(language, Executable, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

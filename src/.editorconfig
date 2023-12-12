@@ -98,9 +98,6 @@ dotnet_diagnostic.IDE0065.severity = none
 # IDE0009: Add this or Me qualification
 dotnet_diagnostic.IDE0009.severity = none
 
-# CA1862: Prefer using 'StringComparer'/'StringComparison' to perform case-insensitive string comparisons
-dotnet_diagnostic.CA1862.severity = suggestion
-
 # CA1863: Cache a CompositeFormat for repeated use in this formatting operation
 dotnet_diagnostic.CA1863.severity = none
 

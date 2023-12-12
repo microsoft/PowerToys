@@ -434,7 +434,7 @@ namespace MouseWithoutBorders
         {
             if (string.IsNullOrEmpty(Setting.Values.Username) && !Common.RunOnLogonDesktop)
             {
-                if (Program.User.ToLower(CultureInfo.CurrentCulture).Contains("system"))
+                if (Program.User.Contains("system", StringComparison.CurrentCulture))
                 {
                     _ = Common.ImpersonateLoggedOnUserAndDoSomething(() =>
                     {
