@@ -1063,7 +1063,7 @@ namespace MouseWithoutBorders.Class
 
             List<IPAddress> localIPv4Addresses = GetMyIPv4Addresses().ToList();
 
-            if (!localIPv4Addresses.Any())
+            if (localIPv4Addresses.Count == 0)
             {
                 Common.Log($"No IPv4 resolved from the local machine: {Common.MachineName}");
                 return true;

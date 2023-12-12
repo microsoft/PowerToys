@@ -302,6 +302,8 @@ namespace MouseWithoutBorders
 
             IntPtr h = (IntPtr)NativeMethods.FindWindow(null, Common.HELPER_FORM_TEXT);
 
+            var processes = Process.GetProcessesByName(HelperProcessName);
+
             if (h.ToInt32() <= 0)
             {
                 _ = Common.CreateProcessInInputDesktopSession(
@@ -313,7 +315,7 @@ namespace MouseWithoutBorders
                 HasSwitchedMachineSinceLastCopy = true;
 
                 // Common.CreateLowIntegrityProcess("\"" + Path.GetDirectoryName(Application.ExecutablePath) + "\\MouseWithoutBordersHelper.exe\"", string.Empty, 0, false, 0);
-                if (Process.GetProcessesByName(HelperProcessName)?.Any() != true)
+                if (processes != null && processes.Length != 0)
                 {
                     Log("Unable to start helper process.");
                     Common.ShowToolTip("Error starting Mouse Without Borders Helper, clipboard sharing will not work!", 5000, ToolTipIcon.Error);
@@ -325,7 +327,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                if (Process.GetProcessesByName(HelperProcessName)?.Any() == true)
+                if (processes != null && processes.Length != 0)
                 {
                     Log("Helper process found running.");
                 }

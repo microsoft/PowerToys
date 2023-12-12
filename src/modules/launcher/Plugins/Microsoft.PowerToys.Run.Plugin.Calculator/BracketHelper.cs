@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 }
             }
 
-            return !trailTest.Any();
+            return trailTest.Count == 0;
         }
 
         private static (TrailDirection Direction, TrailType Type) BracketTrail(char @char)

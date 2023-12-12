@@ -91,7 +91,7 @@ namespace Microsoft.Plugin.Program
                 .Where(r => r?.Score > 0)
                 .ToArray();
 
-            if (result.Any())
+            if (result.Length != 0)
             {
                 var maxScore = result.Max(x => x.Score);
                 return result

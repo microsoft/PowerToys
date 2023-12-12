@@ -178,7 +178,7 @@ namespace PowerLauncher.Plugin
 
             _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
 
-            if (failedPlugins.Any())
+            if (!failedPlugins.IsEmpty)
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
                 var description = string.Format(CultureInfo.CurrentCulture, Resources.FailedToInitializePluginsDescription, failed);
