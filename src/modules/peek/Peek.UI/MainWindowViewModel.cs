@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
@@ -15,6 +16,7 @@ namespace Peek.UI
 {
     public partial class MainWindowViewModel : ObservableObject
     {
+        private static readonly string _defaultWindowTitle = ResourceLoaderInstance.ResourceLoader.GetString("AppTitle/Title");
         private const int NavigationThrottleDelayMs = 100;
 
         [ObservableProperty]
@@ -22,6 +24,16 @@ namespace Peek.UI
 
         [ObservableProperty]
         private IFileSystemItem? _currentItem;
+
+        partial void OnCurrentItemChanged(IFileSystemItem? value)
+        {
+            WindowTitle = value != null
+                ? ReadableStringHelper.FormatResourceString("WindowTitle", value.Name)
+                : _defaultWindowTitle;
+        }
+
+        [ObservableProperty]
+        private string _windowTitle;
 
         [ObservableProperty]
         private NeighboringItems? _items;
@@ -36,6 +48,7 @@ namespace Peek.UI
         public MainWindowViewModel(NeighboringItemsQuery query)
         {
             NeighboringItemsQuery = query;
+            WindowTitle = _defaultWindowTitle;
 
             NavigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
             NavigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
