@@ -211,7 +211,7 @@ namespace KeyboardEventHandlers
             const bool remapToKey = it->second.targetShortcut.index() == 0;
             const bool remapToShortcut = it->second.targetShortcut.index() == 1;
             const bool remapToText = it->second.targetShortcut.index() == 2;
-
+            const bool isRunProgram = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).isRunProgram);
             const size_t src_size = it->first.Size();
             const size_t dest_size = remapToShortcut ? std::get<Shortcut>(it->second.targetShortcut).Size() : 1;
 
@@ -273,66 +273,66 @@ namespace KeyboardEventHandlers
                         it->second.winKeyInvoked = ModifierKey::Left;
                     }
 
-                    if (remapToShortcut)
+                    if (isRunProgram)
+                    {
+                        key_count = KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE + src_size;
+                        keyEventList = new INPUT[key_count]{};
+
+                        int i = 0;
+                        Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                        // Release original shortcut state (release in reverse order of shortcut to be accurate)
+                        Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                        // don't wait for this to happen...
+                        auto future = std::async(std::launch::async, [=] {
+                            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+                            CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
+                        });
+                    }
+                    else if (remapToShortcut)
                     {
                         // Get the common keys between the two shortcuts if this is not a runProgram shortcut
-                        auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
-                        if (shortcut.isRunProgram)
+
+                        int commonKeys = it->first.GetCommonModifiersCount(std::get<Shortcut>(it->second.targetShortcut));
+
+                        // If the original shortcut modifiers are a subset of the new shortcut
+                        if (commonKeys == src_size - 1)
                         {
-                            CreateOrShowProcessForShortcut(shortcut);
-
-                            key_count = KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE + src_size;
-
+                            // key down for all new shortcut keys except the common modifiers
+                            key_count = dest_size - commonKeys;
+                            keyEventList = new INPUT[key_count]{};
+                            int i = 0;
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        else
+                        {
+                            // Dummy key, key up for all the original shortcut modifier keys and key down for all the new shortcut keys but common keys in each are not repeated
+                            key_count = KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE + (src_size - 1) + (dest_size) - (2 * static_cast<size_t>(commonKeys));
                             keyEventList = new INPUT[key_count]{};
 
+                            // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->Ctrl+V, press Win+A, since Win will be released here we need to send a dummy event before it
                             int i = 0;
                             Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                             // Release original shortcut state (release in reverse order of shortcut to be accurate)
-                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
+
+                            // Set new shortcut key down state
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
                         }
-                        else
+
+                        // Modifier state reset might be required for this key depending on the shortcut's action and target modifiers - ex: Win+Caps -> Ctrl+A
+                        if (it->first.GetCtrlKey() == NULL && it->first.GetAltKey() == NULL && it->first.GetShiftKey() == NULL)
                         {
-                            int commonKeys = it->first.GetCommonModifiersCount(shortcut);
-
-                            // If the original shortcut modifiers are a subset of the new shortcut
-                            if (commonKeys == src_size - 1)
+                            Shortcut temp = std::get<Shortcut>(it->second.targetShortcut);
+                            for (auto keys : temp.GetKeyCodes())
                             {
-                                // key down for all new shortcut keys except the common modifiers
-                                key_count = dest_size - commonKeys;
-                                keyEventList = new INPUT[key_count]{};
-                                int i = 0;
-                                Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
-                                Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                i++;
-                            }
-                            else
-                            {
-                                // Dummy key, key up for all the original shortcut modifier keys and key down for all the new shortcut keys but common keys in each are not repeated
-                                key_count = KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE + (src_size - 1) + (dest_size) - (2 * static_cast<size_t>(commonKeys));
-                                keyEventList = new INPUT[key_count]{};
-
-                                // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->Ctrl+V, press Win+A, since Win will be released here we need to send a dummy event before it
-                                int i = 0;
-                                Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-
-                                // Release original shortcut state (release in reverse order of shortcut to be accurate)
-                                Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
-
-                                // Set new shortcut key down state
-                                Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
-                                Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                i++;
-                            }
-
-                            // Modifier state reset might be required for this key depending on the shortcut's action and target modifiers - ex: Win+Caps -> Ctrl+A
-                            if (it->first.GetCtrlKey() == NULL && it->first.GetAltKey() == NULL && it->first.GetShiftKey() == NULL)
-                            {
-                                Shortcut temp = std::get<Shortcut>(it->second.targetShortcut);
-                                for (auto keys : temp.GetKeyCodes())
-                                {
-                                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, keys, data->lParam->vkCode);
-                                }
+                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, keys, data->lParam->vkCode);
                             }
                         }
                     }
@@ -426,7 +426,6 @@ namespace KeyboardEventHandlers
                 // Get the common keys between the two shortcuts
 
                 int commonKeys = remapToShortcut ? it->first.GetCommonModifiersCount(std::get<Shortcut>(it->second.targetShortcut)) : 0;
-                bool isRunProgram = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).isRunProgram);
 
                 // Case 1: If any of the modifier keys of the original shortcut are released before the action key
                 if ((it->first.CheckWinKey(data->lParam->vkCode) || it->first.CheckCtrlKey(data->lParam->vkCode) || it->first.CheckAltKey(data->lParam->vkCode) || it->first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
@@ -434,7 +433,7 @@ namespace KeyboardEventHandlers
                     // Release new shortcut, and set original shortcut keys except the one released
                     size_t key_count = 0;
                     LPINPUT keyEventList = nullptr;
-                    if (remapToShortcut && !isRunProgram)
+                    if (remapToShortcut)
                     {
                         // if the released key is present in both shortcuts' modifiers (i.e part of the common modifiers)
                         if (std::get<Shortcut>(it->second.targetShortcut).CheckWinKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckCtrlKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckAltKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckShiftKey(data->lParam->vkCode))
@@ -465,13 +464,17 @@ namespace KeyboardEventHandlers
                             Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                             i++;
                         }
-                        Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first, data->lParam->vkCode);
 
-                        // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
-                        Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut), data->lParam->vkCode);
+                        if (!isRunProgram)
+                        {
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first, data->lParam->vkCode);
 
-                        // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->Ctrl+V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
-                        Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
+                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut), data->lParam->vkCode);
+
+                            // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->Ctrl+V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
+                            Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
                     }
                     else if (remapToKey)
                     {
@@ -581,7 +584,7 @@ namespace KeyboardEventHandlers
                     }
 
                     // Case 3: If the action key is released from the original shortcut, keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
-                    if (!remapToText && !isRunProgram && data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                    if (!remapToText && data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
                         size_t key_count = 1;
                         LPINPUT keyEventList = nullptr;
@@ -650,7 +653,7 @@ namespace KeyboardEventHandlers
                     // Case 4: If a modifier key in the original shortcut is pressed then suppress that key event since the original shortcut is already held down physically - This case can occur only if a user has a duplicated modifier key (possibly by remapping) or if user presses both L/R versions of a modifier remapped with "Both"
                     if ((it->first.CheckWinKey(data->lParam->vkCode) || it->first.CheckCtrlKey(data->lParam->vkCode) || it->first.CheckAltKey(data->lParam->vkCode) || it->first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                     {
-                        if (remapToShortcut && !isRunProgram)
+                        if (remapToShortcut)
                         {
                             // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps
                             if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
@@ -672,7 +675,7 @@ namespace KeyboardEventHandlers
                     // Case 5: If any key apart from the action key or a modifier key in the original shortcut is pressed then revert the keyboard state to just the original modifiers being held down along with the current key press
                     if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                     {
-                        if (remapToShortcut && !isRunProgram)
+                        if (remapToShortcut)
                         {
                             // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps, Shift is pressed. System should not see Shift and Caps pressed together
                             if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
@@ -1041,7 +1044,7 @@ namespace KeyboardEventHandlers
         {
             Logger::trace(L"CKBH:{}, already running, pid:{}", fileNamePart, targetPid);
 
-            ShowProgram(targetPid, fileNamePart, false);
+            ShowProgram(targetPid, fileNamePart, false, true);
         }
         else
         {
@@ -1074,7 +1077,19 @@ namespace KeyboardEventHandlers
 
             auto future = std::async(std::launch::async, [=] {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                ShowProgram(processId, fileNamePart, true);
+                if (!ShowProgram(processId, fileNamePart, true, false))
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    if (!ShowProgram(processId, fileNamePart, true, false))
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        if (!ShowProgram(processId, fileNamePart, true, false))
+                        {
+                            std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+                            ShowProgram(processId, fileNamePart, true, false);
+                        }
+                    }
+                }
             });
 
             //auto job = [processId, fileNamePart]() {
@@ -1087,8 +1102,10 @@ namespace KeyboardEventHandlers
         return;
     }
 
-    void ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess)
+    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool hideIfVisible)
     {
+        Logger::trace(L"CKBH:ShowProgram starting with {},{},{}", pid, programName, isNewProcess);
+
         // a good place to look for this...
         // https://github.com/ritchielawrence/cmdow
 
@@ -1101,33 +1118,33 @@ namespace KeyboardEventHandlers
             if (hwnd == GetForegroundWindow())
             {
                 // only hide if this was a call from a already open program, don't make small if we just opened it.
-                if (!isNewProcess)
+                if (!isNewProcess && hideIfVisible)
                 {
                     Logger::trace(L"CKBH:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
-                    ShowWindow(hwnd, SW_MINIMIZE);
+                    return ShowWindow(hwnd, SW_MINIMIZE);
                 }
-                return;
+                return false;
             }
             else
             {
                 Logger::trace(L"CKBH:{}, no GetForegroundWindow, doing SW_RESTORE", programName);
-                ShowWindow(hwnd, SW_RESTORE);
+                auto result = ShowWindow(hwnd, SW_RESTORE);
 
                 if (!SetForegroundWindow(hwnd))
                 {
                     auto errorCode = GetLastError();
                     Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                    return false;
                 }
                 else
                 {
                     Logger::trace(L"CKBH:{}, success on SetForegroundWindow", programName);
-                    return;
+                    return true;
                 }
             }
         }
 
         // try by console.
-
         hwnd = FindWindow(nullptr, nullptr);
         if (AttachConsole(pid))
         {
@@ -1158,7 +1175,7 @@ namespace KeyboardEventHandlers
             FreeConsole();
             if (showByConsoleSuccess)
             {
-                return;
+                return true;
             }
         }
 
@@ -1181,7 +1198,12 @@ namespace KeyboardEventHandlers
                         ShowWindow(hwnd, SW_RESTORE);
 
                         // hwnd is the window handle with targetPid
-                        if (!SetForegroundWindow(hwnd))
+                        if (SetForegroundWindow(hwnd))
+                        {
+                            Logger::trace(L"CKBH:{}, success on SetForegroundWindow", programName);
+                            return true;
+                        }
+                        else
                         {
                             auto errorCode = GetLastError();
                             Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
@@ -1191,6 +1213,8 @@ namespace KeyboardEventHandlers
                 hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
             }
         }
+
+        return false;
     }
 
     // Function to a handle an os-level shortcut remap
