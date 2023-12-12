@@ -745,6 +745,10 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
+LAlt
+Lambson
+languagesjson
+langword
 lastcodeanalysissucceeded
 Lastdevice
 LAYOUTRTL
@@ -1016,6 +1020,7 @@ NOTSRCCOPY
 NOTSRCERASE
 NOZORDER
 NPH
+npmjs
 NResize
 nrw
 nsunt
@@ -1708,6 +1713,8 @@ wcsnicmp
 WDA
 wdp
 wdupenv
+weakme
+webbrowsers
 webcam
 webpage
 websites
