@@ -104,11 +104,11 @@
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    FontSize="14"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                     Text="{Binding Metadata.ActionKeyword}"
                                     TextAlignment="Left"
-                                    TextTrimming="CharacterEllipsis" />
+                                    FontWeight="SemiBold"
+                                    TextTrimming="WordEllipsis" />
                             </Border>
                             <TextBlock
                                 Grid.Column="1"

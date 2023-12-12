@@ -40,16 +40,22 @@
         SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
         SelectionChanged="SuggestionsListView_SelectionChanged"
         SelectionMode="Single">
+        <ListView.Resources>
+            <Style BasedOn="{StaticResource ResultsListViewItemStyle}" TargetType="{x:Type ListViewItem}" />
+        </ListView.Resources>
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
-                <VirtualizingStackPanel Margin="12,12,0,0" IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}" VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
+                <VirtualizingStackPanel
+                    Margin="12,12,0,0"
+                    IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}"
+                    VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
             </ItemsPanelTemplate>
         </ListView.ItemsPanel>
         <!--
             AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"
         -->
-        <!--  Style="{StaticResource ListViewNoAnimations}"  --> 
+        <!--  Style="{StaticResource ListViewNoAnimations}"  -->
         <ListView.ItemTemplate>
             <DataTemplate>
                 <Grid
@@ -75,7 +81,10 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid.ToolTip>
-                        <ToolTip Opened="ToolTip_Opened" Visibility="{Binding Result.ToolTipVisibility}" MaxWidth="480">
+                        <ToolTip
+                            MaxWidth="480"
+                            Opened="ToolTip_Opened"
+                            Visibility="{Binding Result.ToolTipVisibility}">
                             <StackPanel>
                                 <TextBlock
                                     FontWeight="SemiBold"
@@ -96,16 +105,16 @@
                         Grid.RowSpan="2"
                         Height="24"
                         Margin="-6,-2,0,0"
-                        VerticalAlignment="Center"
                         HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
                         AutomationProperties.Name="{x:Static p:Resources.AppIcon}"
                         Source="{Binding Image}" />
                     <TextBlock
                         x:Name="Title"
                         Grid.Column="1"
-                        FontSize="16"
                         VerticalAlignment="Bottom"
                         AutomationProperties.Name="{x:Static p:Resources.Title}"
+                        FontSize="16"
                         IsHitTestVisible="False"
                         TextTrimming="CharacterEllipsis">
                         <viewmodel:ResultsViewModel.FormattedText>
@@ -122,7 +131,7 @@
                         Grid.Column="1"
                         VerticalAlignment="Top"
                         AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Opacity="0.6"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{Binding Result.SubTitle}"
                         TextTrimming="CharacterEllipsis" />
@@ -156,19 +165,19 @@
                                     Name="commandButton"
                                     Width="42"
                                     Height="42"
-                                    Style="{StaticResource SubtleButtonStyle}"
                                     VerticalAlignment="Center"
                                     AutomationProperties.Name="{x:Static p:Resources.ContextMenuItem}"
                                     BorderThickness="1"
-                                    Command="{Binding Command}">
+                                    Command="{Binding Command}"
+                                    Style="{StaticResource SubtleButtonStyle}">
                                     <ToolTipService.ToolTip>
                                         <ToolTip Opened="ToolTip_Opened">
                                             <TextBlock
                                                 AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
                                                 Text="{Binding Title}"
-                                                TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
-                                            />
+                                                TextWrapping="Wrap" />
                                         </ToolTip>
                                     </ToolTipService.ToolTip>
                                     <Button.Content>
