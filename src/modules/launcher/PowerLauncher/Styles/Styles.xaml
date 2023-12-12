@@ -197,7 +197,6 @@
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="ActiveRectangle" Property="Visibility" Value="Visible" />
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlAltFillColorQuarternaryBrush}" />
-                            <!-- ControlAltFillColorQuarternaryBrush -->
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

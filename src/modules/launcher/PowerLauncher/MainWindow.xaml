@@ -46,14 +46,6 @@
             Padding="12,4,12,3">
             <local:LauncherControl x:Name="SearchBox" />
         </Border>
-        <local:ResultList
-            x:Name="ListBox"
-            Grid.Row="2"
-            VerticalAlignment="Stretch"
-            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,0"
-            PreviewMouseDown="ListBox_PreviewMouseDown"
-            Visibility="{Binding Results.Visibility}" />
 
         <!--  Have to use a Grid instead of a StackPanel for scrolling to work?  -->
         <Grid
@@ -104,10 +96,10 @@
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
+                                    FontWeight="SemiBold"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                     Text="{Binding Metadata.ActionKeyword}"
                                     TextAlignment="Left"
-                                    FontWeight="SemiBold"
                                     TextTrimming="WordEllipsis" />
                             </Border>
                             <TextBlock
@@ -123,6 +115,16 @@
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
+
+        <local:ResultList
+            x:Name="ListBox"
+            Grid.Row="2"
+            VerticalAlignment="Stretch"
+            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
+            PreviewMouseDown="ListBox_PreviewMouseDown"
+            Visibility="{Binding Results.Visibility}" />
+
     </Grid>
     <ui:FluentWindow.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
