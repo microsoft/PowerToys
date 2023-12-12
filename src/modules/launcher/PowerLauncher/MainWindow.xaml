@@ -72,7 +72,7 @@
             <TextBlock
                 Margin="22,12,0,4"
                 FontWeight="SemiBold"
-                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Text="{x:Static p:Resources.PluginKeywords}" />
 
@@ -87,7 +87,7 @@
                 SelectionMode="Single">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Height="32">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
@@ -95,16 +95,20 @@
                             <Border
                                 Width="32"
                                 Height="32"
+                                Padding="2,0,2,0"
                                 Background="{DynamicResource ControlFillColorDefaultBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="4">
+                                CornerRadius="4"
+                                ToolTipService.ToolTip="{Binding Metadata.ActionKeyword}">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    FontWeight="SemiBold"
+                                    FontSize="14"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                    Text="{Binding Metadata.ActionKeyword}" />
+                                    Text="{Binding Metadata.ActionKeyword}"
+                                    TextAlignment="Left"
+                                    TextTrimming="CharacterEllipsis" />
                             </Border>
                             <TextBlock
                                 Grid.Column="1"
