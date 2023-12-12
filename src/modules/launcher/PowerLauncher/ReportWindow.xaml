@@ -15,24 +15,23 @@
     Topmost="True"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Grid Margin="12">
+    <Grid Margin="12" Background="White">
         <Grid.RowDefinitions>
-            <RowDefinition Height="64" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <TextBlock
-            FontFamily="Segoe UI Light"
-            FontSize="32"
-            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+            FontSize="24"
+            FontWeight="SemiBold"
+            Foreground="Black"
             Text="{x:Static p:Resources.reportWindow_header}" />
 
         <TextBlock
             Grid.Row="1"
-            FontSize="14"
-            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+            Foreground="Black"
             TextWrapping="Wrap">
             <Run Text="{x:Static p:Resources.reportWindow_file_bug}" />
             <Hyperlink
@@ -49,12 +48,12 @@
         <TextBox
             x:Name="LogFilePathBox"
             Grid.Row="2"
-            Margin="-8,16,-8,16"
+            Margin="0,16,0,16"
             Background="Transparent"
-            BorderThickness="0"
+            BorderBrush="Black"
+            BorderThickness="1"
             FontFamily="Consolas"
-            FontSize="14"
-            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+            Foreground="Black"
             IsReadOnly="True"
             TextWrapping="Wrap" />
 
@@ -63,10 +62,10 @@
             Grid.Row="3"
             VerticalAlignment="Stretch"
             Background="Transparent"
+            BorderBrush="Black"
             BorderThickness="1"
             FontFamily="Consolas"
-            FontSize="14"
-            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+            Foreground="Black"
             HorizontalScrollBarVisibility="Auto"
             IsDocumentEnabled="True"
             VerticalScrollBarVisibility="Auto" />
