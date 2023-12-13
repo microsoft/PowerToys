@@ -44,4 +44,46 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- MSBuildCache -->
+  <PropertyGroup>
+    <!-- Off by default -->
+    <MSBuildCacheEnabled Condition="'$(MSBuildCacheEnabled)' == ''">false</MSBuildCacheEnabled>
+
+    <!-- In Azure pipelines, use Pipeline Caching as the cache storage backend. Otherwise, use the local cache. -->
+    <MSBuildCachePackageName Condition="'$(TF_BUILD)' != ''">Microsoft.MSBuildCache.AzurePipelines</MSBuildCachePackageName>
+    <MSBuildCachePackageName Condition="'$(MSBuildCachePackageName)' == ''">Microsoft.MSBuildCache.Local</MSBuildCachePackageName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildCacheEnabled)' == 'true'">
+    <!-- Change this to bust the cache -->
+    <MSBuildCacheCacheUniverse Condition="'$(MSBuildCacheCacheUniverse)' == ''">202310210737</MSBuildCacheCacheUniverse>
+
+    <!--
+      A tool inside Microsoft.WindowsAppSDK uses AppInsights which appears to read packages\Microsoft.WindowsAppSDK.1.4.230913002\tools\net472\ApplicationInsights.config
+      after the project is finished, likely in a detached process. This is acceptable and should not impact cache correctness.
+    -->
+    <MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>$(MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns);packages\Microsoft.WindowsAppSDK.*\tools\net472\ApplicationInsights.config</MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+
+    <!-- 
+      This repo uses a common output directory with many projects writing duplicate outputs. Allow everything, but note this costs some performance in the form of requiring
+      the cache to use copies instead of hardlinks when pulling from cache.
+    -->
+    <MSBuildCacheIdenticalDuplicateOutputPatterns>$(MSBuildCacheIdenticalDuplicateOutputPatterns);**</MSBuildCacheIdenticalDuplicateOutputPatterns>
+
+    <!-- version of MSBuildCache is not part of the cache key -->
+    <PackagesConfigFile>$(MSBuildThisFileDirectory)packages.config</PackagesConfigFile>
+    <MSBuildCacheIgnoredInputPatterns>$(MSBuildCacheIgnoredInputPatterns);$(PackagesConfigFile)</MSBuildCacheIgnoredInputPatterns>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildCacheEnabled)' == 'true' and '$(MSBuildCachePackageRoot)' == ''">
+    <PackagesConfigContents>$([System.IO.File]::ReadAllText("$(PackagesConfigFile)"))</PackagesConfigContents>
+    <MSBuildCachePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.MSBuildCache.*?version="(.*?)"').Groups[1].Value)</MSBuildCachePackageVersion>
+    <MSBuildCachePackageRoot>$(MSBuildThisFileDirectory)packages\$(MSBuildCachePackageName).$(MSBuildCachePackageVersion)</MSBuildCachePackageRoot>
+    <MSBuildCacheSharedCompilationPackageRoot>$(MSBuildThisFileDirectory)packages\Microsoft.MSBuildCache.SharedCompilation.$(MSBuildCachePackageVersion)</MSBuildCacheSharedCompilationPackageRoot>
+  </PropertyGroup>
+
+  <ImportGroup Condition="'$(MSBuildCacheEnabled)' == 'true'">
+    <Import Project="$(MSBuildCachePackageRoot)\build\$(MSBuildCachePackageName).props" />
+    <Import Project="$(MSBuildCacheSharedCompilationPackageRoot)\build\Microsoft.MSBuildCache.SharedCompilation.props" />
+  </ImportGroup>
 </Project>

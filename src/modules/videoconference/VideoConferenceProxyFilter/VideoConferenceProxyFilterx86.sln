@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceProxyFilter"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceShared", "..\VideoConferenceShared\VideoConferenceShared.vcxproj", "{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Version", "..\..\..\common\version\version.vcxproj", "{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,14 @@ Global
 		{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}.Release|Win32.Build.0 = Release|Win32
 		{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}.Release|x64.ActiveCfg = Release|x64
 		{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}.Release|x64.Build.0 = Release|x64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Debug|Win32.Build.0 = Debug|Win32
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Debug|x64.ActiveCfg = Debug|x64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Debug|x64.Build.0 = Debug|x64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Release|Win32.ActiveCfg = Release|Win32
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Release|Win32.Build.0 = Release|Win32
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Release|x64.ActiveCfg = Release|x64
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

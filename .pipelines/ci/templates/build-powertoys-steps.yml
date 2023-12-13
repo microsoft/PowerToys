@@ -1,5 +1,10 @@
 parameters:
-  additionalBuildArguments: ''
+  - name: additionalBuildArguments
+    type: string
+    default: ''
+  - name: enableCaching
+    type: boolean
+    default: false
 
 steps:
 - checkout: self
@@ -78,6 +83,13 @@ steps:
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
 
+- ${{ if eq(parameters.enableCaching, true) }}:
+  - task: NuGetToolInstaller@1
+    displayName: Install NuGet
+
+  - script: nuget restore packages.config -SolutionDirectory .
+    displayName: 'nuget restore packages.config'
+
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
   inputs:
@@ -85,8 +97,15 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
+    ${{ if eq(parameters.enableCaching, true) }}:
+      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -reportfileaccesses -p:MSBuildCacheEnabled=true -p:MSBuildCacheLogDirectory=$(Build.ArtifactStagingDirectory)\logs\MSBuildCache -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
+    ${{ else }}:
+      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
+    msbuildArchitecture: x64
     maximumCpuCount: true
+  ${{ if eq(parameters.enableCaching, true) }}:
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)        
 
 - task: VSBuild@1
   displayName: 'Build BugReportTool.sln'
@@ -95,7 +114,8 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\BugReportTool.binlog -ds:false
+    msbuildArchitecture: x64
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -105,7 +125,8 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\WebcamReportTool.binlog -ds:false
+    msbuildArchitecture: x64
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -115,7 +136,8 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\StylesReportTool.binlog -ds:false
+    msbuildArchitecture: x64
     maximumCpuCount: true
 
 - task: PowerShell@2
@@ -131,7 +153,8 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysInstaller -restore ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: /t:PowerToysInstaller -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToysSetup-PowerToysInstaller.binlog -ds:false
+    msbuildArchitecture: x64
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -141,8 +164,9 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }}
+    msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToysSetup-PowerToysBootstrapper.binlog -ds:false
     clean: false
+    msbuildArchitecture: x64
     maximumCpuCount: true
 
 - task: PowerShell@2
@@ -159,7 +183,8 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysInstaller -restore ${{ parameters.additionalBuildArguments }} /p:PerUser=true
+    msbuildArgs: /t:PowerToysInstaller -restore ${{ parameters.additionalBuildArguments }} /p:PerUser=true -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToysSetup-PowerToysInstaller-PerUser.binlog -ds:false
+    msbuildArchitecture: x64
     maximumCpuCount: true
 
 - task: VSBuild@1
@@ -169,8 +194,9 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }} /p:PerUser=true
+    msbuildArgs: /t:PowerToysBootstrapper ${{ parameters.additionalBuildArguments }} /p:PerUser=true -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToysSetup-PowerToysBootstrapper-PerUser.binlog -ds:false
     clean: false
+    msbuildArchitecture: x64
     maximumCpuCount: true
 
 # Check if deps.json files don't reference different dll versions.
@@ -268,3 +294,8 @@ steps:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
     arguments: -path '$(build.sourcesdirectory)\'
     pwsh: true
+
+- publish: $(Build.ArtifactStagingDirectory)\logs
+  displayName: Publish Logs
+  artifact: '$(System.JobDisplayName) logs'
+  condition: always()

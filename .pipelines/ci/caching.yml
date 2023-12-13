@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/main/service-schema.json
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+      - stable
+  paths:
+    exclude:
+      - doc/*
+      - temp/*
+      - tools/*
+      - '**.md'
+
+pr:
+  branches:
+    include:
+      - main
+      - stable
+  paths:
+    exclude:
+      - '**.md'
+      - doc
+       
+#     0.0.yyMM.dd##
+#     0.0.1904.0900
+name: 0.0.$(Date:yyMM).$(Date:dd)$(Rev:rr)
+
+variables:
+  EnablePipelineCache: true
+
+jobs:
+  - template: ./templates/build-powertoys-precheck.yml
+  - template: ./templates/build-powertoys-ci.yml
+    parameters:
+      platform: x64
+      enableCaching: true
+  - template: ./templates/build-powertoys-ci.yml
+    parameters:
+      platform: arm64
+      enableCaching: true
