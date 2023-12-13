@@ -98,8 +98,5 @@ dotnet_diagnostic.IDE0065.severity = none
 # IDE0009: Add this or Me qualification
 dotnet_diagnostic.IDE0009.severity = none
 
-# CA2208: Instantiate argument exceptions correctly
-dotnet_diagnostic.CA2208.severity = none
-
 # CS9191: The 'ref' modifier for argument corresponding to 'in' is equivalent to 'in'. Consider using 'in' instead.
 dotnet_diagnostic.CS9191.severity = none
