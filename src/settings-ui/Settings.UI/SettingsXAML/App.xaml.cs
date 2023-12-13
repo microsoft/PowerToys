@@ -294,8 +294,6 @@ namespace Microsoft.PowerToys.Settings.UI
                     ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
                 }
 
-                SetContentTheme(isDark);
-
                 if (SelectedTheme() == ElementTheme.Default)
                 {
                     themeListener = new ThemeListener();
@@ -340,18 +338,6 @@ namespace Microsoft.PowerToys.Settings.UI
 
             HandleThemeChange();
             return 0;
-        }
-
-        public static void SetContentTheme(bool isDark)
-        {
-            if (isDark)
-            {
-                App.Current.RequestedTheme = ApplicationTheme.Dark;
-            }
-            else
-            {
-                App.Current.RequestedTheme = ApplicationTheme.Light;
-            }
         }
 
         private static ISettingsUtils settingsUtils = new SettingsUtils();
