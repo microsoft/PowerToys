@@ -316,7 +316,7 @@ namespace KeyboardEventHandlers
                         //    }
                         //} }.detach();
 
-                        toast(L"Test Message!");
+                        toast(L"Failed to start a program.", L"The path to start in was not valid.");
                         Logger::trace(L"CKBH:returning..");
                         return 1;
                     }
@@ -1054,7 +1054,7 @@ namespace KeyboardEventHandlers
         return fullPath;
     }
 
-    void toast(param::hstring const& message) noexcept
+    void toast(param::hstring const& message1, param::hstring const& message2) noexcept
     {
         try
         {
@@ -1063,16 +1063,22 @@ namespace KeyboardEventHandlers
             XmlElement toastElement = toastXml.CreateElement(L"toast");
             XmlElement visualElement = toastXml.CreateElement(L"visual");
             XmlElement bindingElement = toastXml.CreateElement(L"binding");
-            XmlElement textElement = toastXml.CreateElement(L"text");
+            XmlElement textElement1 = toastXml.CreateElement(L"text");
+            XmlElement textElement2 = toastXml.CreateElement(L"text");
 
             toastXml.AppendChild(toastElement);
             toastElement.AppendChild(visualElement);
             visualElement.AppendChild(bindingElement);
-            bindingElement.AppendChild(textElement);
+
+            bindingElement.AppendChild(textElement1);
+            bindingElement.AppendChild(textElement2);
 
             bindingElement.SetAttribute(L"template", L"ToastGeneric");
-            textElement.InnerText(message);
 
+            textElement1.InnerText(message1);
+            textElement2.InnerText(message2);
+
+            Logger::trace(L"CKBH:toastXml {}", toastXml.GetXml());
             std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
             const auto notifier = ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
 
