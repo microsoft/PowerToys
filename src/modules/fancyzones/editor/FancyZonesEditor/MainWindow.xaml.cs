@@ -335,7 +335,7 @@ namespace FancyZonesEditor
             App.Overlay.StartEditing(_settings.SelectedModel);
 
             Keyboard.ClearFocus();
-            EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Edit_Template, ((LayoutModel)dataContext).Name);
+            EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Edit_Template), ((LayoutModel)dataContext).Name);
             await EditLayoutDialog.ShowAsync();
         }
 
@@ -567,7 +567,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
                 string activityId = "sliderValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Pixel_Value, SensitivityInput.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Pixel_Value), SensitivityInput.Value);
 
                 if (peer != null && value != null)
                 {
@@ -588,7 +588,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(TemplateZoneCount) as SliderAutomationPeer;
                 string activityId = "templateZoneCountValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Template_Zone_Count_Value, TemplateZoneCount.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Template_Zone_Count_Value), TemplateZoneCount.Value);
 
                 if (peer != null && value != null)
                 {
@@ -609,7 +609,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(Spacing) as SliderAutomationPeer;
                 string activityId = "spacingValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Pixel_Value, Spacing.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Pixel_Value), Spacing.Value);
 
                 if (peer != null && value != null)
                 {

@@ -44,9 +44,9 @@ namespace SvgPreviewHandler
             var colorMode = (SvgPreviewColorMode)settings.ColorMode;
             return colorMode switch
             {
-                SvgPreviewColorMode.SolidColor => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColor, ColorTranslator.ToHtml(settings.SolidColor), svgData),
-                SvgPreviewColorMode.Checkered => string.Format(CultureInfo.InvariantCulture, HtmlTemplateCheckered, GetConfiguredCheckeredShadeImage(), svgData),
-                SvgPreviewColorMode.Default or _ => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColor, ColorTranslator.ToHtml(settings.ThemeColor), svgData),
+                SvgPreviewColorMode.SolidColor => string.Format(CultureInfo.InvariantCulture, System.Text.CompositeFormat.Parse(HtmlTemplateSolidColor), ColorTranslator.ToHtml(settings.SolidColor), svgData),
+                SvgPreviewColorMode.Checkered => string.Format(CultureInfo.InvariantCulture, System.Text.CompositeFormat.Parse(HtmlTemplateCheckered), GetConfiguredCheckeredShadeImage(), svgData),
+                SvgPreviewColorMode.Default or _ => string.Format(CultureInfo.InvariantCulture, System.Text.CompositeFormat.Parse(HtmlTemplateSolidColor), ColorTranslator.ToHtml(settings.ThemeColor), svgData),
             };
         }
 

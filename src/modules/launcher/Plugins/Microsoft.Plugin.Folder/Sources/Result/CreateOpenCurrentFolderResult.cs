@@ -29,10 +29,10 @@ namespace Microsoft.Plugin.Folder.Sources.Result
         {
             return new Wox.Plugin.Result
             {
-                Title = string.Format(CultureInfo.InvariantCulture, Properties.Resources.wox_plugin_folder_select_folder_first_result_title, new DirectoryInfo(Search).Name),
+                Title = string.Format(CultureInfo.InvariantCulture, System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_folder_select_folder_first_result_title), new DirectoryInfo(Search).Name),
                 QueryTextDisplay = Search,
                 SubTitle = Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle,
-                ToolTipData = new ToolTipData(string.Format(CultureInfo.InvariantCulture, Properties.Resources.wox_plugin_folder_select_folder_first_result_title, new DirectoryInfo(Search).Name), Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle),
+                ToolTipData = new ToolTipData(string.Format(CultureInfo.InvariantCulture, System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_folder_select_folder_first_result_title), new DirectoryInfo(Search).Name), Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle),
                 IcoPath = Search,
                 Score = 500,
                 Action = c => _shellAction.ExecuteSanitized(Search, contextApi),

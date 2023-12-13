@@ -25,8 +25,8 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 QueryTextDisplay = Search,
 
                 // Using CurrentCulture since this is user facing
-                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Microsoft_plugin_folder_truncation_warning_subtitle, PostTruncationCount, PreTruncationCount),
-                ToolTipData = new ToolTipData(Properties.Resources.Microsoft_plugin_folder_truncation_warning_title, string.Format(CultureInfo.CurrentCulture, Properties.Resources.Microsoft_plugin_folder_truncation_warning_subtitle, PostTruncationCount, PreTruncationCount)),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Microsoft_plugin_folder_truncation_warning_subtitle), PostTruncationCount, PreTruncationCount),
+                ToolTipData = new ToolTipData(Properties.Resources.Microsoft_plugin_folder_truncation_warning_title, string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Microsoft_plugin_folder_truncation_warning_subtitle), PostTruncationCount, PreTruncationCount)),
                 IcoPath = WarningIconPath,
             };
         }

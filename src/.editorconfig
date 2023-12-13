@@ -98,9 +98,6 @@ dotnet_diagnostic.IDE0065.severity = none
 # IDE0009: Add this or Me qualification
 dotnet_diagnostic.IDE0009.severity = none
 
-# CA1863: Cache a CompositeFormat for repeated use in this formatting operation
-dotnet_diagnostic.CA1863.severity = none
-
 # CA1864: Prefer the 'IDictionary.TryAdd(TKey, TValue)' method
 dotnet_diagnostic.CA1864.severity = suggestion
 

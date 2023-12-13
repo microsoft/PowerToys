@@ -192,7 +192,7 @@ namespace ImageResizer.Properties
 
             // Using InvariantCulture since this is used internally
             Assert.AreEqual(
-                string.Format(CultureInfo.InvariantCulture, Resources.ValueMustBeBetween, 1, 100),
+                string.Format(CultureInfo.InvariantCulture, System.Text.CompositeFormat.Parse(Resources.ValueMustBeBetween), 1, 100),
                 result);
         }
 

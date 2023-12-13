@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 
         public static string StubSettingsPath(string version, string module, string fileName)
         {
-            return string.Format(CultureInfo.InvariantCulture, BackCompatTestProperties.RootPathStubFiles, version, module, fileName);
+            return string.Format(CultureInfo.InvariantCulture, System.Text.CompositeFormat.Parse(BackCompatTestProperties.RootPathStubFiles), version, module, fileName);
         }
 
         public static void VerifyModuleIOProviderWasRead(Mock<IFile> provider, string module, int expectedCallCount)

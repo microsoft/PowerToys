@@ -39,8 +39,8 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 IcoPath = Path,
 
                 // Using CurrentCulture since this is user facing
-                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Subtitle),
-                ToolTipData = new ToolTipData(Title, string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Subtitle)),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_folder_select_folder_result_subtitle), Subtitle),
+                ToolTipData = new ToolTipData(Title, string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_folder_select_folder_result_subtitle), Subtitle)),
                 QueryTextDisplay = Path,
                 ContextData = new SearchResult { Type = ResultType.Folder, Path = Path },
                 Action = c => ShellAction.Execute(Path, contextApi),

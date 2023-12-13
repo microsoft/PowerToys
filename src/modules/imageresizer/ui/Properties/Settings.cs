@@ -122,7 +122,7 @@ namespace ImageResizer.Properties
                 if (JpegQualityLevel < 1 || JpegQualityLevel > 100)
                 {
                     // Using CurrentCulture since this is user facing
-                    return string.Format(CultureInfo.CurrentCulture, Resources.ValueMustBeBetween, 1, 100);
+                    return string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Resources.ValueMustBeBetween), 1, 100);
                 }
 
                 return string.Empty;

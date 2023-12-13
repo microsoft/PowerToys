@@ -181,7 +181,7 @@ namespace PowerLauncher.Plugin
             if (!failedPlugins.IsEmpty)
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
-                var description = string.Format(CultureInfo.CurrentCulture, Resources.FailedToInitializePluginsDescription, failed);
+                var description = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Resources.FailedToInitializePluginsDescription), failed);
                 Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false));
             }
         }

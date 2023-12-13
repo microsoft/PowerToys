@@ -29,7 +29,7 @@ namespace FancyZonesEditor.Controls
 
             string announce = string.Format(
                 CultureInfo.CurrentCulture,
-                Properties.Resources.Custom_slider_announce,
+                System.Text.CompositeFormat.Parse(Properties.Resources.Custom_slider_announce),
                 name,
                 element.Minimum,
                 element.Maximum,

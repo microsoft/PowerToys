@@ -869,7 +869,7 @@ namespace PowerLauncher.ViewModel
             }
             catch (Exception)
             {
-                string errorMsg = string.Format(CultureInfo.InvariantCulture, Properties.Resources.registerHotkeyFailed, hotkeyStr);
+                string errorMsg = string.Format(CultureInfo.InvariantCulture, System.Text.CompositeFormat.Parse(Properties.Resources.registerHotkeyFailed), hotkeyStr);
                 MessageBox.Show(errorMsg);
             }
         }
