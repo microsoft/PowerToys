@@ -14,6 +14,13 @@
 #include <future>
 #include <chrono>
 
+#include <winrt/Windows.UI.Notifications.h>
+#include <winrt/Windows.Data.Xml.Dom.h>
+
+using namespace winrt;
+using namespace Windows::UI::Notifications;
+using namespace Windows::Data::Xml::Dom;
+
 namespace
 {
     bool GeneratedByKBM(const LowlevelKeyboardEvent* data)
@@ -278,38 +285,39 @@ namespace KeyboardEventHandlers
 
                     if (isRunProgram)
                     {
-                        // don't wait for this to happen...
-                        /*auto future = std::async(std::launch::async, [=] {
-                            Logger::trace(L"CKBH:Sleep start");XYZ
-                            std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-                            Logger::trace(L"CKBH:Sleep done");
-                            CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
-                        });*/
-
-                        //key_count = KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE + src_size;
-                        //keyEventList = new INPUT[key_count]{};
-
-                        //int i = 0;
-                        //Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-
-                        //// Release original shortcut state (release in reverse order of shortcut to be accurate)
-                        //Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-
-                        //for (size_t idx = 0; idx < key_count; ++idx)
-                        //{
-                        //    auto& input = keyEventList[idx + i];
-                        //    input.type = INPUT_KEYBOARD;
-                        //    const bool upEvent = idx & 0x1;
-                        //    input.ki.dwFlags = KEYEVENTF_UNICODE | (upEvent ? KEYEVENTF_KEYUP : 0);
-                        //    input.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-                        //}
-
-                        //UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
-                        //delete[] keyEventList;
-
                         CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
-                        Logger::trace(L"CKBH:returning..");
 
+                        //std::thread{ [] {
+                        //    try
+                        //    {
+                        //        // Alternatively can build DOM from code:
+                        //        XmlDocument toastXml;
+                        //        XmlElement toastElement = toastXml.CreateElement(L"toast");
+                        //        XmlElement visualElement = toastXml.CreateElement(L"visual");
+                        //        XmlElement bindingElement = toastXml.CreateElement(L"binding");
+                        //        XmlElement textElement = toastXml.CreateElement(L"text");
+
+                        //        toastXml.AppendChild(toastElement);
+                        //        toastElement.AppendChild(visualElement);
+                        //        visualElement.AppendChild(bindingElement);
+                        //        bindingElement.AppendChild(textElement);
+
+                        //        bindingElement.SetAttribute(L"template", L"ToastGeneric");
+                        //        textElement.InnerText(L"The path was invalid");
+
+                        //        std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
+                        //        const auto notifier = ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+
+                        //        ToastNotification notification{ toastXml };
+                        //        notifier.Show(notification);
+                        //    }
+                        //    catch (...)
+                        //    {
+                        //    }
+                        //} }.detach();
+
+                        toast(L"Test Message!");
+                        Logger::trace(L"CKBH:returning..");
                         return 1;
                     }
                     else if (remapToShortcut)
@@ -1044,6 +1052,40 @@ namespace KeyboardEventHandlers
             return fullPath.substr(found + 1);
         }
         return fullPath;
+    }
+
+    void toast(param::hstring const& message) noexcept
+    {
+        try
+        {
+            // Alternatively can build DOM from code:
+            XmlDocument toastXml;
+            XmlElement toastElement = toastXml.CreateElement(L"toast");
+            XmlElement visualElement = toastXml.CreateElement(L"visual");
+            XmlElement bindingElement = toastXml.CreateElement(L"binding");
+            XmlElement textElement = toastXml.CreateElement(L"text");
+
+            toastXml.AppendChild(toastElement);
+            toastElement.AppendChild(visualElement);
+            visualElement.AppendChild(bindingElement);
+            bindingElement.AppendChild(textElement);
+
+            bindingElement.SetAttribute(L"template", L"ToastGeneric");
+            textElement.InnerText(message);
+
+            std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
+            const auto notifier = ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+
+            ToastNotification notification{ toastXml };
+            notifier.Show(notification);
+        }
+        catch (...)
+        {
+        }
+
+        /*std::thread{ [message] {
+    
+        } }.detach();*/
     }
 
     void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept

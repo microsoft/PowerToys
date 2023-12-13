@@ -40,6 +40,8 @@ namespace KeyboardEventHandlers
     // Function to handle (start or show) programs for shortcuts
     void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept;
 
+    void toast(winrt::param::hstring const& message) noexcept;
+
     // Function to help FindMainWindow
     BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam);
 
