@@ -212,16 +212,25 @@
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
-                    <controls:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
-                        <controls:SettingsCard.Description>
+                    <controls:SettingsExpander x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}" IsExpanded="True">
+                        <controls:SettingsExpander.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
-                        </controls:SettingsCard.Description>
+                        </controls:SettingsExpander.Description>
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
-                            <ComboBoxItem x:Uid="Radio_Theme_Default" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Windows_App_Default" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="FlyoutColorModeHeader">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.FlyoutThemeIndex}">
+                                    <ComboBoxItem x:Uid="Radio_Theme_Dark" />
+                                    <ComboBoxItem x:Uid="Radio_Theme_Light" />
+                                    <ComboBoxItem x:Uid="Radio_Theme_Windows_System_Default" />
+                                </ComboBox>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <controls:SettingsCard x:Uid="GeneralPage_RunAtStartUp">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=Startup}" />

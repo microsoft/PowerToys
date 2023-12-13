@@ -199,7 +199,7 @@
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
-                            <ComboBoxItem x:Uid="Radio_Theme_Default" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Windows_App_Default" />
                         </ComboBox>
                     </controls:SettingsCard>
                 </custom:SettingsGroup>

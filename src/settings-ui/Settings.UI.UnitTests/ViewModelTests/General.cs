@@ -229,6 +229,70 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void IsFlyoutLightThemeRadioButtonCheckedShouldThemeToLightWhenSuccessful()
+        {
+            // Arrange
+            GeneralViewModel viewModel = null;
+
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                Assert.AreEqual("light", snd.GeneralSettings.FlyoutTheme);
+                return 0;
+            };
+
+            Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
+            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            viewModel = new GeneralViewModel(
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                "GeneralSettings_RunningAsAdminText",
+                "GeneralSettings_RunningAsUserText",
+                false,
+                false,
+                UpdateUIThemeMethod,
+                sendMockIPCConfigMSG,
+                sendRestartAdminIPCMessage,
+                sendCheckForUpdatesIPCMessage,
+                GeneralSettingsFileName);
+            Assert.AreNotEqual(1, viewModel.FlyoutThemeIndex);
+
+            // Act
+            viewModel.FlyoutThemeIndex = 1;
+        }
+
+        [TestMethod]
+        public void IsFlyoutDarkThemeRadioButtonCheckedShouldThemeToDarkWhenSuccessful()
+        {
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                Assert.AreEqual("dark", snd.GeneralSettings.FlyoutTheme);
+                return 0;
+            };
+
+            // Arrange
+            Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
+            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            GeneralViewModel viewModel = new GeneralViewModel(
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                "GeneralSettings_RunningAsAdminText",
+                "GeneralSettings_RunningAsUserText",
+                false,
+                false,
+                UpdateUIThemeMethod,
+                sendMockIPCConfigMSG,
+                sendRestartAdminIPCMessage,
+                sendCheckForUpdatesIPCMessage,
+                GeneralSettingsFileName);
+            Assert.AreNotEqual(0, viewModel.FlyoutThemeIndex);
+
+            // Act
+            viewModel.FlyoutThemeIndex = 0;
+        }
+
+        [TestMethod]
         public void AllModulesAreEnabledByDefault()
         {
             // arrange

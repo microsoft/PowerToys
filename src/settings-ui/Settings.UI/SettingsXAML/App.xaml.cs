@@ -270,10 +270,26 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
+        public static ElementTheme SelectedFlyoutTheme()
+        {
+            return SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.FlyoutTheme.ToUpper(CultureInfo.InvariantCulture) switch
+            {
+                "DARK" => ElementTheme.Dark,
+                "LIGHT" => ElementTheme.Light,
+                _ => ElementTheme.Default,
+            };
+        }
+
         public static bool IsDarkTheme()
         {
             var selectedTheme = SelectedTheme();
             return selectedTheme == ElementTheme.Dark || (selectedTheme == ElementTheme.Default && ThemeHelpers.GetAppTheme() == AppTheme.Dark);
+        }
+
+        public static bool IsFlyoutDarkTheme()
+        {
+            var selectedTheme = SelectedTheme();
+            return selectedTheme == ElementTheme.Dark || (selectedTheme == ElementTheme.Default && ThemeHelpers.GetSystemTheme() == AppTheme.Dark);
         }
 
         public static void HandleThemeChange()

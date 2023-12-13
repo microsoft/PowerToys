@@ -33,6 +33,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("theme")]
         public string Theme { get; set; }
 
+        private string _flyoutTheme;
+
+        // Gets or sets flyout theme name.
+        [JsonPropertyName("flyout_theme")]
+        public string FlyoutTheme
+        {
+            get => _flyoutTheme;
+            set
+            {
+                if (_flyoutTheme == value)
+                {
+                    return;
+                }
+
+                _flyoutTheme = value;
+
+                FlyoutThemeChanged.Invoke();
+            }
+        }
+
         // Gets or sets system theme name.
         [JsonPropertyName("system_theme")]
         public string SystemTheme { get; set; }
@@ -53,6 +73,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("enable_experimentation")]
         public bool EnableExperimentation { get; set; }
 
+        /// <summary>
+        /// Fires whenever <see cref="FlyoutTheme"/> changes.
+        /// </summary>
+        public static event Action FlyoutThemeChanged = () => { };
+
         public GeneralSettings()
         {
             Startup = false;
@@ -61,6 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AutoDownloadUpdates = false;
             EnableExperimentation = true;
             Theme = "system";
+            FlyoutTheme = "system";
             SystemTheme = "light";
             try
             {

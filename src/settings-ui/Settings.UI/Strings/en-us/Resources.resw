@@ -1581,9 +1581,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Light</value>
     <comment>Light refers to color, not weight</comment>
   </data>
-  <data name="Radio_Theme_Default.Content" xml:space="preserve">
-    <value>Windows default</value>
-    <comment>Windows refers to the Operating system</comment>
+  <data name="Radio_Theme_Windows_App_Default.Content" xml:space="preserve">
+    <value>Windows app default</value>
+    <comment>Uses the Windows OS app theme</comment>
+  </data>
+  <data name="Radio_Theme_Windows_System_Default.Content" xml:space="preserve">
+    <value>Windows system default</value>
+    <comment>Uses the Windows OS theme</comment>
   </data>
   <data name="Windows_Color_Settings.Content" xml:space="preserve">
     <value>Windows color settings</value>
@@ -2183,7 +2187,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Welcome to PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
   </data>
-	<data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
+  <data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
     <value>What's New</value>
   </data>
   <data name="Feedback_NavViewItem.Content" xml:space="preserve">
@@ -3364,7 +3368,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>German</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
-  <value>Greek</value>
+    <value>Greek</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
     <value>Hebrew</value>

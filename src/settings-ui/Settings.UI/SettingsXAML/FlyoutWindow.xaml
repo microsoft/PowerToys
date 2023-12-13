@@ -17,17 +17,9 @@
     IsShownInSwitchers="False"
     IsTitleBarVisible="False"
     mc:Ignorable="d">
-    <winuiex:WindowEx.Backdrop>
-        <winuiex:AcrylicSystemBackdrop
-            DarkFallbackColor="#1c1c1c"
-            DarkLuminosityOpacity="0.96"
-            DarkTintColor="#202020"
-            DarkTintOpacity="0.5"
-            LightFallbackColor="#EEEEEE"
-            LightLuminosityOpacity="0.90"
-            LightTintColor="#F3F3F3"
-            LightTintOpacity="0" />
-    </winuiex:WindowEx.Backdrop>
+    <winuiex:WindowEx.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
     <Grid>
         <!--  HACK: https://github.com/microsoft/microsoft-ui-xaml/issues/7629  -->
         <!--  W11 grey border, W10: no border  -->
@@ -40,6 +32,6 @@
                 <ic:ChangePropertyAction PropertyName="BorderBrush" Value="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
             </ic:DataTriggerBehavior>
         </i:Interaction.Behaviors>
-        <flyout:ShellPage x:Name="FlyoutShellPage" />
+        <flyout:ShellPage x:Name="FlyoutShellPage" Background="{ThemeResource SystemControlAcrylicWindowBrush}" />
     </Grid>
 </winuiex:WindowEx>

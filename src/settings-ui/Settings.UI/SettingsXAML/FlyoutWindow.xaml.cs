@@ -2,12 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Flyout;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using Windows.Graphics;
+using Windows.UI;
 using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
@@ -21,6 +25,24 @@ namespace Microsoft.PowerToys.Settings.UI
         private const int WindowHeight = 486;
         private const int WindowMargin = 12;
 
+        private static readonly Brush AcrylicDark = new AcrylicBrush()
+        {
+            FallbackColor = Color.FromArgb(0x00, 0x1C, 0x1C, 0x1C),
+            TintLuminosityOpacity = 0.96,
+            TintColor = Color.FromArgb(0x00, 0x20, 0x20, 0x20),
+            TintOpacity = 0.5,
+            Opacity = 0.80,
+        };
+
+        private static readonly Brush AcrylicLight = new AcrylicBrush()
+        {
+            FallbackColor = Color.FromArgb(0x00, 0xEE, 0xEE, 0xEE),
+            TintLuminosityOpacity = 0.90,
+            TintColor = Color.FromArgb(0x00, 0xF3, 0xF3, 0xF3),
+            TintOpacity = 0,
+            Opacity = 0.70,
+        };
+
         public FlyoutViewModel ViewModel { get; set; }
 
         public POINT? FlyoutAppearPosition { get; set; }
@@ -31,7 +53,20 @@ namespace Microsoft.PowerToys.Settings.UI
             this.Activated += FlyoutWindow_Activated;
             FlyoutAppearPosition = initialPosition;
             ViewModel = new FlyoutViewModel();
+
+            FlyoutShellPage.RequestedTheme = FlyoutTheme;
+            FlyoutShellPage.Background = FlyoutBackgroundBrush;
+
+            GeneralSettings.FlyoutThemeChanged += () =>
+            {
+                FlyoutShellPage.RequestedTheme = FlyoutTheme;
+                FlyoutShellPage.Background = FlyoutBackgroundBrush;
+            };
         }
+
+        private static ElementTheme FlyoutTheme => App.IsFlyoutDarkTheme() ? ElementTheme.Dark : ElementTheme.Light;
+
+        private static Brush FlyoutBackgroundBrush => App.IsFlyoutDarkTheme() ? AcrylicDark : AcrylicLight;
 
         private void FlyoutWindow_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
         {

@@ -120,6 +120,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     break;
             }
 
+            _flyoutThemeIndex = GeneralSettingsConfig.FlyoutTheme.ToUpperInvariant() switch
+            {
+                "DARK" => 0,
+                "LIGHT" => 1,
+                _ => 2,
+            };
+
             _startup = GeneralSettingsConfig.Startup;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
@@ -151,6 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _runElevated;
         private bool _isAdmin;
         private int _themeIndex;
+        private int _flyoutThemeIndex;
 
         private bool _autoDownloadUpdates;
         private bool _autoDownloadUpdatesIsGpoDisabled;
@@ -377,6 +385,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         Logger.LogError("Exception encountered when changing Settings theme", e);
                     }
+
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int FlyoutThemeIndex
+        {
+            get
+            {
+                return _flyoutThemeIndex;
+            }
+
+            set
+            {
+                if (_flyoutThemeIndex != value)
+                {
+                    GeneralSettingsConfig.FlyoutTheme = value switch
+                    {
+                        0 => "dark",
+                        1 => "light",
+                        _ => "system",
+                    };
+
+                    _flyoutThemeIndex = value;
 
                     NotifyPropertyChanged();
                 }

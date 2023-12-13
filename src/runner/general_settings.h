@@ -13,6 +13,7 @@ struct GeneralSettings
     bool downloadUpdatesAutomatically;
     bool enableExperimentation;
     std::wstring theme;
+    std::wstring flyoutTheme;
     std::wstring systemTheme;
     std::wstring powerToysVersion;
 

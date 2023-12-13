@@ -8,7 +8,5 @@
     Loaded="Page_Loaded"
     mc:Ignorable="d">
 
-    <Grid>
-        <Frame x:Name="ContentFrame" />
-    </Grid>
+    <Frame x:Name="ContentFrame" />
 </Page>

@@ -18,12 +18,19 @@ namespace ManagedCommon
         internal const string HkeyWindowsTheme = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes";
         internal const string HkeyWindowsPersonalizeTheme = $@"{HkeyWindowsTheme}\Personalize";
         internal const string HValueAppTheme = "AppsUseLightTheme";
+        internal const string HValueSystemTheme = "SystemUsesLightTheme";
         internal const int DWMWAImmersiveDarkMode = 20;
 
         // based on https://stackoverflow.com/questions/51334674/how-to-detect-windows-10-light-dark-mode-in-win32-application
         public static AppTheme GetAppTheme()
         {
             int value = (int)Registry.GetValue($"{HKeyRoot}\\{HkeyWindowsPersonalizeTheme}", HValueAppTheme, 1);
+            return (AppTheme)value;
+        }
+
+        public static AppTheme GetSystemTheme()
+        {
+            int value = (int)Registry.GetValue($"{HKeyRoot}\\{HkeyWindowsPersonalizeTheme}", HValueSystemTheme, 1);
             return (AppTheme)value;
         }
 

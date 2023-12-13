@@ -142,7 +142,8 @@
                     x:Uid="SettingsBtn"
                     Padding="8"
                     Click="SettingsBtn_Click"
-                    Style="{StaticResource FlyoutButtonStyle}">
+                    Style="{StaticResource FlyoutButtonStyle}"
+                    Foreground="{ThemeResource TextFillColorPrimary}">
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="SettingsTooltip" />
                     </ToolTipService.ToolTip>

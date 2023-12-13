@@ -14,6 +14,7 @@
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
+static std::wstring flyout_theme = L"system";
 static bool run_as_elevated = false;
 static bool download_updates_automatically = true;
 static bool enable_experimentation = true;
@@ -41,6 +42,7 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"enable_experimentation", json::value(enableExperimentation));
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"theme", json::value(theme));
+    result.SetNamedValue(L"flyout_theme", json::value(flyoutTheme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
     result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
 
@@ -72,6 +74,7 @@ GeneralSettings get_general_settings()
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .enableExperimentation = enable_experimentation,
         .theme = settings_theme,
+        .flyoutTheme = flyout_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
         .powerToysVersion = get_product_version()
     };
@@ -181,6 +184,11 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     if (json::has(general_configs, L"theme", json::JsonValueType::String))
     {
         settings_theme = general_configs.GetNamedString(L"theme");
+    }
+
+    if (json::has(general_configs, L"flyout_theme", json::JsonValueType::String))
+    {
+        flyout_theme = general_configs.GetNamedString(L"flyout_theme");
     }
 
     if (save)
