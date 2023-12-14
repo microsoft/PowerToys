@@ -5,6 +5,8 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Management.Automation.Runspaces;
+using System.Reflection;
 using System.Text.Json;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
@@ -32,6 +34,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
+
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().Location;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
+        private static readonly string ModuleFile = "WinGetCommandNotFound.psd1";
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -112,18 +127,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // Install module
             var iss = System.Management.Automation.Runspaces.InitialSessionState.CreateDefault2();
+            iss.ExecutionPolicy = Microsoft.PowerShell.ExecutionPolicy.Unrestricted;
             var ps = System.Management.Automation.PowerShell.Create(iss);
             ps.AddCommand("Install-Module")
-                .AddParameter("Name", string.Empty /*TODO CARLOS: Path to module*/)
+                .AddParameter("Name", AssemblyDirectory + "\\" + ModuleFile)
                 .AddParameter("Scope", "CurrentUser")
-                .AddParameter("Confirm", "True")
+                .AddParameter("Confirm", true)
                 .Invoke();
 
             // Append Import-Module to PowerShell profile
-            var pwshProfilePath = ps.Runspace.SessionStateProxy.GetVariable("PROFILE").ToString();
+            var pwshProfilePath = ps.Runspace.SessionStateProxy.GetVariable("PATH").ToString();
             using (StreamWriter w = File.AppendText(pwshProfilePath))
             {
-                w.WriteLine("Import-Module \"\";" /*TODO CARLOS: Name of module*/);
+                w.WriteLine("Import-Module \"" + AssemblyDirectory + "\\" + ModuleFile + "\";");
             }
 
             return;

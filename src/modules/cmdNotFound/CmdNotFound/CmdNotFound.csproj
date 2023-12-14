@@ -11,7 +11,7 @@
 		<Product>PowerToys</Product>
 		<Nullable>enable</Nullable>
 		<Description>PowerToys CommandNotFound</Description>
-		<AssemblyName>PowerToys.CommandNotFound</AssemblyName>
+		<AssemblyName>PowerToys.CmdNotFound</AssemblyName>
 		<GenerateDependencyFile>false</GenerateDependencyFile>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
