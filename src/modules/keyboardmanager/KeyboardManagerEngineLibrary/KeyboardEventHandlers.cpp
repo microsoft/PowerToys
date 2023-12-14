@@ -1092,6 +1092,16 @@ namespace KeyboardEventHandlers
         }
         else
         {
+            DWORD dwAttrib = GetFileAttributesW(shortcut.runProgramFilePath.c_str());
+
+            if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+            {
+                std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
+                std::wstring message = fmt::format(L"The program was not found.");
+                toast(title, message);
+                return;
+            }
+
             std::wstring executable_and_args = fmt::format(L"\"{}\" {}", shortcut.runProgramFilePath, shortcut.runProgramArgs);
 
             auto currentDir = shortcut.runProgramStartInDir.c_str();
@@ -1107,9 +1117,10 @@ namespace KeyboardEventHandlers
                 if (dwAttrib == INVALID_FILE_ATTRIBUTES)
                 {
                     std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
-                    std::wstring message = fmt::format(L"The path was not valid. It could not be used.", currentDir);
+                    std::wstring message = fmt::format(L"The start in path was not valid. It could not be used.", currentDir);
                     currentDir = nullptr;
                     toast(title, message);
+                    return;
                 }
             }
 
