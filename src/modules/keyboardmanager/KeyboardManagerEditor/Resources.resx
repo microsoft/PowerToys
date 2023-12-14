@@ -144,7 +144,13 @@
   <data name="EditShortcuts_WindowName" xml:space="preserve">
     <value>Remap shortcuts</value>
   </data>
-  <data name="Ok_Button" xml:space="preserve">
+  <data name="Browse_For_Program_Button" xml:space="preserve">
+    <value>Select program</value>
+  </data>
+  <data name="Browse_For_Path_Button" xml:space="preserve">
+    <value>Select path</value>
+  </data>
+	<data name="Ok_Button" xml:space="preserve">
     <value>OK</value>
   </data>
   <data name="Cancel_Button" xml:space="preserve">

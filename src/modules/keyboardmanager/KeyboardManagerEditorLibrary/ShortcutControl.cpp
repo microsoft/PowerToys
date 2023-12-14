@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ShortcutControl.h"
-
+#include <Windows.h>
+#include <commdlg.h>
+#include <ShlObj.h>
 #include <common/interop/shared_constants.h>
 
 #include "KeyboardManagerState.h"
@@ -167,7 +169,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     runProgramPathInput.IsSpellCheckEnabled(false);
     runProgramPathInput.Visibility(Visibility::Collapsed);
     runProgramPathInput.Width(EditorConstants::TableDropDownHeight);
-    controlStackPanel.Children().Append(runProgramPathInput);
+
     runProgramPathInput.HorizontalAlignment(HorizontalAlignment::Left);
 
     auto runProgramArgsForProgramInput = TextBox();
@@ -178,7 +180,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     runProgramArgsForProgramInput.IsSpellCheckEnabled(false);
     runProgramArgsForProgramInput.Visibility(Visibility::Collapsed);
     runProgramArgsForProgramInput.Width(EditorConstants::TableDropDownHeight);
-    controlStackPanel.Children().Append(runProgramArgsForProgramInput);
+
     runProgramArgsForProgramInput.HorizontalAlignment(HorizontalAlignment::Left);
 
     auto runProgramStartInDirInput = TextBox();
@@ -189,8 +191,36 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     runProgramStartInDirInput.AcceptsReturn(false);
     runProgramStartInDirInput.Visibility(Visibility::Collapsed);
     runProgramStartInDirInput.Width(EditorConstants::TableDropDownHeight);
-    controlStackPanel.Children().Append(runProgramStartInDirInput);
+    //controlStackPanel.Children().Append(runProgramStartInDirInput);
     runProgramStartInDirInput.HorizontalAlignment(HorizontalAlignment::Left);
+
+    StackPanel tempStackPanel1;
+    tempStackPanel1.Orientation(Orientation::Horizontal);
+
+    StackPanel tempStackPanel2;
+    tempStackPanel2.Orientation(Orientation::Horizontal);
+
+    Button pickFileBtn;
+    Button pickPathBtn;
+
+ /*   while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }*/
+    pickFileBtn.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_BROWSE_FOR_PROGRAM_BUTTON)));
+    pickPathBtn.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_BROWSE_FOR_PATH_BUTTON)));
+    pickFileBtn.Margin(textInputMargin);
+    pickPathBtn.Margin(textInputMargin);
+
+    tempStackPanel1.Children().Append(runProgramPathInput);
+    tempStackPanel1.Children().Append(pickFileBtn);
+
+    tempStackPanel2.Children().Append(runProgramStartInDirInput);
+    tempStackPanel2.Children().Append(pickPathBtn);
+
+    controlStackPanel.Children().Append(tempStackPanel1);
+    controlStackPanel.Children().Append(runProgramArgsForProgramInput);
+    controlStackPanel.Children().Append(tempStackPanel2);
 
     // add shortcut type choice
     auto runProgramElevationTypeCombo = ComboBox();
@@ -254,6 +284,94 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
 
         //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
+    });
+
+    pickFileBtn.Click([&, parent, row](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        Button currentButton = sender.as<Button>();
+        uint32_t rowIndex;
+        // Get index of delete button
+        UIElementCollection children = parent.Children();
+        bool indexFound = children.IndexOf(row, rowIndex);
+
+        // IndexOf could fail if the row got deleted and the button handler was invoked twice. In this case it should return
+        if (!indexFound)
+        {
+            return;
+        }
+
+        OPENFILENAME ofn;
+        TCHAR szFile[260] = { 0 };
+
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = NULL;
+        ofn.lpstrFile = szFile;
+        ofn.nMaxFile = sizeof(szFile);
+        ofn.lpstrFilter = TEXT("All Files (*.*)\0*.*\0");
+        ofn.nFilterIndex = 1;
+        ofn.lpstrFileTitle = NULL;
+        ofn.nMaxFileTitle = 0;
+        ofn.lpstrInitialDir = NULL;
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+        auto textBox = currentButton.Parent().as<StackPanel>().Children().GetAt(0).as<TextBox>();
+        if (GetOpenFileName(&ofn) == TRUE)
+        {
+            textBox.Text(szFile);
+        }
+    });
+
+    pickPathBtn.Click([&, parent, row](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        Button currentButton = sender.as<Button>();
+        uint32_t rowIndex;
+        // Get index of delete button
+        UIElementCollection children = parent.Children();
+        bool indexFound = children.IndexOf(row, rowIndex);
+
+        if (!indexFound)
+        {
+            return;
+        }
+
+
+        HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+        if (!FAILED(hr))
+        {
+            // Create a buffer to store the selected folder path
+            wchar_t path[MAX_PATH];
+            ZeroMemory(path, sizeof(path));
+
+            // Initialize the BROWSEINFO structure
+            BROWSEINFO browseInfo = { 0 };
+            browseInfo.hwndOwner = NULL; // Use NULL if there's no owner window
+            browseInfo.pidlRoot = NULL; // Use NULL to start from the desktop
+            browseInfo.pszDisplayName = path; // Buffer to store the display name
+            browseInfo.lpszTitle = L"Select a folder"; // Title of the dialog
+            browseInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE; // Show only file system directories
+
+            // Show the dialog
+            LPITEMIDLIST pidl = SHBrowseForFolder(&browseInfo);
+            if (pidl != NULL)
+            {
+                // Get the selected folder's path
+                if (SHGetPathFromIDList(pidl, path))
+                {
+                    auto textBox = currentButton.Parent().as<StackPanel>().Children().GetAt(0).as<TextBox>();
+                    textBox.Text(path);
+                }
+
+                // Free the PIDL
+                CoTaskMemFree(pidl);
+            }
+
+            // Release COM
+            CoUninitialize();
+
+            // Uninitialize COM
+            CoUninitialize();
+        }
+
+        
     });
 
     // add grid for when it's a key/shortcut
@@ -772,7 +890,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     // Detect Chord
     Windows::UI::Xaml::Controls::StackPanel chordStackPanel;
-    
+
     if (isOrigShortcut)
     {
         TextBlock allowChordText;
@@ -789,7 +907,6 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         chordStackPanel.Children().Append(allowChordText);
         chordStackPanel.Children().Append(allowChordSwitch);
 
-
         stackPanel.Children().Append(chordStackPanel);
         allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
 
@@ -798,7 +915,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         };
 
         allowChordSwitch.Toggled(toggleHandler);
-    }       
+    }
 
     TextBlock holdEscInfo;
     holdEscInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDESC));

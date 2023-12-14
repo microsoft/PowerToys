@@ -287,36 +287,6 @@ namespace KeyboardEventHandlers
                     {
                         CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
 
-                        //std::thread{ [] {
-                        //    try
-                        //    {
-                        //        // Alternatively can build DOM from code:
-                        //        XmlDocument toastXml;
-                        //        XmlElement toastElement = toastXml.CreateElement(L"toast");
-                        //        XmlElement visualElement = toastXml.CreateElement(L"visual");
-                        //        XmlElement bindingElement = toastXml.CreateElement(L"binding");
-                        //        XmlElement textElement = toastXml.CreateElement(L"text");
-
-                        //        toastXml.AppendChild(toastElement);
-                        //        toastElement.AppendChild(visualElement);
-                        //        visualElement.AppendChild(bindingElement);
-                        //        bindingElement.AppendChild(textElement);
-
-                        //        bindingElement.SetAttribute(L"template", L"ToastGeneric");
-                        //        textElement.InnerText(L"The path was invalid");
-
-                        //        std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
-                        //        const auto notifier = ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
-
-                        //        ToastNotification notification{ toastXml };
-                        //        notifier.Show(notification);
-                        //    }
-                        //    catch (...)
-                        //    {
-                        //    }
-                        //} }.detach();
-
-                        toast(L"Failed to start a program.", L"The path to start in was not valid.");
                         Logger::trace(L"CKBH:returning..");
                         return 1;
                     }
@@ -1129,6 +1099,18 @@ namespace KeyboardEventHandlers
             if (shortcut.runProgramStartInDir == L"")
             {
                 currentDir = nullptr;
+            }
+            else
+            {
+                DWORD dwAttrib = GetFileAttributesW(currentDir);
+
+                if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+                {
+                    std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
+                    std::wstring message = fmt::format(L"The path was not valid. It could not be used.", currentDir);
+                    currentDir = nullptr;
+                    toast(title, message);
+                }
             }
 
             DWORD processId = 1;
