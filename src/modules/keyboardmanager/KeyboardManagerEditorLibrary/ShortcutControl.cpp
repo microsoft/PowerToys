@@ -164,16 +164,20 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
     const bool textSelected = newKeys.index() == 2;
     bool isRunProgram = false;
+    bool isOpenUri = false;
     Shortcut shortCut;
     if (!textSelected)
     {
         shortCut = std::get<Shortcut>(newKeys);
-        isRunProgram = true;
+        isRunProgram = (shortCut.operationType == Shortcut::OperationType::RunProgram);
+        isOpenUri = (shortCut.operationType == Shortcut::OperationType::OpenURI);
     }
 
     // add TextBoxes for when it's a runProgram fields
 
     auto runProgramStackPanel = SetupRunProgramControls(parent, row, shortCut, textInputMargin, controlStackPanel);
+
+    auto openURIStackPanel = SetupOpenURIControls(parent, row, shortCut, textInputMargin, controlStackPanel);
 
     // add grid for when it's a key/shortcut
     auto grid = keyboardRemapControlObjects.back()[1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>();
@@ -183,7 +187,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     auto shortcutButton = keyboardRemapControlObjects.back()[1]->typeShortcut.as<Button>();
 
     // event code for when type changes
-    typeCombo.SelectionChanged([typeCombo, grid, shortcutButton, textInput, runProgramStackPanel, targetAppTextBox](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
+    typeCombo.SelectionChanged([typeCombo, grid, shortcutButton, textInput, runProgramStackPanel, openURIStackPanel, targetAppTextBox](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
         const auto shortcutType = ShortcutControl::GetShortcutType(typeCombo);
 
         if (shortcutType == ShortcutControl::ShortcutType::Shortcut)
@@ -193,6 +197,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             shortcutButton.Visibility(Visibility::Visible);
             textInput.Visibility(Visibility::Collapsed);
             runProgramStackPanel.Visibility(Visibility::Collapsed);
+            openURIStackPanel.Visibility(Visibility::Collapsed);
         }
         else if (shortcutType == ShortcutControl::ShortcutType::Text)
         {
@@ -201,6 +206,16 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             shortcutButton.Visibility(Visibility::Collapsed);
             textInput.Visibility(Visibility::Visible);
             runProgramStackPanel.Visibility(Visibility::Collapsed);
+            openURIStackPanel.Visibility(Visibility::Collapsed);
+        }
+        else if (shortcutType == ShortcutControl::ShortcutType::RunProgram)
+        {
+            targetAppTextBox.IsEnabled(false);
+            grid.Visibility(Visibility::Collapsed);
+            shortcutButton.Visibility(Visibility::Collapsed);
+            textInput.Visibility(Visibility::Collapsed);
+            runProgramStackPanel.Visibility(Visibility::Visible);
+            openURIStackPanel.Visibility(Visibility::Collapsed);
         }
         else
         {
@@ -208,7 +223,8 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             grid.Visibility(Visibility::Collapsed);
             shortcutButton.Visibility(Visibility::Collapsed);
             textInput.Visibility(Visibility::Collapsed);
-            runProgramStackPanel.Visibility(Visibility::Visible);
+            runProgramStackPanel.Visibility(Visibility::Collapsed);
+            openURIStackPanel.Visibility(Visibility::Visible);
         }
     });
 
@@ -218,9 +234,13 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     }
     else
     {
-        if (shortCut.isRunProgram)
+        if (shortCut.operationType == Shortcut::OperationType::RunProgram)
         {
             typeCombo.SelectedIndex(2);
+        }
+        else if (shortCut.operationType == Shortcut::OperationType::OpenURI)
+        {
+            typeCombo.SelectedIndex(3);
         }
         else
         {
@@ -232,37 +252,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }*/
-
-    //runProgramElevationTypeCombo.SelectionChanged([parent, row, runProgramElevationTypeCombo, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput, grid, shortcutButton](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
-    //    uint32_t rowIndex;
-    //    if (!parent.Children().IndexOf(row, rowIndex))
-    //    {
-    //        return;
-    //    }
-
-    //    Shortcut tempShortcut;
-    //    tempShortcut.isRunProgram = true;
-
-    //    if (runProgramElevationTypeCombo.SelectedIndex() == 0)
-    //    {
-    //        tempShortcut.elevationLevel = Shortcut::ElevationLevel::NonElevated;
-    //    }
-    //    else if (runProgramElevationTypeCombo.SelectedIndex() == 1)
-    //    {
-    //        tempShortcut.elevationLevel = Shortcut::ElevationLevel::Elevated;
-    //    }
-    //    else if (runProgramElevationTypeCombo.SelectedIndex() == 2)
-    //    {
-    //        tempShortcut.elevationLevel = Shortcut::ElevationLevel::DifferentUser;
-    //    }
-
-    //    tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
-    //    tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
-    //    tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
-
-    //    // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-    //    shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
-    //});
 
     row.Children().Append(target);
 
@@ -415,7 +404,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     {
         // change to load app name
 
-        if (isRunProgram)
+        if (isRunProgram || isOpenUri)
         {
             // not sure why by we need to add the current item in here, so we have it even if does not change.
             auto newShortcut = std::get<Shortcut>(newKeys);
@@ -453,9 +442,38 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     }
 }
 
-StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel)
+StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel)
+{
+    StackPanel controlStackPanel;
+    auto uriText = TextBox();
 
-//StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, TextBox& runProgramPathInput, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::TextBox& runProgramArgsForProgramInput, ::TextBox& runProgramStartInDirInput, ::Button& pickFileBtn, ::Button& pickPathBtn, ::StackPanel& _controlStackPanel, ::ComboBox& runProgramElevationTypeCombo)
+    uriText.Text(shortCut.uriToOpen);
+    uriText.PlaceholderText(L"uriText!!!");
+    uriText.Margin(textInputMargin);
+    uriText.Width(EditorConstants::TableDropDownHeight);
+    uriText.HorizontalAlignment(HorizontalAlignment::Left);
+    controlStackPanel.Children().Append(uriText);
+
+    _controlStackPanel.Children().Append(controlStackPanel);
+
+    uriText.TextChanged([parent, row, uriText](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+        uint32_t rowIndex = -1;
+        if (!parent.Children().IndexOf(row, rowIndex))
+        {
+            return;
+        }
+        Shortcut tempShortcut;
+        tempShortcut.operationType = Shortcut::OperationType::OpenURI;
+        tempShortcut.uriToOpen = (uriText.Text().c_str());
+        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+
+        //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
+    });
+
+    return controlStackPanel;
+}
+
+StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel)
 {
     StackPanel controlStackPanel;
     auto runProgramPathInput = TextBox();
@@ -537,7 +555,8 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
             return;
         }
         Shortcut tempShortcut;
-        tempShortcut.isRunProgram = true;
+        tempShortcut.operationType = Shortcut::OperationType::RunProgram;
+        //tempShortcut.isRunProgram = true;
         tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
         tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
         tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
@@ -554,7 +573,8 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
             return;
         }
         Shortcut tempShortcut;
-        tempShortcut.isRunProgram = true;
+        tempShortcut.operationType = Shortcut::OperationType::RunProgram;
+        //tempShortcut.isRunProgram = true;
         tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
         tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
         tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
@@ -571,7 +591,8 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         }
 
         Shortcut tempShortcut;
-        tempShortcut.isRunProgram = true;
+        tempShortcut.operationType = Shortcut::OperationType::RunProgram;
+        //tempShortcut.isRunProgram = true;
         tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
         tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
         tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
@@ -679,7 +700,8 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         }
 
         Shortcut tempShortcut;
-        tempShortcut.isRunProgram = true;
+        tempShortcut.operationType = Shortcut::OperationType::RunProgram;
+        //tempShortcut.isRunProgram = true;
 
         if (runProgramElevationTypeCombo.SelectedIndex() == 0)
         {
@@ -720,7 +742,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         runProgramElevationTypeCombo.SelectedIndex(2);
     }
 
-
     return controlStackPanel;
 }
 
@@ -744,9 +765,13 @@ ShortcutControl::ShortcutType ShortcutControl::GetShortcutType(const winrt::Wind
     {
         return ShortcutControl::ShortcutType::Text;
     }
-    else
+    else if (typeCombo.SelectedIndex() == 2)
     {
         return ShortcutControl::ShortcutType::RunProgram;
+    }
+    else
+    {
+        return ShortcutControl::ShortcutType::OpenURI;
     }
 }
 

@@ -33,16 +33,25 @@ public:
         DifferentUser = 2
     };
 
+    enum OperationType
+    {
+        RemapShortcut = 0,
+        RunProgram = 1,
+        OpenURI = 2
+    };
+
     ModifierKey winKey = ModifierKey::Disabled;
     ModifierKey ctrlKey = ModifierKey::Disabled;
     ModifierKey altKey = ModifierKey::Disabled;
     ModifierKey shiftKey = ModifierKey::Disabled;
 
-    bool isRunProgram = false;
+    //bool isRunProgram = false;
     std::wstring runProgramFilePath;
     std::wstring runProgramArgs;
     std::wstring runProgramStartInDir;
+    std::wstring uriToOpen;
     Shortcut::ElevationLevel elevationLevel = ElevationLevel::NonElevated;
+    Shortcut::OperationType operationType = OperationType::RemapShortcut;
 
     DWORD actionKey = {};
     DWORD secondKey = {}; // of the chord
@@ -60,7 +69,7 @@ public:
     Shortcut(const std::wstring& shortcutVK, const DWORD _secondKeyOfChord);
 
     // Constructor to initialize shortcut from a list of keys and a runProgram data
-    Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir, const Shortcut::ElevationLevel elevationLevel, const DWORD secondKeyOfChord);
+    /*Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir, const Shortcut::ElevationLevel elevationLevel);*/
 
     // Constructor to initialize shortcut from a list of keys
     Shortcut(const std::vector<int32_t>& keys);
@@ -90,6 +99,10 @@ public:
 
     // Function to return the action key
     DWORD GetActionKey() const;
+
+    bool Shortcut::IsRunProgram() const;
+
+    bool Shortcut::IsOpenURI() const;
 
     // Function to return the second key (of the chord)
     DWORD Shortcut::GetSecondKey() const;

@@ -45,7 +45,8 @@ private:
     {
         Shortcut,
         Text,
-        RunProgram
+        RunProgram,
+        OpenURI
     };
 
 public:
@@ -81,4 +82,5 @@ public:
 };
 
 StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel);
-//StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, TextBox& runProgramPathInput, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::TextBox& runProgramArgsForProgramInput, ::TextBox& runProgramStartInDirInput, ::Button& pickFileBtn, ::Button& pickPathBtn, ::StackPanel& controlStackPanel, ::ComboBox& runProgramElevationTypeCombo);
+
+StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel);

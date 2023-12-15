@@ -218,7 +218,7 @@ namespace KeyboardEventHandlers
             const bool remapToKey = it->second.targetShortcut.index() == 0;
             const bool remapToShortcut = it->second.targetShortcut.index() == 1;
             const bool remapToText = it->second.targetShortcut.index() == 2;
-            const bool isRunProgram = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).isRunProgram);
+            const bool isRunProgram = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).IsRunProgram());
             const size_t src_size = it->first.Size();
             const size_t dest_size = remapToShortcut ? std::get<Shortcut>(it->second.targetShortcut).Size() : 1;
 
@@ -1083,11 +1083,11 @@ namespace KeyboardEventHandlers
             Logger::trace(L"CKBH:{}, already running, pid:{}", fileNamePart, targetPid);
             if (!ShowProgram(targetPid, fileNamePart, false, true))
             {
-                auto future = std::async(std::launch::async, [=] {
+                /*auto future = std::async(std::launch::async, [=] {
                     std::this_thread::sleep_for(std::chrono::milliseconds(30));
                     Logger::trace(L"CKBH:{}, second try, pid:{}", fileNamePart, targetPid);
-                    ShowProgram(targetPid, fileNamePart, true, false);
-                });
+                    ShowProgram(targetPid, fileNamePart, false, false);
+                });*/
             }
         }
         else
@@ -1141,6 +1141,8 @@ namespace KeyboardEventHandlers
                 newProcessHandle = run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
                 processId = GetProcessId(newProcessHandle);
             }
+
+            ShowProgram(processId, fileNamePart, true, false);
         }
         return;
     }
@@ -1171,7 +1173,19 @@ namespace KeyboardEventHandlers
             else
             {
                 Logger::trace(L"CKBH:{}, no GetForegroundWindow, doing SW_RESTORE", programName);
-                auto result = ShowWindow(hwnd, SW_RESTORE);
+
+                // Check if the window is minimized
+                if (IsIconic(hwnd))
+                {
+                    // Show the window since SetForegroundWindow fails on minimized windows
+                    if (!ShowWindow(hwnd, SW_RESTORE))
+                    {
+                        Logger::error(L"ShowWindow failed");
+                    }
+                }
+
+                INPUT inputs[1] = { { .type = INPUT_MOUSE } };
+                SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
 
                 if (!SetForegroundWindow(hwnd))
                 {

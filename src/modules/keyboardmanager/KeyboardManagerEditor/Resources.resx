@@ -317,8 +317,8 @@
     <comment>Run Program</comment>
   </data>
   <data name="Mapping_Type_DropDown_Open_URI" xml:space="preserve">
-    <value>Open Path</value>
-    <comment>Open Path</comment>
+    <value>Open URI</value>
+    <comment>URI to open.</comment>
   </data>
 	<data name="Add_Key_Remap_Button" xml:space="preserve">
     <value>Add key remapping</value>

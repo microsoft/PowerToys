@@ -433,7 +433,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
 
     auto secondKey = shortcut.GetSecondKey();
 
-    if (shortcutKeyCodes.size() != 0 || shortcut.isRunProgram)
+    if (shortcutKeyCodes.size() != 0 || shortcut.IsRunProgram())
     {
         bool ignoreWarning = false;
 
