@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Management.Automation.Runspaces;
@@ -45,8 +46,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return Path.GetDirectoryName(path);
             }
         }
-
-        private static readonly string ModuleFile = "WinGetCommandNotFound.psd1";
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -125,24 +124,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void InstallModule()
         {
-            // Install module
-            var iss = System.Management.Automation.Runspaces.InitialSessionState.CreateDefault2();
-            iss.ExecutionPolicy = Microsoft.PowerShell.ExecutionPolicy.Unrestricted;
-            var ps = System.Management.Automation.PowerShell.Create(iss);
-            ps.AddCommand("Install-Module")
-                .AddParameter("Name", AssemblyDirectory + "\\" + ModuleFile)
-                .AddParameter("Scope", "CurrentUser")
-                .AddParameter("Confirm", true)
-                .Invoke();
+            var ps1File = AssemblyDirectory + "\\Utilities\\EnableModule.ps1";
 
-            // Append Import-Module to PowerShell profile
-            var pwshProfilePath = ps.Runspace.SessionStateProxy.GetVariable("PATH").ToString();
-            using (StreamWriter w = File.AppendText(pwshProfilePath))
+            var startInfo = new ProcessStartInfo()
             {
-                w.WriteLine("Import-Module \"" + AssemblyDirectory + "\\" + ModuleFile + "\";");
-            }
-
-            return;
+                FileName = "pwsh.exe",
+                Arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\" -scriptPath {AssemblyDirectory}\\..",
+                UseShellExecute = false,
+            };
+            Process.Start(startInfo);
         }
 
         private void ScheduleSavingOfSettings()
