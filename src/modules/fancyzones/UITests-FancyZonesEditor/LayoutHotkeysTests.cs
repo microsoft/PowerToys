@@ -180,7 +180,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 },
                 new LayoutHotkeyWrapper
                 {
-                    LayoutId = "{F1A94F38-82B6-4876-A653-70D0E882DE2A}",
+                    LayoutId = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
                     Key = 1,
                 },
             },
@@ -389,6 +389,50 @@ namespace Microsoft.FancyZonesEditor.UITests
             catch
             {
                 Assert.Fail("The key is not available for other layouts.");
+            }
+        }
+
+        [TestMethod]
+        public void Assign_AllPossibleValues()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                string layoutName = $"Layout {i}";
+                _session?.Click_EditLayout(layoutName);
+
+                var hotkeyComboBox = _session?.GetHotkeyComboBox();
+                hotkeyComboBox?.Click();
+                var popup = _session?.GetHotkeyPopup();
+                _session?.Click(popup?.FindElementByName($"{i}")!);
+
+                _session?.Click_Save();
+                _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
+            }
+
+            // check there nothing except None
+            {
+                int layout = 10;
+                string layoutName = $"Layout {layout}";
+                _session?.Click_EditLayout(layoutName);
+                var hotkeyComboBox = _session?.GetHotkeyComboBox();
+                hotkeyComboBox?.Click();
+                var popup = _session?.GetHotkeyPopup();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    try
+                    {
+                        popup?.FindElementByName($"{i}");
+                        Assert.Fail("The assigned key is still available for other layouts.");
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                _session?.Click(popup?.FindElementByName($"None")!);
+                _session?.Click_Save();
+                _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
             }
         }
 
