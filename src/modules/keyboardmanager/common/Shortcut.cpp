@@ -47,12 +47,12 @@ Shortcut::Shortcut(const DWORD key)
 }
 
 // Constructor to initialize Shortcut from it's virtual key code string representation.
-Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD _secondKeyOfChord) :
+Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD secondKeyOfChord) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     auto keys = splitwstring(shortcutVK, ';');
     SetKeyCodes(ConvertToNumbers(keys));
-    secondKey = _secondKeyOfChord;
+    secondKey = secondKeyOfChord;
 }
 
 // Constructor to initialize shortcut from a list of keys and runProgram data

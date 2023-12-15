@@ -17,6 +17,10 @@
 #include <winrt/Windows.UI.Notifications.h>
 #include <winrt/Windows.Data.Xml.Dom.h>
 
+#include <windows.h>
+#include <string>
+#include <urlmon.h>
+
 using namespace winrt;
 using namespace Windows::UI::Notifications;
 using namespace Windows::Data::Xml::Dom;
@@ -219,6 +223,7 @@ namespace KeyboardEventHandlers
             const bool remapToShortcut = it->second.targetShortcut.index() == 1;
             const bool remapToText = it->second.targetShortcut.index() == 2;
             const bool isRunProgram = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).IsRunProgram());
+            const bool isOpenUri = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).IsOpenURI());
             const size_t src_size = it->first.Size();
             const size_t dest_size = remapToShortcut ? std::get<Shortcut>(it->second.targetShortcut).Size() : 1;
 
@@ -286,6 +291,50 @@ namespace KeyboardEventHandlers
                     if (isRunProgram)
                     {
                         CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
+
+                        Logger::trace(L"CKBH:returning..");
+                        return 1;
+                    }
+                    else if (isOpenUri)
+                    {
+                        auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
+
+                        auto uri = shortcut.uriToOpen;
+                        auto newUri = uri;
+
+                        if (!PathIsURL(uri.c_str()))
+                        {
+                            WCHAR url[1024];
+                            DWORD bufferSize = 1024;
+
+                            if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
+                            {
+                                newUri = url;
+                                Logger::trace(L"CKBH:ConvertPathToURI from {} to {}", uri, url);
+                            }
+                            else
+                            {
+                                toast(L"Error", L"the URI is bad");
+                                return 1;
+                            }
+
+                            //newUri = ConvertPathToURI(uri);
+                            //Logger::trace(L"CKBH:ConvertPathToURI from {} to {}", uri, newUri);
+                            //if (!PathIsURL(newUri.c_str()))
+                            //{
+                            //    Logger::trace(L"CKBH:ConvertPathToURI made bad uri from {} to {}", uri, newUri);
+                            //    return 1;
+                            //}
+                        }
+
+                        HINSTANCE result = ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+                        if (result == reinterpret_cast<HINSTANCE>(HINSTANCE_ERROR))
+                        {
+                            toast(L"Error", L"the URI is bad");
+                        }
+
+                        //CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
 
                         Logger::trace(L"CKBH:returning..");
                         return 1;
@@ -884,6 +933,40 @@ namespace KeyboardEventHandlers
         }
 
         return 0;
+    }
+
+    std::wstring URLencode(const std::wstring& filepath)
+    {
+        std::wostringstream escaped;
+        escaped.fill('0');
+        escaped << std::hex;
+
+        for (wchar_t ch : filepath)
+        {
+            // Encode special characters except for colon after drive letter
+            if (!iswalnum(ch) && ch != L'-' && ch != L'_' && ch != L'.' && ch != L'~' && !(ch == L':' && std::isalpha(filepath[0])))
+            {
+                escaped << std::uppercase;
+                //escaped << '%' << std::setw(2) << int((unsigned char)ch);
+                escaped << '%' << std::setw(2) << static_cast<int>((static_cast<unsigned char>(ch)));
+                escaped << std::nouppercase;
+            }
+            else
+            {
+                escaped << ch;
+            }
+        }
+
+        return escaped.str();
+    }
+
+    std::wstring ConvertPathToURI(const std::wstring& filePath)
+    {
+        std::wstring fileUri = std::filesystem::absolute(filePath).wstring();
+        std::replace(fileUri.begin(), fileUri.end(), L'\\', L'/');
+        fileUri = L"file:///" + URLencode(fileUri);
+
+        return fileUri;
     }
 
     void ResetAllOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, DWORD keyToKeep)
