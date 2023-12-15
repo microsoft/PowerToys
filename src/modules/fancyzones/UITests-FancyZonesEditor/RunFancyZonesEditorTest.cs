@@ -24,7 +24,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             _context = testContext;
 
-            // prepare files to launch Editor without errors
+            // prepare test editor parameters with 2 monitors before launching the editor
             EditorParameters editorParameters = new EditorParameters();
             EditorParameters.ParamsWrapper parameters = new EditorParameters.ParamsWrapper
             {

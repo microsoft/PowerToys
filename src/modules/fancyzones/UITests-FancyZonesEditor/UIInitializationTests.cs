@@ -12,7 +12,7 @@ using static FancyZonesEditorCommon.Data.EditorParameters;
 namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
-    public class UIInitializaionTests
+    public class UIInitializationTests
     {
         private static TestContext? _context;
         private static FancyZonesEditorSession? _session;
