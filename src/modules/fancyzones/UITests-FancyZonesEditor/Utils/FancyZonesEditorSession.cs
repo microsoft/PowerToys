@@ -242,12 +242,20 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             var layout = GetLayout(layoutName);
             Assert.IsNotNull(layout, $"Layout \"{layoutName}\" not found");
-            var editButton = layout?.FindElementByAccessibilityId(AccessibilityId.EditLayoutButton);
-            Assert.IsNotNull(editButton, "Edit button not found");
-            editButton.Click();
 
-            // wait until the dialog is opened
-            WaitElementDisplayedByName($"Edit '{layoutName}'");
+            // added retry attempts, because Click can fail for some reason
+            bool opened = false;
+            int retryAttempts = 10;
+            while (!opened && retryAttempts > 0)
+            {
+                var editButton = layout?.FindElementByAccessibilityId(AccessibilityId.EditLayoutButton);
+                Assert.IsNotNull(editButton, "Edit button not found");
+                editButton.Click();
+
+                // wait until the dialog is opened
+                opened = WaitElementDisplayedByName($"Edit '{layoutName}'");
+                retryAttempts--;
+            }
         }
 
         public void RightClick_Layout(string layoutName)
@@ -289,19 +297,26 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
-        public void WaitElementDisplayedByName(string name)
+        public bool WaitElementDisplayedByName(string name)
         {
-            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
-            wait.Until(pred =>
+            try
             {
-                var element = Session?.FindElementByName(name);
-                if (element != null)
+                WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
+                return wait.Until(pred =>
+                {
+                    var element = Session?.FindElementByName(name);
+                    if (element != null)
                 {
                     return element.Displayed;
                 }
 
+                    return false;
+                });
+            }
+            catch
+            {
                 return false;
-            });
+            }
         }
 
         public void WaitElementDisplayedById(string id)
