@@ -378,7 +378,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
                 // Correct the process data if the window belongs to a uwp app hosted by 'ApplicationFrameHost.exe'
                 // (This only works if the window isn't minimized. For minimized windows the required child window isn't assigned.)
-                if (string.Equals(_handlesToProcessCache[hWindow].Name, "APPLICATIONFRAMEHOST.EXE", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(_handlesToProcessCache[hWindow].Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
                 {
                     new Task(() =>
                     {
