@@ -183,6 +183,7 @@ clrcall
 CLSCTX
 Clusion
 cmder
+CMDNOTFOUNDMODULEINTERFACE
 Cmds
 CMIC
 CMINVOKECOMMANDINFO
@@ -462,7 +463,6 @@ FANCYZONESEDITOR
 FARPROC
 fdw
 fff
-FFFA
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
@@ -744,10 +744,7 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
-LAlt
-Lambson
 languagesjson
-langword
 lastcodeanalysissucceeded
 Lastdevice
 LAYOUTRTL
@@ -1574,7 +1571,6 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
-tonos
 toolkitcontrols
 toolkitconverters
 Toolset
@@ -1710,7 +1706,6 @@ wcsnicmp
 WDA
 wdp
 wdupenv
-weakme
 webbrowsers
 webcam
 webpage
@@ -1749,7 +1744,6 @@ winforms
 winfx
 winget
 wingetcreate
-wingetprovider
 Winhook
 WINL
 winlogon
@@ -1758,7 +1752,6 @@ winmm
 winnt
 winres
 winrt
-winrtact
 winsdk
 winsdkver
 winspool
