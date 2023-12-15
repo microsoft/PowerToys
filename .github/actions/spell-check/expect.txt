@@ -1,3 +1,6 @@
+# FALSE POSITIVES
+## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
+## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -160,7 +163,6 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
-CHT
 cidl
 cim
 CImage
@@ -218,7 +220,6 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
-constexpr
 consts
 contentdialog
 contentfiles
@@ -295,6 +296,7 @@ ddf
 DDxgi
 Deact
 debugbreak
+declatory
 decryptor
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -318,7 +320,6 @@ DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-DEU
 devblogs
 devdocs
 devenum
@@ -461,6 +462,7 @@ FANCYZONESEDITOR
 FARPROC
 fdw
 fff
+FFFA
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
@@ -537,7 +539,6 @@ Hanzi
 Hardlines
 hardlinks
 HARDWAREINPUT
-hashcode
 Hashset
 hashtag
 HASHVAL
@@ -556,7 +557,6 @@ hcwhite
 hdc
 hdrop
 hdwwiz
-HEB
 Helpline
 helptext
 HGFE
@@ -719,7 +719,6 @@ jif
 jjw
 jobject
 jpe
-JPN
 jpnime
 Jsons
 jsonval
@@ -906,6 +905,8 @@ MOUSEHWHEEL
 MOUSEINPUT
 MOVESIZEEND
 MOVESIZESTART
+MOZILLAPL
+MOZPL
 mpmc
 MRM
 MRT
@@ -971,6 +972,7 @@ newdev
 newitem
 newpath
 newrow
+newsgroups
 NIF
 NLD
 NLog
@@ -983,7 +985,6 @@ NOCLOSEPROCESS
 NOCOALESCE
 NOCOPYBITS
 nodeca
-nodiscard
 nodoc
 NODRAWCAPTION
 NODRAWICON
@@ -1070,6 +1071,7 @@ overlaywindow
 Oversampling
 OWNDC
 OWNERDRAW
+Packagemanager
 PACL
 PAINTSTRUCT
 PALETTEWINDOW
@@ -1092,7 +1094,6 @@ pcch
 pcelt
 pch
 PCIDLIST
-pcs
 PCWSTR
 pdisp
 pdo
@@ -1216,7 +1217,6 @@ qit
 QITAB
 QITABENT
 qoi
-qps
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
@@ -1302,7 +1302,6 @@ RKey
 RNumber
 roadmap
 rop
-roundf
 ROUNDSMALL
 rpcrt
 RRF
@@ -1323,8 +1322,6 @@ runtimeclass
 runtimeobject
 runtimepack
 runtimes
-RUS
-RValue
 rvm
 rwin
 rwl
@@ -1505,7 +1502,6 @@ subquery
 Superbar
 sut
 svchost
-SVE
 SVGIn
 SVGIO
 svgz
@@ -1723,7 +1719,6 @@ wekyb
 Wevtapi
 wgpocpl
 WIC
-wifi
 wil
 winapi
 winappdriver
@@ -1753,8 +1748,8 @@ winexe
 winforms
 winfx
 winget
-wingetprovider
 wingetcreate
+wingetprovider
 Winhook
 WINL
 winlogon
@@ -1853,13 +1848,3 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-newsgroups
-MOZILLAPL
-MOZPL
-
-# FALSE POSITIVES
-
-## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
-declatory
-## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
-Packagemanager
