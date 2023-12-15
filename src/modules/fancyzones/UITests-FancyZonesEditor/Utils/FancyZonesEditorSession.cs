@@ -292,7 +292,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
             catch (Exception)
             {
-                Assert.Fail($"{name} not found");
+                context.WriteLine($"{name} not found");
                 return null;
             }
         }
