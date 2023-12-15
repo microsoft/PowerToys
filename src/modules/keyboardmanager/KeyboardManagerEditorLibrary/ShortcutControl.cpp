@@ -444,19 +444,32 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
 StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel)
 {
-    StackPanel controlStackPanel;
-    auto uriText = TextBox();
+    StackPanel openUriStackPanel;
+    auto uriTextBox = TextBox();
 
-    uriText.Text(shortCut.uriToOpen);
-    uriText.PlaceholderText(L"uriText!!!");
-    uriText.Margin(textInputMargin);
-    uriText.Width(EditorConstants::TableDropDownHeight);
-    uriText.HorizontalAlignment(HorizontalAlignment::Left);
-    controlStackPanel.Children().Append(uriText);
+    uriTextBox.Text(shortCut.uriToOpen);
+    uriTextBox.PlaceholderText(L"uriText!!!");
+    uriTextBox.Margin(textInputMargin);
+    uriTextBox.Width(EditorConstants::TableDropDownHeight);
+    uriTextBox.HorizontalAlignment(HorizontalAlignment::Left);
+    
 
-    _controlStackPanel.Children().Append(controlStackPanel);
+    winrt::Windows::UI::Xaml::Controls::HyperlinkButton hyperlinkButton;
+    hyperlinkButton.NavigateUri(Windows::Foundation::Uri(L"https://learn.microsoft.com/en-us/windows/uwp/launch-resume/launch-settings-app#ms-settings-uri-scheme-reference"));
+    hyperlinkButton.Content(winrt::box_value(L"?"));
+    hyperlinkButton.Margin(textInputMargin);
 
-    uriText.TextChanged([parent, row, uriText](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+    StackPanel boxAndLink;
+    boxAndLink.Orientation(Orientation::Horizontal);
+    boxAndLink.Children().Append(uriTextBox);
+    boxAndLink.Children().Append(hyperlinkButton);
+    
+    
+    openUriStackPanel.Children().Append(boxAndLink);
+
+    
+
+    uriTextBox.TextChanged([parent, row, uriTextBox](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;
         if (!parent.Children().IndexOf(row, rowIndex))
         {
@@ -464,13 +477,14 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
         }
         Shortcut tempShortcut;
         tempShortcut.operationType = Shortcut::OperationType::OpenURI;
-        tempShortcut.uriToOpen = (uriText.Text().c_str());
+        tempShortcut.uriToOpen = (uriTextBox.Text().c_str());
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
 
         //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
     });
 
-    return controlStackPanel;
+    _controlStackPanel.Children().Append(openUriStackPanel);
+    return openUriStackPanel;
 }
 
 StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel)

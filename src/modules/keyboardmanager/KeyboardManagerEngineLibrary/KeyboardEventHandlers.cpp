@@ -317,14 +317,6 @@ namespace KeyboardEventHandlers
                                 toast(L"Error", L"the URI is bad");
                                 return 1;
                             }
-
-                            //newUri = ConvertPathToURI(uri);
-                            //Logger::trace(L"CKBH:ConvertPathToURI from {} to {}", uri, newUri);
-                            //if (!PathIsURL(newUri.c_str()))
-                            //{
-                            //    Logger::trace(L"CKBH:ConvertPathToURI made bad uri from {} to {}", uri, newUri);
-                            //    return 1;
-                            //}
                         }
 
                         HINSTANCE result = ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -333,9 +325,7 @@ namespace KeyboardEventHandlers
                         {
                             toast(L"Error", L"the URI is bad");
                         }
-
-                        //CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
-
+                        
                         Logger::trace(L"CKBH:returning..");
                         return 1;
                     }
