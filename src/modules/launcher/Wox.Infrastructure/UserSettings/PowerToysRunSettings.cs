@@ -319,7 +319,14 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool RememberLastLaunchLocation { get; set; }
 
-        public bool ShowPluginsOverview { get; set; }
+        public enum ShowPluginsOverviewMode
+        {
+            All,
+            NonGlobal,
+            None,
+        }
+
+        public ShowPluginsOverviewMode ShowPluginsOverview { get; set; } = ShowPluginsOverviewMode.All;
 
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 

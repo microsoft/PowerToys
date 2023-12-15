@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public Theme Theme { get; set; }
 
         [JsonPropertyName("show_plugins_overview")]
-        public bool ShowPluginsOverview { get; set; }
+        public int ShowPluginsOverview { get; set; }
 
         [JsonPropertyName("startupPosition")]
         public StartupPosition Position { get; set; }
@@ -110,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SearchWaitForSlowResults = false;
             GenerateThumbnailsFromFiles = true;
             UsePinyin = false;
-            ShowPluginsOverview = true;
+            ShowPluginsOverview = 0;
         }
     }
 }

@@ -203,7 +203,11 @@
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="PowerLauncher_ShowPluginKeywords" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
-                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.ShowPluginsOverview}" />
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ShowPluginsOverviewIndex}">
+                            <ComboBoxItem x:Uid="ShowPluginsOveriew_All" />
+                            <ComboBoxItem x:Uid="ShowPluginsOveriew_NonGlobal" />
+                            <ComboBoxItem x:Uid="ShowPluginsOveriew_None" />
+                        </ComboBox>
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 

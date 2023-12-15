@@ -597,7 +597,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowPluginsOverview
+        public int ShowPluginsOverviewIndex
         {
             get
             {

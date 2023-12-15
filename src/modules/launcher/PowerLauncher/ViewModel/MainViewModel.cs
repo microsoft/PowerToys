@@ -373,7 +373,7 @@ namespace PowerLauncher.ViewModel
 
         public void SetPluginsOverviewVisibility()
         {
-            if (_settings.ShowPluginsOverview && (string.IsNullOrEmpty(_queryText) || string.IsNullOrWhiteSpace(_queryText)))
+            if (_settings.ShowPluginsOverview != PowerToysRunSettings.ShowPluginsOverviewMode.None && (string.IsNullOrEmpty(_queryText) || string.IsNullOrWhiteSpace(_queryText)))
             {
                 PluginsOverviewVisibility = Visibility.Visible;
             }
@@ -1238,7 +1238,10 @@ namespace PowerLauncher.ViewModel
 
                 foreach (var p in PluginManager.AllPlugins.Where(a => a.IsPluginInitialized && !a.Metadata.Disabled && a.Metadata.ActionKeyword != string.Empty))
                 {
-                    Plugins.Add(p);
+                    if (_settings.ShowPluginsOverview == PowerToysRunSettings.ShowPluginsOverviewMode.All || (_settings.ShowPluginsOverview == PowerToysRunSettings.ShowPluginsOverviewMode.NonGlobal && !p.Metadata.IsGlobal))
+                    {
+                        Plugins.Add(p);
+                    }
                 }
             });
         }
