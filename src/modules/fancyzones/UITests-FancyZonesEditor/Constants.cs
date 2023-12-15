@@ -12,8 +12,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             Empty,
             Focus,
-            Rows,
             Columns,
+            Rows,
             Grid,
             PriorityGrid,
         }
@@ -22,8 +22,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             { TemplateLayouts.Empty, "No layout" },
             { TemplateLayouts.Focus, "Focus" },
-            { TemplateLayouts.Rows, "Rows" },
             { TemplateLayouts.Columns, "Columns" },
+            { TemplateLayouts.Rows, "Rows" },
             { TemplateLayouts.Grid, "Grid" },
             { TemplateLayouts.PriorityGrid, "Priority Grid" },
         };
@@ -32,8 +32,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             { TemplateLayouts.Empty, "blank" },
             { TemplateLayouts.Focus, "focus" },
-            { TemplateLayouts.Rows, "rows" },
             { TemplateLayouts.Columns, "columns" },
+            { TemplateLayouts.Rows, "rows" },
             { TemplateLayouts.Grid, "grid" },
             { TemplateLayouts.PriorityGrid, "priority-grid" },
         };
