@@ -276,13 +276,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        private void CheckCustomLayouts(string horizontalDefaulLayouttUuid, string verticalDefaultLayoutUuid)
+        private void CheckCustomLayouts(string horizontalDefaultLayoutUuid, string verticalDefaultLayoutUuid)
         {
             foreach (var layout in CustomLayouts.CustomLayouts)
             {
                 _session?.Click_EditLayout(layout.Name);
 
-                bool isCheckedHorizontal = layout.Uuid == horizontalDefaulLayouttUuid;
+                bool isCheckedHorizontal = layout.Uuid == horizontalDefaultLayoutUuid;
                 var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(isCheckedHorizontal);
                 Assert.IsNotNull(horizontalDefaultButton, "Incorrect horizontal custom layout set at " + layout.Name);
 
