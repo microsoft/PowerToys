@@ -202,7 +202,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 {
                     new DefaultLayoutWrapper
                     {
-                        MonitorConfiguration = MonitorConfigurationType.Vertical.ToString(),
+                        MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Vertical),
                         Layout = new DefaultLayoutWrapper.LayoutWrapper
                         {
                             Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
@@ -214,7 +214,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new DefaultLayoutWrapper
                     {
-                        MonitorConfiguration = MonitorConfigurationType.Horizontal.ToString(),
+                        MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal),
                         Layout = new DefaultLayoutWrapper.LayoutWrapper
                         {
                             Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
