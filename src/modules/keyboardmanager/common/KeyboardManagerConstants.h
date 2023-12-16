@@ -62,10 +62,10 @@ namespace KeyboardManagerConstants
     inline const std::wstring ShortcutSecondKeyOfChordSettingName = L"secondKeyOfChord";
 
     // Name of the property use to store openUri.
-    inline const std::wstring ShortcutOpenURI = L"openUri ";
+    inline const std::wstring ShortcutOpenURI = L"openUri";
 
     // Name of the property use to store shortcutOperationType.
-    inline const std::wstring ShortcutOperationType = L"operationType ";
+    inline const std::wstring ShortcutOperationType = L"operationType";
 
     // Name of the property use to store runProgramFilePath.
     //inline const std::wstring IsRunProgramSettingName = L"isRunProgram";

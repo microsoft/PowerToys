@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Management;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -27,8 +29,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("runProgramArgs")]
         public string RunProgramArgs { get; set; }
 
-        [JsonPropertyName("isRunProgram")]
-        public bool IsRunProgram { get; set; }
+        [JsonPropertyName("openUri")]
+        public string OpenUri { get; set; }
+
+        [JsonPropertyName("operationType")]
+        public int OperationType { get; set; }
 
         private static List<string> MapKeys(string stringOfKeys)
         {
@@ -49,7 +54,31 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return MapKeys(OriginalKeys);
         }
 
-        public List<string> GetMappedNewRemapKeys()
+        public bool IsRunProgram
+        {
+            get
+            {
+                return OperationType == 1;
+            }
+        }
+
+        public bool IsOpenURI
+        {
+            get
+            {
+                return OperationType == 2;
+            }
+        }
+
+        public bool IsOpenURIOrIsRunProgram
+        {
+            get
+            {
+                return IsOpenURI || IsRunProgram;
+            }
+        }
+
+        public List<string> GetMappedNewRemapKeys(int runProgramMaxLength)
         {
             if (IsRunProgram)
             {
@@ -60,7 +89,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
                 else
                 {
-                    return new List<string> { FormatFakeKeyForDisplay() };
+                    return new List<string> { FormatFakeKeyForDisplay(runProgramMaxLength) };
+                }
+            }
+            else if (IsOpenURI)
+            {
+                // we're going to just pretend this is a "key" if we have a RunProgramFilePath
+                if (string.IsNullOrEmpty(OpenUri))
+                {
+                    return new List<string>();
+                }
+                else
+                {
+                    if (OpenUri.Length > runProgramMaxLength)
+                    {
+                        return new List<string> { $"{OpenUri.Substring(0, runProgramMaxLength - 3)}..." };
+                    }
+                    else
+                    {
+                        return new List<string> { OpenUri };
+                    }
                 }
             }
 
@@ -72,28 +120,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // e.g.: c:\MyCool\PathIs\Long\software.exe myArg1 myArg2 myArg3 -> (something like) "...ng\software.exe myArg1..."
         // the idea is you get the most important part of the program to run and some of the args in case that the only thing thats different,
         // e.g: "...path\software.exe cool1.txt" and "...path\software.exe cool3.txt"
-        private string FormatFakeKeyForDisplay()
+        private string FormatFakeKeyForDisplay(int runProgramMaxLength)
         {
             // was going to use this:
-            // var fakeKey = Path.GetFileName(RunProgramFilePath);
-            // but I like this better:
             var fakeKey = RunProgramFilePath;
-
-            if (fakeKey.Length > 15)
+            try
             {
-                fakeKey = $"...{fakeKey.Substring(fakeKey.Length - 12)}";
+                if (File.Exists(fakeKey))
+                {
+                    fakeKey = Path.GetFileName(RunProgramFilePath);
+                }
+            }
+            catch
+            {
             }
 
-            if (!string.IsNullOrEmpty(RunProgramArgs))
+            fakeKey = $"{fakeKey} {RunProgramArgs}".Trim();
+
+            if (fakeKey.Length > runProgramMaxLength)
             {
-                if (RunProgramArgs.Length > 10)
-                {
-                    fakeKey = $"{fakeKey} {RunProgramArgs.Substring(0, 7)}...";
-                }
-                else
-                {
-                    fakeKey = $"{fakeKey} {RunProgramArgs}";
-                }
+                fakeKey = $"{fakeKey.Substring(0, runProgramMaxLength - 3)}...";
             }
 
             return fakeKey;

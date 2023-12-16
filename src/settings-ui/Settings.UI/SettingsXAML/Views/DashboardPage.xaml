@@ -156,7 +156,7 @@
                                                 <ItemsControl
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     IsTabStop="False"
-                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
+                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys(15)}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="12" />
@@ -221,13 +221,13 @@
                                                 x:Uid="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
-                                                Visibility="{x:Bind Path=IsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
+                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                             <custom:IsEnabledTextBlock
                                                  x:Uid="Starts"
                                                  Margin="8,0,8,0"
                                                  VerticalAlignment="Center"
-                                                 Visibility="{x:Bind Path=IsRunProgram, Mode=OneWay}"
+                                                 Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay}"
                                                  Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                             <Border
                                                 Padding="8,4"
@@ -238,7 +238,7 @@
                                                 <ItemsControl
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     IsTabStop="False"
-                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
+                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys(15)}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="12" />
@@ -260,7 +260,7 @@
                                             <TextBlock
                                                 Margin="4,0,0,0"
                                                 VerticalAlignment="Center"
-                                                Visibility="{x:Bind Path=IsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
+                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
                                                 Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                                                 Text="{x:Bind TargetApp}" />
                                         </StackPanel>

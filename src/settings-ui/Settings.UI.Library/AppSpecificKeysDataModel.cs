@@ -18,9 +18,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return base.GetMappedOriginalKeys();
         }
 
-        public new List<string> GetMappedNewRemapKeys()
+        public new List<string> GetMappedNewRemapKeys(int runProgramMaxLength)
         {
-            return base.GetMappedNewRemapKeys();
+            return base.GetMappedNewRemapKeys(runProgramMaxLength);
         }
 
         public bool Compare(AppSpecificKeysDataModel arg)

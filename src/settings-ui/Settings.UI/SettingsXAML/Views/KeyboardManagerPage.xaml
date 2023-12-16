@@ -110,7 +110,7 @@
                                             x:Uid="KeyboardManager_RemappedTo"
                                             IsTabStop="False"
                                             ItemTemplate="{StaticResource RemappedKeyTemplate}"
-                                            ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
+                                            ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -159,14 +159,14 @@
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
-                                            Visibility="{x:Bind Path=IsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
+                                            Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
                                             Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
 
                                         <custom:IsEnabledTextBlock
                                             x:Uid="Starts"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
-                                            Visibility="{x:Bind Path=IsRunProgram, Mode=OneWay}"
+                                            Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay}"
                                             Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
 
 
@@ -175,7 +175,7 @@
                                             x:Uid="KeyboardManager_RemappedTo"
                                             IsTabStop="False"
                                             ItemTemplate="{StaticResource RemappedKeyTemplate}"
-                                            ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
+                                            ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -187,7 +187,7 @@
                                             Padding="12,4,12,6"
                                             VerticalAlignment="Center"
                                             CornerRadius="12"
-                                            Visibility="{x:Bind Path=IsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                            Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                             <Border.Background>
                                                 <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
                                             </Border.Background>
