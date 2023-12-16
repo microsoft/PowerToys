@@ -360,7 +360,7 @@ namespace MonitorUtils
                 if (GetMonitorInfo(monitor, &destMi))
                 {
                     RECT newPosition = FitOnScreen(placement.rcNormalPosition, originMi.rcWork, destMi.rcWork);
-                    FancyZonesWindowUtils::SizeWindowToRect(window, newPosition);
+                    FancyZonesWindowUtils::SizeWindowToRect(window, newPosition, false);
                 }
             }
         }
