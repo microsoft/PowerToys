@@ -59,7 +59,7 @@ namespace KeyboardEventHandlers
     std::wstring GetFileNameFromPath(const std::wstring& fullPath);
 
     // Function to a find and show a running program
-    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool hideIfVisible);
+    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool hideIfVisible, int retryCount);
 
     // Function to a handle an os-level shortcut remap
     intptr_t HandleOSLevelShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;

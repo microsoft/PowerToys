@@ -572,7 +572,7 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
         }
         Shortcut tempShortcut;
         tempShortcut.operationType = Shortcut::OperationType::OpenURI;
-        tempShortcut.uriToOpen = (uriTextBox.Text().c_str());
+        tempShortcut.uriToOpen = ShortcutControl::RemoveExtraQuotes(uriTextBox.Text().c_str());
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
 
         //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);

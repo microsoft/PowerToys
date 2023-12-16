@@ -325,7 +325,7 @@ namespace KeyboardEventHandlers
                         {
                             toast(L"Error", L"the URI is bad");
                         }
-                        
+
                         Logger::trace(L"CKBH:returning..");
                         return 1;
                     }
@@ -1154,7 +1154,7 @@ namespace KeyboardEventHandlers
         if (targetPid != 0)
         {
             Logger::trace(L"CKBH:{}, already running, pid:{}", fileNamePart, targetPid);
-            if (!ShowProgram(targetPid, fileNamePart, false, true))
+            if (!ShowProgram(targetPid, fileNamePart, false, true, 0))
             {
                 /*auto future = std::async(std::launch::async, [=] {
                     std::this_thread::sleep_for(std::chrono::milliseconds(30));
@@ -1215,14 +1215,14 @@ namespace KeyboardEventHandlers
                 processId = GetProcessId(newProcessHandle);
             }
 
-            ShowProgram(processId, fileNamePart, true, false);
+            ShowProgram(processId, fileNamePart, true, false, 0);
         }
         return;
     }
 
-    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool hideIfVisible)
+    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool hideIfVisible, int retryCount)
     {
-        Logger::trace(L"CKBH:ShowProgram starting with {},{},{}", pid, programName, isNewProcess);
+        Logger::trace(L"CKBH:ShowProgram starting with {},{},{}, retryCount:{}", pid, programName, isNewProcess, retryCount);
 
         // a good place to look for this...
         // https://github.com/ritchielawrence/cmdow
@@ -1245,7 +1245,7 @@ namespace KeyboardEventHandlers
             }
             else
             {
-                Logger::trace(L"CKBH:{}, no GetForegroundWindow, doing SW_RESTORE", programName);
+                Logger::trace(L"CKBH:{}, not ForegroundWindow, doing SW_RESTORE", programName);
 
                 // Check if the window is minimized
                 if (IsIconic(hwnd))
@@ -1275,7 +1275,16 @@ namespace KeyboardEventHandlers
         }
         else
         {
-            Logger::trace(L"CKBH:{}, No hwnd from FindMainWindow", programName);
+            if (retryCount < 20)
+            {
+                Logger::trace(L"CKBH:hwnd not found will retry for pid:{}", pid);
+
+                auto future = std::async(std::launch::async, [=] {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    ShowProgram(pid, programName, isNewProcess, hideIfVisible, retryCount + 1);
+                    return false;
+                });
+            }
         }
 
         if (isNewProcess)
