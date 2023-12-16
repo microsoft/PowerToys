@@ -68,6 +68,8 @@ public:
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
     static void AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"");
 
+    //static winrt::Windows::Foundation::IInspectable ShortcutControl::FindRowChildByName(const winrt::Windows::UI::Xaml::Controls::StackPanel& parent, const wchar_t* nameToFind);
+
     // Function to get the shortcut type
     static ShortcutType GetShortcutType(const Controls::ComboBox& typeCombo);
 
