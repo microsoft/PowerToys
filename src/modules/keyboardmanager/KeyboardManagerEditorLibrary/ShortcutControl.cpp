@@ -210,7 +210,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         }
         else if (shortcutType == ShortcutControl::ShortcutType::RunProgram)
         {
-            targetAppTextBox.IsEnabled(false);
+            //targetAppTextBox.IsEnabled(false);
             grid.Visibility(Visibility::Collapsed);
             shortcutButton.Visibility(Visibility::Collapsed);
             textInput.Visibility(Visibility::Collapsed);
@@ -219,7 +219,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         }
         else
         {
-            targetAppTextBox.IsEnabled(false);
+            //targetAppTextBox.IsEnabled(false);
             grid.Visibility(Visibility::Collapsed);
             shortcutButton.Visibility(Visibility::Collapsed);
             textInput.Visibility(Visibility::Collapsed);
