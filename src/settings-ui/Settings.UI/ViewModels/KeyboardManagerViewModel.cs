@@ -47,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ICommand _remapKeyboardCommand;
         private ICommand _editShortcutCommand;
+
         private KeyboardManagerProfile _profile;
 
         private Func<string, int> SendConfigMSG { get; }

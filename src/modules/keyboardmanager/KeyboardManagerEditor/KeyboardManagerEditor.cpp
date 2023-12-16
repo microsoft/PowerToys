@@ -77,8 +77,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
     }
 
-    if (numArgs == 3)
+    //while (true)
+    //{
+    //    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    //}
+
+    std::wstring keysForShortcutToEdit = L"";
+
+    if (numArgs >= 3)
     {
+        if (numArgs == 4)
+        {
+            keysForShortcutToEdit = std::wstring(cmdArgs[3]);
+        }
+
         std::wstring pid = std::wstring(cmdArgs[2]);
         Logger::trace(L"Editor started from the settings with pid {}", pid);
         if (!pid.empty())
@@ -108,7 +120,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return -1;
     }
 
-    editor->OpenEditorWindow(type);
+    editor->OpenEditorWindow(type, keysForShortcutToEdit);
 
     editor = nullptr;
 
@@ -149,7 +161,7 @@ bool KeyboardManagerEditor::StartLowLevelKeyboardHook()
     return (hook != nullptr);
 }
 
-void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type)
+void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type, std::wstring keysForShortcutToEdit)
 {
     switch (type)
     {
@@ -157,7 +169,7 @@ void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type)
         CreateEditKeyboardWindow(hInstance, keyboardManagerState, mappingConfiguration);
         break;
     case KeyboardManagerEditorType::ShortcutEditor:
-        CreateEditShortcutsWindow(hInstance, keyboardManagerState, mappingConfiguration);
+        CreateEditShortcutsWindow(hInstance, keyboardManagerState, mappingConfiguration, keysForShortcutToEdit);
     }
 }
 

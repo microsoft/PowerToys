@@ -190,10 +190,14 @@
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_Info" xml:space="preserve">
-    <value>Select the shortcut you want to change ("Select") and then configure the key, shortcut or text you want it to send ("To send").</value>
+    <value>Edit shortcuts to activate and then configure the actions to happen when activated.</value>
     <comment>Key on a keyboard</comment>
   </data>
-  <data name="EditShortcuts_InfoExample" xml:space="preserve">
+  <data name="EditSingleShortcut_Info" xml:space="preserve">
+    <value>Edit shortcut to activate and then configure the action to happen when activated.</value>
+    <comment>Key on a keyboard</comment>
+  </data>
+	<data name="EditShortcuts_InfoExample" xml:space="preserve">
     <value>Example of a remapping: Select "Alt+T" and send "Ctrl+T" only on Microsoft Edge. "MSEdge" (exe name) would be your "Target app". Note: if you remapped a key, that will influence the shortcut.</value>
     <comment>Key on a keyboard</comment>
   </data>

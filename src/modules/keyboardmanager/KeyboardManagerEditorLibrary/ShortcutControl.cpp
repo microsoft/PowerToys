@@ -86,7 +86,7 @@ void ShortcutControl::UpdateAccessibleNames(StackPanel sourceColumn, StackPanel 
 }
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutTextUnion& newKeys, const std::wstring& targetAppName)
+void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutTextUnion& newKeys, const std::wstring& targetAppName, bool isHidden)
 {
     // Textbox for target application
     TextBox targetAppTextBox;
@@ -96,6 +96,18 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     StackPanel row = StackPanel();
 
     row.Name(L"row");
+
+    //while (true)
+    //{
+    //    Sleep(1000);
+    //}
+
+    bool isInSingleEditMode = false;
+    if (isHidden)
+    {
+        row.Visibility(Visibility::Collapsed);
+        isInSingleEditMode = true; 
+    }
 
     parent.Children().Append(row);
     newrow.emplace_back(std::make_unique<ShortcutControl>(parent, row, 0, targetAppTextBox));

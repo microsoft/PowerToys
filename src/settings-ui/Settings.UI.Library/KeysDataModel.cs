@@ -2,13 +2,20 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Windows.Input;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -34,6 +41,81 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("operationType")]
         public int OperationType { get; set; }
+
+        private enum KeyboardManagerEditorType
+        {
+            KeyEditor = 0,
+            ShortcutEditor,
+        }
+
+        private static Process editor;
+
+        private ICommand _editShortcutItemCommand;
+
+        public ICommand EditShortcutItem => _editShortcutItemCommand ?? (_editShortcutItemCommand = new RelayCommand<object>(OnEditShortcutItem));
+
+        public void OnEditShortcutItem(object parameter)
+        {
+            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
+        }
+
+        private async void OpenEditor(int type)
+        {
+            if (editor != null)
+            {
+                BringProcessToFront(editor);
+                return;
+            }
+
+            const string PowerToyName = KeyboardManagerSettings.ModuleName;
+            const string KeyboardManagerEditorPath = "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
+            try
+            {
+                if (editor != null && editor.HasExited)
+                {
+                    Logger.LogInfo($"Previous instance of {PowerToyName} editor exited");
+                    editor = null;
+                }
+
+                if (editor != null)
+                {
+                    Logger.LogInfo($"The {PowerToyName} editor instance {editor.Id} exists. Bringing the process to the front");
+                    BringProcessToFront(editor);
+                    return;
+                }
+
+                string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
+                Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
+
+                // InvariantCulture: type represents the KeyboardManagerEditorType enum value
+                editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId} {OriginalKeys}");
+
+                await editor.WaitForExitAsync();
+
+                editor = null;
+            }
+            catch (Exception e)
+            {
+                editor = null;
+                Logger.LogError($"Exception encountered when opening an {PowerToyName} editor", e);
+            }
+        }
+
+        private static void BringProcessToFront(Process process)
+        {
+            if (process == null)
+            {
+                return;
+            }
+
+            IntPtr handle = process.MainWindowHandle;
+            if (NativeMethods.IsIconic(handle))
+            {
+                NativeMethods.ShowWindow(handle, NativeMethods.SWRESTORE);
+            }
+
+            NativeMethods.SetForegroundWindow(handle);
+        }
 
         private static List<string> MapKeys(string stringOfKeys)
         {

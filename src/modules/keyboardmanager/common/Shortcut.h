@@ -53,6 +53,7 @@ public:
     Shortcut::ElevationLevel elevationLevel = ElevationLevel::NonElevated;
     Shortcut::OperationType operationType = OperationType::RemapShortcut;
 
+
     DWORD actionKey = {};
     DWORD secondKey = {}; // of the chord
     bool chordStarted = false;

@@ -69,7 +69,7 @@ static IAsyncAction OnClickAccept(
 }
 
 // Function to create the Edit Shortcuts Window
-inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
+inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration, std::wstring keysForShortcutToEdit)
 {
     Logger::trace("CreateEditShortcutsWindowImpl()");
     auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -113,6 +113,13 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     // Calculate DPI dependent window size
     float windowWidth = EditorConstants::DefaultEditShortcutsWindowWidth;
     float windowHeight = EditorConstants::DefaultEditShortcutsWindowHeight;
+
+    if (!keysForShortcutToEdit.empty())
+    {
+        windowWidth = EditorConstants::DefaultEditSingleShortcutsWindowWidth;
+        windowHeight = EditorConstants::DefaultEditSingleShortcutsWindowHeight;
+    }
+
     DPIAware::ConvertByCursorPosition(windowWidth, windowHeight);
     DPIAware::GetScreenDPIForCursor(g_currentDPI);
 
@@ -246,9 +253,33 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     // Create copy of the remaps to avoid concurrent access
     ShortcutRemapTable osLevelShortcutReMapCopy = mappingConfiguration.osLevelShortcutReMap;
 
+    bool isInSingleEditMode = false;
+    if (!keysForShortcutToEdit.empty())
+    {
+        isInSingleEditMode = true;
+    }
+
     for (const auto& it : osLevelShortcutReMapCopy)
     {
-        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, it.second.targetShortcut);
+        auto isHidden = false;
+
+        if (!keysForShortcutToEdit.empty())
+        {
+            isHidden = (keysForShortcutToEdit != it.first.ToHstringVK());
+        }
+
+        /*
+(
+        StackPanel& parent, 
+        std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects,
+        const Shortcut& originalKeys = Shortcut(),
+        const KeyShortcutTextUnion& newKeys = Shortcut(),
+        const std::wstring& targetAppName = L"",
+        bool isHidden = false
+    );        
+        */
+
+        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, it.second.targetShortcut, L"", isHidden);
     }
 
     // Load existing app-specific shortcuts into UI
@@ -261,7 +292,13 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         // Iterate through shortcuts for each app
         for (const auto& itShortcut : itApp.second)
         {
-            ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, itShortcut.first, itShortcut.second.targetShortcut, itApp.first);
+            auto isHidden = false;
+
+            if (!keysForShortcutToEdit.empty())
+            {
+                isHidden = (keysForShortcutToEdit != itShortcut.first.ToHstringVK());
+            }
+            ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, itShortcut.first, itShortcut.second.targetShortcut, itApp.first, isHidden);
         }
     }
 
@@ -310,6 +347,14 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Remap shortcut button content
     StackPanel addShortcutContent;
+
+    if (isInSingleEditMode)
+    {
+        addShortcut.Visibility(Visibility::Collapsed);
+        //shortcutRemapInfoExample.Visibility(Visibility::Collapsed);
+        shortcutRemapInfoHeader.Text(GET_RESOURCE_STRING(IDS_EDITSINGLESHORTCUT_INFO));
+    }
+
     addShortcutContent.Orientation(Orientation::Horizontal);
     addShortcutContent.Spacing(10);
     addShortcutContent.Children().Append(SymbolIcon(Symbol::Add));
@@ -389,10 +434,10 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     keyboardManagerState.ClearRegisteredKeyDelays();
 }
 
-void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
+void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration, std::wstring keysForShortcutToEdit)
 {
     // Move implementation into the separate method so resources get destroyed correctly
-    CreateEditShortcutsWindowImpl(hInst, keyboardManagerState, mappingConfiguration);
+    CreateEditShortcutsWindowImpl(hInst, keyboardManagerState, mappingConfiguration, keysForShortcutToEdit);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
