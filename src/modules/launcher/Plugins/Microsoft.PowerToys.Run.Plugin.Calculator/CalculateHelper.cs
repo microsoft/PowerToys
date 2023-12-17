@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
@@ -64,8 +66,31 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private static string CheckScientificNotation(string input)
         {
-            // Also needs to match RegValidExpressChar
-            var p = @"(-?(\d+(\.\d*)?)|-?(\.\d+))[E](-?\d+\.?\d*)";
+            /**
+             * NOTE: Anywhere you see a "{0}", that is meant to be replaced by the user's decimal separator.
+             *
+             * Regex explanation:
+             * (-?(\d+({0}\d*)?)|-?({0}\d+)): Used to capture one of two types:
+             * -?(\d+({0}\d*)?): Captures a decimal number starting with a number (e.g. "-1.23")
+             * -?({0}\d+): Captures a decimal number without leading number (e.g. ".23")
+             * E: Captures capital 'E'
+             * (-?\d+{0}?\d*): Captures decimal number starting with a number (e.g. "1.23")
+             */
+            var p = @"(-?(\d+({0}\d*)?)|-?({0}\d+))E(-?\d+{0}?\d*)";
+
+            // If the decimal separator is a ".", we also have to insert a backslash.
+            if (CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator == ".")
+            {
+                p = string.Format(CultureInfo.CurrentCulture, p, @"\.");
+            }
+            else
+            {
+                p = string.Format(
+                    CultureInfo.CurrentCulture,
+                    p,
+                    CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+            }
+
             var r = "($1 * 10^($5))";
             return Regex.Replace(input, p, r);
         }

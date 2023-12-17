@@ -152,6 +152,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("0.1E2", "(0.1 * 10^(2))")]
         [DataRow(".1E2", "(.1 * 10^(2))")]
         [DataRow(".1E2.1", "(.1 * 10^(2.1))")]
+        [DataRow("5/5E3", "5/(5 * 10^(3))")]
         [DataRow("1.E2", "(1. * 10^(2))")]
         public void RightHumanMultiplicationExpressionTransformation(string typedString, string expectedQuery)
         {
