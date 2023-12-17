@@ -23,7 +23,7 @@ public:
     }
 
     bool StartLowLevelKeyboardHook();
-    void OpenEditorWindow(KeyboardManagerEditorType type, std::wstring keysForShortcutToEdit);
+    void OpenEditorWindow(KeyboardManagerEditorType type, std::wstring keysForShortcutToEdit, std::wstring action);
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

@@ -44,6 +44,12 @@ namespace KeyboardEventHandlers
     // Function to handle (start or show) programs for shortcuts
     void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept;
 
+    void CloseProcessByName(const std::wstring& fileNamePart);
+
+    void TerminateProcsesByName(const std::wstring& fileNamePart);
+
+    void CloseAndTerminateProcessByName(const std::wstring& fileNamePart);
+
     void toast(winrt::param::hstring const& message1, winrt::param::hstring const& message2) noexcept;
 
     // Function to help FindMainWindow
@@ -54,6 +60,9 @@ namespace KeyboardEventHandlers
 
     // Function to GetProcessIdByName
     DWORD GetProcessIdByName(const std::wstring& processName);
+
+    // Function to GetProcessesIdByName
+    std::vector<DWORD> GetProcessesIdByName(const std::wstring& processName);
 
     // Function to get just the file name from a fill path
     std::wstring GetFileNameFromPath(const std::wstring& fullPath);

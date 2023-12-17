@@ -52,6 +52,9 @@ namespace KeyboardManagerConstants
     // Name of the property use to store runProgramStartInDir.
     inline const std::wstring RunProgramElevationLevelSettingName = L"runProgramElevationLevel";
 
+    // Name of the property use to store runProgramAlreadyRunningAction.
+    inline const std::wstring RunProgramAlreadyRunningAction = L"runProgramAlreadyRunningAction";
+    
     // Name of the property use to store runProgramArgs.
     inline const std::wstring RunProgramArgsSettingName = L"runProgramArgs";
 

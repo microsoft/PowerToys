@@ -11,6 +11,7 @@
 #include "UIHelpers.h"
 #include "EditorHelpers.h"
 #include "EditorConstants.h"
+//#include <Dialog.h>
 
 //Both static members are initialized to null
 HWND ShortcutControl::editShortcutsWindowHandle = nullptr;
@@ -85,8 +86,17 @@ void ShortcutControl::UpdateAccessibleNames(StackPanel sourceColumn, StackPanel 
     deleteButton.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_AUTOMATIONPROPERTIES_ROW) + std::to_wstring(rowIndex) + L", " + GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
 }
 
+void ShortcutControl::DeleteShortcutControl(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, int rowIndex)
+{
+    UIElementCollection children = parent.Children();
+    children.RemoveAt(rowIndex);
+    shortcutRemapBuffer.erase(shortcutRemapBuffer.begin() + rowIndex);
+    // delete the SingleKeyRemapControl objects so that they get destructed
+    keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + rowIndex);
+}
+
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutTextUnion& newKeys, const std::wstring& targetAppName, bool isHidden)
+void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutTextUnion& newKeys, const std::wstring& targetAppName, bool isHidden, bool closeOnDelete, std::function<void()> doneFunction, const std::wstring& action)
 {
     // Textbox for target application
     TextBox targetAppTextBox;
@@ -106,7 +116,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     if (isHidden)
     {
         row.Visibility(Visibility::Collapsed);
-        isInSingleEditMode = true; 
+        isInSingleEditMode = true;
     }
 
     parent.Children().Append(row);
@@ -340,6 +350,8 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
                 auto runProgramPathInput = row.FindName(L"runProgramPathInput_" + std::to_wstring(rowIndex)).as<TextBox>();
                 auto runProgramArgsForProgramInput = row.FindName(L"runProgramArgsForProgramInput_" + std::to_wstring(rowIndex)).as<TextBox>();
                 auto runProgramStartInDirInput = row.FindName(L"runProgramStartInDirInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+                auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
+                auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
 
                 Shortcut tempShortcut;
                 tempShortcut.operationType = Shortcut::OperationType::RunProgram;
@@ -348,20 +360,8 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
                 tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
                 tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
 
-                auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
-
-                if (runProgramElevationTypeCombo.SelectedIndex() == 0)
-                {
-                    tempShortcut.elevationLevel = Shortcut::ElevationLevel::NonElevated;
-                }
-                else if (runProgramElevationTypeCombo.SelectedIndex() == 1)
-                {
-                    tempShortcut.elevationLevel = Shortcut::ElevationLevel::Elevated;
-                }
-                else if (runProgramElevationTypeCombo.SelectedIndex() == 2)
-                {
-                    tempShortcut.elevationLevel = Shortcut::ElevationLevel::DifferentUser;
-                }
+                tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationTypeCombo.SelectedIndex());
+                tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction.SelectedIndex());
 
                 // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
                 shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
@@ -399,16 +399,37 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteShortcut;
+
+    if (action == L"isDelete")
+    {
+        deleteShortcut.Name(L"isDelete");
+    }
+
     deleteShortcut.Content(SymbolIcon(Symbol::Delete));
     deleteShortcut.Background(Media::SolidColorBrush(Colors::Transparent()));
     deleteShortcut.HorizontalAlignment(HorizontalAlignment::Center);
     deleteShortcut.Margin({ 0, 0, 0, 10 });
-    deleteShortcut.Click([&, parent, row, deleteShortcut](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    deleteShortcut.Click([&, parent, row, deleteShortcut, closeOnDelete, doneFunction](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         Button currentButton = sender.as<Button>();
         uint32_t rowIndex;
         // Get index of delete button
         UIElementCollection children = parent.Children();
         bool indexFound = children.IndexOf(row, rowIndex);
+
+        if (closeOnDelete)
+        {
+            // need to confirm this.
+            /*
+            * 
+            auto reallyDelete = GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_PARTIALCONFIRMATIONDIALOGTITLE);
+            reallyDelete = L"REALLY?";
+
+            if (!co_await Dialog::PartialRemappingConfirmationDialog(parent.XamlRoot(), reallyDelete))
+            {
+                co_return;
+            }
+            */
+        }
 
         // IndexOf could fail if the row got deleted and the button handler was invoked twice. In this case it should return
         if (!indexFound)
@@ -439,6 +460,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         shortcutRemapBuffer.erase(shortcutRemapBuffer.begin() + rowIndex);
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + rowIndex);
+
+        if (closeOnDelete)
+        {
+            doneFunction();
+        }
     });
 
     // To set the accessible name of the delete button
@@ -616,6 +642,9 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     auto runProgramElevationTypeCombo = ComboBox();
     runProgramElevationTypeCombo.Name(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex));
 
+    auto runProgramAlreadyRunningAction = ComboBox();
+    runProgramAlreadyRunningAction.Name(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex));
+
     _controlStackPanel.Children().Append(controlStackPanel);
 
     StackPanel stackPanelForRunProgramPath;
@@ -676,12 +705,24 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPEDIFFERENTUSER)));
     runProgramElevationTypeCombo.SelectedIndex(0);
 
+    // runProgramAlreadyRunningAction
+    runProgramAlreadyRunningAction.Width(EditorConstants::RemapTableDropDownWidth);
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGSHOWWINDOW)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGSTARTANOTHER)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGDONOTHING)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGCLOSE)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGTERMINATE)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGCLOSEANDTERMINATE)));
+
+    runProgramAlreadyRunningAction.SelectedIndex(0);
+
     //auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
     //auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
     controlStackPanel.Children().Append(runProgramElevationTypeCombo);
+    controlStackPanel.Children().Append(runProgramAlreadyRunningAction);
 
     // add events to TextBoxes for runProgram fields
-    runProgramPathInput.TextChanged([parent, row, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput, runProgramElevationTypeCombo](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+    runProgramPathInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;
         if (!parent.Children().IndexOf(row, rowIndex))
         {
@@ -690,35 +731,39 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         Shortcut tempShortcut;
         tempShortcut.operationType = Shortcut::OperationType::RunProgram;
         //tempShortcut.isRunProgram = true;
+
+        auto runProgramPathInput = row.FindName(L"runProgramPathInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramArgsForProgramInput = row.FindName(L"runProgramArgsForProgramInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramStartInDirInput = row.FindName(L"runProgramStartInDirInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
+        auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
+
         tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
         tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
         tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
         // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
 
-        if (runProgramElevationTypeCombo.SelectedIndex() == 0)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::NonElevated;
-        }
-        else if (runProgramElevationTypeCombo.SelectedIndex() == 1)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::Elevated;
-        }
-        else if (runProgramElevationTypeCombo.SelectedIndex() == 2)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::DifferentUser;
-        }
+        tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationTypeCombo.SelectedIndex());
+        tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction.SelectedIndex());
 
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
 
         //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
     });
 
-    runProgramArgsForProgramInput.TextChanged([parent, row, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput, runProgramElevationTypeCombo](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+    runProgramArgsForProgramInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;
         if (!parent.Children().IndexOf(row, rowIndex))
         {
             return;
         }
+
+        auto runProgramPathInput = row.FindName(L"runProgramPathInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramArgsForProgramInput = row.FindName(L"runProgramArgsForProgramInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramStartInDirInput = row.FindName(L"runProgramStartInDirInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
+        auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
+
         Shortcut tempShortcut;
         tempShortcut.operationType = Shortcut::OperationType::RunProgram;
         //tempShortcut.isRunProgram = true;
@@ -727,29 +772,25 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
         // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
 
-        if (runProgramElevationTypeCombo.SelectedIndex() == 0)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::NonElevated;
-        }
-        else if (runProgramElevationTypeCombo.SelectedIndex() == 1)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::Elevated;
-        }
-        else if (runProgramElevationTypeCombo.SelectedIndex() == 2)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::DifferentUser;
-        }
+        tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationTypeCombo.SelectedIndex());
+        tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction.SelectedIndex());
 
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
         //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
     });
 
-    runProgramStartInDirInput.TextChanged([parent, row, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput, runProgramElevationTypeCombo](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+    runProgramStartInDirInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;
         if (!parent.Children().IndexOf(row, rowIndex))
         {
             return;
         }
+
+        auto runProgramPathInput = row.FindName(L"runProgramPathInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramArgsForProgramInput = row.FindName(L"runProgramArgsForProgramInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramStartInDirInput = row.FindName(L"runProgramStartInDirInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
+        auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
 
         Shortcut tempShortcut;
         tempShortcut.operationType = Shortcut::OperationType::RunProgram;
@@ -759,18 +800,8 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
         // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
 
-        if (runProgramElevationTypeCombo.SelectedIndex() == 0)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::NonElevated;
-        }
-        else if (runProgramElevationTypeCombo.SelectedIndex() == 1)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::Elevated;
-        }
-        else if (runProgramElevationTypeCombo.SelectedIndex() == 2)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::DifferentUser;
-        }
+        tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationTypeCombo.SelectedIndex());
+        tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction.SelectedIndex());
 
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
 
@@ -805,10 +836,12 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         ofn.lpstrInitialDir = NULL;
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
-        auto textBox = currentButton.Parent().as<StackPanel>().Children().GetAt(0).as<TextBox>();
+        //auto textBox = currentButton.Parent().as<StackPanel>().Children().GetAt(0).as<TextBox>();
+        auto runProgramPathInput = row.FindName(L"runProgramPathInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+
         if (GetOpenFileName(&ofn) == TRUE)
         {
-            textBox.Text(szFile);
+            runProgramPathInput.Text(szFile);
         }
     });
 
@@ -846,8 +879,8 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
                 // Get the selected folder's path
                 if (SHGetPathFromIDList(pidl, path))
                 {
-                    auto textBox = currentButton.Parent().as<StackPanel>().Children().GetAt(0).as<TextBox>();
-                    textBox.Text(path);
+                    //auto textBox = currentButton.Parent().as<StackPanel>().Children().GetAt(0).as<TextBox>();
+                    runProgramStartInDirInput.Text(path);
                 }
 
                 // Free the PIDL
@@ -862,7 +895,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         }
     });
 
-    runProgramElevationTypeCombo.SelectionChanged([parent, row, runProgramElevationTypeCombo, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
+    runProgramAlreadyRunningAction.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
         uint32_t rowIndex;
         if (!parent.Children().IndexOf(row, rowIndex))
         {
@@ -874,26 +907,56 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
             return;
         }
 
+        auto runProgramPathInput = row.FindName(L"runProgramPathInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramArgsForProgramInput = row.FindName(L"runProgramArgsForProgramInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramStartInDirInput = row.FindName(L"runProgramStartInDirInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
+        auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
+
         Shortcut tempShortcut;
         tempShortcut.operationType = Shortcut::OperationType::RunProgram;
         //tempShortcut.isRunProgram = true;
 
-        if (runProgramElevationTypeCombo.SelectedIndex() == 0)
+        tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
+        tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
+        tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
+
+        tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationTypeCombo.SelectedIndex());
+        tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction.SelectedIndex());
+
+        // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
+
+        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
+    });
+
+    runProgramElevationTypeCombo.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
+        uint32_t rowIndex;
+        if (!parent.Children().IndexOf(row, rowIndex))
         {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::NonElevated;
+            return;
         }
-        else if (runProgramElevationTypeCombo.SelectedIndex() == 1)
+
+        if (ShortcutControl::shortcutRemapBuffer.size() <= rowIndex)
         {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::Elevated;
+            return;
         }
-        else if (runProgramElevationTypeCombo.SelectedIndex() == 2)
-        {
-            tempShortcut.elevationLevel = Shortcut::ElevationLevel::DifferentUser;
-        }
+
+        auto runProgramPathInput = row.FindName(L"runProgramPathInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramArgsForProgramInput = row.FindName(L"runProgramArgsForProgramInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramStartInDirInput = row.FindName(L"runProgramStartInDirInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
+        auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
+
+        Shortcut tempShortcut;
+        tempShortcut.operationType = Shortcut::OperationType::RunProgram;
+        //tempShortcut.isRunProgram = true;
 
         tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
         tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
         tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
+
+        tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationTypeCombo.SelectedIndex());
+        tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction.SelectedIndex());
 
         // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
 
@@ -904,18 +967,8 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramArgsForProgramInput.Text(shortCut.runProgramArgs);
     runProgramStartInDirInput.Text(shortCut.runProgramStartInDir);
 
-    if (shortCut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
-    {
-        runProgramElevationTypeCombo.SelectedIndex(0);
-    }
-    else if (shortCut.elevationLevel == Shortcut::ElevationLevel::Elevated)
-    {
-        runProgramElevationTypeCombo.SelectedIndex(1);
-    }
-    else if (shortCut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
-    {
-        runProgramElevationTypeCombo.SelectedIndex(2);
-    }
+    runProgramElevationTypeCombo.SelectedIndex(shortCut.elevationLevel);
+    runProgramAlreadyRunningAction.SelectedIndex(shortCut.alreadyRunningAction);
 
     return controlStackPanel;
 }

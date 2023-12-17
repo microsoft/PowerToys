@@ -130,8 +130,21 @@
                         ActionIcon="{ui:FontIcon FontSize=14,
                                                  Glyph=&#xE8A7;}"
                         Command="{Binding Path=EditShortcutCommand}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}"
-                        IsClickEnabled="True" />
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
+                        IsClickEnabled="True" >
+
+                        <Button
+                             HorizontalAlignment="Right" 
+                             Command="{Binding Path=EditNewShortcutCommand}"   
+                             x:Uid="EditButton"
+                             Width="40"
+                             Height="36"
+                             Content="&#xE710;"
+                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                             Style="{StaticResource SubtleButtonStyle}">
+                        </Button>
+
+                    </controls:SettingsCard>
 
                     <ListView
                         x:Name="RemapShortcutsList"
@@ -142,40 +155,29 @@
                         Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
-                                <controls:SettingsCard ContentAlignment="Left">
 
-
-
-                                    <Grid Width="900">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <!-- Left side width -->
-                                            <ColumnDefinition Width="Auto" />
-                                            <!-- Right side width -->
-                                        </Grid.ColumnDefinitions>
-
-                                        <!-- Left side content -->
-                                        <StackPanel Grid.Column="0">
-                                            <StackPanel Orientation="Horizontal">
-                                                <ItemsControl
+                                <controls:SettingsCard HeaderIcon="{ui:FontIcon Glyph=&#xE737;}">
+                                    <controls:SettingsCard.Description>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ItemsControl
                                                      IsTabStop="False"
                                                      ItemTemplate="{StaticResource OriginalKeyTemplate}"
                                                      ItemsSource="{x:Bind GetMappedOriginalKeys()}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                </ItemsControl>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
 
-                                                <custom:IsEnabledTextBlock
+                                            <custom:IsEnabledTextBlock
                                                      x:Uid="To"
                                                      Margin="8,0,8,0"
                                                      VerticalAlignment="Center"
                                                      Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
                                                      Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
 
-                                                <custom:IsEnabledTextBlock
+                                            <custom:IsEnabledTextBlock
                                                      x:Uid="Starts"
                                                      Margin="8,0,8,0"
                                                      VerticalAlignment="Center"
@@ -183,37 +185,50 @@
                                                      Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
 
 
-                                                <ItemsControl
+                                            <ItemsControl
                                                      Name="KeyboardManager_RemappedTo"
                                                      x:Uid="KeyboardManager_RemappedTo"
                                                      IsTabStop="False"
                                                      ItemTemplate="{StaticResource RemappedKeyTemplate}"
                                                      ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                </ItemsControl>
-                                                <Border
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <Border
                                                      Margin="16,0,0,0"
                                                      Padding="12,4,12,6"
                                                      VerticalAlignment="Center"
                                                      CornerRadius="12"
                                                      Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram,
                                                      Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
-                                                    <Border.Background>
-                                                        <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
-                                                    </Border.Background>
-                                                    <TextBlock Text="{x:Bind TargetApp}" />
-                                                </Border>
+                                                <Border.Background>
+                                                    <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
+                                                </Border.Background>
+                                                <TextBlock Text="{x:Bind TargetApp}" />
+                                            </Border>
 
-                                            </StackPanel>
                                         </StackPanel>
-
-                                        <!-- Right side content -->
-                                        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                                            <Button
+                                    </controls:SettingsCard.Description>
+                                    
+                                    <StackPanel
+                            Grid.Column="2"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                                        <Button
+                                                HorizontalAlignment="Right" 
+                                                Command="{Binding Path=EditShortcutDeleteItem}"   
+                                                x:Uid="EditButton"
+                                                Width="40"
+                                                Height="36"
+                                                Content="&#xE74D;"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Style="{StaticResource SubtleButtonStyle}">
+                                        </Button>
+                                        <Button
                                                 HorizontalAlignment="Right" 
                                                 Command="{Binding Path=EditShortcutItem}"   
                                                 x:Uid="EditButton"
@@ -222,18 +237,13 @@
                                                 Content="&#xE70F;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 Style="{StaticResource SubtleButtonStyle}">
-                                            </Button>
-
-                                        </StackPanel>
-                                    </Grid>
-
-
-
-
-
-
-
+                                        </Button>
+                                        
+                                    </StackPanel>
                                 </controls:SettingsCard>
+
+
+
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>

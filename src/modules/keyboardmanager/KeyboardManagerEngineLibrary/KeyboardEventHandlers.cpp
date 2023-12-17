@@ -241,7 +241,7 @@ namespace KeyboardEventHandlers
                         if (!resetChordsResults.AnyChordStarted && data->lParam->vkCode == itShortcut.GetActionKey() && !itShortcut.IsChordStarted() && itShortcut.HasChord())
                         {
                             // start new chord
-                            Logger::trace(L"CKBH:new chord started for {}", data->lParam->vkCode);
+                            // Logger::trace(L"CKBH:new chord started for {}", data->lParam->vkCode);
                             isMatchOnChordStart = true;
                             ResetAllOtherStartedChords(state, activatedApp, data->lParam->vkCode);
                             itShortcut.SetChordStarted(true);
@@ -256,7 +256,7 @@ namespace KeyboardEventHandlers
 
                         if (resetChordsResults.AnyChordStarted && !isMatchOnChordEnd)
                         {
-                            Logger::trace(L"CKBH:waiting on second key of chord, checked {} for {}", itShortcut.GetSecondKey(), data->lParam->vkCode);
+                            // Logger::trace(L"CKBH:waiting on second key of chord, checked {} for {}", itShortcut.GetSecondKey(), data->lParam->vkCode);
                             // this is a key and there is a mod, but it's not the second key of a chord.
                             // we can't do anything with this key, we're waiting.
                             continue;
@@ -1058,6 +1058,34 @@ namespace KeyboardEventHandlers
     }
 
     // GetProcessIdByName also used by HandleCreateProcessHotKeysAndChords
+
+    std::vector<DWORD> GetProcessesIdByName(const std::wstring& processName)
+    {
+        std::vector<DWORD> pids;
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+        if (snapshot != INVALID_HANDLE_VALUE)
+        {
+            PROCESSENTRY32 processEntry;
+            processEntry.dwSize = sizeof(PROCESSENTRY32);
+
+            if (Process32First(snapshot, &processEntry))
+            {
+                do
+                {
+                    if (_wcsicmp(processEntry.szExeFile, processName.c_str()) == 0)
+                    {
+                        pids.push_back(processEntry.th32ProcessID);
+                    }
+                } while (Process32Next(snapshot, &processEntry));
+            }
+
+            CloseHandle(snapshot);
+        }
+
+        return pids;
+    }
+
     DWORD GetProcessIdByName(const std::wstring& processName)
     {
         DWORD pid = 0;
@@ -1144,23 +1172,51 @@ namespace KeyboardEventHandlers
         Logger::trace(L"CKBH:{}, trying to run {}", fileNamePart, shortcut.runProgramFilePath);
         //lastKeyInChord = 0;
 
-        DWORD targetPid = 0;
+        DWORD targetPid = GetProcessIdByName(fileNamePart);
 
-        if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe" && fileNamePart != L"msedge.exe")
+        /*if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe" && fileNamePart != L"msedge.exe")
         {
             targetPid = GetProcessIdByName(fileNamePart);
-        }
+        }*/
 
-        if (targetPid != 0)
+        Logger::trace(L"CKBH:{}, already running, pid:{}, alreadyRunningAction:{}", fileNamePart, targetPid, shortcut.alreadyRunningAction);
+
+        if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
         {
-            Logger::trace(L"CKBH:{}, already running, pid:{}", fileNamePart, targetPid);
-            if (!ShowProgram(targetPid, fileNamePart, false, true, 0))
+            if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::CloseAndEndTask)
             {
-                /*auto future = std::async(std::launch::async, [=] {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(30));
-                    Logger::trace(L"CKBH:{}, second try, pid:{}", fileNamePart, targetPid);
-                    ShowProgram(targetPid, fileNamePart, false, false);
-                });*/
+                /*std::thread myThread(CloseAndTerminateProcessByName, fileNamePart);*/
+                return;
+            }
+            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
+            {
+                TerminateProcsesByName(fileNamePart);
+                return;
+            }
+            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
+            {
+                CloseProcessByName(fileNamePart);
+                Logger::trace(L"CKBH:{}, CloseProcessByName returning 3", fileNamePart);
+                return;
+            }
+            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
+            {
+                auto pids = GetProcessesIdByName(fileNamePart);
+
+                for (DWORD pid : pids)
+                {
+                    ShowProgram(targetPid, fileNamePart, false, false, 0);
+                }
+
+                //if (!ShowProgram(targetPid, fileNamePart, false, false, 0))
+                //{
+                //    /*auto future = std::async(std::launch::async, [=] {
+                //    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                //    Logger::trace(L"CKBH:{}, second try, pid:{}", fileNamePart, targetPid);
+                //    ShowProgram(targetPid, fileNamePart, false, false);
+                //});*/
+                //}
+                return;
             }
         }
         else
@@ -1218,6 +1274,123 @@ namespace KeyboardEventHandlers
             ShowProgram(processId, fileNamePart, true, false, 0);
         }
         return;
+    }
+
+    void CloseAndTerminateProcessByName(const std::wstring& fileNamePart)
+    {
+        CloseProcessByName(fileNamePart);
+        Sleep(1000);
+        TerminateProcsesByName(fileNamePart);
+    }
+
+    void CloseProcessByName(const std::wstring& fileNamePart)
+    {
+        auto pids = GetProcessesIdByName(fileNamePart);
+
+        if (pids.size() == 0)
+        {
+            Logger::trace(L"CKBH:{}, Nothing To WM_CLOSE", fileNamePart);
+            return;
+        }
+
+        if (false)
+        {
+            auto retryCount = 10;
+            while (pids.size() > 0 && retryCount-- > 0)
+            {
+                for (DWORD pid : pids)
+                {
+                    //Logger::trace(L"CKBH:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
+                    HWND hwnd = FindMainWindow(pid);
+                    SendMessage(hwnd, WM_CLOSE, 0, 0);
+                }
+
+                Sleep(500);
+                pids = GetProcessesIdByName(fileNamePart);
+                if (pids.size() <= 0)
+                {
+                    Logger::trace(L"CKBH:{}, WM_CLOSE done", fileNamePart);
+                    break;
+                }
+                else
+                {
+                    Sleep(100);
+                }
+            }
+        }
+        else
+        {
+            auto threadFunction = [fileNamePart]() {
+                auto pids = GetProcessesIdByName(fileNamePart);
+                auto retryCount = 10;
+                while (pids.size() > 0 && retryCount-- > 0)
+                {
+                    //Logger::trace(L"CKBH:{}, WM_CLOSE'ing {}pids ", fileNamePart, pids.size());
+                    for (DWORD pid : pids)
+                    {
+                        //Logger::trace(L"CKBH:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
+                        HWND hwnd = FindMainWindow(pid);
+                        SendMessage(hwnd, WM_CLOSE, 0, 0);
+
+                        // small sleep between when there are a lot might help
+                        Sleep(10);
+                    }
+
+                    pids = GetProcessesIdByName(fileNamePart);
+                    if (pids.size() <= 0)
+                    {
+                        Logger::trace(L"CKBH:{}, WM_CLOSE done", fileNamePart);
+                        break;
+                    }
+                    else
+                    {
+                        Sleep(100);
+                    }
+                }
+            };
+
+            Sleep(100);
+            pids = GetProcessesIdByName(fileNamePart);
+
+            if (pids.size() > 0)
+            {
+                std::thread myThread(threadFunction);
+                if (myThread.joinable())
+                {
+                    myThread.detach();
+                }
+            }
+        }
+
+        Logger::trace(L"CKBH:{}, CloseProcessByName returning", fileNamePart);
+    }
+
+    void TerminateProcsesByName(const std::wstring& fileNamePart)
+    {
+        auto pids = GetProcessesIdByName(fileNamePart);
+
+        if (pids.size() == 0)
+        {
+            Logger::trace(L"CKBH:{}, Nothing To PROCESS_TERMINATE", fileNamePart);
+            return;
+        }
+
+        for (DWORD pid : pids)
+        {
+            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+            Logger::trace(L"CKBH:{}, PROCESS_TERMINATE (1) -> pid:{}", fileNamePart, pid);
+            if (hProcess != NULL)
+            {
+                if (!TerminateProcess(hProcess, 0))
+                {
+                    CloseHandle(hProcess);
+                }
+                else
+                {
+                    CloseHandle(hProcess);
+                }
+            }
+        }
     }
 
     bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool hideIfVisible, int retryCount)

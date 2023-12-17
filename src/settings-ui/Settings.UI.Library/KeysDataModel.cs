@@ -49,17 +49,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         private static Process editor;
-
         private ICommand _editShortcutItemCommand;
+        private ICommand _editShortcutDeleteItemCommand;
 
         public ICommand EditShortcutItem => _editShortcutItemCommand ?? (_editShortcutItemCommand = new RelayCommand<object>(OnEditShortcutItem));
 
-        public void OnEditShortcutItem(object parameter)
+        public ICommand EditShortcutDeleteItem => _editShortcutDeleteItemCommand ?? (_editShortcutDeleteItemCommand = new RelayCommand<object>(OnEditShortcutDeleteItem));
+
+        public void OnEditShortcutDeleteItem(object parameter)
         {
-            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
+            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor, true);
         }
 
-        private async void OpenEditor(int type)
+        public void OnEditShortcutItem(object parameter)
+        {
+            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor, false);
+        }
+
+        private async void OpenEditor(int type, bool isDelete)
         {
             if (editor != null)
             {
@@ -88,7 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value
-                editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId} {OriginalKeys}");
+                editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId} {OriginalKeys} {(isDelete ? "isDelete" : string.Empty)}");
 
                 await editor.WaitForExitAsync();
 

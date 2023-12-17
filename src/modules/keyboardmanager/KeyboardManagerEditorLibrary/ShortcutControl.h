@@ -66,7 +66,9 @@ public:
     ShortcutControl(StackPanel table, StackPanel row, const int colIndex, TextBox targetApp);
 
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-    static void AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"", bool isHidden = false);
+    static void AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"", bool isHidden = false, bool closeOnDelete = false, std::function<void()> fn = nullptr, const std::wstring& actio = L"");
+
+    static void ShortcutControl::DeleteShortcutControl(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, int index);
 
     //static winrt::Windows::Foundation::IInspectable ShortcutControl::FindRowChildByName(const winrt::Windows::UI::Xaml::Controls::StackPanel& parent, const wchar_t* nameToFind);
 

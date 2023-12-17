@@ -40,6 +40,16 @@ public:
         OpenURI = 2
     };
 
+    enum ProgramAlreadyRunningAction
+    {
+        ShowWindow = 0,
+        StartAnother = 1,
+        DoNothing = 2,
+        Close = 3,
+        EndTask = 4,
+        CloseAndEndTask = 5,
+    };
+
     ModifierKey winKey = ModifierKey::Disabled;
     ModifierKey ctrlKey = ModifierKey::Disabled;
     ModifierKey altKey = ModifierKey::Disabled;
@@ -50,9 +60,10 @@ public:
     std::wstring runProgramArgs;
     std::wstring runProgramStartInDir;
     std::wstring uriToOpen;
-    Shortcut::ElevationLevel elevationLevel = ElevationLevel::NonElevated;
-    Shortcut::OperationType operationType = OperationType::RemapShortcut;
 
+    ProgramAlreadyRunningAction alreadyRunningAction = ProgramAlreadyRunningAction::ShowWindow;
+    ElevationLevel elevationLevel = ElevationLevel::NonElevated;
+    OperationType operationType = OperationType::RemapShortcut;
 
     DWORD actionKey = {};
     DWORD secondKey = {}; // of the chord

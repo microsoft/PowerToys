@@ -144,7 +144,10 @@
   <data name="EditShortcuts_WindowName" xml:space="preserve">
     <value>Remap shortcuts</value>
   </data>
-  <data name="Browse_For_Program_Button" xml:space="preserve">
+  <data name="EditThisShortcut_WindowName" xml:space="preserve">
+    <value>Edit shortcut</value>
+  </data>
+	<data name="Browse_For_Program_Button" xml:space="preserve">
     <value>Select program</value>
   </data>
   <data name="Browse_For_Path_Button" xml:space="preserve">
@@ -334,7 +337,25 @@
   <data name="Delete_Remapping_Button" xml:space="preserve">
     <value>Delete remapping</value>
   </data>
-  <data name="ElevationTypeNormal" xml:space="preserve">
+  <data name="AlreadyRunningDoNothing" xml:space="preserve">
+    <value>Do nothing</value>
+  </data>
+  <data name="AlreadyRunningShowWindow" xml:space="preserve">
+    <value>Show window</value>
+  </data>
+  <data name="AlreadyRunningStartAnother" xml:space="preserve">
+    <value>Start another</value>
+  </data>
+  <data name="AlreadyRunningClose" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="AlreadyRunningTerminate" xml:space="preserve">
+    <value>End task</value>
+  </data>
+  <data name="AlreadyRunningCloseAndTerminate" xml:space="preserve">
+    <value>Close and end task</value>
+  </data>
+	<data name="ElevationTypeNormal" xml:space="preserve">
     <value>Normal</value>
   </data>
   <data name="ElevationTypeElevated" xml:space="preserve">
