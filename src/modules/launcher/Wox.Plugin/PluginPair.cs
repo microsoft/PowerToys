@@ -4,9 +4,9 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Windows;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin.Logger;
@@ -153,7 +153,8 @@ namespace Wox.Plugin
 
             try
             {
-                _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(Metadata.ExecuteFilePath);
+                var loadContext = new PluginLoadContext(Metadata.ExecuteFilePath);
+                _assembly = loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(Metadata.ExecuteFilePath)));
             }
             catch (Exception e)
             {
