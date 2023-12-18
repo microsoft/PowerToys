@@ -3,6 +3,7 @@
 - [ ] Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.{PluginName}`
 - [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
 - [ ] The project file should import `Version.props` and specify `<Version>$(Version).0</Version>`
+- [ ] The project file should import `Plugin.props`
 - [ ] Make sure `*.csproj` specify only x64 platform target
 - [ ] The plugin has to contain a `plugin.json` file of the following format in its root folder
 ```
