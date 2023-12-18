@@ -19,7 +19,7 @@
     <PackageVersion Include="coverlet.collector" Version="1.3.0" />
     <PackageVersion Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
     <PackageVersion Include="HelixToolkit" Version="2.20.2" />
-    <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.20.2" />
+    <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageVersion Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
     <PackageVersion Include="LazyCache" Version="2.4.0" />
@@ -45,6 +45,7 @@
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
+    <!-- Moq to stay below v4.20 due to licensing change -->
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="MSTest.TestAdapter" Version="3.1.1" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.1.1" />
