@@ -8,53 +8,29 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <custom:OOBEPageControl
-        x:Uid="Oobe_MouseUtils"
-        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.gif">
+    <custom:OOBEPageControl x:Uid="Oobe_MouseUtils" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.gif">
 
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
-                <TextBlock
-                    x:Uid="Oobe_MouseUtils_FindMyMouse"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_MouseUtils_FindMyMouse_Description"
-                    Background="Transparent" />
+                <TextBlock x:Uid="Oobe_MouseUtils_FindMyMouse" Style="{ThemeResource OobeSubtitleStyle}" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_FindMyMouse_Description" Background="Transparent" />
 
-                <TextBlock
-                    x:Uid="Oobe_MouseUtils_MouseHighlighter"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_MouseUtils_MouseHighlighter_Description"
-                    Background="Transparent" />
+                <TextBlock x:Uid="Oobe_MouseUtils_MouseHighlighter" Style="{ThemeResource OobeSubtitleStyle}" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_MouseHighlighter_Description" Background="Transparent" />
 
-                <TextBlock
-                    x:Uid="Oobe_MouseUtils_MousePointerCrosshairs"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_MouseUtils_MousePointerCrosshairs_Description"
-                    Background="Transparent" />
+                <TextBlock x:Uid="Oobe_MouseUtils_MousePointerCrosshairs" Style="{ThemeResource OobeSubtitleStyle}" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_MousePointerCrosshairs_Description" Background="Transparent" />
 
-                <TextBlock
-                    x:Uid="Oobe_MouseUtils_MouseJump"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_MouseUtils_MouseJump_Description"
-                    Background="Transparent" />
+                <TextBlock x:Uid="Oobe_MouseUtils_MouseJump" Style="{ThemeResource OobeSubtitleStyle}" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_MouseJump_Description" Background="Transparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"
                     Orientation="Horizontal"
                     Spacing="12">
-                    <Button
-                        x:Uid="OOBE_Settings"
-                        Click="SettingsLaunchButton_Click" />
-                    <HyperlinkButton
-                        NavigateUri="https://aka.ms/PowerToysOverview_MouseUtilities"
-                        Style="{StaticResource TextButtonStyle}">
-                        <TextBlock
-                            x:Uid="LearnMore_MouseUtils"
-                            TextWrapping="Wrap" />
+                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_MouseUtilities" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock x:Uid="LearnMore_MouseUtils" TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
 

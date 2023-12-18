@@ -4,11 +4,13 @@
 
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Common;
 using ManagedCommon;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using UtfUnknown;
 using Windows.System;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
@@ -123,10 +125,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     InitializeIndexFileAndSelectedFile(filePath);
 
                     Logger.LogInfo("Create WebView2 environment");
+                    var webView2Options = new CoreWebView2EnvironmentOptions("--disable-features=RendererAppContainer");
                     ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                         webView2EnvironmentAwaiter = CoreWebView2Environment
-                            .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
-                                                            "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp")
+                            .CreateAsync(
+                            userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp",
+                            options: webView2Options)
                             .ConfigureAwait(true).GetAwaiter();
                     webView2EnvironmentAwaiter.OnCompleted(async () =>
                     {
@@ -165,7 +170,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             }
                             catch (NullReferenceException e)
                             {
-                                Logger.LogError("NullReferenceException catched. Skipping exception.", e);
+                                Logger.LogError("NullReferenceException caught. Skipping exception.", e);
                             }
                         }
                         catch (WebView2RuntimeNotFoundException e)
@@ -358,7 +363,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             Logger.LogInfo("Starting getting monaco language id out of filetype");
             _vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
 
-            using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            DetectionResult result = CharsetDetector.DetectFromFile(filePath);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            // Check if the detected encoding is not null, otherwise default to UTF-8
+            Encoding encodingToUse = result.Detected?.Encoding ?? Encoding.UTF8;
+
+            using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), encodingToUse))
             {
                 Logger.LogInfo("Starting reading requested file");
                 var fileContent = fileReader.ReadToEnd();

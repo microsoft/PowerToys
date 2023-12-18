@@ -292,12 +292,19 @@ namespace RegistryPreview
 
                     // set the name and the value
                     string name = registryLine.Substring(0, equal);
+
+                    // trim the whitespace and quotes from the name
+                    name = name.Trim();
                     name = StripFirstAndLast(name);
 
                     // Clean out any escaped characters in the value, only for the preview
                     name = StripEscapedCharacters(name);
 
+                    // set the value
                     string value = registryLine.Substring(equal + 1);
+
+                    // trim the whitespace from the value
+                    value = value.Trim();
 
                     // Create a new listview item that will be used to display the value
                     registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
@@ -445,7 +452,7 @@ namespace RegistryPreview
                                         i++;
                                     }
 
-                                    if (value[i - 1] != '\\' && value[i] == '"')
+                                    if (i < value.Length && value[i - 1] != '\\' && value[i] == '"')
                                     {
                                         // Don't allow non-escaped quotes
                                         registryValue.Type = "ERROR";
@@ -767,7 +774,19 @@ namespace RegistryPreview
 
                 // before moving onto the next node, tag the previous node and update the path
                 previousNode = newNode;
-                fullPath = fullPath.Replace(string.Format(CultureInfo.InvariantCulture, @"\{0}", individualKeys[i]), string.Empty);
+
+                // this used to use Replace but that would replace all instances of the same key name, which causes bugs.
+                try
+                {
+                    int removeAt = fullPath.LastIndexOf(string.Format(CultureInfo.InvariantCulture, @"\{0}", individualKeys[i]), StringComparison.InvariantCulture);
+                    if (removeAt > -1)
+                    {
+                        fullPath = fullPath.Substring(0, removeAt);
+                    }
+                }
+                catch
+                {
+                }
 
                 // One last check: if we get here, the parent of this node is not yet in the tree, so we need to add it as a RootNode
                 if (i == 0)
@@ -1028,8 +1047,11 @@ namespace RegistryPreview
 
             try
             {
-                fileContents = jsonWindowPlacement.Stringify();
-                await Windows.Storage.FileIO.WriteTextAsync(storageFile, fileContents);
+                if (jsonWindowPlacement != null)
+                {
+                    fileContents = jsonWindowPlacement.Stringify();
+                    await Windows.Storage.FileIO.WriteTextAsync(storageFile, fileContents);
+                }
             }
             catch (Exception ex)
             {

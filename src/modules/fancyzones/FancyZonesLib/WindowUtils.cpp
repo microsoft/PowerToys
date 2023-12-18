@@ -15,7 +15,7 @@
 namespace NonLocalizable
 {
     const wchar_t PowerToysAppFZEditor[] = L"POWERTOYS.FANCYZONESEDITOR.EXE";
-    const wchar_t SplashClassName[] = L"MsoSplash";
+    const char SplashClassName[] = "MsoSplash";
     const wchar_t CoreWindow[] = L"Windows.UI.Core.CoreWindow";
     const wchar_t SearchUI[] = L"SearchUI.exe";
     const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
@@ -122,17 +122,6 @@ namespace
     }
 }
 
-bool FancyZonesWindowUtils::IsSplashScreen(HWND window)
-{
-    wchar_t className[MAX_PATH];
-    if (GetClassName(window, className, MAX_PATH) == 0)
-    {
-        return false;
-    }
-
-    return wcscmp(NonLocalizable::SplashClassName, className) == 0;
-}
-
 bool FancyZonesWindowUtils::IsWindowMaximized(HWND window) noexcept
 {
     WINDOWPLACEMENT placement{};
@@ -164,38 +153,9 @@ bool FancyZonesWindowUtils::HasVisibleOwner(HWND window) noexcept
     return rect.top != rect.bottom && rect.left != rect.right;
 }
 
-bool FancyZonesWindowUtils::IsStandardWindow(HWND window)
+bool FancyZonesWindowUtils::IsRoot(HWND window) noexcept
 {
-    // True if from the styles the window looks like a standard window
-
-    if (GetAncestor(window, GA_ROOT) != window)
-    {
-        return false;
-    }
-
-    auto style = GetWindowLong(window, GWL_STYLE);
-    auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
-
-    bool isToolWindow = (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW;
-    bool isVisible = (style & WS_VISIBLE) == WS_VISIBLE;
-    if (isToolWindow || !isVisible)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool FancyZonesWindowUtils::IsPopupWindow(HWND window) noexcept
-{
-    auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_POPUP) == WS_POPUP);
-}
-
-bool FancyZonesWindowUtils::HasThickFrameAndMinimizeMaximizeButtons(HWND window) noexcept
-{
-    auto style = GetWindowLong(window, GWL_STYLE);
-    return ((style & WS_THICKFRAME) == WS_THICKFRAME && (style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX && (style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX);
+    return GetAncestor(window, GA_ROOT) == window;
 }
 
 bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
@@ -242,12 +202,12 @@ bool FancyZonesWindowUtils::IsExcluded(HWND window)
     return false;
 }
 
-bool FancyZonesWindowUtils::IsExcludedByUser(const HWND& hwnd, std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcludedByUser(const HWND& hwnd, const std::wstring& processPath) noexcept
 {
     return (check_excluded_app(hwnd, processPath, FancyZonesSettings::settings().excludedAppsArray));
 }
 
-bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, std::wstring& processPath) noexcept
+bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, const std::wstring& processPath) noexcept
 {
     static std::vector<std::wstring> defaultExcludedFolders = { NonLocalizable::SystemAppsFolder };
     if (find_folder_in_path(processPath, defaultExcludedFolders))
@@ -255,9 +215,14 @@ bool FancyZonesWindowUtils::IsExcludedByDefault(const HWND& hwnd, std::wstring& 
         return true;
     }
 
-    std::array<char, 256> class_name;
-    GetClassNameA(hwnd, class_name.data(), static_cast<int>(class_name.size()));
-    if (is_system_window(hwnd, class_name.data()))
+    std::array<char, 256> className;
+    GetClassNameA(hwnd, className.data(), static_cast<int>(className.size()));
+    if (is_system_window(hwnd, className.data()))
+    {
+        return true;
+    }
+
+    if (strcmp(NonLocalizable::SplashClassName, className.data()) == 0)
     {
         return true;
     }
@@ -300,25 +265,22 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
         ::GetWindowPlacement(window, &placement);
     }
 
-    if (!IsWindowVisible(window))
-    {
-        placement.showCmd = SW_HIDE;
-    }
-    else
+    if (IsWindowVisible(window))
     {
         // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
         if ((placement.showCmd != SW_SHOWMINIMIZED) &&
             (placement.showCmd != SW_MINIMIZE))
         {
-            placement.showCmd = SW_RESTORE;
-        }
+            // Remove maximized show command to make sure window is moved to the correct zone.
+            if (placement.showCmd == SW_SHOWMAXIMIZED)
+                placement.flags &= ~WPF_RESTORETOMAXIMIZED;
 
-        // Remove maximized show command to make sure window is moved to the correct zone.
-        if (placement.showCmd == SW_SHOWMAXIMIZED)
-        {
             placement.showCmd = SW_RESTORE;
-            placement.flags &= ~WPF_RESTORETOMAXIMIZED;
         }
+    }
+    else
+    {
+        placement.showCmd = SW_HIDE;
     }
 
     ScreenToWorkAreaCoords(window, rect);

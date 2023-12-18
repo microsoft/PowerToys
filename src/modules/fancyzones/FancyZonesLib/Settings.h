@@ -27,7 +27,7 @@ struct Settings
     bool shiftDrag = true;
     bool mouseSwitch = false;
     bool mouseMiddleClickSpanningMultipleZones = false;
-    bool displayChange_moveWindows = false;
+    bool displayOrWorkAreaChange_moveWindows = true;
     bool zoneSetChange_flashZones = false;
     bool zoneSetChange_moveWindows = false;
     bool overrideSnapHotkeys = false;
@@ -44,7 +44,6 @@ struct Settings
     bool makeDraggedWindowTransparent = true;
     bool systemTheme = true;
     bool showZoneNumber = true;
-    bool allowSnapPopupWindows = false;
     bool allowSnapChildWindows = false;
     bool disableRoundCorners = false;
     std::wstring zoneColor = L"#AACDFF";

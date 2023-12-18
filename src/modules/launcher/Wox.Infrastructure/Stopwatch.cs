@@ -19,10 +19,7 @@ namespace Wox.Infrastructure
         /// </summary>
         public static long Debug(string message, Action action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            ArgumentNullException.ThrowIfNull(action);
 
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
@@ -36,10 +33,7 @@ namespace Wox.Infrastructure
 
         public static long Normal(string message, Action action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            ArgumentNullException.ThrowIfNull(action);
 
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
@@ -53,10 +47,7 @@ namespace Wox.Infrastructure
 
         public static void StartCount(string name, Action action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            ArgumentNullException.ThrowIfNull(action);
 
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();

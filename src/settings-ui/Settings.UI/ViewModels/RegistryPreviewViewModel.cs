@@ -22,10 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public RegistryPreviewViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<RegistryPreviewSettings> registryPreviewSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
@@ -33,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 

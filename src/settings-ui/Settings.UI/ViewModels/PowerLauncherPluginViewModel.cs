@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -33,6 +34,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged(nameof(AdditionalOptions));
                 };
             }
+
+            _enabledGpoRuleConfiguration = (GpoRuleConfigured)settings.EnabledPolicyUiState;
+            _enabledGpoRuleIsConfigured = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
         }
 
         public string Id { get => settings.Id; }
@@ -43,11 +47,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Author { get => settings.Author; }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledGpoRuleIsConfigured;
+
         public bool Disabled
         {
             get
             {
-                return settings.Disabled;
+                if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    return true;
+                }
+                else if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+                {
+                    return false;
+                }
+                else
+                {
+                    return settings.Disabled;
+                }
             }
 
             set
@@ -55,6 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (settings.Disabled != value)
                 {
                     settings.Disabled = value;
+
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                     NotifyPropertyChanged(nameof(Enabled));
@@ -66,6 +85,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public bool Enabled => !Disabled;
+
+        public bool EnabledGpoRuleIsConfigured => _enabledGpoRuleIsConfigured;
 
         public double DisabledOpacity => Disabled ? 0.5 : 1;
 

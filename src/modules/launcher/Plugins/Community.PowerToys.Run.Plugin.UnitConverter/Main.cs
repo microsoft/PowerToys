@@ -21,16 +21,15 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public string Description => Properties.Resources.plugin_description;
 
+        public static string PluginID => "aa0ee9daff654fb7be452c2d77c471b9";
+
         private PluginInitContext _context;
         private static string _icon_path;
         private bool _disposed;
 
         public void Init(PluginInitContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             _context = context;
             _context.API.ThemeChanged += OnThemeChanged;
@@ -39,10 +38,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             // Parse
             ConvertModel convertModel = InputInterpreter.Parse(query);
@@ -96,7 +92,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 PluginName = Name,
                 Title = Properties.Resources.context_menu_copy,
                 Glyph = "\xE8C8",
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
                 Action = _ =>
                 {

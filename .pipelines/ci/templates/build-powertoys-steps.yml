@@ -7,8 +7,21 @@ steps:
   submodules: true
   clean: true
 
+- task: UseDotNet@2
+  displayName: 'Use .NET 6 SDK'
+  inputs:
+    packageType: sdk
+    version: '6.x'
+
 - task: PowerShell@2
-  displayName: Verifying Nuget package versions for PowerToys.sln
+  displayName: Verify XAML formatting
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\applyXamlStyling.ps1'
+    arguments: -Passive
+    pwsh: true
+
+- task: PowerShell@2
+  displayName: Verify Nuget package versions for PowerToys.sln
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNugetPackages.ps1'
     arguments: -solution '$(build.sourcesdirectory)\PowerToys.sln'
@@ -49,11 +62,18 @@ steps:
     arguments: -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
     pwsh: true
 
+- task: PowerShell@2
+  displayName: Verify and set latest VCToolsVersion usage
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1'
+    pwsh: true
+
 - task: UseDotNet@2
-  displayName: 'Use .NET 7 SDK'
+  displayName: 'Use .NET 8 SDK'
   inputs:
     packageType: sdk
-    version: '7.x'
+    version: '8.x'
+    includePreviewVersions: true
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
@@ -188,8 +208,11 @@ steps:
       **\UnitTests-GcodeThumbnailProvider.dll
       **\UnitTests-StlThumbnailProvider.dll
       **\UnitTests-PdfThumbnailProvider.dll
+      **\UnitTests-QoiThumbnailProvider.dll
       **\Settings.UI.UnitTests.dll
       **\UnitTests-GcodePreviewHandler.dll
+      **\UnitTests-QoiPreviewHandler.dll
+      **\UnitTests-FancyZonesEditor.dll
       **\UnitTests-PdfPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
@@ -240,7 +263,7 @@ steps:
       dotnet list $(build.sourcesdirectory)\src\common\Common.UI\Common.UI.csproj package
 
 - task: PowerShell@2
-  displayName: Verifying Notice.md and Nuget packages match
+  displayName: Verify Notice.md and Nuget packages match
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\verifyNoticeMdAgainstNugetPackages.ps1'
     arguments: -path '$(build.sourcesdirectory)\'

@@ -31,7 +31,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{c604b37e-9d0e-4484-8778-e8b31b0e1b3a}</ProjectGuid>
     <RootNamespace>FileLocksmithLibInterop</RootNamespace>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <TargetName>PowerToys.FileLocksmithLib.Interop</TargetName>
   </PropertyGroup>

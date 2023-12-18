@@ -8,42 +8,26 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
-    <custom:OOBEPageControl
-        x:Uid="Oobe_MouseWithoutBorders"
-        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseWithoutBorders.png">
+    <custom:OOBEPageControl x:Uid="Oobe_MouseWithoutBorders" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseWithoutBorders.png">
 
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
 
-                <TextBlock
-                    x:Uid="Oobe_HowToUse"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_MouseWithoutBorders_HowToUse"
-                    Background="Transparent" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseWithoutBorders_HowToUse" Background="Transparent" />
 
-                <TextBlock
-                    x:Uid="Oobe_TipsAndTricks"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock
-                    x:Uid="Oobe_MouseWithoutBorders_TipsAndTricks"
-                    Background="Transparent" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_MouseWithoutBorders_TipsAndTricks" Background="Transparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"
                     Orientation="Horizontal"
                     Spacing="12">
-                    <Button
-                        x:Uid="OOBE_Settings"
-                        Click="SettingsLaunchButton_Click" />
-                    <HyperlinkButton
-                        NavigateUri="https://aka.ms/PowerToysOverview_MouseWithoutBorders"
-                        Style="{StaticResource TextButtonStyle}">
-                        <TextBlock
-                            x:Uid="LearnMore_MouseWithoutBorders"
-                            TextWrapping="Wrap" />
+                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_MouseWithoutBorders" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock x:Uid="LearnMore_MouseWithoutBorders" TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>

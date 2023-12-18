@@ -50,9 +50,9 @@ namespace PowerLauncher.Helper
                     string pVarKey = (string)pVar.Key;
                     string pVarValue = (string)pVar.Value;
 
-                    if (machineAndUserVars.ContainsKey(pVarKey))
+                    if (machineAndUserVars.TryGetValue(pVarKey, out string value))
                     {
-                        if (machineAndUserVars[pVarKey] != pVarValue)
+                        if (value != pVarValue)
                         {
                             // Variable value for this process differs form merged machine/user value.
                             _protectedProcessVariables.Add(pVarKey);
@@ -214,7 +214,7 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// Returns the variables for the specified target. Errors that occurs will be catched and logged.
+        /// Returns the variables for the specified target. Errors that occurs will be caught and logged.
         /// </summary>
         /// <param name="target">The target variable source of the type <see cref="EnvironmentVariableTarget"/> </param>
         /// <returns>A dictionary with the variable or an empty dictionary on errors.</returns>

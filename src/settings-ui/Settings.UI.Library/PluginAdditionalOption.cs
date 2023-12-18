@@ -54,8 +54,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public int ComboBoxValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list of dropdown items for the ComboBox. Please use the item name as Key and an integer as Value.
+        /// The value gets converted in settings UI to an integer and will be saved in <see cref="ComboBoxValue"/>.
+        /// You can define the visibility order in settings ui by arranging the list items.
+        /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<string> ComboBoxOptions { get; set; }
+        public List<KeyValuePair<string, string>> ComboBoxItems { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string TextValue { get; set; }
@@ -91,5 +96,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? NumberBoxLargeChange { get; set; }
+
+        // Outdated properties kept for backward compatibility with third-party plugins. (They are only required to not have old third-party plugins crashing when propagating their plugin options.)
+#pragma warning disable SA1623 // Property summary documentation should match accessors
+
+        /// <summary>
+        /// PLEASE DON'T USE ANYMORE!! (The property was used for the list of combobox items in the past and is not functional anymore.)
+        /// </summary>
+        [JsonIgnore]
+        public List<string> ComboBoxOptions { get; set; }
+#pragma warning restore SA1623 // Property summary documentation should match accessors
     }
 }

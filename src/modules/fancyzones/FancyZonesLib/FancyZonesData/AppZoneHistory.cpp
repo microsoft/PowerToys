@@ -278,32 +278,7 @@ void AppZoneHistory::LoadData()
 
 void AppZoneHistory::SaveData()
 {
-    bool dirtyFlag = false;
-    std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> updatedHistory;
-    
-    for (const auto& [path, dataVector] : m_history)
-    {
-        auto updatedVector = dataVector;
-        for (auto& data : updatedVector)
-        {
-            if (!VirtualDesktop::instance().IsVirtualDesktopIdSavedInRegistry(data.workAreaId.virtualDesktopId))
-            {
-                data.workAreaId.virtualDesktopId = GUID_NULL;
-                dirtyFlag = true;
-            }
-        }
-
-        updatedHistory.insert(std::make_pair(path, updatedVector));
-    }
-
-    if (dirtyFlag)
-    {
-        json::to_file(AppZoneHistoryFileName(), JsonUtils::SerializeJson(updatedHistory));
-    }
-    else
-    {
-        json::to_file(AppZoneHistoryFileName(), JsonUtils::SerializeJson(m_history));
-    }
+    json::to_file(AppZoneHistoryFileName(), JsonUtils::SerializeJson(m_history));
 }
 
 void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids)
