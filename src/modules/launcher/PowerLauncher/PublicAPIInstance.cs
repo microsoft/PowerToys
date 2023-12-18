@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,21 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-
+using System.Windows.Media;
 using Common.UI;
-
 using ManagedCommon;
-
 using Microsoft.Toolkit.Uwp.Notifications;
-
+using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
-
 using Windows.UI.Notifications;
-
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
+using Wpf.Ui.Appearance;
 
 namespace Wox
 {
@@ -29,22 +26,26 @@ namespace Wox
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
-        private readonly ThemeManager _themeManager;
         private bool _disposed;
 
         public event ThemeChangedHandler ThemeChanged;
 
-        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
+        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet)
         {
             _settingsVM = settingsVM ?? throw new ArgumentNullException(nameof(settingsVM));
             _mainVM = mainVM ?? throw new ArgumentNullException(nameof(mainVM));
             _alphabet = alphabet ?? throw new ArgumentNullException(nameof(alphabet));
-            _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
-            _themeManager.ThemeChanged += OnThemeChanged;
+            ApplicationThemeManager.Changed += OnThemeChanged;
 
             ToastNotificationManagerCompat.OnActivated += args =>
             {
             };
+        }
+
+        private void OnThemeChanged(ApplicationTheme currentApplicationTheme, Color systemAccent)
+        {
+            // oldTheme isn't used
+            ThemeChanged?.Invoke(currentApplicationTheme.ToTheme(), currentApplicationTheme.ToTheme());
         }
 
         public void RemoveUserSelectedItem(Result result)
@@ -108,7 +109,7 @@ namespace Wox
 
         public Theme GetCurrentTheme()
         {
-            return _themeManager.GetCurrentTheme();
+            return ApplicationThemeManager.GetAppTheme().ToTheme();
         }
 
         public void Dispose()
@@ -128,7 +129,7 @@ namespace Wox
             {
                 if (disposing)
                 {
-                    _themeManager.ThemeChanged -= OnThemeChanged;
+                    ApplicationThemeManager.Changed -= OnThemeChanged;
                     _disposed = true;
                 }
             }

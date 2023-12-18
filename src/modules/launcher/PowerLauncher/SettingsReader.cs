@@ -9,7 +9,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Windows.Input;
-using Common.UI;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;
@@ -30,23 +29,20 @@ namespace PowerLauncher
         private const int MaxRetries = 10;
         private static readonly object _readSyncObject = new object();
         private readonly PowerToysRunSettings _settings;
-        private readonly ThemeManager _themeManager;
         private Action _refreshPluginsOverviewCallback;
+        private MainWindow _mainWindow;
 
         private IFileSystemWatcher _watcher;
 
-        public SettingsReader(PowerToysRunSettings settings, ThemeManager themeManager)
+        public SettingsReader(PowerToysRunSettings settings, MainWindow mainWindow)
         {
             _settingsUtils = new SettingsUtils();
             _settings = settings;
-            _themeManager = themeManager;
+            _mainWindow = mainWindow;
 
             var overloadSettings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
             UpdateSettings(overloadSettings);
             _settingsUtils.SaveSettings(overloadSettings.ToJsonString(), PowerLauncherSettings.ModuleName);
-
-            // Apply theme at startup
-            _themeManager.ChangeTheme(_settings.Theme, true);
         }
 
         public void CreateSettingsIfNotExists()
@@ -161,7 +157,14 @@ namespace PowerLauncher
                     if (_settings.Theme != overloadSettings.Properties.Theme)
                     {
                         _settings.Theme = overloadSettings.Properties.Theme;
-                        _themeManager.ChangeTheme(_settings.Theme, true);
+
+                        _mainWindow?.Dispatcher.Invoke(() =>
+                        {
+                            if (_mainWindow.IsLoaded)
+                            {
+                                _mainWindow.SetTheme();
+                            }
+                        });
                     }
 
                     if (_settings.StartupPosition != overloadSettings.Properties.Position)

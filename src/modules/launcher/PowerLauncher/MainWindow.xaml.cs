@@ -15,6 +15,7 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Common.UI;
 using interop;
+using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
@@ -24,6 +25,7 @@ using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Interfaces;
+using Wpf.Ui.Appearance;
 using CancellationToken = System.Threading.CancellationToken;
 using Image = Wox.Infrastructure.Image;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
@@ -56,25 +58,6 @@ namespace PowerLauncher
             _settings = settings;
             InitializeComponent();
 
-            if (OSVersionHelper.IsWindows11())
-            {
-                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Acrylic;
-            }
-            else
-            {
-                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.None;
-            }
-
-            // workaround for #30217
-            try
-            {
-                Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
-            }
-            catch (Exception ex)
-            {
-                Log.Exception("Exception in SystemThemeWatcher.Watch, issue 30217.", ex, GetType());
-            }
-
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
             NativeEventWaiter.WaitForEventLoop(
@@ -82,6 +65,29 @@ namespace PowerLauncher
                 SendSettingsTelemetry,
                 Application.Current.Dispatcher,
                 _nativeWaiterCancelToken);
+        }
+
+        public void SetTheme()
+        {
+            if (_settings.Theme == Theme.Light)
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Light);
+                SystemThemeWatcher.UnWatch(this);
+            }
+            else if (_settings.Theme == Theme.Dark)
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark);
+                SystemThemeWatcher.UnWatch(this);
+            }
+            else
+            {
+                WindowBackdropType = OSVersionHelper.IsWindows11()
+                    ? Wpf.Ui.Controls.WindowBackdropType.Acrylic
+                    : Wpf.Ui.Controls.WindowBackdropType.None;
+
+                SystemThemeWatcher.Watch(this, WindowBackdropType);
+                ApplicationThemeManager.ApplySystemTheme();
+            }
         }
 
         private void SendSettingsTelemetry()
@@ -184,6 +190,8 @@ namespace PowerLauncher
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            SetTheme();
+
             WindowsInteropHelper.DisableControlBox(this);
             InitializePosition();
 
