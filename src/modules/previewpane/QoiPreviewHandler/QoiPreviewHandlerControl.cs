@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Qoi
                     throw new ArgumentException($"{nameof(dataSource)} for {nameof(QoiPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
                 }
 
-                FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                using FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
                 thumbnail = QoiImage.FromStream(fs);
 
