@@ -3672,6 +3672,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="CmdNotFound_InstallButton.Content" xml:space="preserve">
     <value>Install PowerShell Module</value>
   </data>
+  <data name="CmdNotFound_UninstallButton.Content" xml:space="preserve">
+    <value>Uninstall PowerShell Module</value>
+  </data>
   <data name="Oobe_CmdNotFound.Description" xml:space="preserve">
     <value>Command Not Found detects an error thrown by a command in PowerShell and suggests a relevant WinGet package to install, if available.</value>
   </data>

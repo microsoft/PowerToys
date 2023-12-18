@@ -127,7 +127,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="Utilities\EnableModule.ps1">
+		<None Update="Assets\Settings\Scripts\EnableModule.ps1">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

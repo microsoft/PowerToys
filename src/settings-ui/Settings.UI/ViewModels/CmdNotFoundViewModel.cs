@@ -124,12 +124,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void InstallModule()
         {
-            var ps1File = AssemblyDirectory + "\\Utilities\\EnableModule.ps1";
+            var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\EnableModule.ps1";
 
             var startInfo = new ProcessStartInfo()
             {
                 FileName = "pwsh.exe",
                 Arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\" -scriptPath {AssemblyDirectory}\\..",
+                UseShellExecute = false,
+            };
+            Process.Start(startInfo);
+        }
+
+        public void UninstallModule()
+        {
+            var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\DisableModule.ps1";
+
+            var startInfo = new ProcessStartInfo()
+            {
+                FileName = "pwsh.exe",
+                Arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"",
                 UseShellExecute = false,
             };
             Process.Start(startInfo);

@@ -20,7 +20,10 @@
                     x:Uid="CmdNotFound_InstallModule_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsCmdNotFound.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <Button x:Uid="CmdNotFound_InstallButton" Click="{x:Bind ViewModel.InstallModule, Mode=OneWay}" />
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Uid="CmdNotFound_InstallButton" Click="{x:Bind ViewModel.InstallModule, Mode=OneWay}" />
+                        <Button x:Uid="CmdNotFound_UninstallButton" Click="{x:Bind ViewModel.UninstallModule, Mode=OneWay}" />
+                    </StackPanel>
                 </controls:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"

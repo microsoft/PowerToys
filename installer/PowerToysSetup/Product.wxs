@@ -57,7 +57,6 @@
       <ComponentGroupRef Id="BaseApplicationsComponentGroup" />
       <ComponentGroupRef Id="WinUI3ApplicationsComponentGroup" />
       <ComponentGroupRef Id="AwakeComponentGroup" />
-      <ComponentGroupRef Id="CmdNotFoundComponentGroup" />
       <ComponentGroupRef Id="ColorPickerComponentGroup" />
       <ComponentGroupRef Id="FileExplorerPreviewComponentGroup" />
       <ComponentGroupRef Id="FileLocksmithComponentGroup" />
@@ -134,6 +133,7 @@
     <InstallExecuteSequence>
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
+      <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize">
@@ -158,6 +158,9 @@
         Installed AND (REMOVE="ALL")
       </Custom>
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="UninstallCommandNotFound" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
@@ -199,6 +202,10 @@
 
     <CustomAction Id="SetUnApplyModulesRegistryChangeSetsParam"
                     Property="UnApplyModulesRegistryChangeSets"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetUninstallCommandNotFoundParam"
+                    Property="UninstallCommandNotFound"
                     Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetCreateWinAppSDKHardlinksParam"
@@ -253,7 +260,15 @@
                     BinaryKey="PTCustomActions"
                     DllEntry="UninstallServicesCA"
                    />
-      
+
+      <CustomAction Id="UninstallCommandNotFound"
+                    Return="check"
+                    Impersonate="yes"
+                    Execute="deferred"
+                    BinaryKey="PTCustomActions"
+                    DllEntry="UninstallCommandNotFoundModuleCA"
+                   />
+
       <CustomAction Id="TelemetryLogInstallSuccess"
               Return="ignore"
               Impersonate="yes"
