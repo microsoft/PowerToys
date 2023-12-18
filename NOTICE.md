@@ -1307,8 +1307,8 @@ EXHIBIT A -Mozilla Public License.
 - CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
 - CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
 - ControlzEx 6.0.0
-- HelixToolkit 2.20.2
-- HelixToolkit.Core.Wpf 2.20.2
+- HelixToolkit 2.24.0
+- HelixToolkit.Core.Wpf 2.24.0
 - hyjiacan.pinyin4net 4.1.1
 - Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
 - LazyCache 2.4.0
@@ -1320,6 +1320,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Hosting 8.0.0
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
 - Microsoft.Extensions.Logging 8.0.0
+- Microsoft.Extensions.Logging.Abstractions 8.0.0
 - Microsoft.NET.Test.Sdk 17.6.3
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2088.41
