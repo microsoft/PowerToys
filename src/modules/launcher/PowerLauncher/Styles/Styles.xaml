@@ -1,4 +1,9 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="clr-namespace:System;assembly=mscorlib">
+
+    <core:Double x:Key="TitleFontSize">16</core:Double>
 
     <!--  This removes the selection state of the default WpfUI ListViewItemStyle  -->
     <Style x:Key="PluginsListViewItemStyle" TargetType="{x:Type ListViewItem}">

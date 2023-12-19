@@ -184,6 +184,11 @@ namespace PowerLauncher
                         _settings.ShowPluginsOverview = (PowerToysRunSettings.ShowPluginsOverviewMode)overloadSettings.Properties.ShowPluginsOverview;
                     }
 
+                    if (_settings.TitleFontSize != overloadSettings.Properties.TitleFontSize)
+                    {
+                        _settings.TitleFontSize = overloadSettings.Properties.TitleFontSize;
+                    }
+
                     retry = false;
                 }
 

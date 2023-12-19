@@ -328,6 +328,8 @@ namespace Wox.Infrastructure.UserSettings
 
         public ShowPluginsOverviewMode ShowPluginsOverview { get; set; } = ShowPluginsOverviewMode.All;
 
+        public int TitleFontSize { get; set; } = 16;
+
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
         public bool StartedFromPowerToysRunner { get; set; }

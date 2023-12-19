@@ -221,6 +221,7 @@ namespace PowerLauncher
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             _viewModel.LoadedAtLeastOnce = true;
             _viewModel.SetPluginsOverviewVisibility();
+            _viewModel.SetFontSize();
 
             BringProcessToForeground();
         }
@@ -364,6 +365,7 @@ namespace PowerLauncher
                     BringProcessToForeground();
 
                     _viewModel.SetPluginsOverviewVisibility();
+                    _viewModel.SetFontSize();
 
                     // HACK: Setting focus here again fixes some focus issues, like on first run or after showing a message box.
                     SearchBox.QueryTextBox.Focus();
