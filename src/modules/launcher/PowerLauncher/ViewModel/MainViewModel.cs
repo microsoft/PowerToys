@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -131,6 +131,10 @@ namespace PowerLauncher.ViewModel
                             SetHotkey(hwnd, _settings.Hotkey, OnHotkey);
                         }
                     });
+                }
+                else if (e.PropertyName == nameof(PowerToysRunSettings.ShowPluginsOverview))
+                {
+                    RefreshPluginsOverview();
                 }
             };
 
@@ -298,6 +302,16 @@ namespace PowerLauncher.ViewModel
                     // Push Event to UI SystemQuery has changed
                     OnPropertyChanged(nameof(SystemQueryText));
                 }
+            });
+
+            SelectNextOverviewPluginCommand = new RelayCommand(_ =>
+            {
+                SelectNextOverviewPlugin();
+            });
+
+            SelectPrevOverviewPluginCommand = new RelayCommand(_ =>
+            {
+                SelectPrevOverviewPlugin();
             });
         }
 
@@ -472,6 +486,10 @@ namespace PowerLauncher.ViewModel
         public ICommand OpenResultWithMouseCommand { get; private set; }
 
         public ICommand ClearQueryCommand { get; private set; }
+
+        public ICommand SelectNextOverviewPluginCommand { get; private set; }
+
+        public ICommand SelectPrevOverviewPluginCommand { get; private set; }
 
         public class QueryTuningOptions
         {
@@ -1212,6 +1230,22 @@ namespace PowerLauncher.ViewModel
 
         public ObservableCollection<PluginPair> Plugins { get; } = new();
 
+        private PluginPair _selectedPlugin;
+
+        public PluginPair SelectedPlugin
+        {
+            get => _selectedPlugin;
+
+            set
+            {
+                if (_selectedPlugin != value)
+                {
+                    _selectedPlugin = value;
+                    OnPropertyChanged(nameof(SelectedPlugin));
+                }
+            }
+        }
+
         private Visibility _pluginsOverviewVisibility = Visibility.Visible;
 
         public Visibility PluginsOverviewVisibility
@@ -1244,6 +1278,52 @@ namespace PowerLauncher.ViewModel
                     }
                 }
             });
+        }
+
+        private void SelectNextOverviewPlugin()
+        {
+            if (Plugins.Count == 0)
+            {
+                return;
+            }
+
+            var selectedIndex = Plugins.IndexOf(SelectedPlugin);
+            if (selectedIndex == -1)
+            {
+                selectedIndex = 0;
+            }
+            else
+            {
+                if (++selectedIndex > Plugins.Count - 1)
+                {
+                    selectedIndex = 0;
+                }
+            }
+
+            SelectedPlugin = Plugins[selectedIndex];
+        }
+
+        private void SelectPrevOverviewPlugin()
+        {
+            if (Plugins.Count == 0)
+            {
+                return;
+            }
+
+            var selectedIndex = Plugins.IndexOf(SelectedPlugin);
+            if (selectedIndex == -1)
+            {
+                selectedIndex = Plugins.Count - 1;
+            }
+            else
+            {
+                if (--selectedIndex < 0)
+                {
+                    selectedIndex = Plugins.Count - 1;
+                }
+            }
+
+            SelectedPlugin = Plugins[selectedIndex];
         }
     }
 }

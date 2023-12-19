@@ -41,24 +41,20 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsEnabled" Value="True" />
-                                <Condition Property="IsMouseOver" Value="True" />
-                            </MultiTrigger.Conditions>
-                            <!--<Setter TargetName="Border" Property="Background">
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background">
                                 <Setter.Value>
                                     <SolidColorBrush Color="{DynamicResource SubtleFillColorSecondary}" />
                                 </Setter.Value>
-                            </Setter>-->
-                        </MultiTrigger>
+                            </Setter>
+                        </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <!--<Setter TargetName="ActiveRectangle" Property="Visibility" Value="Visible" />
-                             <Setter TargetName="Border" Property="Background">
-                                 <Setter.Value>
-                                     <SolidColorBrush Color="{DynamicResource SubtleFillColorSecondary}" />
-                                 </Setter.Value>
-                             </Setter>-->
+                            <Setter TargetName="ActiveRectangle" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Border" Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{DynamicResource SubtleFillColorSecondary}" />
+                                </Setter.Value>
+                            </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
