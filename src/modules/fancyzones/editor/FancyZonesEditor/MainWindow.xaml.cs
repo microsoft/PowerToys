@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -35,6 +36,8 @@ namespace FancyZonesEditor
         private TextBlock _createLayoutAnnounce;
 
         private bool haveTriedToGetFocusAlready;
+
+        private static readonly CompositeFormat PixelValue = System.Text.CompositeFormat.Parse(Properties.Resources.Pixel_Value);
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
@@ -567,7 +570,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
                 string activityId = "sliderValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Pixel_Value), SensitivityInput.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, PixelValue, SensitivityInput.Value);
 
                 if (peer != null && value != null)
                 {
@@ -609,7 +612,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(Spacing) as SliderAutomationPeer;
                 string activityId = "spacingValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Pixel_Value), Spacing.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, PixelValue, Spacing.Value);
 
                 if (peer != null && value != null)
                 {

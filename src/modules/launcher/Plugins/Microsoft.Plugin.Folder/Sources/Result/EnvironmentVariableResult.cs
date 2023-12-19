@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using System.Text;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
@@ -11,6 +12,8 @@ namespace Microsoft.Plugin.Folder.Sources.Result
     public class EnvironmentVariableResult : IItemResult
     {
         private readonly ShellAction _shellAction = new ShellAction();
+
+        private static readonly CompositeFormat WoxPluginFolderSelectFolderResultSubtitle = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_folder_select_folder_result_subtitle);
 
         public string Search { get; set; }
 
@@ -35,8 +38,8 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 IcoPath = Path,
 
                 // Using CurrentCulture since this is user facing
-                SubTitle = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_folder_select_folder_result_subtitle), Path),
-                ToolTipData = new ToolTipData(Title, string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_folder_select_folder_result_subtitle), Path)),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, WoxPluginFolderSelectFolderResultSubtitle, Path),
+                ToolTipData = new ToolTipData(Title, string.Format(CultureInfo.CurrentCulture, WoxPluginFolderSelectFolderResultSubtitle, Path)),
                 QueryTextDisplay = Path,
                 ContextData = new SearchResult { Type = ResultType.Folder, Path = Path },
                 Action = c => _shellAction.Execute(Path, contextApi),

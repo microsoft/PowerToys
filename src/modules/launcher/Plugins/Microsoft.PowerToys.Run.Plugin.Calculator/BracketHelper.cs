@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                         continue;
                     default:
                         {
-                            throw new ArgumentOutOfRangeException($"Invalid direction value. Expected values: [{TrailDirection.Open}, {TrailDirection.Close}].");
+                            throw new ArgumentOutOfRangeException($"Can't process value (Parameter direction: {direction})");
                         }
                 }
             }
