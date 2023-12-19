@@ -220,6 +220,7 @@ namespace PowerLauncher
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             _viewModel.LoadedAtLeastOnce = true;
+            _viewModel.SetPluginsOverviewVisibility();
 
             BringProcessToForeground();
         }
@@ -361,6 +362,8 @@ namespace PowerLauncher
                     // Called when window is made visible by hotkey. Not called when the window is deactivated by clicking away
                     UpdatePosition();
                     BringProcessToForeground();
+
+                    _viewModel.SetPluginsOverviewVisibility();
 
                     // HACK: Setting focus here again fixes some focus issues, like on first run or after showing a message box.
                     SearchBox.QueryTextBox.Focus();

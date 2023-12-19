@@ -59,7 +59,10 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -2183,7 +2186,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Welcome to PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
   </data>
-	<data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
+  <data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
     <value>What's New</value>
   </data>
   <data name="Feedback_NavViewItem.Content" xml:space="preserve">
@@ -2996,6 +2999,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
     <value>Wait on slower plugin results before selecting top item in results</value>
   </data>
+  <data name="PowerLauncher_ShowPluginKeywords.Header" xml:space="preserve">
+    <value>Plugin hints</value>
+  </data>
+  <data name="PowerLauncher_ShowPluginKeywords.Description" xml:space="preserve">
+    <value>Choose which plugin keywords to be shown when the searchbox is empty</value>
+  </data>
   <data name="PowerLauncher_PluginWeightBoost.Description" xml:space="preserve">
     <value>Use a higher number to have this plugin's result show higher in the global results. Default is 0.</value>
   </data>
@@ -3364,7 +3373,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>German</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
-  <value>Greek</value>
+    <value>Greek</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
     <value>Hebrew</value>
@@ -3897,5 +3906,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_SourceCode_WrapText.Content" xml:space="preserve">
     <value>Wrap text</value>
+  </data>
+  <data name="ShowPluginsOverview_All.Content" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ShowPluginsOverview_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="ShowPluginsOverview_NonGlobal.Content" xml:space="preserve">
+    <value>Not included in global results</value>
   </data>
 </root>

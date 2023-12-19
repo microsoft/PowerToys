@@ -84,10 +84,10 @@
     </UserControl.Resources>
     <Grid
         MinHeight="32"
-        Margin="12"
+        Margin="8,12,8,12"
         VerticalAlignment="Top">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="32" />
+            <ColumnDefinition Width="38" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -116,7 +116,7 @@
             Foreground="{DynamicResource TextPlaceholderColorBrush}" />
         <ui:SymbolIcon
             AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
-            FontSize="18"
+            FontSize="20"
             Foreground="{DynamicResource TextPlaceholderColorBrush}"
             Symbol="Search12" />
     </Grid>

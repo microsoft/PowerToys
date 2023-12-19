@@ -37,43 +37,41 @@
         </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MaxHeight="{Binding Results.MaxHeight}" />
         </Grid.RowDefinitions>
         <Border
             x:Name="SearchBoxBorder"
             Grid.Row="0"
-            Margin="12,12,12,0"
-            Background="{DynamicResource LayerFillColorDefaultBrush}"
-            BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="8">
+            Padding="12,4,12,3">
             <local:LauncherControl x:Name="SearchBox" />
         </Border>
-        <local:ResultList
-            x:Name="ListBox"
-            Grid.Row="1"
-            VerticalAlignment="Stretch"
-            PreviewMouseDown="ListBox_PreviewMouseDown"
-            Visibility="{Binding Results.Visibility}" />
 
         <!--  Have to use a Grid instead of a StackPanel for scrolling to work?  -->
         <Grid
             x:Name="KeywordsOverviewGrid"
             Grid.Row="1"
-            Margin="12,0,0,0"
+            MaxHeight="256"
             Visibility="{Binding PluginsOverviewVisibility}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
+            <Rectangle
+                Height="1"
+                VerticalAlignment="Top"
+                Fill="{DynamicResource DividerStrokeColorDefaultBrush}" />
             <TextBlock
-                Margin="10,16,0,8"
+                Margin="22,12,0,4"
                 FontWeight="SemiBold"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 Text="{x:Static p:Resources.PluginKeywords}" />
 
             <ListView
+                x:Name="pluginsHintsList"
                 Grid.Row="1"
+                Margin="16,0,0,0"
                 ItemContainerStyle="{StaticResource PluginsListViewItemStyle}"
                 ItemsSource="{Binding Plugins}"
                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -81,7 +79,7 @@
                 SelectionMode="Single">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Height="36">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
@@ -89,29 +87,44 @@
                             <Border
                                 Width="32"
                                 Height="32"
-                                Margin="4,0,10,0"
+                                Padding="2,0,2,0"
                                 Background="{DynamicResource ControlFillColorDefaultBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="4">
+                                CornerRadius="4"
+                                ToolTipService.ToolTip="{Binding Metadata.ActionKeyword}">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontWeight="SemiBold"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                    Text="{Binding Metadata.ActionKeyword}" />
+                                    Text="{Binding Metadata.ActionKeyword}"
+                                    TextAlignment="Left"
+                                    TextTrimming="WordEllipsis" />
                             </Border>
                             <TextBlock
                                 Grid.Column="1"
+                                Margin="12,0,0,0"
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="{Binding Plugin.Description}"
-                                TextTrimming="CharacterEllipsis" />
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
+
+        <local:ResultList
+            x:Name="ListBox"
+            Grid.Row="2"
+            VerticalAlignment="Stretch"
+            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
+            PreviewMouseDown="ListBox_PreviewMouseDown"
+            Visibility="{Binding Results.Visibility}" />
+
     </Grid>
     <ui:FluentWindow.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />

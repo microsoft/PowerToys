@@ -17,23 +17,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:HighlightTextConverter x:Key="highlightTextConverter" />
-
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <Style x:Key="FocusVisual">
-                <Setter Property="Control.Template">
-                    <Setter.Value>
-                        <ControlTemplate>
-                            <Rectangle
-                                Margin="2"
-                                SnapsToDevicePixels="true"
-                                Stroke="{DynamicResource FocusStrokeColorOuterBrush}"
-                                StrokeDashArray="1 2"
-                                StrokeThickness="1" />
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
             <Style
                 x:Key="CollapsableTextblock"
                 BasedOn="{StaticResource CaptionTextBlockStyle}"
@@ -48,7 +32,6 @@
     </UserControl.Resources>
     <ListView
         x:Name="SuggestionsList"
-        Margin="0,12,0,0"
         x:FieldModifier="public"
         AutomationProperties.Name="{x:Static p:Resources.Results}"
         ItemsSource="{Binding Results.Results, Mode=OneWay}"
@@ -57,10 +40,13 @@
         SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
         SelectionChanged="SuggestionsListView_SelectionChanged"
         SelectionMode="Single">
+        <ListView.Resources>
+            <Style BasedOn="{StaticResource ResultsListViewItemStyle}" TargetType="{x:Type ListViewItem}" />
+        </ListView.Resources>
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
                 <VirtualizingStackPanel
-                    Margin="12,6,0,0"
+                    Margin="12,12,0,0"
                     IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}"
                     VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
             </ItemsPanelTemplate>
@@ -73,7 +59,7 @@
         <ListView.ItemTemplate>
             <DataTemplate>
                 <Grid
-                    Height="40"
+                    Height="44"
                     Background="Transparent"
                     ToolTipService.BetweenShowDelay="0"
                     ToolTipService.InitialShowDelay="1000">
@@ -95,10 +81,13 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid.ToolTip>
-                        <ToolTip Opened="ToolTip_Opened" Visibility="{Binding Result.ToolTipVisibility}">
+                        <ToolTip
+                            MaxWidth="480"
+                            Opened="ToolTip_Opened"
+                            Visibility="{Binding Result.ToolTipVisibility}">
                             <StackPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
+                                    FontWeight="SemiBold"
                                     Style="{DynamicResource CollapsableTextblock}"
                                     Text="{Binding Result.ToolTipData.Title}"
                                     TextWrapping="Wrap" />
@@ -115,9 +104,9 @@
                         x:Name="AppIcon"
                         Grid.RowSpan="2"
                         Height="24"
-                        MaxWidth="56"
                         Margin="-6,-2,0,0"
                         HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
                         AutomationProperties.Name="{x:Static p:Resources.AppIcon}"
                         Source="{Binding Image}" />
                     <TextBlock
@@ -125,7 +114,7 @@
                         Grid.Column="1"
                         VerticalAlignment="Bottom"
                         AutomationProperties.Name="{x:Static p:Resources.Title}"
-                        FontSize="14"
+                        FontSize="16"
                         IsHitTestVisible="False"
                         TextTrimming="CharacterEllipsis">
                         <viewmodel:ResultsViewModel.FormattedText>
@@ -140,10 +129,9 @@
                         x:Name="Path"
                         Grid.Row="1"
                         Grid.Column="1"
-                        Margin="0,0,0,0"
                         VerticalAlignment="Top"
                         AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Opacity="0.6"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{Binding Result.SubTitle}"
                         TextTrimming="CharacterEllipsis" />
@@ -187,7 +175,9 @@
                                             <TextBlock
                                                 AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="{Binding Title}" />
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{Binding Title}"
+                                                TextWrapping="Wrap" />
                                         </ToolTip>
                                     </ToolTipService.ToolTip>
                                     <Button.Content>

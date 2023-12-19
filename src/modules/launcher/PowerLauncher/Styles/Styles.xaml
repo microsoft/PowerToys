@@ -127,6 +127,7 @@
                         x:Name="border"
                         Background="Transparent"
                         BorderBrush="Transparent"
+                        BorderThickness="1"
                         CornerRadius="4"
                         SnapsToDevicePixels="true">
                         <ContentPresenter
@@ -141,10 +142,61 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="true">
                             <Setter TargetName="border" Property="Background" Value="Transparent" />
-                            <Setter TargetName="border" Property="BorderBrush" Value="Transparent" />
+                            <!--<Setter TargetName="border" Property="BorderBrush" Value="Transparent" />-->
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ResultsListViewItemStyle" TargetType="{x:Type ListViewItem}">
+        <Setter Property="Foreground" Value="{DynamicResource ListViewItemForeground}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Border.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="Margin" Value="0,0,0,2" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Border
+                        x:Name="Border"
+                        Margin="0"
+                        Padding="0"
+                        Background="Transparent"
+                        BorderThickness="1"
+                        CornerRadius="{TemplateBinding Border.CornerRadius}">
+                        <Grid>
+                            <ContentPresenter Margin="{TemplateBinding Padding}" />
+                            <Rectangle
+                                x:Name="ActiveRectangle"
+                                Width="3"
+                                Height="24"
+                                Margin="0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Fill="{DynamicResource ListViewItemPillFillBrush}"
+                                RadiusX="2"
+                                RadiusY="2"
+                                Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEnabled" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+
+                        </MultiTrigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ActiveRectangle" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlAltFillColorQuarternaryBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

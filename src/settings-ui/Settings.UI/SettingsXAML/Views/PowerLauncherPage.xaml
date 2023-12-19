@@ -157,10 +157,9 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles">
+                    <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </controls:SettingsCard>
-
                 </custom:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
@@ -200,6 +199,14 @@
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="PowerLauncher_ShowPluginKeywords" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ShowPluginsOverviewIndex}">
+                            <ComboBoxItem x:Uid="ShowPluginsOverview_All" />
+                            <ComboBoxItem x:Uid="ShowPluginsOverview_NonGlobal" />
+                            <ComboBoxItem x:Uid="ShowPluginsOverview_None" />
                         </ComboBox>
                     </controls:SettingsCard>
                 </custom:SettingsGroup>

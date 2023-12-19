@@ -597,6 +597,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int ShowPluginsOverviewIndex
+        {
+            get
+            {
+                return settings.Properties.ShowPluginsOverview;
+            }
+
+            set
+            {
+                if (settings.Properties.ShowPluginsOverview != value)
+                {
+                    settings.Properties.ShowPluginsOverview = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
 
         public ObservableCollection<PowerLauncherPluginViewModel> Plugins
