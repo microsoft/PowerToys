@@ -58,6 +58,13 @@ namespace PowerLauncher
             _settings = settings;
             InitializeComponent();
 
+            WindowBackdropType = OSVersionHelper.IsWindows11()
+                ? Wpf.Ui.Controls.WindowBackdropType.Acrylic
+                : Wpf.Ui.Controls.WindowBackdropType.None;
+
+            SystemThemeWatcher.Watch(this, WindowBackdropType);
+            ApplicationThemeManager.Changed += ApplicationThemeManager_Changed;
+
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
             NativeEventWaiter.WaitForEventLoop(
@@ -67,26 +74,32 @@ namespace PowerLauncher
                 _nativeWaiterCancelToken);
         }
 
-        public void SetTheme()
+        public void SetTheme(bool fromSettings)
         {
             if (_settings.Theme == Theme.Light)
             {
-                ApplicationThemeManager.Apply(ApplicationTheme.Light);
-                SystemThemeWatcher.UnWatch(this);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType);
             }
             else if (_settings.Theme == Theme.Dark)
             {
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark);
-                SystemThemeWatcher.UnWatch(this);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType);
             }
-            else
+            else if (fromSettings)
             {
-                WindowBackdropType = OSVersionHelper.IsWindows11()
-                    ? Wpf.Ui.Controls.WindowBackdropType.Acrylic
-                    : Wpf.Ui.Controls.WindowBackdropType.None;
-
-                SystemThemeWatcher.Watch(this, WindowBackdropType);
                 ApplicationThemeManager.ApplySystemTheme();
+            }
+        }
+
+        private void ApplicationThemeManager_Changed(ApplicationTheme currentApplicationTheme, System.Windows.Media.Color systemAccent)
+        {
+            try
+            {
+                ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
+                SetTheme(false);
+            }
+            finally
+            {
+                ApplicationThemeManager.Changed += ApplicationThemeManager_Changed;
             }
         }
 
@@ -190,7 +203,7 @@ namespace PowerLauncher
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            SetTheme();
+            SetTheme(false);
 
             WindowsInteropHelper.DisableControlBox(this);
             InitializePosition();
@@ -811,12 +824,9 @@ namespace PowerLauncher
             {
                 if (disposing)
                 {
-                    if (_firstDeleteTimer != null)
-                    {
-                        _firstDeleteTimer.Dispose();
-                    }
-
+                    _firstDeleteTimer?.Dispose();
                     _hwndSource?.Dispose();
+                    ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
                 }
 
                 _firstDeleteTimer = null;

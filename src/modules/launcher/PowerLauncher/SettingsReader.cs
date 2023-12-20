@@ -162,7 +162,7 @@ namespace PowerLauncher
                         {
                             if (_mainWindow.IsLoaded)
                             {
-                                _mainWindow.SetTheme();
+                                _mainWindow.SetTheme(true);
                             }
                         });
                     }
