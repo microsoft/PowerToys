@@ -114,14 +114,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             {
                 // Split up the version strings into int[]
                 // Example: v10.0.2 -> {10, 0, 2};
-                if (version1 == null)
-                {
-                    throw new ArgumentNullException(nameof(version1));
-                }
-                else if (version2 == null)
-                {
-                    throw new ArgumentNullException(nameof(version2));
-                }
+                ArgumentNullException.ThrowIfNull(version1);
+                ArgumentNullException.ThrowIfNull(version2);
 
                 var v1 = version1.Substring(1).Split('.').Select(int.Parse).ToArray();
                 var v2 = version2.Substring(1).Split('.').Select(int.Parse).ToArray();

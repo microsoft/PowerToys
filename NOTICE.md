@@ -788,6 +788,34 @@ SOFTWARE.
 
 ## Utility: Peek
 
+### The Quite OK Image Format reference decoder
+
+**Source**: https://github.com/phoboslab/qoi
+
+**Note**: [@pedrolamas](https://github.com/pedrolamas) translated and adapted the reference decoder code to C# that is in PowerToys from the original C++ implementation.
+
+MIT License
+
+Copyright (c) 2022 Dominic Szablewski
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ### UTF Unknown
 
 We use the UTF.Unknown NuGet package for detecting encoding in text/code files.
@@ -1270,7 +1298,6 @@ EXHIBIT A -Mozilla Public License.
 
 - CommunityToolkit.Mvvm 8.2.0
 - CommunityToolkit.WinUI.Animations 8.0.230907
-- CommunityToolkit.WinUI.Collections 8.0.230907
 - CommunityToolkit.WinUI.Controls.Primitives 8.0.230907
 - CommunityToolkit.WinUI.Controls.Segmented 8.0.230907
 - CommunityToolkit.WinUI.Controls.SettingsControls 8.0.230907
@@ -1280,28 +1307,29 @@ EXHIBIT A -Mozilla Public License.
 - CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
 - CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
 - ControlzEx 6.0.0
-- HelixToolkit 2.20.2
-- HelixToolkit.Core.Wpf 2.20.2
+- HelixToolkit 2.24.0
+- HelixToolkit.Core.Wpf 2.24.0
 - hyjiacan.pinyin4net 4.1.1
 - Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
 - LazyCache 2.4.0
 - Mages 2.0.1
 - Markdig.Signed 0.27.0
-- Microsoft.CodeAnalysis.NetAnalyzers 7.0.3
-- Microsoft.Data.Sqlite 7.0.0
-- Microsoft.Extensions.DependencyInjection 7.0.0
-- Microsoft.Extensions.Hosting 7.0.1
-- Microsoft.Extensions.Hosting.WindowsServices 7.0.0
-- Microsoft.Extensions.Logging 7.0.0
+- Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
+- Microsoft.Data.Sqlite 8.0.0
+- Microsoft.Extensions.DependencyInjection 8.0.0
+- Microsoft.Extensions.Hosting 8.0.0
+- Microsoft.Extensions.Hosting.WindowsServices 8.0.0
+- Microsoft.Extensions.Logging 8.0.0
+- Microsoft.Extensions.Logging.Abstractions 8.0.0
 - Microsoft.NET.Test.Sdk 17.6.3
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2088.41
-- Microsoft.Windows.Compatibility 7.0.3
+- Microsoft.Windows.Compatibility 8.0.0
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.4
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.756
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
-- Microsoft.WindowsAppSDK 1.4.230913002
+- Microsoft.WindowsAppSDK 1.4.231115000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
@@ -1315,22 +1343,22 @@ EXHIBIT A -Mozilla Public License.
 - StreamJsonRpc 2.14.24
 - StyleCop.Analyzers 1.2.0-beta.507
 - System.CommandLine 2.0.0-beta4.22272.1
-- System.ComponentModel.Composition 7.0.0
-- System.Configuration.ConfigurationManager 6.0.0
-- System.Data.OleDb 7.0.0
-- System.Drawing.Common 7.0.0
+- System.ComponentModel.Composition 8.0.0
+- System.Configuration.ConfigurationManager 8.0.0
+- System.Data.OleDb 8.0.0
+- System.Drawing.Common 8.0.0
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
-- System.Management 7.0.2
+- System.Management 8.0.0
 - System.Reactive 6.0.0-preview.9
-- System.Runtime.Caching 7.0.0
-- System.ServiceProcess.ServiceController 7.0.1
-- System.Text.Encoding.CodePages 7.0.0
+- System.Runtime.Caching 8.0.0
+- System.ServiceProcess.ServiceController 8.0.0
+- System.Text.Encoding.CodePages 8.0.0
 - UnicodeInformation 2.6.0
 - UnitsNet 4.145.0
 - UTF.Unknown 2.5.1
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
-- WPF-UI 3.0.0-preview.9
+- WPF-UI 3.0.0-preview.12
 

@@ -205,10 +205,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public Result Result(string query, string queryArguments, IPublicAPI api)
         {
-            if (api == null)
-            {
-                throw new ArgumentNullException(nameof(api));
-            }
+            ArgumentNullException.ThrowIfNull(api);
 
             var score = Score(query);
             if (score <= 0)
@@ -264,9 +261,9 @@ namespace Microsoft.Plugin.Program.Programs
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, result.Title).MatchData;
 
             // Using CurrentCulture since this is user facing
-            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
+            var toolTipTitle = result.Title;
             string filePath = !string.IsNullOrEmpty(FullPathLocalized) ? FullPathLocalized : FullPath;
-            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, filePath);
+            var toolTipText = filePath;
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
@@ -274,10 +271,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
-            if (api == null)
-            {
-                throw new ArgumentNullException(nameof(api));
-            }
+            ArgumentNullException.ThrowIfNull(api);
 
             var contextMenus = new List<ContextMenuResult>();
 
@@ -605,10 +599,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to get the application type, given the path to the application
         public static ApplicationType GetAppTypeFromPath(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentNullException.ThrowIfNull(path);
 
             string extension = Extension(path);
 
@@ -640,10 +631,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to get the Win32 application, given the path to the application
         public static Win32Program GetAppFromPath(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentNullException.ThrowIfNull(path);
 
             Win32Program app;
             switch (GetAppTypeFromPath(path))
@@ -985,10 +973,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public static IList<Win32Program> All(ProgramPluginSettings settings)
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
+            ArgumentNullException.ThrowIfNull(settings);
 
             try
             {

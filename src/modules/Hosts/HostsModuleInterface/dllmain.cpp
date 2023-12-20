@@ -51,9 +51,9 @@ private:
 
     HANDLE m_hProcess = nullptr;
 
-    HANDLE m_hShowEvent;
+    HANDLE m_hShowEvent{};
 
-    HANDLE m_hShowAdminEvent;
+    HANDLE m_hShowAdminEvent{};
 
     bool is_process_running()
     {

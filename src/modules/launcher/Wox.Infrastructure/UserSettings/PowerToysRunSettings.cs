@@ -319,6 +319,28 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool RememberLastLaunchLocation { get; set; }
 
+        public enum ShowPluginsOverviewMode
+        {
+            All,
+            NonGlobal,
+            None,
+        }
+
+        private ShowPluginsOverviewMode _showPluginsOverview = ShowPluginsOverviewMode.All;
+
+        public ShowPluginsOverviewMode ShowPluginsOverview
+        {
+            get => _showPluginsOverview;
+            set
+            {
+                if (_showPluginsOverview != value)
+                {
+                    _showPluginsOverview = value;
+                    OnPropertyChanged(nameof(ShowPluginsOverview));
+                }
+            }
+        }
+
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
         public bool StartedFromPowerToysRunner { get; set; }

@@ -29,10 +29,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public void Init(PluginInitContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             _context = context;
             _context.API.ThemeChanged += OnThemeChanged;
@@ -41,10 +38,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             // Parse
             ConvertModel convertModel = InputInterpreter.Parse(query);

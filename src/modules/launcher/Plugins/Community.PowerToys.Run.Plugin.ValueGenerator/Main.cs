@@ -87,10 +87,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var results = new List<Result>();
             try

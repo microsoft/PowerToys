@@ -49,7 +49,17 @@ public partial class OCROverlay : Window
         Top = screenRectangle.Top >= 0 ? screenRectangle.Top : screenRectangle.Top + (screenRectangle.Height / 2);
 
         InitializeComponent();
-        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
+
+        // workaround for #30177
+        try
+        {
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Exception in SystemThemeWatcher.Watch, issue 30177. {ex.Message}");
+        }
+
         PopulateLanguageMenu();
     }
 
