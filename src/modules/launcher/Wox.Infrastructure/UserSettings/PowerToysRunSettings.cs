@@ -326,7 +326,20 @@ namespace Wox.Infrastructure.UserSettings
             None,
         }
 
-        public ShowPluginsOverviewMode ShowPluginsOverview { get; set; } = ShowPluginsOverviewMode.All;
+        private ShowPluginsOverviewMode _showPluginsOverview = ShowPluginsOverviewMode.All;
+
+        public ShowPluginsOverviewMode ShowPluginsOverview
+        {
+            get => _showPluginsOverview;
+            set
+            {
+                if (_showPluginsOverview != value)
+                {
+                    _showPluginsOverview = value;
+                    OnPropertyChanged(nameof(ShowPluginsOverview));
+                }
+            }
+        }
 
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
