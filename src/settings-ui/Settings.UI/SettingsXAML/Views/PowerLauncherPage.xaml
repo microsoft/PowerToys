@@ -157,7 +157,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
 
-                    <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles">
+                    <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </toolkitcontrols:SettingsCard>
                 </custom:SettingsGroup>
