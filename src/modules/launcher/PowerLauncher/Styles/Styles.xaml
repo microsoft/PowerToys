@@ -31,35 +31,24 @@
                             <ContentPresenter Margin="{TemplateBinding Padding}" />
                             <Rectangle
                                 x:Name="ActiveRectangle"
-                                Width="4"
-                                Height="18"
+                                Width="3"
+                                Height="24"
                                 Margin="0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
+                                Fill="{DynamicResource ListViewItemPillFillBrush}"
                                 RadiusX="2"
                                 RadiusY="2"
-                                Visibility="Collapsed">
-                                <Rectangle.Fill>
-                                    <SolidColorBrush Color="{DynamicResource SystemAccentColorSecondary}" />
-                                </Rectangle.Fill>
-                            </Rectangle>
+                                Visibility="Collapsed" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background">
-                                <Setter.Value>
-                                    <SolidColorBrush Color="{DynamicResource SubtleFillColorSecondary}" />
-                                </Setter.Value>
-                            </Setter>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="ActiveRectangle" Property="Visibility" Value="Visible" />
-                            <Setter TargetName="Border" Property="Background">
-                                <Setter.Value>
-                                    <SolidColorBrush Color="{DynamicResource SubtleFillColorSecondary}" />
-                                </Setter.Value>
-                            </Setter>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlAltFillColorQuarternaryBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
