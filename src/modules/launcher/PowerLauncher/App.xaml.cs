@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
-using Common.UI;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
@@ -40,10 +39,10 @@ namespace PowerLauncher
         private PowerToysRunSettings _settings;
         private MainViewModel _mainVM;
         private MainWindow _mainWindow;
+        private ThemeManager _themeManager;
         private SettingWindowViewModel _settingsVM;
         private StringMatcher _stringMatcher;
         private SettingsReader _settingsReader;
-        private ThemeManager _themeManager;
 
         // To prevent two disposals running at the same time.
         private static readonly object _disposingLock = new object();
@@ -81,7 +80,7 @@ namespace PowerLauncher
             {
                 application.InitializeComponent();
 
-                NativeEventWaiter.WaitForEventLoop(
+                Common.UI.NativeEventWaiter.WaitForEventLoop(
                     Constants.RunExitEvent(),
                     () =>
                     {

@@ -4,11 +4,10 @@
 
 using System;
 using ManagedCommon;
-using PowerLauncher.Helper;
 using Wox.Infrastructure.UserSettings;
 using Wpf.Ui.Appearance;
 
-namespace PowerLauncher
+namespace PowerLauncher.Helper
 {
     public class ThemeManager : IDisposable
     {

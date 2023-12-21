@@ -8,7 +8,7 @@ using System.Linq;
 using System.Windows;
 using ManagedCommon;
 using Microsoft.Toolkit.Uwp.Notifications;
-using PowerLauncher;
+using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
 using Windows.UI.Notifications;
@@ -39,11 +39,6 @@ namespace Wox
             ToastNotificationManagerCompat.OnActivated += args =>
             {
             };
-        }
-
-        private void OnThemeChanged(Theme oldTheme, Theme newTheme)
-        {
-            ThemeChanged?.Invoke(oldTheme, newTheme);
         }
 
         public void RemoveUserSelectedItem(Result result)
@@ -114,6 +109,11 @@ namespace Wox
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        protected void OnThemeChanged(Theme oldTheme, Theme newTheme)
+        {
+            ThemeChanged?.Invoke(oldTheme, newTheme);
         }
 
         protected virtual void Dispose(bool disposing)
