@@ -50,6 +50,8 @@ namespace PowerLauncher.Helper
             }
 
             ImageLoader.UpdateIconPath(_currentTheme);
+
+            // oldTheme isn't used
             ThemeChanged?.Invoke(_currentTheme, _currentTheme);
         }
 
