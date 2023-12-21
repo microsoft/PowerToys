@@ -29,8 +29,8 @@ namespace PowerLauncher
         private const int MaxRetries = 10;
         private static readonly object _readSyncObject = new object();
         private readonly PowerToysRunSettings _settings;
+        private readonly ThemeManager _themeManager;
         private Action _refreshPluginsOverviewCallback;
-        private ThemeManager _themeManager;
 
         private IFileSystemWatcher _watcher;
 
