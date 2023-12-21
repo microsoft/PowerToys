@@ -19,7 +19,7 @@
   "ExecuteFileName": string, // Should be {Type}.PowerToys.Run.Plugin.{PluginName}.dll
   "IcoPathDark": string, // Path to dark theme icon. The path is relative to the root plugin folder 
   "IcoPathLight": string // Path to light theme icon. The path is relative to the root plugin folder
-  "DynamicLoading": bool // Sets whether the plugin should dynamically load any dependecies isolated from the core application.  
+  "DynamicLoading": bool // Sets whether the plugin should dynamically load any dependencies isolated from the core application.  
 }
 ```
 - [ ] Make sure your `Main` class contains a public, static string property for the `PluginID`. The plugin id has to be the same as the one in the `plugin.json`file.
