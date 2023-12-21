@@ -293,13 +293,20 @@
                                         <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_ActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                             <TextBox MinWidth="{StaticResource SettingActionControlMinWidth}" Text="{x:Bind ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                         </toolkitcontrols:SettingsCard>
-                                        <InfoBar
-                                            x:Uid="Run_NotAccessibleWarning"
-                                            CornerRadius="0"
-                                            IsClosable="False"
-                                            IsOpen="{x:Bind ShowNotAccessibleWarning, Mode=OneWay}"
-                                            IsTabStop="{x:Bind ShowNotAccessibleWarning}"
-                                            Severity="Error" />
+                                        <toolkitcontrols:SettingsCard
+                                            Padding="0"
+                                            HorizontalContentAlignment="Stretch"
+                                            IsEnabled="{x:Bind Enabled, Mode=OneWay}"
+                                            Visibility="{x:Bind ShowNotAccessibleWarning, Mode=OneWay}">
+                                            <InfoBar
+                                                x:Uid="Run_NotAccessibleWarning"
+                                                HorizontalAlignment="Stretch"
+                                                CornerRadius="0"
+                                                IsClosable="False"
+                                                IsOpen="{x:Bind ShowNotAccessibleWarning, Mode=OneWay}"
+                                                IsTabStop="{x:Bind ShowNotAccessibleWarning, Mode=OneWay}"
+                                                Severity="Error" />
+                                        </toolkitcontrols:SettingsCard>
                                         <toolkitcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                             <CheckBox
                                                 Margin="0,-8,0,0"
