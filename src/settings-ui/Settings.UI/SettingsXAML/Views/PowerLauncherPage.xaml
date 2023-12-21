@@ -23,6 +23,7 @@
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
                 </toolkitcontrols:SettingsCard>
+
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -50,33 +51,28 @@
 
                 <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
                                           HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
                                           Keys="Win, Ctrl, Alt, Shift"
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
                                           HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenConsole, Mode=TwoWay}"
                                           Keys="Win, Ctrl, Alt, Shift"
                                           IsEnabled="False"
                                         />-->
 
                 <!--<CheckBox x:Uid="PowerLauncher_OverrideWinRKey"
-                      Margin="{StaticResource SmallTopMargin}"
                       IsChecked="False"
                       IsEnabled="False"
                       />-->
 
                 <!--<CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
-                      Margin="{StaticResource SmallTopMargin}"
                       IsChecked="{Binding Mode=TwoWay, Path=ViewModel.OverrideWinSKey}"
                       IsEnabled="False"
                       />-->
@@ -278,104 +274,164 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
-                                <Grid>
-                                    <toolkitcontrols:SettingsExpander Description="{x:Bind Description}" Header="{x:Bind Name}">
-                                        <toolkitcontrols:SettingsExpander.HeaderIcon>
-                                            <BitmapIcon UriSource="{x:Bind IconPath}" />
-                                        </toolkitcontrols:SettingsExpander.HeaderIcon>
-                                        <StackPanel Orientation="Horizontal" Spacing="16">
-                                            <!-- todo(Stefan): InfoBadge not available
-                                                        <InfoBadge AutomationProperties.AccessibilityView="Raw"
-                                                                        Visibility="{x:Bind ShowBadgeOnPluginSettingError}"
-                                                                        Style="{StaticResource CriticalIconInfoBadgeStyle}" />
-                                            -->
+                                <toolkitcontrols:SettingsExpander Description="{x:Bind Description}" Header="{x:Bind Name}">
+                                    <toolkitcontrols:SettingsExpander.HeaderIcon>
+                                        <BitmapIcon UriSource="{x:Bind IconPath}" />
+                                    </toolkitcontrols:SettingsExpander.HeaderIcon>
+                                    <StackPanel Orientation="Horizontal" Spacing="16">
+                                        <InfoBadge
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Style="{StaticResource CriticalIconInfoBadgeStyle}"
+                                            Visibility="{x:Bind ShowBadgeOnPluginSettingError, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        <ToggleSwitch
+                                            x:Uid="PowerLauncher_EnablePluginToggle"
+                                            IsEnabled="{x:Bind EnabledGpoRuleIsConfigured, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
+                                            IsOn="{x:Bind Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}" />
+                                    </StackPanel>
 
-                                            <!--  Temporary badge replacement for InfoBadge control (htcfreek). (Normally you need one grid per icon group. But if you want to show two badges at the same place in a StackPanel you have to put all FontIcons into the same Grid.)  -->
-                                            <Grid Visibility="{x:Bind ShowBadgeOnPluginSettingError}">
-                                                <!--  Error badge  -->
-                                                <FontIcon Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}" Glyph="{StaticResource InfoBarIconBackgroundGlyph}" />
-                                                <FontIcon Foreground="{ThemeResource InfoBarErrorSeverityIconForeground}" Glyph="{StaticResource InfoBarErrorIconGlyph}" />
-                                            </Grid>
-                                            <ToggleSwitch
-                                                x:Uid="PowerLauncher_EnablePluginToggle"
-                                                IsEnabled="{x:Bind EnabledGpoRuleIsConfigured, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
-                                                IsOn="{x:Bind Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}" />
-                                        </StackPanel>
-
-                                        <toolkitcontrols:SettingsExpander.Items>
-                                            <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_ActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
-                                                <TextBox MinWidth="{StaticResource SettingActionControlMinWidth}" Text="{x:Bind ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                            </toolkitcontrols:SettingsCard>
-                                            <InfoBar
-                                                x:Uid="Run_NotAccessibleWarning"
-                                                CornerRadius="0"
-                                                IsClosable="False"
-                                                IsOpen="{x:Bind ShowNotAccessibleWarning, Mode=OneWay}"
-                                                IsTabStop="{x:Bind ShowNotAccessibleWarning}"
-                                                Severity="Error" />
-                                            <toolkitcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
-                                                <CheckBox
-                                                    Margin="0,-8,0,0"
-                                                    AutomationProperties.Name="{Binding Text, ElementName=IncludeInGlobalResultTitle}"
-                                                    IsChecked="{x:Bind IsGlobal, Mode=TwoWay}">
-                                                    <StackPanel Orientation="Vertical">
-                                                        <TextBlock x:Name="IncludeInGlobalResultTitle" x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
-                                                        <custom:IsEnabledTextBlock
-                                                            x:Uid="PowerLauncher_IncludeInGlobalResultDescription"
-                                                            FontSize="{StaticResource SecondaryTextFontSize}"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                    </StackPanel>
-                                                </CheckBox>
-                                            </toolkitcontrols:SettingsCard>
-                                            <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_PluginWeightBoost" IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
-                                                <NumberBox
-                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                    LargeChange="50"
-                                                    Maximum="1000"
-                                                    Minimum="-1000"
-                                                    SmallChange="10"
-                                                    SpinButtonPlacementMode="Compact"
-                                                    Value="{x:Bind WeightBoost, Mode=TwoWay}" />
-                                            </toolkitcontrols:SettingsCard>
-                                            <toolkitcontrols:SettingsCard
-                                                MinHeight="0"
+                                    <toolkitcontrols:SettingsExpander.Items>
+                                        <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_ActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                            <TextBox MinWidth="{StaticResource SettingActionControlMinWidth}" Text="{x:Bind ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </toolkitcontrols:SettingsCard>
+                                        <InfoBar
+                                            x:Uid="Run_NotAccessibleWarning"
+                                            CornerRadius="0"
+                                            IsClosable="False"
+                                            IsOpen="{x:Bind ShowNotAccessibleWarning, Mode=OneWay}"
+                                            IsTabStop="{x:Bind ShowNotAccessibleWarning}"
+                                            Severity="Error" />
+                                        <toolkitcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                            <CheckBox
+                                                Margin="0,-8,0,0"
+                                                AutomationProperties.Name="{Binding Text, ElementName=IncludeInGlobalResultTitle}"
+                                                IsChecked="{x:Bind IsGlobal, Mode=TwoWay}">
+                                                <StackPanel Orientation="Vertical">
+                                                    <TextBlock x:Name="IncludeInGlobalResultTitle" x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
+                                                    <custom:IsEnabledTextBlock
+                                                        x:Uid="PowerLauncher_IncludeInGlobalResultDescription"
+                                                        FontSize="{StaticResource SecondaryTextFontSize}"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </StackPanel>
+                                            </CheckBox>
+                                        </toolkitcontrols:SettingsCard>
+                                        <toolkitcontrols:SettingsCard x:Uid="PowerLauncher_PluginWeightBoost" IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
+                                            <NumberBox
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                LargeChange="50"
+                                                Maximum="1000"
+                                                Minimum="-1000"
+                                                SmallChange="10"
+                                                SpinButtonPlacementMode="Compact"
+                                                Value="{x:Bind WeightBoost, Mode=TwoWay}" />
+                                        </toolkitcontrols:SettingsCard>
+                                        <toolkitcontrols:SettingsCard
+                                            MinHeight="0"
+                                            HorizontalContentAlignment="Stretch"
+                                            ContentAlignment="Vertical">
+                                            <toolkitcontrols:SettingsCard.Resources>
+                                                <Thickness x:Key="SettingsCardPadding">0</Thickness>
+                                                <Thickness x:Key="SettingsExpanderItemPadding">0</Thickness>
+                                            </toolkitcontrols:SettingsCard.Resources>
+                                            <ItemsControl
+                                                HorizontalAlignment="Stretch"
                                                 HorizontalContentAlignment="Stretch"
-                                                ContentAlignment="Vertical">
-                                                <toolkitcontrols:SettingsCard.Resources>
-                                                    <Thickness x:Key="SettingsCardPadding">0</Thickness>
-                                                    <Thickness x:Key="SettingsExpanderItemPadding">0</Thickness>
-                                                </toolkitcontrols:SettingsCard.Resources>
-                                                <ItemsControl
-                                                    HorizontalAlignment="Stretch"
-                                                    HorizontalContentAlignment="Stretch"
-                                                    IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                                    ItemsSource="{x:Bind AdditionalOptions}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
-                                                            <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
-                                                                <!--  Checkbox setting  -->
+                                                IsEnabled="{x:Bind Enabled, Mode=OneWay}"
+                                                ItemsSource="{x:Bind AdditionalOptions}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+                                                        <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
+                                                            <!--  Checkbox setting  -->
+                                                            <toolkitcontrols:SettingsCard
+                                                                Padding="56,0,0,12"
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                ContentAlignment="Left"
+                                                                CornerRadius="0"
+                                                                Visibility="{x:Bind ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                <custom:CheckBoxWithDescriptionControl
+                                                                    Description="{x:Bind DisplayDescription}"
+                                                                    Header="{x:Bind DisplayLabel}"
+                                                                    IsChecked="{x:Bind Value, Mode=TwoWay}" />
+                                                            </toolkitcontrols:SettingsCard>
+                                                            <!--  ComboBox setting  -->
+                                                            <toolkitcontrols:SettingsCard
+                                                                MinHeight="0"
+                                                                Margin="56,0,0,0"
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                CornerRadius="0"
+                                                                Description="{x:Bind DisplayDescription}"
+                                                                Header="{x:Bind DisplayLabel}"
+                                                                Visibility="{x:Bind ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                <ComboBox
+                                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                    DisplayMemberPath="Key"
+                                                                    ItemsSource="{x:Bind ComboBoxItems}"
+                                                                    SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
+                                                                    SelectedValuePath="Value" />
+                                                            </toolkitcontrols:SettingsCard>
+                                                            <!--  TextBox setting  -->
+                                                            <toolkitcontrols:SettingsCard
+                                                                MinHeight="0"
+                                                                Margin="56,0,0,0"
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                CornerRadius="0"
+                                                                Description="{x:Bind DisplayDescription}"
+                                                                Header="{x:Bind DisplayLabel}"
+                                                                Visibility="{x:Bind ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                <TextBox
+                                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                    MaxWidth="450"
+                                                                    MaxLength="{x:Bind TextBoxMaxLength, Mode=OneWay}"
+                                                                    Text="{x:Bind TextValue, Mode=TwoWay}" />
+                                                            </toolkitcontrols:SettingsCard>
+                                                            <!--  NumberBox setting  -->
+                                                            <toolkitcontrols:SettingsCard
+                                                                MinHeight="0"
+                                                                Margin="56,0,0,0"
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                CornerRadius="0"
+                                                                Description="{x:Bind DisplayDescription}"
+                                                                Header="{x:Bind DisplayLabel}"
+                                                                Visibility="{x:Bind ShowNumberBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                <NumberBox
+                                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                    LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
+                                                                    Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
+                                                                    Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
+                                                                    SmallChange="{x:Bind NumberBoxSmallChange, Mode=OneWay}"
+                                                                    SpinButtonPlacementMode="Compact"
+                                                                    Value="{x:Bind NumberValue, Mode=TwoWay}" />
+                                                            </toolkitcontrols:SettingsCard>
+                                                            <!--  Checkbox And ComboBox setting  -->
+                                                            <StackPanel
+                                                                HorizontalAlignment="Stretch"
+                                                                Orientation="Vertical"
+                                                                Visibility="{x:Bind ShowCheckboxAndCombobox, Converter={StaticResource BoolToVisibilityConverter}}">
                                                                 <toolkitcontrols:SettingsCard
-                                                                    Padding="56,0,0,12"
+                                                                    MinHeight="0"
+                                                                    Padding="0,6,0,4"
                                                                     Background="Transparent"
                                                                     BorderThickness="0"
                                                                     ContentAlignment="Left"
-                                                                    CornerRadius="0"
-                                                                    Visibility="{x:Bind ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    CornerRadius="0">
                                                                     <custom:CheckBoxWithDescriptionControl
+                                                                        Margin="56,0,0,0"
                                                                         Description="{x:Bind DisplayDescription}"
                                                                         Header="{x:Bind DisplayLabel}"
                                                                         IsChecked="{x:Bind Value, Mode=TwoWay}" />
                                                                 </toolkitcontrols:SettingsCard>
-                                                                <!--  ComboBox setting  -->
                                                                 <toolkitcontrols:SettingsCard
                                                                     MinHeight="0"
-                                                                    Margin="56,0,0,0"
+                                                                    Margin="84,0,45,8"
                                                                     Background="Transparent"
                                                                     BorderThickness="0"
                                                                     CornerRadius="0"
-                                                                    Description="{x:Bind DisplayDescription}"
-                                                                    Header="{x:Bind DisplayLabel}"
-                                                                    Visibility="{x:Bind ShowComboBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    Description="{x:Bind SecondDisplayDescription}"
+                                                                    Header="{x:Bind SecondDisplayLabel}"
+                                                                    IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                                                                     <ComboBox
                                                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                         DisplayMemberPath="Key"
@@ -383,32 +439,67 @@
                                                                         SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
                                                                         SelectedValuePath="Value" />
                                                                 </toolkitcontrols:SettingsCard>
-                                                                <!--  TextBox setting  -->
+                                                            </StackPanel>
+                                                            <!--  Checkbox And TextBox setting  -->
+                                                            <StackPanel
+                                                                HorizontalAlignment="Stretch"
+                                                                Orientation="Vertical"
+                                                                Visibility="{x:Bind ShowCheckboxAndTextbox, Converter={StaticResource BoolToVisibilityConverter}}">
                                                                 <toolkitcontrols:SettingsCard
                                                                     MinHeight="0"
-                                                                    Margin="56,0,0,0"
+                                                                    Padding="0,6,0,4"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0"
+                                                                    ContentAlignment="Left"
+                                                                    CornerRadius="0">
+                                                                    <custom:CheckBoxWithDescriptionControl
+                                                                        Margin="56,0,0,0"
+                                                                        Description="{x:Bind DisplayDescription}"
+                                                                        Header="{x:Bind DisplayLabel}"
+                                                                        IsChecked="{x:Bind Value, Mode=TwoWay}" />
+                                                                </toolkitcontrols:SettingsCard>
+                                                                <toolkitcontrols:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="84,0,45,8"
                                                                     Background="Transparent"
                                                                     BorderThickness="0"
                                                                     CornerRadius="0"
-                                                                    Description="{x:Bind DisplayDescription}"
-                                                                    Header="{x:Bind DisplayLabel}"
-                                                                    Visibility="{x:Bind ShowTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    Description="{x:Bind SecondDisplayDescription}"
+                                                                    Header="{x:Bind SecondDisplayLabel}"
+                                                                    IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                                                                     <TextBox
                                                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                         MaxWidth="450"
                                                                         MaxLength="{x:Bind TextBoxMaxLength, Mode=OneWay}"
                                                                         Text="{x:Bind TextValue, Mode=TwoWay}" />
                                                                 </toolkitcontrols:SettingsCard>
-                                                                <!--  NumberBox setting  -->
+                                                            </StackPanel>
+                                                            <!--  Checkbox And NumberBox setting  -->
+                                                            <StackPanel
+                                                                HorizontalAlignment="Stretch"
+                                                                Orientation="Vertical"
+                                                                Visibility="{x:Bind ShowCheckboxAndNumberbox, Converter={StaticResource BoolToVisibilityConverter}}">
                                                                 <toolkitcontrols:SettingsCard
                                                                     MinHeight="0"
-                                                                    Margin="56,0,0,0"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0"
+                                                                    ContentAlignment="Left"
+                                                                    CornerRadius="0">
+                                                                    <custom:CheckBoxWithDescriptionControl
+                                                                        Margin="56,0,0,0"
+                                                                        Description="{x:Bind DisplayDescription}"
+                                                                        Header="{x:Bind DisplayLabel}"
+                                                                        IsChecked="{x:Bind Value, Mode=TwoWay}" />
+                                                                </toolkitcontrols:SettingsCard>
+                                                                <toolkitcontrols:SettingsCard
+                                                                    MinHeight="0"
+                                                                    Margin="84,0,45,8"
                                                                     Background="Transparent"
                                                                     BorderThickness="0"
                                                                     CornerRadius="0"
-                                                                    Description="{x:Bind DisplayDescription}"
-                                                                    Header="{x:Bind DisplayLabel}"
-                                                                    Visibility="{x:Bind ShowNumberBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    Description="{x:Bind SecondDisplayDescription}"
+                                                                    Header="{x:Bind SecondDisplayLabel}"
+                                                                    IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                                                                     <NumberBox
                                                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                         LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
@@ -418,133 +509,28 @@
                                                                         SpinButtonPlacementMode="Compact"
                                                                         Value="{x:Bind NumberValue, Mode=TwoWay}" />
                                                                 </toolkitcontrols:SettingsCard>
-                                                                <!--  Checkbox And ComboBox setting  -->
-                                                                <StackPanel
-                                                                    HorizontalAlignment="Stretch"
-                                                                    Orientation="Vertical"
-                                                                    Visibility="{x:Bind ShowCheckboxAndCombobox, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                    <toolkitcontrols:SettingsCard
-                                                                        MinHeight="0"
-                                                                        Padding="0,6,0,4"
-                                                                        Background="Transparent"
-                                                                        BorderThickness="0"
-                                                                        ContentAlignment="Left"
-                                                                        CornerRadius="0">
-                                                                        <custom:CheckBoxWithDescriptionControl
-                                                                            Margin="56,0,0,0"
-                                                                            Description="{x:Bind DisplayDescription}"
-                                                                            Header="{x:Bind DisplayLabel}"
-                                                                            IsChecked="{x:Bind Value, Mode=TwoWay}" />
-                                                                    </toolkitcontrols:SettingsCard>
-                                                                    <toolkitcontrols:SettingsCard
-                                                                        MinHeight="0"
-                                                                        Margin="84,0,45,8"
-                                                                        Background="Transparent"
-                                                                        BorderThickness="0"
-                                                                        CornerRadius="0"
-                                                                        Description="{x:Bind SecondDisplayDescription}"
-                                                                        Header="{x:Bind SecondDisplayLabel}"
-                                                                        IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
-                                                                        <ComboBox
-                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                                            DisplayMemberPath="Key"
-                                                                            ItemsSource="{x:Bind ComboBoxItems}"
-                                                                            SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
-                                                                            SelectedValuePath="Value" />
-                                                                    </toolkitcontrols:SettingsCard>
-                                                                </StackPanel>
-                                                                <!--  Checkbox And TextBox setting  -->
-                                                                <StackPanel
-                                                                    HorizontalAlignment="Stretch"
-                                                                    Orientation="Vertical"
-                                                                    Visibility="{x:Bind ShowCheckboxAndTextbox, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                    <toolkitcontrols:SettingsCard
-                                                                        MinHeight="0"
-                                                                        Padding="0,6,0,4"
-                                                                        Background="Transparent"
-                                                                        BorderThickness="0"
-                                                                        ContentAlignment="Left"
-                                                                        CornerRadius="0">
-                                                                        <custom:CheckBoxWithDescriptionControl
-                                                                            Margin="56,0,0,0"
-                                                                            Description="{x:Bind DisplayDescription}"
-                                                                            Header="{x:Bind DisplayLabel}"
-                                                                            IsChecked="{x:Bind Value, Mode=TwoWay}" />
-                                                                    </toolkitcontrols:SettingsCard>
-                                                                    <toolkitcontrols:SettingsCard
-                                                                        MinHeight="0"
-                                                                        Margin="84,0,45,8"
-                                                                        Background="Transparent"
-                                                                        BorderThickness="0"
-                                                                        CornerRadius="0"
-                                                                        Description="{x:Bind SecondDisplayDescription}"
-                                                                        Header="{x:Bind SecondDisplayLabel}"
-                                                                        IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
-                                                                        <TextBox
-                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                                            MaxWidth="450"
-                                                                            MaxLength="{x:Bind TextBoxMaxLength, Mode=OneWay}"
-                                                                            Text="{x:Bind TextValue, Mode=TwoWay}" />
-                                                                    </toolkitcontrols:SettingsCard>
-                                                                </StackPanel>
-                                                                <!--  Checkbox And NumberBox setting  -->
-                                                                <StackPanel
-                                                                    HorizontalAlignment="Stretch"
-                                                                    Orientation="Vertical"
-                                                                    Visibility="{x:Bind ShowCheckboxAndNumberbox, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                    <toolkitcontrols:SettingsCard
-                                                                        MinHeight="0"
-                                                                        Background="Transparent"
-                                                                        BorderThickness="0"
-                                                                        ContentAlignment="Left"
-                                                                        CornerRadius="0">
-                                                                        <custom:CheckBoxWithDescriptionControl
-                                                                            Margin="56,0,0,0"
-                                                                            Description="{x:Bind DisplayDescription}"
-                                                                            Header="{x:Bind DisplayLabel}"
-                                                                            IsChecked="{x:Bind Value, Mode=TwoWay}" />
-                                                                    </toolkitcontrols:SettingsCard>
-                                                                    <toolkitcontrols:SettingsCard
-                                                                        MinHeight="0"
-                                                                        Margin="84,0,45,8"
-                                                                        Background="Transparent"
-                                                                        BorderThickness="0"
-                                                                        CornerRadius="0"
-                                                                        Description="{x:Bind SecondDisplayDescription}"
-                                                                        Header="{x:Bind SecondDisplayLabel}"
-                                                                        IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
-                                                                        <NumberBox
-                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                                            LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
-                                                                            Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
-                                                                            Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
-                                                                            SmallChange="{x:Bind NumberBoxSmallChange, Mode=OneWay}"
-                                                                            SpinButtonPlacementMode="Compact"
-                                                                            Value="{x:Bind NumberValue, Mode=TwoWay}" />
-                                                                    </toolkitcontrols:SettingsCard>
-                                                                </StackPanel>
-                                                                <!--  Separator line  -->
-                                                                <Rectangle
-                                                                    Height="1"
-                                                                    HorizontalAlignment="Stretch"
-                                                                    Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                                             </StackPanel>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </toolkitcontrols:SettingsCard>
-                                            <toolkitcontrols:SettingsCard
-                                                MinHeight="0"
-                                                BorderThickness="0"
-                                                ContentAlignment="Right">
-                                                <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
-                                                    <Run x:Uid="PowerLauncher_AuthoredBy" />
-                                                    <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
-                                                </TextBlock>
-                                            </toolkitcontrols:SettingsCard>
-                                        </toolkitcontrols:SettingsExpander.Items>
-                                    </toolkitcontrols:SettingsExpander>
-                                </Grid>
+                                                            <!--  Separator line  -->
+                                                            <Rectangle
+                                                                Height="1"
+                                                                HorizontalAlignment="Stretch"
+                                                                Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </toolkitcontrols:SettingsCard>
+                                        <toolkitcontrols:SettingsCard
+                                            MinHeight="0"
+                                            BorderThickness="0"
+                                            ContentAlignment="Right">
+                                            <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
+                                                <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                                <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                            </TextBlock>
+                                        </toolkitcontrols:SettingsCard>
+                                    </toolkitcontrols:SettingsExpander.Items>
+                                </toolkitcontrols:SettingsExpander>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
