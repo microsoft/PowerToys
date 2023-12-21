@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h notifications.base.rc notifications.rc" />
+  </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}</ProjectGuid>
@@ -40,6 +43,20 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+	  <Compile Update="Resources\Resources.Designer.cs">
+	    <DependentUpon>Resources.resx</DependentUpon>
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	  </Compile>
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Update="Resources\Resources.resx">
+	    <SubType>Designer</SubType>
+	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+	    <Generator>PublicResXFileCodeGenerator</Generator>
+	  </EmbeddedResource>
+	</ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets')" />

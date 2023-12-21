@@ -8,6 +8,9 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/process_path.h>
 
+#include <common/utils/elevation.h>
+#include <common/notifications/NotificationUtil.h>
+
 #include <interop/shared_constants.h>
 
 #include <trace.h>
@@ -171,7 +174,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     if (isExcluded(window))
     {
         return;
-    }
+    }    
 
     Sound::Type soundType = Sound::Type::Off;
     bool topmost = IsTopmost(window);
@@ -489,6 +492,11 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     break;
     case EVENT_SYSTEM_FOREGROUND:
     {
+        if (!is_process_elevated() && IsProcessOfWindowElevated(data->hwnd))
+        {
+            std::wstring title = L"AlwaysOnTop";
+            notifications::WarnIfElevationIsRequired(title);
+        }
         RefreshBorders();
     }
     break;
@@ -499,7 +507,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
             // check if topmost was reset
             // fixes https://github.com/microsoft/PowerToys/issues/19168
             if (!IsTopmost(window))
-            {
+            {               
                 Logger::trace(L"A window no longer has Topmost set and it should. Setting topmost again.");
                 PinTopmostWindow(window);
             }
