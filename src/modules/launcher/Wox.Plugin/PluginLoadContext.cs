@@ -23,8 +23,8 @@ namespace Wox.Plugin
             string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
             if (assemblyPath != null)
             {
-                var existAssembly = Default.Assemblies.FirstOrDefault(x => x.FullName == assemblyName.FullName);
-                return existAssembly ?? (assemblyPath == null ? null : LoadFromAssemblyPath(assemblyPath));
+                var existingAssembly = Default.Assemblies.FirstOrDefault(x => x.FullName == assemblyName.FullName);
+                return existingAssembly ?? (assemblyPath == null ? null : LoadFromAssemblyPath(assemblyPath));
             }
 
             return null;

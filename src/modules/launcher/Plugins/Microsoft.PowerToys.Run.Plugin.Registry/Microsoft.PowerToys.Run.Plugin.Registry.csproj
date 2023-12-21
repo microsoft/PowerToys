@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Version.props" />
-  <Import Project="..\Plugin.props" />
+  
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.Registry</RootNamespace>
