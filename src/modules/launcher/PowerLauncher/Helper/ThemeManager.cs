@@ -45,7 +45,6 @@ namespace PowerLauncher.Helper
             }
             else if (fromSettings)
             {
-                _currentTheme = ApplicationThemeManager.GetAppTheme().ToTheme();
                 _mainWindow?.Dispatcher.Invoke(ApplicationThemeManager.ApplySystemTheme);
             }
 
