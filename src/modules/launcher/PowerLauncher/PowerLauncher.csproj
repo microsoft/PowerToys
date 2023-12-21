@@ -80,7 +80,6 @@
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="ModernWpfUI" />
     <PackageReference Include="ScipBe.Common.Office.OneNote" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="System.Data.OleDb" />
