@@ -22,20 +22,6 @@ namespace PowerLauncher.Helper
             };
         }
 
-        public static ApplicationTheme ToApplicationTheme(this Theme theme)
-        {
-            return theme switch
-            {
-                Theme.Dark => ApplicationTheme.Dark,
-                Theme.Light => ApplicationTheme.Light,
-                Theme.HighContrastWhite => ApplicationTheme.HighContrast,
-                Theme.HighContrastBlack => ApplicationTheme.HighContrast,
-                Theme.HighContrastOne => ApplicationTheme.HighContrast,
-                Theme.HighContrastTwo => ApplicationTheme.HighContrast,
-                _ => ApplicationTheme.Unknown,
-            };
-        }
-
         private static Theme GetHighContrastBaseType()
         {
             string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";

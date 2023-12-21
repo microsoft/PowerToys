@@ -15,7 +15,6 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Common.UI;
 using interop;
-using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
@@ -58,12 +57,16 @@ namespace PowerLauncher
             _settings = settings;
             InitializeComponent();
 
-            WindowBackdropType = OSVersionHelper.IsWindows11()
-                ? Wpf.Ui.Controls.WindowBackdropType.Acrylic
-                : Wpf.Ui.Controls.WindowBackdropType.None;
+            if (OSVersionHelper.IsWindows11())
+            {
+                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Acrylic;
+            }
+            else
+            {
+                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.None;
+            }
 
             SystemThemeWatcher.Watch(this, WindowBackdropType);
-            ApplicationThemeManager.Changed += ApplicationThemeManager_Changed;
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
@@ -72,35 +75,6 @@ namespace PowerLauncher
                 SendSettingsTelemetry,
                 Application.Current.Dispatcher,
                 _nativeWaiterCancelToken);
-        }
-
-        public void SetTheme(bool fromSettings)
-        {
-            if (_settings.Theme == Theme.Light)
-            {
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType);
-            }
-            else if (_settings.Theme == Theme.Dark)
-            {
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, WindowBackdropType);
-            }
-            else if (fromSettings)
-            {
-                ApplicationThemeManager.ApplySystemTheme();
-            }
-        }
-
-        private void ApplicationThemeManager_Changed(ApplicationTheme currentApplicationTheme, System.Windows.Media.Color systemAccent)
-        {
-            try
-            {
-                ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
-                SetTheme(false);
-            }
-            finally
-            {
-                ApplicationThemeManager.Changed += ApplicationThemeManager_Changed;
-            }
         }
 
         private void SendSettingsTelemetry()
@@ -203,8 +177,6 @@ namespace PowerLauncher
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            SetTheme(false);
-
             WindowsInteropHelper.DisableControlBox(this);
             InitializePosition();
 
@@ -826,7 +798,6 @@ namespace PowerLauncher
                 {
                     _firstDeleteTimer?.Dispose();
                     _hwndSource?.Dispose();
-                    ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
                 }
 
                 _firstDeleteTimer = null;

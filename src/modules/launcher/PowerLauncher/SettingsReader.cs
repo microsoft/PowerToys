@@ -30,15 +30,15 @@ namespace PowerLauncher
         private static readonly object _readSyncObject = new object();
         private readonly PowerToysRunSettings _settings;
         private Action _refreshPluginsOverviewCallback;
-        private MainWindow _mainWindow;
+        private ThemeManager _themeManager;
 
         private IFileSystemWatcher _watcher;
 
-        public SettingsReader(PowerToysRunSettings settings, MainWindow mainWindow)
+        public SettingsReader(PowerToysRunSettings settings, ThemeManager themeManager)
         {
             _settingsUtils = new SettingsUtils();
             _settings = settings;
-            _mainWindow = mainWindow;
+            _themeManager = themeManager;
 
             var overloadSettings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
             UpdateSettings(overloadSettings);
@@ -157,14 +157,7 @@ namespace PowerLauncher
                     if (_settings.Theme != overloadSettings.Properties.Theme)
                     {
                         _settings.Theme = overloadSettings.Properties.Theme;
-
-                        _mainWindow?.Dispatcher.Invoke(() =>
-                        {
-                            if (_mainWindow.IsLoaded)
-                            {
-                                _mainWindow.SetTheme(true);
-                            }
-                        });
+                        _themeManager.SetTheme(true);
                     }
 
                     if (_settings.StartupPosition != overloadSettings.Properties.Position)

@@ -6,18 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using System.Windows.Media;
-using Common.UI;
 using ManagedCommon;
 using Microsoft.Toolkit.Uwp.Notifications;
-using PowerLauncher.Helper;
+using PowerLauncher;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
 using Windows.UI.Notifications;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
-using Wpf.Ui.Appearance;
 
 namespace Wox
 {
@@ -26,26 +23,27 @@ namespace Wox
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
+        private readonly ThemeManager _themeManager;
         private bool _disposed;
 
-        public event ThemeChangedHandler ThemeChanged;
+        public event Common.UI.ThemeChangedHandler ThemeChanged;
 
-        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet)
+        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
         {
             _settingsVM = settingsVM ?? throw new ArgumentNullException(nameof(settingsVM));
             _mainVM = mainVM ?? throw new ArgumentNullException(nameof(mainVM));
             _alphabet = alphabet ?? throw new ArgumentNullException(nameof(alphabet));
-            ApplicationThemeManager.Changed += OnThemeChanged;
+            _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
+            _themeManager.ThemeChanged += OnThemeChanged;
 
             ToastNotificationManagerCompat.OnActivated += args =>
             {
             };
         }
 
-        private void OnThemeChanged(ApplicationTheme currentApplicationTheme, Color systemAccent)
+        private void OnThemeChanged(Theme oldTheme, Theme newTheme)
         {
-            // oldTheme isn't used
-            ThemeChanged?.Invoke(currentApplicationTheme.ToTheme(), currentApplicationTheme.ToTheme());
+            ThemeChanged?.Invoke(oldTheme, newTheme);
         }
 
         public void RemoveUserSelectedItem(Result result)
@@ -109,7 +107,7 @@ namespace Wox
 
         public Theme GetCurrentTheme()
         {
-            return ApplicationThemeManager.GetAppTheme().ToTheme();
+            return _themeManager.CurrentTheme;
         }
 
         public void Dispose()
@@ -118,18 +116,13 @@ namespace Wox
             GC.SuppressFinalize(this);
         }
 
-        protected void OnThemeChanged(Theme oldTheme, Theme newTheme)
-        {
-            ThemeChanged?.Invoke(oldTheme, newTheme);
-        }
-
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
                 if (disposing)
                 {
-                    ApplicationThemeManager.Changed -= OnThemeChanged;
+                    _themeManager.ThemeChanged -= OnThemeChanged;
                     _disposed = true;
                 }
             }

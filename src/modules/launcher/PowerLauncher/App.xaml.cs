@@ -23,7 +23,6 @@ using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
-using Wpf.Ui.Appearance;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -44,6 +43,7 @@ namespace PowerLauncher
         private SettingWindowViewModel _settingsVM;
         private StringMatcher _stringMatcher;
         private SettingsReader _settingsReader;
+        private ThemeManager _themeManager;
 
         // To prevent two disposals running at the same time.
         private static readonly object _disposingLock = new object();
@@ -121,8 +121,6 @@ namespace PowerLauncher
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
-                ImageLoader.Initialize(ApplicationThemeManager.GetAppTheme().ToTheme());
-
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
                 _settings.StartedFromPowerToysRunner = e.Args.Contains("--started-from-runner");
@@ -134,8 +132,10 @@ namespace PowerLauncher
 
                 _mainVM = new MainViewModel(_settings, NativeThreadCTS.Token);
                 _mainWindow = new MainWindow(_settings, _mainVM, NativeThreadCTS.Token);
-                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet);
-                _settingsReader = new SettingsReader(_settings, _mainWindow);
+                _themeManager = new ThemeManager(_settings, _mainWindow);
+                ImageLoader.Initialize(_themeManager.CurrentTheme);
+                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
+                _settingsReader = new SettingsReader(_settings, _themeManager);
                 _settingsReader.ReadSettings();
 
                 PluginManager.InitializePlugins(API);
@@ -259,7 +259,6 @@ namespace PowerLauncher
 
                     // Dispose needs to be called on the main Windows thread, since some resources owned by the thread need to be disposed.
                     _mainWindow?.Dispatcher.Invoke(Dispose);
-                    API?.Dispose();
                     _mainVM?.Dispose();
                 }
 
