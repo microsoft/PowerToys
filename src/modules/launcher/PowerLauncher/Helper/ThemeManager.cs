@@ -4,6 +4,7 @@
 
 using System;
 using ManagedCommon;
+using Wox.Infrastructure.Image;
 using Wox.Infrastructure.UserSettings;
 using Wpf.Ui.Appearance;
 
@@ -48,6 +49,7 @@ namespace PowerLauncher.Helper
                 _mainWindow?.Dispatcher.Invoke(ApplicationThemeManager.ApplySystemTheme);
             }
 
+            ImageLoader.UpdateIconPath(_currentTheme);
             ThemeChanged?.Invoke(_currentTheme, _currentTheme);
         }
 
