@@ -227,7 +227,7 @@
                                 StepFrequency="2"
                                 TickFrequency="2"
                                 TickPlacement="Outside"
-                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.TitleFontSize}" />
+                                Value="{x:Bind ViewModel.TitleFontSize, Mode=TwoWay}" />
                             <TextBlock
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"

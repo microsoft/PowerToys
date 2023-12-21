@@ -74,8 +74,10 @@
                 Margin="16,0,0,0"
                 ItemContainerStyle="{StaticResource PluginsListViewItemStyle}"
                 ItemsSource="{Binding Plugins}"
+                PreviewMouseLeftButtonUp="PluginsHintsList_PreviewMouseLeftButtonUp"
                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                SelectedItem="{Binding SelectedPlugin, Mode=TwoWay}"
                 SelectionMode="Single">
                 <ListView.ItemTemplate>
                     <DataTemplate>
