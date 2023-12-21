@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 
@@ -22,7 +23,8 @@ namespace Wox.Plugin
             string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
             if (assemblyPath != null)
             {
-                return LoadFromAssemblyPath(assemblyPath);
+                var existAssembly = Default.Assemblies.FirstOrDefault(x => x.FullName == assemblyName.FullName);
+                return existAssembly ?? (assemblyPath == null ? null : LoadFromAssemblyPath(assemblyPath));
             }
 
             return null;
