@@ -98,12 +98,12 @@
         <local:CustomSearchBox
             x:Name="QueryTextBox"
             Grid.Column="1"
+            MinHeight="0"
+            Margin="0"
             VerticalAlignment="Center"
             x:FieldModifier="public"
             AutomationProperties.Name="{x:Static p:Resources.Query}"
             Canvas.ZIndex="0"
-            Margin="0"
-            MinHeight="0"
             FontSize="{DynamicResource TitleFontSize}"
             Style="{StaticResource QueryTextBoxStyle}"
             Tag="{x:Static p:Resources.startTyping}" />
