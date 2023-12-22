@@ -3679,7 +3679,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Check if PowerShell 7 is in the path and its version</value>
   </data>
   <data name="CmdNotFound_CheckPowerShellVersionButtonControl.Description" xml:space="preserve">
-    <value>APowerShell 7 is a requirement for installing and using Command Not Found</value>
+    <value>PowerShell 7 is a requirement for installing and using Command Not Found</value>
     <comment>"Command Not Found" is a product name</comment>
   </data>
   <data name="CmdNotFound_InstallModuleButtonControl.Header" xml:space="preserve">
