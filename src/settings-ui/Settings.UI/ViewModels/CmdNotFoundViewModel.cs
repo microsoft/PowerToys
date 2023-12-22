@@ -14,6 +14,7 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -23,6 +24,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
+
+        public ButtonClickCommand InstallModuleEventHandler => new ButtonClickCommand(InstallModule);
+
+        public ButtonClickCommand UninstallModuleEventHandler => new ButtonClickCommand(UninstallModule);
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
