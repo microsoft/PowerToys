@@ -13,8 +13,6 @@ public sealed class BoxStyle
 {
     /*
 
-    see https://www.w3schools.com/css/css_boxmodel.asp
-
     +--------------[bounds]---------------+
     |▒▒▒▒▒▒▒▒▒▒▒▒▒▒[margin]▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒|
     |▒▒▓▓▓▓▓▓▓▓▓▓▓▓[border]▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒|
