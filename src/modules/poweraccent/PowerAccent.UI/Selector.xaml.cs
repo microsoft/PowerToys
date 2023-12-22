@@ -5,7 +5,6 @@
 using System;
 using System.ComponentModel;
 using System.Windows;
-using ManagedCommon;
 using Wpf.Ui.Controls;
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
@@ -40,15 +39,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
     {
         InitializeComponent();
 
-        // workaround for #30177
-        try
-        {
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Exception in SystemThemeWatcher.Watch, issue 30177. {ex.Message}");
-        }
+        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
         Application.Current.MainWindow.ShowActivated = false;
         Application.Current.MainWindow.Topmost = true;
