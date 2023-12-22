@@ -180,7 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void InstallModule()
         {
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\EnableModule.ps1";
-            var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\" -scriptPath {AssemblyDirectory}\\..";
+            var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\" -scriptPath \"{AssemblyDirectory}\\..\"";
             RunPowerShellScript(arguments);
         }
 

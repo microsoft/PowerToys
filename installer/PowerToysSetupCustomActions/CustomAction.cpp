@@ -446,9 +446,9 @@ UINT __stdcall UninstallCommandNotFoundModuleCA(MSIHANDLE hInstall)
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installFolder.");
 
-    command = "start pwsh.exe";
+    command = "pwsh.exe";
     command += " ";
-    command += "-NoProfile -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Utilities\\DisableModule.ps1" + "\"";
+    command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Utilities\\DisableModule.ps1" + "\"";
 
     system(command.c_str());
 
