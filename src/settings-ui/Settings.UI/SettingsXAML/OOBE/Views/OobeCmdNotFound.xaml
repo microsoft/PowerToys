@@ -9,7 +9,7 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_CmdNotFound" HeroImage="ms-appx:///Assets/Modules/OOBE/CmdNotFound.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_CmdNotFound" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/CmdNotFound.gif">
 
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

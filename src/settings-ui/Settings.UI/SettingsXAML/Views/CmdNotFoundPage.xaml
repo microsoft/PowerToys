@@ -10,7 +10,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <custom:SettingsPageControl x:Uid="CmdNotFound" ModuleImageSource="ms-appx:///Assets/Modules/CmdNotFound.png">
+    <custom:SettingsPageControl x:Uid="CmdNotFound" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <InfoBar

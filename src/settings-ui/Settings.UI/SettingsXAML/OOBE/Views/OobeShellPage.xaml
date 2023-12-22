@@ -71,7 +71,7 @@
                     Tag="Awake" />
                 <NavigationViewItem
                     x:Uid="Shell_CmdNotFound"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsCmdNotFound.png}"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
                     Tag="CmdNotFound" />
                 <NavigationViewItem
                     x:Uid="Shell_ColorPicker"

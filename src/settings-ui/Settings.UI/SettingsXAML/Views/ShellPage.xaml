@@ -109,7 +109,7 @@
                 <NavigationViewItem
                     x:Uid="Shell_CmdNotFound"
                     helpers:NavHelper.NavigateTo="views:CmdNotFoundPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/FluentIcons/FluentIconsCmdNotFound.png}" />
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_ColorPicker"
