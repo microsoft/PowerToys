@@ -161,7 +161,7 @@
         Installed AND (REMOVE="ALL")
       </Custom>
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
+        Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
           Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
@@ -262,7 +262,7 @@
                    />
 
       <CustomAction Id="UninstallCommandNotFound"
-                    Return="check"
+                    Return="ignore"
                     Impersonate="yes"
                     Execute="deferred"
                     BinaryKey="PTCustomActions"
