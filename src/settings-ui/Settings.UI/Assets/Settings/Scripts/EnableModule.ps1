@@ -32,7 +32,7 @@ if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contai
 else
 {
   Add-Content -Path $PROFILE  -Value "`r`n#34de4b3d-13a8-4540-b76d-b9e8d3851756 PowerToys CommandNotFound module"
-  Add-Content -Path $PROFILE  -Value "`r`nImport-Module $scriptPath\WinGetCommandNotFound.psd1"
+  Add-Content -Path $PROFILE  -Value "`r`nImport-Module `"$scriptPath\WinGetCommandNotFound.psd1`""
   Add-Content -Path $PROFILE  -Value "#34de4b3d-13a8-4540-b76d-b9e8d3851756"  
   Write-Host "Module was successfully registered in the profile file."
 }
