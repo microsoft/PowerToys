@@ -8,6 +8,7 @@ using System.IO.Abstractions;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Modules.MouseJump;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace MouseJumpUI.Helpers;
@@ -60,8 +61,8 @@ internal class SettingsHelper
                         if (!settingsUtils.SettingsExists(MouseJumpSettings.ModuleName))
                         {
                             Logger.LogInfo("MouseJump settings.json was missing, creating a new one");
-                            var defaultSettings = new MouseJumpSettings();
-                            defaultSettings.Save(settingsUtils);
+                            var defaultSettings = MouseJumpSettings.DefaultSettings;
+                            MouseJumpSettings.DefaultSettings.Save(settingsUtils);
                         }
 
                         var settings = settingsUtils.GetSettingsOrDefault<MouseJumpSettings>(MouseJumpSettings.ModuleName);

@@ -1,0 +1,57 @@
+{
+  "name": "MouseJump",
+  "version": "2.0",
+  "properties": {
+    "DefaultActivationShortcut": {
+      "win": true,
+      "ctrl": false,
+      "alt": false,
+      "shift": true,
+      "code": 68,
+      "key": ""
+    },
+    "activation_shortcut": {
+      "win": false,
+      "ctrl": true,
+      "alt": true,
+      "shift": true,
+      "code": 70,
+      "key": ""
+    },
+    "preview_style": {
+      "name": "default",
+      "size": {
+        "width": 1600,
+        "height": 1200
+      },
+      "canvas": {
+        "border": {
+          "color": "SystemColors.Highlight",
+          "width": 6,
+          "depth": 0
+        },
+        "padding": {
+          "width": 6
+        },
+        "background": {
+          "color1": "#0D57D2",
+          "color2": "#0344C0"
+        }
+      },
+      "screen": {
+        "margin": {
+          "width": 2
+        },
+        "border": {
+          "color": "#222222",
+          "width": 10,
+          "depth": 3
+        },
+        "background": {
+          "color1": "Color.MidnightBlue",
+          "color2": "Color.MidnightBlue"
+        }
+      }
+    }
+  }
+}

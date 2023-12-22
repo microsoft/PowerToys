@@ -3,16 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using Common.UI;
 using interop;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
 using MouseJumpUI.Helpers;
 
 namespace MouseJumpUI;
@@ -46,29 +43,32 @@ internal static class Program
 
         // validate command line arguments - we're expecting
         // a single argument containing the runner pid
-        if ((args.Length != 1) || !int.TryParse(args[0], out var runnerPid))
+        var runnerPid = 0;
+        if ((args.Length == 0) || !int.TryParse(args[0], out runnerPid))
         {
-            var message = string.Join("\r\n", new[]
-            {
-                "Invalid command line arguments.",
-                "Expected usage is:",
-                string.Empty,
-                $"{Assembly.GetExecutingAssembly().GetName().Name} <RunnerPid>",
-            });
+            var message = string.Join(
+                Environment.NewLine,
+                new[]
+                {
+                    "Unexpected command line arguments.",
+                    "Expected usage is:",
+                    string.Empty,
+                    $"{Assembly.GetExecutingAssembly().GetName().Name} <RunnerPid>",
+                });
             Logger.LogInfo(message);
-            throw new InvalidOperationException(message);
         }
 
-        Logger.LogInfo($"Mouse Jump started from the PowerToys Runner. Runner pid={runnerPid}");
-
         var cancellationTokenSource = new CancellationTokenSource();
-
-        RunnerHelper.WaitForPowerToysRunner(runnerPid, () =>
+        if (runnerPid != 0)
         {
-            Logger.LogInfo("PowerToys Runner exited. Exiting Mouse Jump");
-            cancellationTokenSource.Cancel();
-            Application.Exit();
-        });
+            Logger.LogInfo($"Mouse Jump started from the PowerToys Runner. Runner pid={runnerPid}");
+            RunnerHelper.WaitForPowerToysRunner(runnerPid, () =>
+            {
+                Logger.LogInfo("PowerToys Runner exited. Exiting Mouse Jump");
+                cancellationTokenSource.Cancel();
+                Application.Exit();
+            });
+        }
 
         var settingsHelper = new SettingsHelper();
         var mainForm = new MainForm(settingsHelper);
@@ -80,30 +80,5 @@ internal static class Program
             cancellationTokenSource.Token);
 
         Application.Run();
-    }
-
-    private static MouseJumpSettings ReadSettings()
-    {
-        var settingsUtils = new SettingsUtils();
-        var settingsPath = settingsUtils.GetSettingsFilePath(MouseJumpSettings.ModuleName);
-        if (!File.Exists(settingsPath))
-        {
-            var scaffoldSettings = new MouseJumpSettings();
-            settingsUtils.SaveSettings(JsonSerializer.Serialize(scaffoldSettings), MouseJumpSettings.ModuleName);
-        }
-
-        var settings = new MouseJumpSettings();
-        try
-        {
-            settings = settingsUtils.GetSettings<MouseJumpSettings>(MouseJumpSettings.ModuleName);
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
-            Logger.LogInfo(errorMessage);
-            Logger.LogDebug(errorMessage);
-        }
-
-        return settings;
     }
 }
