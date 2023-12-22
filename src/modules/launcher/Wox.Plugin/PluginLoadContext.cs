@@ -24,7 +24,7 @@ namespace Wox.Plugin
             if (assemblyPath != null)
             {
                 var existingAssembly = Default.Assemblies.FirstOrDefault(x => x.FullName == assemblyName.FullName);
-                return existingAssembly ?? (assemblyPath == null ? null : LoadFromAssemblyPath(assemblyPath));
+                return existingAssembly ?? LoadFromAssemblyPath(assemblyPath);
             }
 
             return null;
