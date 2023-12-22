@@ -117,35 +117,64 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private string _commandOutputLog;
+
+        public string CommandOutputLog
+        {
+            get => _commandOutputLog;
+            set
+            {
+                if (_commandOutputLog != value)
+                {
+                    _commandOutputLog = value;
+                    OnPropertyChanged(nameof(CommandOutputLog));
+                }
+            }
+        }
+
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
         }
 
+        public void RunPowerShellScript(string powershellArguments)
+        {
+            string outputLog = string.Empty;
+            try
+            {
+                var startInfo = new ProcessStartInfo()
+                {
+                    FileName = "pwsh.exe",
+                    Arguments = powershellArguments,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                };
+                var process = Process.Start(startInfo);
+                while (!process.StandardOutput.EndOfStream)
+                {
+                    outputLog += process.StandardOutput.ReadLine();
+                }
+            }
+            catch (Exception ex)
+            {
+                outputLog = ex.ToString();
+            }
+
+            CommandOutputLog = outputLog;
+        }
+
         public void InstallModule()
         {
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\EnableModule.ps1";
-
-            var startInfo = new ProcessStartInfo()
-            {
-                FileName = "pwsh.exe",
-                Arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\" -scriptPath {AssemblyDirectory}\\..",
-                UseShellExecute = false,
-            };
-            Process.Start(startInfo);
+            var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\" -scriptPath {AssemblyDirectory}\\..";
+            RunPowerShellScript(arguments);
         }
 
         public void UninstallModule()
         {
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\DisableModule.ps1";
-
-            var startInfo = new ProcessStartInfo()
-            {
-                FileName = "pwsh.exe",
-                Arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"",
-                UseShellExecute = false,
-            };
-            Process.Start(startInfo);
+            var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
+            RunPowerShellScript(arguments);
         }
 
         private void ScheduleSavingOfSettings()

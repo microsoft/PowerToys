@@ -31,6 +31,12 @@
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
+                <TextBox
+                    Height="300"
+                    FontFamily="Courier New"
+                    IsReadOnly="True"
+                    Text="{x:Bind Mode=OneWay, Path=ViewModel.CommandOutputLog}"
+                    TextWrapping="Wrap" />
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>
 
