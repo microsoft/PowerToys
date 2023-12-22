@@ -156,10 +156,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                 };
+                startInfo.EnvironmentVariables["NO_COLOR"] = "1";
                 var process = Process.Start(startInfo);
                 while (!process.StandardOutput.EndOfStream)
                 {
-                    outputLog += process.StandardOutput.ReadLine();
+                    outputLog += process.StandardOutput.ReadLine() + "\r\n"; // Weirdly, PowerShell 7 won't give us new lines.
                 }
             }
             catch (Exception ex)
@@ -172,7 +173,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void CheckPowershellVersion()
         {
-            var arguments = $"-Command $PSVersionTable";
+            var arguments = $"-NoProfile -NonInteractive -Command $PSVersionTable";
             RunPowerShellScript(arguments);
         }
 
