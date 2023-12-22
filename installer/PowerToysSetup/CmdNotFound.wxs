@@ -12,7 +12,7 @@
           <RegistryValue Type="string" Name="Module_CmdNotFound" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Source="$(var.BinDir)WinGetCommandNotFound.psd1" />
-        <!-- The dllss will be picked up by BaseApplications generateAllFileComponents.ps1-->
+        <!-- The dll files will be picked up by BaseApplications generateAllFileComponents.ps1-->
       </Component>
     </DirectoryRef>
 
