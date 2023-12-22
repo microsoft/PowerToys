@@ -27,6 +27,11 @@
                     Severity="Informational" />
                 <custom:SettingsGroup x:Uid="CmdNotFound_ModuleInstallation" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingsCard
+                        x:Uid="CmdNotFound_CheckPowerShellVersionButtonControl"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.CheckPowershellVersionEventHandler}"
+                        IsClickEnabled="True" />
+                    <controls:SettingsCard
                         x:Uid="CmdNotFound_InstallModuleButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.InstallModuleEventHandler}"

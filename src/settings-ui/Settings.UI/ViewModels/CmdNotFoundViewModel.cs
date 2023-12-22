@@ -25,6 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
 
+        public ButtonClickCommand CheckPowershellVersionEventHandler => new ButtonClickCommand(CheckPowershellVersion);
+
         public ButtonClickCommand InstallModuleEventHandler => new ButtonClickCommand(InstallModule);
 
         public ButtonClickCommand UninstallModuleEventHandler => new ButtonClickCommand(UninstallModule);
@@ -166,6 +168,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             CommandOutputLog = outputLog;
+        }
+
+        public void CheckPowershellVersion()
+        {
+            var arguments = $"-Command $PSVersionTable";
+            RunPowerShellScript(arguments);
         }
 
         public void InstallModule()
