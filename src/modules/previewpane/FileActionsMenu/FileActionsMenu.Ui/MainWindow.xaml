@@ -1,0 +1,69 @@
+﻿<Window x:Class="FileActionsMenu.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="0" Width="0" MinHeight="0" MinWidth="0" MaxHeight="0" MaxWidth="0"
+              AllowsTransparency="True" WindowStyle="None" Background="Transparent">
+    <Window.Resources>
+        <ContextMenu x:Key="Menu">
+            <MenuItem Header="PowerToys File actions" IsEnabled="False"></MenuItem>
+            <Separator />
+            <Separator />
+            <MenuItem Header="Generate Checksum">
+                <MenuItem Header="Md5 hash" Click="GenerateHash" />
+                <MenuItem Header="Sha1 hash" Click="GenerateHashes"/>
+                <MenuItem Header="Sha256 hash" />
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Copy to">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE8C8;" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Move to">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE8C6;" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="New folder with selection">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE8DE;" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Copy path of files sperated by">
+                <MenuItem Header='";"'/>
+                <MenuItem Header='" "'/>
+                <MenuItem Header='","'/>
+                <MenuItem Header='Newline'/>
+                <MenuItem Header='Custom...' />
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="Rename with PowerRename">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE8AC;" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Transform images with Image Resizer">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xEE71;" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="Following items only apply to the first-selected file (test.txt)" IsEnabled="False"/>
+            <MenuItem Header="What's using this file?">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE72E;" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Copy image to clipboard">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xF413;" />
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+    </Window.Resources>
+</Window>
