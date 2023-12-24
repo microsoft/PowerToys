@@ -217,7 +217,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 string pickedImage = PickFileDialog();
-                if (pickedImage != null)
+                if (!string.IsNullOrEmpty(pickedImage))
                 {
                     CameraImageOverlayPath = pickedImage;
                     Settings.Properties.CameraOverlayImagePath = pickedImage;
