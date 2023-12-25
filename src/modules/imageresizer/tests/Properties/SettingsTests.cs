@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using ImageResizer.Models;
 using ImageResizer.Test;
@@ -20,6 +21,8 @@ namespace ImageResizer.Properties
         {
             WriteIndented = true,
         };
+
+        private static readonly CompositeFormat ValueMustBeBetween = System.Text.CompositeFormat.Parse(Properties.Resources.ValueMustBeBetween);
 
         private static App _imageResizerApp;
 
@@ -192,7 +195,7 @@ namespace ImageResizer.Properties
 
             // Using InvariantCulture since this is used internally
             Assert.AreEqual(
-                string.Format(CultureInfo.InvariantCulture, System.Text.CompositeFormat.Parse(Resources.ValueMustBeBetween), 1, 100),
+                string.Format(CultureInfo.InvariantCulture, ValueMustBeBetween, 1, 100),
                 result);
         }
 

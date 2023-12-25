@@ -115,6 +115,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// </summary>
         internal IPAddressCollection WinsServers { get; private set; }
 
+        private static readonly CompositeFormat MicrosoftPluginSysGbps = CompositeFormat.Parse(Properties.Resources.Microsoft_plugin_sys_Gbps);
+        private static readonly CompositeFormat MicrosoftPluginSysMbps = CompositeFormat.Parse(Properties.Resources.Microsoft_plugin_sys_Mbps);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkConnectionProperties"/> class.
         /// This private constructor is used when we crete the list of adapter (properties) by calling <see cref="NetworkConnectionProperties.GetList()"/>.
@@ -287,7 +290,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <returns>A formatted string like `100 MB/s`</returns>
         private static string GetFormattedSpeedValue(long speed)
         {
-            return (speed >= 1000000000) ? string.Format(CultureInfo.InvariantCulture, CompositeFormat.Parse(Resources.Microsoft_plugin_sys_Gbps), speed / 1000000000) : string.Format(CultureInfo.InvariantCulture, CompositeFormat.Parse(Resources.Microsoft_plugin_sys_Mbps), speed / 1000000);
+            return (speed >= 1000000000) ? string.Format(CultureInfo.InvariantCulture, MicrosoftPluginSysGbps, speed / 1000000000) : string.Format(CultureInfo.InvariantCulture, MicrosoftPluginSysMbps, speed / 1000000);
         }
 
         /// <summary>

@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using global::PowerToys.GPOWrapper;
@@ -28,6 +29,8 @@ namespace PowerLauncher.Plugin
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IDirectory Directory = FileSystem.Directory;
         private static readonly object AllPluginsLock = new object();
+
+        private static readonly CompositeFormat FailedToInitializePluginsTitle = System.Text.CompositeFormat.Parse(Properties.Resources.FailedToInitializePluginsTitle);
 
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
@@ -181,7 +184,7 @@ namespace PowerLauncher.Plugin
             if (!failedPlugins.IsEmpty)
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
-                var description = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Resources.FailedToInitializePluginsDescription), failed);
+                var description = string.Format(CultureInfo.CurrentCulture, FailedToInitializePluginsTitle, failed);
                 Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false));
             }
         }

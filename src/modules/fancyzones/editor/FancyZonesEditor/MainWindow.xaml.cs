@@ -37,7 +37,9 @@ namespace FancyZonesEditor
 
         private bool haveTriedToGetFocusAlready;
 
+        private static readonly CompositeFormat EditTemplate = System.Text.CompositeFormat.Parse(Properties.Resources.Edit_Template);
         private static readonly CompositeFormat PixelValue = System.Text.CompositeFormat.Parse(Properties.Resources.Pixel_Value);
+        private static readonly CompositeFormat TemplateZoneCountValue = System.Text.CompositeFormat.Parse(Properties.Resources.Template_Zone_Count_Value);
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
@@ -338,7 +340,7 @@ namespace FancyZonesEditor
             App.Overlay.StartEditing(_settings.SelectedModel);
 
             Keyboard.ClearFocus();
-            EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Edit_Template), ((LayoutModel)dataContext).Name);
+            EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, EditTemplate, ((LayoutModel)dataContext).Name);
             await EditLayoutDialog.ShowAsync();
         }
 
@@ -591,7 +593,7 @@ namespace FancyZonesEditor
                     FrameworkElementAutomationPeer.FromElement(TemplateZoneCount) as SliderAutomationPeer;
                 string activityId = "templateZoneCountValueChanged";
 
-                string value = string.Format(CultureInfo.CurrentCulture, System.Text.CompositeFormat.Parse(Properties.Resources.Template_Zone_Count_Value), TemplateZoneCount.Value);
+                string value = string.Format(CultureInfo.CurrentCulture, TemplateZoneCountValue, TemplateZoneCount.Value);
 
                 if (peer != null && value != null)
                 {
