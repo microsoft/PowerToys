@@ -2187,7 +2187,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Don't loc "PowerToys"</comment>
   </data>
   <data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
-    <value>What's New</value>
+    <value>What's new</value>
   </data>
   <data name="Feedback_NavViewItem.Content" xml:space="preserve">
     <value>Give feedback</value>
