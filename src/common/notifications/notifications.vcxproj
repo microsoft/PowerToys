@@ -30,7 +30,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="notifications.h" />
+	<ClInclude Include="NotificationUtil.h" />
     <ClInclude Include="dont_show_again.h" />
+	<ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -51,12 +53,14 @@
 	  </Compile>
 	</ItemGroup>
 	<ItemGroup>
-	  <EmbeddedResource Update="Resources\Resources.resx">
-	    <SubType>Designer</SubType>
-	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-	    <Generator>PublicResXFileCodeGenerator</Generator>
-	  </EmbeddedResource>
-	</ItemGroup>
+    <None Include="notifications.base.rc" />
+    <ResourceCompile Include="Generated Files\notifications.rc" />
+	  </ItemGroup>
+	  <ItemGroup>
+		<None Include="Resources.resx">
+		  <SubType>Designer</SubType>
+		</None>
+	  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.targets')" />
