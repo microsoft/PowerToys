@@ -4,7 +4,7 @@
   <!-- Props that should be disabled while building on CI server -->
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.h AlwaysOnTop.rc" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h AlwaysOnTop.base.rc AlwaysOnTop.rc" />
   </Target>
   <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
     <ClCompile>
@@ -145,11 +145,11 @@
     <ClInclude Include="AlwaysOnTop.h" />
     <ClInclude Include="FrameDrawer.h" />
 	<ClInclude Include="Generated Files/resource.h" />
-	<None Include="resource.h" />
     <ClInclude Include="ModuleConstants.h" />
 	<ClInclude Include="NotificationUtil.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.h" />
+    <None Include="resource.h" />
+	<None Include="resource.base.h" />
     <ClInclude Include="ScalingUtils.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SettingsConstants.h" />
@@ -180,7 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/AlwaysOnTop.rc" />
-    <None Include="AlwaysOnTop.rc" />
+    <None Include="AlwaysOnTop.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources.resx" />

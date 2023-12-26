@@ -62,10 +62,10 @@
 	<None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="resource.h">
+    <None Include="resource.base.h">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="AlwaysOnTop.rc">
+    <None Include="AlwaysOnTop.base.rc">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -118,10 +118,5 @@
 	<ClInclude Include="Generated Files/resource.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="AlwaysOnTop.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
   </ItemGroup>
 </Project>

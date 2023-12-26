@@ -20,7 +20,7 @@ namespace notifications
         using namespace NonLocalizable;
 
         static bool warning_shown = false;
-        if (!warning_shown && !is_toast_disabled(ElevatedDontShowAgainRegistryPath, 0))
+        if (!warning_shown && !is_toast_disabled(ElevatedDontShowAgainRegistryPath, ElevatedDisableIntervalInDays))
         {
             std::vector<action_t> actions = {
                 link_button{ button1, RunAsAdminInfoPage },
@@ -30,6 +30,7 @@ namespace notifications
                                         title,
                                         {},
                                         std::move(actions));
+            warning_shown = true;
         }
     }
 }

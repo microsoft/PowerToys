@@ -6,7 +6,7 @@
 // Non-localizable
 
 #define FILE_DESCRIPTION "PowerToys.AlwaysOnTop"
-#define INTERNAL_NAME "AlwaysOnTop"
+#define INTERNAL_NAME "PowerToys.AlwaysOnTop"
 #define ORIGINAL_FILENAME "PowerToys.AlwaysOnTop.exe"
 
 // Non-localizable
