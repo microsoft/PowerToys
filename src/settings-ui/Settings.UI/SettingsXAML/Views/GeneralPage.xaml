@@ -181,7 +181,8 @@
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowPeriodicUpdateCheckGpoInformation}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowPeriodicUpdateCheckGpoInformation}"
-                        Severity="Warning" />
+                        Severity="Warning"
+                        Visibility="{Binding Mode=OneWay, Path=ViewModel.ShowPeriodicUpdateCheckGpoInformation, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                     <controls:SettingsCard
                         x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"

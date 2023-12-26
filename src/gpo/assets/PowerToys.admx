@@ -5,7 +5,7 @@
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.7"/><!-- Last changed with PowerToys v0.77.0 -->
+  <resources minRequiredRevision="1.7"/><!-- Last changed with PowerToys v0.78.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
