@@ -209,6 +209,33 @@
                             <ComboBoxItem x:Uid="ShowPluginsOverview_None" />
                         </ComboBox>
                     </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="PowerLauncher_TitleFontSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="A" />
+                            <Slider
+                                x:Uid="PowerLauncher_TextFontSizeSlider"
+                                LargeChange="2"
+                                Maximum="24"
+                                Minimum="12"
+                                SmallChange="2"
+                                StepFrequency="2"
+                                TickFrequency="2"
+                                TickPlacement="Outside"
+                                Value="{x:Bind ViewModel.TitleFontSize, Mode=TwoWay}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="24"
+                                FontWeight="SemiBold"
+                                Text="A" />
+                        </StackPanel>
+                    </controls:SettingsCard>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">

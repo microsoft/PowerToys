@@ -214,6 +214,7 @@ namespace PowerLauncher
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             _viewModel.LoadedAtLeastOnce = true;
             _viewModel.SetPluginsOverviewVisibility();
+            _viewModel.SetFontSize();
 
             BringProcessToForeground();
         }
@@ -357,6 +358,8 @@ namespace PowerLauncher
                     BringProcessToForeground();
 
                     _viewModel.SetPluginsOverviewVisibility();
+                    _viewModel.SetFontSize();
+
                     if (_viewModel.Plugins.Count > 0)
                     {
                         _viewModel.SelectedPlugin = null;
