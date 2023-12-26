@@ -5,13 +5,8 @@
 
     <core:Double x:Key="TitleFontSize">16</core:Double>
 
-    <!--  This removes the selection state of the default WpfUI ListViewItemStyle  -->
     <Style x:Key="PluginsListViewItemStyle" TargetType="{x:Type ListViewItem}">
-        <Setter Property="Foreground">
-            <Setter.Value>
-                <SolidColorBrush Color="{DynamicResource TextFillColorPrimary}" />
-            </Setter.Value>
-        </Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ListViewItemForeground}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Border.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
         <Setter Property="Margin" Value="0,0,0,2" />
@@ -32,7 +27,7 @@
                             <Rectangle
                                 x:Name="ActiveRectangle"
                                 Width="3"
-                                Height="24"
+                                Height="18"
                                 Margin="0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
