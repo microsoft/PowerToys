@@ -3914,6 +3914,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Please check manually at regular intervals for updates.</value>
   </data>
   <data name="GPO_PeriodicUpdateCheckIsDisabled.Title" xml:space="preserve">
-    <value>The system administrator has disabled the periodic background checks for updates.</value>
+    <value>The system administrator has disabled the automatic update checks.</value>
   </data>
 </root>
