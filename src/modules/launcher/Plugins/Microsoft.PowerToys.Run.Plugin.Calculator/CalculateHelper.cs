@@ -74,7 +74,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
              * -?(\d+({0}\d*)?): Captures a decimal number starting with a number (e.g. "-1.23")
              * -?({0}\d+): Captures a decimal number without leading number (e.g. ".23")
              * E: Captures capital 'E'
-             * (-?\d+{0}?\d*): Captures an integer number (e.g. "-1" or "23")
+             * (-?\d+): Captures an integer number (e.g. "-1" or "23")
              */
             var p = @"(-?(\d+({0}\d*)?)|-?({0}\d+))E(-?\d+)";
 
