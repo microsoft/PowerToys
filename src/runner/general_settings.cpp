@@ -59,7 +59,7 @@ json::JsonObject load_general_settings()
     }
     run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
-    showWhatsNewAfterUpdates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
+    show_whats_new_after_updates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation",true);
 
     return loaded;
