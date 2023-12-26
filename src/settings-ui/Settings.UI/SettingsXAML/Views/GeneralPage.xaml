@@ -189,9 +189,7 @@
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowAutoDownloadUpdatesGpoInformation}"
                         Severity="Informational" />
 
-                    <controls:SettingsCard
-                        x:Uid="GeneralPage_ToggleSwitch_ShowWhatsNewAfterUpdates"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled, Converter={StaticResource BoolNegationConverter}}">
+                    <controls:SettingsCard x:Uid="GeneralPage_ToggleSwitch_ShowWhatsNewAfterUpdates" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
                     </controls:SettingsCard>
                     <InfoBar
