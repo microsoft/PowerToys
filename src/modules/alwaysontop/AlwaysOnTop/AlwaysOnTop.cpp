@@ -175,8 +175,8 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     if (isExcluded(window))
     {
         return;
-    }    
-
+    }
+    
     Sound::Type soundType = Sound::Type::Off;
     bool topmost = IsTopmost(window);
     if (topmost)
@@ -507,7 +507,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
             // check if topmost was reset
             // fixes https://github.com/microsoft/PowerToys/issues/19168
             if (!IsTopmost(window))
-            {               
+            {
                 Logger::trace(L"A window no longer has Topmost set and it should. Setting topmost again.");
                 PinTopmostWindow(window);
             }
