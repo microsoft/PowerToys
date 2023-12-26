@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
+using System.Buffers.Binary;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -69,6 +69,31 @@ namespace Peek.Common.Extensions
                             }
 
                             reader.Close();
+                        }
+                    }
+                }
+            }
+
+            return size;
+        }
+
+        public static Size? GetQoiSize(this IFileSystemItem item)
+        {
+            Size? size = null;
+            using (FileStream stream = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+            {
+                if (stream.Length >= 12)
+                {
+                    stream.Position = 4;
+
+                    using (var reader = new BinaryReader(stream))
+                    {
+                        uint widthValue = BinaryPrimitives.ReadUInt32BigEndian(reader.ReadBytes(4));
+                        uint heightValue = BinaryPrimitives.ReadUInt32BigEndian(reader.ReadBytes(4));
+
+                        if (widthValue > 0 && heightValue > 0)
+                        {
+                            size = new Size(widthValue, heightValue);
                         }
                     }
                 }

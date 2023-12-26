@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using Common;
+using Microsoft.PowerToys.FilePreviewCommon;
 using Microsoft.PowerToys.PreviewHandler.Qoi.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
-using PreviewHandlerCommon.Utilities;
 
 namespace Microsoft.PowerToys.PreviewHandler.Qoi
 {
@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Qoi
                     throw new ArgumentException($"{nameof(dataSource)} for {nameof(QoiPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
                 }
 
-                FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                using FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
                 thumbnail = QoiImage.FromStream(fs);
 
