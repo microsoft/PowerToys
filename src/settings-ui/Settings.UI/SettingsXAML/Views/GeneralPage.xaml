@@ -190,10 +190,10 @@
                         Severity="Informational" />
 
                     <controls:SettingsCard
-                        x:Uid="GeneralPage_ToggleSwitch_NewUpdatesToastDisabled"
+                        x:Uid="GeneralPage_ToggleSwitch_ShowNewUpdatesToast"
                         Margin="0,-6,0,0"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsNewUpdatesToastDisabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=NewUpdatesToastDisabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"

@@ -82,7 +82,7 @@ If disabled or not configured, the automatic update checks are enabled.
 
 If enabled, the notification is disabled.
 
-If disabled or not configured, the notification is shown.
+If disabled or not configured, the has the control whether the notification is shown or not.
 </string>
       <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
 

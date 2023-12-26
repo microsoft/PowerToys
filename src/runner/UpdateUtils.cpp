@@ -142,8 +142,8 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
 
     // Check toast notification GPOs and settings. (We check only if notifications are allowed. This is the case if we are triggered by the periodic check.)
     // Disable notification GPO or setting
-    bool disable_notification_setting = get_general_settings().newUpdatesToastDisabled;
-    if (show_notifications && (disable_notification_setting == true || powertoys_gpo::getDisableNewUpdateToastValue() == powertoys_gpo::gpo_rule_configured_enabled))
+    bool disable_notification_setting = get_general_settings().showNewUpdatesToastNotification == false;
+    if (show_notifications && (disable_notification_setting || powertoys_gpo::getDisableNewUpdateToastValue() == powertoys_gpo::gpo_rule_configured_enabled))
     {
         Logger::info(L"There is a new update available or ready to install. But the toast notification is disabled by setting or GPO.");
         show_notifications = false;
