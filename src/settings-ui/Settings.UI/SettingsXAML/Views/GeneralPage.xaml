@@ -19,7 +19,7 @@
     <custom:SettingsPageControl x:Uid="General" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <custom:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
+                <custom:SettingsGroup x:Uid="General_VersionAndUpdate" Margin="0,-32,0,0">
                     <controls:SettingsCard Header="{Binding PowerToysVersion}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
                         <controls:SettingsCard.Description>
                             <StackPanel Orientation="Vertical">

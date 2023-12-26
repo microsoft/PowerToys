@@ -10,6 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -133,6 +134,11 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             {
                 PowerToysTelemetry.Log.WriteEvent(new TrayFlyoutModuleRunEvent() { ModuleName = ((ModuleType)selectedModuleBtn.Tag).ToString() });
             }
+        }
+
+        private void UpdateDetailsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            App.OpenSettingsWindow(typeof(GeneralPage), true);
         }
 
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
