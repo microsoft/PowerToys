@@ -177,6 +177,7 @@
 
                     <InfoBar
                         x:Uid="GPO_PeriodicUpdateCheckIsDisabled"
+                        Margin="0,-10,0,10"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowPeriodicUpdateCheckGpoInformation}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowPeriodicUpdateCheckGpoInformation}"
