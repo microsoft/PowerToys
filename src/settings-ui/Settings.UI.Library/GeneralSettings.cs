@@ -50,6 +50,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
+        [JsonPropertyName("new_updates_toast_disable")]
+        public bool NewUpdatesToastDisabled { get; set; }
+
         [JsonPropertyName("enable_experimentation")]
         public bool EnableExperimentation { get; set; }
 
@@ -59,6 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IsAdmin = false;
             IsElevated = false;
             AutoDownloadUpdates = false;
+            NewUpdatesToastDisabled = false;
             EnableExperimentation = true;
             Theme = "system";
             SystemTheme = "light";

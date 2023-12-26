@@ -11,6 +11,7 @@ struct GeneralSettings
     bool isRunElevated;
     bool isAdmin;
     bool downloadUpdatesAutomatically;
+    bool newUpdatesToastDisabled;
     bool enableExperimentation;
     std::wstring theme;
     std::wstring systemTheme;

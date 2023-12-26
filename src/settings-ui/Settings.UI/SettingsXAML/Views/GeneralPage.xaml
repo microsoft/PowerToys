@@ -188,6 +188,19 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowAutoDownloadUpdatesGpoInformation}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowAutoDownloadUpdatesGpoInformation}"
                         Severity="Informational" />
+
+                    <controls:SettingsCard
+                        x:Uid="GeneralPage_ToggleSwitch_NewUpdatesToastDisabled"
+                        Margin="0,-6,0,0"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsNewUpdatesToastDisabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=NewUpdatesToastDisabled}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsNewUpdatesToastDisabledGpoConfigured}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsNewUpdatesToastDisabledGpoConfigured}"
+                        Severity="Informational" />
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="Admin_Mode">

@@ -16,6 +16,7 @@
 static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
 static bool download_updates_automatically = true;
+static bool new_updates_toast_disabled = false;
 static bool enable_experimentation = true;
 
 json::JsonObject GeneralSettings::to_json()
@@ -38,6 +39,7 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"is_elevated", json::value(isElevated));
     result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
     result.SetNamedValue(L"download_updates_automatically", json::value(downloadUpdatesAutomatically));
+    result.SetNamedValue(L"new_updates_toast_disabled", json::value(newUpdatesToastDisabled));
     result.SetNamedValue(L"enable_experimentation", json::value(enableExperimentation));
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"theme", json::value(theme));
@@ -57,6 +59,7 @@ json::JsonObject load_general_settings()
     }
     run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
+    new_updates_toast_disabled = loaded.GetNamedBoolean(L"new_updates_toast_disable", false);
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation",true);
 
     return loaded;
@@ -70,6 +73,7 @@ GeneralSettings get_general_settings()
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
+        .newUpdatesToastDisabled = new_updates_toast_disabled,
         .enableExperimentation = enable_experimentation,
         .theme = settings_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
@@ -92,6 +96,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
 
     download_updates_automatically = general_configs.GetNamedBoolean(L"download_updates_automatically", true);
+    new_updates_toast_disabled = general_configs.GetNamedBoolean(L"new_updates_toast_disable", false);
 
     enable_experimentation = general_configs.GetNamedBoolean(L"enable_experimentation", true);
 

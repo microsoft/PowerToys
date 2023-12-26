@@ -122,6 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _startup = GeneralSettingsConfig.Startup;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
+            _newUpdatesToastDisabled = GeneralSettingsConfig.NewUpdatesToastDisabled;
             _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
 
             _isElevated = isElevated;
@@ -137,8 +138,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
-            _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
+            _newUpdatesToastIsGpoDisabled = GPOWrapper.GetDisableNewUpdateToastValue() == GpoRuleConfigured.Enabled;
+            _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
 
             if (dispatcherAction != null)
             {
@@ -155,6 +157,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _autoDownloadUpdates;
         private bool _autoDownloadUpdatesIsGpoDisabled;
         private bool _enableExperimentation;
+        private bool _newUpdatesToastDisabled;
+        private bool _newUpdatesToastIsGpoDisabled;
+
         private bool _experimentationIsGpoDisallowed;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
@@ -325,6 +330,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool NewUpdatesToastDisabled
+        {
+            get
+            {
+                return _newUpdatesToastDisabled && !_newUpdatesToastIsGpoDisabled;
+            }
+
+            set
+            {
+                if (_newUpdatesToastDisabled != value)
+                {
+                    _newUpdatesToastDisabled = value;
+                    GeneralSettingsConfig.NewUpdatesToastDisabled = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsNewUpdatesToastDisabledGpoConfigured
+        {
+            get => _newUpdatesToastIsGpoDisabled;
         }
 
         public bool IsExperimentationGpoDisallowed
