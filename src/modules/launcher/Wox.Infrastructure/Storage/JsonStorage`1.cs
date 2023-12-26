@@ -290,8 +290,8 @@ namespace Wox.Infrastructure.Storage
                 {
                     JsonElement targetElement = root;
 
-                    // If rootElement is not empty, try to get the specified property
-                    if (!string.IsNullOrEmpty(rootElement) && root.TryGetProperty(rootElement, out var retrievedElement))
+                    // Try to get the specified property
+                    if (root.TryGetProperty(rootElement, out var retrievedElement))
                     {
                         targetElement = retrievedElement;
                     }
