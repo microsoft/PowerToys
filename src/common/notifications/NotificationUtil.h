@@ -15,7 +15,7 @@ namespace notifications
         const wchar_t ToastNotificationButtonUrl[] = L"powertoys://cant_drag_elevated_disable/";
     }
 
-    inline void WarnIfElevationIsRequired(std::wstring title)
+    inline void WarnIfElevationIsRequired(std::wstring title, std::wstring message, std::wstring button1, std::wstring button2)
     {
         using namespace NonLocalizable;
 
@@ -23,10 +23,10 @@ namespace notifications
         if (!warning_shown && !is_toast_disabled(ElevatedDontShowAgainRegistryPath, 0))
         {
             std::vector<action_t> actions = {
-                link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), RunAsAdminInfoPage },
-                link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), ToastNotificationButtonUrl }
+                link_button{ button1, RunAsAdminInfoPage },
+                link_button{ button2, ToastNotificationButtonUrl }
             };
-            show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED),
+            show_toast_with_activations(message,
                                         title,
                                         {},
                                         std::move(actions));

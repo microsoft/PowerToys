@@ -21,8 +21,8 @@
     <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
     <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
         <value>[base64 mime encoded serialized .NET Framework object]</value>
-    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
@@ -117,14 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AlwaysOnTop" xml:space="preserve">
+    <value>AlwaysOnTop</value>
+    <comment>AlwaysOnTop is a product name, keep as is.</comment>
+  </data>
   <data name="Cant_Drag_Elevated" xml:space="preserve">
-  <value>We've detected an application running with administrator privileges. This will prevent certain interactions with these applications.</value>
-  <comment>administrator is context of user account.</comment>
-</data>
-<data name="Cant_Drag_Elevated_Learn_More" xml:space="preserve">
-  <value>Learn more</value>
-</data>
-<data name="Cant_Drag_Elevated_Dialog_Dont_Show_Again" xml:space="preserve">
-  <value>Don't show again</value>
-</data>
+    <value>We've detected an application running with administrator privileges. This will prevent certain interactions with these applications.</value>
+    <comment>administrator is context of user account.</comment>
+  </data>
+  <data name="Cant_Drag_Elevated_Learn_More" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+  <data name="Cant_Drag_Elevated_Dialog_Dont_Show_Again" xml:space="preserve">
+    <value>Don't show again</value>
+  </data>
 </root>

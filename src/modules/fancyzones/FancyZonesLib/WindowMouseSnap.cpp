@@ -37,7 +37,7 @@ std::unique_ptr<WindowMouseSnap> WindowMouseSnap::Create(HWND window, const std:
     if (!is_process_elevated() && IsProcessOfWindowElevated(window))
     {
         // Notifies user if unable to drag elevated window
-        notifications::WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_FANCYZONES));
+        notifications::WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_FANCYZONES), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
         return nullptr;
     }
 

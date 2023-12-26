@@ -10,6 +10,7 @@
 
 #include <common/utils/elevation.h>
 #include <common/notifications/NotificationUtil.h>
+#include <Generated Files/resource.h>
 
 #include <interop/shared_constants.h>
 
@@ -494,8 +495,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     {
         if (!is_process_elevated() && IsProcessOfWindowElevated(data->hwnd))
         {
-            std::wstring title = L"AlwaysOnTop";
-            notifications::WarnIfElevationIsRequired(title);
+            notifications::WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_ALWAYSONTOP), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
         }
         RefreshBorders();
     }
