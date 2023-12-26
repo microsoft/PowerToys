@@ -429,7 +429,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         bool scoobeDisabledByGpo = powertoys_gpo::getDisableShowWhatsNewAfterUpdatesValue() == powertoys_gpo::gpo_rule_configured_enabled;
         if (openScoobe && (scoobeSettingDisabled || scoobeDisabledByGpo))
         {
-            // Scoope is disabled by policy or setting
+            // Scoope should show after an update, but is disabled by policy or setting
             Logger::info(L"Scoobe: Showing scoope after updates is disabled by setting or by GPO.");
             openScoobe = false;
         }
