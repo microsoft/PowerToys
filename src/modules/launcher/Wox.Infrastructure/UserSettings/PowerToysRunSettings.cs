@@ -341,7 +341,21 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
-        public int TitleFontSize { get; set; } = 16;
+        private int _titleFontSize = 16;
+
+        public int TitleFontSize
+        {
+            get => _titleFontSize;
+            set
+            {
+                if (_titleFontSize != value)
+                {
+                    _titleFontSize = value;
+                    OnPropertyChanged(nameof(TitleFontSize));
+                    OnPropertyChanged(nameof(MaxResultsToShow));
+                }
+            }
+        }
 
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
