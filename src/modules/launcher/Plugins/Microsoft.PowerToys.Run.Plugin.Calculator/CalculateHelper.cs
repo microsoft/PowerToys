@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +
             @"pi|" +
             @"==|~=|&&|\|\||" +
-            @"((-?(\d+(\.\d*)?)|-?(\.\d+))[E](-?\d+\.*\d*))|" + /* expression from CheckScientificNotation between parenthesis */
+            @"((-?(\d+(\.\d*)?)|-?(\.\d+))[E](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
             @"e|[0-9]|0x[0-9a-fA-F]+|0b[01]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
             @")+$",
             RegexOptions.Compiled);
