@@ -176,7 +176,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         return;
     }
-    
+
     Sound::Type soundType = Sound::Type::Off;
     bool topmost = IsTopmost(window);
     if (topmost)
