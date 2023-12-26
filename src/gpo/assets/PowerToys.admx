@@ -15,7 +15,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_73_0" displayName="$(string.SUPPORTED_POWERTOYS_0_73_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_75_0" displayName="$(string.SUPPORTED_POWERTOYS_0_75_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_76_0" displayName="$(string.SUPPORTED_POWERTOYS_0_76_0)"/>
-      <definition name="SUPPORTED_POWERTOYS_0_77_0" displayName="$(string.SUPPORTED_POWERTOYS_0_77_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_78_0" displayName="$(string.SUPPORTED_POWERTOYS_0_77_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -432,7 +432,7 @@
     </policy>
     <policy name="DisablePeriodicUpdateCheck" class="Both" displayName="$(string.DisablePeriodicUpdateCheck)" explainText="$(string.DisablePeriodicUpdateCheckDescription)" key="Software\Policies\PowerToys" valueName="PeriodicUpdateCheckDisabled">
       <parentCategory ref="InstallerUpdates" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_77_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_78_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
