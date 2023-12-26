@@ -424,13 +424,13 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
         const bool with_restartedElevated_arg = cmdLine.find("--restartedElevated") != std::string::npos;
 
-        // Update scoope behavior based on setting and gpo
+        // Update scoobe behavior based on setting and gpo
         bool scoobeSettingDisabled = general_settings.GetNamedBoolean(L"show_whats_new_after_updates", true) == false;
         bool scoobeDisabledByGpo = powertoys_gpo::getDisableShowWhatsNewAfterUpdatesValue() == powertoys_gpo::gpo_rule_configured_enabled;
         if (openScoobe && (scoobeSettingDisabled || scoobeDisabledByGpo))
         {
-            // Scoope should show after an update, but is disabled by policy or setting
-            Logger::info(L"Scoobe: Showing scoope after updates is disabled by setting or by GPO.");
+            // Scoobe should show after an update, but is disabled by policy or setting
+            Logger::info(L"Scoobe: Showing scoobe after updates is disabled by setting or by GPO.");
             openScoobe = false;
         }
 
