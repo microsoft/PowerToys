@@ -191,7 +191,6 @@
 
                     <controls:SettingsCard
                         x:Uid="GeneralPage_ToggleSwitch_ShowWhatsNewAfterUpdates"
-                        Margin="0,-6,0,0"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
                     </controls:SettingsCard>
