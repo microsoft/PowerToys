@@ -397,6 +397,11 @@ namespace PowerLauncher.ViewModel
             }
         }
 
+        public void SetFontSize()
+        {
+            App.Current.Resources["TitleFontSize"] = (double)_settings.TitleFontSize;
+        }
+
         public bool LastQuerySelected { get; set; }
 
         private ResultsViewModel _selectedResults;

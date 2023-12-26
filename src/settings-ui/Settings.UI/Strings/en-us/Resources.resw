@@ -59,10 +59,7 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root"
-    xmlns=""
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -3915,5 +3912,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="ShowPluginsOverview_NonGlobal.Content" xml:space="preserve">
     <value>Not included in global results</value>
+  </data>
+  <data name="PowerLauncher_TitleFontSize.Description" xml:space="preserve">
+    <value>The size of result titles and the search query</value>
+  </data>
+  <data name="PowerLauncher_TitleFontSize.Header" xml:space="preserve">
+    <value>Text size (pt)</value>
+  </data>
+  <data name="PowerLauncher_TextFontSizeSlider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Text size of result titles</value>
   </data>
 </root>
