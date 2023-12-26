@@ -50,7 +50,7 @@ namespace PowerLauncher.ViewModel
         {
             get
             {
-                return (int)(_settings.MaxResultsToShow * (52 + (0.4 * _settings.TitleFontSize))) + 16;
+                return (_settings.MaxResultsToShow * 56) + 16;
             }
         }
 
