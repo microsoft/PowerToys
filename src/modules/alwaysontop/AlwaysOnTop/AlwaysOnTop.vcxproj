@@ -148,7 +148,7 @@
     <ClInclude Include="ModuleConstants.h" />
 	<ClInclude Include="NotificationUtil.h" />
     <ClInclude Include="pch.h" />
-    <None Include="resource.h" />
+    <ClInclude Include="resource.h" />
 	<None Include="resource.base.h" />
     <ClInclude Include="ScalingUtils.h" />
     <ClInclude Include="Settings.h" />
