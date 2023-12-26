@@ -91,8 +91,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                     CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
             }
 
-            var r = "($1 * 10^($5))";
-            return Regex.Replace(input, p, r);
+            return Regex.Replace(input, p, "($1 * 10^($5))");
         }
 
         /*
