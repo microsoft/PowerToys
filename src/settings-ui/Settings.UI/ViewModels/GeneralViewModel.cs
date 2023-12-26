@@ -139,6 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
+            _periodicUpdateCheckIsGpoDisabled = GPOWrapper.GetDisablePeriodicUpdateCheckValue() == GpoRuleConfigured.Enabled;
 
             if (dispatcherAction != null)
             {
@@ -154,6 +155,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private bool _autoDownloadUpdates;
         private bool _autoDownloadUpdatesIsGpoDisabled;
+        private bool _periodicUpdateCheckIsGpoDisabled;
         private bool _enableExperimentation;
         private bool _experimentationIsGpoDisallowed;
 
@@ -307,6 +309,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowAutoDownloadUpdatesGpoInformation
         {
             get => _isAdmin && _autoDownloadUpdatesIsGpoDisabled;
+        }
+
+        public bool ShowPeriodicUpdateCheckGpoInformation
+        {
+            get => _periodicUpdateCheckIsGpoDisabled;
         }
 
         public bool EnableExperimentation

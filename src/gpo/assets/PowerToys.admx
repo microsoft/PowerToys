@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.5" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.7" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.6"/><!-- Last changed with PowerToys v0.76.0 -->
+  <resources minRequiredRevision="1.7"/><!-- Last changed with PowerToys v0.77.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -15,6 +15,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_73_0" displayName="$(string.SUPPORTED_POWERTOYS_0_73_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_75_0" displayName="$(string.SUPPORTED_POWERTOYS_0_75_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_76_0" displayName="$(string.SUPPORTED_POWERTOYS_0_76_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_77_0" displayName="$(string.SUPPORTED_POWERTOYS_0_77_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -429,10 +430,9 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	<!-- This policy is implemented for later usage (PT v1.0 and later) and therefore inactive. (To make it working please update `src/runner/UpdateUtils.cpp`)
-	<policy name="DisablePeriodicUpdateCheck" class="Both" displayName="$(string.DisablePeriodicUpdateCheck)" explainText="$(string.DisablePeriodicUpdateCheckDescription)" key="Software\Policies\PowerToys" valueName="PeriodicUpdateCheckDisabled">
+    <policy name="DisablePeriodicUpdateCheck" class="Both" displayName="$(string.DisablePeriodicUpdateCheck)" explainText="$(string.DisablePeriodicUpdateCheckDescription)" key="Software\Policies\PowerToys" valueName="PeriodicUpdateCheckDisabled">
       <parentCategory ref="InstallerUpdates" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_77_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
@@ -440,7 +440,6 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	-->
     <policy name="AllowExperimentation" class="Both" displayName="$(string.AllowExperimentation)" explainText="$(string.AllowExperimentationDescription)" key="Software\Policies\PowerToys" valueName="AllowExperimentation">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />

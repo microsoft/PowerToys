@@ -194,12 +194,11 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
 void PeriodicUpdateWorker()
 {
     // Check if periodic update check is disabled by GPO.
-    // This policy code is implemented but not active. It is for later usage in PT version after 1.0 release.
-    //if (powertoys_gpo::getDisablePeriodicUpdateCheckValue() == powertoys_gpo::gpo_rule_configured_enabled)
-    //{
-    //    Logger::info(L"Initialization of periodic update checks stopped. Periodic update checks are disabled by GPO.");
-    //    return;
-    //}
+    if (powertoys_gpo::getDisablePeriodicUpdateCheckValue() == powertoys_gpo::gpo_rule_configured_enabled)
+    {
+        Logger::info(L"Initialization of periodic update checks stopped. Periodic update checks are disabled by GPO.");
+        return;
+    }
 
     for (;;)
     {
