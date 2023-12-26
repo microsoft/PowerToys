@@ -107,9 +107,13 @@
                 x:Uid="UpdateAvailable"
                 IsClosable="False"
                 IsOpen="True"
-                Severity="Success">
+                Severity="Informational">
                 <InfoBar.ActionButton>
-                    <Button x:Uid="ShowUpdateDetails" Click="UpdateDetailsBtn_Click" />
+                    <Button x:Uid="ShowUpdateDetails" Click="UpdateDetailsBtn_Click">
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="Flyout_ShowUpdateDetails_ToolTip" />
+                        </ToolTipService.ToolTip>
+                    </Button>
                 </InfoBar.ActionButton>
             </InfoBar>
 

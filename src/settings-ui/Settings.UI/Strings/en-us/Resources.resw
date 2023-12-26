@@ -3913,6 +3913,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="ShowPluginsOverview_NonGlobal.Content" xml:space="preserve">
     <value>Not included in global results</value>
   </data>
+  <data name="Flyout_ShowUpdateDetails_ToolTip.Text" xml:space="preserve">
+    <value>Show update details</value>
+  </data>
   <data name="GeneralPage_ToggleSwitch_NewUpdatesToastDisabled.Description" xml:space="preserve">
     <value>The notifications in the settings ui and the tray flyout are still shown</value>
   </data>
