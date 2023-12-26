@@ -5,7 +5,6 @@
     xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:converters="clr-namespace:PowerLauncher.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:helper="clr-namespace:PowerLauncher.Helper"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:PowerLauncher.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
@@ -59,7 +58,7 @@
         <ListView.ItemTemplate>
             <DataTemplate>
                 <Grid
-                    Height="44"
+                    MinHeight="44"
                     Background="Transparent"
                     ToolTipService.BetweenShowDelay="0"
                     ToolTipService.InitialShowDelay="1000">
@@ -76,10 +75,6 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
                     <Grid.ToolTip>
                         <ToolTip
                             MaxWidth="480"
@@ -109,35 +104,38 @@
                         VerticalAlignment="Center"
                         AutomationProperties.Name="{x:Static p:Resources.AppIcon}"
                         Source="{Binding Image}" />
-                    <TextBlock
-                        x:Name="Title"
+                    <StackPanel
                         Grid.Column="1"
-                        VerticalAlignment="Bottom"
-                        AutomationProperties.Name="{x:Static p:Resources.Title}"
-                        FontSize="16"
-                        IsHitTestVisible="False"
-                        TextTrimming="CharacterEllipsis">
-                        <viewmodel:ResultsViewModel.FormattedText>
-                            <MultiBinding Converter="{StaticResource highlightTextConverter}">
-                                <Binding Path="Result.Title" />
-                                <Binding Path="Result.TitleHighlightData" />
-                                <Binding Path="IsSelected" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}" />
-                            </MultiBinding>
-                        </viewmodel:ResultsViewModel.FormattedText>
-                    </TextBlock>
-                    <TextBlock
-                        x:Name="Path"
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        VerticalAlignment="Top"
-                        AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
-                        Opacity="0.6"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{Binding Result.SubTitle}"
-                        TextTrimming="CharacterEllipsis" />
+                        VerticalAlignment="Center"
+                        Orientation="Vertical">
+                        <TextBlock
+                            x:Name="Title"
+                            VerticalAlignment="Bottom"
+                            AutomationProperties.Name="{x:Static p:Resources.Title}"
+                            FontSize="{DynamicResource TitleFontSize}"
+                            IsHitTestVisible="False"
+                            TextTrimming="CharacterEllipsis">
+                            <viewmodel:ResultsViewModel.FormattedText>
+                                <MultiBinding Converter="{StaticResource highlightTextConverter}">
+                                    <Binding Path="Result.Title" />
+                                    <Binding Path="Result.TitleHighlightData" />
+                                    <Binding Path="IsSelected" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}" />
+                                </MultiBinding>
+                            </viewmodel:ResultsViewModel.FormattedText>
+                        </TextBlock>
+                        <TextBlock
+                            x:Name="Path"
+                            VerticalAlignment="Top"
+                            AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
+                            Opacity="0.6"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{Binding Result.SubTitle}"
+                            TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+
                     <ListView
-                        Grid.RowSpan="2"
                         Grid.Column="2"
+                        Height="44"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemsCollection}"

@@ -3924,5 +3924,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="ShowUpdateDetails.Content" xml:space="preserve">
     <value>Show</value>
+</data>
+  <data name="PowerLauncher_TitleFontSize.Description" xml:space="preserve">
+    <value>The size of result titles and the search query</value>
+  </data>
+  <data name="PowerLauncher_TitleFontSize.Header" xml:space="preserve">
+    <value>Text size (pt)</value>
+  </data>
+  <data name="PowerLauncher_TextFontSizeSlider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Text size of result titles</value>
   </data>
 </root>
