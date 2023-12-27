@@ -40,6 +40,14 @@ public:
         OpenURI = 2
     };
 
+    enum StartWindowType
+    {
+        Normal = 0,
+        Hidden = 1,
+        Minimized = 2,
+        Maximized = 2
+    };
+
     enum ProgramAlreadyRunningAction
     {
         ShowWindow = 0,
@@ -64,6 +72,7 @@ public:
     ProgramAlreadyRunningAction alreadyRunningAction = ProgramAlreadyRunningAction::ShowWindow;
     ElevationLevel elevationLevel = ElevationLevel::NonElevated;
     OperationType operationType = OperationType::RemapShortcut;
+    StartWindowType startWindowType = StartWindowType::Normal;
 
     DWORD actionKey = {};
     DWORD secondKey = {}; // of the chord

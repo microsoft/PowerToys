@@ -54,7 +54,10 @@ namespace KeyboardManagerConstants
 
     // Name of the property use to store runProgramAlreadyRunningAction.
     inline const std::wstring RunProgramAlreadyRunningAction = L"runProgramAlreadyRunningAction";
-    
+
+    // Name of the property use to store runProgramStartWindowType.
+    inline const std::wstring RunProgramStartWindowType = L"runProgramStartWindowType";
+
     // Name of the property use to store runProgramArgs.
     inline const std::wstring RunProgramArgsSettingName = L"runProgramArgs";
 

@@ -208,7 +208,7 @@ inline bool drop_elevated_privileges()
 }
 
 // Run command as different user, returns true if succeeded
-inline HANDLE run_as_different_user(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr)
+inline HANDLE run_as_different_user(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr, const bool showWindow = true)
 {
     Logger::info(L"run_elevated with params={}", params);
     SHELLEXECUTEINFOW exec_info = { 0 };
@@ -220,13 +220,21 @@ inline HANDLE run_as_different_user(const std::wstring& file, const std::wstring
     exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
     exec_info.lpDirectory = workingDir;
     exec_info.hInstApp = 0;
-    exec_info.nShow = SW_SHOWDEFAULT;
+    if (showWindow)
+    {
+        exec_info.nShow = SW_SHOWDEFAULT;
+    }
+    else
+    {
+        // might have limited success, but only option with ShellExecuteExW
+        exec_info.nShow = SW_HIDE;
+    }
 
     return ShellExecuteExW(&exec_info) ? exec_info.hProcess : nullptr;
 }
 
 // Run command as elevated user, returns true if succeeded
-inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr)
+inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr, const bool showWindow = true)
 {
     Logger::info(L"run_elevated with params={}", params);
     SHELLEXECUTEINFOW exec_info = { 0 };
@@ -238,13 +246,22 @@ inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params,
     exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
     exec_info.lpDirectory = workingDir;
     exec_info.hInstApp = 0;
-    exec_info.nShow = SW_SHOWDEFAULT;
+
+    if (showWindow)
+    {
+        exec_info.nShow = SW_SHOWDEFAULT;
+    }
+    else
+    {
+        // might have limited success, but only option with ShellExecuteExW
+        exec_info.nShow = SW_HIDE;
+    }
 
     return ShellExecuteExW(&exec_info) ? exec_info.hProcess : nullptr;
 }
 
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
-inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr)
+inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr, const bool showWindow = true)
 {
     Logger::info(L"run_non_elevated with params={}", params);
     auto executable_args = L"\"" + file + L"\"";
@@ -310,15 +327,22 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     STARTUPINFOEX siex = { 0 };
     siex.lpAttributeList = pptal;
     siex.StartupInfo.cb = sizeof(siex);
-
     PROCESS_INFORMATION pi = { 0 };
+    auto dwCreationFlags = EXTENDED_STARTUPINFO_PRESENT;
+
+    if (!showWindow)
+    {
+        siex.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
+        siex.StartupInfo.wShowWindow = SW_HIDE;
+        dwCreationFlags = CREATE_NO_WINDOW;
+    }
 
     auto succeeded = CreateProcessW(file.c_str(),
                                     &executable_args[0],
                                     nullptr,
                                     nullptr,
                                     FALSE,
-                                    EXTENDED_STARTUPINFO_PRESENT,
+                                    dwCreationFlags,
                                     nullptr,
                                     workingDir,
                                     &siex.StartupInfo,

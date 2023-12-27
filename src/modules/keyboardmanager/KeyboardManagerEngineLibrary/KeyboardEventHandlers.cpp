@@ -1032,13 +1032,37 @@ namespace KeyboardEventHandlers
     };
 
     // used for reactivating a window for a program we already started.
-    HWND FindMainWindow(unsigned long process_id)
+    HWND FindMainWindow(unsigned long process_id, const bool allowNonVisible)
     {
         handle_data data;
         data.process_id = process_id;
         data.window_handle = 0;
-        EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&data));
+
+        if (allowNonVisible)
+        {
+            EnumWindows(EnumWindowsCallbackAllowNonVisible, reinterpret_cast<LPARAM>(&data));
+        }
+        else
+        {
+            EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&data));
+        }
+
         return data.window_handle;
+    }
+
+    // used by FindMainWindow
+    BOOL CALLBACK EnumWindowsCallbackAllowNonVisible(HWND handle, LPARAM lParam)
+    {
+        handle_data& data = *reinterpret_cast<handle_data*>(lParam);
+        unsigned long process_id = 0;
+        GetWindowThreadProcessId(handle, &process_id);
+
+        if (data.process_id == process_id)
+        {
+            data.window_handle = handle;
+            return FALSE;
+        }
+        return TRUE;
     }
 
     // used by FindMainWindow
@@ -1256,22 +1280,43 @@ namespace KeyboardEventHandlers
             DWORD processId = 1;
             HANDLE newProcessHandle;
 
+            {
+                INPUT inputs[3] = { 0 };
+                inputs[0].type = INPUT_MOUSE;
+                inputs[0].mi.dx = 0; // Replace with desired X position
+                inputs[0].mi.dy = 0; // Replace with desired Y position
+                inputs[0].mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
+                inputs[1].type = INPUT_MOUSE;
+                inputs[1].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+                inputs[2].type = INPUT_MOUSE;
+                inputs[2].mi.dwFlags = MOUSEEVENTF_LEFTUP;
+                UINT sent = SendInput(3, inputs, sizeof(INPUT));
+                if (sent != 3)
+                {
+                    // Handle error if input events weren't sent successfully
+                }
+            }
+
             if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
             {
-                newProcessHandle = run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                newProcessHandle = run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
                 processId = GetProcessId(newProcessHandle);
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
             {
-                run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, &processId, currentDir);
+                run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, &processId, currentDir, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
             {
-                newProcessHandle = run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir);
+                newProcessHandle = run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
                 processId = GetProcessId(newProcessHandle);
             }
 
-            ShowProgram(processId, fileNamePart, true, false, 0);
+            if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
+            {
+                HideProgram(processId, fileNamePart, 0);
+            }
+            //ShowProgram(processId, fileNamePart, true, false, (shortcut.startWindowType == Shortcut::StartWindowType::Hidden), 0);
         }
         return;
     }
@@ -1301,7 +1346,7 @@ namespace KeyboardEventHandlers
                 for (DWORD pid : pids)
                 {
                     //Logger::trace(L"CKBH:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
-                    HWND hwnd = FindMainWindow(pid);
+                    HWND hwnd = FindMainWindow(pid, false);
                     SendMessage(hwnd, WM_CLOSE, 0, 0);
                 }
 
@@ -1329,7 +1374,7 @@ namespace KeyboardEventHandlers
                     for (DWORD pid : pids)
                     {
                         //Logger::trace(L"CKBH:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
-                        HWND hwnd = FindMainWindow(pid);
+                        HWND hwnd = FindMainWindow(pid, false);
                         SendMessage(hwnd, WM_CLOSE, 0, 0);
 
                         // small sleep between when there are a lot might help
@@ -1393,23 +1438,80 @@ namespace KeyboardEventHandlers
         }
     }
 
-    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool hideIfVisible, int retryCount)
+    bool HideProgram(DWORD pid, std::wstring programName, int retryCount)
     {
-        Logger::trace(L"CKBH:ShowProgram starting with {},{},{}, retryCount:{}", pid, programName, isNewProcess, retryCount);
+        Logger::trace(L"CKBH:HideProgram starting with {},{}, retryCount:{}", pid, programName, retryCount);
+
+        HWND hwnd = FindMainWindow(pid, false);
+        if (hwnd == NULL)
+        {
+            if (retryCount < 20)
+            {
+                Logger::trace(L"CKBH:hwnd not found will retry for pid:{}", pid);
+                auto future = std::async(std::launch::async, [=] {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    auto result = HideProgram(pid, programName, retryCount + 1);
+                    return false;
+                });
+            }
+        }
+
+        hwnd = FindWindow(nullptr, nullptr);
+
+        auto anyHideResultFailed = false;
+
+        Logger::trace(L"CKBH:{}:{},{}, FindWindow, HideProgram (all)", programName, pid, retryCount);
+        while (hwnd)
+        {
+            DWORD pidForHwnd;
+            GetWindowThreadProcessId(hwnd, &pidForHwnd);
+            if (pid == pidForHwnd)
+            {
+                if (IsWindowVisible(hwnd))
+                {
+                    ShowWindow(hwnd, SW_HIDE);
+                    Logger::trace(L"CKBH:{}, tryToHide {}, {}", programName, reinterpret_cast<uintptr_t>(hwnd), anyHideResultFailed);
+                }
+            }
+            hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
+        }
+
+        return true;
+    }
+
+    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool minimizeIfVisible, int retryCount)
+    {
+        Logger::trace(L"CKBH:ShowProgram starting with {},{},isNewProcess:{}, tryToHide:{} retryCount:{}", pid, programName, isNewProcess, retryCount);
 
         // a good place to look for this...
         // https://github.com/ritchielawrence/cmdow
 
         // try by main window.
-        HWND hwnd = FindMainWindow(pid);
-        if (hwnd != NULL)
+        auto allowNonVisible = false;
+
+        HWND hwnd = FindMainWindow(pid, allowNonVisible);
+
+        if (hwnd == NULL)
+        {
+            if (retryCount < 20)
+            {
+                Logger::trace(L"CKBH:hwnd not found will retry for pid:{}, allowNonVisible:{}", pid, allowNonVisible);
+
+                auto future = std::async(std::launch::async, [=] {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    auto result = ShowProgram(pid, programName, isNewProcess, minimizeIfVisible, retryCount + 1);
+                    return false;
+                });
+            }
+        }
+        else
         {
             Logger::trace(L"CKBH:{}, got hwnd from FindMainWindow", programName);
 
             if (hwnd == GetForegroundWindow())
             {
                 // only hide if this was a call from a already open program, don't make small if we just opened it.
-                if (!isNewProcess && hideIfVisible)
+                if (!isNewProcess && minimizeIfVisible)
                 {
                     Logger::trace(L"CKBH:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
                     return ShowWindow(hwnd, SW_MINIMIZE);
@@ -1446,66 +1548,57 @@ namespace KeyboardEventHandlers
                 }
             }
         }
-        else
-        {
-            if (retryCount < 20)
-            {
-                Logger::trace(L"CKBH:hwnd not found will retry for pid:{}", pid);
-
-                auto future = std::async(std::launch::async, [=] {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                    ShowProgram(pid, programName, isNewProcess, hideIfVisible, retryCount + 1);
-                    return false;
-                });
-            }
-        }
 
         if (isNewProcess)
         {
             return true;
         }
 
-        // try by console.
-        hwnd = FindWindow(nullptr, nullptr);
-        if (AttachConsole(pid))
+        if (false)
         {
-            Logger::trace(L"CKBH:{}, success on AttachConsole", programName);
-
-            // Get the console window handle
-            hwnd = GetConsoleWindow();
-            auto showByConsoleSuccess = false;
-            if (hwnd != NULL)
+            // try by console.
+            hwnd = FindWindow(nullptr, nullptr);
+            if (AttachConsole(pid))
             {
-                Logger::trace(L"CKBH:{}, success on GetConsoleWindow, doing SW_RESTORE", programName);
+                Logger::trace(L"CKBH:{}, success on AttachConsole", programName);
 
-                ShowWindow(hwnd, SW_RESTORE);
-
-                if (!SetForegroundWindow(hwnd))
+                // Get the console window handle
+                hwnd = GetConsoleWindow();
+                auto showByConsoleSuccess = false;
+                if (hwnd != NULL)
                 {
-                    auto errorCode = GetLastError();
-                    Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
-                }
-                else
-                {
-                    Logger::trace(L"CKBH:{}, success on SetForegroundWindow", programName);
-                    showByConsoleSuccess = true;
-                }
-            }
+                    Logger::trace(L"CKBH:{}, success on GetConsoleWindow, doing SW_RESTORE", programName);
 
-            // Detach from the console
-            FreeConsole();
-            if (showByConsoleSuccess)
-            {
-                return true;
+                    ShowWindow(hwnd, SW_RESTORE);
+
+                    if (!SetForegroundWindow(hwnd))
+                    {
+                        auto errorCode = GetLastError();
+                        Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                    }
+                    else
+                    {
+                        Logger::trace(L"CKBH:{}, success on SetForegroundWindow", programName);
+                        showByConsoleSuccess = true;
+                    }
+                }
+
+                // Detach from the console
+                FreeConsole();
+                if (showByConsoleSuccess)
+                {
+                    return true;
+                }
             }
         }
 
         // try to just show them all (if they have a title)!.
         hwnd = FindWindow(nullptr, nullptr);
 
+        auto anyHideResultFailed = false;
         if (hwnd)
         {
-            Logger::trace(L"CKBH:{}:{}, FindWindow (show all mode)", programName, pid);
+            Logger::trace(L"CKBH:{}:{},{}, FindWindow (show all mode)", programName, pid, retryCount);
             while (hwnd)
             {
                 DWORD pidForHwnd;

@@ -55,8 +55,11 @@ namespace KeyboardEventHandlers
     // Function to help FindMainWindow
     BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam);
 
+    // Function to help FindMainWindow
+    BOOL CALLBACK EnumWindowsCallbackAllowNonVisible(HWND handle, LPARAM lParam);
+
     // Function to FindMainWindow
-    HWND FindMainWindow(unsigned long process_id);
+    HWND FindMainWindow(unsigned long process_id, const bool allowNonVisible);
 
     // Function to GetProcessIdByName
     DWORD GetProcessIdByName(const std::wstring& processName);
@@ -68,7 +71,9 @@ namespace KeyboardEventHandlers
     std::wstring GetFileNameFromPath(const std::wstring& fullPath);
 
     // Function to a find and show a running program
-    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool hideIfVisible, int retryCount);
+    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool minimizeIfVisible, int retryCount);
+
+    bool HideProgram(DWORD pid, std::wstring programName, int retryCount);
 
     // Function to a handle an os-level shortcut remap
     intptr_t HandleOSLevelShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;

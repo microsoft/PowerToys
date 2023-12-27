@@ -116,6 +116,16 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         isEditShortcutsWindowRegistrationCompleted = true;
     }
 
+    if (!keysForShortcutToEdit.empty())
+    {
+        isInSingleEditMode = true;
+
+        if (keysForShortcutToEdit == L"inCreateNewMode")
+        {
+            isInCreateNewMode = true;
+        }
+    }
+
     // Find coordinates of the screen where the settings window is placed.
     RECT desktopRect = UIHelpers::GetForegroundWindowDesktopRect();
 
@@ -239,7 +249,19 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     tableHeader.Children().Append(originalShortcutContainer.as<FrameworkElement>());
     auto newShortcutHeaderContainer = UIHelpers::GetWrapped(newShortcutHeader, EditorConstants::ShortcutTargetColumnWidth);
     tableHeader.Children().Append(newShortcutHeaderContainer.as<FrameworkElement>());
-    tableHeader.Children().Append(targetAppHeader);
+
+    if (isInSingleEditMode)
+    {
+    }
+    else
+    {
+        tableHeader.Children().Append(targetAppHeader);
+    }
+
+    /*if (isInSingleEditMode)
+    {
+        tableHeader.Visibility(Visibility::Collapsed);
+    }*/
 
     // Store handle of edit shortcuts window
     ShortcutControl::editShortcutsWindowHandle = _hWndEditShortcutsWindow;
@@ -284,16 +306,6 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     auto OnClickAcceptNoCheckFn = ApplyRemappings;
 
-    if (!keysForShortcutToEdit.empty())
-    {
-        isInSingleEditMode = true;
-
-        if (keysForShortcutToEdit == L"inCreateNewMode")
-        {
-            isInCreateNewMode = true;
-        }
-    }
-
     for (const auto& it : osLevelShortcutReMapCopy)
     {
         auto isHidden = false;
@@ -328,7 +340,6 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         for (const auto& itShortcut : itApp.second)
         {
             auto isHidden = false;
-
             if (!keysForShortcutToEdit.empty())
             {
                 isHidden = (keysForShortcutToEdit != itShortcut.first.ToHstringVK());
@@ -422,7 +433,14 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Remapping table
     StackPanel mappingsPanel;
-    mappingsPanel.Children().Append(tableHeader);
+    if (isInSingleEditMode)
+    {
+    }
+    else
+    {
+        mappingsPanel.Children().Append(tableHeader);
+    }
+
     mappingsPanel.Children().Append(shortcutTable);
     mappingsPanel.Children().Append(addShortcut);
 

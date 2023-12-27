@@ -53,6 +53,25 @@ namespace UIHelpers
         return parentElement.Children().GetAt(index + 1);
     }
 
+    winrt::Windows::Foundation::IInspectable GetLabelWrapped(const winrt::Windows::Foundation::IInspectable& element, std::wstring label, double textWidth)
+    {
+        StackPanel sp = StackPanel();
+        sp.Orientation(Orientation::Horizontal);
+        sp.HorizontalAlignment(HorizontalAlignment::Left);
+        TextBlock text;
+        text.FontWeight(Text::FontWeights::Bold());
+        text.Text(label);
+
+        if (textWidth >= 0)
+        {
+            text.Width(textWidth);
+        }
+
+        sp.Children().Append(text);
+        sp.Children().Append(element.as<FrameworkElement>());
+        return sp;
+    }
+
     winrt::Windows::Foundation::IInspectable GetWrapped(const winrt::Windows::Foundation::IInspectable& element, double width)
     {
         StackPanel sp = StackPanel();
