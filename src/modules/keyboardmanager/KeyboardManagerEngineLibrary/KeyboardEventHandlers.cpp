@@ -1191,9 +1191,12 @@ namespace KeyboardEventHandlers
 
     void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept
     {
-        auto fileNamePart = GetFileNameFromPath(shortcut.runProgramFilePath);
+        WCHAR fullExpandedFilePath[MAX_PATH];
+        DWORD result = ExpandEnvironmentStrings(shortcut.runProgramFilePath.c_str(), fullExpandedFilePath, MAX_PATH);
 
-        Logger::trace(L"CKBH:{}, trying to run {}", fileNamePart, shortcut.runProgramFilePath);
+        auto fileNamePart = GetFileNameFromPath(fullExpandedFilePath);
+
+        Logger::trace(L"CKBH:{}, trying to run {}", fileNamePart, fullExpandedFilePath);
         //lastKeyInChord = 0;
 
         DWORD targetPid = GetProcessIdByName(fileNamePart);
@@ -1245,7 +1248,7 @@ namespace KeyboardEventHandlers
         }
         else
         {
-            DWORD dwAttrib = GetFileAttributesW(shortcut.runProgramFilePath.c_str());
+            DWORD dwAttrib = GetFileAttributesW(fullExpandedFilePath);
 
             if (dwAttrib == INVALID_FILE_ATTRIBUTES)
             {
@@ -1255,13 +1258,15 @@ namespace KeyboardEventHandlers
                 return;
             }
 
-            std::wstring executable_and_args = fmt::format(L"\"{}\" {}", shortcut.runProgramFilePath, shortcut.runProgramArgs);
+            std::wstring executable_and_args = fmt::format(L"\"{}\" {}", fullExpandedFilePath, shortcut.runProgramArgs);
 
-            auto currentDir = shortcut.runProgramStartInDir.c_str();
+            WCHAR currentDir[MAX_PATH];
+            WCHAR* currentDirPtr = currentDir;
+            DWORD result = ExpandEnvironmentStrings(shortcut.runProgramStartInDir.c_str(), currentDir, MAX_PATH);
 
             if (shortcut.runProgramStartInDir == L"")
             {
-                currentDir = nullptr;
+                currentDirPtr = nullptr;
             }
             else
             {
@@ -1271,45 +1276,36 @@ namespace KeyboardEventHandlers
                 {
                     std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
                     std::wstring message = fmt::format(L"The start in path was not valid. It could not be used.", currentDir);
-                    currentDir = nullptr;
+                    currentDirPtr = nullptr;
                     toast(title, message);
                     return;
                 }
             }
 
-            DWORD processId = 1;
+            DWORD processId = 0;
             HANDLE newProcessHandle;
-
-            {
-                INPUT inputs[3] = { 0 };
-                inputs[0].type = INPUT_MOUSE;
-                inputs[0].mi.dx = 0; // Replace with desired X position
-                inputs[0].mi.dy = 0; // Replace with desired Y position
-                inputs[0].mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
-                inputs[1].type = INPUT_MOUSE;
-                inputs[1].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-                inputs[2].type = INPUT_MOUSE;
-                inputs[2].mi.dwFlags = MOUSEEVENTF_LEFTUP;
-                UINT sent = SendInput(3, inputs, sizeof(INPUT));
-                if (sent != 3)
-                {
-                    // Handle error if input events weren't sent successfully
-                }
-            }
 
             if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
             {
-                newProcessHandle = run_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                newProcessHandle = run_elevated(fullExpandedFilePath, shortcut.runProgramArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
                 processId = GetProcessId(newProcessHandle);
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
             {
-                run_non_elevated(shortcut.runProgramFilePath, shortcut.runProgramArgs, &processId, currentDir, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                run_non_elevated(fullExpandedFilePath, shortcut.runProgramArgs, &processId, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
             {
-                newProcessHandle = run_as_different_user(shortcut.runProgramFilePath, shortcut.runProgramArgs, currentDir, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                newProcessHandle = run_as_different_user(fullExpandedFilePath, shortcut.runProgramArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
                 processId = GetProcessId(newProcessHandle);
+            }
+
+            if (processId == 0)
+            {
+                std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
+                std::wstring message = fmt::format(L"The application might not have started.");
+                toast(title, message);
+                return;
             }
 
             if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)

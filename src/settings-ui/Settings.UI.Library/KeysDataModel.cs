@@ -212,12 +212,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string FormatFakeKeyForDisplay(int runProgramMaxLength)
         {
             // was going to use this:
-            var fakeKey = RunProgramFilePath;
+            var fakeKey = Environment.ExpandEnvironmentVariables(RunProgramFilePath);
             try
             {
                 if (File.Exists(fakeKey))
                 {
-                    fakeKey = Path.GetFileName(RunProgramFilePath);
+                    fakeKey = Path.GetFileName(Environment.ExpandEnvironmentVariables(RunProgramFilePath));
                 }
             }
             catch
