@@ -17,6 +17,7 @@ static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
 static bool download_updates_automatically = true;
 static bool enable_experimentation = true;
+static bool enable_warnings_elevated_apps = true;
 
 json::JsonObject GeneralSettings::to_json()
 {
@@ -40,6 +41,7 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"download_updates_automatically", json::value(downloadUpdatesAutomatically));
     result.SetNamedValue(L"enable_experimentation", json::value(enableExperimentation));
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
+    result.SetNamedValue(L"enable_warnings_elevated_apps", json::value(enableWarningsElevatedApps));
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
     result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
@@ -58,6 +60,7 @@ json::JsonObject load_general_settings()
     run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation",true);
+    enable_warnings_elevated_apps = loaded.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
 
     return loaded;
 }
@@ -69,6 +72,7 @@ GeneralSettings get_general_settings()
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
+        .enableWarningsElevatedApps = enable_warnings_elevated_apps,
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .enableExperimentation = enable_experimentation,
         .theme = settings_theme,
@@ -90,6 +94,8 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
 {
     Logger::info(L"apply_general_settings: {}", std::wstring{ general_configs.ToString() });
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
+
+    enable_warnings_elevated_apps = general_configs.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
 
     download_updates_automatically = general_configs.GetNamedBoolean(L"download_updates_automatically", true);
 

@@ -18,8 +18,11 @@ namespace FancyZonesNotifications
         using namespace notifications;
         using namespace NonLocalizable;
 
+        auto settings = PTSettingsHelper::load_general_settings();
+        auto enableWarningsElevatedApps = settings.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
+
         static bool warning_shown = false;
-        if (!warning_shown && !is_toast_disabled(CantDragElevatedDontShowAgainRegistryPath, CantDragElevatedDisableIntervalInDays))
+        if (enableWarningsElevatedApps && !warning_shown && !is_toast_disabled(CantDragElevatedDontShowAgainRegistryPath, 0))
         {
             std::vector<action_t> actions = {
                 link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), FancyZonesRunAsAdminInfoPage },
@@ -29,7 +32,6 @@ namespace FancyZonesNotifications
                                         GET_RESOURCE_STRING(IDS_FANCYZONES),
                                         {},
                                         std::move(actions));
-            warning_shown = true;
         }
     }
 }
