@@ -9,7 +9,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Modules.MouseJump;
 using MouseJumpUI.Helpers;
 using MouseJumpUI.Models.Drawing;
 using MouseJumpUI.Models.Layout;
@@ -172,7 +172,9 @@ internal partial class MainForm : Form
             .Index;
 
         // avoid a race condition - cache the current settings in case they change
-        var currentSettings = form.SettingsHelper.CurrentSettings;
+        var currentSettings = SettingsConverter.ConvertToPreviewStyle(
+            previewStyle: form.SettingsHelper.CurrentSettings.Properties.PreviewStyle,
+            defaultStyle: MouseJumpSettings.DefaultSettings.Properties.PreviewStyle);
 
         var layoutConfig = new LayoutConfig(
             virtualScreenBounds: ScreenHelper.GetVirtualScreen(),
@@ -181,8 +183,8 @@ internal partial class MainForm : Form
             activatedScreenIndex: activatedScreenIndex,
             activatedScreenNumber: activatedScreenIndex + 1,
             maximumFormSize: new(
-                currentSettings.Properties.ThumbnailSize.Width,
-                currentSettings.Properties.ThumbnailSize.Height),
+                currentSettings.CanvasSize.Width,
+                currentSettings.CanvasSize.Height),
             /*
               don't read the panel padding values because they are affected by dpi scaling
               and can give wrong values when moving between monitors with different dpi scaling

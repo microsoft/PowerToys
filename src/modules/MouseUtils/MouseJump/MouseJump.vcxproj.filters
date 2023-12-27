@@ -21,10 +21,10 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Generated Files\resource.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="trace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -40,16 +40,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resource.h">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="MouseJump.rc">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Generated Files\MouseJump.rc">
+    <ResourceCompile Include="MouseJump.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

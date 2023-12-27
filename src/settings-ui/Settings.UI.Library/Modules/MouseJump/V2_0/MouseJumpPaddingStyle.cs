@@ -1,0 +1,48 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+#nullable enable
+
+using System;
+using System.ComponentModel;
+using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Library.Modules.MouseJump.Helpers;
+
+namespace Microsoft.PowerToys.Settings.UI.Library.Modules.MouseJump.V2_0;
+
+/// <summary>
+/// Represents the margin style for a drawing object.
+/// </summary>
+public sealed class MouseJumpPaddingStyle : INotifyPropertyChanged
+{
+    private int? _width;
+
+    public MouseJumpPaddingStyle(int? width)
+    {
+        this.Width = width;
+    }
+
+    [JsonPropertyName("width")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Width
+    {
+        get => _width;
+        set => PropertyChangedHelper.SetField(
+            field: ref _width,
+            value: value.HasValue ? Math.Clamp(value.Value, 0, 99) : null,
+            this.OnPropertyChanged);
+    }
+
+    public override string ToString()
+    {
+        return "{" +
+            $"{nameof(this.Width)}={this.Width}" +
+            "}";
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged(string propertyName) =>
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+}

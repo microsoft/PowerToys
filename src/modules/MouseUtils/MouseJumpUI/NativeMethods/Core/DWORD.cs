@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
+
 namespace MouseJumpUI.NativeMethods;
 
 internal static partial class Core
@@ -22,6 +24,9 @@ internal static partial class Core
         {
             this.Value = value;
         }
+
+        public static int Size =>
+            Marshal.SizeOf(typeof(DWORD));
 
         public static implicit operator uint(DWORD value) => value.Value;
 

@@ -73,14 +73,20 @@ internal static class MouseHelper
         //
         // setting the position a second time seems to fix this and moves the
         // cursor to the expected location (b)
-        var point = location.ToPoint();
+        var target = location.ToPoint();
         for (var i = 0; i < 2; i++)
         {
-            var result = User32.SetCursorPos(point.X, point.Y);
+            var result = User32.SetCursorPos(target.X, target.Y);
             if (!result)
             {
                 throw new Win32Exception(
                     Marshal.GetLastWin32Error());
+            }
+
+            var current = MouseHelper.GetCursorPosition();
+            if ((current.X == target.X) && (current.Y == target.Y))
+            {
+                break;
             }
         }
 
@@ -128,7 +134,7 @@ internal static class MouseHelper
         return (x * 65535) / User32.GetSystemMetrics(User32.SYSTEM_METRICS_INDEX.SM_CXSCREEN);
     }
 
-    internal static decimal CalculateAbsoluteCoordinateY(decimal y)
+    private static decimal CalculateAbsoluteCoordinateY(decimal y)
     {
         // If MOUSEEVENTF_ABSOLUTE value is specified, dx and dy contain normalized absolute coordinates between 0 and 65,535.
         // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput

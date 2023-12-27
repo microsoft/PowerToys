@@ -19,6 +19,7 @@ using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI;
+using Microsoft.PowerToys.Settings.UI.Library.Modules.MouseJump;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {

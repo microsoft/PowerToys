@@ -34,7 +34,7 @@ internal static partial class Core
 
         public static implicit operator UIntPtr(ULONG_PTR value) => value.Value;
 
-        public static implicit operator ULONG_PTR(UIntPtr value) => new(value);
+        public static explicit operator ULONG_PTR(UIntPtr value) => new(value);
 
         public override string ToString()
         {

@@ -25,13 +25,13 @@ public static class MouseHelperTests
                 this.ExpectedResult = expectedResult;
             }
 
-            public PointInfo PreviewLocation { get; set; }
+            public PointInfo PreviewLocation { get; }
 
-            public SizeInfo PreviewSize { get; set; }
+            public SizeInfo PreviewSize { get; }
 
-            public RectangleInfo DesktopBounds { get; set; }
+            public RectangleInfo DesktopBounds { get; }
 
-            public PointInfo ExpectedResult { get; set; }
+            public PointInfo ExpectedResult { get; }
         }
 
         public static IEnumerable<object[]> GetTestCases()

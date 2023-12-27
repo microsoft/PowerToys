@@ -21,7 +21,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public virtual string ToJsonString()
         {
             // By default JsonSerializer will only serialize the properties in the base class. This can be avoided by passing the object type (more details at https://stackoverflow.com/a/62498888)
-            return JsonSerializer.Serialize(this, GetType());
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+            return JsonSerializer.Serialize(this, GetType(), options);
         }
 
         public override int GetHashCode()

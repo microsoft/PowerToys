@@ -9,6 +9,8 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Modules.MouseJump;
+using Microsoft.PowerToys.Settings.UI.Library.Modules.MouseJump.V1_0;
 using Microsoft.PowerToys.Settings.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -79,7 +81,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(mouseJumpSettingsRepository);
 
             MouseJumpSettingsConfig = mouseJumpSettingsRepository.SettingsConfig;
+#pragma warning disable 0618
             MouseJumpSettingsConfig.Properties.ThumbnailSize.PropertyChanged += MouseJumpThumbnailSizePropertyChanged;
+#pragma warning restore 0618
 
             ArgumentNullException.ThrowIfNull(mousePointerCrosshairsSettingsRepository);
 
@@ -641,7 +645,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (MouseJumpSettingsConfig.Properties.ActivationShortcut != value)
                 {
-                    MouseJumpSettingsConfig.Properties.ActivationShortcut = value ?? MouseJumpSettingsConfig.Properties.DefaultActivationShortcut;
+                    MouseJumpSettingsConfig.Properties.ActivationShortcut = value ?? MouseJumpProperties.DefaultActivationShortcut;
                     NotifyMouseJumpPropertyChanged();
                 }
             }
@@ -651,17 +655,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
+#pragma warning disable 0618
                 return MouseJumpSettingsConfig.Properties.ThumbnailSize;
+#pragma warning restore 0618
             }
 
             set
             {
+#pragma warning disable 0618
                 if ((MouseJumpSettingsConfig.Properties.ThumbnailSize.Width != value?.Width)
                     && (MouseJumpSettingsConfig.Properties.ThumbnailSize.Height != value?.Height))
                 {
                     MouseJumpSettingsConfig.Properties.ThumbnailSize = value;
                     NotifyMouseJumpPropertyChanged();
                 }
+#pragma warning restore 0618
             }
         }
 
