@@ -5,9 +5,8 @@
 using System;
 using System.Drawing;
 using System.IO;
-using PreviewHandlerCommon.Utilities;
 
-namespace Common.Utilities
+namespace Microsoft.PowerToys.FilePreviewCommon
 {
     /// <summary>
     /// Represents a gcode thumbnail.

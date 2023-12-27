@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 
             // Extension to modify markdown AST.
             HTMLParsingExtension extension = new HTMLParsingExtension(imagesBlockedCallBack);
-            extension.FilePath = Path.GetDirectoryName(filePath);
+            extension.FilePath = Path.GetDirectoryName(filePath) ?? string.Empty;
 
             // if you have a string with double space, some people view it as a new line.
             // while this is against spec, even GH supports this. Technically looks like GH just trims whitespace

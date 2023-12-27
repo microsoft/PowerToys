@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Common.Utilities
+namespace Microsoft.PowerToys.FilePreviewCommon
 {
     /// <summary>
     /// The gcode thumbnail image format.
