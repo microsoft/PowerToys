@@ -18,7 +18,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private readonly CultureInfo targetCulture;
         private readonly Regex splitRegexForSource;
         private readonly Regex splitRegexForTarget;
-        private readonly Regex hexRegex;
 
         private NumberTranslator(CultureInfo sourceCulture, CultureInfo targetCulture)
         {
@@ -27,8 +26,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             splitRegexForSource = GetSplitRegex(this.sourceCulture);
             splitRegexForTarget = GetSplitRegex(this.targetCulture);
-
-            hexRegex = new Regex(@"(?:(0x[\da-fA-F]+))");
         }
 
         /// <summary>
@@ -53,7 +50,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// <returns>translated string</returns>
         public string Translate(string input)
         {
-            return Translate(input, sourceCulture, targetCulture, splitRegexForSource, hexRegex);
+            return Translate(input, sourceCulture, targetCulture, splitRegexForSource);
         }
 
         /// <summary>
@@ -63,12 +60,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// <returns>source culture string</returns>
         public string TranslateBack(string input)
         {
-            return Translate(input, targetCulture, sourceCulture, splitRegexForTarget, hexRegex);
+            return Translate(input, targetCulture, sourceCulture, splitRegexForTarget);
         }
 
-        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex, Regex hexRegex)
+        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
         {
             var outputBuilder = new StringBuilder();
+            var hexRegex = new Regex(@"(?:(0x[\da-fA-F]+))");
 
             string[] hexTokens = hexRegex.Split(input);
 
