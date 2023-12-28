@@ -14,7 +14,9 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -182,6 +184,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\EnableModule.ps1";
             var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\" -scriptPath \"{AssemblyDirectory}\\..\"";
             RunPowerShellScript(arguments);
+            PowerToysTelemetry.Log.WriteEvent(new CmdNotFoundInstallEvent());
         }
 
         public void UninstallModule()
@@ -189,6 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\DisableModule.ps1";
             var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
             RunPowerShellScript(arguments);
+            PowerToysTelemetry.Log.WriteEvent(new CmdNotFoundUninstallEvent());
         }
 
         private void ScheduleSavingOfSettings()
