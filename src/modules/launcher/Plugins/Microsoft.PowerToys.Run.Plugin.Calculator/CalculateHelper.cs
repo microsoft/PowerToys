@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private static string CheckScientificNotation(string input)
         {
             /**
-             * NOTE: Anywhere you see a "{0}", that is meant to be replaced by the user's decimal separator.
+             * NOTE: By the time the expression gets to us, it's already in English format.
              *
              * Regex explanation:
              * (-?(\d+({0}\d*)?)|-?({0}\d+)): Used to capture one of two types:
@@ -76,21 +76,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
              * E: Captures capital 'E'
              * (-?\d+): Captures an integer number (e.g. "-1" or "23")
              */
-            var p = @"(-?(\d+({0}\d*)?)|-?({0}\d+))E(-?\d+)";
-
-            // If the decimal separator is a ".", we also have to insert a backslash.
-            if (CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator == ".")
-            {
-                p = string.Format(CultureInfo.CurrentCulture, p, @"\.");
-            }
-            else
-            {
-                p = string.Format(
-                    CultureInfo.CurrentCulture,
-                    p,
-                    CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-            }
-
+            var p = @"(-?(\d+(\.\d*)?)|-?(\.\d+))E(-?\d+)";
             return Regex.Replace(input, p, "($1 * 10^($5))");
         }
 

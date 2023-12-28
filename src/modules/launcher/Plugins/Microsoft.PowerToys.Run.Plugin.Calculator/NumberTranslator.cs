@@ -18,6 +18,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private readonly CultureInfo targetCulture;
         private readonly Regex splitRegexForSource;
         private readonly Regex splitRegexForTarget;
+        private readonly Regex hexRegex;
 
         private NumberTranslator(CultureInfo sourceCulture, CultureInfo targetCulture)
         {
@@ -26,6 +27,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             splitRegexForSource = GetSplitRegex(this.sourceCulture);
             splitRegexForTarget = GetSplitRegex(this.targetCulture);
+
+            hexRegex = new Regex(@"(?:(0x[\da-fA-F]+))");
         }
 
         /// <summary>
@@ -50,7 +53,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// <returns>translated string</returns>
         public string Translate(string input)
         {
-            return Translate(input, sourceCulture, targetCulture, splitRegexForSource);
+            return Translate(input, sourceCulture, targetCulture, splitRegexForSource, hexRegex);
         }
 
         /// <summary>
@@ -60,41 +63,52 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         /// <returns>source culture string</returns>
         public string TranslateBack(string input)
         {
-            return Translate(input, targetCulture, sourceCulture, splitRegexForTarget);
+            return Translate(input, targetCulture, sourceCulture, splitRegexForTarget, hexRegex);
         }
 
-        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
+        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex, Regex hexRegex)
         {
             var outputBuilder = new StringBuilder();
 
-            string[] tokens = splitRegex.Split(input);
-            foreach (string token in tokens)
-            {
-                int leadingZeroCount = 0;
+            string[] hexTokens = hexRegex.Split(input);
 
-                // Count leading zero characters.
-                foreach (char c in token)
+            foreach (string hexToken in hexTokens)
+            {
+                if (hexToken.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    if (c != '0')
+                    outputBuilder.Append(hexToken);
+                    continue;
+                }
+
+                string[] tokens = splitRegex.Split(hexToken);
+                foreach (string token in tokens)
+                {
+                    int leadingZeroCount = 0;
+
+                    // Count leading zero characters.
+                    foreach (char c in token)
                     {
-                        break;
+                        if (c != '0')
+                        {
+                            break;
+                        }
+
+                        leadingZeroCount++;
                     }
 
-                    leadingZeroCount++;
+                    // number is all zero characters. no need to add zero characters at the end.
+                    if (token.Length == leadingZeroCount)
+                    {
+                        leadingZeroCount = 0;
+                    }
+
+                    decimal number;
+
+                    outputBuilder.Append(
+                        decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
+                        ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
+                        : token);
                 }
-
-                // number is all zero characters. no need to add zero characters at the end.
-                if (token.Length == leadingZeroCount)
-                {
-                    leadingZeroCount = 0;
-                }
-
-                decimal number;
-
-                outputBuilder.Append(
-                    decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
-                    ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
-                    : token);
             }
 
             return outputBuilder.ToString();
@@ -102,7 +116,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private static Regex GetSplitRegex(CultureInfo culture)
         {
-            var splitPattern = $"((?:\\d|[a-fA-F]|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
+            var splitPattern = $"((?:\\d|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
             if (!string.IsNullOrEmpty(culture.NumberFormat.NumberGroupSeparator))
             {
                 splitPattern += $"|{Regex.Escape(culture.NumberFormat.NumberGroupSeparator)}";
