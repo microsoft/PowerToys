@@ -24,7 +24,7 @@ namespace PowerLauncher
     // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
     public class SettingsReader : BaseModel
     {
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
 
         private const int MaxRetries = 10;
         private static readonly object _readSyncObject = new object();
@@ -286,7 +286,7 @@ namespace PowerLauncher
             settings.Plugins = defaultPlugins.Values.ToList();
         }
 
-        private static IEnumerable<PluginAdditionalOption> CombineAdditionalOptions(IEnumerable<PluginAdditionalOption> defaultAdditionalOptions, IEnumerable<PluginAdditionalOption> additionalOptions)
+        private static Dictionary<string, PluginAdditionalOption>.ValueCollection CombineAdditionalOptions(IEnumerable<PluginAdditionalOption> defaultAdditionalOptions, IEnumerable<PluginAdditionalOption> additionalOptions)
         {
             var defaultOptions = defaultAdditionalOptions.ToDictionary(x => x.Key);
             foreach (var option in additionalOptions)

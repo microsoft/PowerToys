@@ -21,6 +21,15 @@ namespace Wox.Infrastructure
         private static readonly IFileInfoFactory FileInfo = FileSystem.FileInfo;
         private static readonly IDirectory Directory = FileSystem.Directory;
 
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Converters =
+            {
+                new JsonStringEnumConverter(),
+            },
+        };
+
         /// <summary>
         /// http://www.yinwang.org/blog-cn/2015/11/21/programming-philosophy
         /// </summary>
@@ -81,14 +90,7 @@ namespace Wox.Infrastructure
 
         public static string Formatted<T>(this T t)
         {
-            var formatted = JsonSerializer.Serialize(t, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Converters =
-                {
-                    new JsonStringEnumConverter(),
-                },
-            });
+            var formatted = JsonSerializer.Serialize(t, _serializerOptions);
 
             return formatted;
         }

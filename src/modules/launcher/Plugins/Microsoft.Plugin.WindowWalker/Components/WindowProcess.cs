@@ -113,7 +113,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal WindowProcess(uint pid, uint tid, string name)
         {
             UpdateProcessInfo(pid, tid, name);
-            _isUwpApp = Name.ToUpperInvariant().Equals("APPLICATIONFRAMEHOST.EXE", StringComparison.Ordinal);
+            _isUwpApp = string.Equals(Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
