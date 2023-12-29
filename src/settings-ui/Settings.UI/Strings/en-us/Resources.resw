@@ -3917,7 +3917,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Notifications in the settings and the tray flyout are always shown</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_ShowNewUpdatesToast.Header" xml:space="preserve">
-    <value>Show desktop notifications for new updates</value>
+    <value>Show notifications for new updates</value>
   </data>
   <data name="ShowUpdateDetails.Content" xml:space="preserve">
     <value>Install</value>
