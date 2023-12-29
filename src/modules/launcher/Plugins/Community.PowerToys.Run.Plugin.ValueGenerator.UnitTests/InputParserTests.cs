@@ -30,6 +30,18 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
         [DataRow("base99 abc", null)]
         [DataRow("base64s abc", null)]
         [DataRow("base64d abc=", typeof(Base64.Base64DecodeRequest))]
+        [DataRow("url http://googl.de/u oii d", typeof(Uri.UrlEncodeRequest))]
+        [DataRow("urld http://googl.de/u oii d=oo", typeof(Uri.UrlDecodeRequest))]
+        [DataRow("esc:data jjdje332j 3 3l2jl32", typeof(Uri.DataEscapeRequest))]
+        [DataRow("esc:hex d", typeof(Uri.HexEscapeRequest))]
+        [DataRow("esc:hex 4", typeof(Uri.HexEscapeRequest))]
+        [DataRow("esc:hex ", null)]
+        [DataRow("esc:hex d44", null)]
+        [DataRow("uesc:data jjdje332j 3 3l2jl32", typeof(Uri.DataUnescapeRequest))]
+        [DataRow("uesc:hex %21", typeof(Uri.HexUnescapeRequest))]
+        [DataRow("uesc:hex 4", null)]
+        [DataRow("uesc:hex ", null)]
+        [DataRow("uesc:hex d44", null)]
         public void ParserTest(string input, Type? expectedRequestType)
         {
             var parser = new InputParser();
