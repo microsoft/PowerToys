@@ -25,7 +25,7 @@
                     IsOpen="True"
                     IsTabStop="True"
                     Severity="Informational" />
-                <custom:SettingsGroup x:Uid="CmdNotFound_ModuleInstallation" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="CmdNotFound_ModuleInstallation" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <controls:SettingsCard
                         x:Uid="CmdNotFound_CheckPowerShellVersionButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
@@ -42,7 +42,7 @@
                         Command="{x:Bind ViewModel.UninstallModuleEventHandler}"
                         IsClickEnabled="True" />
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="CmdNotFound_ModuleInstallationLogs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="CmdNotFound_ModuleInstallationLogs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <TextBox
                         Height="300"
                         FontFamily="Courier New"
