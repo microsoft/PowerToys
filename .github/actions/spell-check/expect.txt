@@ -1610,6 +1610,7 @@ UAL
 uap
 udit
 uefi
+uesc
 UHash
 UIA
 UIEx
@@ -1618,6 +1619,7 @@ ums
 uncompilable
 UNCPRIORITY
 UNDNAME
+unescape
 UNICODETEXT
 uninstantiated
 uniquifier
@@ -1636,6 +1638,7 @@ UOI
 Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
+urld
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
