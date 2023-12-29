@@ -19,7 +19,7 @@ void Trace::UnregisterProvider()
 }
 
 // Log if the user has CmdNotFound enabled or disabled
-void Trace::EnableCmdNotFound(const bool enabled) noexcept
+void Trace::EnableCmdNotFoundGpo(const bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,

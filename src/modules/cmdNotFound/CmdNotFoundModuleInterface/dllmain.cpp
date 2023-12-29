@@ -114,46 +114,21 @@ public:
         return app_key.c_str();
     }
 
-    virtual bool get_config(wchar_t* buffer, int* buffer_size) override
+    virtual bool get_config(wchar_t* /*buffer*/, int* /*buffer_size*/) override
     {
-        HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-
-        PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(MODULE_DESC);
-
-        return settings.serialize_to_buffer(buffer, buffer_size);
+        return false;
     }
 
     virtual void set_config(const wchar_t* config) override
     {
-        try
-        {
-            PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
-
-            values.save_to_settings_file();
-        }
-        catch (std::exception&)
-        {
-            // Improper JSON
-        }
     }
 
     virtual void enable()
     {
-        Trace::EnableCmdNotFound(true);
-        m_enabled = true;
     }
 
     virtual void disable()
     {
-        if (m_enabled)
-        {
-            Trace::EnableCmdNotFound(false);
-            Logger::trace(L"Disabling CmdNotFound...");
-        }
-
-        m_enabled = false;
     }
 
     virtual bool is_enabled() override
