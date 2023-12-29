@@ -2183,7 +2183,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Welcome to PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
   </data>
-	<data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
+  <data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
     <value>What's New</value>
   </data>
   <data name="Feedback_NavViewItem.Content" xml:space="preserve">
@@ -3368,7 +3368,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>German</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
-  <value>Greek</value>
+    <value>Greek</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
     <value>Hebrew</value>
@@ -3658,43 +3658,34 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Command Not Found</comment>
   </data>
   <data name="CmdNotFound.ModuleDescription" xml:space="preserve">
-    <value>Command Not Found is a PowerShell module that detects an error thrown by a command and suggests a relevant WinGet package to install, if available.</value>
+    <value>A PowerShell module that detects an error thrown by a command and suggests a relevant WinGet package to install, if available.</value>
     <comment>"Command Not Found" is a product name</comment>
   </data>
   <data name="CmdNotFound.ModuleTitle" xml:space="preserve">
     <value>Command Not Found</value>
     <comment>"Command Not Found" is a product name</comment>
   </data>
-  <data name="CmdNotFound_ModuleExplanation.Title" xml:space="preserve">
-    <value>Command Not Found works from PowerShell 7. This Settings page is used to install the Command Not Found module to the PowerShell 7's profile script for the user, so that new PowerShell sessions have the module activated.</value>
+	<data name="CmdNotFound_Enable.Header" xml:space="preserve">
+    <value>Command Not Found</value>
     <comment>"Command Not Found" is a product name</comment>
   </data>
-  <data name="CmdNotFound_ModuleInstallation.Header" xml:space="preserve">
-    <value>Module Installation</value>
+	<data name="CmdNotFound_Enable_DescriptionText.Text" xml:space="preserve">
+    <value>Add this module to the PowerShell 7 profile script so that it is enabled with every new session</value>
   </data>
-  <data name="CmdNotFound_ModuleInstallationLogs.Header" xml:space="preserve">
-    <value>Installation Logs</value>
-  </data>
-  <data name="CmdNotFound_CheckPowerShellVersionButtonControl.Header" xml:space="preserve">
-    <value>Check if PowerShell 7 is in the path and its version</value>
+  <data name="CmdNotFound_ModuleInstallationLogs.Text" xml:space="preserve">
+    <value>Installation logs</value>
   </data>
   <data name="CmdNotFound_CheckPowerShellVersionButtonControl.Description" xml:space="preserve">
-    <value>PowerShell 7 is a requirement for installing and using Command Not Found</value>
-    <comment>"Command Not Found" is a product name</comment>
+    <value>PowerShell 7 is required to use this module</value>
   </data>
-  <data name="CmdNotFound_InstallModuleButtonControl.Header" xml:space="preserve">
-    <value>Install Command Not Found module in PowerShell 7</value>
-    <comment>"Command Not Found" is a product name</comment>
+	<data name="CmdNotFound_CheckCompatibility.Content" xml:space="preserve">
+    <value>Check if your PowerShell configuration is compatible</value>
   </data>
-  <data name="CmdNotFound_InstallModuleButtonControl.Description" xml:space="preserve">
-    <value>Adds the module initialization to PowerShell 7's profile script</value>
+	<data name="CmdNotFound_InstallButton.Content" xml:space="preserve">
+    <value>Install</value>
   </data>
-  <data name="CmdNotFound_UninstallModuleButtonControl.Header" xml:space="preserve">
-    <value>Uninstall Command Not Found module from PowerShell 7</value>
-    <comment>"Command Not Found" is a product name</comment>
-  </data>
-  <data name="CmdNotFound_UninstallModuleButtonControl.Description" xml:space="preserve">
-    <value>Removes the module initialization from PowerShell 7's profile script</value>
+	<data name="CmdNotFound_UninstallButton.Content" xml:space="preserve">
+    <value>Uninstall</value>
   </data>
   <data name="Oobe_CmdNotFound.Description" xml:space="preserve">
     <value>Command Not Found detects an error thrown by a command in PowerShell and suggests a relevant WinGet package to install, if available.</value>
