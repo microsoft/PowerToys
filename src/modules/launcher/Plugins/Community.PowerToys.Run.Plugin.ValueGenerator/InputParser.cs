@@ -8,6 +8,7 @@ using System.Text;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Base64;
 using Community.PowerToys.Run.Plugin.ValueGenerator.GUID;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Hashing;
+using Community.PowerToys.Run.Plugin.ValueGenerator.Uri;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -126,6 +127,57 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                 request = new Base64DecodeRequest(content);
+            }
+            else if (command.StartsWith("escape", StringComparison.OrdinalIgnoreCase)
+            {
+                if (command.Equals("escapedata", StringComparison.OrdinalIgnoreCase))
+                {
+                    int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                    string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                    request = new DataEscapeRequest(content);
+                }
+                else if (command.Equals("escapehex", StringComparison.OrdinalIgnoreCase))
+                {
+                    int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                    string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+
+                    // This is only for single chars
+                    if (content.Length == 1)
+                    {
+                        request = new HexEscapeRequest(content);
+                    }
+                    else
+                    {
+                        throw new FormatException($"Invalid Query: {query.RawUserQuery}");
+                    }
+                }
+            }
+            else if (command.StartsWith("unescape", StringComparison.OrdinalIgnoreCase))
+            {
+                if (command.Equals("unescapedata", StringComparison.OrdinalIgnoreCase))
+                {
+                    int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                    string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                    request = new DataUnescapeRequest(content);
+                }
+                else if (command.Equals("unescapehex", StringComparison.OrdinalIgnoreCase))
+                {
+                    int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                    string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                    request = new HexUnescapeRequest(content);
+                }
+            }
+            else if (command.Equals("url", StringComparison.OrdinalIgnoreCase))
+            {
+                int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                request = new UrlEncodeRequest(content);
+            }
+            else if (command.Equals("urld", StringComparison.OrdinalIgnoreCase))
+            {
+                int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                request = new UrlDecodeRequest(content);
             }
             else
             {
