@@ -161,7 +161,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
             else if (command.StartsWith("uesc:", StringComparison.OrdinalIgnoreCase))
             {
-                // Unescpae things
+                // Unescape things
                 if (command.Equals("uesc:data", StringComparison.OrdinalIgnoreCase))
                 {
                     int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
