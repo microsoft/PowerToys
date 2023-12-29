@@ -13,12 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string ModuleName = "CmdNotFound";
 
-        [JsonPropertyName("properties")]
-        public CmdNotFoundProperties Properties { get; set; }
-
         public CmdNotFoundSettings()
         {
-            Properties = new CmdNotFoundProperties();
             Version = "1";
             Name = ModuleName;
         }

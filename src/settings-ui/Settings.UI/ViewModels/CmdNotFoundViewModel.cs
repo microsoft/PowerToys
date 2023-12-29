@@ -4,46 +4,26 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Management.Automation.Runspaces;
 using System.Reflection;
-using System.Text.Json;
-using System.Timers;
 using global::PowerToys.GPOWrapper;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class CmdNotFoundViewModel : Observable, IDisposable
+    public class CmdNotFoundViewModel : Observable
     {
-        private bool disposedValue;
-
-        // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
-        private const int SaveSettingsDelayInMs = 500;
-
         public ButtonClickCommand CheckPowershellVersionEventHandler => new ButtonClickCommand(CheckPowershellVersion);
 
         public ButtonClickCommand InstallModuleEventHandler => new ButtonClickCommand(InstallModule);
 
         public ButtonClickCommand UninstallModuleEventHandler => new ButtonClickCommand(UninstallModule);
 
-        private GeneralSettings GeneralSettingsConfig { get; set; }
-
-        private readonly ISettingsUtils _settingsUtils;
-        private readonly object _delayedActionLock = new object();
-
-        private readonly CmdNotFoundSettings _cmdNotFoundSettings;
-        private Timer _delayedTimer;
-
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
-        private bool _isEnabled;
 
         public static string AssemblyDirectory
         {
@@ -56,34 +36,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private Func<string, int> SendConfigMSG { get; }
-
-        public CmdNotFoundViewModel(
-            ISettingsUtils settingsUtils,
-            ISettingsRepository<GeneralSettings> settingsRepository,
-            ISettingsRepository<CmdNotFoundSettings> cmdNotFoundSettingsRepository,
-            Func<string, int> ipcMSGCallBackFunc)
+        public CmdNotFoundViewModel()
         {
-            // To obtain the general settings configurations of PowerToys Settings.
-            ArgumentNullException.ThrowIfNull(settingsRepository);
-
-            GeneralSettingsConfig = settingsRepository.SettingsConfig;
-
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-
-            ArgumentNullException.ThrowIfNull(cmdNotFoundSettingsRepository);
-
-            _cmdNotFoundSettings = cmdNotFoundSettingsRepository.SettingsConfig;
-
             InitializeEnabledValue();
-
-            // set the callback functions value to hangle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
-
-            _delayedTimer = new Timer();
-            _delayedTimer.Interval = SaveSettingsDelayInMs;
-            _delayedTimer.Elapsed += DelayedTimer_Tick;
-            _delayedTimer.AutoReset = false;
         }
 
         private void InitializeEnabledValue()
@@ -93,36 +48,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 // Get the enabled state from GPO.
                 _enabledStateIsGPOConfigured = true;
-                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isEnabled = GeneralSettingsConfig.Enabled.CmdNotFound;
-            }
-        }
-
-        public bool IsEnabled
-        {
-            get => _isEnabled;
-            set
-            {
-                if (_enabledStateIsGPOConfigured)
-                {
-                    // If it's GPO configured, shouldn't be able to change this state.
-                    return;
-                }
-
-                if (_isEnabled != value)
-                {
-                    _isEnabled = value;
-                    OnPropertyChanged(nameof(IsEnabled));
-
-                    // Set the status of CmdNotFound in the general settings
-                    GeneralSettingsConfig.Enabled.CmdNotFound = value;
-                    var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-
-                    SendConfigMSG(outgoing.ToString());
-                }
             }
         }
 
@@ -194,63 +119,5 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             RunPowerShellScript(arguments);
             PowerToysTelemetry.Log.WriteEvent(new CmdNotFoundUninstallEvent());
         }
-
-        private void ScheduleSavingOfSettings()
-        {
-            lock (_delayedActionLock)
-            {
-                if (_delayedTimer.Enabled)
-                {
-                    _delayedTimer.Stop();
-                }
-
-                _delayedTimer.Start();
-            }
-        }
-
-        private void DelayedTimer_Tick(object sender, EventArgs e)
-        {
-            lock (_delayedActionLock)
-            {
-                _delayedTimer.Stop();
-                NotifySettingsChanged();
-            }
-        }
-
-        private void NotifySettingsChanged()
-        {
-            // Using InvariantCulture as this is an IPC message
-            SendConfigMSG(
-                   string.Format(
-                       CultureInfo.InvariantCulture,
-                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                       CmdNotFoundSettings.ModuleName,
-                       JsonSerializer.Serialize(_cmdNotFoundSettings)));
-        }
-
-        public void RefreshEnabledState()
-        {
-            InitializeEnabledValue();
-            OnPropertyChanged(nameof(IsEnabled));
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _delayedTimer.Dispose();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-    }
+     }
 }
