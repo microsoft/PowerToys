@@ -15,7 +15,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_73_0" displayName="$(string.SUPPORTED_POWERTOYS_0_73_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_75_0" displayName="$(string.SUPPORTED_POWERTOYS_0_75_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_76_0" displayName="$(string.SUPPORTED_POWERTOYS_0_76_0)"/>
-      <definition name="SUPPORTED_POWERTOYS_0_78_0" displayName="$(string.SUPPORTED_POWERTOYS_0_77_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_78_0" displayName="$(string.SUPPORTED_POWERTOYS_0_78_0)"/>
     </definitions>
   </supportedOn>
   <categories>
