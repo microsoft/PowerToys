@@ -3913,18 +3913,16 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="ShowPluginsOverview_NonGlobal.Content" xml:space="preserve">
     <value>Not included in global results</value>
   </data>
-  <data name="Flyout_ShowUpdateDetails_ToolTip.Text" xml:space="preserve">
-    <value>Show update</value>
-  </data>
   <data name="GeneralPage_ToggleSwitch_ShowNewUpdatesToast.Description" xml:space="preserve">
-    <value>If disabled the notifications in the settings and the tray flyout are still shown</value>
+    <value>Notifications in the settings and the tray flyout are always shown</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_ShowNewUpdatesToast.Header" xml:space="preserve">
-    <value>Show Action Center notifications for new updates</value>
+    <value>Show desktop notifications for new updates</value>
   </data>
   <data name="ShowUpdateDetails.Content" xml:space="preserve">
-    <value>Show</value>
-</data>
+    <value>Install</value>
+    <comment>"Install" like in "install updates". </comment>
+  </data>
   <data name="PowerLauncher_TitleFontSize.Description" xml:space="preserve">
     <value>The size of result titles and the search query</value>
   </data>
