@@ -70,7 +70,9 @@ If enabled, the notification is suspended.
 
 If disabled or not configured, the notification is shown.
 
-Notes: The notification about new major versions is always displayed. This policy has no effect if the update notifications are disable.
+Notes: The notification about new major versions is always displayed.
+
+This policy has no effect if the update notification is disabled by the policy "Disable Action Center notification for new updates" or the user setting.
 </string>
       <string id="DisablePeriodicUpdateCheckDescription">This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
 
@@ -82,7 +84,7 @@ If disabled or not configured, the automatic update checks are enabled.
 
 If enabled, the notification is disabled.
 
-If disabled or not configured, the has the control whether the notification is shown or not.
+If disabled or not configured, the user can control if the notification is shown or not.
 </string>
       <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
 
