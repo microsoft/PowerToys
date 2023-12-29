@@ -9,6 +9,7 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <interface/powertoy_module_interface.h>
 
@@ -45,6 +46,30 @@ class CmdNotFound : public PowertoyModuleIface
 private:
     bool m_enabled = false;
 
+    void install_module()
+    {
+        auto module_path = get_module_folderpath();
+
+        std::string command = "pwsh.exe";
+        command += " ";
+        command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(module_path) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\EnableModule.ps1" + "\"" + " -scriptPath \"" + winrt::to_string(module_path) + "\"";
+
+        system(command.c_str());
+        Trace::EnableCmdNotFoundGpo(true);
+    }
+
+    void uninstall_module()
+    {
+        auto module_path = get_module_folderpath();
+
+        std::string command = "pwsh.exe";
+        command += " ";
+        command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(module_path) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "\"";
+
+        system(command.c_str());
+        Trace::EnableCmdNotFoundGpo(false);
+    }
+
 public:
     CmdNotFound()
     {
@@ -55,6 +80,18 @@ public:
         logFilePath.append(LogSettings::cmdNotFoundLogPath);
         Logger::init(LogSettings::cmdNotFoundLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
         Logger::info("CmdNotFound object is constructing");
+
+        powertoys_gpo::gpo_rule_configured_t gpo_rule_configured_value = gpo_policy_enabled_configuration();
+        if (gpo_rule_configured_value == powertoys_gpo::gpo_rule_configured_t::gpo_rule_configured_enabled)
+        {
+            install_module();
+            m_enabled = true;
+        }
+        else if (gpo_rule_configured_value == powertoys_gpo::gpo_rule_configured_t::gpo_rule_configured_disabled)
+        {
+            uninstall_module();
+            m_enabled = false;
+        }
     }
 
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
