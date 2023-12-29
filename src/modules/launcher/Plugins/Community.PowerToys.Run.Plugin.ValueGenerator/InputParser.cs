@@ -128,15 +128,16 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                 request = new Base64DecodeRequest(content);
             }
-            else if (command.StartsWith("escape", StringComparison.OrdinalIgnoreCase))
+            else if (command.StartsWith("esc:", StringComparison.OrdinalIgnoreCase))
             {
-                if (command.Equals("escapedata", StringComparison.OrdinalIgnoreCase))
+                // Escape things
+                if (command.Equals("esc:data", StringComparison.OrdinalIgnoreCase))
                 {
                     int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                     string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                     request = new DataEscapeRequest(content);
                 }
-                else if (command.Equals("escapehex", StringComparison.OrdinalIgnoreCase))
+                else if (command.Equals("esc:hex", StringComparison.OrdinalIgnoreCase))
                 {
                     int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                     string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
@@ -158,15 +159,16 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     throw new FormatException($"Invalid Query: {query.RawUserQuery}");
                 }
             }
-            else if (command.StartsWith("unescape", StringComparison.OrdinalIgnoreCase))
+            else if (command.StartsWith("uesc:", StringComparison.OrdinalIgnoreCase))
             {
-                if (command.Equals("unescapedata", StringComparison.OrdinalIgnoreCase))
+                // Unescpae things
+                if (command.Equals("uesc:data", StringComparison.OrdinalIgnoreCase))
                 {
                     int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                     string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                     request = new DataUnescapeRequest(content);
                 }
-                else if (command.Equals("unescapehex", StringComparison.OrdinalIgnoreCase))
+                else if (command.Equals("uesc:hex", StringComparison.OrdinalIgnoreCase))
                 {
                     int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                     string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
