@@ -34,6 +34,7 @@ ALPHATYPE
 AModifier
 AMPROPERTY
 AMPROPSETID
+animatedvisuals
 ANDSCANS
 ansicolor
 ANull

@@ -33,7 +33,7 @@
                             <TextBlock
                                 Margin="6,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="16"
+                                FontSize="{DynamicResource TitleFontSize}"
                                 Text="{TemplateBinding Tag}">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
@@ -98,11 +98,13 @@
         <local:CustomSearchBox
             x:Name="QueryTextBox"
             Grid.Column="1"
+            MinHeight="0"
+            Margin="0"
             VerticalAlignment="Center"
             x:FieldModifier="public"
             AutomationProperties.Name="{x:Static p:Resources.Query}"
             Canvas.ZIndex="0"
-            FontSize="18"
+            FontSize="{DynamicResource TitleFontSize}"
             Style="{StaticResource QueryTextBoxStyle}"
             Tag="{x:Static p:Resources.startTyping}" />
         <TextBlock
@@ -112,7 +114,7 @@
             VerticalAlignment="Center"
             x:FieldModifier="public"
             Canvas.ZIndex="-1"
-            FontSize="18"
+            FontSize="{DynamicResource TitleFontSize}"
             Foreground="{DynamicResource TextPlaceholderColorBrush}" />
         <ui:SymbolIcon
             AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"

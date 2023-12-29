@@ -614,6 +614,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int TitleFontSize
+        {
+            get
+            {
+                return settings.Properties.TitleFontSize;
+            }
+
+            set
+            {
+                if (settings.Properties.TitleFontSize != value)
+                {
+                    settings.Properties.TitleFontSize = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
 
         public ObservableCollection<PowerLauncherPluginViewModel> Plugins

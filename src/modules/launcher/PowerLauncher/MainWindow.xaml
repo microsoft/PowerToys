@@ -108,7 +108,7 @@
                                 Grid.Column="1"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="{Binding Plugin.Description}"
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="Wrap" />

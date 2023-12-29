@@ -61,7 +61,6 @@
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="MonitorUtils.h" />
     <ClInclude Include="WorkAreaConfiguration.h" />
-    <ClInclude Include="NotificationUtil.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Generated Files/resource.h" />
     <None Include="resource.base.h" />

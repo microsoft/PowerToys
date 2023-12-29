@@ -24,6 +24,7 @@ using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Interfaces;
+using Wpf.Ui.Appearance;
 using CancellationToken = System.Threading.CancellationToken;
 using Image = Wox.Infrastructure.Image;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
@@ -65,15 +66,7 @@ namespace PowerLauncher
                 WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.None;
             }
 
-            // workaround for #30217
-            try
-            {
-                Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
-            }
-            catch (Exception ex)
-            {
-                Log.Exception("Exception in SystemThemeWatcher.Watch, issue 30217.", ex, GetType());
-            }
+            SystemThemeWatcher.Watch(this, WindowBackdropType);
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
@@ -221,6 +214,7 @@ namespace PowerLauncher
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             _viewModel.LoadedAtLeastOnce = true;
             _viewModel.SetPluginsOverviewVisibility();
+            _viewModel.SetFontSize();
 
             BringProcessToForeground();
         }
@@ -364,6 +358,8 @@ namespace PowerLauncher
                     BringProcessToForeground();
 
                     _viewModel.SetPluginsOverviewVisibility();
+                    _viewModel.SetFontSize();
+
                     if (_viewModel.Plugins.Count > 0)
                     {
                         _viewModel.SelectedPlugin = null;
@@ -803,11 +799,7 @@ namespace PowerLauncher
             {
                 if (disposing)
                 {
-                    if (_firstDeleteTimer != null)
-                    {
-                        _firstDeleteTimer.Dispose();
-                    }
-
+                    _firstDeleteTimer?.Dispose();
                     _hwndSource?.Dispose();
                 }
 

@@ -17,7 +17,7 @@ namespace Hosts.Settings
         private const string HostsModuleName = "Hosts";
         private const int MaxNumberOfRetry = 5;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly IFileSystemWatcher _watcher;
         private readonly object _loadingSettingsLock = new object();
 

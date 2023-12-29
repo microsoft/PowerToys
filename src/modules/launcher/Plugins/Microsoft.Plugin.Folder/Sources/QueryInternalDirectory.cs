@@ -75,7 +75,7 @@ namespace Microsoft.Plugin.Folder.Sources
             {
                 // folder exist, add \ at the end of doesn't exist
                 // Using Ordinal since this is internal and is used for a symbol
-                if (!search.EndsWith(@"\", StringComparison.Ordinal))
+                if (!search.EndsWith('\\'))
                 {
                     search += @"\";
                 }

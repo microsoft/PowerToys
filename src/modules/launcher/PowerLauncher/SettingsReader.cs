@@ -9,7 +9,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Windows.Input;
-using Common.UI;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;
@@ -25,7 +24,7 @@ namespace PowerLauncher
     // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
     public class SettingsReader : BaseModel
     {
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
 
         private const int MaxRetries = 10;
         private static readonly object _readSyncObject = new object();
@@ -44,9 +43,6 @@ namespace PowerLauncher
             var overloadSettings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
             UpdateSettings(overloadSettings);
             _settingsUtils.SaveSettings(overloadSettings.ToJsonString(), PowerLauncherSettings.ModuleName);
-
-            // Apply theme at startup
-            _themeManager.ChangeTheme(_settings.Theme, true);
         }
 
         public void CreateSettingsIfNotExists()
@@ -161,7 +157,7 @@ namespace PowerLauncher
                     if (_settings.Theme != overloadSettings.Properties.Theme)
                     {
                         _settings.Theme = overloadSettings.Properties.Theme;
-                        _themeManager.ChangeTheme(_settings.Theme, true);
+                        _themeManager.SetTheme(true);
                     }
 
                     if (_settings.StartupPosition != overloadSettings.Properties.Position)
@@ -182,6 +178,11 @@ namespace PowerLauncher
                     if (_settings.ShowPluginsOverview != (PowerToysRunSettings.ShowPluginsOverviewMode)overloadSettings.Properties.ShowPluginsOverview)
                     {
                         _settings.ShowPluginsOverview = (PowerToysRunSettings.ShowPluginsOverviewMode)overloadSettings.Properties.ShowPluginsOverview;
+                    }
+
+                    if (_settings.TitleFontSize != overloadSettings.Properties.TitleFontSize)
+                    {
+                        _settings.TitleFontSize = overloadSettings.Properties.TitleFontSize;
                     }
 
                     retry = false;
@@ -285,7 +286,7 @@ namespace PowerLauncher
             settings.Plugins = defaultPlugins.Values.ToList();
         }
 
-        private static IEnumerable<PluginAdditionalOption> CombineAdditionalOptions(IEnumerable<PluginAdditionalOption> defaultAdditionalOptions, IEnumerable<PluginAdditionalOption> additionalOptions)
+        private static Dictionary<string, PluginAdditionalOption>.ValueCollection CombineAdditionalOptions(IEnumerable<PluginAdditionalOption> defaultAdditionalOptions, IEnumerable<PluginAdditionalOption> additionalOptions)
         {
             var defaultOptions = defaultAdditionalOptions.ToDictionary(x => x.Key);
             foreach (var option in additionalOptions)
