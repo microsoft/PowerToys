@@ -128,7 +128,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                 request = new Base64DecodeRequest(content);
             }
-            else if (command.StartsWith("escape", StringComparison.OrdinalIgnoreCase)
+            else if (command.StartsWith("escape", StringComparison.OrdinalIgnoreCase))
             {
                 if (command.Equals("escapedata", StringComparison.OrdinalIgnoreCase))
                 {
@@ -142,14 +142,16 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
 
                     // This is only for single chars
-                    if (content.Length == 1)
-                    {
-                        request = new HexEscapeRequest(content);
-                    }
-                    else
+                    if (content.Length != 1)
                     {
                         throw new FormatException($"Invalid Query: {query.RawUserQuery}");
                     }
+
+                    request = new HexEscapeRequest(content);
+                }
+                else
+                {
+                    throw new FormatException($"Invalid Query: {query.RawUserQuery}");
                 }
             }
             else if (command.StartsWith("unescape", StringComparison.OrdinalIgnoreCase))
@@ -165,6 +167,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                     string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                     request = new HexUnescapeRequest(content);
+                }
+                else
+                {
+                    throw new FormatException($"Invalid Query: {query.RawUserQuery}");
                 }
             }
             else if (command.Equals("url", StringComparison.OrdinalIgnoreCase))
