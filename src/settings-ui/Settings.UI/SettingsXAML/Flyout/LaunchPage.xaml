@@ -106,7 +106,7 @@
             <InfoBar
                 x:Uid="UpdateAvailable"
                 IsClosable="False"
-                IsOpen="True"
+                IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
                 Severity="Informational">
                 <InfoBar.ActionButton>
                     <Button x:Uid="ShowUpdateDetails" Click="UpdateDetailsBtn_Click" />

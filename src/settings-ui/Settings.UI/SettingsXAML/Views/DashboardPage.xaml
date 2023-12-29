@@ -281,7 +281,7 @@
             VerticalAlignment="Center"
             CornerRadius="8"
             IsClosable="False"
-            IsOpen="True"
+            IsOpen="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"
             Severity="Informational">
             <InfoBar.ActionButton>
                 <Button x:Uid="ShowUpdateDetails" Click="SWVersionButtonClicked" />
