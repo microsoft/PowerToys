@@ -58,11 +58,6 @@ namespace Wox.Infrastructure.Storage
 
         private string DefaultFileContent { get; set; }
 
-        public JsonSerializerOptions GetInformationSerializerOptions()
-        {
-            return _informationSerializerOptions;
-        }
-
         public virtual T Load()
         {
             _storageHelper = new StoragePowerToysVersionInfo(FilePath, _jsonStorage);
@@ -265,60 +260,6 @@ namespace Wox.Infrastructure.Storage
             {
                 Log.Exception($"Error in CheckWithInformationFileToClear at <{FilePath}>", e, GetType());
                 return true;
-            }
-        }
-
-        public T ExtractFields(T data, string rootElement)
-        {
-            // If rootElement is empty, return the entire data
-            if (string.IsNullOrEmpty(rootElement))
-            {
-                return data;
-            }
-
-            try
-            {
-                // Serialize the data to a JSON string
-                string jsonData = JsonSerializer.Serialize(data);
-
-                // Parse the JSON string to a JsonDocument
-                using var jsonDoc = JsonDocument.Parse(jsonData);
-                var root = jsonDoc.RootElement;
-
-                // Check if the root element is an object before proceeding
-                if (root.ValueKind == JsonValueKind.Object)
-                {
-                    JsonElement targetElement = root;
-
-                    // Try to get the specified property
-                    if (root.TryGetProperty(rootElement, out var retrievedElement))
-                    {
-                        targetElement = retrievedElement;
-                    }
-
-                    if (targetElement.ValueKind == JsonValueKind.Array)
-                    {
-                        // Extract fields from the first element of the array
-                        var firstArrayElement = targetElement.EnumerateArray().FirstOrDefault();
-                        return JsonSerializer.Deserialize<T>(firstArrayElement);
-                    }
-                    else if (targetElement.ValueKind == JsonValueKind.Object)
-                    {
-                        // Extract fields from the first sub-element if the target is an object
-                        var firstSubElement = targetElement.EnumerateObject().FirstOrDefault().Value;
-                        if (firstSubElement.ValueKind == JsonValueKind.Object)
-                        {
-                            return JsonSerializer.Deserialize<T>(firstSubElement);
-                        }
-                    }
-                }
-
-                return default(T); // Return default if the root element is not found
-            }
-            catch (JsonException e)
-            {
-                Log.Exception($"Error processing JSON in ExtractFirstElementFields: {e.Message}", e, GetType());
-                return default(T);
             }
         }
 

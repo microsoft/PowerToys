@@ -213,14 +213,13 @@ namespace PowerLauncher.ViewModel
                         try
                         {
                             // UserSelectedRecord
-                            var userSelectedRecordItemData = JsonSerializer.Deserialize<UserSelectedRecord.UserSelectedRecordItem>("{}", _userSelectedRecordStorage.GetInformationSerializerOptions());
+                            var userSelectedRecordItemData = new UserSelectedRecord.UserSelectedRecordItem();
                             var userSelectedRecordItemStorage = new WoxJsonStorage<UserSelectedRecord.UserSelectedRecordItem>(_userSelectedRecordStorage.GetFileName());
                             userSelectedRecordItemStorage.Load();
 
-                            var userSelectedRecordItemFields = userSelectedRecordItemStorage.ExtractFields(userSelectedRecordItemData, string.Empty);
-                            if (userSelectedRecordItemFields != null)
+                            if (userSelectedRecordItemData != null)
                             {
-                                if (userSelectedRecordItemStorage.CheckVersionMismatch(userSelectedRecordItemFields, _userSelectedRecordStorage.GetVersionMismatch()))
+                                if (userSelectedRecordItemStorage.CheckVersionMismatch(userSelectedRecordItemData, _userSelectedRecordStorage.GetVersionMismatch()))
                                 {
                                     if (!userSelectedRecordItemStorage.CheckWithInformationFileToClear(userSelectedRecordItemData))
                                     {
@@ -231,14 +230,13 @@ namespace PowerLauncher.ViewModel
                             }
 
                             // History
-                            var historyItemData = JsonSerializer.Deserialize<HistoryItem>("{}", _historyItemsStorage.GetInformationSerializerOptions());
+                            var historyItemData = new HistoryItem();
                             var historyItemStorage = new WoxJsonStorage<HistoryItem>(_historyItemsStorage.GetFileName());
                             historyItemStorage.Load();
 
-                            var historyItemFields = historyItemStorage.ExtractFields(historyItemData, string.Empty);
-                            if (historyItemFields != null)
+                            if (historyItemData != null)
                             {
-                                if (historyItemStorage.CheckVersionMismatch(historyItemFields, _historyItemsStorage.GetVersionMismatch()))
+                                if (historyItemStorage.CheckVersionMismatch(historyItemData, _historyItemsStorage.GetVersionMismatch()))
                                 {
                                     if (!historyItemStorage.CheckWithInformationFileToClear(historyItemData))
                                     {
