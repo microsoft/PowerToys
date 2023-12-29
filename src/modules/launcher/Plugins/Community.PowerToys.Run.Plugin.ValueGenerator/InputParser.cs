@@ -142,7 +142,11 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
 
                     // This is only for single chars
-                    if (content.Length != 1)
+                    if (content.Length > 1)
+                    {
+                        throw new ArgumentException($"Invalid Query: {query.RawUserQuery} (To many characters.)");
+                    }
+                    else if (content.Length == 0)
                     {
                         throw new FormatException($"Invalid Query: {query.RawUserQuery}");
                     }
