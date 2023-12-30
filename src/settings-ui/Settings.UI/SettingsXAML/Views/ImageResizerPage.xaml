@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -15,8 +15,8 @@
     mc:Ignorable="d">
     
     <Page.Resources>
-        <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
-        <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
+        <ptconverters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
+        <ptconverters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <toolkitconverters:BoolToObjectConverter
             x:Key="BoolToComboBoxIndexConverter"
             FalseValue="1"
