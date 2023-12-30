@@ -2,23 +2,23 @@
     x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeVideoConference"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <custom:OOBEPageControl x:Uid="Oobe_VideoConference" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/VideoConferenceMute.png">
+    <ptcontrols:OOBEPageControl x:Uid="Oobe_VideoConference" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/VideoConferenceMute.png">
 
-        <custom:OOBEPageControl.PageContent>
+        <ptcontrols:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
                 <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <custom:ShortcutWithTextLabelControl x:Name="HotkeyMicVidControl" x:Uid="Oobe_VideoConference_ToggleMicVid" />
-                <custom:ShortcutWithTextLabelControl x:Name="HotkeyMicControl" x:Uid="Oobe_VideoConference_ToggleMic" />
-                <custom:ShortcutWithTextLabelControl x:Name="HotkeyPushToTalkControl" x:Uid="Oobe_VideoConference_PushToTalkMic" />
-                <custom:ShortcutWithTextLabelControl x:Name="HotkeyVidControl" x:Uid="Oobe_VideoConference_ToggleVid" />
+                <ptcontrols:ShortcutWithTextLabelControl x:Name="HotkeyMicVidControl" x:Uid="Oobe_VideoConference_ToggleMicVid" />
+                <ptcontrols:ShortcutWithTextLabelControl x:Name="HotkeyMicControl" x:Uid="Oobe_VideoConference_ToggleMic" />
+                <ptcontrols:ShortcutWithTextLabelControl x:Name="HotkeyPushToTalkControl" x:Uid="Oobe_VideoConference_PushToTalkMic" />
+                <ptcontrols:ShortcutWithTextLabelControl x:Name="HotkeyVidControl" x:Uid="Oobe_VideoConference_ToggleVid" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_VideoConference_HowToLaunch" Background="Transparent" />
 
@@ -32,6 +32,6 @@
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>
-        </custom:OOBEPageControl.PageContent>
-    </custom:OOBEPageControl>
+        </ptcontrols:OOBEPageControl.PageContent>
+    </ptcontrols:OOBEPageControl>
 </Page>
