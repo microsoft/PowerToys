@@ -2,7 +2,7 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.AlwaysOnTopPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -16,12 +16,12 @@
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/AlwaysOnTop.png">
         <ptcontrols:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tkcontrols:SettingsCard
+                <tk8controls:SettingsCard
                     x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
+                </tk8controls:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -30,46 +30,46 @@
                     Severity="Informational" />
                 <ptcontrols:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
-                    <tkcontrols:SettingsExpander
+                    <tk8controls:SettingsExpander
                         x:Uid="AlwaysOnTop_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <ptcontrols:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                        <tk8controls:SettingsExpander.Items>
+                            <tk8controls:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DoNotActivateOnGameMode}" />
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+                            </tk8controls:SettingsCard>
+                        </tk8controls:SettingsExpander.Items>
+                    </tk8controls:SettingsExpander>
                 </ptcontrols:SettingsGroup>
 
                 <ptcontrols:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tkcontrols:SettingsExpander
+                    <tk8controls:SettingsExpander
                         x:Uid="AlwaysOnTop_FrameEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsExpanded="True">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FrameEnabled}" />
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                        <tk8controls:SettingsExpander.Items>
+                            <tk8controls:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Custom_Color" />
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Windows_Default" />
                                 </ComboBox>
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard
+                            </tk8controls:SettingsCard>
+                            <tk8controls:SettingsCard
                                 x:Uid="AlwaysOnTop_FrameColor"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FrameAccentColor, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <ptcontrols:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FrameColor, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                            </tk8controls:SettingsCard>
+                            <tk8controls:SettingsCard x:Uid="AlwaysOnTop_FrameOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="0"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FrameOpacity}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameThickness" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
+                            </tk8controls:SettingsCard>
+                            <tk8controls:SettingsCard x:Uid="AlwaysOnTop_FrameThickness" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.FrameEnabled}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="5"
@@ -77,32 +77,32 @@
                                     Minimum="1"
                                     SmallChange="1"
                                     Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}">
+                            </tk8controls:SettingsCard>
+                            <tk8controls:SettingsCard ContentAlignment="Left" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.Windows11, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <CheckBox x:Uid="AlwaysOnTop_RoundCorners" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RoundCornersEnabled}" />
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+                            </tk8controls:SettingsCard>
+                        </tk8controls:SettingsExpander.Items>
+                    </tk8controls:SettingsExpander>
 
-                    <tkcontrols:SettingsExpander
+                    <tk8controls:SettingsExpander
                         x:Uid="AlwaysOnTop_SoundTitle"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}"
                         IsExpanded="True">
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                        <tk8controls:SettingsExpander.Items>
+                            <tk8controls:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="AlwaysOnTop_Sound" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SoundEnabled}" />
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+                            </tk8controls:SettingsCard>
+                        </tk8controls:SettingsExpander.Items>
+                    </tk8controls:SettingsExpander>
                 </ptcontrols:SettingsGroup>
 
                 <ptcontrols:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tkcontrols:SettingsExpander
+                    <tk8controls:SettingsExpander
                         x:Uid="AlwaysOnTop_ExcludedApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsExpanded="True">
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                        <tk8controls:SettingsExpander.Items>
+                            <tk8controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="AlwaysOnTop_ExcludedApps_TextBoxControl"
                                     MinWidth="240"
@@ -113,9 +113,9 @@
                                     ScrollViewer.VerticalScrollMode="Enabled"
                                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+                            </tk8controls:SettingsCard>
+                        </tk8controls:SettingsExpander.Items>
+                    </tk8controls:SettingsExpander>
                 </ptcontrols:SettingsGroup>
             </StackPanel>
         </ptcontrols:SettingsPageControl.ModuleContent>
