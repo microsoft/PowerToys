@@ -2,18 +2,18 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ImageResizerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkitconverters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    
+
     <Page.Resources>
         <ptconverters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
         <ptconverters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
