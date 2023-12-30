@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
     <ptcontrols:OOBEPageControl x:Uid="Oobe_PastePlain" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PastePlain.gif">
