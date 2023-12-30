@@ -109,7 +109,7 @@
                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
                 Severity="Informational">
                 <InfoBar.ActionButton>
-                    <Button x:Uid="ShowUpdateDetails" Click="UpdateDetailsBtn_Click" />
+                    <HyperlinkButton x:Uid="ShowUpdateDetails" Click="UpdateDetailsBtn_Click" />
                 </InfoBar.ActionButton>
             </InfoBar>
 
