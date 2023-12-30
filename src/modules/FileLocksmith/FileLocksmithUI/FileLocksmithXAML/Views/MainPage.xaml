@@ -23,10 +23,10 @@
             FalseValue="Visible"
             GreaterThan="0"
             TrueValue="Collapsed" />
-        <tkconverters:FileCountConverter x:Key="fileCountConverter" />
-        <tkconverters:PidToIconConverter x:Key="pidToIconConverter" />
-        <tkconverters:UserToSystemWarningVisibilityConverter x:Key="userToSystemWarningVisibilityConverter" />
-        <tkconverters:FileListToDescriptionConverter x:Key="fileListToDescriptionConverter" />
+        <converters:FileCountConverter x:Key="fileCountConverter" />
+        <converters:PidToIconConverter x:Key="pidToIconConverter" />
+        <converters:UserToSystemWarningVisibilityConverter x:Key="userToSystemWarningVisibilityConverter" />
+        <converters:FileListToDescriptionConverter x:Key="fileListToDescriptionConverter" />
     </Page.Resources>
 
     <interactivity:Interaction.Behaviors>
@@ -93,11 +93,11 @@
                     SelectionMode="None">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
-                            <tkControls:SettingsExpander Margin="0,0,0,4">
-                                <tkControls:SettingsExpander.Resources>
+                            <tk8controls:SettingsExpander Margin="0,0,0,4">
+                                <tk8controls:SettingsExpander.Resources>
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
-                                </tkControls:SettingsExpander.Resources>
-                                <tkControls:SettingsExpander.Header>
+                                </tk8controls:SettingsExpander.Resources>
+                                <tk8controls:SettingsExpander.Header>
                                     <!--  We can't use the HeaderIcon because it only support a BitmapIcon, which only supports UriSource - not a direct BitmapImage  -->
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Image
@@ -106,8 +106,8 @@
                                             Source="{x:Bind pid, Converter={StaticResource pidToIconConverter}}" />
                                         <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind name}" />
                                     </StackPanel>
-                                </tkControls:SettingsExpander.Header>
-                                <tkControls:SettingsExpander.Content>
+                                </tk8controls:SettingsExpander.Header>
+                                <tk8controls:SettingsExpander.Content>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <FontIcon
                                             Foreground="{ThemeResource InfoBarWarningSeverityIconBackground}"
@@ -127,27 +127,27 @@
                                             </StackPanel>
                                         </Button>
                                     </StackPanel>
-                                </tkControls:SettingsExpander.Content>
-                                <tkControls:SettingsExpander.Items>
-                                    <tkControls:SettingsCard x:Uid="ProcessID">
+                                </tk8controls:SettingsExpander.Content>
+                                <tk8controls:SettingsExpander.Items>
+                                    <tk8controls:SettingsCard x:Uid="ProcessID">
                                         <TextBlock
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             IsTextSelectionEnabled="True"
                                             Text="{x:Bind pid}" />
-                                    </tkControls:SettingsCard>
-                                    <tkControls:SettingsCard x:Uid="User">
+                                    </tk8controls:SettingsCard>
+                                    <tk8controls:SettingsCard x:Uid="User">
                                         <TextBlock
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             IsTextSelectionEnabled="True"
                                             Text="{x:Bind user}" />
-                                    </tkControls:SettingsCard>
-                                    <tkControls:SettingsCard ContentAlignment="Vertical">
-                                        <tkControls:SettingsCard.Header>
+                                    </tk8controls:SettingsCard>
+                                    <tk8controls:SettingsCard ContentAlignment="Vertical">
+                                        <tk8controls:SettingsCard.Header>
                                             <TextBlock>
                                                 <Run x:Uid="Files" />
                                                 <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
                                             </TextBlock>
-                                        </tkControls:SettingsCard.Header>
+                                        </tk8controls:SettingsCard.Header>
                                         <ItemsRepeater ItemsSource="{x:Bind files}">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate x:DataType="x:String">
@@ -162,9 +162,9 @@
                                                 </DataTemplate>
                                             </ItemsRepeater.ItemTemplate>
                                         </ItemsRepeater>
-                                    </tkControls:SettingsCard>
-                                </tkControls:SettingsExpander.Items>
-                            </tkControls:SettingsExpander>
+                                    </tk8controls:SettingsCard>
+                                </tk8controls:SettingsExpander.Items>
+                            </tk8controls:SettingsExpander>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
