@@ -7,7 +7,7 @@
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
@@ -15,7 +15,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <localConverters:ModuleItemTemplateSelector
+        <ptconverters:ModuleItemTemplateSelector
             x:Key="ModuleItemTemplateSelector"
             ButtonTemplate="{StaticResource ModuleItemButtonTemplate}"
             KBMTemplate="{StaticResource ModuleItemKBMTemplate}"
@@ -25,7 +25,7 @@
         <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
             <Setter Property="IsTabStop" Value="False" />
         </Style>
-        <localConverters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
+        <ptconverters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
         <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <tkconverters:BoolToVisibilityConverter
