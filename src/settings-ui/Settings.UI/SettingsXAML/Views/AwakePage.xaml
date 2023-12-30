@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -17,11 +17,11 @@
         <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
     </Page.Resources>
 
-    <custom:SettingsPageControl
+    <ptcontrols:SettingsPageControl
         x:Uid="Awake"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/Awake.png">
-        <custom:SettingsPageControl.ModuleContent>
+        <ptcontrols:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="Awake_EnableSettingsCard"
@@ -36,7 +36,7 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="Awake_BehaviorSettingsGroup" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <ptcontrols:SettingsGroup x:Uid="Awake_BehaviorSettingsGroup" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
                     <tkcontrols:SettingsCard x:Uid="Awake_ModeSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
@@ -97,15 +97,15 @@
                         IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </custom:SettingsGroup>
+                </ptcontrols:SettingsGroup>
             </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
+        </ptcontrols:SettingsPageControl.ModuleContent>
 
-        <custom:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_Awake" Link="https://aka.ms/PowerToysOverview_Awake" />
-        </custom:SettingsPageControl.PrimaryLinks>
-        <custom:SettingsPageControl.SecondaryLinks>
-            <custom:PageLink x:Uid="SecondaryLink_Awake" Link="https://awake.den.dev" />
-        </custom:SettingsPageControl.SecondaryLinks>
-    </custom:SettingsPageControl>
+        <ptcontrols:SettingsPageControl.PrimaryLinks>
+            <ptcontrols:PageLink x:Uid="LearnMore_Awake" Link="https://aka.ms/PowerToysOverview_Awake" />
+        </ptcontrols:SettingsPageControl.PrimaryLinks>
+        <ptcontrols:SettingsPageControl.SecondaryLinks>
+            <ptcontrols:PageLink x:Uid="SecondaryLink_Awake" Link="https://awake.den.dev" />
+        </ptcontrols:SettingsPageControl.SecondaryLinks>
+    </ptcontrols:SettingsPageControl>
 </Page>

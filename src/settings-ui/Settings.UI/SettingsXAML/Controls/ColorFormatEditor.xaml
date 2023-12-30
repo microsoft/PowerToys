@@ -8,12 +8,12 @@
     xmlns:CommunityToolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:ColorFormatConverter x:Key="ColorFormatConverter" />
-        <DataTemplate x:Key="FormatParameterTemplate" x:DataType="local:ColorFormatParameter">
+        <DataTemplate x:Key="FormatParameterTemplate" x:DataType="ptcontrols:ColorFormatEditor">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="34" />
@@ -36,7 +36,7 @@
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="ColorParameterTemplate" x:DataType="local:ColorFormatParameter">
+        <DataTemplate x:Key="ColorParameterTemplate" x:DataType="ptcontrols:ColorFormatEditor">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="18" />
