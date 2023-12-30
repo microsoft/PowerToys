@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
@@ -14,7 +14,7 @@
     
     <Page.Resources>
         <localConverters:FindMyMouseActivationIntToVisibilityConverter x:Key="FindMyMouseActivationIntToVisibilityConverter" />
-        <converters:BoolToVisibilityConverter
+        <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
             TrueValue="Collapsed" />

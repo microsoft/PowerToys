@@ -9,7 +9,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EnvironmentVariables.Models"
-    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     mc:Ignorable="d">
@@ -92,18 +92,18 @@
                 </tkcontrols:SettingsCard>
             </DataTemplate>
 
-            <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
-            <converters:EnvironmentStateToBoolConverter x:Key="EnvironmentStateToBoolConverter" />
-            <converters:EnvironmentStateToMessageConverter x:Key="EnvironmentStateToMessageConverter" />
-            <converters:EnvironmentStateToTitleConverter x:Key="EnvironmentStateToTitleConverter" />
-            <converters:EnvironmentStateToVisibilityConverter x:Key="EnvironmentStateToVisibilityConverter" />
+            <tkconverters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
+            <tkconverters:EnvironmentStateToBoolConverter x:Key="EnvironmentStateToBoolConverter" />
+            <tkconverters:EnvironmentStateToMessageConverter x:Key="EnvironmentStateToMessageConverter" />
+            <tkconverters:EnvironmentStateToTitleConverter x:Key="EnvironmentStateToTitleConverter" />
+            <tkconverters:EnvironmentStateToVisibilityConverter x:Key="EnvironmentStateToVisibilityConverter" />
 
-            <toolkitConverters:BoolToVisibilityConverter
+            <tkconverters:BoolToVisibilityConverter
                 x:Key="BoolToInvertedVisibilityConverter"
                 FalseValue="Visible"
                 TrueValue="Collapsed" />
-            <toolkitConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-            <toolkitConverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
         </ResourceDictionary>
     </Page.Resources>
     <i:Interaction.Behaviors>

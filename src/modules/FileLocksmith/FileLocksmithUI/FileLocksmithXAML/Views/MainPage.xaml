@@ -9,24 +9,24 @@
     xmlns:interop="using:FileLocksmith.Interop"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:tkConverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
     <Page.Resources>
-        <tkConverters:BoolToVisibilityConverter
+        <tkconverters:BoolToVisibilityConverter
             x:Key="boolToVisibilityConverter"
             FalseValue="Visible"
             TrueValue="Collapsed" />
 
-        <tkConverters:DoubleToVisibilityConverter
+        <tkconverters:DoubleToVisibilityConverter
             x:Key="doubleToVisibilityConverter"
             FalseValue="Visible"
             GreaterThan="0"
             TrueValue="Collapsed" />
-        <converters:FileCountConverter x:Key="fileCountConverter" />
-        <converters:PidToIconConverter x:Key="pidToIconConverter" />
-        <converters:UserToSystemWarningVisibilityConverter x:Key="userToSystemWarningVisibilityConverter" />
-        <converters:FileListToDescriptionConverter x:Key="fileListToDescriptionConverter" />
+        <tkconverters:FileCountConverter x:Key="fileCountConverter" />
+        <tkconverters:PidToIconConverter x:Key="pidToIconConverter" />
+        <tkconverters:UserToSystemWarningVisibilityConverter x:Key="userToSystemWarningVisibilityConverter" />
+        <tkconverters:FileListToDescriptionConverter x:Key="fileListToDescriptionConverter" />
     </Page.Resources>
 
     <interactivity:Interaction.Behaviors>
