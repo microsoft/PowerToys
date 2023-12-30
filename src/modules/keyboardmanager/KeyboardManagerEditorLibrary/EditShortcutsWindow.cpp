@@ -368,13 +368,15 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     addShortcut.Margin({ 10, 10, 0, 25 });
     addShortcut.Style(AccentButtonStyle());
     addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
+        ShortcutControl& newShortcut = ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
 
         // Whenever a remap is added move to the bottom of the screen
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
 
         // Set focus to the first Type Button in the newly added row
         UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, EditorConstants::ShortcutTableColCount);
+
+        newShortcut.OpenNewShortcutControlRow(shortcutTable, shortcutTable.Children().GetAt(shortcutTable.Children().Size() - 1).as<StackPanel>());
     });
 
     /*while (true)
@@ -403,13 +405,18 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     if (isInCreateNewMode)
     {
-        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
+        //ShortcutControl& newShortcut =  ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
+
+        ShortcutControl& newShortcut = ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, Shortcut(), Shortcut(), L"", false, true, nullptr, L"");
 
         // Whenever a remap is added move to the bottom of the screen
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
 
         // Set focus to the first Type Button in the newly added row
         UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, EditorConstants::ShortcutTableColCount);
+
+        // not working from here, cross thread maybe
+        // newShortcut.OpenNewShortcutControlRow(shortcutTable, shortcutTable.Children().GetAt(shortcutTable.Children().Size() - 1).as<StackPanel>());
     }
 
     // Remap shortcut button content
@@ -445,6 +452,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     mappingsPanel.Children().Append(addShortcut);
 
     // Remapping table should be scrollable
+
     scrollViewer.Content(mappingsPanel);
 
     RelativePanel xamlContainer;

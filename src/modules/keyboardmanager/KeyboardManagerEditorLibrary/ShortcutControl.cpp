@@ -40,6 +40,28 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
         CreateDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState, colIndex, table, keyDropDownControlObjects, row, targetApp, isHybridControl, false, editShortcutsWindowHandle, shortcutRemapBuffer);
     });
 
+    FontIcon fontIcon;
+    fontIcon.Glyph(L"\uE70F"); // Unicode for the accept icon
+    fontIcon.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets")); // Set the font family to Segoe MDL2 Assets
+    // Set the FontIcon as the content of the button
+    btnPickShortcut.as<Button>().Content(fontIcon);
+    //btnPickShortcut.as<Button>().Width(EditorConstants::ShortcutTableDropDownWidth / 2);
+
+    uint32_t rowIndex;
+
+    UIElementCollection children = table.Children();
+    bool indexFound = children.IndexOf(row, rowIndex);
+
+    /*while (true)
+    {
+        Sleep(1000);
+    }*/
+
+    //auto nameX = L"btnPickShortcut_" + std::to_wstring(colIndex) + L"-" + std::to_wstring(rowIndex);
+    auto nameX = L"btnPickShortcut_" + std::to_wstring(colIndex);
+    //auto nameX = L"btnPickShortcut";
+    btnPickShortcut.as<Button>().Name(nameX);
+
     // Set an accessible name for the type shortcut button
     btnPickShortcut.as<Button>().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
 
@@ -58,7 +80,7 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
 
     shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
 
-    KeyDropDownControl::AddDropDown(table, row, shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, false);
+    //KeyDropDownControl::AddDropDown(table, row, shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, false);
 
     //int runProgramLabelWidth = 80;
     //UIHelpers::GetLabelWrapped(temp, L"XXXX:", runProgramLabelWidth).as<StackPanel>()
@@ -70,6 +92,48 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
     }
     catch (...)
     {
+    }
+}
+
+void ShortcutControl::OpenNewShortcutControlRow(StackPanel table, StackPanel row)
+{
+    //auto newItemIndex = parent.Children().Size() - 1;
+    //auto nameX = L"btnPickShortcut_0";
+
+    //auto btnPickShortcut = row.FindName(nameX).as<Button>();
+    //if (btnPickShortcut == nullptr)
+    //{
+    //    // not good.
+    //    return;
+    //}
+
+    /*while (true)
+    {
+        Sleep(1000);
+    }*/
+
+    if (false)
+    {
+        try
+        {
+            auto _btnPickShortcut = btnPickShortcut;
+            std::vector<std::unique_ptr<KeyDropDownControl>>& _x = keyDropDownControlObjects;
+            btnPickShortcut.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [&_x, _btnPickShortcut, table, row] {
+                    keyboardManagerState->SetUIState(KBMEditor::KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
+                    CreateDetectShortcutWindow(_btnPickShortcut, _btnPickShortcut.XamlRoot(), *keyboardManagerState, 0, table, _x, row, nullptr, false, false, editShortcutsWindowHandle, shortcutRemapBuffer);
+                });
+        }
+        catch (...)
+        {
+        }
+    }
+    else
+    {
+        keyboardManagerState->SetUIState(KBMEditor::KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
+        // Using the XamlRoot of the typeShortcut to get the root of the XAML host
+        CreateDetectShortcutWindow(btnPickShortcut, btnPickShortcut.XamlRoot(), *keyboardManagerState, 0, table, keyDropDownControlObjects, row, nullptr, false, false, editShortcutsWindowHandle, shortcutRemapBuffer);
     }
 }
 
@@ -105,7 +169,7 @@ void ShortcutControl::DeleteShortcutControl(StackPanel& parent, std::vector<std:
 }
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutTextUnion& newKeys, const std::wstring& targetAppName, bool isHidden, bool isInSingleEditMode, std::function<void()> doneFunction, const std::wstring& action)
+ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutTextUnion& newKeys, const std::wstring& targetAppName, bool isHidden, bool isInSingleEditMode, std::function<void()> doneFunction, const std::wstring& action)
 {
     // Textbox for target application
     TextBox targetAppTextBox;
@@ -130,8 +194,16 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     }
 
     parent.Children().Append(row);
+
     newrow.emplace_back(std::make_unique<ShortcutControl>(parent, row, 0, targetAppTextBox));
+
+    ShortcutControl& newShortcutToRemap = *(newrow.back());
+
+    //const auto& newShortcutToRemap = newrow.back(); // Get a reference to the last unique_ptr
+    //return *newShortcutToRemap;
+
     newrow.emplace_back(std::make_unique<ShortcutControl>(parent, row, 1, targetAppTextBox));
+
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     row.Padding({ 10, 15, 10, 5 });
@@ -153,8 +225,9 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     if (isInSingleEditMode)
     {
         //const long xd = EditorConstants::ShortcutOriginColumnWidth;
-        auto x = EditorConstants::ShortcutOriginColumnWidth - 150;
-        origin.Width(x);
+        origin.Width(EditorConstants::ShortcutOriginColumnWidth);
+        //auto x = EditorConstants::ShortcutOriginColumnWidth - 50;
+        //origin.Width(x);
     }
     else
     {
@@ -175,15 +248,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
     // ShortcutControl for the new shortcut
     auto target = keyboardRemapControlObjects.back()[1]->GetShortcutControl();
+    target.Width(EditorConstants::ShortcutTargetColumnWidth);
 
     if (isInSingleEditMode)
     {
-        //const long xd = EditorConstants::ShortcutOriginColumnWidth;
-        auto x = EditorConstants::ShortcutTargetColumnWidth - 150;
-        target.Width(EditorConstants::ShortcutTargetColumnWidth);
-    }
-    else
-    {
+        auto x = EditorConstants::ShortcutTargetColumnWidth - 250;
         target.Width(EditorConstants::ShortcutTargetColumnWidth);
     }
 
@@ -206,7 +275,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
     if (!parent.Children().IndexOf(row, rowIndex))
     {
-        return;
+        return newShortcutToRemap;
     }
 
     auto unicodeTextKeysInput = TextBox();
@@ -332,6 +401,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }*/
+
+    //target.BorderThickness({ 1, 1, 1, 1 });
+    //target.BorderBrush(Media::SolidColorBrush(Colors::Red()));
+
+    target.Width(target.Width() - 120);
 
     row.Children().Append(target);
 
@@ -486,7 +560,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         targetAppContainer.VerticalAlignment(VerticalAlignment::Center);
         targetAppContainer.Children().Append(targetAppHeader);
         targetAppContainer.Children().Append(targetAppTextBox);
-
         origin.Children().Append(targetAppContainer);
     }
     else
@@ -497,6 +570,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         StackPanel targetAppContainer = UIHelpers::GetWrapped(targetAppHorizontal, EditorConstants::TableTargetAppColWidth).as<StackPanel>();
         targetAppContainer.Orientation(Orientation::Vertical);
         targetAppContainer.VerticalAlignment(VerticalAlignment::Center);
+
         row.Children().Append(targetAppContainer);
     }
 
@@ -585,7 +659,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         deleteShortcutContainer.Children().Append(deleteShortcut);
         deleteShortcutContainer.Orientation(Orientation::Vertical);
         deleteShortcutContainer.VerticalAlignment(VerticalAlignment::Center);
-        row.Children().Append(deleteShortcutContainer);
+
+        if (!isInSingleEditMode)
+        {
+            row.Children().Append(deleteShortcutContainer);
+        }
 
         // Set accessible names
         UpdateAccessibleNames(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->GetShortcutControl(), keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->GetShortcutControl(), targetAppTextBox, deleteShortcut, static_cast<int>(keyboardRemapControlObjects.size()));
@@ -632,6 +710,8 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         // Initialize both shortcuts as empty shortcuts
         shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
     }
+
+    return newShortcutToRemap;
 }
 
 //StackPanel* findChildByName(const StackPanel& panel, const std::string& name)
@@ -1201,7 +1281,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     {
         shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[1]);
     }
-    
+
     if (!shortcut.IsEmpty() && shortcut.HasChord())
     {
         keyboardManagerState.AllowChord = true;
@@ -1218,6 +1298,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     detectShortcutBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPESHORTCUT_TITLE)));
 
     // Get the parent linked stack panel for the "Type shortcut" button that was clicked
+
     VariableSizedWrapGrid linkedShortcutVariableSizedWrapGrid = UIHelpers::GetSiblingElement(sender.as<FrameworkElement>().Parent()).as<VariableSizedWrapGrid>();
 
     auto unregisterKeys = [&keyboardManagerState]() {

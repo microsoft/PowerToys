@@ -20,6 +20,8 @@ namespace UIHelpers
     // This method sets focus to the first Type button on the last row of the Grid
     void SetFocusOnTypeButtonInLastRow(StackPanel& parent, long colCount);
 
+    FrameworkElement FindElementByName(DependencyObject parent, std::wstring const& name);
+
     RECT GetForegroundWindowDesktopRect();
 
     // Function to return the next sibling element for an element under a stack panel

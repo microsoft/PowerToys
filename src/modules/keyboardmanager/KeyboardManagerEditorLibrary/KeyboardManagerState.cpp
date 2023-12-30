@@ -117,7 +117,7 @@ TextBlock KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hs
     TextBlock remapKey;
     Border border;
 
-    border.Padding({ 20, 10, 20, 10 });
+    border.Padding({ 10, 5, 10, 5 });
     border.Margin({ 0, 0, 10, 0 });
 
     // Based on settings-ui\Settings.UI\SettingsXAML\Controls\KeyVisual\KeyVisual.xaml
@@ -128,7 +128,7 @@ TextBlock KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hs
     remapKey.Foreground(Application::Current().Resources().Lookup(box_value(L"ButtonForeground")).as<Media::Brush>());
     remapKey.FontWeight(Text::FontWeights::SemiBold());
 
-    remapKey.FontSize(12);
+    remapKey.FontSize(14);
 
     border.HorizontalAlignment(HorizontalAlignment::Left);
     border.Child(remapKey);

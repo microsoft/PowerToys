@@ -186,6 +186,8 @@ public:
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;
+
+    int GetModifiersCount() const;
 };
 
 using KeyShortcutTextUnion = std::variant<DWORD, Shortcut, std::wstring>;

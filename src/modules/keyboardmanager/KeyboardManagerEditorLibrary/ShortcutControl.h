@@ -26,10 +26,11 @@ private:
     winrt::Windows::Foundation::IInspectable shortcutDropDownVariableSizedWrapGrid;
 
     // Button to type the shortcut
-    winrt::Windows::Foundation::IInspectable btnPickShortcut;
-    
+    //winrt::Windows::Foundation::IInspectable btnPickShortcut;
+    Button btnPickShortcut;
+
     // TODO
-    StackPanel spBtnPickShortcut;   
+    StackPanel spBtnPickShortcut;
 
     // StackPanel to parent the above controls
     winrt::Windows::Foundation::IInspectable shortcutControlLayout;
@@ -68,8 +69,10 @@ public:
     // constructor
     ShortcutControl(StackPanel table, StackPanel row, const int colIndex, TextBox targetApp);
 
+    void OpenNewShortcutControlRow(StackPanel table, StackPanel row);
+
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-    static void AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"", bool isHidden = false, bool closeOnDelete = false, std::function<void()> fn = nullptr, const std::wstring& actio = L"");
+    static ShortcutControl& AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"", bool isHidden = false, bool closeOnDelete = false, std::function<void()> fn = nullptr, const std::wstring& actio = L"");
 
     static void ShortcutControl::DeleteShortcutControl(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, int index);
 

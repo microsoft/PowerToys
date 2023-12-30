@@ -915,6 +915,29 @@ bool Shortcut::IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInt
     return true;
 }
 
+int Shortcut::GetModifiersCount() const
+{   
+    int modifierCount = 0;
+    if (winKey != ModifierKey::Disabled)
+    {
+        modifierCount += 1;
+    }
+    if (ctrlKey != ModifierKey::Disabled)
+    {
+        modifierCount += 1;
+    }
+    if (altKey != ModifierKey::Disabled)
+    {
+        modifierCount += 1;
+    }
+    if (shiftKey != ModifierKey::Disabled)
+    {
+        modifierCount += 1;
+    }
+
+    return modifierCount;
+}
+
 // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
 int Shortcut::GetCommonModifiersCount(const Shortcut& input) const
 {

@@ -448,12 +448,20 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
             ignoreWarning = true;
         }
 
-        StackPanel spForShortcut;
-        spForShortcut.HorizontalAlignment(HorizontalAlignment::Left);
-        spForShortcut.Orientation(Orientation::Horizontal);
+        StackPanel spForShortcutRowOne;
+        StackPanel spForShortcutRowTwo;
+        bool hasTwoRows = false;
+        spForShortcutRowOne.HorizontalAlignment(HorizontalAlignment::Left);
+        spForShortcutRowOne.Orientation(Orientation::Horizontal);
+
+        spForShortcutRowTwo.HorizontalAlignment(HorizontalAlignment::Left);
+        spForShortcutRowTwo.Orientation(Orientation::Horizontal);
+        spForShortcutRowTwo.Visibility(Visibility::Collapsed);
 
         VariableSizedWrapGrid tempParent;
+
         KeyDropDownControl::AddDropDown(table, row, tempParent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
+        StackPanel sp = spForShortcutRowOne;
 
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
@@ -462,13 +470,24 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
             {
                 ComboBox currentDropDown = tempParent.Children().GetAt(i).as<ComboBox>();
                 currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcutKeyCodes[i])));
+
+                auto keyText = winrt::unbox_value<hstring>(currentDropDown.SelectedItem().as<ComboBoxItem>().Content());
+                sp = spForShortcutRowOne;
+
+                if (i >= 9999)
+                {
+                    sp = spForShortcutRowTwo;
+                    spForShortcutRowTwo.Visibility(Visibility::Visible);
+                    hasTwoRows = true;
+                }
+
                 if (currentDropDown.SelectedItem().as<ComboBoxItem>() != nullptr)
                 {
-                    keyboardManagerState.AddKeyToLayout(spForShortcut, winrt::unbox_value<hstring>(currentDropDown.SelectedItem().as<ComboBoxItem>().Content()));
+                    auto key = keyboardManagerState.AddKeyToLayout(sp, keyText);
                 }
                 else
                 {
-                    auto badKey = keyboardManagerState.AddKeyToLayout(spForShortcut, L"BAD_KEY!");
+                    auto badKey = keyboardManagerState.AddKeyToLayout(sp, L"BAD_KEY!");
                     badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
                 }
             }
@@ -476,32 +495,44 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
 
         if (shortcut.HasChord())
         {
+            sp = spForShortcutRowOne;
+            if (hasTwoRows)
+            {
+                sp = spForShortcutRowTwo;
+                spForShortcutRowTwo.Visibility(Visibility::Visible);
+                hasTwoRows = true;
+            }
+
             TextBlock txtComma;
             txtComma.Text(L",");
             txtComma.FontSize(20);
             txtComma.Padding({ 0, 0, 10, 0 });
             txtComma.VerticalAlignment(VerticalAlignment::Bottom);
             txtComma.TextAlignment(TextAlignment::Left);
-            spForShortcut.Children().Append(txtComma);
+            sp.Children().Append(txtComma);
 
             // if this has a chord, render it last
             KeyDropDownControl::AddDropDown(table, row, tempParent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
             auto nextI = static_cast<int>(shortcutKeyCodes.size());
             ComboBox currentDropDown = tempParent.Children().GetAt(nextI).as<ComboBox>();
             currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcut.GetSecondKey())));
+
+            auto keyText = winrt::unbox_value<hstring>(currentDropDown.SelectedItem().as<ComboBoxItem>().Content());
+
             if (currentDropDown.SelectedItem().as<ComboBoxItem>() != nullptr)
             {
-                keyboardManagerState.AddKeyToLayout(spForShortcut, winrt::unbox_value<hstring>(currentDropDown.SelectedItem().as<ComboBoxItem>().Content()));
+                keyboardManagerState.AddKeyToLayout(sp, keyText);
             }
             else
             {
-                auto badKey = keyboardManagerState.AddKeyToLayout(spForShortcut, L"BAD_KEY!");
+                auto badKey = keyboardManagerState.AddKeyToLayout(sp, L"BAD_KEY!");
                 badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
             }
         }
 
         // for some reason the first item in this parent needs to visible, so add the text version and then add the others as hidden.
-        parent.Children().Append(spForShortcut);
+        parent.Children().Append(spForShortcutRowOne);
+        parent.Children().Append(spForShortcutRowTwo);
 
         tempParent.Visibility(Visibility::Collapsed);
         parent.Children().Append(tempParent);
