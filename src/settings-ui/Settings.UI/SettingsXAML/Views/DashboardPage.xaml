@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -296,7 +296,7 @@
                     Style="{StaticResource SubtitleTextBlockStyle}" />
                 <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
-                        <controls:StaggeredLayout
+                        <tkcontrols:StaggeredLayout
                             ColumnSpacing="8"
                             DesiredColumnWidth="378"
                             RowSpacing="8" />
@@ -394,7 +394,7 @@
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
-                        <controls:StaggeredLayout
+                        <tkcontrols:StaggeredLayout
                             ColumnSpacing="8"
                             DesiredColumnWidth="378"
                             RowSpacing="8" />

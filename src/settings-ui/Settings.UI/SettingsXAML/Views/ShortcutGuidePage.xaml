@@ -2,7 +2,7 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,12 +13,12 @@
     <custom:SettingsPageControl x:Uid="ShortcutGuide" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ShortcutGuide.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="ShortcutGuide_Enable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" />
-                </controls:SettingsCard>
+                </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -26,21 +26,21 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
                 <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingsCard x:Uid="ShortcutGuide_ActivationMethod">
+                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_ActivationMethod">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut" />
                             <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="ShortcutGuide_PressTimeForGlobalWindowsShortcuts"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -51,9 +51,9 @@
                             SmallChange="50"
                             SpinButtonPlacementMode="Compact"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}" />
-                    </controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="ShortcutGuide_PressTimeForTaskbarIconShortcuts"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -64,7 +64,7 @@
                             SmallChange="50"
                             SpinButtonPlacementMode="Compact"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.DelayTime}" />
-                    </controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
                     <InfoBar
                         x:Uid="ShortcutGuide_PressWinKeyWarning"
@@ -76,33 +76,33 @@
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
-                        <controls:SettingsCard.Description>
+                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                        <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
-                        </controls:SettingsCard.Description>
+                        </tkcontrols:SettingsCard.Description>
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="ShortcutGuide_OverlayOpacity">
+                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_OverlayOpacity">
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
                             Minimum="0"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}" />
-                    </controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="ShortcutGuide_DisabledApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsExpanded="True">
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
                                     MinWidth="240"
@@ -113,9 +113,9 @@
                                     ScrollViewer.VerticalScrollMode="Enabled"
                                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </custom:SettingsGroup>
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>

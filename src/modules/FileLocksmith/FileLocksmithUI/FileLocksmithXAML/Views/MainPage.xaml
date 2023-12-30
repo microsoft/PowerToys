@@ -8,7 +8,7 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:interop="using:FileLocksmith.Interop"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tkControls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkConverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
