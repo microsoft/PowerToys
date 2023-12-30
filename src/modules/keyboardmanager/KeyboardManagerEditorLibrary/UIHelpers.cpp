@@ -56,6 +56,15 @@ namespace UIHelpers
     winrt::Windows::Foundation::IInspectable GetLabelWrapped(const winrt::Windows::Foundation::IInspectable& element, std::wstring label, double textWidth)
     {
         StackPanel sp = StackPanel();
+
+        try
+        {
+            sp.Name(L"Wrapped_" + element.as<FrameworkElement>().Name());
+        }
+        catch (...)
+        {
+        }
+
         sp.Orientation(Orientation::Horizontal);
         sp.HorizontalAlignment(HorizontalAlignment::Left);
         TextBlock text;

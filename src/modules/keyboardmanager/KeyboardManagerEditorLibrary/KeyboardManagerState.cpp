@@ -109,8 +109,9 @@ void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const StackPanel& tex
     std::lock_guard<std::mutex> lock(currentSingleKeyUI_mutex);
     currentSingleKeyUI = textBlock.as<winrt::Windows::Foundation::IInspectable>();
 }
+//void xAddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
 
-void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring& key)
+TextBlock KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring& key)
 {
     // Textblock to display the detected key
     TextBlock remapKey;
@@ -127,12 +128,15 @@ void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring
     remapKey.Foreground(Application::Current().Resources().Lookup(box_value(L"ButtonForeground")).as<Media::Brush>());
     remapKey.FontWeight(Text::FontWeights::SemiBold());
 
-    remapKey.FontSize(20);
+    remapKey.FontSize(12);
+
     border.HorizontalAlignment(HorizontalAlignment::Left);
     border.Child(remapKey);
 
     remapKey.Text(key);
     panel.Children().Append(border);
+
+    return remapKey;
 }
 
 // Function to update the detect shortcut UI based on the entered keys

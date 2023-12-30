@@ -26,13 +26,16 @@ private:
     winrt::Windows::Foundation::IInspectable shortcutDropDownVariableSizedWrapGrid;
 
     // Button to type the shortcut
-    winrt::Windows::Foundation::IInspectable typeShortcut;
+    winrt::Windows::Foundation::IInspectable btnPickShortcut;
+    
+    // TODO
+    StackPanel spBtnPickShortcut;   
 
     // StackPanel to parent the above controls
     winrt::Windows::Foundation::IInspectable shortcutControlLayout;
 
     // StackPanel to parent the first line of "To" Column
-    winrt::Windows::Foundation::IInspectable keyComboAndSelectStackPanel;
+    winrt::Windows::Foundation::IInspectable keyComboStackPanel;
 
     // Function to set the accessible name of the target app text box
     static void SetAccessibleNameForTextBox(TextBox targetAppTextBox, int rowIndex);

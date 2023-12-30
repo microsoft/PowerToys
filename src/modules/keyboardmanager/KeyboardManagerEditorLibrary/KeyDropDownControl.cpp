@@ -62,7 +62,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     }
     else
     {
-        dropDown.as<ComboBox>().Width(EditorConstants::ShortcutTableDropDownWidth);
+        dropDown.as<ComboBox>().Width(EditorConstants::ShortcutTableDropDownWidth / 2);
     }
 
     dropDown.as<ComboBox>().MaxDropDownHeight(EditorConstants::TableDropDownHeight);
@@ -437,32 +437,74 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
     {
         bool ignoreWarning = false;
 
+        //while (true)
+        //{
+        //    Sleep(1000);
+        //}
+
         // If more than one key is to be added, ignore a shortcut to key warning on partially entering the remapping
         if (shortcutKeyCodes.size() > 1)
         {
             ignoreWarning = true;
         }
 
-        KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
+        StackPanel spForShortcut;
+        spForShortcut.HorizontalAlignment(HorizontalAlignment::Left);
+        spForShortcut.Orientation(Orientation::Horizontal);
+
+        VariableSizedWrapGrid tempParent;
+        KeyDropDownControl::AddDropDown(table, row, tempParent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
 
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
             // New drop down gets added automatically when the SelectedValue(key code) is set
-            if (i < (int)parent.Children().Size())
+            if (i < (int)tempParent.Children().Size())
             {
-                ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
+                ComboBox currentDropDown = tempParent.Children().GetAt(i).as<ComboBox>();
                 currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcutKeyCodes[i])));
+                if (currentDropDown.SelectedItem().as<ComboBoxItem>() != nullptr)
+                {
+                    keyboardManagerState.AddKeyToLayout(spForShortcut, winrt::unbox_value<hstring>(currentDropDown.SelectedItem().as<ComboBoxItem>().Content()));
+                }
+                else
+                {
+                    auto badKey = keyboardManagerState.AddKeyToLayout(spForShortcut, L"BAD_KEY!");
+                    badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
+                }
             }
         }
 
         if (shortcut.HasChord())
         {
+            TextBlock txtComma;
+            txtComma.Text(L",");
+            txtComma.FontSize(20);
+            txtComma.Padding({ 0, 0, 10, 0 });
+            txtComma.VerticalAlignment(VerticalAlignment::Bottom);
+            txtComma.TextAlignment(TextAlignment::Left);
+            spForShortcut.Children().Append(txtComma);
+
             // if this has a chord, render it last
-            KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
+            KeyDropDownControl::AddDropDown(table, row, tempParent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
             auto nextI = static_cast<int>(shortcutKeyCodes.size());
-            ComboBox currentDropDown = parent.Children().GetAt(nextI).as<ComboBox>();
+            ComboBox currentDropDown = tempParent.Children().GetAt(nextI).as<ComboBox>();
             currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcut.GetSecondKey())));
+            if (currentDropDown.SelectedItem().as<ComboBoxItem>() != nullptr)
+            {
+                keyboardManagerState.AddKeyToLayout(spForShortcut, winrt::unbox_value<hstring>(currentDropDown.SelectedItem().as<ComboBoxItem>().Content()));
+            }
+            else
+            {
+                auto badKey = keyboardManagerState.AddKeyToLayout(spForShortcut, L"BAD_KEY!");
+                badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
+            }
         }
+
+        // for some reason the first item in this parent needs to visible, so add the text version and then add the others as hidden.
+        parent.Children().Append(spForShortcut);
+
+        tempParent.Visibility(Visibility::Collapsed);
+        parent.Children().Append(tempParent);
     }
 }
 

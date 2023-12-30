@@ -22,7 +22,7 @@ RemapBuffer ShortcutControl::shortcutRemapBuffer;
 ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int colIndex, TextBox targetApp)
 {
     shortcutDropDownVariableSizedWrapGrid = VariableSizedWrapGrid();
-    typeShortcut = Button();
+    btnPickShortcut = Button();
     shortcutControlLayout = StackPanel();
 
     const bool isHybridControl = colIndex == 1;
@@ -32,28 +32,37 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
     shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
     shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>().MaximumRowsOrColumns(3);
 
-    typeShortcut.as<Button>().Content(winrt::box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
-    typeShortcut.as<Button>().Width(EditorConstants::ShortcutTableDropDownWidth);
-    typeShortcut.as<Button>().Click([&, table, row, colIndex, isHybridControl, targetApp](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    btnPickShortcut.as<Button>().Content(winrt::box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
+    btnPickShortcut.as<Button>().Width(EditorConstants::ShortcutTableDropDownWidth / 2);
+    btnPickShortcut.as<Button>().Click([&, table, row, colIndex, isHybridControl, targetApp](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         keyboardManagerState->SetUIState(KBMEditor::KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
         // Using the XamlRoot of the typeShortcut to get the root of the XAML host
         CreateDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState, colIndex, table, keyDropDownControlObjects, row, targetApp, isHybridControl, false, editShortcutsWindowHandle, shortcutRemapBuffer);
     });
 
     // Set an accessible name for the type shortcut button
-    typeShortcut.as<Button>().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
+    btnPickShortcut.as<Button>().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
 
     shortcutControlLayout.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
 
-    keyComboAndSelectStackPanel = StackPanel();
-    keyComboAndSelectStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-    keyComboAndSelectStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
+    keyComboStackPanel = StackPanel();
+    keyComboStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    keyComboStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
 
-    keyComboAndSelectStackPanel.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
-    shortcutControlLayout.as<StackPanel>().Children().InsertAt(0, keyComboAndSelectStackPanel.as<StackPanel>());
+    //keyComboStackPanel.as<StackPanel>().Children().Append(btnPickShortcut.as<Button>());
+
+    shortcutControlLayout.as<StackPanel>().Children().Append(keyComboStackPanel.as<StackPanel>());
+
+    spBtnPickShortcut = UIHelpers::GetLabelWrapped(btnPickShortcut.as<Button>(), L"Shortcut:", 80).as<StackPanel>();
+    shortcutControlLayout.as<StackPanel>().Children().Append(spBtnPickShortcut);
 
     shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
+
     KeyDropDownControl::AddDropDown(table, row, shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, false);
+
+    //int runProgramLabelWidth = 80;
+    //UIHelpers::GetLabelWrapped(temp, L"XXXX:", runProgramLabelWidth).as<StackPanel>()
+
     try
     {
         // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
@@ -100,6 +109,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 {
     // Textbox for target application
     TextBox targetAppTextBox;
+    int runProgramLabelWidth = 80;
 
     // Create new ShortcutControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<ShortcutControl>> newrow;
@@ -178,31 +188,51 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     }
 
     // add shortcut type choice
-    auto typeCombo = ComboBox();
-    typeCombo.Width(EditorConstants::RemapTableDropDownWidth);
-    typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeKeyShortcut()));
-    typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
-    typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeRunProgram()));
-    typeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeOpenUri()));
+    auto actionTypeCombo = ComboBox();
+    actionTypeCombo.Width(EditorConstants::RemapTableDropDownWidth);
+    actionTypeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeKeyShortcut()));
+    actionTypeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
+    actionTypeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeRunProgram()));
+    actionTypeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeOpenUri()));
 
     auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
-    auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
-    firstLineStackPanel.Children().InsertAt(0, typeCombo);
+    auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboStackPanel.as<StackPanel>();
+
+    firstLineStackPanel.Children().InsertAt(0, UIHelpers::GetLabelWrapped(actionTypeCombo, L"Action:", runProgramLabelWidth).as<StackPanel>());
 
     // add textbox for when it's a text input
-    auto textInput = TextBox();
+
+    uint32_t rowIndex = -1;
+
+    if (!parent.Children().IndexOf(row, rowIndex))
+    {
+        return;
+    }
+
+    auto unicodeTextKeysInput = TextBox();
+
+    /*while (true)
+    {
+        Sleep(1000);
+    }*/
+
+    unicodeTextKeysInput.Name(L"unicodeTextKeysInput_" + std::to_wstring(rowIndex));
+
     auto textInputMargin = Windows::UI::Xaml::Thickness();
     textInputMargin.Top = -EditorConstants::ShortcutTableDropDownSpacing;
     textInputMargin.Bottom = EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed UIElement
-    textInput.Margin(textInputMargin);
+    unicodeTextKeysInput.Margin(textInputMargin);
 
-    textInput.AcceptsReturn(false);
-    textInput.Visibility(Visibility::Collapsed);
-    textInput.Width(EditorConstants::TableDropDownHeight);
-    controlStackPanel.Children().Append(textInput);
-    textInput.HorizontalAlignment(HorizontalAlignment::Left);
+    unicodeTextKeysInput.AcceptsReturn(false);
+    //unicodeTextKeysInput.Visibility(Visibility::Collapsed);
+    unicodeTextKeysInput.Width(EditorConstants::TableDropDownHeight);
 
-    textInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
+    StackPanel spUnicodeTextKeysInput = UIHelpers::GetLabelWrapped(unicodeTextKeysInput, L"Keys:", runProgramLabelWidth).as<StackPanel>();
+    controlStackPanel.Children().Append(spUnicodeTextKeysInput);
+
+    unicodeTextKeysInput.HorizontalAlignment(HorizontalAlignment::Left);
+
+    unicodeTextKeysInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         auto textbox = sender.as<TextBox>();
         auto text = textbox.Text();
         uint32_t rowIndex = -1;
@@ -233,69 +263,70 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     auto openURIStackPanel = SetupOpenURIControls(parent, row, shortCut, textInputMargin, controlStackPanel);
 
     // add grid for when it's a key/shortcut
-    auto grid = keyboardRemapControlObjects.back()[1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>();
+    auto shortcutItemsGrid = keyboardRemapControlObjects.back()[1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>();
     auto gridMargin = Windows::UI::Xaml::Thickness();
     gridMargin.Bottom = -EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed textInput
-    grid.Margin(gridMargin);
-    auto shortcutButton = keyboardRemapControlObjects.back()[1]->typeShortcut.as<Button>();
+    shortcutItemsGrid.Margin(gridMargin);
+    auto shortcutButton = keyboardRemapControlObjects.back()[1]->btnPickShortcut.as<Button>();
+    auto spBtnPickShortcut = keyboardRemapControlObjects.back()[1]->spBtnPickShortcut.as<StackPanel>();
 
     // event code for when type changes
-    typeCombo.SelectionChanged([typeCombo, grid, shortcutButton, textInput, runProgramStackPanel, openURIStackPanel](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
-        const auto shortcutType = ShortcutControl::GetShortcutType(typeCombo);
+    actionTypeCombo.SelectionChanged([parent, row, controlStackPanel, actionTypeCombo, shortcutItemsGrid, spBtnPickShortcut, spUnicodeTextKeysInput, runProgramStackPanel, openURIStackPanel](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
+        const auto shortcutType = ShortcutControl::GetShortcutType(actionTypeCombo);
+
+        /*uint32_t rowIndex;
+        if (!parent.Children().IndexOf(row, rowIndex))
+        {
+            return;
+        }*/
+        /*while (true)
+        {
+            Sleep(1000);
+        }*/
+
+        /*TextBox unicodeTextKeysInput = controlStackPanel.FindName(L"unicodeTextKeysInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+        if (unicodeTextKeysInput == nullptr)
+        {
+            unicodeTextKeysInput = row.FindName(L"unicodeTextKeysInput_" + std::to_wstring(rowIndex)).as<TextBox>();
+            if (unicodeTextKeysInput == nullptr)
+            {
+                return;
+            }
+        }*/
 
         if (shortcutType == ShortcutControl::ShortcutType::Shortcut)
         {
-            grid.Visibility(Visibility::Visible);
-            shortcutButton.Visibility(Visibility::Visible);
-            textInput.Visibility(Visibility::Collapsed);
+            spBtnPickShortcut.Visibility(Visibility::Visible);
+            shortcutItemsGrid.Visibility(Visibility::Visible);            
+            spUnicodeTextKeysInput.Visibility(Visibility::Collapsed);
             runProgramStackPanel.Visibility(Visibility::Collapsed);
             openURIStackPanel.Visibility(Visibility::Collapsed);
         }
         else if (shortcutType == ShortcutControl::ShortcutType::Text)
         {
-            grid.Visibility(Visibility::Collapsed);
-            shortcutButton.Visibility(Visibility::Collapsed);
-            textInput.Visibility(Visibility::Visible);
+            spBtnPickShortcut.Visibility(Visibility::Collapsed);
+            shortcutItemsGrid.Visibility(Visibility::Collapsed);            
+            spUnicodeTextKeysInput.Visibility(Visibility::Visible);
             runProgramStackPanel.Visibility(Visibility::Collapsed);
             openURIStackPanel.Visibility(Visibility::Collapsed);
         }
         else if (shortcutType == ShortcutControl::ShortcutType::RunProgram)
         {
-            grid.Visibility(Visibility::Collapsed);
-            shortcutButton.Visibility(Visibility::Collapsed);
-            textInput.Visibility(Visibility::Collapsed);
+            spBtnPickShortcut.Visibility(Visibility::Collapsed);
+            shortcutItemsGrid.Visibility(Visibility::Collapsed);            
+            spUnicodeTextKeysInput.Visibility(Visibility::Collapsed);
             runProgramStackPanel.Visibility(Visibility::Visible);
             openURIStackPanel.Visibility(Visibility::Collapsed);
         }
         else
         {
-            grid.Visibility(Visibility::Collapsed);
-            shortcutButton.Visibility(Visibility::Collapsed);
-            textInput.Visibility(Visibility::Collapsed);
+            spBtnPickShortcut.Visibility(Visibility::Collapsed);
+            shortcutItemsGrid.Visibility(Visibility::Collapsed);            
+            spUnicodeTextKeysInput.Visibility(Visibility::Collapsed);
             runProgramStackPanel.Visibility(Visibility::Collapsed);
             openURIStackPanel.Visibility(Visibility::Visible);
         }
     });
-
-    if (textSelected)
-    {
-        typeCombo.SelectedIndex(1);
-    }
-    else
-    {
-        if (shortCut.operationType == Shortcut::OperationType::RunProgram)
-        {
-            typeCombo.SelectedIndex(2);
-        }
-        else if (shortCut.operationType == Shortcut::OperationType::OpenURI)
-        {
-            typeCombo.SelectedIndex(3);
-        }
-        else
-        {
-            typeCombo.SelectedIndex(0);
-        }
-    }
 
     /*while (true)
     {
@@ -303,6 +334,26 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     }*/
 
     row.Children().Append(target);
+
+    if (textSelected)
+    {
+        actionTypeCombo.SelectedIndex(1);
+    }
+    else
+    {
+        if (shortCut.operationType == Shortcut::OperationType::RunProgram)
+        {
+            actionTypeCombo.SelectedIndex(2);
+        }
+        else if (shortCut.operationType == Shortcut::OperationType::OpenURI)
+        {
+            actionTypeCombo.SelectedIndex(3);
+        }
+        else
+        {
+            actionTypeCombo.SelectedIndex(0);
+        }
+    }
 
     targetAppTextBox.Width(EditorConstants::ShortcutTableDropDownWidth);
     targetAppTextBox.PlaceholderText(KeyboardManagerEditorStrings::DefaultAppName());
@@ -316,7 +367,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     });
 
     // LostFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)
-    targetAppTextBox.LostFocus([&keyboardRemapControlObjects, parent, row, targetAppTextBox, typeCombo, textInput](auto const& sender, auto const& e) {
+    targetAppTextBox.LostFocus([&keyboardRemapControlObjects, parent, row, targetAppTextBox, actionTypeCombo, unicodeTextKeysInput](auto const& sender, auto const& e) {
         // Get index of targetAppTextBox button
         uint32_t rowIndex;
         if (!parent.Children().IndexOf(row, rowIndex))
@@ -338,14 +389,14 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>()));
         // second column is a hybrid column
 
-        const bool regularShortcut = typeCombo.SelectedIndex() == 0;
-        const bool textSelected = typeCombo.SelectedIndex() == 1;
-        const bool runProgram = typeCombo.SelectedIndex() == 2;
-        const bool openUri = typeCombo.SelectedIndex() == 3;
+        const bool regularShortcut = actionTypeCombo.SelectedIndex() == 0;
+        const bool textSelected = actionTypeCombo.SelectedIndex() == 1;
+        const bool runProgram = actionTypeCombo.SelectedIndex() == 2;
+        const bool openUri = actionTypeCombo.SelectedIndex() == 3;
 
         if (textSelected)
         {
-            shortcutRemapBuffer[rowIndex].first[1] = textInput.Text().c_str();
+            shortcutRemapBuffer[rowIndex].first[1] = unicodeTextKeysInput.Text().c_str();
         }
         else
         {
@@ -639,6 +690,8 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
     StackPanel openUriStackPanel;
     auto uriTextBox = TextBox();
 
+    int runProgramLabelWidth = 80;
+
     uriTextBox.Text(shortCut.uriToOpen);
     uriTextBox.PlaceholderText(L"uriText!!!");
     uriTextBox.Margin(textInputMargin);
@@ -655,7 +708,7 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
     boxAndLink.Children().Append(uriTextBox);
     boxAndLink.Children().Append(hyperlinkButton);
 
-    openUriStackPanel.Children().Append(boxAndLink);
+    openUriStackPanel.Children().Append(UIHelpers::GetLabelWrapped(boxAndLink, L"Path/URI:", runProgramLabelWidth).as<StackPanel>());
 
     uriTextBox.TextChanged([parent, row, uriTextBox](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;

@@ -6,6 +6,7 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Shortcut.h>
 
+
 class KeyDelay;
 
 namespace Helpers
@@ -22,6 +23,8 @@ namespace Helpers
 namespace winrt::Windows::UI::Xaml::Controls
 {
     struct StackPanel;
+    struct TextBlock;
+
 }
 
 namespace KBMEditor
@@ -80,10 +83,11 @@ namespace KBMEditor
         std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
         std::mutex keyDelays_mutex;
 
-        // Display a key by appending a border Control as a child of the panel.
-        void AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
-
     public:
+        // Display a key by appending a border Control as a child of the panel.
+        winrt::Windows::UI::Xaml::Controls::TextBlock AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
+
+        
 
         // flag to set if we want to allow building a chord
         bool AllowChord = false;
