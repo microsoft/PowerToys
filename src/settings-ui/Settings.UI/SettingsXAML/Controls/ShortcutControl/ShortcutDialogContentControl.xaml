@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
     <Grid MinWidth="498" MinHeight="220">
@@ -66,7 +66,7 @@
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                     Severity="Warning" />
             </Grid>
-            <toolkitcontrols:MarkdownTextBlock
+            <tk7controls:MarkdownTextBlock
                 x:Uid="InvalidShortcutWarningLabel"
                 Background="Transparent"
                 FontSize="12"

@@ -5,7 +5,7 @@
     xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
     <ptcontrols:OOBEPageControl x:Uid="Oobe_KBM" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/KBM.gif">
 
@@ -14,11 +14,11 @@
 
                 <TextBlock x:Uid="Oobe_HowToCreateMappings" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_KBM_HowToCreateMappings" Background="Transparent" />
+                <tk7controls:MarkdownTextBlock x:Uid="Oobe_KBM_HowToCreateMappings" Background="Transparent" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_KBM_TipsAndTricks" Background="Transparent" />
+                <tk7controls:MarkdownTextBlock x:Uid="Oobe_KBM_TipsAndTricks" Background="Transparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"

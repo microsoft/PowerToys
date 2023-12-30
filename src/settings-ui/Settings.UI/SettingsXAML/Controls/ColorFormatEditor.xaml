@@ -60,7 +60,7 @@
         </DataTemplate>
 
         <ItemsPanelTemplate x:Key="ItemPanelTemplate">
-            <CommunityToolkit:WrapPanel
+            <tk7controls:WrapPanel
                 HorizontalSpacing="20"
                 Orientation="Horizontal"
                 VerticalSpacing="4" />
