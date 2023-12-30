@@ -92,11 +92,11 @@
                 </tk8controls:SettingsCard>
             </DataTemplate>
 
-            <tkconverters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
-            <tkconverters:EnvironmentStateToBoolConverter x:Key="EnvironmentStateToBoolConverter" />
-            <tkconverters:EnvironmentStateToMessageConverter x:Key="EnvironmentStateToMessageConverter" />
-            <tkconverters:EnvironmentStateToTitleConverter x:Key="EnvironmentStateToTitleConverter" />
-            <tkconverters:EnvironmentStateToVisibilityConverter x:Key="EnvironmentStateToVisibilityConverter" />
+            <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
+            <converters:EnvironmentStateToBoolConverter x:Key="EnvironmentStateToBoolConverter" />
+            <converters:EnvironmentStateToMessageConverter x:Key="EnvironmentStateToMessageConverter" />
+            <converters:EnvironmentStateToTitleConverter x:Key="EnvironmentStateToTitleConverter" />
+            <converters:EnvironmentStateToVisibilityConverter x:Key="EnvironmentStateToVisibilityConverter" />
 
             <tkconverters:BoolToVisibilityConverter
                 x:Key="BoolToInvertedVisibilityConverter"

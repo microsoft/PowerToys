@@ -13,7 +13,7 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <ptconverters:ColorFormatConverter x:Key="ColorFormatConverter" />
-        <DataTemplate x:Key="FormatParameterTemplate" x:DataType="ptcontrols:ColorFormatEditor">
+        <DataTemplate x:Key="FormatParameterTemplate" x:DataType="ptcontrols:ColorFormatParameter">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="34" />
@@ -36,7 +36,7 @@
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="ColorParameterTemplate" x:DataType="ptcontrols:ColorFormatEditor">
+        <DataTemplate x:Key="ColorParameterTemplate" x:DataType="ptcontrols:ColorFormatParameter">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="18" />

@@ -290,7 +290,7 @@
                 </tk7controls:DataGrid>
             </Border>
 
-            <tk7controls:GridSplitter
+            <tk8controls:GridSplitter
                 x:Name="verticalSplitter"
                 Grid.Row="1"
                 Grid.RowSpan="3"
@@ -298,7 +298,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
                 IsTabStop="False" />
-            <tk7controls:GridSplitter
+            <tk8controls:GridSplitter
                 x:Name="horizontalSplitter"
                 Grid.Row="2"
                 Grid.Column="2"
