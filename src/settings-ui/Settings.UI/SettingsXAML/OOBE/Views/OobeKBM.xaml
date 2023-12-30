@@ -2,9 +2,9 @@
     x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeKBM"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
     <ptcontrols:OOBEPageControl x:Uid="Oobe_KBM" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/KBM.gif">
