@@ -297,7 +297,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         if (shortcutType == ShortcutControl::ShortcutType::Shortcut)
         {
             spBtnPickShortcut.Visibility(Visibility::Visible);
-            shortcutItemsGrid.Visibility(Visibility::Visible);            
+            shortcutItemsGrid.Visibility(Visibility::Visible);
             spUnicodeTextKeysInput.Visibility(Visibility::Collapsed);
             runProgramStackPanel.Visibility(Visibility::Collapsed);
             openURIStackPanel.Visibility(Visibility::Collapsed);
@@ -305,7 +305,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         else if (shortcutType == ShortcutControl::ShortcutType::Text)
         {
             spBtnPickShortcut.Visibility(Visibility::Collapsed);
-            shortcutItemsGrid.Visibility(Visibility::Collapsed);            
+            shortcutItemsGrid.Visibility(Visibility::Collapsed);
             spUnicodeTextKeysInput.Visibility(Visibility::Visible);
             runProgramStackPanel.Visibility(Visibility::Collapsed);
             openURIStackPanel.Visibility(Visibility::Collapsed);
@@ -313,7 +313,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         else if (shortcutType == ShortcutControl::ShortcutType::RunProgram)
         {
             spBtnPickShortcut.Visibility(Visibility::Collapsed);
-            shortcutItemsGrid.Visibility(Visibility::Collapsed);            
+            shortcutItemsGrid.Visibility(Visibility::Collapsed);
             spUnicodeTextKeysInput.Visibility(Visibility::Collapsed);
             runProgramStackPanel.Visibility(Visibility::Visible);
             openURIStackPanel.Visibility(Visibility::Collapsed);
@@ -321,7 +321,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         else
         {
             spBtnPickShortcut.Visibility(Visibility::Collapsed);
-            shortcutItemsGrid.Visibility(Visibility::Collapsed);            
+            shortcutItemsGrid.Visibility(Visibility::Collapsed);
             spUnicodeTextKeysInput.Visibility(Visibility::Collapsed);
             runProgramStackPanel.Visibility(Visibility::Collapsed);
             openURIStackPanel.Visibility(Visibility::Visible);
@@ -1187,6 +1187,28 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     // check to see if this orig or map-to shortcut;
     bool isOrigShortcut = (colIndex == 0);
 
+    uint32_t rowIndex;
+
+    UIElementCollection children = table.Children();
+    bool indexFound = children.IndexOf(row, rowIndex);
+
+    Shortcut shortcut;
+    if (colIndex == 0)
+    {
+        shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]);
+    }
+    else
+    {
+        shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[1]);
+    }
+    
+    if (!shortcut.IsEmpty() && shortcut.HasChord())
+    {
+        keyboardManagerState.AllowChord = true;
+    }
+
+    //remapBuffer[rowIndex].first.
+
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
     ToggleSwitch allowChordSwitch;
@@ -1407,4 +1429,9 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     // Show the dialog
     detectShortcutBox.ShowAsync();
+
+    if (!shortcut.IsEmpty())
+    {
+        keyboardManagerState.SetDetectedShortcut(shortcut);
+    }
 }

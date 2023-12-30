@@ -128,6 +128,8 @@ namespace KBMEditor
         // Function to return the currently detected shortcut which is displayed on the UI
         Shortcut GetDetectedShortcut();
 
+        void KeyboardManagerState::SetDetectedShortcut(Shortcut shortcut);
+
         // Function to return the currently detected remap key which is displayed on the UI
         DWORD GetDetectedSingleRemapKey();
 

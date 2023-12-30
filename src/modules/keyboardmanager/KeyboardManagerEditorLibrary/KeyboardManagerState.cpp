@@ -194,6 +194,14 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
         if (detectedShortcut.HasChord())
         {
             //TextBlock, to show what shortcut in text, e.g.: "CRTL+j, k" OR "CRTL+j, CRTL+k".
+
+            TextBlock txtComma;
+            txtComma.Text(L",");
+            txtComma.FontSize(20);
+            txtComma.Padding({ 0, 0, 10, 0 });
+            txtComma.VerticalAlignment(VerticalAlignment::Bottom);
+            txtComma.TextAlignment(TextAlignment::Left);
+            lastStackPanel.Children().Append(txtComma);
             AddKeyToLayout(lastStackPanel, EditorHelpers::GetKeyVector(Shortcut(detectedShortcutCopy.secondKey), keyboardMap)[0]);
         }
 
@@ -245,6 +253,12 @@ Shortcut KeyboardManagerState::GetDetectedShortcut()
 {
     std::lock_guard<std::mutex> lock(currentShortcut_mutex);
     return currentShortcut;
+}
+
+void KeyboardManagerState::SetDetectedShortcut(Shortcut shortcut)
+{
+    detectedShortcut = shortcut;
+    UpdateDetectShortcutUI();
 }
 
 // Function to return the currently detected remap key which is displayed on the UI
