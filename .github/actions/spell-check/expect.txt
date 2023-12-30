@@ -54,7 +54,6 @@ appdata
 APPEXECLINK
 appium
 Applicationcan
-applicationframehost
 appmanifest
 APPNAME
 appref
@@ -164,7 +163,6 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
-CHT
 cidl
 cim
 CImage
@@ -222,7 +220,6 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
-constexpr
 consts
 contentdialog
 contentfiles
@@ -323,7 +320,6 @@ DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-DEU
 devblogs
 devdocs
 devenum
@@ -542,7 +538,6 @@ Hanzi
 Hardlines
 hardlinks
 HARDWAREINPUT
-hashcode
 Hashset
 hashtag
 HASHVAL
@@ -561,7 +556,6 @@ hcwhite
 hdc
 hdrop
 hdwwiz
-HEB
 Helpline
 helptext
 HGFE
@@ -724,7 +718,6 @@ jif
 jjw
 jobject
 jpe
-JPN
 jpnime
 Jsons
 jsonval
@@ -750,10 +743,7 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
-LAlt
-Lambson
 languagesjson
-langword
 lastcodeanalysissucceeded
 Lastdevice
 LAYOUTRTL
@@ -991,7 +981,6 @@ NOCLOSEPROCESS
 NOCOALESCE
 NOCOPYBITS
 nodeca
-nodiscard
 nodoc
 NODRAWCAPTION
 NODRAWICON
@@ -1101,7 +1090,6 @@ pcch
 pcelt
 pch
 PCIDLIST
-pcs
 PCWSTR
 pdisp
 pdo
@@ -1209,6 +1197,8 @@ PSYSTEM
 psz
 ptb
 ptc
+ptcontrols
+ptconverters
 ptd
 PTOKEN
 PToy
@@ -1225,7 +1215,6 @@ qit
 QITAB
 QITABENT
 qoi
-qps
 Quarternary
 QUERYENDSESSION
 QUERYOPEN
@@ -1312,7 +1301,6 @@ RKey
 RNumber
 roadmap
 rop
-roundf
 ROUNDSMALL
 rpcrt
 RRF
@@ -1332,8 +1320,6 @@ runtimeclass
 runtimeobject
 runtimepack
 runtimes
-RUS
-RValue
 rvm
 rwin
 rwl
@@ -1514,7 +1500,6 @@ subquery
 Superbar
 sut
 svchost
-SVE
 SVGIn
 SVGIO
 svgz
@@ -1581,6 +1566,7 @@ timeunion
 timeutil
 Titlecase
 tkcontrols
+tkconverters
 TKey
 TLayout
 tlb
@@ -1588,8 +1574,6 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
-tonos
-toolkitcontrols
 Toolset
 toolwindow
 TOPDOWNDIB
@@ -1606,7 +1590,6 @@ trl
 Tsd
 TServer
 TStr
-TValue
 tweakme
 TWF
 tymed
@@ -1723,7 +1706,6 @@ wcsnicmp
 WDA
 wdp
 wdupenv
-weakme
 webbrowsers
 webcam
 webpage
@@ -1732,7 +1714,6 @@ wekyb
 Wevtapi
 wgpocpl
 WIC
-wifi
 wil
 winapi
 winappdriver
