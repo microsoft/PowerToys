@@ -8,8 +8,10 @@
     xmlns:CommunityToolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:library="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=library:ColorFormatModel}"
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:ColorFormatConverter x:Key="ColorFormatConverter" />

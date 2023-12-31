@@ -10,6 +10,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    d:DataContext="{d:DesignInstance Type=ViewModels:PowerLauncherViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
