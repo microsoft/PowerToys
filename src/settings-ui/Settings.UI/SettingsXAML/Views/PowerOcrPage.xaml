@@ -19,33 +19,33 @@
                 <controls:SettingsCard
                     x:Uid="TextExtractor_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerOcr.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
                 <InfoBar
                     x:Uid="TextExtractor_UseSnippingToolWarning"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsWin11OrGreater}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsWin11OrGreater}"
+                    IsOpen="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
                     Severity="Informational" />
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
                 <InfoBar
                     x:Uid="TextExtractor_SupportedLanguages"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                    IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                     Severity="Informational">
                     <InfoBar.ActionButton>
                         <HyperlinkButton x:Uid="TextExtractor_SupportedLanguages_Link" NavigateUri="https://aka.ms/PowerToysOverview_TextExtractor#supported-languages" />
                     </InfoBar.ActionButton>
                 </InfoBar>
 
-                <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </controls:SettingsCard>
