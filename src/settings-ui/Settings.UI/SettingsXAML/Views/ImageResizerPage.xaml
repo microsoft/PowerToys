@@ -79,13 +79,13 @@
                                                 FontSize="10"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="&#xE947;"
-                                                Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Visibility="{x:Bind Path=EnableExtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Height, Mode=OneWay}"
-                                                Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Visibility="{x:Bind Path=EnableExtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 Style="{ThemeResource SecondaryTextStyle}"
@@ -139,7 +139,7 @@
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
-                                                                Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                Visibility="{x:Bind Path=EnableExtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                                                                 Value="{x:Bind Path=Height, Mode=TwoWay}" />
 
                                                         </StackPanel>

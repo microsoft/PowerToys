@@ -31,7 +31,7 @@
         {
           "Id": 0,
           "ExtraBoxOpacity": 100,
-          "EnableEtraBoxes": true,
+          "EnableExtraBoxes": true,
           "name": "Small",
           "fit": 1,
           "width": 850,
@@ -41,7 +41,7 @@
         {
           "Id": 1,
           "ExtraBoxOpacity": 100,
-          "EnableEtraBoxes": true,
+          "EnableExtraBoxes": true,
           "name": "Medium",
           "fit": 1,
           "width": 1363,
@@ -51,7 +51,7 @@
         {
           "Id": 2,
           "ExtraBoxOpacity": 100,
-          "EnableEtraBoxes": true,
+          "EnableExtraBoxes": true,
           "name": "Large",
           "fit": 1,
           "width": 1917,
@@ -61,7 +61,7 @@
         {
           "Id": 3,
           "ExtraBoxOpacity": 100,
-          "EnableEtraBoxes": true,
+          "EnableExtraBoxes": true,
           "name": "Phone",
           "fit": 1,
           "width": 316,
@@ -80,7 +80,7 @@
       "value": {
         "Id": 4,
         "ExtraBoxOpacity": 100,
-        "EnableEtraBoxes": true,
+        "EnableExtraBoxes": true,
         "name": "custom",
         "fit": 1,
         "width": 1024,
