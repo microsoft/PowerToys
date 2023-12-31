@@ -119,8 +119,8 @@
                     x:Name="DocsBtn"
                     x:Uid="DocsBtn"
                     Click="DocsBtn_Click"
-                    Content="{ui:FontIcon FontSize=16,
-                                          Glyph=&#xE8A5;}"
+                    Content="{ui:FontIcon Glyph=&#xE8A5;,
+                                          FontSize=16}"
                     Style="{StaticResource FlyoutButtonStyle}">
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="DocsTooltip" />
@@ -130,8 +130,8 @@
                     x:Name="ReportBugBtn"
                     x:Uid="BugReportBtn"
                     Click="ReportBugBtn_Click"
-                    Content="{ui:FontIcon FontSize=16,
-                                          Glyph=&#xebe8;}"
+                    Content="{ui:FontIcon Glyph=&#xebe8;,
+                                          FontSize=16}"
                     Style="{StaticResource FlyoutButtonStyle}">
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="BugReportTooltip" />
