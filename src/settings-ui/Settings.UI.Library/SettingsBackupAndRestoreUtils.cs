@@ -29,6 +29,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public DateTime LastBackupStartTime { get; set; }
 
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
+
         private SettingsBackupAndRestoreUtils()
         {
             LastBackupStartTime = DateTime.MinValue;
@@ -393,7 +398,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return settingsBackupAndRestoreDir;
         }
 
-        private IList<string> GetBackupSettingsFiles(string settingsBackupAndRestoreDir)
+        private List<string> GetBackupSettingsFiles(string settingsBackupAndRestoreDir)
         {
             return Directory.GetFiles(settingsBackupAndRestoreDir, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19}).ptb")).ToList();
         }
@@ -760,7 +765,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         UnchangedFiles = skippedSettingsFiles.Keys.ToList(),
                     };
 
-                    var manifest = JsonSerializer.Serialize(manifestData, new JsonSerializerOptions() { WriteIndented = true });
+                    var manifest = JsonSerializer.Serialize(manifestData, _serializerOptions);
 
                     if (!dryRun)
                     {
@@ -1008,7 +1013,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             public static string Normalize(string json)
             {
                 var doc1 = JsonNormalizer.Deserialize(json);
-                var newJson1 = JsonSerializer.Serialize(doc1, new JsonSerializerOptions { WriteIndented = true });
+                var newJson1 = JsonSerializer.Serialize(doc1, _serializerOptions);
                 return newJson1;
             }
 

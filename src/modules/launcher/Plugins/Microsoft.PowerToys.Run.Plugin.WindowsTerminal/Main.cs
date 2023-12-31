@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
         private const string OpenNewTab = nameof(OpenNewTab);
         private const string OpenQuake = nameof(OpenQuake);
         private const string ShowHiddenProfiles = nameof(ShowHiddenProfiles);
-        private readonly ITerminalQuery _terminalQuery = new TerminalQuery();
+        private readonly TerminalQuery _terminalQuery = new TerminalQuery();
         private PluginInitContext _context;
         private bool _openNewTab;
         private bool _openQuake;
@@ -199,7 +199,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
             _showHiddenProfiles = showHiddenProfiles;
         }
 
-        private ImageSource GetLogo(TerminalPackage terminal)
+        private BitmapImage GetLogo(TerminalPackage terminal)
         {
             var aumid = terminal.AppUserModelId;
 
