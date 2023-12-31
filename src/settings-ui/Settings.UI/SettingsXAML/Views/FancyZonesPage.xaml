@@ -142,7 +142,7 @@
                                 <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows" IsChecked="{x:Bind ViewModel.AppLastZoneMoveWindows, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor" IsChecked="{Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}" />
+                                <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor" IsChecked="{x:Bind OpenWindowOnActiveMonitor, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_RestoreSize" IsChecked="{x:Bind ViewModel.RestoreSize, Mode=TwoWay}" />

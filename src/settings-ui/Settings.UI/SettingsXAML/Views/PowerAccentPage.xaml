@@ -81,7 +81,7 @@
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+                <custom:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="QuickAccent_ToolbarPosition" HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter" />
