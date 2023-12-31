@@ -120,7 +120,7 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Minimum="1"
                             SpinButtonPlacementMode="Compact"
-                            Value="{x:Bind MaximumNumberOfResults, Mode=TwoWay}" />
+                            Value="{x:Bind ViewModel.MaximumNumberOfResults, Mode=TwoWay}" />
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind ViewModel.ClearInputOnLaunch, Mode=TwoWay}" />
