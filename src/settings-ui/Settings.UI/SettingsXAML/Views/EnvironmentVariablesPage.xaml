@@ -6,7 +6,7 @@
     xmlns:controls1="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <controls:SettingsPageControl x:Uid="EnvironmentVariables" ModuleImageSource="ms-appx:///Assets/Settings/Modules/EnvironmentVariables.png">
@@ -27,17 +27,13 @@
                 <controls:SettingsGroup x:Uid="EnvironmentVariables_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls1:SettingsCard
                         x:Uid="EnvironmentVariables_LaunchButtonControl"
-                        ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 FontSize=14,
-                                                 Glyph=&#xE8A7;}"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 Glyph=&#xEA37;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
                     <controls1:SettingsCard
                         x:Uid="EnvironmentVariables_Toggle_LaunchAdministrator"
-                        HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                 Glyph=&#xE7EF;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.LaunchAdministratorEnabled}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LaunchAdministrator}" />
                     </controls1:SettingsCard>
