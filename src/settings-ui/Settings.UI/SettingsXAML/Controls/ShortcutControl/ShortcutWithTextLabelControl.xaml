@@ -11,7 +11,7 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
