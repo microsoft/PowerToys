@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
@@ -16,12 +16,12 @@
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerAccent.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tk8controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="QuickAccent_EnableQuickAccent"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerAccent.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tk8controls:SettingsCard>
+                </tkcontrols:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
@@ -31,17 +31,17 @@
                     Severity="Informational" />
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="QuickAccent_Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="QuickAccent_SelectedLanguage" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_SelectedLanguage" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedLangIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in PowerAccentViewModel.cs  -->
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_All" />
@@ -78,11 +78,11 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Welsh" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="QuickAccent_ToolbarPosition" HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_ToolbarPosition" HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter" />
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomCenter" />
@@ -94,20 +94,20 @@
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner" />
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Center" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
-                    <tk8controls:SettingsCard x:Uid="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
                         <ToggleSwitch x:Uid="QuickAccent_UnicodeDescription_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.ShowUnicodeDescription}" />
-                    </tk8controls:SettingsCard>
-                    <tk8controls:SettingsCard x:Uid="QuickAccent_SortByUsageFrequency_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_SortByUsageFrequency_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}">
                         <ToggleSwitch x:Uid="QuickAccent_SortByUsageFrequency_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SortByUsageFrequency}" />
-                    </tk8controls:SettingsCard>
-                    <tk8controls:SettingsCard x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE974;}">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE974;}">
                         <ToggleSwitch x:Uid="QuickAccent_StartSelectionFromTheLeft_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.StartSelectionFromTheLeft}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="QuickAccent_InputTimeMs" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_InputTimeMs" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="100"
@@ -115,11 +115,11 @@
                             SmallChange="10"
                             SpinButtonPlacementMode="Compact"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.InputTimeMs}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsExpander x:Uid="QuickAccent_ExcludedApps" HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}">
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                    <tkcontrols:SettingsExpander x:Uid="QuickAccent_ExcludedApps" HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="QuickAccent_ExcludedApps_TextBoxControl"
                                     MinWidth="240"
@@ -130,9 +130,9 @@
                                     ScrollViewer.VerticalScrollMode="Enabled"
                                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

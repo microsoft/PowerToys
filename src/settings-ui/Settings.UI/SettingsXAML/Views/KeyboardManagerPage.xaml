@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -48,17 +48,17 @@
     <controls:SettingsPageControl x:Uid="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tk8controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="KeyboardManager_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsKeyboardManager.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Enabled, Mode=TwoWay}" />
-                    <tk8controls:SettingsCard.Description>
+                    <tkcontrols:SettingsCard.Description>
                         <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys">
                             <TextBlock x:Uid="KBM_KeysCannotBeRemapped" FontWeight="SemiBold" />
                         </HyperlinkButton>
-                    </tk8controls:SettingsCard.Description>
-                </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard.Description>
+                </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -67,7 +67,7 @@
                     Severity="Informational" />
 
                 <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"
                         ActionIcon="{ui:FontIcon FontSize=14,
                                                  Glyph=&#xE8A7;}"
@@ -84,7 +84,7 @@
                         Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="Lib:KeysDataModel">
-                                <tk8controls:SettingsCard ContentAlignment="Left">
+                                <tkcontrols:SettingsCard ContentAlignment="Left">
                                     <StackPanel Orientation="Horizontal">
                                         <ItemsControl
                                             IsTabStop="False"
@@ -114,14 +114,14 @@
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
                                     </StackPanel>
-                                </tk8controls:SettingsCard>
+                                </tkcontrols:SettingsCard>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_RemapShortcutsButton"
                         ActionIcon="{ui:FontIcon FontSize=14,
                                                  Glyph=&#xE8A7;}"
@@ -138,7 +138,7 @@
                         Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
-                                <tk8controls:SettingsCard ContentAlignment="Left">
+                                <tkcontrols:SettingsCard ContentAlignment="Left">
                                     <StackPanel Orientation="Horizontal">
                                         <ItemsControl
                                             IsTabStop="False"
@@ -179,7 +179,7 @@
                                             <TextBlock Text="{x:Bind TargetApp}" />
                                         </Border>
                                     </StackPanel>
-                                </tk8controls:SettingsCard>
+                                </tkcontrols:SettingsCard>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>

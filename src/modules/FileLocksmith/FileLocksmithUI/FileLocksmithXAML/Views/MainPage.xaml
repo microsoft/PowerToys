@@ -8,7 +8,7 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:interop="using:FileLocksmith.Interop"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
@@ -93,11 +93,11 @@
                     SelectionMode="None">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="interop:ProcessResult">
-                            <tk8controls:SettingsExpander Margin="0,0,0,4">
-                                <tk8controls:SettingsExpander.Resources>
+                            <tkcontrols:SettingsExpander Margin="0,0,0,4">
+                                <tkcontrols:SettingsExpander.Resources>
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
-                                </tk8controls:SettingsExpander.Resources>
-                                <tk8controls:SettingsExpander.Header>
+                                </tkcontrols:SettingsExpander.Resources>
+                                <tkcontrols:SettingsExpander.Header>
                                     <!--  We can't use the HeaderIcon because it only support a BitmapIcon, which only supports UriSource - not a direct BitmapImage  -->
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Image
@@ -106,8 +106,8 @@
                                             Source="{x:Bind pid, Converter={StaticResource pidToIconConverter}}" />
                                         <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind name}" />
                                     </StackPanel>
-                                </tk8controls:SettingsExpander.Header>
-                                <tk8controls:SettingsExpander.Content>
+                                </tkcontrols:SettingsExpander.Header>
+                                <tkcontrols:SettingsExpander.Content>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <FontIcon
                                             Foreground="{ThemeResource InfoBarWarningSeverityIconBackground}"
@@ -127,27 +127,27 @@
                                             </StackPanel>
                                         </Button>
                                     </StackPanel>
-                                </tk8controls:SettingsExpander.Content>
-                                <tk8controls:SettingsExpander.Items>
-                                    <tk8controls:SettingsCard x:Uid="ProcessID">
+                                </tkcontrols:SettingsExpander.Content>
+                                <tkcontrols:SettingsExpander.Items>
+                                    <tkcontrols:SettingsCard x:Uid="ProcessID">
                                         <TextBlock
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             IsTextSelectionEnabled="True"
                                             Text="{x:Bind pid}" />
-                                    </tk8controls:SettingsCard>
-                                    <tk8controls:SettingsCard x:Uid="User">
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="User">
                                         <TextBlock
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             IsTextSelectionEnabled="True"
                                             Text="{x:Bind user}" />
-                                    </tk8controls:SettingsCard>
-                                    <tk8controls:SettingsCard ContentAlignment="Vertical">
-                                        <tk8controls:SettingsCard.Header>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard ContentAlignment="Vertical">
+                                        <tkcontrols:SettingsCard.Header>
                                             <TextBlock>
                                                 <Run x:Uid="Files" />
                                                 <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
                                             </TextBlock>
-                                        </tk8controls:SettingsCard.Header>
+                                        </tkcontrols:SettingsCard.Header>
                                         <ItemsRepeater ItemsSource="{x:Bind files}">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate x:DataType="x:String">
@@ -162,9 +162,9 @@
                                                 </DataTemplate>
                                             </ItemsRepeater.ItemTemplate>
                                         </ItemsRepeater>
-                                    </tk8controls:SettingsCard>
-                                </tk8controls:SettingsExpander.Items>
-                            </tk8controls:SettingsExpander>
+                                    </tkcontrols:SettingsCard>
+                                </tkcontrols:SettingsExpander.Items>
+                            </tkcontrols:SettingsExpander>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>

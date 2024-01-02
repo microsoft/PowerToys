@@ -7,7 +7,7 @@
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
@@ -25,12 +25,12 @@
     <controls:SettingsPageControl x:Uid="ImageResizer" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
-                <tk8controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="ImageResizer_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsImageResizer.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tk8controls:SettingsCard>
+                </tkcontrols:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
@@ -40,12 +40,12 @@
                     Severity="Informational" />
 
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
                             Click="AddSizeButton_Click"
                             Style="{ThemeResource AccentButtonStyle}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                     <ListView
                         x:Name="ImagesSizesListView"
                         x:Uid="ImagesSizesListView"
@@ -54,11 +54,11 @@
                         SelectionMode="None">
                         <ListView.ItemTemplate>
                             <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
-                                <tk8controls:SettingsCard Header="{x:Bind Name, Mode=OneWay}">
-                                    <tk8controls:SettingsCard.Resources>
+                                <tkcontrols:SettingsCard Header="{x:Bind Name, Mode=OneWay}">
+                                    <tkcontrols:SettingsCard.Resources>
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
-                                    </tk8controls:SettingsCard.Resources>
-                                    <tk8controls:SettingsCard.Description>
+                                    </tkcontrols:SettingsCard.Resources>
+                                    <tkcontrols:SettingsCard.Description>
                                         <StackPanel
                                             Grid.Row="1"
                                             Grid.Column="1"
@@ -92,7 +92,7 @@
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" />
                                         </StackPanel>
-                                    </tk8controls:SettingsCard.Description>
+                                    </tkcontrols:SettingsCard.Description>
                                     <StackPanel
                                         Grid.Column="2"
                                         HorizontalAlignment="Right"
@@ -173,14 +173,14 @@
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
-                                </tk8controls:SettingsCard>
+                                </tkcontrols:SettingsCard>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="ImageResizer_FallBackEncoderText">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FallBackEncoderText">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
@@ -189,25 +189,25 @@
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_WMPhoto" />
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="ImageResizer_Encoding">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_Encoding">
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
                             Minimum="0"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
                             <ComboBoxItem x:Uid="Default" />
                             <ComboBoxItem x:Uid="On" />
                             <ComboBoxItem x:Uid="Off" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="ImageResizer_TIFFCompression">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_TIFFCompression">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}">
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None" />
@@ -217,11 +217,11 @@
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_RLE" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <TextBox
                                 x:Uid="ImageResizer_FilenameFormatPlaceholder"
@@ -266,14 +266,14 @@
                                 </Button.Flyout>
                             </Button>
                         </StackPanel>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="ImageResizer_FileModifiedDate">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FileModifiedDate">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate" />
                             <ComboBoxItem x:Uid="ImageResizer_UseResizeDate" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
 

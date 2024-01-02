@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
@@ -26,12 +26,12 @@
                 x:Name="ColorPickerView"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical">
-                <tk8controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="ColorPicker_EnableColorPicker"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tk8controls:SettingsCard>
+                </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -40,22 +40,22 @@
                     Severity="Informational" />
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
+                    <tkcontrols:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="EditorFirst" />
                             <ComboBoxItem x:Uid="ColorPickerFirst" />
                             <ComboBoxItem x:Uid="ColorPickerOnly" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
+                    <tkcontrols:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -65,11 +65,11 @@
                             SelectedIndex="{Binding ColorFormatsPreviewIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
                             SelectedValuePath="Key" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="ColorPicker_ShowColorName">
+                    <tkcontrols:SettingsCard x:Uid="ColorPicker_ShowColorName">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                     <!--
                 Disabling this until we have a safer way to reset cursor as
                 we can hit a state where the cursor doesn't reset
@@ -82,7 +82,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE762;}">
@@ -91,7 +91,7 @@
                             HorizontalAlignment="Right"
                             Click="NewFormatClick"
                             Style="{StaticResource AccentButtonStyle}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                     <!--  Disabled reordering by dragging  -->
                     <!--  CanReorderItems="True" AllowDrop="True"  -->
                     <ItemsControl
@@ -101,17 +101,17 @@
                         ItemsSource="{Binding ColorFormats, Mode=TwoWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ColorFormatModel">
-                                <tk8controls:SettingsCard
+                                <tkcontrols:SettingsCard
                                     Margin="0,0,0,2"
                                     Click="EditButton_Click"
                                     Description="{x:Bind Example, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     Header="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     IsActionIconVisible="False"
                                     IsClickEnabled="True">
-                                    <tk8controls:SettingsCard.Resources>
+                                    <tkcontrols:SettingsCard.Resources>
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
                                         <x:Double x:Key="SettingsCardActionButtonWidth">0</x:Double>
-                                    </tk8controls:SettingsCard.Resources>
+                                    </tkcontrols:SettingsCard.Resources>
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <ToggleSwitch
                                             x:Uid="Enable_ColorFormat"
@@ -152,7 +152,7 @@
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
-                                </tk8controls:SettingsCard>
+                                </tkcontrols:SettingsCard>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
