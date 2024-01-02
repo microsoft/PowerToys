@@ -4,18 +4,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <ptcontrols:OOBEPageControl x:Uid="Oobe_CropAndLock" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/CropAndLock.gif">
-        <ptcontrols:OOBEPageControl.PageContent>
+    <controls:OOBEPageControl x:Uid="Oobe_CropAndLock" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/CropAndLock.gif">
+        <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <ptcontrols:ShortcutWithTextLabelControl x:Name="ThumbnailHotkeyControl" x:Uid="Oobe_CropAndLock_HowToUse_Thumbnail" />
+                <controls:ShortcutWithTextLabelControl x:Name="ThumbnailHotkeyControl" x:Uid="Oobe_CropAndLock_HowToUse_Thumbnail" />
 
-                <ptcontrols:ShortcutWithTextLabelControl x:Name="ReparentHotkeyControl" x:Uid="Oobe_CropAndLock_HowToUse_Reparent" />
+                <controls:ShortcutWithTextLabelControl x:Name="ReparentHotkeyControl" x:Uid="Oobe_CropAndLock_HowToUse_Reparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"
@@ -27,6 +27,6 @@
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>
-        </ptcontrols:OOBEPageControl.PageContent>
-    </ptcontrols:OOBEPageControl>
+        </controls:OOBEPageControl.PageContent>
+    </controls:OOBEPageControl>
 </Page>

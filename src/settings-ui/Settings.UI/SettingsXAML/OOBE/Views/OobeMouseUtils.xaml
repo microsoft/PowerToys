@@ -4,13 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <ptcontrols:OOBEPageControl x:Uid="Oobe_MouseUtils" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_MouseUtils" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.gif">
 
-        <ptcontrols:OOBEPageControl.PageContent>
+        <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
                 <TextBlock x:Uid="Oobe_MouseUtils_FindMyMouse" Style="{ThemeResource OobeSubtitleStyle}" />
                 <tk7controls:MarkdownTextBlock x:Uid="Oobe_MouseUtils_FindMyMouse_Description" Background="Transparent" />
@@ -35,6 +35,6 @@
                 </StackPanel>
 
             </StackPanel>
-        </ptcontrols:OOBEPageControl.PageContent>
-    </ptcontrols:OOBEPageControl>
+        </controls:OOBEPageControl.PageContent>
+    </controls:OOBEPageControl>
 </Page>
