@@ -6,7 +6,7 @@
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
@@ -19,37 +19,37 @@
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
-                <InfoBar
-                    x:Uid="CmdNotFound_ModuleExplanation"
-                    IsClosable="True"
-                    IsOpen="True"
-                    IsTabStop="True"
-                    Severity="Informational" />
-                <custom:SettingsGroup x:Uid="CmdNotFound_ModuleInstallation" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <controls:SettingsCard
-                        x:Uid="CmdNotFound_CheckPowerShellVersionButtonControl"
-                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                        Command="{x:Bind ViewModel.CheckPowershellVersionEventHandler}"
-                        IsClickEnabled="True" />
-                    <controls:SettingsCard
-                        x:Uid="CmdNotFound_InstallModuleButtonControl"
-                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                        Command="{x:Bind ViewModel.InstallModuleEventHandler}"
-                        IsClickEnabled="True" />
-                    <controls:SettingsCard
-                        x:Uid="CmdNotFound_UninstallModuleButtonControl"
-                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                        Command="{x:Bind ViewModel.UninstallModuleEventHandler}"
-                        IsClickEnabled="True" />
-                </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="CmdNotFound_ModuleInstallationLogs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <TextBox
-                        Height="300"
-                        FontFamily="Courier New"
-                        IsReadOnly="True"
-                        Text="{x:Bind Mode=OneWay, Path=ViewModel.CommandOutputLog}"
-                        TextWrapping="Wrap" />
-                </custom:SettingsGroup>
+
+                <controls:SettingsCard
+                    x:Uid="CmdNotFound_Enable"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button
+                            x:Uid="CmdNotFound_InstallButton"
+                            Command="{x:Bind ViewModel.InstallModuleEventHandler}"
+                            Style="{StaticResource AccentButtonStyle}" />
+                        <HyperlinkButton x:Uid="CmdNotFound_UninstallButton" Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
+                    </StackPanel>
+                    <controls:SettingsCard.Description>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock x:Uid="CmdNotFound_Enable_DescriptionText" />
+                            <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckPowershellVersionEventHandler}" />
+                        </StackPanel>
+                    </controls:SettingsCard.Description>
+                </controls:SettingsCard>
+
+                <TextBlock
+                    x:Uid="CmdNotFound_ModuleInstallationLogs"
+                    Margin="0,12,0,4"
+                    Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                <TextBox
+                    Height="300"
+                    FontFamily="Consolas"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
+                    IsReadOnly="True"
+                    Text="{x:Bind Mode=OneWay, Path=ViewModel.CommandOutputLog}"
+                    TextWrapping="Wrap" />
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>
 
