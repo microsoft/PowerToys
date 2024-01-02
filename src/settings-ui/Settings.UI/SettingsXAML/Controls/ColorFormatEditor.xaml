@@ -8,11 +8,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <ptconverters:ColorFormatConverter x:Key="ColorFormatConverter" />
+        <converters:ColorFormatConverter x:Key="ColorFormatConverter" />
         <DataTemplate x:Key="FormatParameterTemplate" x:DataType="controls:ColorFormatParameter">
             <Grid>
                 <Grid.ColumnDefinitions>

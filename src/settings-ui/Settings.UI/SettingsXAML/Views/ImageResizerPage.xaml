@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -15,8 +15,8 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <ptconverters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
-        <ptconverters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
+        <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
+        <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <tkconverters:BoolToObjectConverter
             x:Key="BoolToComboBoxIndexConverter"
             FalseValue="1"
