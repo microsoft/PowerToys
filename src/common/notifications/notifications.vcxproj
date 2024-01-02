@@ -27,6 +27,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="notifications.h" />
+    <ClInclude Include="NotificationUtil.h" />
     <ClInclude Include="dont_show_again.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

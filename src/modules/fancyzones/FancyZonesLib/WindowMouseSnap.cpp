@@ -4,7 +4,6 @@
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
-#include <FancyZonesLib/NotificationUtil.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/WindowUtils.h>
 #include <FancyZonesLib/WorkArea.h>
@@ -12,6 +11,7 @@
 #include <FancyZonesLib/trace.h>
 
 #include <common/utils/elevation.h>
+#include <common/notifications/NotificationUtil.h>
 
 WindowMouseSnap::WindowMouseSnap(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas) :
     m_window(window),
@@ -34,10 +34,10 @@ std::unique_ptr<WindowMouseSnap> WindowMouseSnap::Create(HWND window, const std:
         return nullptr;
     }
 
-    if (!is_process_elevated() && FancyZonesWindowUtils::IsProcessOfWindowElevated(window))
+    if (!is_process_elevated() && IsProcessOfWindowElevated(window))
     {
         // Notifies user if unable to drag elevated window
-        FancyZonesNotifications::WarnIfElevationIsRequired();
+        notifications::WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_FANCYZONES), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
         return nullptr;
     }
 

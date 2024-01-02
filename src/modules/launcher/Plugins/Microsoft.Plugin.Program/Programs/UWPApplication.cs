@@ -118,8 +118,8 @@ namespace Microsoft.Plugin.Program.Programs
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
             // Using CurrentCulture since this is user facing
-            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
-            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, LocationLocalized);
+            var toolTipTitle = result.Title;
+            var toolTipText = LocationLocalized;
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
@@ -308,7 +308,7 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     parsed = prefix + key;
                 }
-                else if (key.StartsWith("/", StringComparison.Ordinal))
+                else if (key.StartsWith('/'))
                 {
                     parsed = prefix + "//" + key;
                 }

@@ -157,10 +157,9 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles">
+                    <controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </controls:SettingsCard>
-
                 </custom:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
@@ -201,6 +200,41 @@
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
                         </ComboBox>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="PowerLauncher_ShowPluginKeywords" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ShowPluginsOverviewIndex}">
+                            <ComboBoxItem x:Uid="ShowPluginsOverview_All" />
+                            <ComboBoxItem x:Uid="ShowPluginsOverview_NonGlobal" />
+                            <ComboBoxItem x:Uid="ShowPluginsOverview_None" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="PowerLauncher_TitleFontSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Text="A" />
+                            <Slider
+                                x:Uid="PowerLauncher_TextFontSizeSlider"
+                                LargeChange="2"
+                                Maximum="24"
+                                Minimum="12"
+                                SmallChange="2"
+                                StepFrequency="2"
+                                TickFrequency="2"
+                                TickPlacement="Outside"
+                                Value="{x:Bind ViewModel.TitleFontSize, Mode=TwoWay}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="24"
+                                FontWeight="SemiBold"
+                                Text="A" />
+                        </StackPanel>
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 

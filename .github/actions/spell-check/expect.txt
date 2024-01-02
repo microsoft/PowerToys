@@ -37,6 +37,7 @@ ALPHATYPE
 AModifier
 AMPROPERTY
 AMPROPSETID
+animatedvisuals
 ANDSCANS
 ansicolor
 ANull
@@ -1214,6 +1215,8 @@ qit
 QITAB
 QITABENT
 qoi
+qps
+Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC

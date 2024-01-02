@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq.Expressions;
+using System.Text;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
@@ -19,6 +20,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 
         // Using Ordinal since this is used internally for a path
         private static readonly Expression<Func<string, bool>> SettingsFilterExpression = s => s == null || s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
+
+        private static readonly CompositeFormat RootPathStubFilesCompositeFormat = System.Text.CompositeFormat.Parse(BackCompatTestProperties.RootPathStubFiles);
 
         internal sealed class MockSettingsRepository<T> : ISettingsRepository<T>
             where T : ISettingsConfig, new()
@@ -81,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 
         public static string StubSettingsPath(string version, string module, string fileName)
         {
-            return string.Format(CultureInfo.InvariantCulture, BackCompatTestProperties.RootPathStubFiles, version, module, fileName);
+            return string.Format(CultureInfo.InvariantCulture, RootPathStubFilesCompositeFormat, version, module, fileName);
         }
 
         public static void VerifyModuleIOProviderWasRead(Mock<IFile> provider, string module, int expectedCallCount)

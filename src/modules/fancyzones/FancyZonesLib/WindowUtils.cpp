@@ -158,33 +158,6 @@ bool FancyZonesWindowUtils::IsRoot(HWND window) noexcept
     return GetAncestor(window, GA_ROOT) == window;
 }
 
-bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
-{
-    DWORD pid = 0;
-    GetWindowThreadProcessId(window, &pid);
-    if (!pid)
-    {
-        return false;
-    }
-
-    wil::unique_handle hProcess{ OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
-                                             FALSE,
-                                             pid) };
-
-    wil::unique_handle token;
-
-    if (OpenProcessToken(hProcess.get(), TOKEN_QUERY, &token))
-    {
-        TOKEN_ELEVATION elevation;
-        DWORD size;
-        if (GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &size))
-        {
-            return elevation.TokenIsElevated != 0;
-        }
-    }
-    return false;
-}
-
 bool FancyZonesWindowUtils::IsExcluded(HWND window)
 {
     std::wstring processPath = get_process_path_waiting_uwp(window);
@@ -253,7 +226,7 @@ void FancyZonesWindowUtils::SwitchToWindow(HWND window) noexcept
     }
 }
 
-void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
+void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect, BOOL snapZone) noexcept
 {
     WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
@@ -265,8 +238,15 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
         ::GetWindowPlacement(window, &placement);
     }
 
+    BOOL maximizeLater = false;
     if (IsWindowVisible(window))
     {
+        // If is not snap zone then need keep maximize state (move to active monitor)
+        if (!snapZone && placement.showCmd == SW_SHOWMAXIMIZED)
+        {
+            maximizeLater = true;
+        }
+
         // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
         if ((placement.showCmd != SW_SHOWMINIMIZED) &&
             (placement.showCmd != SW_MINIMIZE))
@@ -292,6 +272,12 @@ void FancyZonesWindowUtils::SizeWindowToRect(HWND window, RECT rect) noexcept
     if (!result)
     {
         Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
+    }
+
+    // make sure window is moved to the correct monitor before maximize.
+    if (maximizeLater)
+    {
+        placement.showCmd = SW_SHOWMAXIMIZED;
     }
 
     // Do it again, allowing Windows to resize the window and set correct scaling

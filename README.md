@@ -31,6 +31,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 ### Requirements
 
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
+- x64 or ARM64 processor
 - Our installer will install the following items:
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
 

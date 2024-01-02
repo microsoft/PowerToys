@@ -145,7 +145,7 @@ namespace AllExperiments
 
         private string? AssignmentUnit { get; set; }
 
-        private IVariantAssignmentRequest GetVariantAssignmentRequest()
+        private VariantAssignmentRequest GetVariantAssignmentRequest()
         {
             var jsonFilePath = CreateFilePath();
             try

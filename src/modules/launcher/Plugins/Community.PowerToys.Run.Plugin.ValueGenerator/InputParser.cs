@@ -26,7 +26,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
             string command = query.Terms[0];
 
-            if (command.ToLower(null) == "md5")
+            if (command.Equals("md5", StringComparison.OrdinalIgnoreCase))
             {
                 int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
@@ -115,13 +115,13 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     request = new GUIDRequest(version);
                 }
             }
-            else if (command.ToLower(null) == "base64")
+            else if (command.Equals("base64", StringComparison.OrdinalIgnoreCase))
             {
                 int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                 request = new Base64Request(Encoding.UTF8.GetBytes(content));
             }
-            else if (command.ToLower(null) == "base64d")
+            else if (command.Equals("base64d", StringComparison.OrdinalIgnoreCase))
             {
                 int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
