@@ -112,8 +112,8 @@ Note: Changes require a restart of PowerToys Run.
       <string id="ConfigureGlobalUtilityEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityCmdNotFound">Command Not Found: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityCmdNotFound">Command Not Found: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCropAndLock">Crop And Lock: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityEnvironmentVariables">Environment Variables: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>

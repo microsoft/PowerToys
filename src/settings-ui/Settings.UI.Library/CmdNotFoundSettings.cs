@@ -11,6 +11,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class CmdNotFoundSettings : BasePTModuleSettings, ISettingsConfig
     {
+        private static readonly JsonSerializerOptions SerializerOptions = new()
+        {
+            WriteIndented = true,
+        };
+
         public const string ModuleName = "CmdNotFound";
 
         public CmdNotFoundSettings()
@@ -22,14 +27,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public virtual void Save(ISettingsUtils settingsUtils)
         {
             // Save settings to file
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
-            settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
+            settingsUtils.SaveSettings(JsonSerializer.Serialize(this, SerializerOptions), ModuleName);
         }
 
         public string GetModuleName()
