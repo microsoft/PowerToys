@@ -1197,8 +1197,6 @@ PSYSTEM
 psz
 ptb
 ptc
-ptcontrols
-ptconverters
 ptd
 PTOKEN
 PToy
@@ -1565,6 +1563,7 @@ timediff
 timeunion
 timeutil
 Titlecase
+tkcontrols
 tkconverters
 TLayout
 tlb
@@ -1572,7 +1571,6 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
-toolkitconverters
 Toolset
 toolwindow
 TOPDOWNDIB
