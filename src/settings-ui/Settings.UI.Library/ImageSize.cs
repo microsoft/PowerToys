@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        public bool EnableExtraBoxes
+        public bool EnableEtraBoxes
         {
             get
             {
@@ -129,7 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     _fit = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(ExtraBoxOpacity));
-                    OnPropertyChanged(nameof(EnableExtraBoxes));
+                    OnPropertyChanged(nameof(EnableEtraBoxes));
                 }
             }
         }
@@ -207,7 +207,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     _unit = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(ExtraBoxOpacity));
-                    OnPropertyChanged(nameof(EnableExtraBoxes));
+                    OnPropertyChanged(nameof(EnableEtraBoxes));
                 }
             }
         }
