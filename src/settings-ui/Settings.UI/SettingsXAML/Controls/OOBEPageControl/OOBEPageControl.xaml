@@ -24,7 +24,7 @@
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel
-                Margin="32,12,32,24"
+                Margin="32,24"
                 VerticalAlignment="Top"
                 Orientation="Vertical"
                 Spacing="12">
@@ -43,6 +43,7 @@
 
                 <ContentPresenter
                     x:Name="ModuleContentPresenter"
+                    Margin="0,8"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch"
                     Content="{x:Bind PageContent}" />
