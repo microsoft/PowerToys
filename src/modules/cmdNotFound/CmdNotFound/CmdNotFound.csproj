@@ -60,4 +60,8 @@
 		</Content>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+	</ItemGroup>
+
 </Project>

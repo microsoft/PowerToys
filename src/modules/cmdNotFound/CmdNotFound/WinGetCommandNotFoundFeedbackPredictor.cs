@@ -9,6 +9,7 @@ using System.Management.Automation;
 using System.Management.Automation.Subsystem.Feedback;
 using System.Management.Automation.Subsystem.Prediction;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.PowerToys.Telemetry;
 
 namespace WinGetCommandNotFound
 {
@@ -87,6 +88,8 @@ namespace WinGetCommandNotFound
                 var footerMessage = tooManySuggestions ?
                     string.Format(CultureInfo.InvariantCulture, "Additional results can be found using \"winget search --{0} {1}\"", packageMatchFilterField, target) :
                     null;
+
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.CmdNotFoundFeedbackProvidedEvent());
 
                 return new FeedbackItem(
                     "Try installing this package using winget:",
@@ -186,6 +189,7 @@ namespace WinGetCommandNotFound
 
                 if (result is not null)
                 {
+                    PowerToysTelemetry.Log.WriteEvent(new Telemetry.CmdNotFoundSuggestionProvidedEvent());
                     return new SuggestionPackage(result);
                 }
             }
