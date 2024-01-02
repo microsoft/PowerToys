@@ -10,10 +10,12 @@ namespace WinGetCommandNotFound
 {
     public sealed class PooledPowerShellObjectPolicy : IPooledObjectPolicy<PowerShell>
     {
+        private static readonly string[] WingetClientModuleName = new[] { "Microsoft.WinGet.Client" };
+
         public PowerShell Create()
         {
             var iss = InitialSessionState.CreateDefault2();
-            iss.ImportPSModule(new[] { "Microsoft.WinGet.Client" });
+            iss.ImportPSModule(WingetClientModuleName);
             return PowerShell.Create(iss);
         }
 
