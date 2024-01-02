@@ -10,9 +10,7 @@
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:toolkitconverters="using:CommunityToolkit.WinUI.UI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     x:Name="RootPage"
-    d:DataContext="{d:DesignInstance Type=viewmodels:ImageResizerViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <Page.Resources>

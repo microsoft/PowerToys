@@ -10,9 +10,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
-    d:DataContext="{d:DesignInstance Type=viewmodels:ShellViewModel}"
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
     mc:Ignorable="d">

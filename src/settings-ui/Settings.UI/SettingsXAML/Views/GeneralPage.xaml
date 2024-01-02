@@ -8,8 +8,6 @@
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    d:DataContext="{d:DesignInstance Type=viewmodels:GeneralViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 

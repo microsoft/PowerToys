@@ -10,7 +10,6 @@
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    d:DataContext="{d:DesignInstance Type=viewmodels:DashboardViewModel}"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
     mc:Ignorable="d">
