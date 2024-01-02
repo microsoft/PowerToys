@@ -2,7 +2,7 @@
   <Import Project="..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectGuid>{D9C5DE64-6849-4278-91AD-9660AECF2876}</ProjectGuid>

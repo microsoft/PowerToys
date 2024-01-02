@@ -2,7 +2,7 @@
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ProjectGuid>{9F94B303-5E21-4364-9362-64426F8DB932}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Community.PowerToys.Run.Plugin.WebSearch</RootNamespace>

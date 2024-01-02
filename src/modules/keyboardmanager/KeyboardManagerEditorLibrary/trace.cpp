@@ -19,7 +19,7 @@ void Trace::UnregisterProvider() noexcept
 }
 
 // Log number of key remaps when the user uses Edit Keyboard and saves settings
-void Trace::KeyRemapCount(const DWORD keyToKeyCount, const DWORD keyToShortcutCount) noexcept
+void Trace::KeyRemapCount(const DWORD keyToKeyCount, const DWORD keyToShortcutCount, const DWORD keyToTextCount) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
@@ -28,7 +28,8 @@ void Trace::KeyRemapCount(const DWORD keyToKeyCount, const DWORD keyToShortcutCo
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(keyToKeyCount + keyToShortcutCount, "KeyRemapCount"),
         TraceLoggingValue(keyToKeyCount, "KeyToKeyRemapCount"),
-        TraceLoggingValue(keyToShortcutCount, "KeyToShortcutRemapCount"));
+        TraceLoggingValue(keyToShortcutCount, "KeyToShortcutRemapCount"),
+        TraceLoggingValue(keyToTextCount, "KeyToTextRemapCount"));
 }
 
 // Log number of os level shortcut remaps when the user uses Edit Shortcuts and saves settings

@@ -8,19 +8,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
-    <custom:OOBEPageControl
-        x:Uid="Oobe_ShortcutGuide"
-        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/OOBEShortcutGuide.png">
+    <custom:OOBEPageControl x:Uid="Oobe_ShortcutGuide" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/OOBEShortcutGuide.png">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
 
-                <TextBlock
-                    x:Uid="Oobe_HowToLaunch"
-                    Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <custom:ShortcutWithTextLabelControl
-                    x:Name="HotkeyControl"
-                    x:Uid="Oobe_ShortcutGuide_HowToLaunch" />
+                <custom:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_ShortcutGuide_HowToLaunch" />
                 <StackPanel
                     Margin="0,24,0,0"
                     Orientation="Horizontal"
@@ -29,15 +23,9 @@
                         x:Uid="Launch_ShortcutGuide"
                         Click="Start_ShortcutGuide_Click"
                         Style="{StaticResource AccentButtonStyle}" />
-                    <Button
-                        x:Uid="OOBE_Settings"
-                        Click="SettingsLaunchButton_Click" />
-                    <HyperlinkButton
-                        NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide"
-                        Style="{StaticResource TextButtonStyle}">
-                        <TextBlock
-                            x:Uid="LearnMore_ShortcutGuide"
-                            TextWrapping="Wrap" />
+                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock x:Uid="LearnMore_ShortcutGuide" TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>

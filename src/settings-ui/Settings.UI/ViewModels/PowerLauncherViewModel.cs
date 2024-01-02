@@ -56,16 +56,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this.isDark = isDark;
 
             // To obtain the general Settings configurations of PowerToys
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
             callback = (PowerLauncherSettings s) =>
             {
@@ -595,6 +592,40 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (settings.Properties.UsePinyin != value)
                 {
                     settings.Properties.UsePinyin = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public int ShowPluginsOverviewIndex
+        {
+            get
+            {
+                return settings.Properties.ShowPluginsOverview;
+            }
+
+            set
+            {
+                if (settings.Properties.ShowPluginsOverview != value)
+                {
+                    settings.Properties.ShowPluginsOverview = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public int TitleFontSize
+        {
+            get
+            {
+                return settings.Properties.TitleFontSize;
+            }
+
+            set
+            {
+                if (settings.Properties.TitleFontSize != value)
+                {
+                    settings.Properties.TitleFontSize = value;
                     UpdateSettings();
                 }
             }

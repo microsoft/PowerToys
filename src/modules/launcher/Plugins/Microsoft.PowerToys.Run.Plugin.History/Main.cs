@@ -205,7 +205,7 @@ namespace Microsoft.PowerToys.Run.Plugin.History
                 menuItems.Add(new ContextMenuResult
                 {
                     // https://learn.microsoft.com/windows/apps/design/style/segoe-ui-symbol-font
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xF739",   // ECC9 => Symbol: RemoveFrom, or F739 => SetHistoryStatus2
                     Title = $"Remove this from history",
                     Action = _ =>

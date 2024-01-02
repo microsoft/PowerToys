@@ -123,9 +123,7 @@ class MouseWithoutBorders : public PowertoyModuleIface
 private:
     bool m_enabled = false;
     bool run_in_service_mode = false;
-    HANDLE send_telemetry_event;
-    HANDLE m_hInvokeEvent;
-    PROCESS_INFORMATION p_info;
+    PROCESS_INFORMATION p_info = {};
 
     bool is_enabled_by_default() const override
     {
@@ -520,8 +518,6 @@ public:
     virtual void enable()
     {
         Trace::MouseWithoutBorders::Enable(true);
-        ResetEvent(send_telemetry_event);
-        ResetEvent(m_hInvokeEvent);
 
         launch_process();
 
@@ -534,8 +530,6 @@ public:
         {
             Trace::MouseWithoutBorders::Enable(false);
             Logger::trace(L"Disabling MouseWithoutBorders...");
-            ResetEvent(send_telemetry_event);
-            ResetEvent(m_hInvokeEvent);
 
             Logger::trace(L"Signaled exit event for PowerToys MouseWithoutBorders.");
             TerminateProcess(p_info.hProcess, 1);

@@ -34,20 +34,14 @@ namespace Wox.Plugin
 
         public void Remove(Result result)
         {
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(result);
 
             Records.Remove(result.ToString());
         }
 
         public void Add(Result result)
         {
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(result);
 
             var key = result.ToString();
             if (Records.TryGetValue(key, out var value))
@@ -81,10 +75,7 @@ namespace Wox.Plugin
 
         public UserSelectedRecordItem GetSelectedData(Result result)
         {
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(result);
 
             if (result != null && Records.TryGetValue(result.ToString(), out var value))
             {

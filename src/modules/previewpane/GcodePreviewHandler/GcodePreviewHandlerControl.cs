@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Common;
-using Common.Utilities;
+using Microsoft.PowerToys.FilePreviewCommon;
 using Microsoft.PowerToys.PreviewHandler.Gcode.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 
@@ -28,6 +28,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         /// Represent if an text box info bar is added for showing message.
         /// </summary>
         private bool _infoBarAdded;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GcodePreviewHandlerControl"/> class.
+        /// </summary>
+        public GcodePreviewHandlerControl()
+        {
+            SetBackgroundColor(Settings.BackgroundColor);
+        }
 
         /// <summary>
         /// Start the preview on the Control.
@@ -124,7 +132,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         {
             _pictureBox = new PictureBox();
             _pictureBox.BackgroundImage = image;
-            _pictureBox.BackgroundImageLayout = ImageLayout.Center;
+            _pictureBox.BackgroundImageLayout = Width >= image.Width && Height >= image.Height ? ImageLayout.Center : ImageLayout.Zoom;
             _pictureBox.Dock = DockStyle.Fill;
             Controls.Add(_pictureBox);
         }

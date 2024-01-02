@@ -39,7 +39,7 @@ param(
 Write-Output "Use 'Help .\applyXamlStyling.ps1' for more info or '-Main' to run against all files."
 Write-Output ""
 Write-Output "Restoring dotnet tools..."
-dotnet tool restore
+dotnet tool restore --disable-parallel --no-cache
 
 if (-not $Passive)
 {
@@ -107,7 +107,7 @@ if (-not $Passive)
 else 
 {
     Write-Output "Checking all files (passively)"
-    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\launcher\\PowerLauncher\\)|(\\launcher\\Wox.Plugin\\)|(\\colorPicker\\ColorPickerUI\\)|(\\settings-ui\\Settings.UI\\)" }
+    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\Generated Files\\PowerRenameXAML\\)|(\\colorPicker\\ColorPickerUI\\)" }
 
     if ($files.count -gt 0)
     {

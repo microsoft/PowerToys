@@ -81,7 +81,7 @@ inline wil::unique_mutex_nothrow create_msi_mutex()
 void open_menu_from_another_instance(std::optional<std::string> settings_window)
 {
     const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
-    LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Overview);
+    LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Dashboard);
     if (settings_window.has_value() && settings_window.value() != "")
     {
         msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
@@ -155,6 +155,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"WinUI3Apps/PowerToys.MeasureToolModuleInterface.dll",
             L"WinUI3Apps/PowerToys.HostsModuleInterface.dll",
             L"WinUI3Apps/PowerToys.Peek.dll",
+            L"WinUI3Apps/PowerToys.EnvironmentVariablesModuleInterface.dll",
             L"PowerToys.MouseWithoutBordersModuleInterface.dll",
             L"PowerToys.CropAndLockModuleInterface.dll",
         };
@@ -273,7 +274,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
     if (param == cant_drag_elevated_disable)
     {
-        return notifications::disable_toast(notifications::CantDragElevatedDontShowAgainRegistryPath) ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
+        return notifications::disable_toast(notifications::ElevatedDontShowAgainRegistryPath) ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
     }
     else if (param.starts_with(update_now))
     {

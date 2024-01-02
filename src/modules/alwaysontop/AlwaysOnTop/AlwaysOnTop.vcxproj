@@ -3,6 +3,9 @@
   <!-- Project configurations -->
   <!-- Props that should be disabled while building on CI server -->
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.221104.6\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h AlwaysOnTop.base.rc AlwaysOnTop.rc" />
+  </Target>
   <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -141,9 +144,12 @@
   <ItemGroup>
     <ClInclude Include="AlwaysOnTop.h" />
     <ClInclude Include="FrameDrawer.h" />
+	<ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="ModuleConstants.h" />
+	<ClInclude Include="NotificationUtil.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+	<None Include="resource.base.h" />
     <ClInclude Include="ScalingUtils.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SettingsConstants.h" />
@@ -168,9 +174,16 @@
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
+	<ProjectReference Include="..\..\..\common\notifications\notifications.vcxproj">
+      <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="AlwaysOnTop.rc" />
+    <ResourceCompile Include="Generated Files/AlwaysOnTop.rc" />
+    <None Include="AlwaysOnTop.base.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />

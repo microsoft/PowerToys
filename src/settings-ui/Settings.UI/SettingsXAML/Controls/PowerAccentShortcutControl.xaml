@@ -22,9 +22,7 @@
             ItemsSource="{x:Bind Keys}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel
-                        Orientation="Horizontal"
-                        Spacing="4" />
+                    <StackPanel Orientation="Horizontal" Spacing="4" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>

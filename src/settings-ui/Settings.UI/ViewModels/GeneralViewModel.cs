@@ -83,10 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ResourceLoader = resourceLoader;
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
@@ -95,15 +92,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 UpdatingSettingsConfig = new UpdatingSettings();
             }
 
-            // set the callback functions value to hangle outgoing IPC message.
+            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
             SendCheckForUpdatesConfigMSG = ipcMSGCheckForUpdatesCallBackFunc;
             SendRestartAsAdminConfigMSG = ipcMSGRestartAsAdminMSGCallBackFunc;
 
             // set the callback function value to update the UI theme.
             UpdateUIThemeCallBack = updateTheme;
-
-            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;

@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "KeyboardListener.g.h"
-
+#include <mutex>
 #include <spdlog/stopwatch.h>
 
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation

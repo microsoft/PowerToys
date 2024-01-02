@@ -14,6 +14,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string ModuleName = "PowerToys Run";
 
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+
         [JsonPropertyName("properties")]
         public PowerLauncherProperties Properties { get; set; }
 
@@ -30,16 +36,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public virtual void Save(ISettingsUtils settingsUtils)
         {
             // Save settings to file
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            };
+            var options = _serializerOptions;
 
-            if (settingsUtils == null)
-            {
-                throw new ArgumentNullException(nameof(settingsUtils));
-            }
+            ArgumentNullException.ThrowIfNull(settingsUtils);
 
             settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }

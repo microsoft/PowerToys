@@ -14,20 +14,14 @@ namespace Microsoft.Plugin.Folder.Sources
     {
         public bool Execute(string sanitizedPath, IPublicAPI contextApi)
         {
-            if (contextApi == null)
-            {
-                throw new ArgumentNullException(nameof(contextApi));
-            }
+            ArgumentNullException.ThrowIfNull(contextApi);
 
             return OpenFileOrFolder(sanitizedPath, contextApi);
         }
 
         public bool ExecuteSanitized(string search, IPublicAPI contextApi)
         {
-            if (contextApi == null)
-            {
-                throw new ArgumentNullException(nameof(contextApi));
-            }
+            ArgumentNullException.ThrowIfNull(contextApi);
 
             return Execute(SanitizedPath(search), contextApi);
         }
@@ -38,7 +32,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
             // A network path must start with \\
             // Using Ordinal since this is internal and used with a symbol
-            if (!sanitizedPath.StartsWith("\\", StringComparison.Ordinal))
+            if (!sanitizedPath.StartsWith('\\'))
             {
                 return sanitizedPath;
             }

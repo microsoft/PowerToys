@@ -10,9 +10,10 @@ using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using global::PowerToys.GPOWrapper;
-using ManagedCommon;
 using PowerLauncher.Properties;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -28,6 +29,8 @@ namespace PowerLauncher.Plugin
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IDirectory Directory = FileSystem.Directory;
         private static readonly object AllPluginsLock = new object();
+
+        private static readonly CompositeFormat FailedToInitializePluginsTitle = System.Text.CompositeFormat.Parse(Properties.Resources.FailedToInitializePluginsTitle);
 
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
@@ -53,18 +56,20 @@ namespace PowerLauncher.Plugin
                         if (_allPlugins == null)
                         {
                             _allPlugins = PluginConfig.Parse(Directories)
-                                .Where(x => x.Language.ToUpperInvariant() == AllowedLanguage.CSharp)
+                                .Where(x => string.Equals(x.Language, AllowedLanguage.CSharp, StringComparison.OrdinalIgnoreCase))
                                 .GroupBy(x => x.ID) // Deduplicates plugins by ID, choosing for each ID the highest DLL product version. This fixes issues such as https://github.com/microsoft/PowerToys/issues/14701
                                 .Select(g => g.OrderByDescending(x => // , where an upgrade didn't remove older versions of the plugins.
                                 {
                                     try
                                     {
-                                        // Return a comparable produce version.
+                                        // Return a comparable product version.
                                         var fileVersion = FileVersionInfo.GetVersionInfo(x.ExecuteFilePath);
-                                        return ((uint)fileVersion.ProductMajorPart << 48)
-                                        | ((uint)fileVersion.ProductMinorPart << 32)
-                                        | ((uint)fileVersion.ProductBuildPart << 16)
-                                        | ((uint)fileVersion.ProductPrivatePart);
+
+                                        // Convert each part to an unsigned 32 bit integer, then extend to 64 bit.
+                                        return ((ulong)(uint)fileVersion.ProductMajorPart << 48)
+                                            | ((ulong)(uint)fileVersion.ProductMinorPart << 32)
+                                            | ((ulong)(uint)fileVersion.ProductBuildPart << 16)
+                                            | (ulong)(uint)fileVersion.ProductPrivatePart;
                                     }
                                     catch (System.IO.FileNotFoundException)
                                     {
@@ -176,20 +181,17 @@ namespace PowerLauncher.Plugin
 
             _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
 
-            if (failedPlugins.Any())
+            if (!failedPlugins.IsEmpty)
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
-                var description = string.Format(CultureInfo.CurrentCulture, Resources.FailedToInitializePluginsDescription, failed);
-                API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false);
+                var description = string.Format(CultureInfo.CurrentCulture, FailedToInitializePluginsTitle, failed);
+                Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false));
             }
         }
 
         public static List<Result> QueryForPlugin(PluginPair pair, Query query, bool delayedExecution = false)
         {
-            if (pair == null)
-            {
-                throw new ArgumentNullException(nameof(pair));
-            }
+            ArgumentNullException.ThrowIfNull(pair);
 
             if (!pair.IsPluginInitialized)
             {
@@ -270,15 +272,9 @@ namespace PowerLauncher.Plugin
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)
         {
-            if (results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
+            ArgumentNullException.ThrowIfNull(results);
 
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
+            ArgumentNullException.ThrowIfNull(metadata);
 
             foreach (var r in results)
             {

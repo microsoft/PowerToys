@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     AcceleratorKey = Key.F4,
                     AcceleratorModifiers = ModifierKeys.Control,
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE8BB",                       // E8B8 => Symbol: ChromeClose
                     Title = $"{Resources.wox_plugin_windowwalker_Close} (Ctrl+F4)",
                     Action = _ =>
@@ -51,14 +51,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             // Hide menu if Explorer.exe is the shell process or the process name is ApplicationFrameHost.exe
             // In the first case we would crash the windows ui and in the second case we would kill the generic process for uwp apps.
-            if (!windowData.Process.IsShellProcess && !(windowData.Process.IsUwpApp & windowData.Process.Name.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "applicationframehost.exe")
-                && !(windowData.Process.IsFullAccessDenied & WindowWalkerSettings.Instance.HideKillProcessOnElevatedProcesses))
+            if (!windowData.Process.IsShellProcess && !(windowData.Process.IsUwpApp && string.Equals(windowData.Process.Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
+                && !(windowData.Process.IsFullAccessDenied && WindowWalkerSettings.Instance.HideKillProcessOnElevatedProcesses))
             {
                 contextMenu.Add(new ContextMenuResult
                 {
                     AcceleratorKey = Key.Delete,
                     AcceleratorModifiers = ModifierKeys.Control,
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE74D",                       // E74D => Symbol: Delete
                     Title = $"{Resources.wox_plugin_windowwalker_Kill} (Ctrl+Delete)",
                     Action = _ => KillProcessCommand(windowData),
