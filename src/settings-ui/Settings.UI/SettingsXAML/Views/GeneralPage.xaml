@@ -20,12 +20,12 @@
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <custom:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
-                    <controls:SettingsCard Header="{Binding PowerToysVersion}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
+                    <controls:SettingsCard Header="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
                         <controls:SettingsCard.Description>
                             <StackPanel Orientation="Vertical">
                                 <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                     <Run x:Uid="General_VersionLastChecked" />
-                                    <Run Text="{Binding ViewModel.UpdateCheckedDate, Mode=OneWay}" />
+                                    <Run Text="{x:Bind ViewModel.UpdateCheckedDate, Mode=OneWay}" />
                                 </TextBlock>
                                 <HyperlinkButton
                                     x:Uid="ReleaseNotes"
@@ -34,7 +34,7 @@
                                     NavigateUri="https://github.com/microsoft/PowerToys/releases/" />
                             </StackPanel>
                         </controls:SettingsCard.Description>
-                        <Grid Visibility="{Binding IsUpdatePanelVisible, Mode=OneWay}">
+                        <Grid Visibility="{x:Bind ViewModel.IsUpdatePanelVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal"
@@ -51,41 +51,41 @@
                             <Button
                                 x:Uid="GeneralPage_CheckForUpdates"
                                 HorizontalAlignment="Right"
-                                Command="{Binding CheckForUpdatesEventHandler}"
-                                IsEnabled="{Binding IsDownloadAllowed}"
+                                Command="{x:Bind ViewModel.CheckForUpdatesEventHandler, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
                         </Grid>
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="General_UpToDate"
                         IsClosable="False"
-                        IsOpen="{Binding IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
-                        IsTabStop="{Binding IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
+                        IsOpen="{x:Bind ViewModel.IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
                         Severity="Success" />
 
                     <!--  Network error while checking for new version  -->
                     <InfoBar
                         x:Uid="General_CantCheck"
                         IsClosable="False"
-                        IsOpen="{Binding IsNoNetwork, Mode=OneWay}"
-                        IsTabStop="{Binding IsNoNetwork, Mode=OneWay}"
+                        IsOpen="{x:Bind ViewModel.IsNoNetwork, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsNoNetwork, Mode=OneWay}"
                         Severity="Error" />
 
                     <!--  New version available  -->
                     <InfoBar
                         x:Uid="General_NewVersionAvailable"
                         IsClosable="False"
-                        IsOpen="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
-                        IsTabStop="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
-                        Message="{Binding PowerToysNewAvailableVersion, Mode=OneWay}"
+                        IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
+                        IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
+                        Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
                         Severity="Informational">
 
                         <InfoBar.Content>
                             <StackPanel Spacing="16">
                                 <Button
                                     x:Uid="General_DownloadAndInstall"
-                                    Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
+                                    Command="{x:Bind ViewModel.UpdateNowButtonEventHandler, Mode=OneWay}"
+                                    IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}"
                                     Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
 
                                 <!--  In progress panel  -->
@@ -106,7 +106,7 @@
                             <HyperlinkButton
                                 x:Uid="SeeWhatsNew"
                                 HorizontalAlignment="Right"
-                                NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
+                                NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink, Mode=OneWay}"
                                 Style="{StaticResource TextButtonStyle}" />
                         </InfoBar.ActionButton>
                     </InfoBar>
@@ -116,22 +116,22 @@
                     <InfoBar
                         x:Uid="General_NewVersionReadyToInstall"
                         IsClosable="False"
-                        IsOpen="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
-                        IsTabStop="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
-                        Message="{Binding PowerToysNewAvailableVersion}"
+                        IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
+                        IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
+                        Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
                         Severity="Success">
                         <InfoBar.Content>
                             <Button
                                 x:Uid="General_InstallNow"
                                 Margin="0,0,0,16"
-                                Command="{Binding UpdateNowButtonEventHandler}"
-                                IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}" />
+                                Command="{x:Bind ViewModel.UpdateNowButtonEventHandler, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}" />
                         </InfoBar.Content>
                         <InfoBar.ActionButton>
                             <HyperlinkButton
                                 x:Uid="SeeWhatsNew"
                                 HorizontalAlignment="Right"
-                                NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
+                                NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink, Mode=OneWay}"
                                 Style="{StaticResource TextButtonStyle}" />
                         </InfoBar.ActionButton>
                     </InfoBar>
@@ -140,16 +140,16 @@
                     <InfoBar
                         x:Uid="General_FailedToDownloadTheNewVersion"
                         IsClosable="False"
-                        IsOpen="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
-                        IsTabStop="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
-                        Message="{Binding PowerToysNewAvailableVersion}"
+                        IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
+                        IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
+                        Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
                         Severity="Error">
                         <InfoBar.Content>
                             <StackPanel Spacing="16">
                                 <Button
                                     x:Uid="General_TryAgainToDownloadAndInstall"
-                                    Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
+                                    Command="{x:Bind ViewModel.UpdateNowButtonEventHandler, Mode=OneWay}"
+                                    IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}"
                                     Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
 
                                 <!--  In progress panel  -->
@@ -170,7 +170,7 @@
                             <HyperlinkButton
                                 x:Uid="SeeWhatsNew"
                                 HorizontalAlignment="Right"
-                                NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
+                                NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink, Mode=OneWay}"
                                 Style="{StaticResource TextButtonStyle}" />
                         </InfoBar.ActionButton>
                     </InfoBar>
@@ -201,7 +201,7 @@
                         </controls:SettingsExpander.Description>
                         <Button
                             x:Uid="GeneralPage_RestartAsAdmin_Button"
-                            Command="{Binding RestartElevatedButtonEventHandler}"
+                            Command="{x:Bind ViewModel.RestartElevatedButtonEventHandler, Mode=OneWay}"
                             IsEnabled="{x:Bind ViewModel.IsAdminButtonEnabled, Mode=OneWay}" />
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{x:Bind ViewModel.IsElevated, Mode=OneWay}">
@@ -231,8 +231,8 @@
                 <custom:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
                     <controls:SettingsExpander x:Uid="General_SettingsBackupAndRestore" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{Binding RestoreConfigsEventHandler}" />
+                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{x:Bind ViewModel.BackupConfigsEventHandler, Mode=OneWay}" />
+                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{x:Bind ViewModel.RestoreConfigsEventHandler, Mode=OneWay}" />
                         </StackPanel>
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard x:Uid="General_SettingsBackupAndRestoreLocationText">
@@ -249,14 +249,14 @@
                                         Text="{x:Bind ViewModel.SettingsBackupAndRestoreDir, Mode=TwoWay}"
                                         TextWrapping="Wrap">
                                         <ToolTipService.ToolTip>
-                                            <ToolTip IsEnabled="{Binding ElementName=pathTextBlock, Path=IsTextTrimmed}">
+                                            <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=pathTextBlock, Mode=OneWay}">
                                                 <TextBlock Text="{x:Bind ViewModel.SettingsBackupAndRestoreDir, Mode=TwoWay}" />
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
                                     </TextBlock>
                                     <Button
                                         Grid.Column="1"
-                                        Command="{Binding SelectSettingBackupDirEventHandler}"
+                                        Command="{x:Bind ViewModel.SelectSettingBackupDirEventHandler, Mode=OneWay}"
                                         Content="&#xe8da;"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                         <ToolTipService.ToolTip>
@@ -290,7 +290,7 @@
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         TextWrapping="WrapWholeWords">
-                                        <Run Text="{Binding CurrentSettingMatchText, Mode=OneWay}" />
+                                        <Run Text="{x:Bind ViewModel.CurrentSettingMatchText, Mode=OneWay}" />
                                         <Hyperlink Click="UpdateBackupAndRestoreStatusText" TextDecorations="Underline">
                                             <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
                                         </Hyperlink>
@@ -301,7 +301,7 @@
                                         Grid.Row="1"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding LastSettingsBackupFileName, Mode=OneWay}"
+                                        Text="{x:Bind ViewModel.LastSettingsBackupFileName, Mode=OneWay}"
                                         TextWrapping="WrapWholeWords" />
 
                                     <TextBlock x:Uid="General_SettingsBackupInfo_SourceHeader" Grid.Row="2" />
@@ -309,14 +309,14 @@
                                         Grid.Row="2"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding LastSettingsBackupSource, Mode=OneWay}"
+                                        Text="{x:Bind ViewModel.LastSettingsBackupSource, Mode=OneWay}"
                                         TextWrapping="WrapWholeWords" />
                                     <TextBlock x:Uid="General_SettingsBackupInfo_DateHeader" Grid.Row="3" />
                                     <TextBlock
                                         Grid.Row="3"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding LastSettingsBackupDate, Mode=OneWay}"
+                                        Text="{x:Bind ViewModel.LastSettingsBackupDate, Mode=OneWay}"
                                         TextWrapping="WrapWholeWords" />
                                 </Grid>
                             </controls:SettingsCard>
@@ -325,11 +325,11 @@
                 </custom:SettingsGroup>
                 <InfoBar
                     x:Uid="General_SettingsBackupMessageResults"
-                    Title="{Binding SettingsBackupMessage}"
+                    Title="{x:Bind ViewModel.SettingsBackupMessage, Mode=OneWay}"
                     IsClosable="False"
-                    IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
-                    IsTabStop="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
-                    Severity="{Binding BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
+                    IsOpen="{x:Bind ViewModel.SettingsBackupRestoreMessageVisible, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.SettingsBackupRestoreMessageVisible, Mode=OneWay}"
+                    Severity="{x:Bind ViewModel.BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
                 <custom:SettingsGroup x:Uid="General_Experimentation" Visibility="Visible">
                     <controls:SettingsCard x:Uid="GeneralPage_EnableExperimentation" IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <controls:SettingsCard.HeaderIcon>
