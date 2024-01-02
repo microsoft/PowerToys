@@ -115,7 +115,7 @@
                                     CornerRadius="4">
                                     <Image
                                         x:Uid="VideoConference_CameraOverlayImageAlt"
-                                        Source="{x:Bind ViewModel.CameraImageOverlayPath, Mode=OneWay}"
+                                        Source="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"
                                         ToolTipService.ToolTip="{x:Bind ViewModel.CameraImageOverlayPath, Mode=OneWay}" />
                                 </Border>
                             </controls:SettingsCard>
