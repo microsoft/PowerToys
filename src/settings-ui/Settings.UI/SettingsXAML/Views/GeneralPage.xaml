@@ -51,9 +51,9 @@
                             <Button
                                 x:Uid="GeneralPage_CheckForUpdates"
                                 HorizontalAlignment="Right"
-                                Command="{x:Bind ViewModel.CheckForUpdatesEventHandler, Mode=OneWay}"
-                                IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}"
-                                Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
+                                Command="{Binding CheckForUpdatesEventHandler}"
+                                IsEnabled="{Binding IsDownloadAllowed}"
+                                Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
                         </Grid>
                     </controls:SettingsCard>
                     <InfoBar
@@ -84,9 +84,9 @@
                             <StackPanel Spacing="16">
                                 <Button
                                     x:Uid="General_DownloadAndInstall"
-                                    Command="{x:Bind ViewModel.UpdateNowButtonEventHandler, Mode=OneWay}"
-                                    IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}"
-                                    Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
+                                    Command="{Binding UpdateNowButtonEventHandler}"
+                                    IsEnabled="{Binding IsDownloadAllowed}"
+                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
 
                                 <!--  In progress panel  -->
                                 <StackPanel
@@ -124,8 +124,8 @@
                             <Button
                                 x:Uid="General_InstallNow"
                                 Margin="0,0,0,16"
-                                Command="{x:Bind ViewModel.UpdateNowButtonEventHandler, Mode=OneWay}"
-                                IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}" />
+                                Command="{Binding UpdateNowButtonEventHandler}"
+                                IsEnabled="{Binding IsDownloadAllowed}" />
                         </InfoBar.Content>
                         <InfoBar.ActionButton>
                             <HyperlinkButton
@@ -148,16 +148,16 @@
                             <StackPanel Spacing="16">
                                 <Button
                                     x:Uid="General_TryAgainToDownloadAndInstall"
-                                    Command="{x:Bind ViewModel.UpdateNowButtonEventHandler, Mode=OneWay}"
-                                    IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}"
-                                    Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
+                                    Command="{Binding UpdateNowButtonEventHandler}"
+                                    IsEnabled="{Binding IsDownloadAllowed}"
+                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
 
                                 <!--  In progress panel  -->
                                 <StackPanel
                                     Margin="0,0,0,16"
                                     Orientation="Horizontal"
                                     Spacing="18"
-                                    Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                    Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <ProgressRing Width="24" Height="24" />
                                     <TextBlock
                                         x:Uid="General_Downloading"
@@ -201,8 +201,8 @@
                         </controls:SettingsExpander.Description>
                         <Button
                             x:Uid="GeneralPage_RestartAsAdmin_Button"
-                            Command="{x:Bind ViewModel.RestartElevatedButtonEventHandler, Mode=OneWay}"
-                            IsEnabled="{x:Bind ViewModel.IsAdminButtonEnabled, Mode=OneWay}" />
+                            Command="{Binding RestartElevatedButtonEventHandler}"
+                            IsEnabled="{Binding IsAdminButtonEnabled}" />
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{x:Bind ViewModel.IsElevated, Mode=OneWay}">
                                 <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RunElevated, Mode=TwoWay}" />
@@ -231,8 +231,8 @@
                 <custom:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
                     <controls:SettingsExpander x:Uid="General_SettingsBackupAndRestore" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{x:Bind ViewModel.BackupConfigsEventHandler, Mode=OneWay}" />
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{x:Bind ViewModel.RestoreConfigsEventHandler, Mode=OneWay}" />
+                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
+                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{Binding RestoreConfigsEventHandler}" />
                         </StackPanel>
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard x:Uid="General_SettingsBackupAndRestoreLocationText">
@@ -256,7 +256,7 @@
                                     </TextBlock>
                                     <Button
                                         Grid.Column="1"
-                                        Command="{x:Bind ViewModel.SelectSettingBackupDirEventHandler, Mode=OneWay}"
+                                        Command="{Binding SelectSettingBackupDirEventHandler}"
                                         Content="&#xe8da;"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                         <ToolTipService.ToolTip>
