@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
@@ -296,7 +296,7 @@
                     Style="{StaticResource SubtitleTextBlockStyle}" />
                 <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
-                        <tk8controls:StaggeredLayout
+                        <tkcontrols:StaggeredLayout
                             ColumnSpacing="8"
                             DesiredColumnWidth="378"
                             RowSpacing="8" />
@@ -394,7 +394,7 @@
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
-                        <tk8controls:StaggeredLayout
+                        <tkcontrols:StaggeredLayout
                             ColumnSpacing="8"
                             DesiredColumnWidth="378"
                             RowSpacing="8" />

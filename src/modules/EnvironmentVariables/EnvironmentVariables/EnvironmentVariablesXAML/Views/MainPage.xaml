@@ -8,7 +8,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EnvironmentVariables.Models"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
@@ -22,12 +22,12 @@
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
-                <tk8controls:SettingsCard
+                <tkcontrols:SettingsCard
                     CommandParameter="{x:Bind (models:Variable)}"
                     IsActionIconVisible="False"
                     IsClickEnabled="False"
                     Style="{StaticResource DefaultSettingsExpanderItemStyle}">
-                    <tk8controls:SettingsCard.Header>
+                    <tkcontrols:SettingsCard.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{x:Bind Name, Mode=TwoWay}" />
                             <FontIcon
@@ -41,8 +41,8 @@
                                 </ToolTipService.ToolTip>
                             </FontIcon>
                         </StackPanel>
-                    </tk8controls:SettingsCard.Header>
-                    <tk8controls:SettingsCard.Description>
+                    </tkcontrols:SettingsCard.Header>
+                    <tkcontrols:SettingsCard.Description>
                         <StackPanel HorizontalAlignment="Left">
                             <ItemsControl
                                 x:Name="VariableValuesList"
@@ -65,7 +65,7 @@
                                 Text="{x:Bind Values, Mode=TwoWay}"
                                 Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                         </StackPanel>
-                    </tk8controls:SettingsCard.Description>
+                    </tkcontrols:SettingsCard.Description>
                     <Button
                         Content="{ui:FontIcon Glyph=&#xE712;}"
                         IsEnabled="{x:Bind IsEditable}"
@@ -89,7 +89,7 @@
                             <TextBlock x:Uid="More_Options_ButtonTooltip" TextWrapping="Wrap" />
                         </ToolTipService.ToolTip>
                     </Button>
-                </tk8controls:SettingsCard>
+                </tkcontrols:SettingsCard>
             </DataTemplate>
 
             <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
@@ -194,17 +194,17 @@
                     <ItemsControl Margin="0,4,0,0" ItemsSource="{x:Bind ViewModel.Profiles, Mode=TwoWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ProfileVariablesSet">
-                                <tk8controls:SettingsExpander
+                                <tkcontrols:SettingsExpander
                                     Margin="0,0,0,4"
                                     Header="{x:Bind Name, Mode=TwoWay}"
                                     HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}">
-                                    <tk8controls:SettingsExpander.ItemsHeader>
+                                    <tkcontrols:SettingsExpander.ItemsHeader>
                                         <ItemsRepeater
                                             ItemTemplate="{StaticResource VariableTemplate}"
                                             ItemsSource="{x:Bind Variables, Mode=OneWay}"
                                             TabFocusNavigation="Local"
                                             VerticalCacheLength="10" />
-                                    </tk8controls:SettingsExpander.ItemsHeader>
+                                    </tkcontrols:SettingsExpander.ItemsHeader>
 
                                     <StackPanel Orientation="Horizontal" Spacing="12">
                                         <ToggleSwitch
@@ -232,7 +232,7 @@
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
-                                </tk8controls:SettingsExpander>
+                                </tkcontrols:SettingsExpander>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -253,17 +253,17 @@
                         </FontIcon>
                     </StackPanel>
 
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         Margin="0,4,0,0"
                         Header="{x:Bind ViewModel.UserDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}">
-                        <tk8controls:SettingsExpander.ItemsHeader>
+                        <tkcontrols:SettingsExpander.ItemsHeader>
                             <ItemsRepeater
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}"
                                 TabFocusNavigation="Local"
                                 VerticalCacheLength="10" />
-                        </tk8controls:SettingsExpander.ItemsHeader>
+                        </tkcontrols:SettingsExpander.ItemsHeader>
                         <StackPanel Orientation="Horizontal">
                             <Button
                                 x:Name="AddDefaultVariableUserBtn"
@@ -277,17 +277,17 @@
                                 </ToolTipService.ToolTip>
                             </Button>
                         </StackPanel>
-                    </tk8controls:SettingsExpander>
+                    </tkcontrols:SettingsExpander>
 
-                    <tk8controls:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}" HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
-                        <tk8controls:SettingsExpander.ItemsHeader>
+                    <tkcontrols:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}" HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
+                        <tkcontrols:SettingsExpander.ItemsHeader>
                             <ItemsRepeater
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}"
                                 TabFocusNavigation="Local"
                                 VerticalCacheLength="10" />
-                        </tk8controls:SettingsExpander.ItemsHeader>
-                        <tk8controls:SettingsExpander.Description>
+                        </tkcontrols:SettingsExpander.ItemsHeader>
+                        <tkcontrols:SettingsExpander.Description>
                             <StackPanel
                                 Orientation="Horizontal"
                                 Spacing="4"
@@ -305,7 +305,7 @@
                                 </Border>
                                 <TextBlock x:Uid="EditSystemDefaultSetInfoBar" />
                             </StackPanel>
-                        </tk8controls:SettingsExpander.Description>
+                        </tkcontrols:SettingsExpander.Description>
                         <StackPanel Orientation="Horizontal">
                             <Button
                                 x:Name="AddDefaultVariableSystemBtn"
@@ -319,10 +319,10 @@
                                 </ToolTipService.ToolTip>
                             </Button>
                         </StackPanel>
-                    </tk8controls:SettingsExpander>
+                    </tkcontrols:SettingsExpander>
                 </StackPanel>
             </ScrollViewer>
-            <tk8controls:GridSplitter
+            <tkcontrols:GridSplitter
                 x:Name="Splitter"
                 Grid.Row="2"
                 Grid.Column="1"
@@ -642,26 +642,26 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <tk8controls:Segmented
+                                    <tkcontrols:Segmented
                                         x:Name="SwitchViewsSegmentedView"
                                         MaxWidth="500"
                                         HorizontalAlignment="Stretch"
                                         SelectionMode="Single">
-                                        <tk8controls:SegmentedItem
+                                        <tkcontrols:SegmentedItem
                                             x:Name="AddNewVariableSegmentedItem"
                                             x:Uid="NewVariableSegmentedButton"
                                             Tag="NewVariable" />
-                                        <tk8controls:SegmentedItem
+                                        <tkcontrols:SegmentedItem
                                             x:Name="AddExistingVariableSegmentedItem"
                                             x:Uid="ExistingVariableSegmentedButton"
                                             Tag="ExistingVariable" />
-                                    </tk8controls:Segmented>
+                                    </tkcontrols:Segmented>
 
-                                    <tk8controls:SwitchPresenter
+                                    <tkcontrols:SwitchPresenter
                                         x:Name="AddVariableSwitchPresenter"
                                         Grid.Row="1"
                                         Value="{Binding SelectedItem.Tag, ElementName=SwitchViewsSegmentedView}">
-                                        <tk8controls:Case Value="NewVariable">
+                                        <tkcontrols:Case Value="NewVariable">
                                             <StackPanel Grid.Row="1" Orientation="Vertical">
 
                                                 <!--  Adding new variable  -->
@@ -676,8 +676,8 @@
                                                     x:Uid="AddNewVariableValue"
                                                     Margin="0,16,0,0" />
                                             </StackPanel>
-                                        </tk8controls:Case>
-                                        <tk8controls:Case Value="ExistingVariable">
+                                        </tkcontrols:Case>
+                                        <tkcontrols:Case Value="ExistingVariable">
                                             <!--  Adding existing variables  -->
                                             <ListView
                                                 x:Name="ExistingVariablesListView"
@@ -722,8 +722,8 @@
                                                 </ListView.ItemTemplate>
                                             </ListView>
 
-                                        </tk8controls:Case>
-                                    </tk8controls:SwitchPresenter>
+                                        </tkcontrols:Case>
+                                    </tkcontrols:SwitchPresenter>
                                     <Grid Grid.Row="2" HorizontalAlignment="Stretch">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />

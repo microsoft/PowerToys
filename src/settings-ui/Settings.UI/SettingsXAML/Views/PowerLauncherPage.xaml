@@ -8,7 +8,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
@@ -17,12 +17,12 @@
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tk8controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="PowerLauncher_EnablePowerLauncher"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
-                </tk8controls:SettingsCard>
+                </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -31,20 +31,20 @@
                     Severity="Informational" />
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard ContentAlignment="Left">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard ContentAlignment="Left">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
 
@@ -82,13 +82,13 @@
                       />-->
 
                 <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
                         HeaderIcon="{ui:FontIcon Glyph=&#xec48;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}" />
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -97,8 +97,8 @@
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -107,11 +107,11 @@
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
 
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="PowerLauncher_MaximumNumberOfResults"
                         HeaderIcon="{ui:FontIcon Glyph=&#xec8f;}"
                         IsExpanded="True">
@@ -120,20 +120,20 @@
                             Minimum="1"
                             SpinButtonPlacementMode="Compact"
                             Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}" />
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard ContentAlignment="Left">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
 
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryTuningEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryTuningEnabled}" />
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard x:Uid="PowerLauncher_SearchClickedItemWeight" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SearchClickedItemWeight" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -142,24 +142,24 @@
                                     SmallChange="5"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
                                 <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
 
-                    <tk8controls:SettingsCard x:Uid="PowerLauncher_TabSelectsContextButtons" HeaderIcon="{ui:FontIcon Glyph=&#xE7FD;}">
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_TabSelectsContextButtons" HeaderIcon="{ui:FontIcon Glyph=&#xE7FD;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="PowerLauncher_UsePinyin" HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_UsePinyin" HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
@@ -183,34 +183,34 @@
                       />-->
 
                 <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <tk8controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                    <tkcontrols:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorPositionIndex}">
                             <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
-                        <tk8controls:SettingsCard.Description>
+                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                        <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
-                        </tk8controls:SettingsCard.Description>
+                        </tkcontrols:SettingsCard.Description>
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="PowerLauncher_ShowPluginKeywords" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_ShowPluginKeywords" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ShowPluginsOverviewIndex}">
                             <ComboBoxItem x:Uid="ShowPluginsOverview_All" />
                             <ComboBoxItem x:Uid="ShowPluginsOverview_NonGlobal" />
                             <ComboBoxItem x:Uid="ShowPluginsOverview_None" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <tk8controls:SettingsCard x:Uid="PowerLauncher_TitleFontSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_TitleFontSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <TextBlock
                                 VerticalAlignment="Center"
@@ -235,7 +235,7 @@
                                 FontWeight="SemiBold"
                                 Text="A" />
                         </StackPanel>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
@@ -251,13 +251,13 @@
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <tk8controls:SettingsCard x:Uid="Run_PluginUse" HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
-                        <tk8controls:SettingsCard.Description>
+                    <tkcontrols:SettingsCard x:Uid="Run_PluginUse" HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
+                        <tkcontrols:SettingsCard.Description>
                             <StackPanel>
                                 <TextBlock x:Uid="Run_PluginUseDescription" />
                                 <HyperlinkButton x:Uid="Run_PluginUseFindMorePlugins" NavigateUri="https://aka.ms/powerToysRunPlugins" />
                             </StackPanel>
-                        </tk8controls:SettingsCard.Description>
+                        </tkcontrols:SettingsCard.Description>
                         <AutoSuggestBox
                             x:Uid="PowerLauncher_SearchList"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -269,7 +269,7 @@
                                 </ic:EventTriggerBehavior>
                             </i:Interaction.Behaviors>
                         </AutoSuggestBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
 
                     <InfoBar
@@ -306,10 +306,10 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                                 <Grid>
-                                    <tk8controls:SettingsExpander Description="{x:Bind Description}" Header="{x:Bind Path=Name}">
-                                        <tk8controls:SettingsExpander.HeaderIcon>
+                                    <tkcontrols:SettingsExpander Description="{x:Bind Description}" Header="{x:Bind Path=Name}">
+                                        <tkcontrols:SettingsExpander.HeaderIcon>
                                             <BitmapIcon UriSource="{x:Bind IconPath}" />
-                                        </tk8controls:SettingsExpander.HeaderIcon>
+                                        </tkcontrols:SettingsExpander.HeaderIcon>
                                         <StackPanel Orientation="Horizontal" Spacing="16">
                                             <!-- todo(Stefan): InfoBadge not available
                                                         <InfoBadge AutomationProperties.AccessibilityView="Raw"
@@ -338,11 +338,11 @@
                                                 IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}" />
 
                                         </StackPanel>
-                                        <tk8controls:SettingsExpander.Items>
-                                            <tk8controls:SettingsCard x:Uid="PowerLauncher_ActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                        <tkcontrols:SettingsExpander.Items>
+                                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_ActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                 <TextBox MinWidth="{StaticResource SettingActionControlMinWidth}" Text="{x:Bind Path=ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                            </tk8controls:SettingsCard>
-                                            <tk8controls:SettingsCard
+                                            </tkcontrols:SettingsCard>
+                                            <tkcontrols:SettingsCard
                                                 Padding="0,-4,0,0"
                                                 HorizontalContentAlignment="Left"
                                                 Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
@@ -357,8 +357,8 @@
                                                     IsOpen="True"
                                                     IsTabStop="{x:Bind ShowNotAccessibleWarning}"
                                                     Severity="Error" />
-                                            </tk8controls:SettingsCard>
-                                            <tk8controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                            </tkcontrols:SettingsCard>
+                                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                 <CheckBox
                                                     Margin="0,-8,0,0"
                                                     AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
@@ -371,8 +371,8 @@
                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                     </StackPanel>
                                                 </CheckBox>
-                                            </tk8controls:SettingsCard>
-                                            <tk8controls:SettingsCard x:Uid="PowerLauncher_PluginWeightBoost" IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
+                                            </tkcontrols:SettingsCard>
+                                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_PluginWeightBoost" IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                 <NumberBox
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     LargeChange="50"
@@ -381,15 +381,15 @@
                                                     SmallChange="10"
                                                     SpinButtonPlacementMode="Compact"
                                                     Value="{x:Bind Mode=TwoWay, Path=WeightBoost}" />
-                                            </tk8controls:SettingsCard>
-                                            <tk8controls:SettingsCard
+                                            </tkcontrols:SettingsCard>
+                                            <tkcontrols:SettingsCard
                                                 MinHeight="0"
                                                 HorizontalContentAlignment="Stretch"
                                                 ContentAlignment="Vertical">
-                                                <tk8controls:SettingsCard.Resources>
+                                                <tkcontrols:SettingsCard.Resources>
                                                     <Thickness x:Key="SettingsCardPadding">0</Thickness>
                                                     <Thickness x:Key="SettingsExpanderItemPadding">0,0,0,0</Thickness>
-                                                </tk8controls:SettingsCard.Resources>
+                                                </tkcontrols:SettingsCard.Resources>
                                                 <ItemsControl
                                                     Margin="0,-6,0,0"
                                                     HorizontalAlignment="Stretch"
@@ -400,7 +400,7 @@
                                                         <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
                                                             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
                                                                 <!--  Checkbox setting  -->
-                                                                <tk8controls:SettingsCard
+                                                                <tkcontrols:SettingsCard
                                                                     MinHeight="0"
                                                                     Margin="1"
                                                                     Padding="0,6,0,12"
@@ -414,9 +414,9 @@
                                                                         Description="{x:Bind Path=DisplayDescription}"
                                                                         Header="{x:Bind Path=DisplayLabel}"
                                                                         IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
-                                                                </tk8controls:SettingsCard>
+                                                                </tkcontrols:SettingsCard>
                                                                 <!--  ComboBox setting  -->
-                                                                <tk8controls:SettingsCard
+                                                                <tkcontrols:SettingsCard
                                                                     MinHeight="0"
                                                                     Margin="56,8,45,8"
                                                                     Background="Transparent"
@@ -431,9 +431,9 @@
                                                                         ItemsSource="{x:Bind Path=ComboBoxItems}"
                                                                         SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
                                                                         SelectedValuePath="Value" />
-                                                                </tk8controls:SettingsCard>
+                                                                </tkcontrols:SettingsCard>
                                                                 <!--  TextBox setting  -->
-                                                                <tk8controls:SettingsCard
+                                                                <tkcontrols:SettingsCard
                                                                     MinHeight="0"
                                                                     Margin="56,8,45,8"
                                                                     Background="Transparent"
@@ -447,9 +447,9 @@
                                                                         MaxWidth="450"
                                                                         MaxLength="{x:Bind Path=TextBoxMaxLength, Mode=OneWay}"
                                                                         Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
-                                                                </tk8controls:SettingsCard>
+                                                                </tkcontrols:SettingsCard>
                                                                 <!--  NumberBox setting  -->
-                                                                <tk8controls:SettingsCard
+                                                                <tkcontrols:SettingsCard
                                                                     MinHeight="0"
                                                                     Margin="56,8,45,8"
                                                                     Background="Transparent"
@@ -466,13 +466,13 @@
                                                                         SmallChange="{x:Bind Path=NumberBoxSmallChange, Mode=OneWay}"
                                                                         SpinButtonPlacementMode="Compact"
                                                                         Value="{x:Bind Path=NumberValue, Mode=TwoWay}" />
-                                                                </tk8controls:SettingsCard>
+                                                                </tkcontrols:SettingsCard>
                                                                 <!--  Checkbox And ComboBox setting  -->
                                                                 <StackPanel
                                                                     HorizontalAlignment="Stretch"
                                                                     Orientation="Vertical"
                                                                     Visibility="{x:Bind Path=ShowCheckboxAndCombobox, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                    <tk8controls:SettingsCard
+                                                                    <tkcontrols:SettingsCard
                                                                         MinHeight="0"
                                                                         Margin="1"
                                                                         Padding="0,6,0,4"
@@ -485,8 +485,8 @@
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
                                                                             IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
-                                                                    </tk8controls:SettingsCard>
-                                                                    <tk8controls:SettingsCard
+                                                                    </tkcontrols:SettingsCard>
+                                                                    <tkcontrols:SettingsCard
                                                                         MinHeight="0"
                                                                         Margin="84,0,45,8"
                                                                         Background="Transparent"
@@ -501,14 +501,14 @@
                                                                             ItemsSource="{x:Bind Path=ComboBoxItems}"
                                                                             SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
                                                                             SelectedValuePath="Value" />
-                                                                    </tk8controls:SettingsCard>
+                                                                    </tkcontrols:SettingsCard>
                                                                 </StackPanel>
                                                                 <!--  Checkbox And TextBox setting  -->
                                                                 <StackPanel
                                                                     HorizontalAlignment="Stretch"
                                                                     Orientation="Vertical"
                                                                     Visibility="{x:Bind Path=ShowCheckboxAndTextbox, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                    <tk8controls:SettingsCard
+                                                                    <tkcontrols:SettingsCard
                                                                         MinHeight="0"
                                                                         Margin="1"
                                                                         Padding="0,6,0,4"
@@ -521,8 +521,8 @@
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
                                                                             IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
-                                                                    </tk8controls:SettingsCard>
-                                                                    <tk8controls:SettingsCard
+                                                                    </tkcontrols:SettingsCard>
+                                                                    <tkcontrols:SettingsCard
                                                                         MinHeight="0"
                                                                         Margin="84,0,45,8"
                                                                         Background="Transparent"
@@ -536,14 +536,14 @@
                                                                             MaxWidth="450"
                                                                             MaxLength="{x:Bind Path=TextBoxMaxLength, Mode=OneWay}"
                                                                             Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
-                                                                    </tk8controls:SettingsCard>
+                                                                    </tkcontrols:SettingsCard>
                                                                 </StackPanel>
                                                                 <!--  Checkbox And NumberBox setting  -->
                                                                 <StackPanel
                                                                     HorizontalAlignment="Stretch"
                                                                     Orientation="Vertical"
                                                                     Visibility="{x:Bind Path=ShowCheckboxAndNumberbox, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                    <tk8controls:SettingsCard
+                                                                    <tkcontrols:SettingsCard
                                                                         MinHeight="0"
                                                                         Margin="1"
                                                                         Padding="0,6,0,4"
@@ -556,8 +556,8 @@
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
                                                                             IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
-                                                                    </tk8controls:SettingsCard>
-                                                                    <tk8controls:SettingsCard
+                                                                    </tkcontrols:SettingsCard>
+                                                                    <tkcontrols:SettingsCard
                                                                         MinHeight="0"
                                                                         Margin="84,0,45,8"
                                                                         Background="Transparent"
@@ -574,7 +574,7 @@
                                                                             SmallChange="{x:Bind Path=NumberBoxSmallChange, Mode=OneWay}"
                                                                             SpinButtonPlacementMode="Compact"
                                                                             Value="{x:Bind Path=NumberValue, Mode=TwoWay}" />
-                                                                    </tk8controls:SettingsCard>
+                                                                    </tkcontrols:SettingsCard>
                                                                 </StackPanel>
                                                                 <!--  Separator line  -->
                                                                 <Rectangle
@@ -585,8 +585,8 @@
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
-                                            </tk8controls:SettingsCard>
-                                            <tk8controls:SettingsCard
+                                            </tkcontrols:SettingsCard>
+                                            <tkcontrols:SettingsCard
                                                 MinHeight="0"
                                                 BorderThickness="0"
                                                 ContentAlignment="Right">
@@ -594,9 +594,9 @@
                                                     <Run x:Uid="PowerLauncher_AuthoredBy" />
                                                     <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                                 </TextBlock>
-                                            </tk8controls:SettingsCard>
-                                        </tk8controls:SettingsExpander.Items>
-                                    </tk8controls:SettingsExpander>
+                                            </tkcontrols:SettingsCard>
+                                        </tkcontrols:SettingsExpander.Items>
+                                    </tkcontrols:SettingsExpander>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

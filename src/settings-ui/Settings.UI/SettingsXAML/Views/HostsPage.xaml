@@ -5,19 +5,19 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <controls:SettingsPageControl x:Uid="Hosts" ModuleImageSource="ms-appx:///Assets/Settings/Modules/HostsFileEditor.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tk8controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="Hosts_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsHosts.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tk8controls:SettingsCard>
+                </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -25,39 +25,39 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
                 <controls:SettingsGroup x:Uid="Hosts_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="Hosts_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="Hosts_Toggle_LaunchAdministrator"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.LaunchAdministratorEnabled}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LaunchAdministrator}" />
-                    </tk8controls:SettingsCard>
-                    <tk8controls:SettingsCard x:Uid="Hosts_Toggle_ShowStartupWarning" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_ShowStartupWarning" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.ShowStartupWarning}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Hosts_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <tk8controls:SettingsCard x:Uid="Hosts_AdditionalLinesPosition" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
+                    <tkcontrols:SettingsCard x:Uid="Hosts_AdditionalLinesPosition" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.AdditionalLinesPosition, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Top" />
                             <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Bottom" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
-                    <tk8controls:SettingsCard x:Uid="Hosts_Toggle_LoopbackDuplicates" HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_LoopbackDuplicates" HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LoopbackDuplicates}" />
-                    </tk8controls:SettingsCard>
-                    <tk8controls:SettingsCard x:Uid="Hosts_Encoding">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="Hosts_Encoding">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoding, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Hosts_Encoding_Utf8" />
                             <ComboBoxItem x:Uid="Hosts_Encoding_Utf8Bom" />
                         </ComboBox>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

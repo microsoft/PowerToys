@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:winuiex="using:WinUIEx"
     MinWidth="480"
@@ -290,7 +290,7 @@
                 </tk7controls:DataGrid>
             </Border>
 
-            <tk8controls:GridSplitter
+            <tkcontrols:GridSplitter
                 x:Name="verticalSplitter"
                 Grid.Row="1"
                 Grid.RowSpan="3"
@@ -298,7 +298,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
                 IsTabStop="False" />
-            <tk8controls:GridSplitter
+            <tkcontrols:GridSplitter
                 x:Name="horizontalSplitter"
                 Grid.Row="2"
                 Grid.Column="2"

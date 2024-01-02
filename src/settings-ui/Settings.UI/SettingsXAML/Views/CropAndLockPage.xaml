@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
@@ -16,12 +16,12 @@
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/CropAndLock.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tk8controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="CropAndLock_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCropAndLock.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tk8controls:SettingsCard>
+                </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
@@ -30,18 +30,18 @@
                     Severity="Informational" />
                 <controls:SettingsGroup x:Uid="CropAndLock_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
-                    <tk8controls:SettingsCard x:Uid="CropAndLock_ThumbnailActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="CropAndLock_ThumbnailActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ThumbnailActivationShortcut, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
-                    <tk8controls:SettingsCard x:Uid="CropAndLock_ReparentActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="CropAndLock_ReparentActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ReparentActivationShortcut, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

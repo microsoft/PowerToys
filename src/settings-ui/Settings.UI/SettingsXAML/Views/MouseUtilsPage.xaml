@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -23,19 +23,19 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_FindMyMouse"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="MouseUtils_FindMyMouse_ActivationMethod"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE961;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
@@ -46,8 +46,8 @@
                             <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationShakeMouse" />
                             <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationCustomizedShortcut" />
                         </ComboBox>
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=2}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=2}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="1000"
@@ -56,39 +56,39 @@
                                     SmallChange="100"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseShakingMinimumDistance}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
                                 x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=3}">
                                 <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard ContentAlignment="Left">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
 
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
                         IsExpanded="False">
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_OverlayOpacity">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_OverlayOpacity">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseOverlayOpacity}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
@@ -96,15 +96,15 @@
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightRadius}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="40"
                                     Minimum="1"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightInitialZoom}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAnimationEnabledBySystem}"
@@ -113,21 +113,21 @@
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseAnimationDurationMs}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                     <InfoBar
                         x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs_Disabled"
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Informational"
                         Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsAnimationEnabledBySystem, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="MouseUtils_FindMyMouse_ExcludedApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}">
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="MouseUtils_FindMyMouse_ExcludedApps_TextBoxControl"
                                     MinWidth="240"
@@ -139,51 +139,51 @@
                                     ScrollViewer.VerticalScrollMode="Enabled"
                                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseExcludedApps, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseHighlighter"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="MouseUtils_MouseHighlighter_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard ContentAlignment="Left">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MouseHighlighterAutoActivate, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
-                    <tk8controls:SettingsExpander
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsExpander
                         x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
@@ -191,8 +191,8 @@
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterRadius}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
@@ -200,8 +200,8 @@
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDelayMs}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
@@ -209,35 +209,35 @@
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDurationMs}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseJump"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseJump.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_MouseJump_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
-                    <tk8controls:SettingsCard
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_MouseJump_ThumbnailSize"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE740;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
-                        <tk8controls:SettingsCard.Description>
+                        <tkcontrols:SettingsCard.Description>
                             <StackPanel
                                 Grid.Row="1"
                                 Grid.Column="1"
@@ -271,7 +271,7 @@
                                     Foreground="{ThemeResource SystemBaseMediumColor}"
                                     Style="{ThemeResource SecondaryTextStyle}" />
                             </StackPanel>
-                        </tk8controls:SettingsCard.Description>
+                        </tkcontrols:SettingsCard.Description>
                         <StackPanel
                             Grid.Column="2"
                             HorizontalAlignment="Right"
@@ -307,52 +307,52 @@
                                 </Button.Flyout>
                             </Button>
                         </StackPanel>
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
-                    <tk8controls:SettingsCard
+                    <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
-                    </tk8controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
                         Severity="Informational" />
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard ContentAlignment="Left">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoActivate, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
 
-                    <tk8controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         x:Uid="Appearance_Behavior"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
-                        <tk8controls:SettingsExpander.Items>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsColor, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsOpacity}" />
-                            </tk8controls:SettingsCard>
+                            </tkcontrols:SettingsCard>
 
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
@@ -361,9 +361,9 @@
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsRadius}" />
-                            </tk8controls:SettingsCard>
+                            </tkcontrols:SettingsCard>
 
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
@@ -372,13 +372,13 @@
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsThickness}" />
-                            </tk8controls:SettingsCard>
+                            </tkcontrols:SettingsCard>
 
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsBorderColor, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
+                            </tkcontrols:SettingsCard>
 
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="2"
@@ -387,17 +387,17 @@
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsBorderSize}" />
-                            </tk8controls:SettingsCard>
+                            </tkcontrols:SettingsCard>
 
-                            <tk8controls:SettingsCard ContentAlignment="Left">
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoHide, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
+                            </tkcontrols:SettingsCard>
 
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled">
                                 <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=TwoWay}" />
-                            </tk8controls:SettingsCard>
+                            </tkcontrols:SettingsCard>
 
-                            <tk8controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength" IsEnabled="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength" IsEnabled="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
@@ -405,9 +405,9 @@
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsFixedLength}" />
-                            </tk8controls:SettingsCard>
-                        </tk8controls:SettingsExpander.Items>
-                    </tk8controls:SettingsExpander>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
