@@ -4,16 +4,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <ptcontrols:SettingsPageControl x:Uid="FileExplorerPreview" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerPreview.png">
-        <ptcontrols:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="FileExplorerPreview" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerPreview.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <ptcontrols:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">
                     <InfoBar
                         x:Uid="FileExplorerPreview_PreviewHandlerOutlookIncompatibility"
                         IsClosable="False"
@@ -37,7 +37,7 @@
                                 </ComboBox>
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Background_Color" Visibility="{x:Bind ViewModel.IsSvgBackgroundColorVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                <ptcontrols:ColorPickerButton IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.SVGRenderBackgroundSolidColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.SVGRenderBackgroundSolidColor, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode" Visibility="{x:Bind ViewModel.IsSvgCheckeredShadeVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                                 <ComboBox
@@ -84,7 +84,7 @@
                                 <CheckBox x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Wrap_Text" IsChecked="{x:Bind ViewModel.MonacoWrapText, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
-                                <ptcontrols:CheckBoxWithDescriptionControl
+                                <controls:CheckBoxWithDescriptionControl
                                     x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format"
                                     IsChecked="{x:Bind ViewModel.MonacoPreviewTryFormat, Mode=TwoWay}"
                                     IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
@@ -143,9 +143,9 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIRenderEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIRenderEnabledGpoConfigured}"
                         Severity="Informational" />
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <ptcontrols:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
                     <InfoBar
                         x:Uid="FileExplorerPreview_RebootRequired"
                         IsClosable="False"
@@ -203,7 +203,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.STLThumbnailIsEnabled}" />
                         <tk8controls:SettingsExpander.Items>
                             <tk8controls:SettingsCard x:Uid="FileExplorerPreview_Color_Thumbnail_STL">
-                                <ptcontrols:ColorPickerButton IsEnabled="{x:Bind ViewModel.STLThumbnailIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.STLThumbnailColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton IsEnabled="{x:Bind ViewModel.STLThumbnailIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.STLThumbnailColor, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                         </tk8controls:SettingsExpander.Items>
                     </tk8controls:SettingsExpander>
@@ -226,16 +226,16 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIThumbnailEnabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsQOIThumbnailEnabledGpoConfigured}"
                         Severity="Informational" />
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </ptcontrols:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
 
-        <ptcontrols:SettingsPageControl.PrimaryLinks>
-            <ptcontrols:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns" />
-        </ptcontrols:SettingsPageControl.PrimaryLinks>
-        <ptcontrols:SettingsPageControl.SecondaryLinks>
-            <ptcontrols:PageLink Link="https://blog.aaron-junker.ch" Text="Aaron Junker's work on developer file preview" />
-            <ptcontrols:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code, STL, and QOI" />
-        </ptcontrols:SettingsPageControl.SecondaryLinks>
-    </ptcontrols:SettingsPageControl>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="https://blog.aaron-junker.ch" Text="Aaron Junker's work on developer file preview" />
+            <controls:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code, STL, and QOI" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>

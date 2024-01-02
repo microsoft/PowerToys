@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     Loaded="UserControl_Loaded"
@@ -82,7 +82,7 @@
                             IsTabStop="False"
                             ItemsSource="{x:Bind PrimaryLinks}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="ptcontrols:PageLink">
+                                <DataTemplate x:DataType="controls:PageLink">
                                     <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
                                         <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                     </HyperlinkButton>
@@ -123,7 +123,7 @@
                         IsTabStop="False"
                         ItemsSource="{x:Bind SecondaryLinks}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="ptcontrols:PageLink">
+                            <DataTemplate x:DataType="controls:PageLink">
                                 <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
                                     <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                 </HyperlinkButton>

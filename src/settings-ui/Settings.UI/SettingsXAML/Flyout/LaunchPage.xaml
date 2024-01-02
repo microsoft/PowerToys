@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Flyout"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
@@ -76,27 +76,27 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
-                            <ptcontrols:FlyoutMenuButton
+                            <controls:FlyoutMenuButton
                                 AutomationProperties.Name="{x:Bind Label}"
                                 Click="ModuleButton_Click"
                                 Tag="{x:Bind Tag}"
                                 ToolTipService.ToolTip="{x:Bind ToolTip}"
                                 Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <ptcontrols:FlyoutMenuButton.Content>
+                                <controls:FlyoutMenuButton.Content>
                                     <TextBlock
                                         Style="{StaticResource CaptionTextBlockStyle}"
                                         Text="{x:Bind Label}"
                                         TextAlignment="Center"
                                         TextWrapping="Wrap" />
-                                </ptcontrols:FlyoutMenuButton.Content>
-                                <ptcontrols:FlyoutMenuButton.Icon>
+                                </controls:FlyoutMenuButton.Content>
+                                <controls:FlyoutMenuButton.Icon>
                                     <Image>
                                         <Image.Source>
                                             <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
                                         </Image.Source>
                                     </Image>
-                                </ptcontrols:FlyoutMenuButton.Icon>
-                            </ptcontrols:FlyoutMenuButton>
+                                </controls:FlyoutMenuButton.Icon>
+                            </controls:FlyoutMenuButton>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:ptconverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -16,10 +16,10 @@
         <ptconverters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
     </Page.Resources>
 
-    <ptcontrols:SettingsPageControl x:Uid="General" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
-        <ptcontrols:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="General" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <ptcontrols:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
+                <controls:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
                     <tk8controls:SettingsCard Header="{Binding PowerToysVersion}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
                         <tk8controls:SettingsCard.Description>
                             <StackPanel Orientation="Vertical">
@@ -188,9 +188,9 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowAutoDownloadUpdatesGpoInformation}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowAutoDownloadUpdatesGpoInformation}"
                         Severity="Informational" />
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <ptcontrols:SettingsGroup x:Uid="Admin_Mode">
+                <controls:SettingsGroup x:Uid="Admin_Mode">
                     <tk8controls:SettingsExpander
                         x:Uid="Admin_Mode_Running_As"
                         Header="{Binding Mode=OneWay, Path=RunningAsText}"
@@ -209,9 +209,9 @@
                             </tk8controls:SettingsCard>
                         </tk8controls:SettingsExpander.Items>
                     </tk8controls:SettingsExpander>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <ptcontrols:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
+                <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
                     <tk8controls:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tk8controls:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
@@ -226,9 +226,9 @@
                     <tk8controls:SettingsCard x:Uid="GeneralPage_RunAtStartUp">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=Startup}" />
                     </tk8controls:SettingsCard>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <ptcontrols:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
+                <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
                     <tk8controls:SettingsExpander x:Uid="General_SettingsBackupAndRestore" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
@@ -322,7 +322,7 @@
                             </tk8controls:SettingsCard>
                         </tk8controls:SettingsExpander.Items>
                     </tk8controls:SettingsExpander>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
                 <InfoBar
                     x:Uid="General_SettingsBackupMessageResults"
                     Title="{Binding SettingsBackupMessage}"
@@ -330,7 +330,7 @@
                     IsOpen="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                     IsTabStop="{Binding SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                     Severity="{Binding BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
-                <ptcontrols:SettingsGroup x:Uid="General_Experimentation" Visibility="Visible">
+                <controls:SettingsGroup x:Uid="General_Experimentation" Visibility="Visible">
                     <tk8controls:SettingsCard x:Uid="GeneralPage_EnableExperimentation" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsExperimentationGpoDisallowed, Converter={StaticResource BoolNegationConverter}}">
                         <tk8controls:SettingsCard.HeaderIcon>
                             <PathIcon Data="M1859 1758q14 23 21 47t7 51q0 40-15 75t-41 61-61 41-75 15H354q-40 0-75-15t-61-41-41-61-15-75q0-27 6-51t21-47l569-992q10-14 10-34V128H640V0h768v128h-128v604q0 19 10 35l569 991zM896 732q0 53-27 99l-331 577h972l-331-577q-27-46-27-99V128H896v604zm799 1188q26 0 44-19t19-45q0-10-2-17t-8-16l-164-287H464l-165 287q-9 15-9 33 0 26 18 45t46 19h1341z" />
@@ -343,19 +343,19 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsExperimentationGpoDisallowed}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsExperimentationGpoDisallowed}"
                         Severity="Informational" />
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
 
-        </ptcontrols:SettingsPageControl.ModuleContent>
-        <ptcontrols:SettingsPageControl.PrimaryLinks>
-            <ptcontrols:PageLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview" />
-            <ptcontrols:PageLink x:Uid="General_Repository" Link="https://aka.ms/powertoys" />
-            <ptcontrols:PageLink x:Uid="GeneralPage_ReportAbug" Link="https://aka.ms/powerToysReportBug" />
-            <ptcontrols:PageLink x:Uid="GeneralPage_RequestAFeature_URL" Link="https://aka.ms/powerToysRequestFeature" />
-        </ptcontrols:SettingsPageControl.PrimaryLinks>
-        <ptcontrols:SettingsPageControl.SecondaryLinks>
-            <ptcontrols:PageLink x:Uid="GeneralPage_PrivacyStatement_URL" Link="http://go.microsoft.com/fwlink/?LinkId=521839" />
-            <ptcontrols:PageLink x:Uid="OpenSource_Notice" Link="https://github.com/microsoft/PowerToys/blob/main/NOTICE.md" />
-        </ptcontrols:SettingsPageControl.SecondaryLinks>
-    </ptcontrols:SettingsPageControl>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview" />
+            <controls:PageLink x:Uid="General_Repository" Link="https://aka.ms/powertoys" />
+            <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="https://aka.ms/powerToysReportBug" />
+            <controls:PageLink x:Uid="GeneralPage_RequestAFeature_URL" Link="https://aka.ms/powerToysRequestFeature" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink x:Uid="GeneralPage_PrivacyStatement_URL" Link="http://go.microsoft.com/fwlink/?LinkId=521839" />
+            <controls:PageLink x:Uid="OpenSource_Notice" Link="https://github.com/microsoft/PowerToys/blob/main/NOTICE.md" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>

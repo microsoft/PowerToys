@@ -4,14 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <ptcontrols:SettingsPageControl x:Uid="FancyZones" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FancyZones.png">
-        <ptcontrols:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="FancyZones" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FancyZones.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tk8controls:SettingsCard
                     x:Uid="FancyZones_EnableToggleControl_HeaderText"
@@ -26,7 +26,7 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <ptcontrols:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <tk8controls:SettingsCard
                         x:Uid="FancyZones_LaunchEditorButtonControl"
                         ActionIcon="{ui:FontIcon FontSize=14,
@@ -36,7 +36,7 @@
                         IsClickEnabled="True" />
 
                     <tk8controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <ptcontrols:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" />
                     </tk8controls:SettingsCard>
 
                     <tk8controls:SettingsCard x:Uid="FancyZones_UseCursorPosEditorStartupScreen" HeaderIcon="{ui:FontIcon Glyph=&#xe7b5;}">
@@ -45,10 +45,10 @@
                             <ComboBoxItem x:Uid="FancyZones_LaunchPositionMouse" />
                         </ComboBox>
                     </tk8controls:SettingsCard>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
 
-                <ptcontrols:SettingsGroup
+                <controls:SettingsGroup
                     x:Name="ZonesSettingsGroup"
                     x:Uid="FancyZones_Zones"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
@@ -67,7 +67,7 @@
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" />
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard ContentAlignment="Left">
-                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="FancyZones_SpanZonesAcrossMonitors" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="FancyZones_SpanZonesAcrossMonitors" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" />
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard x:Uid="FancyZones_OverlappingZones">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}">
@@ -90,7 +90,7 @@
                         </ComboBox>
                         <tk8controls:SettingsExpander.Items>
                             <tk8controls:SettingsCard ContentAlignment="Left">
-                                <ptcontrols:FancyZonesPreviewControl
+                                <controls:FancyZonesPreviewControl
                                     Width="192"
                                     Height="108"
                                     CustomBorderColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=OneWay}"
@@ -113,22 +113,22 @@
                             </tk8controls:SettingsCard>
 
                             <tk8controls:SettingsCard x:Uid="FancyZones_ZoneHighlightColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
-                                <ptcontrols:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard x:Uid="FancyZones_InActiveColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
-                                <ptcontrols:ColorPickerButton x:Name="InActiveColorButton" SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton x:Name="InActiveColorButton" SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard x:Uid="FancyZones_BorderColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
-                                <ptcontrols:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard x:Uid="FancyZones_NumberColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
-                                <ptcontrols:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneNumberColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneNumberColor, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                         </tk8controls:SettingsExpander.Items>
                     </tk8controls:SettingsExpander>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <ptcontrols:SettingsGroup x:Uid="FancyZones_Windows" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="FancyZones_Windows" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
                     <tk8controls:SettingsExpander x:Uid="FancyZones_WindowBehavior_GroupSettings" IsExpanded="True">
                         <tk8controls:SettingsExpander.Items>
@@ -168,10 +168,10 @@
                             <!--  HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first item in the expander, so we add an invisible card as the first one.  -->
                             <tk8controls:SettingsCard Visibility="Collapsed" />
                             <tk8controls:SettingsCard x:Uid="FancyZones_HotkeyNextTabControl" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.WindowSwitchingCategoryEnabled}">
-                                <ptcontrols:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
+                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard x:Uid="FancyZones_HotkeyPrevTabControl" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.WindowSwitchingCategoryEnabled}">
-                                <ptcontrols:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}" />
+                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                         </tk8controls:SettingsExpander.Items>
                     </tk8controls:SettingsExpander>
@@ -189,7 +189,7 @@
                                     SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                                     <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible">
                                         <StackPanel Orientation="Vertical" Spacing="4">
-                                            <ptcontrols:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex" />
+                                            <controls:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex" />
                                             <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
                                                 <Run x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description" />
                                             </TextBlock>
@@ -197,7 +197,7 @@
                                     </ComboBoxItem>
                                     <ComboBoxItem x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Accessible">
                                         <StackPanel Orientation="Vertical" Spacing="4">
-                                            <ptcontrols:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition" />
+                                            <controls:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition" />
                                             <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
                                                 <Run x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Description" />
                                             </TextBlock>
@@ -210,9 +210,9 @@
                             </tk8controls:SettingsCard>
                         </tk8controls:SettingsExpander.Items>
                     </tk8controls:SettingsExpander>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <ptcontrols:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <tk8controls:SettingsExpander x:Uid="FancyZones_QuickLayoutSwitch" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" />
                         <tk8controls:SettingsExpander.Items>
@@ -221,9 +221,9 @@
                             </tk8controls:SettingsCard>
                         </tk8controls:SettingsExpander.Items>
                     </tk8controls:SettingsExpander>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <ptcontrols:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
                     <tk8controls:SettingsExpander
                         x:Uid="FancyZones_ExcludeApps"
@@ -244,12 +244,12 @@
                             </tk8controls:SettingsCard>
                         </tk8controls:SettingsExpander.Items>
                     </tk8controls:SettingsExpander>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </ptcontrols:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
 
-        <ptcontrols:SettingsPageControl.PrimaryLinks>
-            <ptcontrols:PageLink x:Uid="LearnMore_FancyZones" Link="https://aka.ms/PowerToysOverview_FancyZones" />
-        </ptcontrols:SettingsPageControl.PrimaryLinks>
-    </ptcontrols:SettingsPageControl>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_FancyZones" Link="https://aka.ms/PowerToysOverview_FancyZones" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
 </Page>

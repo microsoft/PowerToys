@@ -4,14 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <ptcontrols:SettingsPageControl x:Uid="PastePlain" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PastePlain.png">
-        <ptcontrols:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="PastePlain" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PastePlain.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical"
@@ -29,9 +29,9 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <ptcontrols:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <tk8controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <ptcontrols:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tk8controls:SettingsCard>
                     <InfoBar
                         x:Uid="PastePlain_ShortcutWarning"
@@ -39,12 +39,12 @@
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsConflictingCopyShortcut}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsConflictingCopyShortcut}"
                         Severity="Warning" />
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </ptcontrols:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
 
-        <ptcontrols:SettingsPageControl.PrimaryLinks>
-            <ptcontrols:PageLink x:Uid="LearnMore_PastePlain" Link="https://aka.ms/PowerToysOverview_PastePlain" />
-        </ptcontrols:SettingsPageControl.PrimaryLinks>
-    </ptcontrols:SettingsPageControl>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_PastePlain" Link="https://aka.ms/PowerToysOverview_PastePlain" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
 </Page>

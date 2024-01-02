@@ -4,13 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
-    <ptcontrols:SettingsPageControl x:Uid="EnvironmentVariables" ModuleImageSource="ms-appx:///Assets/Settings/Modules/EnvironmentVariables.png">
-        <ptcontrols:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="EnvironmentVariables" ModuleImageSource="ms-appx:///Assets/Settings/Modules/EnvironmentVariables.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tk8controls:SettingsCard
                     x:Uid="EnvironmentVariables_EnableToggleControl_HeaderText"
@@ -24,7 +24,7 @@
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
-                <ptcontrols:SettingsGroup x:Uid="EnvironmentVariables_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="EnvironmentVariables_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <tk8controls:SettingsCard
                         x:Uid="EnvironmentVariables_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
@@ -41,12 +41,12 @@
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.LaunchAdministratorEnabled}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.LaunchAdministrator}" />
                     </tk8controls:SettingsCard>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </ptcontrols:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
 
-        <ptcontrols:SettingsPageControl.PrimaryLinks>
-            <ptcontrols:PageLink x:Uid="LearnMore_EnvironmentVariables" Link="https://aka.ms/PowerToysOverview_EnvironmentVariables" />
-        </ptcontrols:SettingsPageControl.PrimaryLinks>
-    </ptcontrols:SettingsPageControl>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_EnvironmentVariables" Link="https://aka.ms/PowerToysOverview_EnvironmentVariables" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
 </Page>

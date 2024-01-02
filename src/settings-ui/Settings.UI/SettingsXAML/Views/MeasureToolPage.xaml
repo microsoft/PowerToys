@@ -4,14 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <ptcontrols:SettingsPageControl x:Uid="MeasureTool" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ScreenRuler.png">
-        <ptcontrols:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="MeasureTool" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ScreenRuler.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tk8controls:SettingsCard
                     x:Uid="MeasureTool_EnableMeasureTool"
@@ -25,9 +25,9 @@
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
-                <ptcontrols:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <tk8controls:SettingsCard x:Uid="MeasureTool_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <ptcontrols:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tk8controls:SettingsCard>
                     <tk8controls:SettingsCard x:Uid="MeasureTool_DefaultMeasureStyle">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.DefaultMeasureStyle, Mode=TwoWay}">
@@ -39,9 +39,9 @@
                         </ComboBox>
                     </tk8controls:SettingsCard>
 
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <ptcontrols:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <tk8controls:SettingsCard x:Uid="MeasureTool_ContinuousCapture" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
                         <ToggleSwitch x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" />
                     </tk8controls:SettingsCard>
@@ -77,16 +77,16 @@
                     </tk8controls:SettingsCard>
 
                     <tk8controls:SettingsCard x:Uid="MeasureTool_MeasureCrossColor">
-                        <ptcontrols:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.CrossColor, Mode=TwoWay}" />
+                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.CrossColor, Mode=TwoWay}" />
                     </tk8controls:SettingsCard>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </ptcontrols:SettingsPageControl.ModuleContent>
-        <ptcontrols:SettingsPageControl.PrimaryLinks>
-            <ptcontrols:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_ScreenRuler" />
-        </ptcontrols:SettingsPageControl.PrimaryLinks>
-        <ptcontrols:SettingsPageControl.SecondaryLinks>
-            <ptcontrols:PageLink x:Uid="Attribution_Rooler" Link="https://github.com/peteblois/rooler" />
-        </ptcontrols:SettingsPageControl.SecondaryLinks>
-    </ptcontrols:SettingsPageControl>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_MeasureTool" Link="https://aka.ms/PowerToysOverview_ScreenRuler" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink x:Uid="Attribution_Rooler" Link="https://github.com/peteblois/rooler" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>

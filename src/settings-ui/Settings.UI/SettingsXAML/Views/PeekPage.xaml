@@ -4,14 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptcontrols="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:tk8controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <ptcontrols:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Peek.png">
-        <ptcontrols:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Peek.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <tk8controls:SettingsCard
                     x:Uid="Peek_EnablePeek"
@@ -26,21 +26,21 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <ptcontrols:SettingsGroup x:Uid="Peek_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="Peek_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <tk8controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <ptcontrols:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tk8controls:SettingsCard>
-                </ptcontrols:SettingsGroup>
-                <ptcontrols:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <tk8controls:SettingsCard x:Uid="Peek_AlwaysRunNotElevated" HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.AlwaysRunNotElevated}" />
                     </tk8controls:SettingsCard>
                     <tk8controls:SettingsCard x:Uid="Peek_CloseAfterLosingFocus">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.CloseAfterLosingFocus}" />
                     </tk8controls:SettingsCard>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <ptcontrols:SettingsGroup x:Uid="Peek_Preview_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="Peek_Preview_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <tk8controls:SettingsExpander
                         x:Uid="Peek_SourceCode_Header"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}"
@@ -50,19 +50,19 @@
                                 <CheckBox x:Uid="Peek_SourceCode_WrapText" IsChecked="{x:Bind ViewModel.SourceCodeWrapText, Mode=TwoWay}" />
                             </tk8controls:SettingsCard>
                             <tk8controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                                <ptcontrols:CheckBoxWithDescriptionControl
+                                <controls:CheckBoxWithDescriptionControl
                                     x:Uid="Peek_SourceCode_TryFormat"
                                     IsChecked="{x:Bind ViewModel.SourceCodeTryFormat, Mode=TwoWay}"
                                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />
                             </tk8controls:SettingsCard>
                         </tk8controls:SettingsExpander.Items>
                     </tk8controls:SettingsExpander>
-                </ptcontrols:SettingsGroup>
+                </controls:SettingsGroup>
 
             </StackPanel>
-        </ptcontrols:SettingsPageControl.ModuleContent>
-        <ptcontrols:SettingsPageControl.PrimaryLinks>
-            <ptcontrols:PageLink x:Uid="LearnMore_Peek" Link="https://aka.ms/PowerToysOverview_Peek" />
-        </ptcontrols:SettingsPageControl.PrimaryLinks>
-    </ptcontrols:SettingsPageControl>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_Peek" Link="https://aka.ms/PowerToysOverview_Peek" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
 </Page>
