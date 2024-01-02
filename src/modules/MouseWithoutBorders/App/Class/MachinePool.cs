@@ -156,7 +156,7 @@ namespace MouseWithoutBorders.Class
                     }
                     else if (list.Count >= 4)
                     {
-                        throw new ArgumentException("machineNames.Length > Common.MAX_MACHINE");
+                        throw new ArgumentException($"The number of machines exceeded the maximum allowed limit of {Common.MAX_MACHINE}. Actual count: {list.Count}.");
                     }
 
                     _ = LearnMachine(name);
@@ -178,7 +178,7 @@ namespace MouseWithoutBorders.Class
                     }
                     else if (list.Count >= 4)
                     {
-                        throw new ArgumentException("infos.Length > Common.MAX_MACHINE");
+                        throw new ArgumentException($"The number of machines exceeded the maximum allowed limit of {Common.MAX_MACHINE}. Actual count: {list.Count}.");
                     }
 
                     _ = LearnMachine(inf.Name);

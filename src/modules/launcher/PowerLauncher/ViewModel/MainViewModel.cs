@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -62,6 +63,8 @@ namespace PowerLauncher.ViewModel
         private bool _usingGlobalHotKey;
 
         internal HotkeyManager HotkeyManager { get; private set; }
+
+        private static readonly CompositeFormat RegisterHotkeyFailed = System.Text.CompositeFormat.Parse(Properties.Resources.registerHotkeyFailed);
 
         public MainViewModel(PowerToysRunSettings settings, CancellationToken nativeThreadCancelToken)
         {
@@ -897,7 +900,7 @@ namespace PowerLauncher.ViewModel
             }
             catch (Exception)
             {
-                string errorMsg = string.Format(CultureInfo.InvariantCulture, Properties.Resources.registerHotkeyFailed, hotkeyStr);
+                string errorMsg = string.Format(CultureInfo.InvariantCulture, RegisterHotkeyFailed, hotkeyStr);
                 MessageBox.Show(errorMsg);
             }
         }
