@@ -24,25 +24,25 @@
                     <controls:SettingsCard
                         x:Uid="MouseWithoutBorders_Toggle_Enable"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanBeEnabled}"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" />
+                            IsEnabled="{x:Bind ViewModel.CanBeEnabled, Mode=OneWay}"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                        IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                         Severity="Informational" />
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="MouseWithoutBorders_KeySettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="MouseWithoutBorders_KeySettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsExpander
                         x:Name="MouseWithoutBorders_ConnectSettings"
                         x:Uid="MouseWithoutBorders_SecurityKey"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D7;}"
-                        IsExpanded="{x:Bind Mode=TwoWay, Path=ViewModel.ConnectFieldsVisible}">
+                        IsExpanded="{x:Bind ViewModel.ConnectFieldsVisible, Mode=TwoWay}">
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard ContentAlignment="Right">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -56,20 +56,20 @@
                                         Width="248" />
                                     <Button
                                         x:Uid="MouseWithoutBorders_Connect"
-                                        Command="{x:Bind Mode=OneTime, Path=ConnectCommand}"
+                                        Command="{x:Bind ConnectCommand, Mode=OneTime}"
                                         Style="{StaticResource AccentButtonStyle}" />
                                 </StackPanel>
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox IsReadOnly="True" Text="{x:Bind Mode=TwoWay, Path=ViewModel.SecurityKey}" />
+                            <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=TwoWay}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_NewKey"
-                                Command="{x:Bind Mode=OneTime, Path=GenerateNewKeyCommand}"
+                                Command="{x:Bind GenerateNewKeyCommand, Mode=OneTime}"
                                 Style="{StaticResource AccentButtonStyle}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_Connect"
-                                Command="{x:Bind Mode=OneTime, Path=ShowConnectFieldsCommand}"
+                                Command="{x:Bind ShowConnectFieldsCommand, Mode=OneTime}"
                                 Style="{StaticResource AccentButtonStyle}"
                                 Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource negativeBoolToVisibilityConverter}, ConverterParameter=True}" />
                         </StackPanel>
@@ -81,12 +81,12 @@
                                 VerticalAlignment="Center"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 IsTextSelectionEnabled="True"
-                                Text="{x:Bind Mode=OneTime, Path=ViewModel.MachineHostName}" />
+                                Text="{x:Bind ViewModel.MachineHostName, Mode=OneTime}" />
                             <Button
                                 Width="32"
                                 Height="32"
                                 Padding="4"
-                                Command="{x:Bind Mode=OneTime, Path=CopyPCNameCommand}"
+                                Command="{x:Bind CopyPCNameCommand, Mode=OneTime}"
                                 Content="&#xE8C8;"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}">
                                 <ToolTipService.ToolTip>
@@ -96,7 +96,7 @@
                         </StackPanel>
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="MouseWithoutBorders_DeviceLayoutSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="MouseWithoutBorders_DeviceLayoutSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard
                         HorizontalContentAlignment="Stretch"
                         Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
@@ -123,11 +123,11 @@
                                             Width="136"
                                             Height="90"
                                             Margin="4"
-                                            AllowDrop="{Binding Mode=OneWay, Path=Item.CanDragDrop}"
+                                            AllowDrop="{Binding Item.CanDragDrop, Mode=OneWay}"
                                             Background="{ThemeResource SolidBackgroundFillColorBaseAltBrush}"
                                             BorderBrush="{Binding Item.StatusBrush}"
                                             BorderThickness="2"
-                                            CanDrag="{Binding Mode=OneWay, Path=Item.CanDragDrop}"
+                                            CanDrag="{Binding Item.CanDragDrop, Mode=OneWay}"
                                             CornerRadius="4"
                                             DataContext="{Binding}"
                                             DragOver="Device_DragOver"
@@ -157,7 +157,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button HorizontalAlignment="Right" Command="{x:Bind Mode=OneTime, Path=ReconnectCommand}">
+                            <Button HorizontalAlignment="Right" Command="{x:Bind ReconnectCommand, Mode=OneTime}">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="MouseWithoutBorders_ReconnectTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
@@ -171,7 +171,7 @@
                     <InfoBar
                         x:Uid="MouseWithoutBorders_CannotDragDropAsAdmin"
                         IsClosable="True"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated}"
+                        IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay}"
                         IsTabStop="True"
                         Severity="Informational" />
 
@@ -181,17 +181,17 @@
                         <ToggleSwitch x:Uid="MouseWithoutBorders_MatrixOneRow_ToggleSwitch" IsOn="{x:Bind ViewModel.MatrixOneRow, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="MouseWithoutBorders_ServiceSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanToggleUseService}">
+                <custom:SettingsGroup x:Uid="MouseWithoutBorders_ServiceSettings" IsEnabled="{x:Bind ViewModel.CanToggleUseService, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="MouseWithoutBorders_UseService">
                         <ToggleSwitch
                             x:Uid="MouseWithoutBorders_UseService_ToggleSwitch"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                            IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                             IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="MouseWithoutBorders_RunAsAdminText"
                         IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.CanToggleUseService, Converter={StaticResource BoolNegationConverter}}"
+                        IsOpen="{x:Bind ViewModel.CanToggleUseService, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                         IsTabStop="True"
                         Severity="Informational" />
                     <InfoBar
@@ -204,10 +204,10 @@
                         x:Uid="MouseWithoutBorders_UninstallService"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.UninstallServiceEventHandler}"
-                        IsClickEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanUninstallService}"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanUninstallService}" />
+                        IsClickEnabled="{x:Bind ViewModel.CanUninstallService, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.CanUninstallService, Mode=OneWay}" />
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="MouseWithoutBorders_Settings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="MouseWithoutBorders_Settings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="MouseWithoutBorders_WrapMouse">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_WrapMouse_ToggleSwitch" IsOn="{x:Bind ViewModel.WrapMouse, Mode=TwoWay}" />
                     </controls:SettingsCard>
@@ -242,7 +242,7 @@
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowClipboardAndNetworkStatusMessages, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="MouseWithoutBorders_EasyMouseOption">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.EasyMouseOptionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Disabled" />
@@ -289,7 +289,7 @@
                         </ComboBox>
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="MouseWithoutBorders_AdvancedSettings_Group" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="MouseWithoutBorders_AdvancedSettings_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsExpander x:Uid="MouseWithoutBorders_IPAddressMapping" IsExpanded="True">
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
@@ -301,13 +301,13 @@
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.Name2IP, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{x:Bind ViewModel.Name2IP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="MouseWithoutBorders_TroubleShooting" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="MouseWithoutBorders_TroubleShooting" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard
                         x:Uid="MouseWithoutBorders_AddFirewallRuleButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
@@ -316,7 +316,7 @@
                     <controls:SettingsCard x:Uid="MouseWithoutBorders_ShowOriginalUI">
                         <ToggleSwitch
                             x:Uid="MouseWithoutBorders_ShowOriginalUI_ToggleSwitch"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                            IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                             IsOn="{x:Bind ViewModel.ShowOriginalUI, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </custom:SettingsGroup>

@@ -27,18 +27,18 @@
                 <controls:SettingsCard
                     x:Uid="ImageResizer_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsImageResizer.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
@@ -79,13 +79,13 @@
                                                 FontSize="10"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="&#xE947;"
-                                                Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Height, Mode=OneWay}"
-                                                Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 Style="{ThemeResource SecondaryTextStyle}"
@@ -114,13 +114,13 @@
                                                             x:Uid="ImageResizer_Name"
                                                             Width="240"
                                                             HorizontalAlignment="Left"
-                                                            Text="{x:Bind Path=Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                            Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Fit"
                                                             Width="240"
                                                             HorizontalAlignment="Left"
-                                                            SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}">
+                                                            SelectedIndex="{x:Bind Fit, Mode=TwoWay}">
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
@@ -132,21 +132,21 @@
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
-                                                                Value="{x:Bind Path=Width, Mode=TwoWay}" />
+                                                                Value="{x:Bind Width, Mode=TwoWay}" />
 
                                                             <NumberBox
                                                                 x:Uid="ImageResizer_Height"
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
-                                                                Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                                Value="{x:Bind Path=Height, Mode=TwoWay}" />
+                                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                Value="{x:Bind Height, Mode=TwoWay}" />
 
                                                         </StackPanel>
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Size"
                                                             Width="240"
-                                                            SelectedIndex="{Binding Path=Unit, Mode=TwoWay}">
+                                                            SelectedIndex="{Binding Unit, Mode=TwoWay}">
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
                                                             <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
@@ -178,9 +178,9 @@
                     </ListView>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="ImageResizer_FallBackEncoderText">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Encoder, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
@@ -195,11 +195,11 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
                             Minimum="0"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}" />
+                            Value="{x:Bind ViewModel.JPEGQualityLevel, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PngInterlaceOption, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Default" />
                             <ComboBoxItem x:Uid="On" />
                             <ComboBoxItem x:Uid="Off" />
@@ -207,7 +207,7 @@
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="ImageResizer_TIFFCompression">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.TiffCompressOption, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3" />
@@ -219,13 +219,13 @@
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="File" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <TextBox
                                 x:Uid="ImageResizer_FilenameFormatPlaceholder"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}" />
+                                Text="{x:Bind ViewModel.FileName, Mode=TwoWay}" />
                             <Button
                                 x:Uid="ImageResizer_FilenameParameters"
                                 Content="&#xE946;"
@@ -268,7 +268,7 @@
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="ImageResizer_FileModifiedDate">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.KeepDateModified, Mode=TwoWay, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate" />
                             <ComboBoxItem x:Uid="ImageResizer_UseResizeDate" />
                         </ComboBox>
