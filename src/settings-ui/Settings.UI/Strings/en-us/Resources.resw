@@ -1025,7 +1025,7 @@
   <data name="GeneralPage_WarningsElevatedApps.Header" xml:space="preserve">
     <value>Elevated Apps warnings </value>
   </data>
-	<data name="GeneralPage_WarningsElevatedApps.Description" xml:space="preserve">
+  <data name="GeneralPage_WarningsElevatedApps.Description" xml:space="preserve">
     <value>Show notifications about PowerToys functionality issues when running alongside elevated applications.</value>
   </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
