@@ -249,7 +249,7 @@ namespace RegistryPreview
                     // do not track the result of this node, since it should have no children
                     AddTextToTree(registryLine, imageName);
                 }
-                else if (registryLine.StartsWith("[", StringComparison.InvariantCulture))
+                else if (registryLine.StartsWith('['))
                 {
                     string imageName = KEYIMAGE;
                     CheckKeyLineForBrackets(ref registryLine, ref imageName);
@@ -259,7 +259,7 @@ namespace RegistryPreview
 
                     treeViewNode = AddTextToTree(registryLine, imageName);
                 }
-                else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture) && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
+                else if (registryLine.StartsWith('"') && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
                 {
                     // this line deletes this value so it gets special treatment for the UI
                     registryLine = registryLine.Replace("=-", string.Empty);
@@ -277,7 +277,7 @@ namespace RegistryPreview
                         StoreTheListValue((RegistryKey)treeViewNode.Content, registryValue);
                     }
                 }
-                else if (registryLine.StartsWith("\"", StringComparison.InvariantCulture))
+                else if (registryLine.StartsWith('"'))
                 {
                     // this is a named value
 
@@ -310,16 +310,16 @@ namespace RegistryPreview
                     registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
 
                     // if the first character is a " then this is a string value, so find the last most " which will avoid comments
-                    if (value.StartsWith("\"", StringComparison.InvariantCulture))
+                    if (value.StartsWith('"'))
                     {
-                        int last = value.LastIndexOf("\"", StringComparison.InvariantCulture);
+                        int last = value.LastIndexOf('"');
                         if (last >= 0)
                         {
                             value = value.Substring(0, last + 1);
                         }
                     }
 
-                    if (value.StartsWith("\"", StringComparison.InvariantCulture) && value.EndsWith("\"", StringComparison.InvariantCulture))
+                    if (value.StartsWith('"') && value.EndsWith('"'))
                     {
                         value = StripFirstAndLast(value);
                     }
@@ -988,7 +988,7 @@ namespace RegistryPreview
             {
                 try
                 {
-                    TextReader reader = new StreamReader(storageFile);
+                    StreamReader reader = new StreamReader(storageFile);
                     fileContents = reader.ReadToEnd();
                     reader.Close();
                 }
@@ -1167,7 +1167,7 @@ namespace RegistryPreview
         private string ScanAndRemoveComments(string value)
         {
             // scan for comments and remove them
-            int indexOf = value.IndexOf(";", StringComparison.InvariantCulture);
+            int indexOf = value.IndexOf(';');
             if (indexOf > -1)
             {
                 // presume that there is nothing following the start of the comment

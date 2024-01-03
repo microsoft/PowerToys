@@ -48,6 +48,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("theme")]
         public Theme Theme { get; set; }
 
+        [JsonPropertyName("show_plugins_overview")]
+        public int ShowPluginsOverview { get; set; }
+
+        [JsonPropertyName("title_fontsize")]
+        public int TitleFontSize { get; set; }
+
         [JsonPropertyName("startupPosition")]
         public StartupPosition Position { get; set; }
 
@@ -107,6 +113,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SearchWaitForSlowResults = false;
             GenerateThumbnailsFromFiles = true;
             UsePinyin = false;
+            ShowPluginsOverview = 0;
+            TitleFontSize = 16;
         }
     }
 }

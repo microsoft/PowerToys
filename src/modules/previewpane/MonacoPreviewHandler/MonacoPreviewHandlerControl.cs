@@ -125,10 +125,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     InitializeIndexFileAndSelectedFile(filePath);
 
                     Logger.LogInfo("Create WebView2 environment");
+                    var webView2Options = new CoreWebView2EnvironmentOptions("--disable-features=RendererAppContainer");
                     ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                         webView2EnvironmentAwaiter = CoreWebView2Environment
-                            .CreateAsync(userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
-                                                            "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp")
+                            .CreateAsync(
+                            userDataFolder: System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp",
+                            options: webView2Options)
                             .ConfigureAwait(true).GetAwaiter();
                     webView2EnvironmentAwaiter.OnCompleted(async () =>
                     {

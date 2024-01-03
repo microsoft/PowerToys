@@ -118,6 +118,14 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(FancyZonesWindowProcessing::IsProcessable(window));
         }
 
+        TEST_METHOD(Popup_FacebookMessenger)
+        {
+            HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_GROUP | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_POPUP | WS_TABSTOP | WS_THICKFRAME);
+
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessable(window));
+        }
+
         TEST_METHOD (ChildWindow_OptionDisabled)
         {
             FancyZonesSettings::instance().SetSettings(Settings{ .allowSnapChildWindows = false });

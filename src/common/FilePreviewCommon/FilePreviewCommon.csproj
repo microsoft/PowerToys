@@ -4,12 +4,15 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
-	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <Version>$(Version).0</Version>
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys FilePreviewCommon</Description>
     <AssemblyName>PowerToys.FilePreviewCommon</AssemblyName>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +35,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Content Include="Assets\Monaco\monacoSRC\**">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Update="Assets\Monaco\monaco_languages.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

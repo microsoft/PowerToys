@@ -788,6 +788,34 @@ SOFTWARE.
 
 ## Utility: Peek
 
+### The Quite OK Image Format reference decoder
+
+**Source**: https://github.com/phoboslab/qoi
+
+**Note**: [@pedrolamas](https://github.com/pedrolamas) translated and adapted the reference decoder code to C# that is in PowerToys from the original C++ implementation.
+
+MIT License
+
+Copyright (c) 2022 Dominic Szablewski
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ### UTF Unknown
 
 We use the UTF.Unknown NuGet package for detecting encoding in text/code files.
@@ -1279,8 +1307,8 @@ EXHIBIT A -Mozilla Public License.
 - CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
 - CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
 - ControlzEx 6.0.0
-- HelixToolkit 2.20.2
-- HelixToolkit.Core.Wpf 2.20.2
+- HelixToolkit 2.24.0
+- HelixToolkit.Core.Wpf 2.24.0
 - hyjiacan.pinyin4net 4.1.1
 - Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
 - LazyCache 2.4.0
@@ -1292,6 +1320,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Hosting 8.0.0
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
 - Microsoft.Extensions.Logging 8.0.0
+- Microsoft.Extensions.Logging.Abstractions 8.0.0
 - Microsoft.NET.Test.Sdk 17.6.3
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2088.41
@@ -1331,5 +1360,5 @@ EXHIBIT A -Mozilla Public License.
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
-- WPF-UI 3.0.0-preview.11
+- WPF-UI 3.0.0-preview.12
 

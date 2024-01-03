@@ -34,6 +34,7 @@ ALPHATYPE
 AModifier
 AMPROPERTY
 AMPROPSETID
+animatedvisuals
 ANDSCANS
 ansicolor
 ANull
@@ -745,6 +746,10 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
+LAlt
+Lambson
+languagesjson
+langword
 lastcodeanalysissucceeded
 Lastdevice
 LAYOUTRTL
@@ -1016,6 +1021,7 @@ NOTSRCCOPY
 NOTSRCERASE
 NOZORDER
 NPH
+npmjs
 NResize
 nrw
 nsunt
@@ -1212,6 +1218,7 @@ QITAB
 QITABENT
 qoi
 qps
+Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
@@ -1708,6 +1715,8 @@ wcsnicmp
 WDA
 wdp
 wdupenv
+weakme
+webbrowsers
 webcam
 webpage
 websites

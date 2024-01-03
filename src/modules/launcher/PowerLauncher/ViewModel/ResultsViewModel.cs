@@ -50,7 +50,7 @@ namespace PowerLauncher.ViewModel
         {
             get
             {
-                return _settings.MaxResultsToShow * 75;
+                return (_settings.MaxResultsToShow * 56) + 16;
             }
         }
 
@@ -97,7 +97,7 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        private Visibility _visibility = Visibility.Hidden;
+        private Visibility _visibility = Visibility.Collapsed;
 
         public Visibility Visibility
         {

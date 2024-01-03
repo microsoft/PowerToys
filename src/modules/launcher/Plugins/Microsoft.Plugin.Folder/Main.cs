@@ -37,7 +37,7 @@ namespace Microsoft.Plugin.Folder
         };
 
         private static PluginInitContext _context;
-        private IContextMenu _contextMenuLoader;
+        private ContextMenuLoader _contextMenuLoader;
         private bool _disposed;
 
         public string Name => Properties.Resources.wox_plugin_folder_plugin_name;

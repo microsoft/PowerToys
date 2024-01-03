@@ -31,8 +31,7 @@
                 <custom:SettingsGroup x:Uid="RegistryPreview_Launch_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsRegistryPreviewEnabled}">
                     <controls:SettingsCard
                         x:Uid="RegistryPreview_LaunchButtonControl"
-                        ActionIcon="{ui:FontIcon FontSize=14,
-                                                 Glyph=&#xE8A7;}"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />

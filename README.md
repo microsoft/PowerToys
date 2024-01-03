@@ -31,6 +31,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 ### Requirements
 
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
+- x64 or ARM64 processor
 - Our installer will install the following items:
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
 
@@ -41,17 +42,17 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F50
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F49
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysUserSetup-0.76.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysUserSetup-0.76.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysSetup-0.76.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.0/PowerToysSetup-0.76.0-arm64.exe
-
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.2/PowerToysUserSetup-0.76.2-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.2/PowerToysUserSetup-0.76.2-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.2/PowerToysSetup-0.76.2-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.76.2/PowerToysSetup-0.76.2-arm64.exe
+ 
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.76.0-x64.exe][ptUserX64] | 627F60BF3F04583A2ECE7ACE7E6F09ABDE92493E1FFFAC5705CC83009781CD8D |
-| Per user - ARM64     | [PowerToysUserSetup-0.76.0-arm64.exe][ptUserArm64] | 79D11CDDBDD87DF8A69A5B2FC28869B3085392E5F45FEE6560D278E48F8B0673 |
-| Machine wide - x64   | [PowerToysSetup-0.76.0-x64.exe][ptMachineX64] | 4F24A288AC92DD0AB74EF52CFE3D66FA744BDC6889CB4E3ED088763D9134C06D |
-| Machine wide - ARM64 | [PowerToysSetup-0.76.0-arm64.exe][ptMachineArm64] | 1BD9CD9C696D8898AAEE5A6D6A7122F053202CF1865C511BFC91FCFD0D767864 |
+| Per user - x64       | [PowerToysUserSetup-0.76.2-x64.exe][ptUserX64] | 73D734FC34B3F9D7484081EC0F0B6ACD4789A55203A185904CC5C62ABD02AF16 |
+| Per user - ARM64     | [PowerToysUserSetup-0.76.2-arm64.exe][ptUserArm64] | 5284CC5DA399DC37858A2FD260C30F20C484BA1B5616D0EB67CD90A8A286CB8B |
+| Machine wide - x64   | [PowerToysSetup-0.76.2-x64.exe][ptMachineX64] | 72B87381C9E5C7447FB59D7CE478B3102C9CEE3C6EB3A6BC7EC7EC7D9EFAB2A0 |
+| Machine wide - ARM64 | [PowerToysSetup-0.76.2-arm64.exe][ptMachineArm64] | F28C7DA377C25309775AB052B2B19A299C26C41582D05B95C3492A4A8C952BFE |
 
 This is our preferred method.
 

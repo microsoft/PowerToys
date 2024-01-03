@@ -11,6 +11,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
     [TestClass]
     public class InputInterpreterTests
     {
+#pragma warning disable CA1861 // Avoid constant arrays as arguments
         [DataTestMethod]
         [DataRow(new string[] { "1,5'" }, new string[] { "1,5", "'" })]
         [DataRow(new string[] { "1.5'" }, new string[] { "1.5", "'" })]
@@ -58,6 +59,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataRow(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "°f", "in", "DegreeCelsius" })]
         [DataRow(new string[] { "5", "c", "in", "f" }, new string[] { "5", "°c", "in", "°f" })]
         [DataRow(new string[] { "5", "f", "in", "c" }, new string[] { "5", "°f", "in", "°c" })]
+#pragma warning restore CA1861 // Avoid constant arrays as arguments
         public void PrefixesDegrees(string[] input, string[] expectedResult)
         {
             InputInterpreter.DegreePrefixer(ref input);

@@ -29,8 +29,7 @@
                 <custom:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingsCard
                         x:Uid="FancyZones_LaunchEditorButtonControl"
-                        ActionIcon="{ui:FontIcon FontSize=14,
-                                                 Glyph=&#xE8A7;}"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEditorEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsClickEnabled="True" />

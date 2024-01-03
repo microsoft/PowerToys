@@ -274,7 +274,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
     if (param == cant_drag_elevated_disable)
     {
-        return notifications::disable_toast(notifications::CantDragElevatedDontShowAgainRegistryPath) ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
+        return notifications::disable_toast(notifications::ElevatedDontShowAgainRegistryPath) ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
     }
     else if (param.starts_with(update_now))
     {
