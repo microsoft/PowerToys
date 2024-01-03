@@ -21,8 +21,15 @@ HHOOK KeyboardManager::hookHandleCopy;
 HHOOK KeyboardManager::hookHandle;
 KeyboardManager* KeyboardManager::keyboardManagerObjectPtr;
 
+namespace
+{
+    DWORD mainThreadId = {};
+}
+
 KeyboardManager::KeyboardManager()
 {
+    mainThreadId = GetCurrentThreadId();
+
     // Load the initial settings.
     LoadSettings();
 
@@ -38,9 +45,11 @@ KeyboardManager::KeyboardManager()
         }
 
         loadingSettings = true;
+        bool loadedSuccessfully = false;
         try
         {
             LoadSettings();
+            loadedSuccessfully = true;
         }
         catch (...)
         {
@@ -48,6 +57,18 @@ KeyboardManager::KeyboardManager()
         }
 
         loadingSettings = false;
+
+        if (!loadedSuccessfully)
+            return;
+
+        const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
+        // We didn't have any bindings before and we have now
+        if (newHasRemappings && !hookHandle)
+            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+
+        // All bindings were removed
+        if (!newHasRemappings && hookHandle)
+            StopLowlevelKeyboardHook();
     };
 
     editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -119,6 +140,32 @@ void KeyboardManager::StopLowlevelKeyboardHook()
         UnhookWindowsHookEx(hookHandle);
         hookHandle = nullptr;
     }
+}
+
+bool KeyboardManager::HasRegisteredRemappings() const
+{
+    constexpr int MaxAttempts = 5;
+
+    if (loadingSettings)
+    {
+        for (int currentAttempt = 0; currentAttempt < MaxAttempts; ++currentAttempt)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            if (!loadingSettings)
+                break;
+        }
+    }
+
+    // Assume that we have registered remappings to be on the safe side if we couldn't check
+    if (loadingSettings)
+        return true;
+
+    return HasRegisteredRemappingsUnchecked();
+}
+
+bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
+{
+    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty());
 }
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
