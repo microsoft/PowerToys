@@ -74,6 +74,8 @@
     <None Remove="Service\**" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="Microsoft.Windows.CsWinRT"/>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />

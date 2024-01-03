@@ -8,8 +8,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <AssemblyName>PowerToys.MouseWithoutBorders</AssemblyName>    
-    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>    
+    <AssemblyName>PowerToys.MouseWithoutBorders</AssemblyName>
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -58,10 +58,10 @@
     <Compile Remove="Service\**" />
     <Compile Remove="Helper\**" />
     <EmbeddedResource Remove="Resources\**" />
-        <EmbeddedResource Remove="Service\**" />
-        <ExcludeFromStyleCop Remove="Service\**" />
+    <EmbeddedResource Remove="Service\**" />
+    <ExcludeFromStyleCop Remove="Service\**" />
     <None Remove="Resources\**" />
-        <None Remove="Service\**" />
+    <None Remove="Service\**" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Control\ColorBorderField.cs">
@@ -214,6 +214,8 @@
     <Content Include="Logo.ico" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" />

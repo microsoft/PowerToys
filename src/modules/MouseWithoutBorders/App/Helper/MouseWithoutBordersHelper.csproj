@@ -8,8 +8,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <AssemblyName>PowerToys.MouseWithoutBordersHelper</AssemblyName>    
-    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>    
+    <AssemblyName>PowerToys.MouseWithoutBordersHelper</AssemblyName>
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -49,12 +49,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Resources\**" />
-        <Compile Remove="Service\**" />
+    <Compile Remove="Service\**" />
     <EmbeddedResource Remove="Resources\**" />
-        <EmbeddedResource Remove="Service\**" />
-        <ExcludeFromStyleCop Remove="Service\**" />
+    <EmbeddedResource Remove="Service\**" />
+    <ExcludeFromStyleCop Remove="Service\**" />
     <None Remove="Resources\**" />
-        <None Remove="Service\**" />
+    <None Remove="Service\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -69,6 +69,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="StreamJsonRpc" />
