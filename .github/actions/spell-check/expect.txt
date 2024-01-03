@@ -1574,6 +1574,7 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
+toolkitcontrols
 Toolset
 toolwindow
 TOPDOWNDIB
