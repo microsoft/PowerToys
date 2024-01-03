@@ -17,14 +17,17 @@
         <Image
             x:Name="HeaderImage"
             Height="{x:Bind HeroImageHeight}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
             Source="{x:Bind HeroImage}"
             Stretch="UniformToFill" />
 
-        <ScrollViewer
-            Grid.Row="1"
-            Padding="32,24,32,24"
-            VerticalScrollBarVisibility="Auto">
-            <StackPanel VerticalAlignment="Top" Orientation="Vertical">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel
+                Margin="32,24"
+                VerticalAlignment="Top"
+                Orientation="Vertical"
+                Spacing="12">
 
                 <TextBlock
                     x:Name="TitleTxt"
@@ -34,14 +37,13 @@
 
                 <TextBlock
                     x:Name="DescriptionTxt"
-                    Margin="0,8,0,0"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Text="{x:Bind Description}"
                     TextWrapping="Wrap" />
 
                 <ContentPresenter
                     x:Name="ModuleContentPresenter"
-                    Margin="0,12,0,0"
+                    Margin="0,8"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch"
                     Content="{x:Bind PageContent}" />
