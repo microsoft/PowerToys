@@ -1026,7 +1026,7 @@
     <value>Elevated Apps warnings </value>
   </data>
 	<data name="GeneralPage_WarningsElevatedApps.Description" xml:space="preserve">
-    <value>Toggle this setting to enable or disable notifications about PowerToys utilities functionality issues when running alongside elevated applications.</value>
+    <value>Show notifications about PowerToys functionality issues when running alongside elevated applications.</value>
   </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search &amp; replace or regular expressions.</value>
