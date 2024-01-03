@@ -16,35 +16,35 @@
                 <controls:SettingsCard
                     x:Uid="Peek_EnablePeek"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPeek.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="Peek_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="Peek_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="Peek_AlwaysRunNotElevated" HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.AlwaysRunNotElevated}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AlwaysRunNotElevated, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Peek_CloseAfterLosingFocus">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.CloseAfterLosingFocus}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="Peek_Preview_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="Peek_Preview_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsExpander
                         x:Uid="Peek_SourceCode_Header"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="Peek_SourceCode_WrapText" IsChecked="{x:Bind ViewModel.SourceCodeWrapText, Mode=TwoWay}" />

@@ -29,17 +29,17 @@
                 <controls:SettingsCard
                     x:Uid="ColorPicker_EnableColorPicker"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </controls:SettingsCard>
@@ -54,7 +54,7 @@
 
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
@@ -81,7 +81,7 @@
                     -->
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"

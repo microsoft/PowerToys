@@ -17,18 +17,18 @@
                 <controls:SettingsCard
                     x:Uid="RegistryPreview_Enable_RegistryPreview"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsRegistryPreviewEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </controls:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="RegistryPreview_Launch_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsRegistryPreviewEnabled}">
+                <custom:SettingsGroup x:Uid="RegistryPreview_Launch_GroupSettings" IsEnabled="{x:Bind ViewModel.IsRegistryPreviewEnabled, Mode=OneWay}">
                     <controls:SettingsCard
                         x:Uid="RegistryPreview_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
@@ -37,7 +37,7 @@
                         IsClickEnabled="True" />
 
                     <controls:SettingsCard x:Uid="RegistryPreview_DefaultRegApp" HeaderIcon="{ui:FontIcon Glyph=&#xE7AC;}">
-                        <ToggleSwitch x:Uid="RegistryPreview_DefaultRegApp_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsRegistryPreviewDefaultRegApp}" />
+                        <ToggleSwitch x:Uid="RegistryPreview_DefaultRegApp_ToggleSwitch" IsOn="{x:Bind ViewModel.IsRegistryPreviewDefaultRegApp, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 

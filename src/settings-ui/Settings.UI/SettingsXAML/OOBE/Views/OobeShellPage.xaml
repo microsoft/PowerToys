@@ -70,6 +70,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAwake.png}"
                     Tag="Awake" />
                 <NavigationViewItem
+                    x:Uid="Shell_CmdNotFound"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
+                    Tag="CmdNotFound" />
+                <NavigationViewItem
                     x:Uid="Shell_ColorPicker"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}"
                     Tag="ColorPicker" />

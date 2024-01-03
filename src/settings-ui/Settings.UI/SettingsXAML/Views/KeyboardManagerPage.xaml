@@ -51,7 +51,7 @@
                 <controls:SettingsCard
                     x:Uid="KeyboardManager_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsKeyboardManager.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Enabled, Mode=TwoWay}" />
                     <controls:SettingsCard.Description>
                         <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys">
@@ -62,11 +62,11 @@
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
+                <custom:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <controls:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
@@ -119,7 +119,7 @@
                     </ListView>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
+                <custom:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <controls:SettingsCard
                         x:Uid="KeyboardManager_RemapShortcutsButton"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"

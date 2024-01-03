@@ -17,20 +17,20 @@
                 <controls:SettingsCard
                     x:Uid="FileLocksmith_Enable_FileLocksmith"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFileLocksmith.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="FileLocksmith_ShellIntegration" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFileLocksmithEnabled}">
+                <custom:SettingsGroup x:Uid="FileLocksmith_ShellIntegration" IsEnabled="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="FileLocksmith_Toggle_ContextMenu">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EnabledOnContextExtendedMenu, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="FileLocksmith_Toggle_StandardContextMenu" />
                             <ComboBoxItem x:Uid="FileLocksmith_Toggle_ExtendedContextMenu" />
                         </ComboBox>

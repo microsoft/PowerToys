@@ -395,6 +395,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Overview": return typeof(GeneralPage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
+                case "CmdNotFound": return typeof(CmdNotFoundPage);
                 case "ColorPicker": return typeof(ColorPickerPage);
                 case "FancyZones": return typeof(FancyZonesPage);
                 case "FileLocksmith": return typeof(FileLocksmithPage);

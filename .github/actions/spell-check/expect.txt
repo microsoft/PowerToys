@@ -1,6 +1,3 @@
-# FALSE POSITIVES
-## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
-## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -183,6 +180,7 @@ clrcall
 CLSCTX
 Clusion
 cmder
+CMDNOTFOUNDMODULEINTERFACE
 Cmds
 CMIC
 CMINVOKECOMMANDINFO
@@ -508,6 +506,7 @@ GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
+getfilesiginforedist
 GETICON
 GETMINMAXINFO
 GETPROPERTYSTOREFLAGS
@@ -1316,6 +1315,7 @@ rundll
 rungameid
 RUNLEVEL
 runsettings
+runspace
 runtimeclass
 runtimeobject
 runtimepack
@@ -1572,7 +1572,6 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
-Tonmi
 toolkitcontrols
 toolkitconverters
 Toolset
@@ -1842,3 +1841,10 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
+
+# FALSE POSITIVES
+
+## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
+declatory
+## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
+Packagemanager
