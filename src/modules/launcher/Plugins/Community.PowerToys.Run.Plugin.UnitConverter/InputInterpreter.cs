@@ -179,12 +179,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return;
             }
 
-            if (split[1].ToLowerInvariant() == "nmi")
+            if (split[1].Equals("nmi", StringComparison.OrdinalIgnoreCase))
             {
                 split[1] = "nauticalmiles";
             }
 
-            if (split[3].ToLowerInvariant() == "nmi")
+            if (split[3].Equals("nmi", StringComparison.OrdinalIgnoreCase))
             {
                 split[3] = "nauticalmiles";
             }
