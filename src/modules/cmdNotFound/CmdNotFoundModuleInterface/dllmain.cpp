@@ -54,8 +54,17 @@ private:
         command += " ";
         command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(module_path) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\EnableModule.ps1" + "\"" + " -scriptPath \"" + winrt::to_string(module_path) + "\"";
 
-        system(command.c_str());
-        Trace::EnableCmdNotFoundGpo(true);
+        int ret = system(command.c_str());
+
+        if (ret != 0)
+        {
+            Logger::error("Running EnableModule.ps1 script failed.");
+        }
+        else
+        {
+            Logger::info("Module installed successfully.");
+            Trace::EnableCmdNotFoundGpo(true);
+        }
     }
 
     void uninstall_module()
@@ -66,8 +75,17 @@ private:
         command += " ";
         command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(module_path) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "\"";
 
-        system(command.c_str());
-        Trace::EnableCmdNotFoundGpo(false);
+        int ret = system(command.c_str());
+
+        if (ret != 0)
+        {
+            Logger::error("Running EnableModule.ps1 script failed.");
+        }
+        else
+        {
+            Logger::info("Module uninstalled successfully.");
+            Trace::EnableCmdNotFoundGpo(false);
+        }
     }
 
 public:
