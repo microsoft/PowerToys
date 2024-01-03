@@ -161,7 +161,6 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
-CHT
 cidl
 cim
 CImage
@@ -182,6 +181,7 @@ clrcall
 CLSCTX
 Clusion
 cmder
+CMDNOTFOUNDMODULEINTERFACE
 Cmds
 CMIC
 CMINVOKECOMMANDINFO
@@ -219,7 +219,6 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
-constexpr
 consts
 contentdialog
 contentfiles
@@ -319,7 +318,6 @@ DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-DEU
 devblogs
 devdocs
 devenum
@@ -508,6 +506,7 @@ GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
+getfilesiginforedist
 GETICON
 GETMINMAXINFO
 GETPROPERTYSTOREFLAGS
@@ -538,7 +537,6 @@ Hanzi
 Hardlines
 hardlinks
 HARDWAREINPUT
-hashcode
 Hashset
 hashtag
 HASHVAL
@@ -557,7 +555,6 @@ hcwhite
 hdc
 hdrop
 hdwwiz
-HEB
 Helpline
 helptext
 HGFE
@@ -720,7 +717,6 @@ jif
 jjw
 jobject
 jpe
-JPN
 jpnime
 Jsons
 jsonval
@@ -746,10 +742,7 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
-LAlt
-Lambson
 languagesjson
-langword
 lastcodeanalysissucceeded
 Lastdevice
 LAYOUTRTL
@@ -907,6 +900,8 @@ MOUSEHWHEEL
 MOUSEINPUT
 MOVESIZEEND
 MOVESIZESTART
+MOZILLAPL
+MOZPL
 mpmc
 MRM
 MRT
@@ -972,6 +967,7 @@ newdev
 newitem
 newpath
 newrow
+newsgroups
 NIF
 NLD
 NLog
@@ -984,7 +980,6 @@ NOCLOSEPROCESS
 NOCOALESCE
 NOCOPYBITS
 nodeca
-nodiscard
 nodoc
 NODRAWCAPTION
 NODRAWICON
@@ -1093,7 +1088,6 @@ pcch
 pcelt
 pch
 PCIDLIST
-pcs
 PCWSTR
 pdisp
 pdo
@@ -1304,7 +1298,6 @@ RKey
 RNumber
 roadmap
 rop
-roundf
 ROUNDSMALL
 rpcrt
 RRF
@@ -1320,12 +1313,11 @@ rundll
 rungameid
 RUNLEVEL
 runsettings
+runspace
 runtimeclass
 runtimeobject
 runtimepack
 runtimes
-RUS
-RValue
 rvm
 rwin
 rwl
@@ -1506,7 +1498,6 @@ subquery
 Superbar
 sut
 svchost
-SVE
 SVGIn
 SVGIO
 svgz
@@ -1579,7 +1570,6 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
-tonos
 toolkitcontrols
 toolkitconverters
 Toolset
@@ -1715,7 +1705,6 @@ wcsnicmp
 WDA
 wdp
 wdupenv
-weakme
 webbrowsers
 webcam
 webpage
@@ -1724,7 +1713,6 @@ wekyb
 Wevtapi
 wgpocpl
 WIC
-wifi
 wil
 winapi
 winappdriver
@@ -1852,9 +1840,6 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-newsgroups
-MOZILLAPL
-MOZPL
 
 # FALSE POSITIVES
 

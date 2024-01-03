@@ -9,6 +9,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         GPOWrapper() = default;
         static GpoRuleConfigured GetConfiguredAlwaysOnTopEnabledValue();
         static GpoRuleConfigured GetConfiguredAwakeEnabledValue();
+        static GpoRuleConfigured GetConfiguredCmdNotFoundEnabledValue();
         static GpoRuleConfigured GetConfiguredColorPickerEnabledValue();
         static GpoRuleConfigured GetConfiguredCropAndLockEnabledValue();
         static GpoRuleConfigured GetConfiguredFancyZonesEnabledValue();

@@ -18,6 +18,7 @@
   <?define PastePlainProjectName="PastePlain"?>
   <?define RegistryPreviewProjectName="RegistryPreview"?>
   <?define PeekProjectName="Peek"?>
+  <?define CmdNotFoundProjectName="CmdNotFound"?>
   
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>
