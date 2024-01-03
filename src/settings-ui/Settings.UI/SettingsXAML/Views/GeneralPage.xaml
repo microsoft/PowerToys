@@ -202,14 +202,17 @@
                         <Button
                             x:Uid="GeneralPage_RestartAsAdmin_Button"
                             Command="{Binding RestartElevatedButtonEventHandler}"
-                            IsEnabled="{Binding Mode=OneWay, Path=IsAdminButtonEnabled}" />
+                            IsEnabled="{Binding IsAdminButtonEnabled}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}">
-                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=RunElevated}" />
+                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RunElevated, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                    <tkcontrols:SettingsCard x:Uid="GeneralPage_WarningsElevatedApps">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding EnableWarningsElevatedApps, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </custom:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
                     <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
