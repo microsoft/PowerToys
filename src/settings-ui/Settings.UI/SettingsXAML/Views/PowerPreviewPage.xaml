@@ -137,10 +137,6 @@
                         IsEnabled="{x:Bind ViewModel.IsQOIRenderEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.QOIRenderIsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_IsSettingForced"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsQOIRenderEnabledGpoConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsQOIRenderEnabledGpoConfigured, Mode=OneWay}"
                         Severity="Informational" />
                 </controls:SettingsGroup>

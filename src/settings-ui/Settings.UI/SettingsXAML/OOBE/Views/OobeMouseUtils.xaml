@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
-
+    
     <controls:OOBEPageControl x:Uid="Oobe_MouseUtils" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.gif">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">

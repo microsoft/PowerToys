@@ -93,7 +93,16 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             try
             {
                 IComputeRequest computeRequest = _inputParser.ParseInput(query);
-                results.Add(GetResult(computeRequest));
+                var result = GetResult(computeRequest);
+
+                if (!string.IsNullOrEmpty(result.Title))
+                {
+                    results.Add(result);
+                }
+                else
+                {
+                    return results;
+                }
             }
             catch (ArgumentException e)
             {
