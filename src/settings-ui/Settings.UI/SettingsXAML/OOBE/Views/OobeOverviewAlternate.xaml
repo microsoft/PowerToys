@@ -14,12 +14,12 @@
         HeroImageHeight="120">
 
         <custom:OOBEPageControl.PageContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock
                     x:Uid="Alternate_OOBE_Description"
                     Margin="0,24,0,12"
                     FontWeight="SemiBold" />
-                <GridView Margin="-8,0,0,0" SelectionMode="None">
+                <GridView SelectionMode="None">
                     <GridViewItem>
                         <Grid
                             Width="280"
