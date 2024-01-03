@@ -225,7 +225,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             _browser.Dock = DockStyle.Fill;
 
             // Prevent new windows from being opened.
-            var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
+            var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents --disable-features=RendererAppContainer");
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                webView2EnvironmentAwaiter = CoreWebView2Environment
                    .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)

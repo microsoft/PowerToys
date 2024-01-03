@@ -9,6 +9,8 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Threading;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -23,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public class DashboardViewModel : Observable
     {
         private const string JsonFileType = ".json";
-        private readonly IFileSystemWatcher _watcher;
+        private IFileSystemWatcher _watcher;
         private DashboardModuleKBMItem _kbmItem;
         private Dispatcher dispatcher;
 
@@ -53,330 +55,39 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _allModules = new List<DashboardListItem>();
 
-            GpoRuleConfigured gpo;
-            gpo = GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
-            _allModules.Add(new DashboardListItem()
+            foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
             {
-                Tag = "AlwaysOnTop",
-                Label = resourceLoader.GetString("AlwaysOnTop/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.AlwaysOnTop),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 74, 196, 242), // #4ac4f2
-                DashboardModuleItems = GetModuleItemsAlwaysOnTop(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredAwakeEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "Awake",
-                Label = resourceLoader.GetString("Awake/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Awake),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsAwake.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 40, 177, 233), // #28b1e9
-                DashboardModuleItems = GetModuleItemsAwake(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredColorPickerEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "ColorPicker",
-                Label = resourceLoader.GetString("ColorPicker/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ColorPicker),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 7, 129, 211), // #0781d3
-                DashboardModuleItems = GetModuleItemsColorPicker(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredCropAndLockEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "CropAndLock",
-                Label = resourceLoader.GetString("CropAndLock/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.CropAndLock),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsCropAndLock.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 32, 166, 228), // #20a6e4
-                DashboardModuleItems = GetModuleItemsCropAndLock(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "EnvironmentVariables",
-                Label = resourceLoader.GetString("EnvironmentVariables/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.EnvironmentVariables),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsEnvironmentVariables.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 16, 132, 208), // #1084d0
-                DashboardModuleItems = GetModuleItemsEnvironmentVariables(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredFancyZonesEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "FancyZones",
-                Label = resourceLoader.GetString("FancyZones/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FancyZones),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFancyZones.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 65, 209, 247), // #41d1f7
-                DashboardModuleItems = GetModuleItemsFancyZones(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredFileLocksmithEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "FileLocksmith",
-                Label = resourceLoader.GetString("FileLocksmith/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FileLocksmith),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFileLocksmith.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 245, 161, 20), // #f5a114
-                DashboardModuleItems = GetModuleItemsFileLocksmith(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredFindMyMouseEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "FindMyMouse",
-                Label = resourceLoader.GetString("MouseUtils_FindMyMouse/Header"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.FindMyMouse),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 104, 109, 112), // #686d70
-                DashboardModuleItems = GetModuleItemsFindMyMouse(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "Hosts",
-                Label = resourceLoader.GetString("Hosts/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Hosts),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsHosts.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 16, 132, 208), // #1084d0
-                DashboardModuleItems = GetModuleItemsHosts(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredImageResizerEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "ImageResizer",
-                Label = resourceLoader.GetString("ImageResizer/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ImageResizer),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsImageResizer.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 85, 207, 248), // #55cff8
-                DashboardModuleItems = GetModuleItemsImageResizer(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredKeyboardManagerEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "KeyboardManager",
-                Label = resourceLoader.GetString("KeyboardManager/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.KeyboardManager),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsKeyboardManager.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 224, 231, 238), // #e0e7ee
-                DashboardModuleItems = GetModuleItemsKeyboardManager(),
-            });
-
-            if (gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.KeyboardManager))
-            {
-                KeyboardManagerSettings kbmSettings = GetKBMSettings();
-                _watcher = Library.Utilities.Helper.GetFileWatcher(KeyboardManagerSettings.ModuleName, kbmSettings.Properties.ActiveConfiguration.Value + JsonFileType, () => LoadKBMSettingsFromJson());
+                AddDashboardListItem(moduleType);
             }
-
-            gpo = GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "MouseHighlighter",
-                Label = resourceLoader.GetString("MouseUtils_MouseHighlighter/Header"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseHighlighter),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 17, 126, 199), // #117ec7
-                DashboardModuleItems = GetModuleItemsMouseHighlighter(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredMouseJumpEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "MouseJump",
-                Label = resourceLoader.GetString("MouseUtils_MouseJump/Header"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseJump),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseJump.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 240, 240, 239), // #f0f0ef
-                DashboardModuleItems = GetModuleItemsMouseJump(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "MousePointerCrosshairs",
-                Label = resourceLoader.GetString("MouseUtils_MousePointerCrosshairs/Header"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MousePointerCrosshairs),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 25, 115, 182), // #1973b6
-                DashboardModuleItems = GetModuleItemsMouseCrosshairs(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "MouseWithoutBorders",
-                Label = resourceLoader.GetString("MouseWithoutBorders/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MouseWithoutBorders),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 31, 164, 227), // #1fa4e3
-                DashboardModuleItems = GetModuleItemsMouseWithoutBorders(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredPastePlainEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "PastePlain",
-                Label = resourceLoader.GetString("PastePlain/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PastePlain),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPastePlain.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 243, 156, 16), // #f39c10
-                DashboardModuleItems = GetModuleItemsPastePlain(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredPeekEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "Peek",
-                Label = resourceLoader.GetString("Peek/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.Peek),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPeek.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 255, 214, 103), // #ffd667
-                DashboardModuleItems = GetModuleItemsPeek(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredPowerRenameEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "PowerRename",
-                Label = resourceLoader.GetString("PowerRename/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerRename),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerRename.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 43, 186, 243), // #2bbaf3
-                DashboardModuleItems = GetModuleItemsPowerRename(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "PowerLauncher",
-                Label = resourceLoader.GetString("PowerLauncher/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerLauncher),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 51, 191, 240), // #33bff0
-                DashboardModuleItems = GetModuleItemsRun(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredQuickAccentEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "PowerAccent",
-                Label = resourceLoader.GetString("QuickAccent/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerAccent),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerAccent.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 84, 89, 92), // #54595c
-                DashboardModuleItems = GetModuleItemsPowerAccent(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredRegistryPreviewEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "RegistryPreview",
-                Label = resourceLoader.GetString("RegistryPreview/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.RegistryPreview),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 17, 80, 138), // #11508a
-                DashboardModuleItems = GetModuleItemsRegistryPreview(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredScreenRulerEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "MeasureTool",
-                Label = resourceLoader.GetString("MeasureTool/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.MeasureTool),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsScreenRuler.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 135, 144, 153), // #879099
-                DashboardModuleItems = GetModuleItemsScreenRuler(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "ShortcutGuide",
-                Label = resourceLoader.GetString("ShortcutGuide/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.ShortcutGuide),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsShortcutGuide.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 193, 202, 209), // #c1cad1
-                DashboardModuleItems = GetModuleItemsShortcutGuide(),
-            });
-
-            gpo = GPOWrapper.GetConfiguredTextExtractorEnabledValue();
-            _allModules.Add(new DashboardListItem()
-            {
-                Tag = "PowerOCR",
-                Label = resourceLoader.GetString("TextExtractor/ModuleTitle"),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.PowerOCR),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = "ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerOCR.png",
-                EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = Color.FromArgb(255, 24, 153, 224), // #1899e0
-                DashboardModuleItems = GetModuleItemsPowerOCR(),
-            });
 
             ActiveModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => x.IsEnabled));
             DisabledModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => !x.IsEnabled));
 
             UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();
             UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
+
+            App.UpdateUIThemeMethod(generalSettingsConfig.Theme);
+        }
+
+        private void AddDashboardListItem(ModuleType moduleType)
+        {
+            GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
+            _allModules.Add(new DashboardListItem()
+            {
+                Tag = moduleType,
+                Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
+                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
+                Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                EnabledChangedCallback = EnabledChangedOnUI,
+                AccentColor = ModuleHelper.GetModuleAccentColor(moduleType),
+                DashboardModuleItems = GetModuleItems(moduleType),
+            });
+            if (moduleType == ModuleType.KeyboardManager && gpo != GpoRuleConfigured.Disabled)
+            {
+                KeyboardManagerSettings kbmSettings = GetKBMSettings();
+                _watcher = Library.Utilities.Helper.GetFileWatcher(KeyboardManagerSettings.ModuleName, kbmSettings.Properties.ActiveConfiguration.Value + JsonFileType, () => LoadKBMSettingsFromJson());
+            }
         }
 
         private void LoadKBMSettingsFromJson()
@@ -408,52 +119,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return moduleSettingsRepository.SettingsConfig;
         }
 
-        internal void SettingsButtonClicked(object sender)
-        {
-            Button button = sender as Button;
-            if (button == null)
-            {
-                return;
-            }
-
-            string tag = button.Tag as string;
-            if (tag == null)
-            {
-                return;
-            }
-
-            Type type = null;
-            switch (tag)
-            {
-                case "AlwaysOnTop": type = typeof(AlwaysOnTopPage); break;
-                case "Awake": type = typeof(AwakePage); break;
-                case "ColorPicker": type = typeof(ColorPickerPage); break;
-                case "CropAndLock": type = typeof(CropAndLockPage); break;
-                case "FancyZones": type = typeof(FancyZonesPage); break;
-                case "FileLocksmith": type = typeof(FileLocksmithPage); break;
-                case "FindMyMouse": type = typeof(MouseUtilsPage); break;
-                case "Hosts": type = typeof(HostsPage); break;
-                case "ImageResizer": type = typeof(ImageResizerPage); break;
-                case "KeyboardManager": type = typeof(KeyboardManagerPage); break;
-                case "MouseHighlighter": type = typeof(MouseUtilsPage); break;
-                case "MouseJump": type = typeof(MouseUtilsPage); break;
-                case "MousePointerCrosshairs": type = typeof(MouseUtilsPage); break;
-                case "MouseWithoutBorders": type = typeof(MouseWithoutBordersPage); break;
-                case "PastePlain": type = typeof(PastePlainPage); break;
-                case "Peek": type = typeof(PeekPage); break;
-                case "PowerRename": type = typeof(PowerRenamePage); break;
-                case "PowerLauncher": type = typeof(PowerLauncherPage); break;
-                case "PowerAccent": type = typeof(PowerAccentPage); break;
-                case "RegistryPreview": type = typeof(RegistryPreviewPage); break;
-                case "MeasureTool": type = typeof(MeasureToolPage); break;
-                case "ShortcutGuide": type = typeof(ShortcutGuidePage); break;
-                case "PowerOCR": type = typeof(PowerOcrPage); break;
-                case "VideoConference": type = typeof(VideoConferencePage); break;
-            }
-
-            NavigationService.Navigate(type);
-        }
-
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
             Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
@@ -466,35 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             generalSettingsConfig = _settingsRepository.SettingsConfig;
             foreach (DashboardListItem item in _allModules)
             {
-                switch (item.Tag)
-                {
-                    case "AlwaysOnTop": item.IsEnabled = generalSettingsConfig.Enabled.AlwaysOnTop; break;
-                    case "Awake": item.IsEnabled = generalSettingsConfig.Enabled.Awake; break;
-                    case "ColorPicker": item.IsEnabled = generalSettingsConfig.Enabled.ColorPicker; break;
-                    case "CropAndLock": item.IsEnabled = generalSettingsConfig.Enabled.CropAndLock; break;
-                    case "EnvironmentVariables": item.IsEnabled = generalSettingsConfig.Enabled.EnvironmentVariables; break;
-                    case "FancyZones": item.IsEnabled = generalSettingsConfig.Enabled.FancyZones; break;
-                    case "FileLocksmith": item.IsEnabled = generalSettingsConfig.Enabled.FileLocksmith; break;
-                    case "FindMyMouse": item.IsEnabled = generalSettingsConfig.Enabled.FindMyMouse; break;
-                    case "Hosts": item.IsEnabled = generalSettingsConfig.Enabled.Hosts; break;
-                    case "ImageResizer": item.IsEnabled = generalSettingsConfig.Enabled.ImageResizer; break;
-                    case "KeyboardManager": item.IsEnabled = generalSettingsConfig.Enabled.KeyboardManager; break;
-                    case "MouseHighlighter": item.IsEnabled = generalSettingsConfig.Enabled.MouseHighlighter; break;
-                    case "MouseJump": item.IsEnabled = generalSettingsConfig.Enabled.MouseJump; break;
-                    case "MousePointerCrosshairs": item.IsEnabled = generalSettingsConfig.Enabled.MousePointerCrosshairs; break;
-                    case "MouseWithoutBorders": item.IsEnabled = generalSettingsConfig.Enabled.MouseWithoutBorders; break;
-                    case "PastePlain": item.IsEnabled = generalSettingsConfig.Enabled.PastePlain; break;
-                    case "Peek": item.IsEnabled = generalSettingsConfig.Enabled.Peek; break;
-                    case "PowerRename": item.IsEnabled = generalSettingsConfig.Enabled.PowerRename; break;
-                    case "PowerLauncher": item.IsEnabled = generalSettingsConfig.Enabled.PowerLauncher; break;
-                    case "PowerAccent": item.IsEnabled = generalSettingsConfig.Enabled.PowerAccent; break;
-                    case "RegistryPreview": item.IsEnabled = generalSettingsConfig.Enabled.RegistryPreview; break;
-                    case "MeasureTool": item.IsEnabled = generalSettingsConfig.Enabled.MeasureTool; break;
-                    case "ShortcutGuide": item.IsEnabled = generalSettingsConfig.Enabled.ShortcutGuide; break;
-                    case "PowerOCR": item.IsEnabled = generalSettingsConfig.Enabled.PowerOCR; break;
-                    case "VideoConference": item.IsEnabled = generalSettingsConfig.Enabled.VideoConference; break;
-                }
-
+                item.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag);
                 if (item.IsEnabled)
                 {
                     ActiveModules.Add(item);
@@ -507,6 +144,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             OnPropertyChanged(nameof(ActiveModules));
             OnPropertyChanged(nameof(DisabledModules));
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItems(ModuleType moduleType)
+        {
+            return moduleType switch
+            {
+                ModuleType.AlwaysOnTop => GetModuleItemsAlwaysOnTop(),
+                ModuleType.Awake => GetModuleItemsAwake(),
+                ModuleType.ColorPicker => GetModuleItemsColorPicker(),
+                ModuleType.CropAndLock => GetModuleItemsCropAndLock(),
+                ModuleType.EnvironmentVariables => GetModuleItemsEnvironmentVariables(),
+                ModuleType.FancyZones => GetModuleItemsFancyZones(),
+                ModuleType.FileLocksmith => GetModuleItemsFileLocksmith(),
+                ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
+                ModuleType.Hosts => GetModuleItemsHosts(),
+                ModuleType.ImageResizer => GetModuleItemsImageResizer(),
+                ModuleType.KeyboardManager => GetModuleItemsKeyboardManager(),
+                ModuleType.MouseHighlighter => GetModuleItemsMouseHighlighter(),
+                ModuleType.MouseJump => GetModuleItemsMouseJump(),
+                ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
+                ModuleType.MouseWithoutBorders => GetModuleItemsMouseWithoutBorders(),
+                ModuleType.PastePlain => GetModuleItemsPastePlain(),
+                ModuleType.Peek => GetModuleItemsPeek(),
+                ModuleType.PowerRename => GetModuleItemsPowerRename(),
+                ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
+                ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
+                ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
+                ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
+                ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
+                ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
+                _ => new ObservableCollection<DashboardModuleItem>(), // never called, all values listed above
+            };
         }
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsAlwaysOnTop()
@@ -639,6 +308,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             KeyboardManagerProfile kbmProfile = GetKBMProfile();
             _kbmItem = new DashboardModuleKBMItem() { RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys, RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts) };
+
+            _kbmItem.RemapKeys = _kbmItem.RemapKeys.Concat(kbmProfile?.RemapKeysToText.InProcessRemapKeys).ToList();
+
+            var shortcutsToTextRemappings = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcutsToText.GlobalRemapShortcuts, kbmProfile?.RemapShortcutsToText.AppSpecificRemapShortcuts);
+
+            _kbmItem.RemapShortcuts = _kbmItem.RemapShortcuts.Concat(shortcutsToTextRemappings).ToList();
+
             var list = new List<DashboardModuleItem>
             {
                 _kbmItem,
@@ -668,7 +344,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
-        private ObservableCollection<DashboardModuleItem> GetModuleItemsMouseCrosshairs()
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsMousePointerCrosshairs()
         {
             ISettingsRepository<MousePointerCrosshairsSettings> moduleSettingsRepository = SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(new SettingsUtils());
             var list = new List<DashboardModuleItem>
@@ -716,7 +392,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
-        private ObservableCollection<DashboardModuleItem> GetModuleItemsRun()
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerLauncher()
         {
             ISettingsRepository<PowerLauncherSettings> moduleSettingsRepository = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils());
             var list = new List<DashboardModuleItem>
@@ -755,7 +431,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
-        private ObservableCollection<DashboardModuleItem> GetModuleItemsScreenRuler()
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsMeasureTool()
         {
             ISettingsRepository<MeasureToolSettings> moduleSettingsRepository = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils());
             var list = new List<DashboardModuleItem>
@@ -828,6 +504,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
+        internal void DashboardListItemClick(object sender)
+        {
+            Button button = sender as Button;
+            if (button == null)
+            {
+                return;
+            }
+
+            if (!(button.Tag is ModuleType))
+            {
+                return;
+            }
+
+            ModuleType moduleType = (ModuleType)button.Tag;
+
+            NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
         }
     }
 }

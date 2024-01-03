@@ -34,6 +34,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private bool _disposed;
 
+        private static readonly CompositeFormat WoxPluginCalculatorInEnFormatDescription = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_calculator_in_en_format_description);
+        private static readonly CompositeFormat WoxPluginCalculatorOutEnFormatDescription = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_calculator_out_en_format_description);
+
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             // The number examples has to be created at runtime to prevent translation.
@@ -41,28 +44,25 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             {
                 Key = "InputUseEnglishFormat",
                 DisplayLabel = Resources.wox_plugin_calculator_in_en_format,
-                DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_calculator_in_en_format_description, 1000.55.ToString("N2", new CultureInfo("en-us"))),
+                DisplayDescription = string.Format(CultureInfo.CurrentCulture, WoxPluginCalculatorInEnFormatDescription, 1000.55.ToString("N2", new CultureInfo("en-us"))),
                 Value = false,
             },
             new PluginAdditionalOption()
             {
                 Key = "OutputUseEnglishFormat",
                 DisplayLabel = Resources.wox_plugin_calculator_out_en_format,
-                DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_calculator_out_en_format_description, 1000.55.ToString("G", new CultureInfo("en-us"))),
+                DisplayDescription = string.Format(CultureInfo.CurrentCulture, WoxPluginCalculatorOutEnFormatDescription, 1000.55.ToString("G", new CultureInfo("en-us"))),
                 Value = false,
             },
         };
 
         public List<Result> Query(Query query)
         {
+            ArgumentNullException.ThrowIfNull(query);
+
             bool isGlobalQuery = string.IsNullOrEmpty(query.ActionKeyword);
             CultureInfo inputCulture = _inputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
             CultureInfo outputCulture = _outputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
-
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
 
             // Happens if the user has only typed the action key so far
             if (string.IsNullOrEmpty(query.Search))

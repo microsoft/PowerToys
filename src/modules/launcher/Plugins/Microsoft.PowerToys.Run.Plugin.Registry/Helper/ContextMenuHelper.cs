@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ => TryToCopyToClipBoard(entry.GetRegistryKey()),
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
                     Title = $"{Resources.CopyKeyNamePath} (Ctrl+C)",
@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ => TryToCopyToClipBoard(entry.GetValueData()),
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xF413",                       // F413 => Symbol: CopyTo
                     PluginName = assemblyName,
                     Title = $"{Resources.CopyValueData} (Ctrl+Shift+C)",
@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ => TryToCopyToClipBoard(entry.GetValueNameWithKey()),
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
                     Title = $"{Resources.CopyValueName} (Ctrl+C)",
@@ -77,7 +77,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 AcceleratorKey = Key.Enter,
                 AcceleratorModifiers = ModifierKeys.Control,
                 Action = _ => TryToOpenInRegistryEditor(entry),
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 Glyph = "\xE8A7",                           // E8A7 => Symbol: OpenInNewWindow
                 PluginName = assemblyName,
                 Title = $"{Resources.OpenKeyInRegistryEditor} (Ctrl+Enter)",

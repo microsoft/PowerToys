@@ -4,10 +4,11 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Windows;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin.Logger;
 using Wox.Plugin.Properties;
@@ -56,11 +57,18 @@ namespace Wox.Plugin
             return;
         }
 
-        public void Update(PowerLauncherPluginSettings setting, IPublicAPI api)
+        public void Update(PowerLauncherPluginSettings setting, IPublicAPI api, Action refreshPluginsOverviewCallback)
         {
             if (setting == null || api == null)
             {
                 return;
+            }
+
+            bool refreshOverview = false;
+            if (Metadata.Disabled != setting.Disabled
+                || Metadata.ActionKeyword != setting.ActionKeyword)
+            {
+                refreshOverview = true;
             }
 
             // If the enabled state is policy managed then we skip the update of the disabled state as it must be a manual settings.json manipulation.
@@ -74,7 +82,7 @@ namespace Wox.Plugin
                     if (!IsPluginInitialized)
                     {
                         string description = $"{Resources.FailedToLoadPluginDescription} {Metadata.Name}\n\n{Resources.FailedToLoadPluginDescriptionPartTwo}";
-                        api.ShowMsg(Resources.FailedToLoadPluginTitle, description, string.Empty, false);
+                        Application.Current.Dispatcher.InvokeAsync(() => api.ShowMsg(Resources.FailedToLoadPluginTitle, description, string.Empty, false));
                     }
                 }
                 else
@@ -93,6 +101,11 @@ namespace Wox.Plugin
             if (IsPluginInitialized && !Metadata.Disabled)
             {
                 (Plugin as IReloadable)?.ReloadData();
+            }
+
+            if (refreshOverview)
+            {
+                refreshPluginsOverviewCallback?.Invoke();
             }
         }
 
@@ -141,7 +154,15 @@ namespace Wox.Plugin
 
             try
             {
-                _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(Metadata.ExecuteFilePath);
+                if (Metadata.DynamicLoading)
+                {
+                    var loadContext = new PluginLoadContext(Metadata.ExecuteFilePath);
+                    _assembly = loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(Metadata.ExecuteFilePath)));
+                }
+                else
+                {
+                    _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(Metadata.ExecuteFilePath);
+                }
             }
             catch (Exception e)
             {

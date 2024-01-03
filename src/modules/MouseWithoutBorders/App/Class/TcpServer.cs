@@ -104,6 +104,7 @@ namespace MouseWithoutBorders.Class
         }
 
         private static bool logged;
+        internal static readonly string[] Separator = new[] { " " };
 
         private void LogError(string log)
         {
@@ -146,7 +147,7 @@ namespace MouseWithoutBorders.Class
                                 try
                                 {
                                     // Assuming the format of netstat's output is fixed.
-                                    pid = int.Parse(portLogLine.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries).Last(), CultureInfo.CurrentCulture);
+                                    pid = int.Parse(portLogLine.Split(Separator, StringSplitOptions.RemoveEmptyEntries).Last(), CultureInfo.CurrentCulture);
                                     process = Process.GetProcessById(pid);
                                 }
                                 catch (Exception)

@@ -29,8 +29,7 @@
                 <custom:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingsCard
                         x:Uid="FancyZones_LaunchEditorButtonControl"
-                        ActionIcon="{ui:FontIcon FontSize=14,
-                                                 Glyph=&#xE8A7;}"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEditorEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsClickEnabled="True" />
@@ -149,12 +148,6 @@
                             </controls:SettingsCard>
                             <controls:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <custom:CheckBoxWithDescriptionControl
-                                    x:Uid="FancyZones_AllowPopupWindowSnap"
-                                    Margin="0,0,0,6"
-                                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowPopupWindowSnap}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_AllowChildWindowSnap" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AllowChildWindowSnap}" />

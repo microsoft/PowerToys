@@ -6,13 +6,13 @@
 class RemapShortcut
 {
 public:
-    KeyShortcutUnion targetShortcut;
+    KeyShortcutTextUnion targetShortcut;
     bool isShortcutInvoked;
     ModifierKey winKeyInvoked;
     // This bool value is only required for remapping shortcuts to Disable
     bool isOriginalActionKeyPressed;
 
-    RemapShortcut(const KeyShortcutUnion& sc) :
+    RemapShortcut(const KeyShortcutTextUnion& sc) :
         targetShortcut(sc), isShortcutInvoked(false), winKeyInvoked(ModifierKey::Disabled), isOriginalActionKeyPressed(false)
     {
     }

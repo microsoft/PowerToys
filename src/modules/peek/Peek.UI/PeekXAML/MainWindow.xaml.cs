@@ -47,6 +47,7 @@ namespace Peek.UI
             ViewModel = Application.Current.GetService<MainWindowViewModel>();
 
             TitleBarControl.SetTitleBarToWindow(this);
+            AppWindow.SetIcon("Assets/Peek/Icon.ico");
 
             AppWindow.Closing += AppWindow_Closing;
         }
@@ -116,7 +117,7 @@ namespace Peek.UI
             ViewModel.AttemptNextNavigation();
         }
 
-        private void EscKeyInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        private void CloseInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             Uninitialize();
         }

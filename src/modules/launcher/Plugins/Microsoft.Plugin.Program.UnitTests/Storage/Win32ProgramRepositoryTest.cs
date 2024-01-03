@@ -7,10 +7,10 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
 using Wox.Infrastructure.Storage;
 using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
@@ -25,6 +25,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
         private List<IFileSystemWatcherWrapper> _fileSystemWatchers;
         private List<Mock<IFileSystemWatcherWrapper>> _fileSystemMocks;
+        private static readonly string[] Path = new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" };
 
         [TestInitialize]
         public void SetFileSystemWatchers()
@@ -219,7 +220,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // File.ReadAllLines must be mocked for url applications
             var mockFile = new Mock<IFile>();
-            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
+            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(Path);
             Win32Program.FileWrapper = mockFile.Object;
 
             // Act
@@ -268,7 +269,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // File.ReadAllLines must be mocked for url applications
             var mockFile = new Mock<IFile>();
-            mockFile.Setup(m => m.ReadLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
+            mockFile.Setup(m => m.ReadLines(It.IsAny<string>())).Returns(Path);
             Win32Program.FileWrapper = mockFile.Object;
 
             string fullPath = directory + "\\" + path;
@@ -292,7 +293,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // File.ReadAllLines must be mocked for url applications
             var mockFile = new Mock<IFile>();
-            mockFile.Setup(m => m.ReadLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
+            mockFile.Setup(m => m.ReadLines(It.IsAny<string>())).Returns(Path);
             Win32Program.FileWrapper = mockFile.Object;
 
             string oldFullPath = directory + "\\" + oldpath;

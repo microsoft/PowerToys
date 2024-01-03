@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.5" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.6" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -16,6 +16,7 @@
       <string id="SUPPORTED_POWERTOYS_0_70_0">PowerToys version 0.70.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_73_0">PowerToys version 0.73.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_75_0">PowerToys version 0.75.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_76_0">PowerToys version 0.76.0 or later</string>
 
             <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -23,7 +24,7 @@ If you enable this setting, all utilities will be always enabled and the user wo
 
 If you disable this setting, all utilities will be always disabled and the user won't be able to enable it.
 
-If you don't configure this setting, users are able to disable or enable the utilities.
+If you don't configure this setting, users are able to enable or disable the utilities.
 
 The individual enabled state policies for the utilities will override this policy.
 </string>
@@ -34,7 +35,7 @@ If you enable this setting, the utility will be always enabled and the user won'
 
 If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
 
-If you don't configure this setting, users are able to disable or enable the utility.
+If you don't configure this setting, users are able to enable or disable the utility.
 
 This policy has a higher priority than the policy "Configure global utility enabled state" and overrides it.
 </string>
@@ -46,7 +47,7 @@ If you enable this setting, the utility will be always enabled and the user won'
 
 If you disable this setting, the utility will be always disabled and the user won't be able to enable it.
 
-If you don't configure this setting, users are able to disable or enable the utility.
+If you don't configure this setting, users are able to enable or disable the utility.
 
 This policy has a higher priority than the policy "Configure global utility enabled state" and overrides it.
 </string>
@@ -78,7 +79,7 @@ If disabled or not configured, the automatic update checks are enabled.
 </string>
       <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
 
-If this setting is not configured or enabled, the user can control experimentation in the PowerToys settings menu.
+If this setting is enabled or not configured, the user can control experimentation in the PowerToys settings menu.
 
 If this setting is disabled, experimentation is not allowed.
 </string>
@@ -88,22 +89,22 @@ If you enable this setting, the plugins will be always enabled and the user won'
 
 If you disable this setting, the plugins will be always disabled and the user won't be able to enable it.
 
-If you don't configure this setting, users are able to disable or enable the plugins.
+If you don't configure this setting, users are able to enable or disable the plugins.
 
 You can override this policy for individual plugins using the policy "Configure enabled state for individual plugins".
 
 Note: Changes require a restart of PowerToys Run.
 </string>
-      <string id="PowerToysRunIndividualPluginEnabledStateDescription">With this policy you can configures an individual enabled state for each PowerToys Run plugin that you add to the list.
+      <string id="PowerToysRunIndividualPluginEnabledStateDescription">With this policy you can configure an individual enabled state for each PowerToys Run plugin that you add to the list.
 
 If you enable this setting, you can define the list of plugins and their enabled states:
-  - The value name (first column) is the plugin ID. You will find it in the plugin.json which is located in the plugin folder.
+  - The value name (first column) is the plugin ID. You will find it in the plugin.json file which is located in the plugin folder.
   - The value (second column) is a numeric value: 0 for disabled, 1 for enabled and 2 for user takes control.
   - Example to disable the Program plugin: 791FC278BA414111B8D1886DFE447410 | 0
 
 If you disable or don't configure this policy, either the user or the policy "Configure enabled state for all plugins" takes control over the enabled state of the plugins.
 
-You can set the enabled state for all plugins not listed here using the policy "Configure enabled state for all plugins".
+You can set the enabled state for all plugins not configured by this policy using the policy "Configure enabled state for all plugins".
 
 Note: Changes require a restart of PowerToys Run.
 </string>
@@ -149,6 +150,8 @@ Note: Changes require a restart of PowerToys Run.
       <string id="AllowExperimentation">Allow Experimentation</string>
       <string id="PowerToysRunAllPluginsEnabledState">Configure enabled state for all plugins</string>
       <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>
+      <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
     </stringTable>
 	
 	<presentationTable>

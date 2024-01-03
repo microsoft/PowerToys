@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Resources.wox_plugin_service_stop,
                     Glyph = "\xE71A",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ =>
@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Resources.wox_plugin_service_restart,
                     Glyph = "\xE72C",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.R,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ =>
@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Resources.wox_plugin_service_start,
                     Glyph = "\xEDB5",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ =>
@@ -102,7 +102,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = Resources.wox_plugin_service_open_services,
                 Glyph = "\xE8A7",
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = Key.O,
                 AcceleratorModifiers = ModifierKeys.Control,
                 Action = _ =>

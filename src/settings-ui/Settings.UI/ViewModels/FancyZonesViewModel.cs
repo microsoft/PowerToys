@@ -4,18 +4,18 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Common.UI;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
-        private ISettingsUtils SettingsUtils { get; set; }
+        private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -46,27 +46,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
-            if (settingsUtils == null)
-            {
-                throw new ArgumentNullException(nameof(settingsUtils));
-            }
+            ArgumentNullException.ThrowIfNull(settingsUtils);
 
             SettingsUtils = settingsUtils;
 
             // To obtain the general settings configurations of PowerToys Settings.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             settingsConfigFileFolder = configFileSubfolder;
 
             // To obtain the settings configurations of Fancy zones.
-            if (moduleSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(moduleSettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(moduleSettingsRepository);
 
             Settings = moduleSettingsRepository.SettingsConfig;
 
@@ -119,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            _windows11 = Helper.Windows11();
+            _windows11 = OSVersionHelper.IsWindows11();
 
             // Disable setting on windows 10
             if (!_windows11 && DisableRoundCornersOnWindowSnap)
@@ -624,24 +615,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _showZoneNumber = value;
                     Settings.Properties.FancyzonesShowZoneNumber.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public bool AllowPopupWindowSnap
-        {
-            get
-            {
-                return _allowPopupWindowSnap;
-            }
-
-            set
-            {
-                if (value != _allowPopupWindowSnap)
-                {
-                    _allowPopupWindowSnap = value;
-                    Settings.Properties.FancyzonesAllowPopupWindowSnap.Value = value;
                     NotifyPropertyChanged();
                 }
             }

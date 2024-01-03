@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>UnitTests-QoiThumbnailProvider</AssemblyTitle>
+    <AssemblyDescription>PowerToys UnitTests-QoiThumbnailProvider</AssemblyDescription>
+    <AssemblyTitle>UnitTests-QoiThumbnailProvider</AssemblyTitle>
+    <Description>PowerToys UnitTests-QoiThumbnailProvider</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ProjectGuid>{F8FFFC12-A31A-4AFA-B3DF-14DCF42B5E38}</ProjectGuid>
+    <RootNamespace>QoiThumbnailProviderUnitTests</RootNamespace>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\Version.props" />
+
+  <ItemGroup>
+    <None Remove="HelperFiles\sample.qoi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\QoiThumbnailProvider\QoiThumbnailProvider.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
+    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="HelperFiles\sample.qoi">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

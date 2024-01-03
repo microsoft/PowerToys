@@ -51,8 +51,10 @@ std::vector<std::pair<DWORD, std::wstring>> KeyDropDownControl::GetKeyList(bool 
 void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisable)
 {
     dropDown = ComboBox();
+#ifndef USE_NEW_DROPDOWN_WARNING_TIP
     warningFlyout = Flyout();
     warningMessage = TextBlock();
+#endif
 
     if (!isShortcut)
     {
@@ -64,7 +66,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     }
 
     dropDown.as<ComboBox>().MaxDropDownHeight(EditorConstants::TableDropDownHeight);
-    
+
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     dropDown.as<ComboBox>().SelectedValuePath(L"DataContext");
@@ -77,6 +79,32 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
         CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut, renderDisable);
     });
 
+#ifdef USE_NEW_DROPDOWN_WARNING_TIP
+    // Attach the tip to the drop down
+    warningTip.Target(dropDown.as<ComboBox>());
+    dropDown.as<ComboBox>().Loaded([&](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
+        auto combo = dropDown.as<ComboBox>();
+        auto child0 = Media::VisualTreeHelper::GetChild(combo, 0);
+        if (!child0)
+            return;
+        
+        auto grid = child0.as<Grid>();
+        if (!grid)
+            return;
+
+        auto& gridChildren = grid.Children();
+        if (!gridChildren)
+            return;
+        
+        gridChildren.Append(warningTip);
+    });
+
+    // Tip properties
+    muxc::SymbolIconSource warningIcon;
+    warningIcon.Symbol(Symbol::Important);
+    warningTip.IconSource(warningIcon);
+    warningTip.IsLightDismissEnabled(true);
+#else
     // Attach flyout to the drop down
     warningFlyout.as<Flyout>().Content(warningMessage.as<TextBlock>());
 
@@ -86,7 +114,8 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     style.Setters().Append(Setter(Windows::UI::Xaml::Controls::Control::TabNavigationProperty(), winrt::box_value(Windows::UI::Xaml::Input::KeyboardNavigationMode::Cycle)));
     warningFlyout.as<Flyout>().FlyoutPresenterStyle(style);
     dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
-    
+#endif
+
     // To set the accessible name of the combo-box (by default index 1)
     SetAccessibleNameForComboBox(dropDown.as<ComboBox>(), 1);
 }
@@ -125,7 +154,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
 
         ComboBox currentDropDown = sender.as<ComboBox>();
         int selectedKeyCode = GetSelectedValue(currentDropDown);
-        
+
         // Validate current remap selection
         ShortcutErrorType errorType = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(rowIndex, colIndex, selectedKeyCode, singleKeyRemapBuffer);
 
@@ -212,7 +241,7 @@ std::pair<ShortcutErrorType, int> KeyDropDownControl::ValidateShortcutSelection(
             }
 
             parent.Children().RemoveAt(dropDownIndex);
-            
+
             // delete drop down control object from the vector so that it can be destructed
             keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
         }
@@ -352,7 +381,7 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(StackPanel table, Stac
     {
         // Check for errors only if the current selection is a valid shortcut
         std::vector<int32_t> selectedKeyCodes = GetSelectedCodesFromStackPanel(parent);
-        KeyShortcutUnion currentShortcut;
+        KeyShortcutTextUnion currentShortcut;
         if (GetNumberOfSelectedKeys(selectedKeyCodes) == 1 && isHybridControl)
         {
             currentShortcut = (DWORD)selectedKeyCodes[0];
@@ -376,6 +405,11 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(StackPanel table, Stac
 void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring message)
 {
     currentDropDown.SelectedIndex(-1);
+
+#ifdef USE_NEW_DROPDOWN_WARNING_TIP
+    warningTip.Title(message);
+    warningTip.IsOpen(true);
+#else
     warningMessage.as<TextBlock>().Text(message);
     try
     {
@@ -386,6 +420,7 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
         // If it's loading and some remaps are invalid from previous configs, avoid crashing when flyouts can't be showed yet.
         Logger::error(L"Failed to show dropdown error flyout: {}", message);
     }
+#endif
 }
 
 // Function to add a shortcut to the UI control as combo boxes
@@ -393,7 +428,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
 {
     // Delete the existing drop down menus
     parent.Children().Clear();
-    
+
     // Remove references to the old drop down objects to destroy them
     keyDropDownControlObjects.clear();
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();

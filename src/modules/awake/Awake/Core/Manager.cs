@@ -6,12 +6,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using Awake.Core.Models;
 using Awake.Core.Native;
+using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
@@ -26,6 +28,9 @@ namespace Awake.Core
     /// </summary>
     public class Manager
     {
+        private static readonly CompositeFormat AwakeMinutes = System.Text.CompositeFormat.Parse(Properties.Resources.AWAKE_MINUTES);
+        private static readonly CompositeFormat AwakeHours = System.Text.CompositeFormat.Parse(Properties.Resources.AWAKE_HOURS);
+
         private static BlockingCollection<ExecutionState> _stateQueue;
 
         private static CancellationTokenSource _tokenSource;
@@ -274,9 +279,9 @@ namespace Awake.Core
         {
             Dictionary<string, int> optionsList = new Dictionary<string, int>
             {
-                { "30 minutes", 1800 },
-                { "1 hour", 3600 },
-                { "2 hours", 7200 },
+                { string.Format(CultureInfo.InvariantCulture, AwakeMinutes, 30), 1800 },
+                { Resources.AWAKE_1_HOUR, 3600 },
+                { string.Format(CultureInfo.InvariantCulture, AwakeHours, 2), 7200 },
             };
             return optionsList;
         }

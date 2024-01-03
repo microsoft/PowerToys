@@ -58,8 +58,7 @@
                             </controls:SettingsCard>
                             <controls:SettingsCard
                                 x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
-                                HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                         Glyph=&#xEDA7;}"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=3}">
                                 <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
                             </controls:SettingsCard>
@@ -288,8 +287,8 @@
                                     <TextBlock x:Uid="EditTooltip" />
                                 </ToolTipService.ToolTip>
                                 <Button.Flyout>
-                                    <Flyout x:Uid="MouseJumpThumbnailSize_Edit">
-                                        <StackPanel Margin="0,12,0,0" Spacing="16">
+                                    <Flyout x:Uid="MouseJumpThumbnailSize_Edit" ShouldConstrainToRootBounds="False">
+                                        <StackPanel Spacing="16">
                                             <NumberBox
                                                 x:Uid="MouseUtils_MouseJump_ThumbnailSize_Edit_Width"
                                                 Width="140"
