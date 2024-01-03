@@ -59,12 +59,21 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataRow(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "°f", "in", "DegreeCelsius" })]
         [DataRow(new string[] { "5", "c", "in", "f" }, new string[] { "5", "°c", "in", "°f" })]
         [DataRow(new string[] { "5", "f", "in", "c" }, new string[] { "5", "°f", "in", "°c" })]
-#pragma warning restore CA1861 // Avoid constant arrays as arguments
         public void PrefixesDegrees(string[] input, string[] expectedResult)
         {
             InputInterpreter.DegreePrefixer(ref input);
             CollectionAssert.AreEqual(expectedResult, input);
         }
+
+        [DataTestMethod]
+        [DataRow(new string[] { "5", "nmi", "in", "km" }, new string[] { "5", "nauticalmiles", "in", "km" })]
+        [DataRow(new string[] { "1", "km", "in", "nmi" }, new string[] { "1", "km", "in", "nauticalmiles" })]
+        public void TestnmiNotation(string[] input, string[] expectedResult)
+        {
+            InputInterpreter.NauticalMileTonmi(ref input);
+            CollectionAssert.AreEqual(expectedResult, input);
+        }
+#pragma warning restore CA1861 // Avoid constant arrays as arguments
 
         [DataTestMethod]
         [DataRow("a f in c")]
@@ -84,15 +93,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
             Query query = new Query(queryString);
             var convertModel = InputInterpreter.Parse(query);
             Assert.AreEqual(result, convertModel.Value);
-        }
-
-        [DataTestMethod]
-        [DataRow(new string[] { "5", "nmi", "in", "km" }, new string[] { "5", "nauticalmiles", "in", "km" })]
-        [DataRow(new string[] { "1", "km", "in", "nmi" }, new string[] { "1", "km", "in", "nauticalmiles" })]
-        public void TestnmiNotation(string[] input, string[] expectedResult)
-        {
-            InputInterpreter.NauticalMileTonmi(ref input);
-            CollectionAssert.AreEqual(expectedResult, input);
         }
     }
 }
