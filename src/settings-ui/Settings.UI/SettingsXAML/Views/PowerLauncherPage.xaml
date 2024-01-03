@@ -20,17 +20,17 @@
                 <tkcontrols:SettingsCard
                     x:Uid="PowerLauncher_EnablePowerLauncher"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
@@ -38,10 +38,10 @@
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" />
+                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind ViewModel.IgnoreHotkeysInFullScreen, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -77,18 +77,18 @@
 
                 <!--<CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{Binding Mode=TwoWay, Path=ViewModel.OverrideWinSKey}"
+                      IsChecked="{x:Bind ViewModel.OverrideWinSKey, Mode=TwoWay}"
                       IsEnabled="False"
                       />-->
 
-                <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
                         HeaderIcon="{ui:FontIcon Glyph=&#xec48;}"
                         IsExpanded="True">
-                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryResultsWithDelay}" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
+                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -96,9 +96,9 @@
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelayFast}" />
+                                    Value="{x:Bind ViewModel.SearchInputDelayFast, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryResultsWithDelay}">
+                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -106,7 +106,7 @@
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchInputDelay}" />
+                                    Value="{x:Bind ViewModel.SearchInputDelay, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -119,10 +119,10 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Minimum="1"
                             SpinButtonPlacementMode="Compact"
-                            Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}" />
+                            Value="{x:Bind ViewModel.MaximumNumberOfResults, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" />
+                                <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind ViewModel.ClearInputOnLaunch, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -131,9 +131,9 @@
                         x:Uid="PowerLauncher_SearchQueryTuningEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}"
                         IsExpanded="True">
-                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SearchQueryTuningEnabled}" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SearchClickedItemWeight" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
+                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SearchClickedItemWeight" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -141,10 +141,10 @@
                                     Minimum="0"
                                     SmallChange="5"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.SearchClickedItemWeight}" />
+                                    Value="{x:Bind ViewModel.SearchClickedItemWeight, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SearchQueryTuningEnabled}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SearchWaitForSlowResults}" />
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -166,7 +166,7 @@
                       MinWidth="320"
                       Margin="{StaticResource SmallTopMargin}"
                       ItemsSource="{Binding searchResultPreferencesOptions}"
-                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchResultPreference}"
+                      SelectedItem="{x:Bind SelectedSearchResultPreference, Mode=TwoWay}"
                       SelectedValuePath="Item2"
                       DisplayMemberPath="Item1"
                       IsEnabled="False"
@@ -176,15 +176,15 @@
                       MinWidth="320"
                       Margin="{StaticResource SmallTopMargin}"
                       ItemsSource="{Binding searchTypePreferencesOptions}"
-                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchTypePreference}"
+                      SelectedItem="{x:Bind SelectedSearchTypePreference, Mode=TwoWay}"
                       SelectedValuePath="Item2"
                       DisplayMemberPath="Item1"
                       IsEnabled="False"
                       />-->
 
-                <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorPositionIndex}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.MonitorPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
@@ -195,7 +195,7 @@
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </tkcontrols:SettingsCard.Description>
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
@@ -203,7 +203,7 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="PowerLauncher_ShowPluginKeywords" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ShowPluginsOverviewIndex}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ShowPluginsOverviewIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ShowPluginsOverview_All" />
                             <ComboBoxItem x:Uid="ShowPluginsOverview_NonGlobal" />
                             <ComboBoxItem x:Uid="ShowPluginsOverview_None" />
@@ -238,13 +238,13 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
 
                     <InfoBar
                         x:Uid="Run_ConflictingKeywordInfo"
                         IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                        IsOpen="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}"
                         Severity="Informational">
                         <InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="Run_ConflictingKeywordInfo_Link" NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands" />
@@ -340,7 +340,7 @@
                                         </StackPanel>
                                         <tkcontrols:SettingsExpander.Items>
                                             <tkcontrols:SettingsCard x:Uid="PowerLauncher_ActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
-                                                <TextBox MinWidth="{StaticResource SettingActionControlMinWidth}" Text="{x:Bind Path=ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                <TextBox MinWidth="{StaticResource SettingActionControlMinWidth}" Text="{x:Bind ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                             </tkcontrols:SettingsCard>
                                             <tkcontrols:SettingsCard
                                                 Padding="0,-4,0,0"
@@ -362,7 +362,7 @@
                                                 <CheckBox
                                                     Margin="0,-8,0,0"
                                                     AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
-                                                    IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}">
+                                                    IsChecked="{x:Bind IsGlobal, Mode=TwoWay}">
                                                     <StackPanel Orientation="Vertical">
                                                         <TextBlock x:Name="IncludeInGlobalResultTitle" x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
                                                         <controls:IsEnabledTextBlock
@@ -380,7 +380,7 @@
                                                     Minimum="-1000"
                                                     SmallChange="10"
                                                     SpinButtonPlacementMode="Compact"
-                                                    Value="{x:Bind Mode=TwoWay, Path=WeightBoost}" />
+                                                    Value="{x:Bind WeightBoost, Mode=TwoWay}" />
                                             </tkcontrols:SettingsCard>
                                             <tkcontrols:SettingsCard
                                                 MinHeight="0"
@@ -413,7 +413,7 @@
                                                                         Margin="56,0,0,0"
                                                                         Description="{x:Bind Path=DisplayDescription}"
                                                                         Header="{x:Bind Path=DisplayLabel}"
-                                                                        IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                        IsChecked="{x:Bind Value, Mode=TwoWay}" />
                                                                 </tkcontrols:SettingsCard>
                                                                 <!--  ComboBox setting  -->
                                                                 <tkcontrols:SettingsCard
@@ -429,7 +429,7 @@
                                                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                         DisplayMemberPath="Key"
                                                                         ItemsSource="{x:Bind Path=ComboBoxItems}"
-                                                                        SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
+                                                                        SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
                                                                         SelectedValuePath="Value" />
                                                                 </tkcontrols:SettingsCard>
                                                                 <!--  TextBox setting  -->
@@ -445,8 +445,8 @@
                                                                     <TextBox
                                                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                         MaxWidth="450"
-                                                                        MaxLength="{x:Bind Path=TextBoxMaxLength, Mode=OneWay}"
-                                                                        Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
+                                                                        MaxLength="{x:Bind TextBoxMaxLength, Mode=OneWay}"
+                                                                        Text="{x:Bind TextValue, Mode=TwoWay}" />
                                                                 </tkcontrols:SettingsCard>
                                                                 <!--  NumberBox setting  -->
                                                                 <tkcontrols:SettingsCard
@@ -460,12 +460,12 @@
                                                                     Visibility="{x:Bind Path=ShowNumberBox, Converter={StaticResource BoolToVisibilityConverter}}">
                                                                     <NumberBox
                                                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                                        LargeChange="{x:Bind Path=NumberBoxLargeChange, Mode=OneWay}"
-                                                                        Maximum="{x:Bind Path=NumberBoxMax, Mode=OneWay}"
-                                                                        Minimum="{x:Bind Path=NumberBoxMin, Mode=OneWay}"
-                                                                        SmallChange="{x:Bind Path=NumberBoxSmallChange, Mode=OneWay}"
+                                                                        LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
+                                                                        Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
+                                                                        Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
+                                                                        SmallChange="{x:Bind NumberBoxSmallChange, Mode=OneWay}"
                                                                         SpinButtonPlacementMode="Compact"
-                                                                        Value="{x:Bind Path=NumberValue, Mode=TwoWay}" />
+                                                                        Value="{x:Bind NumberValue, Mode=TwoWay}" />
                                                                 </tkcontrols:SettingsCard>
                                                                 <!--  Checkbox And ComboBox setting  -->
                                                                 <StackPanel
@@ -484,7 +484,7 @@
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
-                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                            IsChecked="{x:Bind Value, Mode=TwoWay}" />
                                                                     </tkcontrols:SettingsCard>
                                                                     <tkcontrols:SettingsCard
                                                                         MinHeight="0"
@@ -494,12 +494,12 @@
                                                                         CornerRadius="0"
                                                                         Description="{x:Bind Path=SecondDisplayDescription}"
                                                                         Header="{x:Bind Path=SecondDisplayLabel}"
-                                                                        IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
+                                                                        IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                                                                         <ComboBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                             DisplayMemberPath="Key"
                                                                             ItemsSource="{x:Bind Path=ComboBoxItems}"
-                                                                            SelectedValue="{x:Bind Path=ComboBoxValue, Mode=TwoWay}"
+                                                                            SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
                                                                             SelectedValuePath="Value" />
                                                                     </tkcontrols:SettingsCard>
                                                                 </StackPanel>
@@ -520,7 +520,7 @@
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
-                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                            IsChecked="{x:Bind Value, Mode=TwoWay}" />
                                                                     </tkcontrols:SettingsCard>
                                                                     <tkcontrols:SettingsCard
                                                                         MinHeight="0"
@@ -530,12 +530,12 @@
                                                                         CornerRadius="0"
                                                                         Description="{x:Bind Path=SecondDisplayDescription}"
                                                                         Header="{x:Bind Path=SecondDisplayLabel}"
-                                                                        IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
+                                                                        IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                                                                         <TextBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                             MaxWidth="450"
-                                                                            MaxLength="{x:Bind Path=TextBoxMaxLength, Mode=OneWay}"
-                                                                            Text="{x:Bind Path=TextValue, Mode=TwoWay}" />
+                                                                            MaxLength="{x:Bind TextBoxMaxLength, Mode=OneWay}"
+                                                                            Text="{x:Bind TextValue, Mode=TwoWay}" />
                                                                     </tkcontrols:SettingsCard>
                                                                 </StackPanel>
                                                                 <!--  Checkbox And NumberBox setting  -->
@@ -555,7 +555,7 @@
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
-                                                                            IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                                                            IsChecked="{x:Bind Value, Mode=TwoWay}" />
                                                                     </tkcontrols:SettingsCard>
                                                                     <tkcontrols:SettingsCard
                                                                         MinHeight="0"
@@ -565,15 +565,15 @@
                                                                         CornerRadius="0"
                                                                         Description="{x:Bind Path=SecondDisplayDescription}"
                                                                         Header="{x:Bind Path=SecondDisplayLabel}"
-                                                                        IsEnabled="{x:Bind Path=SecondSettingIsEnabled, Mode=OneWay}">
+                                                                        IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                                                                         <NumberBox
                                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                                            LargeChange="{x:Bind Path=NumberBoxLargeChange, Mode=OneWay}"
-                                                                            Maximum="{x:Bind Path=NumberBoxMax, Mode=OneWay}"
-                                                                            Minimum="{x:Bind Path=NumberBoxMin, Mode=OneWay}"
-                                                                            SmallChange="{x:Bind Path=NumberBoxSmallChange, Mode=OneWay}"
+                                                                            LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
+                                                                            Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
+                                                                            Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
+                                                                            SmallChange="{x:Bind NumberBoxSmallChange, Mode=OneWay}"
                                                                             SpinButtonPlacementMode="Compact"
-                                                                            Value="{x:Bind Path=NumberValue, Mode=TwoWay}" />
+                                                                            Value="{x:Bind NumberValue, Mode=TwoWay}" />
                                                                     </tkcontrols:SettingsCard>
                                                                 </StackPanel>
                                                                 <!--  Separator line  -->
