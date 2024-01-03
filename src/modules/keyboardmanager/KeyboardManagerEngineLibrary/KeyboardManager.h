@@ -7,6 +7,8 @@
 class KeyboardManager
 {
 public:
+    static const inline DWORD StartHookMessageID = WM_APP + 1;
+
     // Constructor
     KeyboardManager();
     
@@ -21,7 +23,12 @@ public:
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
 
+    bool HasRegisteredRemappings() const;
+
 private:
+    // Returns whether there are any remappings available without waiting for settings to load
+    bool HasRegisteredRemappingsUnchecked() const;
+
     // Contains the non localized module name
     std::wstring moduleName = KeyboardManagerConstants::ModuleName;
 
