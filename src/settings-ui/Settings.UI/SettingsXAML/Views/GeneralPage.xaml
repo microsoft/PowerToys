@@ -209,6 +209,9 @@
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
+                    <controls:SettingsCard x:Uid="GeneralPage_WarningsElevatedApps">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=EnableWarningsElevatedApps}" />
+                    </controls:SettingsCard>
                 </custom:SettingsGroup>
 
                 <custom:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
