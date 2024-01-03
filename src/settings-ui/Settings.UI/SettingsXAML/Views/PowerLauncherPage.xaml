@@ -48,20 +48,20 @@
                 </controls:SettingsGroup>
 
 
-                <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
+                <!--<controls:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
                                           IsEnabled="False"
                                         />
-            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
+            <controls:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
                                           Keys="Win, Ctrl, Alt, Shift"
                                           IsEnabled="False"
                                         />
-            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
+            <controls:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenConsole, Mode=TwoWay}"
