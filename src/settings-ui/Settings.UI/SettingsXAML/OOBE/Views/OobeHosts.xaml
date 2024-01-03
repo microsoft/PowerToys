@@ -10,8 +10,8 @@
 
     <controls:OOBEPageControl x:Uid="Oobe_Hosts" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/HostsFileEditor.png">
         <controls:OOBEPageControl.PageContent>
-         <StackPanel Orientation="Vertical" Spacing="12">
-                 <StackPanel Orientation="Horizontal" Spacing="8">
+            <StackPanel Orientation="Vertical" Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button
                         x:Uid="Launch_Hosts"
                         Click="Launch_Hosts_Click"

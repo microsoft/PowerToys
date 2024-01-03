@@ -10,7 +10,7 @@
 
     <controls:OOBEPageControl x:Uid="Oobe_ImageResizer" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ImageResizer.gif">
         <controls:OOBEPageControl.PageContent>
-             <StackPanel Orientation="Horizontal" Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />
 
                 <tk7controls:MarkdownTextBlock x:Uid="Oobe_ImageResizer_HowToLaunch" Background="Transparent" />

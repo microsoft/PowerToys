@@ -9,7 +9,8 @@
     mc:Ignorable="d">
     <controls:OOBEPageControl x:Uid="Oobe_RegistryPreview" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/RegistryPreview.png">
         <controls:OOBEPageControl.PageContent>
-            <StackPanel Orientation="Vertical" Spacing="12">>
+            <StackPanel Orientation="Vertical" Spacing="12">
+                >
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
                 <tk7controls:MarkdownTextBlock x:Uid="Oobe_RegistryPreview_HowToUse" Background="Transparent" />
