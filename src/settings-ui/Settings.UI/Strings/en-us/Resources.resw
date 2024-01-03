@@ -1022,6 +1022,12 @@
   <data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
     <value>PowerToys will launch automatically</value>
   </data>
+  <data name="GeneralPage_WarningsElevatedApps.Header" xml:space="preserve">
+    <value>Elevated Apps warnings </value>
+  </data>
+  <data name="GeneralPage_WarningsElevatedApps.Description" xml:space="preserve">
+    <value>Show notifications about PowerToys functionality issues when running alongside elevated applications.</value>
+  </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search &amp; replace or regular expressions.</value>
   </data>
@@ -2358,6 +2364,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Awake</value>
     <comment>Awake is a product name, do not loc</comment>
   </data>
+  <data name="LearnMore_CmdNotFound.Text" xml:space="preserve">
+    <value>Learn more about Command Not Found</value>
+    <comment> Command Not Found is the name of the module. </comment>
+  </data>
   <data name="SecondaryLink_Awake.Text" xml:space="preserve">
     <value>Den Delimarsky's work on creating Awake</value>
     <comment>Awake is a product name, do not loc</comment>
@@ -3654,6 +3664,51 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_PastePlain_HowToUse.Text" xml:space="preserve">
     <value>to paste your clipboard data as plain text. Note: this will replace the formatted text in your clipboard with the plain text.</value>
+  </data>
+  <data name="Shell_CmdNotFound.Content" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>Product name: Navigation view item name for Command Not Found</comment>
+  </data>
+  <data name="CmdNotFound.ModuleDescription" xml:space="preserve">
+    <value>A PowerShell module that detects an error thrown by a command and suggests a relevant WinGet package to install, if available.</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="CmdNotFound.ModuleTitle" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+	<data name="CmdNotFound_Enable.Header" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+	<data name="CmdNotFound_Enable_DescriptionText.Text" xml:space="preserve">
+    <value>Add this module to the PowerShell 7 profile script so that it is enabled with every new session</value>
+  </data>
+  <data name="CmdNotFound_ModuleInstallationLogs.Text" xml:space="preserve">
+    <value>Installation logs</value>
+  </data>
+  <data name="CmdNotFound_CheckPowerShellVersionButtonControl.Description" xml:space="preserve">
+    <value>PowerShell 7 is required to use this module</value>
+  </data>
+	<data name="CmdNotFound_CheckCompatibility.Content" xml:space="preserve">
+    <value>Check if your PowerShell configuration is compatible</value>
+  </data>
+	<data name="CmdNotFound_InstallButton.Content" xml:space="preserve">
+    <value>Install</value>
+  </data>
+	<data name="CmdNotFound_UninstallButton.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="Oobe_CmdNotFound.Description" xml:space="preserve">
+    <value>Command Not Found detects an error thrown by a command in PowerShell and suggests a relevant WinGet package to install, if available.</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdNotFound.Title" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdNotFound_HowToUse.Text" xml:space="preserve">
+    <value>If a command returns an error, the module will suggest a WinGet package that may provide the relevant executable.</value>
   </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>

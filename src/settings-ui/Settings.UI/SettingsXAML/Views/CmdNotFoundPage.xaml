@@ -1,0 +1,60 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.CmdNotFoundPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <custom:SettingsPageControl x:Uid="CmdNotFound" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
+        <custom:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <InfoBar
+                    x:Uid="GPO_IsSettingForced"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    Severity="Informational" />
+
+                <controls:SettingsCard
+                    x:Uid="CmdNotFound_Enable"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button
+                            x:Uid="CmdNotFound_InstallButton"
+                            Command="{x:Bind ViewModel.InstallModuleEventHandler}"
+                            Style="{StaticResource AccentButtonStyle}" />
+                        <HyperlinkButton x:Uid="CmdNotFound_UninstallButton" Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
+                    </StackPanel>
+                    <controls:SettingsCard.Description>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock x:Uid="CmdNotFound_Enable_DescriptionText" />
+                            <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckPowershellVersionEventHandler}" />
+                        </StackPanel>
+                    </controls:SettingsCard.Description>
+                </controls:SettingsCard>
+
+                <TextBlock
+                    x:Uid="CmdNotFound_ModuleInstallationLogs"
+                    Margin="0,12,0,4"
+                    Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                <TextBox
+                    Height="300"
+                    FontFamily="Consolas"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
+                    IsReadOnly="True"
+                    Text="{x:Bind Mode=OneWay, Path=ViewModel.CommandOutputLog}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </custom:SettingsPageControl.ModuleContent>
+
+        <custom:SettingsPageControl.PrimaryLinks>
+            <custom:PageLink x:Uid="LearnMore_CmdNotFound" Link="https://aka.ms/PowerToysOverview_CmdNotFound" />
+        </custom:SettingsPageControl.PrimaryLinks>
+    </custom:SettingsPageControl>
+</Page>
