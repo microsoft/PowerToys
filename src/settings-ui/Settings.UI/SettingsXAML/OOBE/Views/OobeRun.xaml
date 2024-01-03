@@ -10,7 +10,6 @@
     <controls:OOBEPageControl x:Uid="Oobe_Run" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Run.gif">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                >
                 <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />
 
                 <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_Run_HowToLaunch" />
