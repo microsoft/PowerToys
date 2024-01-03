@@ -1,6 +1,3 @@
-# FALSE POSITIVES
-## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
-## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -298,7 +295,6 @@ ddf
 DDxgi
 Deact
 debugbreak
-declatory
 decryptor
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -1070,7 +1066,6 @@ overlaywindow
 Oversampling
 OWNDC
 OWNERDRAW
-Packagemanager
 PACL
 PAINTSTRUCT
 PALETTEWINDOW
@@ -1845,3 +1840,10 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
+
+# FALSE POSITIVES
+
+## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
+declatory
+## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
+Packagemanager
