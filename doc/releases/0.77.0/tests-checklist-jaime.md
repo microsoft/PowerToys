@@ -384,26 +384,26 @@ Mouse Jump:
 
 ## File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
-   - [ ] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
-   - [ ] End the tasks in File Locksmith UI and verify that closes the installer.
-   - [ ] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
-   - [ ] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
+   - [x] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
+   - [x] End the tasks in File Locksmith UI and verify that closes the installer.
+   - [x] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
+   - [x] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
  * Start the PowerToys installer executable again and let it stay in the initial screen.
-   - [ ] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
-   - [ ] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
+   - [x] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
+   - [x] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
  * Restart PowerToys as admin.
-   - [ ] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
-   - [ ] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
- - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
- - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
+   - [x] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
+   - [x] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
+ - [x] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
+ - [x] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
 
 ## Paste As Plain Text
  * Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.). Then:
-   - [ ] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
-   - [ ] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
-   - [ ] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
-   - [ ] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
-   - [ ] Disable the module and ensure that text is not being pasted using activation shortcut. 
+   - [x] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
+   - [x] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
+   - [x] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
+   - [x] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
+   - [x] Disable the module and ensure that text is not being pasted using activation shortcut. 
 
 ## Mouse Without Borders
  * Install PowerToys on two PCs in the same local network:
@@ -460,9 +460,9 @@ Mouse Jump:
    
 ## Crop And Lock
  * Thumbnail mode
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
    
  * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
