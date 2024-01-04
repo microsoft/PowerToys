@@ -2,7 +2,7 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.CmdNotFoundPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -20,7 +20,7 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="CmdNotFound_Enable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
@@ -31,13 +31,13 @@
                             Style="{StaticResource AccentButtonStyle}" />
                         <HyperlinkButton x:Uid="CmdNotFound_UninstallButton" Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
                     </StackPanel>
-                    <controls:SettingsCard.Description>
+                    <tkcontrols:SettingsCard.Description>
                         <StackPanel Orientation="Vertical">
                             <TextBlock x:Uid="CmdNotFound_Enable_DescriptionText" />
                             <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckPowershellVersionEventHandler}" />
                         </StackPanel>
-                    </controls:SettingsCard.Description>
-                </controls:SettingsCard>
+                    </tkcontrols:SettingsCard.Description>
+                </tkcontrols:SettingsCard>
 
                 <TextBlock
                     x:Uid="CmdNotFound_ModuleInstallationLogs"
