@@ -5,7 +5,7 @@
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">

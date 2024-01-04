@@ -3,18 +3,18 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <custom:SettingsPageControl
+    <controls:SettingsPageControl
         x:Uid="AlwaysOnTop"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/AlwaysOnTop.png">
-        <custom:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
@@ -28,7 +28,7 @@
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
-                <custom:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
                     <tkcontrols:SettingsExpander
                         x:Uid="AlwaysOnTop_ActivationShortcut"
@@ -41,9 +41,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="AlwaysOnTop_FrameEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
@@ -94,9 +94,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="AlwaysOnTop_ExcludedApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
@@ -116,12 +116,12 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
 
-        <custom:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
             <custom:PageLink x:Uid="LearnMore_AlwaysOnTop" Link="https://aka.ms/PowerToysOverview_AlwaysOnTop" />
-        </custom:SettingsPageControl.PrimaryLinks>
-    </custom:SettingsPageControl>
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
 </Page>

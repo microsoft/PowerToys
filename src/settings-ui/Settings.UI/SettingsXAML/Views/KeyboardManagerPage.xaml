@@ -5,7 +5,7 @@
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -19,11 +19,11 @@
         </Style>
 
         <DataTemplate x:Key="OriginalKeyTemplate" x:DataType="x:String">
-            <custom:KeyVisual Content="{Binding}" VisualType="SmallOutline" />
+            <controls:KeyVisual Content="{Binding}" VisualType="SmallOutline" />
         </DataTemplate>
 
         <DataTemplate x:Key="RemappedKeyTemplate" x:DataType="x:String">
-            <custom:KeyVisual Content="{Binding}" VisualType="Small" />
+            <controls:KeyVisual Content="{Binding}" VisualType="Small" />
         </DataTemplate>
 
         <!--<DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
@@ -45,8 +45,8 @@
         </DataTemplate>-->
     </Page.Resources>
 
-    <custom:SettingsPageControl x:Uid="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
-        <custom:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="KeyboardManager_EnableToggle"
@@ -66,7 +66,7 @@
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
@@ -95,7 +95,7 @@
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
-                                        <custom:IsEnabledTextBlock
+                                        <controls:IsEnabledTextBlock
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
@@ -117,9 +117,9 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_RemapShortcutsButton"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
@@ -148,7 +148,7 @@
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
-                                        <custom:IsEnabledTextBlock
+                                        <controls:IsEnabledTextBlock
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
@@ -181,11 +181,11 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
-        <custom:SettingsPageControl.PrimaryLinks>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
             <custom:PageLink x:Uid="LearnMore_KBM" Link="https://aka.ms/PowerToysOverview_KeyboardManager" />
-        </custom:SettingsPageControl.PrimaryLinks>
-    </custom:SettingsPageControl>
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
 </Page>

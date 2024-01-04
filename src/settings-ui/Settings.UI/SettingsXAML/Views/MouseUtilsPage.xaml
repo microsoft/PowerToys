@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -18,10 +18,10 @@
             FalseValue="Visible"
             TrueValue="Collapsed" />
     </Page.Resources>
-    <custom:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
-        <custom:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <custom:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
+                <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_FindMyMouse"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png}"
@@ -141,9 +141,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseHighlighter"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png}"
@@ -211,9 +211,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="MouseUtils_MouseJump">
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseJump"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseJump.png}"
@@ -307,9 +307,9 @@
                             </Button>
                         </StackPanel>
                     </tkcontrols:SettingsCard>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
+                <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png}"
@@ -407,15 +407,15 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
-        <custom:SettingsPageControl.PrimaryLinks>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
             <custom:PageLink x:Uid="LearnMore_MouseUtils" Link="https://aka.ms/PowerToysOverview_MouseUtilities" />
-        </custom:SettingsPageControl.PrimaryLinks>
-        <custom:SettingsPageControl.SecondaryLinks>
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
             <custom:PageLink Link="https://devblogs.microsoft.com/oldnewthing/author/oldnewthing" Text="Raymond Chen's Find My Mouse" />
             <custom:PageLink Link="https://michael-clayton.com/projects/fancymouse" Text="Michael Clayton's Mouse Jump (FancyMouse)" />
-        </custom:SettingsPageControl.SecondaryLinks>
-    </custom:SettingsPageControl>
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>

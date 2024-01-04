@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
@@ -19,8 +19,8 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
     </Page.Resources>
 
-    <custom:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ColorPicker.png">
-        <custom:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ColorPicker.png">
+        <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel
                 x:Name="ColorPickerView"
@@ -39,7 +39,7 @@
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
@@ -52,9 +52,9 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
@@ -79,9 +79,9 @@
                         Margin="{StaticResource SmallTopMargin}"
                         IsEnabled="{Binding IsEnabled}"/>
                     -->
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
@@ -156,7 +156,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
                 <ContentDialog
                     x:Name="ColorFormatDialog"
                     x:Uid="ColorFormatDialog"
@@ -175,14 +175,14 @@
                     </ScrollViewer>
                 </ContentDialog>
             </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
 
-        <custom:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
             <custom:PageLink x:Uid="LearnMore_ColorPicker" Link="https://aka.ms/PowerToysOverview_ColorPicker" />
-        </custom:SettingsPageControl.PrimaryLinks>
-        <custom:SettingsPageControl.SecondaryLinks>
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
             <custom:PageLink Link="https://github.com/martinchrzan/ColorPicker/" Text="Martin Chrzan's Color Picker" />
             <custom:PageLink Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c" Text="Niels Laute's UX concept" />
-        </custom:SettingsPageControl.SecondaryLinks>
-    </custom:SettingsPageControl>
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>
