@@ -129,25 +129,25 @@
                                     </StackPanel>
                                 </tkControls:SettingsExpander.Content>
                                 <tkControls:SettingsExpander.Items>
-                                    <tkControls:SettingsCard x:Uid="ProcessID">
+                                    <tkcontrols:SettingsCard x:Uid="ProcessID">
                                         <TextBlock
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             IsTextSelectionEnabled="True"
                                             Text="{x:Bind pid}" />
-                                    </tkControls:SettingsCard>
-                                    <tkControls:SettingsCard x:Uid="User">
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="User">
                                         <TextBlock
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             IsTextSelectionEnabled="True"
                                             Text="{x:Bind user}" />
-                                    </tkControls:SettingsCard>
-                                    <tkControls:SettingsCard ContentAlignment="Vertical">
-                                        <tkControls:SettingsCard.Header>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard ContentAlignment="Vertical">
+                                        <tkcontrols:SettingsCard.Header>
                                             <TextBlock>
                                                 <Run x:Uid="Files" />
                                                 <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
                                             </TextBlock>
-                                        </tkControls:SettingsCard.Header>
+                                        </tkcontrols:SettingsCard.Header>
                                         <ItemsRepeater ItemsSource="{x:Bind files}">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate x:DataType="x:String">
@@ -162,7 +162,7 @@
                                                 </DataTemplate>
                                             </ItemsRepeater.ItemTemplate>
                                         </ItemsRepeater>
-                                    </tkControls:SettingsCard>
+                                    </tkcontrols:SettingsCard>
                                 </tkControls:SettingsExpander.Items>
                             </tkControls:SettingsExpander>
                         </DataTemplate>
