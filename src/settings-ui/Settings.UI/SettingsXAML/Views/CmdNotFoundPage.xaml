@@ -47,7 +47,7 @@
                     <controls:SettingsCard x:Uid="CmdNotFound_WinGetClientDetection">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <SymbolIcon
-                                Foreground="Green"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
                                 Symbol="Accept"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsWinGetClientModuleDetected, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <SymbolIcon
