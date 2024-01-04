@@ -105,8 +105,7 @@ namespace WinGetCommandNotFound
                 catch (Exception ex)
                 {
                     Logger.LogError("GetFeedback failed to execute", ex);
-
-                    return new FeedbackItem("Command Not Found execution failed.", new List<string>(), FeedbackDisplayLayout.Portrait);
+                    return new FeedbackItem($"Failed to execute PowerToys Command Not Found.{Environment.NewLine}This is a known issue if PowerShell 7 is installed from the Store or MSIX. If that isn't your case, please report an issue.", new List<string>(), FeedbackDisplayLayout.Portrait);
                 }
             }
 
