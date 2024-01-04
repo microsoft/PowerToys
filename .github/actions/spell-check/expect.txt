@@ -1563,6 +1563,8 @@ timediff
 timeunion
 timeutil
 Titlecase
+tkcontrols
+tkconverters
 TKey
 TLayout
 tlb

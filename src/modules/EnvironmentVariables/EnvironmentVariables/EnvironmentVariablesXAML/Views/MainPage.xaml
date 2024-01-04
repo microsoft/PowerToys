@@ -2,15 +2,14 @@
     x:Class="EnvironmentVariables.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:EnvironmentVariables.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EnvironmentVariables.Models"
-    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     mc:Ignorable="d">
@@ -195,17 +194,17 @@
                     <ItemsControl Margin="0,4,0,0" ItemsSource="{x:Bind ViewModel.Profiles, Mode=TwoWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ProfileVariablesSet">
-                                <controls:SettingsExpander
+                                <tkcontrols:SettingsExpander
                                     Margin="0,0,0,4"
                                     Header="{x:Bind Name, Mode=TwoWay}"
                                     HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}">
-                                    <controls:SettingsExpander.ItemsHeader>
+                                    <tkcontrols:SettingsExpander.ItemsHeader>
                                         <ItemsRepeater
                                             ItemTemplate="{StaticResource VariableTemplate}"
                                             ItemsSource="{x:Bind Variables, Mode=OneWay}"
                                             TabFocusNavigation="Local"
                                             VerticalCacheLength="10" />
-                                    </controls:SettingsExpander.ItemsHeader>
+                                    </tkcontrols:SettingsExpander.ItemsHeader>
 
                                     <StackPanel Orientation="Horizontal" Spacing="12">
                                         <ToggleSwitch
@@ -233,7 +232,7 @@
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
-                                </controls:SettingsExpander>
+                                </tkcontrols:SettingsExpander>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -254,17 +253,17 @@
                         </FontIcon>
                     </StackPanel>
 
-                    <controls:SettingsExpander
+                    <tkcontrols:SettingsExpander
                         Margin="0,4,0,0"
                         Header="{x:Bind ViewModel.UserDefaultSet.Name}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}">
-                        <controls:SettingsExpander.ItemsHeader>
+                        <tkcontrols:SettingsExpander.ItemsHeader>
                             <ItemsRepeater
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}"
                                 TabFocusNavigation="Local"
                                 VerticalCacheLength="10" />
-                        </controls:SettingsExpander.ItemsHeader>
+                        </tkcontrols:SettingsExpander.ItemsHeader>
                         <StackPanel Orientation="Horizontal">
                             <Button
                                 x:Name="AddDefaultVariableUserBtn"
@@ -278,17 +277,17 @@
                                 </ToolTipService.ToolTip>
                             </Button>
                         </StackPanel>
-                    </controls:SettingsExpander>
+                    </tkcontrols:SettingsExpander>
 
-                    <controls:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}" HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
-                        <controls:SettingsExpander.ItemsHeader>
+                    <tkcontrols:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}" HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
+                        <tkcontrols:SettingsExpander.ItemsHeader>
                             <ItemsRepeater
                                 ItemTemplate="{StaticResource VariableTemplate}"
                                 ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}"
                                 TabFocusNavigation="Local"
                                 VerticalCacheLength="10" />
-                        </controls:SettingsExpander.ItemsHeader>
-                        <controls:SettingsExpander.Description>
+                        </tkcontrols:SettingsExpander.ItemsHeader>
+                        <tkcontrols:SettingsExpander.Description>
                             <StackPanel
                                 Orientation="Horizontal"
                                 Spacing="4"
@@ -306,7 +305,7 @@
                                 </Border>
                                 <TextBlock x:Uid="EditSystemDefaultSetInfoBar" />
                             </StackPanel>
-                        </controls:SettingsExpander.Description>
+                        </tkcontrols:SettingsExpander.Description>
                         <StackPanel Orientation="Horizontal">
                             <Button
                                 x:Name="AddDefaultVariableSystemBtn"
@@ -320,7 +319,7 @@
                                 </ToolTipService.ToolTip>
                             </Button>
                         </StackPanel>
-                    </controls:SettingsExpander>
+                    </tkcontrols:SettingsExpander>
                 </StackPanel>
             </ScrollViewer>
             <tkcontrols:GridSplitter
@@ -643,26 +642,26 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <controls:Segmented
+                                    <tkcontrols:Segmented
                                         x:Name="SwitchViewsSegmentedView"
                                         MaxWidth="500"
                                         HorizontalAlignment="Stretch"
                                         SelectionMode="Single">
-                                        <controls:SegmentedItem
+                                        <tkcontrols:SegmentedItem
                                             x:Name="AddNewVariableSegmentedItem"
                                             x:Uid="NewVariableSegmentedButton"
                                             Tag="NewVariable" />
-                                        <controls:SegmentedItem
+                                        <tkcontrols:SegmentedItem
                                             x:Name="AddExistingVariableSegmentedItem"
                                             x:Uid="ExistingVariableSegmentedButton"
                                             Tag="ExistingVariable" />
-                                    </controls:Segmented>
+                                    </tkcontrols:Segmented>
 
-                                    <controls:SwitchPresenter
+                                    <tkcontrols:SwitchPresenter
                                         x:Name="AddVariableSwitchPresenter"
                                         Grid.Row="1"
                                         Value="{Binding SelectedItem.Tag, ElementName=SwitchViewsSegmentedView}">
-                                        <controls:Case Value="NewVariable">
+                                        <tkcontrols:Case Value="NewVariable">
                                             <StackPanel Grid.Row="1" Orientation="Vertical">
 
                                                 <!--  Adding new variable  -->
@@ -677,8 +676,8 @@
                                                     x:Uid="AddNewVariableValue"
                                                     Margin="0,16,0,0" />
                                             </StackPanel>
-                                        </controls:Case>
-                                        <controls:Case Value="ExistingVariable">
+                                        </tkcontrols:Case>
+                                        <tkcontrols:Case Value="ExistingVariable">
                                             <!--  Adding existing variables  -->
                                             <ListView
                                                 x:Name="ExistingVariablesListView"
@@ -723,8 +722,8 @@
                                                 </ListView.ItemTemplate>
                                             </ListView>
 
-                                        </controls:Case>
-                                    </controls:SwitchPresenter>
+                                        </tkcontrols:Case>
+                                    </tkcontrols:SwitchPresenter>
                                     <Grid Grid.Row="2" HorizontalAlignment="Stretch">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
