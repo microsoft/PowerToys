@@ -30,7 +30,7 @@
                     <controls:SettingsCard x:Uid="CmdNotFound_PowerShellDetection">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <SymbolIcon
-                                Foreground="Green"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
                                 Symbol="Accept"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsPowerShell7Detected, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <SymbolIcon
