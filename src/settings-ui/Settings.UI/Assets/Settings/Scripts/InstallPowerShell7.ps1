@@ -7,8 +7,14 @@ else
 {
   Write-Host "WinGet not detected. Will try to install."
   $cpuArchitecture="x64"
-  Write-Host "Detected the CPU architecture:$Env:PROCESSOR_ARCHITECTURE"
-  if ($Env:PROCESSOR_ARCHITECTURE -ne "AMD64")
+  $detectedArchitecture=""
+  if ($env:PROCESSOR_ARCHITEW6432 -eq $null) {
+    $detectedArchitecture=$env:PROCESSOR_ARCHITECTURE
+  } else {
+    $detectedArchitecture=$env:PROCESSOR_ARCHITEW6432
+  }
+  Write-Host "Detected the CPU architecture:$detectedArchitecture"
+  if ($detectedArchitecture -ne "AMD64")
   {
     Write-Host "Mismatch with AMD64, setting it to arm64, since that's where we're likely running."
     $cpuArchitecture="arm64"
