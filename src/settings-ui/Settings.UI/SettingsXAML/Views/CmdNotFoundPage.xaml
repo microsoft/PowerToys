@@ -73,7 +73,7 @@
                                 Symbol="Accept"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <SymbolIcon
-                                Foreground="Red"
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                 Symbol="Cancel"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                             <Button
