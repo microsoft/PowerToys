@@ -193,9 +193,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void InstallPowerShell7()
         {
-            var arguments = $"-NoProfile -Command \"winget install --id Microsoft.Powershell --source winget\"";
+            var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\InstallPowerShell7.ps1";
+            var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
             var result = RunPowerShellScript("powershell.exe", arguments);
-            if (result.Contains("Successfully installed"))
+            if (result.Contains("Powershell 7 successfully installed."))
             {
                 IsPowerShell7Detected = true;
             }

@@ -132,6 +132,9 @@
     <None Update="Assets\Settings\Scripts\InstallWinGetClientModule.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\Settings\Scripts\InstallPowerShell7.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Settings\Scripts\EnableModule.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
