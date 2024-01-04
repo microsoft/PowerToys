@@ -28,6 +28,15 @@ else
     Write-Host "Microsoft.VCLibs.140.00 not detected. Will try to install."
     Add-AppxPackage -Path "https://aka.ms/Microsoft.VCLibs.$cpuArchitecture.14.00.Desktop.appx"
   }
+  if((Get-AppxPackage Microsoft.VCLibs.140.00.UWPDesktop).Version -ge [System.Version]"14.0.30704")
+  {
+    Write-Host "Detected Microsoft.VCLibs.140.00.UWPDesktop"
+  }
+  else
+  {
+    Write-Host "Microsoft.VCLibs.140.00.UWPDesktop not detected. Will try to install."
+    Add-AppxPackage -Path "https://aka.ms/Microsoft.VCLibs.$cpuArchitecture.14.00.Desktop.appx"
+  }
   if (Get-AppxPackage Microsoft.UI.Xaml.2.7)
   {
     Write-Host "Detected Microsoft.UI.Xaml.2.7"
