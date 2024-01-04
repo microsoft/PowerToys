@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -21,8 +21,8 @@
             NotEmptyValue="True" />
     </Page.Resources>
 
-    <custom:SettingsPageControl x:Uid="VideoConference" ModuleImageSource="ms-appx:///Assets/Settings/Modules/VideoConference.png">
-        <custom:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="VideoConference" ModuleImageSource="ms-appx:///Assets/Settings/Modules/VideoConference.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <InfoBar
                     x:Uid="VideoConference_DeprecationWarning"
@@ -57,25 +57,25 @@
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
-                <custom:SettingsGroup x:Uid="VideoConference_Shortcuts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="VideoConference_Shortcuts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header">
-                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="VideoConference_MicrophoneMuteHotkeyControl_Header">
-                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="VideoConference_MicrophonePushToTalkHotkeyControl_Header">
-                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.MicrophonePushToTalkHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.MicrophonePushToTalkHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="VideoConference_CameraMuteHotkeyControl_Header">
-                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.CameraMuteHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.CameraMuteHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="VideoConference_Microphone" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="VideoConference_Microphone" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="VideoConference_SelectedMicrophone" HeaderIcon="{ui:FontIcon Glyph=&#xE720;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -86,9 +86,9 @@
                     <tkcontrols:SettingsCard x:Uid="VideoConference_PushToReverse">
                         <ToggleSwitch x:Uid="PushToReverseSwitch" IsOn="{x:Bind ViewModel.PushToReverseEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="VideoConference_Camera" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="VideoConference_Camera" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="VideoConference_SelectedCamera"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE960;}"
@@ -121,9 +121,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="VideoConference_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="VideoConference_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander x:Uid="VideoConference_ToolbarPosition" IsExpanded="True">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopLeftCorner" />
@@ -150,9 +150,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="VideoConference_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="VideoConference_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="VideoConference_StartupAction">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.StartupActionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="VideoConference_StartupActionNothing" />
@@ -160,12 +160,12 @@
                             <ComboBoxItem x:Uid="VideoConference_StartupActionMute" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
 
-        <custom:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_VCM" Link="https://aka.ms/PowerToysOverview_VideoConference" />
-        </custom:SettingsPageControl.PrimaryLinks>
-    </custom:SettingsPageControl>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_VCM" Link="https://aka.ms/PowerToysOverview_VideoConference" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
 </Page>

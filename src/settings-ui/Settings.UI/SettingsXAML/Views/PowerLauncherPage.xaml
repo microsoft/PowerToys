@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ViewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
@@ -13,8 +13,8 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <custom:SettingsPageControl x:Uid="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerLauncher.png">
-        <custom:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerLauncher.png">
+        <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
@@ -30,22 +30,22 @@
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <custom:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind ViewModel.IgnoreHotkeysInFullScreen, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
 
                 <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
@@ -81,7 +81,7 @@
                       IsEnabled="False"
                       />-->
 
-                <custom:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
                         HeaderIcon="{ui:FontIcon Glyph=&#xec48;}"
@@ -144,7 +144,7 @@
                                     Value="{x:Bind ViewModel.SearchClickedItemWeight, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
-                                <custom:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -160,7 +160,7 @@
                     <tkcontrols:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
                       MinWidth="320"
@@ -182,7 +182,7 @@
                       IsEnabled="False"
                       />-->
 
-                <custom:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.MonitorPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
@@ -236,9 +236,9 @@
                                 Text="A" />
                         </StackPanel>
                     </tkcontrols:SettingsCard>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
 
                     <InfoBar
                         x:Uid="Run_ConflictingKeywordInfo"
@@ -365,7 +365,7 @@
                                                     IsChecked="{x:Bind IsGlobal, Mode=TwoWay}">
                                                     <StackPanel Orientation="Vertical">
                                                         <TextBlock x:Name="IncludeInGlobalResultTitle" x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
-                                                        <custom:IsEnabledTextBlock
+                                                        <controls:IsEnabledTextBlock
                                                             x:Uid="PowerLauncher_IncludeInGlobalResultDescription"
                                                             FontSize="{StaticResource SecondaryTextFontSize}"
                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -409,7 +409,7 @@
                                                                     ContentAlignment="Left"
                                                                     CornerRadius="0"
                                                                     Visibility="{x:Bind Path=ShowCheckBox, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                    <custom:CheckBoxWithDescriptionControl
+                                                                    <controls:CheckBoxWithDescriptionControl
                                                                         Margin="56,0,0,0"
                                                                         Description="{x:Bind Path=DisplayDescription}"
                                                                         Header="{x:Bind Path=DisplayLabel}"
@@ -480,7 +480,7 @@
                                                                         BorderThickness="0,0,0,0"
                                                                         ContentAlignment="Left"
                                                                         CornerRadius="0">
-                                                                        <custom:CheckBoxWithDescriptionControl
+                                                                        <controls:CheckBoxWithDescriptionControl
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
@@ -516,7 +516,7 @@
                                                                         BorderThickness="0,0,0,0"
                                                                         ContentAlignment="Left"
                                                                         CornerRadius="0">
-                                                                        <custom:CheckBoxWithDescriptionControl
+                                                                        <controls:CheckBoxWithDescriptionControl
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
@@ -551,7 +551,7 @@
                                                                         BorderThickness="0,0,0,0"
                                                                         ContentAlignment="Left"
                                                                         CornerRadius="0">
-                                                                        <custom:CheckBoxWithDescriptionControl
+                                                                        <controls:CheckBoxWithDescriptionControl
                                                                             Margin="56,0,0,0"
                                                                             Description="{x:Bind Path=DisplayDescription}"
                                                                             Header="{x:Bind Path=DisplayLabel}"
@@ -601,17 +601,17 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
 
-        </custom:SettingsPageControl.ModuleContent>
-        <custom:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun" />
-            <custom:PageLink x:Uid="Run_FindMorePlugins" Link="https://aka.ms/powerToysRunPlugins" />
-        </custom:SettingsPageControl.PrimaryLinks>
-        <custom:SettingsPageControl.SecondaryLinks>
-            <custom:PageLink Link="https://github.com/Wox-launcher/Wox/" Text="Wox" />
-            <custom:PageLink Link="https://github.com/betsegaw/windowwalker/" Text="Beta Tadele's Window Walker" />
-        </custom:SettingsPageControl.SecondaryLinks>
-    </custom:SettingsPageControl>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun" />
+            <controls:PageLink x:Uid="Run_FindMorePlugins" Link="https://aka.ms/powerToysRunPlugins" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="https://github.com/Wox-launcher/Wox/" Text="Wox" />
+            <controls:PageLink Link="https://github.com/betsegaw/windowwalker/" Text="Beta Tadele's Window Walker" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>

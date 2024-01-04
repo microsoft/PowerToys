@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -18,10 +18,10 @@
             FalseValue="Visible"
             TrueValue="Collapsed" />
     </Page.Resources>
-    <custom:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
-        <custom:SettingsPageControl.ModuleContent>
+    <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <custom:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
+                <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_FindMyMouse"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png}"
@@ -60,7 +60,7 @@
                                 x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                                 Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=3}">
-                                <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
+                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}" />
@@ -82,10 +82,10 @@
                                     Value="{x:Bind ViewModel.FindMyMouseOverlayOpacity, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
-                                <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
-                                <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
                                 <NumberBox
@@ -141,9 +141,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseHighlighter"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png}"
@@ -161,7 +161,7 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}"
                         IsExpanded="True">
-                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MouseHighlighterAutoActivate, Mode=TwoWay}" />
@@ -174,13 +174,13 @@
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor">
-                                <custom:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor">
-                                <custom:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
-                                <custom:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
                                 <NumberBox
@@ -211,9 +211,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="MouseUtils_MouseJump">
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseJump"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseJump.png}"
@@ -230,7 +230,7 @@
                         x:Uid="MouseUtils_MouseJump_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
-                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_MouseJump_ThumbnailSize"
@@ -307,9 +307,9 @@
                             </Button>
                         </StackPanel>
                     </tkcontrols:SettingsCard>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
+                <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png}"
@@ -327,7 +327,7 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}"
                         IsExpanded="True">
-                        <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoActivate, Mode=TwoWay}" />
@@ -341,7 +341,7 @@
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
-                                <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
                                 <Slider
@@ -374,7 +374,7 @@
                             </tkcontrols:SettingsCard>
 
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
-                                <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsBorderColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsBorderColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
@@ -407,15 +407,15 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </custom:SettingsGroup>
+                </controls:SettingsGroup>
             </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
-        <custom:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_MouseUtils" Link="https://aka.ms/PowerToysOverview_MouseUtilities" />
-        </custom:SettingsPageControl.PrimaryLinks>
-        <custom:SettingsPageControl.SecondaryLinks>
-            <custom:PageLink Link="https://devblogs.microsoft.com/oldnewthing/author/oldnewthing" Text="Raymond Chen's Find My Mouse" />
-            <custom:PageLink Link="https://michael-clayton.com/projects/fancymouse" Text="Michael Clayton's Mouse Jump (FancyMouse)" />
-        </custom:SettingsPageControl.SecondaryLinks>
-    </custom:SettingsPageControl>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_MouseUtils" Link="https://aka.ms/PowerToysOverview_MouseUtilities" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="https://devblogs.microsoft.com/oldnewthing/author/oldnewthing" Text="Raymond Chen's Find My Mouse" />
+            <controls:PageLink Link="https://michael-clayton.com/projects/fancymouse" Text="Michael Clayton's Mouse Jump (FancyMouse)" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>
