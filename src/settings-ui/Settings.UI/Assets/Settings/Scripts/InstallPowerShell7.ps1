@@ -1,5 +1,5 @@
 
-if ((Get-AppxPackage microsoft.DesktopAppInstaller).Version -ge 1.21)
+if ((Get-AppxPackage microsoft.DesktopAppInstaller).Version -ge [System.Version]"1.21")
 {
   Write-Host "Detected winget. Will try to install PowerShell."
 }
@@ -19,7 +19,7 @@ else
     Write-Host "Mismatch with AMD64, setting it to arm64, since that's where we're likely running."
     $cpuArchitecture="arm64"
   }
-  if((Get-AppxPackage Microsoft.VCLibs.140.00).Version -ge 14.0.30704)
+  if((Get-AppxPackage Microsoft.VCLibs.140.00).Version -ge [System.Version]"14.0.30704")
   {
     Write-Host "Detected Microsoft.VCLibs.140.00."
   }
