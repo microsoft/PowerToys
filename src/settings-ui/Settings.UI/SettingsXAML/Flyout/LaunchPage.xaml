@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Flyout"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkitControls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d">
@@ -71,7 +71,7 @@
                     TabNavigation="Local">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <toolkitControls:WrapPanel VerticalSpacing="12" />
+                            <tk7controls:WrapPanel VerticalSpacing="12" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
