@@ -32,7 +32,7 @@
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
                     IsExpanded="True">
-                    <controls:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled">
+                    <controls:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsCommandNotFoundModuleInstalled, Mode=OneWay}">
                         <controls:Case Value="True">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock
