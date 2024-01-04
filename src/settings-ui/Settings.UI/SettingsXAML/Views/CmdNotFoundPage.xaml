@@ -34,7 +34,7 @@
                                 Symbol="Accept"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsPowerShell7Detected, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <SymbolIcon
-                                Foreground="Red"
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                 Symbol="Cancel"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsPowerShell7Detected, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                             <Button
