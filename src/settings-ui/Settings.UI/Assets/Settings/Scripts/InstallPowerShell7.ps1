@@ -1,5 +1,5 @@
 
-if ((Get-AppxPackage microsoft.desktopappinstaller).Version -ge 1.21)
+if ((Get-AppxPackage microsoft.DesktopAppInstaller).Version -ge 1.21)
 {
   Write-Host "Detected winget. Will try to install PowerShell."
 }
