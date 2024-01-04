@@ -3687,7 +3687,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>PowerShell 7.4 or greater detected</value>
   </data>
   <data name="CmdNotFound_WinGetClientDetection.Header" xml:space="preserve">
-    <value>WinGet Client Powershell module detected</value>
+    <value>WinGet Client PowerShell module detected</value>
   </data>
 	<data name="CmdNotFound_Enable.Header" xml:space="preserve">
     <value>Command Not Found</value>
