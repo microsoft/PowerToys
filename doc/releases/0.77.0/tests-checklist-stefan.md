@@ -1,25 +1,3 @@
-## Install tests
- * install a **previous version** on a clean machine (a clean machine doesn't have the `%localappdata%\Microsoft\PowerToys` folder)
- * open the Settings and for each module change at least one option
- * open the FancyZones editor and create two custom layouts:
-    * a canvas layout with 2 zones, use unicode chars in the layout's name
-    * one from grid template using 4 zones and splitting one zone
-    * apply the custom canvas layout to the primary desktop
-    * create a virtual desktop and apply the custom grid layout
-    * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
- * install the new version (it will uninstall the old version and install the new version)
- - [ ] verify the settings are preserved and FancyZones configuration is still the same
- - [ ] test installing as SYSTEM (LocalSystem account)
-   * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
-   * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe`
-   * Brief check if all modules are working
-
- * PER-USER and PER-MACHINE TESTS:
-   * Install **previous version** on a clean machine and update with new per-machine version. Ensure that it is installed in Program files and that registry entries are under **HKLM**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
-   * Try installing per-user version over already installed per-machine version and ensure that proper error message is shown.
-   * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
-   * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
-
 ## Functional tests
 
  Regressions:
@@ -28,292 +6,332 @@
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [x] System tray menu items
- - [x] Settings
- - [x] OOBE (What's new)
- - [x] Keyboard Manager Editor
- - [x] Color Picker (check the tooltips)
- - [x] FancyZones Editor
- - [X] Power Rename (new WinUI 3 may not be localized)
- - [x] PowerToys Run ("Start typing" string is localized, for example)
- - [x] Image Resizer
- - [x] Shortcut Guide (Windows controls are localized)
- - [x] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [x] Hosts File Editor
- - [x] File Locksmith
- - [x] Registry Preview
- - [x] Environment Variables
+ - [ ] System tray menu items
+ - [ ] Settings
+ - [ ] OOBE (What's new)
+ - [ ] Keyboard Manager Editor
+ - [ ] Color Picker (check the tooltips)
+ - [ ] FancyZones Editor
+ - [ ] Power Rename (new WinUI 3 may not be localized)
+ - [ ] PowerToys Run ("Start typing" string is localized, for example)
+ - [ ] Image Resizer
+ - [ ] Shortcut Guide (Windows controls are localized)
+ - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [ ] Hosts File Editor
+ - [ ] File Locksmith
+ - [ ] Registry Preview
+ - [ ] Environment Variables
 
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
-  - [x] when PowerToys is running unelevated on start-up
-  - [x] when PowerToys is running as admin on start-up
-  - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
-- [x] Change `Activate Color Picker shortcut` and check the new shortcut is working
-- [x] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
-- [x] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
-- [x] Try to copy color formats to the clipboard from the Editor
-- [x] Check `Show color name` and verify if color name is shown in the Color picker
-- [x] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [x] Select a color from the history in the Editor
-- [x] Remove color from the history in the Editor
-- [x] Open the Color Picker from the Editor
-- [x] Open Adjust color from the Editor
-- [x] Check Color Picker logs for errors
-
-## FancyZones Editor
-
-- [x] Open editor from the settings
-- [x] Open editor with a shortcut
-- [x] Create a new layout (grid and canvas)
-- [x] Duplicate a template and a custom layout
-- [x] Delete layout
-- [x] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
-- [x] Edit canvas layout: zones size and position, create or delete zones.
-- [x] Edit grid layout: split, merge, resize zones.
-- [x] Check `Save and apply` and `Cancel` buttons behavior after editing.
-- [x] Assign a layout to each monitor.
-- [x] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
-- [x] Assign horizontal and vertical default layouts
-- [x] Test duplicate layout focus
-   * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
-   * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
-   * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
-   * Expect the layout Y is duplicated
-
-## FancyZones
-
-### Appearance
-- [ ] Change colors, opacity and `Show zone number` options. Verify they're applied.
-
-### Excluded apps
-- [ ] Exclude some apps, verify that they're not applicable to a zone.
-
-### Dragging
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
-- [ ] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
-- [ ] `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
-- [ ] Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
-- [ ] `Make dragged window transparent` - turn on, off, verify behavior
-
-### Snapping
-Disable FZ and clear `app-zone-history.json` before starting. FancyZones should be disabled, otherwise, it'll save cashed values back to the file.
-
-- [ ] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [ ] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [ ] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
-- [ ] Snap a window to several zones, verify zone numbers in the json file are correct.
-- [ ] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
-- [ ] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
-- [ ] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
-- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
-- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
-- [ ] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
-- [ ] Launch PT in administrator mode, assign a window with administrator privileges.
-* Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
-    - [ ] Turn Show this window on all desktops on, verify you can snap this window to a zone.
-    - [ ] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
-
-### Snapped window behavior
-- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
-- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
-- [ ] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
-
-Enable `During zone layout changes, windows assigned to a zone will match new size/positions` and prepare layouts with 1 and 3 zones where zone size/positions are different.
-- [ ] Snap a window to zone 1, change the layout, verify window changed its size/position.
-- [ ] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
-- [ ] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
-- [ ] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
-- [ ] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
-
-Enable `Move newly created windows to their last known zone`.
-- [ ] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
-- [ ] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
-- [ ] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
-- [ ] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
-- [ ] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
-- [ ] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
-
-Enable `Move newly created windows to the current active monitor`.
-- [ ] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
-- [ ] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
-- [ ] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
-- [ ] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
-
-- [ ] Enable `Allow popup windows snapping` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
-- [ ] Enable `Allow popup windows snapping`, snap Teams, verify a popup window appears in its usual position.
-- [ ] Enable `Allow popup windows snapping`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
-- [ ] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
-- [ ] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
-
-### Switch between windows in the current zone
-Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
-- [ ] Snap several windows to one zone, verify switching works.
-- [ ] Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
-- [ ] Disable `Switch between windows in the current zone`, verify switching doesn't work.
-  
-### Override Windows Snap
-- [ ] Disable `Override Windows Snap`, verify it's disabled.
-
-Enable `Override Windows Snap`.
-Select Move windows based on `Zone index`.
-- [ ] Open the previously not snapped window, press `Win`+`LeftArrow` / `Win`+`RightArrow`, verify it's snapped to a first/last zone.
-- [ ] Verify `Win`+`LeftArrow` moves the window to a zone with the previous index.
-- [ ] Verify `Win`+`RightArrow` moves the window to a zone with the next index.
-- [ ] Verify `Win`+`ArrowUp` and `Win`+`ArrowDown` work as usual.
-
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
-
-One monitor:
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
-
-Two and more monitors:
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles window position moving it from the first zone on the current monitor to the last zone of the left (or rightmost, if the current monitor is leftmost) monitor.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles window position moving it from the last zone on the current monitor to the first zone of the right (or leftmost, if the current monitor is rightmost) monitor.
-
-Select Move windows based on `Relative position`.
-- [ ] Open the previously not snapped window, press `Win`+`Arrow`, verify it's snapped.
-- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow`. Verify the window is snapped to all zones.
-- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow` and return it back using the opposite arrow. Verify it could be reverted while you hold `Ctrl`+`Alt`+`Win`.
-
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within one monitor.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` cycles the window position to the right within one monitor.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`UpArrow` cycles the window position up within one monitor.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`DownArrow` cycles the window position down within one monitor.
-
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within all monitors.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles the window position to the right within all monitors.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`UpArrow` cycles the window position up within all monitors.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`DownArrow` cycles the window position down within all monitors.
-
-### Layout apply
-Enable `Enable quick layout switch`, assign numbers to custom layouts.
-- [ ] Switch with `Win` + `Ctrl` + `Alt` + `key`.
-- [ ] Switch with just a key while dragging a window.
-- [ ] Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
-- [ ] Disable `Enable quick layout switch`, verify shortcuts don't work.
-- [ ] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
-- [ ] Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
-- [ ] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
-- [ ] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
-- [ ] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
-
-### Layout reset
-* Test layout resetting.
-Before testing 
-   * Remove all virtual desktops 
-   * Remove `CurrentVirtualDesktop` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops` 
-   * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
-
-- [ ] Test screen locking
-   * Set custom layouts on each monitor
-   * Lock screen / unplug monitor / plug monitor
-   * Verify that layouts weren't reset to defaults
-   
-- [ ] Test restart
-   * Set custom layouts on each monitor
-   * Restart the computer
-   * Verify that layouts weren't reset to defaults
-
-- [ ] Test applying default layouts on reset
-   * Set default horizontal and vertical layouts
-   * Delete `applied-layouts.json`
-   * Verify that selected default layout is applied according to configuration
-
-### Span zones across monitors
-- [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
-
-Repeat the previous subsections steps after enabling `Allow zones to span across monitors`
-- [ ] Dragging
-- [ ] Snapping
-- [ ] Snapped window behavior
-- [ ] Switch between windows in the current zone
-- [ ] Override Windows Snap
-- [ ] Layout apply
-- [ ] Layout reset
+  - [ ] when PowerToys is running unelevated on start-up
+  - [ ] when PowerToys is running as admin on start-up
+  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
+- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
+- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
+- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
+- [ ] Try to copy color formats to the clipboard from the Editor
+- [ ] Check `Show color name` and verify if color name is shown in the Color picker
+- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
+- [ ] Select a color from the history in the Editor
+- [ ] Remove color from the history in the Editor
+- [ ] Open the Color Picker from the Editor
+- [ ] Open Adjust color from the Editor
+- [ ] Check Color Picker logs for errors
 
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
-   - [x] verify the README.md Preview Pane shows the correct content
+   - [ ] verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [x] verify Preview Pane works for the SVG files
-   - [x] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [ ] verify Preview Pane works for the SVG files
+   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [x] verify Preview Pane works for the PDF file
-   - [x] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   - [ ] verify Preview Pane works for the PDF file
+   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [x] verify Preview Pane works for the gcode file
-   - [x] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
+   - [ ] verify Preview Pane works for the gcode file
+   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [x] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\runner
-   - [x] verify Preview Pane works for source files (shows syntax highlighting)
+   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
  * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [x] verify the README.md Preview Pane doesn't show any content
+   - [ ] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [x] verify Preview Pane doesn't show the preview for the SVG files
+   - [ ] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [x] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [x] verify Preview Pane doesn't show the preview for the PDF file
+   - [ ] verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [x] verify Preview Pane doesn't show the preview for the gcode file
+   - [ ] verify Preview Pane doesn't show the preview for the gcode file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [x] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
    * go to PowerToys repo and visit src\runner
-   - [x] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+
+## Image Resizer
+- [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
+- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
+- [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
+- [ ] Resize one image
+- [ ] Resize multiple images
+- [ ] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
+
+- [ ] Resize images with `Fill` option
+- [ ] Resize images with `Fit` option
+- [ ] Resize images with `Stretch` option
+
+- [ ] Resize images using dimension: Centimeters
+- [ ] Resize images using dimension: Inches
+- [ ] Resize images using dimension: Percents
+- [ ] Resize images using dimension: Pixels
+
+- [ ] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
+- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
+- [ ] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
+- [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
+- [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
+
+## Keyboard Manager
+
+UI Validation:
+
+  - [ ] In Remap keys, add and remove rows to validate those buttons. While the blank rows are present, pressing the OK button should result in a warning dialog that some mappings are invalid.
+  - [ ] Using only the Type buttons, for both the remap windows, try adding keys/shortcuts in all the columns. The right-side column in both windows should accept both keys and shortcuts, while the left-side column will accept only keys or only shortcuts for Remap keys and Remap shortcuts respectively. Validate that the Hold Enter and Esc accessibility features work as expected.
+  - [ ] Using the drop downs try to add key to key, key to shortcut, shortcut to key and shortcut to shortcut remapping and ensure that you are able to select remapping both by using mouse and by keyboard navigation.
+  - [ ] Validate that remapping can be saved by pressing the OK button and re-opening the windows loads existing remapping.
+
+Remapping Validation:
+
+For all the remapping below, try pressing and releasing the remapped key/shortcut and pressing and holding it. Try different behaviors like releasing the modifier key before the action key and vice versa.
+  - [ ] Test key to key remapping
+    - A->B
+    - Ctrl->A
+    - A->Ctrl
+    - Win->B (make sure Start menu doesn't appear accidentally)
+    - B->Win (make sure Start menu doesn't appear accidentally)
+    - A->Disable
+    - Win->Disable
+  - [ ] Test key to shortcut remapping
+    - A->Ctrl+V
+    - B->Win+A
+  - [ ] Test shortcut to shortcut remapping
+    - Ctrl+A->Ctrl+V
+    - Win+A->Ctrl+V
+    - Ctrl+V->Win+A
+    - Win+A->Win+F
+  - [ ] Test shortcut to key remapping
+    - Ctrl+A->B
+    - Ctrl+A->Win
+    - Win+A->B
+  * Test app-specific remaps
+    - [ ] Similar remaps to above with Edge (entered as `msedge`), VSCode (entered as `code`) and cmd. For cmd try admin and non-admin (requires PT to run as admin)
+    - [ ] Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
+  - [ ] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
+
+## Shortcut Guide
+ * Run PowerToys as user:
+   - [ ] Verify `Win + Shift + /` opens the guide
+   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
+ * Restore the `Win + Shift + /` hotkey.
+   - [ ] Open the guide and close it pressing `Esc`
+   - [ ] Open the guide and close it pressing and releasing the `Win` key
+ * With PowerToys running as a user, open an elevated app and keep it on foreground:
+   - [ ] Verify `Win + Shift + /` opens the guide
+   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+
+## OOBE
+ * Quit PowerToys
+ * Delete %localappdata%\Microsoft\PowerToys
+ - [ ] Start PowerToys and verify OOBE opens
+ * Change version saved on `%localappdata%\Microsoft\PowerToys\last_version.txt`
+ - [ ] Start PowerToys and verify OOBE opens in the "What's New" page
+ * Visit each OOBE section and for each section:
+   - [ ] open the Settings for that module
+   - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
+   - [ ] close the Settings
+   - [ ] if it's available, test the `Launch module name` button
+ * Close OOBE
+ - [ ] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
+
+## Always on Top
+ - [ ] Pin/unpin a window, verify it's topmost/not topmost.
+ - [ ] Pin/unpin a window, verify the border appeared/disappeared.
+ - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
+ - [ ] Minimize and maximize pinned window, verify the border looks as usual.
+ - [ ] Change border color and thickness.
+ - [ ] Verify if sound is played according to the sound setting.
+ - [ ] Exclude app, try to pin it.
+ - [ ] Exclude already pinned app, verify it was unpinned.
+ - [ ] Try to pin the app in the Game Mode.
+
+## Screen Ruler
+ * Enable Screen Ruler. Then:
+   - [ ] Press the activation shortcut and verify the toolbar appears.
+   - [ ] Press the activation shortcut again and verify the toolbar disappears.
+   - [ ] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
+   - [ ] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
+   - [ ] Select the close button in the toolbar and verify it closes the utility.
+ * With Screen Ruler enabled and activated:
+   - [ ] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
+   - [ ] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [ ] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [ ] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [ ] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
+   - [ ] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
+ * In a multi-monitor setup with different dpis on each monitor:
+   - [ ] Verify that the utilities work well on each monitor, with continuous mode on and off.
+   - [ ] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
+   - [ ] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
+   
+ * Test the different settings and verify they are applied:
+   - [ ] Activation shortcut
+   - [ ] Continous mode
+   - [ ] Per color channel edge detection
+   - [ ] Pixel tolerance for edge detection
+   - [ ] Draw feet on cross
+   - [ ] Line color
 
 ## Quick Accent
  * Enable Quick Accent and open notepad. Then:
-   - [x] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [x] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [x] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
  * Test the different settings and verify they are applied:
-   - [x] Activation key
-   - [x] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [x] Toolbar position (test every option, some had issues before)
-   - [x] Input delay
-   - [x] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [x] Sort characters by frequency.
-   - [x] Always start on the first character when using left/right arrows as activation method.
+   - [ ] Activation key
+   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [ ] Toolbar position (test every option, some had issues before)
+   - [ ] Input delay
+   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [ ] Sort characters by frequency.
+   - [ ] Always start on the first character when using left/right arrows as activation method.
 
 ## Text Extractor
  * Enable Text Extractor. Then:
-   - [x] Press the activation shortcut and verify the overlay appears.
-   - [x] Press Escape and verify the overlay disappears.
-   - [x] Press the activation shortcut and verify the overlay appears.
-   - [x] Right-click and select Cancel. Verify the overlay disappears.
-   - [x] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+   - [ ] Press the activation shortcut and verify the overlay appears.
+   - [ ] Press Escape and verify the overlay disappears.
+   - [ ] Press the activation shortcut and verify the overlay appears.
+   - [ ] Right-click and select Cancel. Verify the overlay disappears.
+   - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
  * With Text Extractor enabled and activated:
-   - [x] Try to select text and verify it is copied to the clipboard.
-   - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
+   - [ ] Try to select text and verify it is copied to the clipboard.
+   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
  * In a multi-monitor setup with different dpis on each monitor:
-   - [x] Verify text is correctly captured on all monitors.
+   - [ ] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
-   - [x] Activation shortcut
-   - [x] OCR Language
+   - [ ] Activation shortcut
+   - [ ] OCR Language
+
+## GPO
+ * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
+   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+ * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled.
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+ * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is enabled.
+   - [ ] Open settings and verify the module is enabled and you can't disable it.
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+ * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
+   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+ * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled. (No context menu entry)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+ * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+ * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## Registry Preview
  * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
  * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
-   - [x] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
-   - [x] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
-   - [x] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
-   - [x] Try opening different registry file by pressing Open file button.
-   - [x] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
+   - [ ] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
+   - [ ] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
+   - [ ] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
+   - [ ] Try opening different registry file by pressing Open file button.
+   - [ ] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
    
  * Open Registry Preview Settings. Then:
-   - [x] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
-   - [x] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
-   - [x] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
-   - [x] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
-   - [x] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
-   - [x] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
+   - [ ] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
+   - [ ] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
+   - [ ] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
+   - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
+   - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
+   - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
+   
+## Peek   
+ * Open different files to check that they're shown properly
+   - [ ] Image
+   - [ ] Text or dev file
+   - [ ] Markdown file
+   - [ ] PDF
+   - [ ] HTML
+   - [ ] Archive files (.zip, .tar, .rar)
+   - [ ] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
+   
+ * Pinning/unpinning
+   - [ ] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
+   - [ ] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
+   - [ ] Unpin the window, switch to a different file, verify the window is moved to the default place.
+   - [ ] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
+
+* Open with a default program
+   - [ ] By clicking a button.
+   - [ ] By pressing enter. 
+  
+ - [ ] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
+ - [ ] Open multiple files, verify you can switch only between selected files.
+ - [ ] Change the shortcut, verify the new one works.
+
+## Environment Variables
+ * NOTE: Make backup of USER and SYSTEM Path and TMP variables before testing so you can revert those is something goes wrong!
+ * Open Environment Variables settings
+   - [ ] Launch as administrator ON - Launch Environment Variables and confirm that SYSTEM variables ARE editable and Add variable button is enabled
+   - [ ] Launch as administrator OFF - Launch Environment Variables and confirm that SYSTEM variables ARE NOT editable and Add variable button is disabled
+
+ * User/System variables
+   - [ ] Add new User variable. Open OS Environment variables window and confirm that added variable is there. Also, confirm that it's added to "Applied variables" list.
+   - [ ] Edit one User variable. Open OS Environment variables window and confirm that variable is changed. Also, confirm that change is applied to "Applied variables" list.
+   - [ ] Remove one User variable. Open OS Environment variables window and confirm that variable is removed. Also, confirm that variable is removed from "Applied variables" list.
+   - Repeat the steps for System variables.
+
+ * Profiles - Basic tests
+   - [ ] Add new profile with no variables and name it "Test_profile_1" (referenced below by name)
+   - [ ] Edit "Test_profile_1": Add one new variable to profile e.g. name: "profile_1_variable_1" value: "profile_1_value_1"
+   - [ ] Add new profile "Test_profile_2": From "Add profile dialog" add two new variables (profile_2_variable_1:profile_2_value_1 and profile_2_variable_2:profile_2_value_2). Set profile to enabled and click Save. Open OS Environment variables window and confirm that all variables from the profile are applied correctly. Also, confirm that "Applied variables" list contains all variables from the profile.
+   - [ ] Apply "Test_profile_1" while "Test_profile_2" is still aplpied. Open OS Environment variables window and confirm that all variables from Test_profile_2 are unapplied and that all variables from Test_profile_1 are applied. Also, confirm that state of "Applied variables" list is updated correctly.
+   - [ ] Unapply applied profile. Open OS Environment variables window and confirm that all variables from the profile are unapplied correctly. Also, confirm that "Applied variables" list does not contain variables from the profile.
+
+ * Overriding existing variable
+   - [ ] To "Test_profile_1" add one existing variable from USER variables, e.g. TMP. After adding, change it's value to e.g "test_TMP" (or manually add variable named TMP with value test_TMP).
+   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variables has value "test_TMP". Confirm that there is backup variable "TMP_PowerToys_Test_profile_1" with original value of TMP var. Also, confirm that "Applied variables" list is updated correctly - there is TMP profile variable, and backup User variable..
+   - [ ] Unapply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variable has original value and that there is no backup variable. Also, confirm that "Applied variables" list is updated correctly.
+
+ * PATH variable
+   - [ ] In "Applied variables" list confirm that PATH variable is shown properly: value of USER Path concatenated to the end of SYSTEM Path.
+   - [ ] To "Test_profile_1" add variable named PATH with value "path1;path2;path3" and click Save. Confirm that PATH variable in profile is shown as list (list of 3 values and not as path1;path2;path3).
+   - [ ] Edit PATH variable from "Test_profile_1". Try different options from ... menu (Delete, Move up, Move down, etc...). Click Save.
+   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that profile is applied correctly - Path value and backup variable. Also, in "Applied variables" list check that Path variable has correct value: value of profile PATH concatenated to the end of SYSTEM Path.
+
+ * Loading profiles on startup
+   - [ ] Close the app and reopen it. Confirm that the state of the app is the same as before closing.
+
+ - [ ] "Test_profile_1" should still be applied (if not apply it). Delete "Test_profile_1". Confirm that profile is unapplied (both in OS Environment variables window and "Applied variables" list).
+ - [ ] Delete "Test_profile_2". Check profiles.json file and confirm that both profiles are gone.
+
+## Command Not Found
+ * Go to Command Not Found module settings
+  - [ ] If you have PowerShell 7.4 installed, confirm that Install PowerShell 7.4 button is disabled. If you don't have PowerShell 7.4, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
+  - [ ] If you have Microsoft.WinGet.Client installed, confirm that Install Microsoft.WinGet.Client button is disabled. If you don't have Microsoft.WinGet.Client, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
+  - [ ] Install the Command Not Found module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is added there. Start new PowerShell 7.4 session and execute "powertoys" (or "atom"). Confirm that suggestion is given to install powertoys (or atom) winget package. (If suggestion is not given, try running the same command few more times, it might take some time for the first time to load the module). Check Installation logs text box bellow and confirm there are no errors.
+  - [ ] Uninstall the module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed. Start new PowerShell 7.4 session and confirm no errors are shown on start.
+  - [ ] Install module again. Uninstall PowerToys. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed after installer is done.
