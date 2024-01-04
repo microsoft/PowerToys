@@ -13,13 +13,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string ModuleName = "Hosts";
 
-        [JsonPropertyName("properties")]
-
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
         };
 
+        [JsonPropertyName("properties")]
         public HostsProperties Properties { get; set; }
 
         public HostsSettings()
