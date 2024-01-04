@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Management.Automation;
 using System.Management.Automation.Subsystem.Feedback;
 using System.Management.Automation.Subsystem.Prediction;
+using ManagedCommon;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.PowerToys.Telemetry;
 
@@ -29,6 +30,8 @@ namespace WinGetCommandNotFound
 
         private WinGetCommandNotFoundFeedbackPredictor(string guid)
         {
+            Logger.InitializeLogger("\\CmdNotFound\\Logs");
+
             _guid = new Guid(guid);
 
             var provider = new DefaultObjectPoolProvider();
@@ -69,33 +72,41 @@ namespace WinGetCommandNotFound
             var target = (string)context.LastError!.TargetObject;
             if (target is not null)
             {
-                bool tooManySuggestions = false;
-                string packageMatchFilterField = "command";
-                var pkgList = FindPackages(target, ref tooManySuggestions, ref packageMatchFilterField);
-                if (pkgList.Count == 0)
+                try
                 {
-                    return null;
-                }
+                    bool tooManySuggestions = false;
+                    string packageMatchFilterField = "command";
+                    var pkgList = FindPackages(target, ref tooManySuggestions, ref packageMatchFilterField);
+                    if (pkgList.Count == 0)
+                    {
+                        return null;
+                    }
 
-                // Build list of suggestions
-                _candidates = new List<string>();
-                foreach (var pkg in pkgList)
+                    // Build list of suggestions
+                    _candidates = new List<string>();
+                    foreach (var pkg in pkgList)
+                    {
+                        _candidates.Add(string.Format(CultureInfo.InvariantCulture, "winget install --id {0}", pkg.Members["Id"].Value.ToString()));
+                    }
+
+                    // Build footer message
+                    var footerMessage = tooManySuggestions ?
+                        string.Format(CultureInfo.InvariantCulture, "Additional results can be found using \"winget search --{0} {1}\"", packageMatchFilterField, target) :
+                        null;
+
+                    PowerToysTelemetry.Log.WriteEvent(new Telemetry.CmdNotFoundFeedbackProvidedEvent());
+
+                    return new FeedbackItem(
+                        "Try installing this package using winget:",
+                        _candidates,
+                        footerMessage,
+                        FeedbackDisplayLayout.Portrait);
+                }
+                catch (Exception ex)
                 {
-                    _candidates.Add(string.Format(CultureInfo.InvariantCulture, "winget install --id {0}", pkg.Members["Id"].Value.ToString()));
+                    Logger.LogError("GetFeedback failed to execute", ex);
+                    return new FeedbackItem($"Failed to execute PowerToys Command Not Found.{Environment.NewLine}This is a known issue if PowerShell 7 is installed from the Store or MSIX. If that isn't your case, please report an issue.", new List<string>(), FeedbackDisplayLayout.Portrait);
                 }
-
-                // Build footer message
-                var footerMessage = tooManySuggestions ?
-                    string.Format(CultureInfo.InvariantCulture, "Additional results can be found using \"winget search --{0} {1}\"", packageMatchFilterField, target) :
-                    null;
-
-                PowerToysTelemetry.Log.WriteEvent(new Telemetry.CmdNotFoundFeedbackProvidedEvent());
-
-                return new FeedbackItem(
-                    "Try installing this package using winget:",
-                    _candidates,
-                    footerMessage,
-                    FeedbackDisplayLayout.Portrait);
             }
 
             return null;
