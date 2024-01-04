@@ -122,7 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
-        public string RunPowerShellScript(string powershellExecutable, string powershellArguments)
+        public string RunPowerShellScript(string powershellExecutable, string powershellArguments, bool hidePowerShellWindow = false)
         {
             string outputLog = string.Empty;
             try
@@ -131,6 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     FileName = powershellExecutable,
                     Arguments = powershellArguments,
+                    CreateNoWindow = hidePowerShellWindow,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                 };
@@ -153,8 +154,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void CheckCommandNotFoundRequirements()
         {
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\CheckCmdNotFoundRequirements.ps1";
-            var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
-            var result = RunPowerShellScript("pwsh.exe", arguments);
+            var arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
+            var result = RunPowerShellScript("pwsh.exe", arguments, true);
 
             if (result.Contains("PowerShell 7.4 or greater detected."))
             {
