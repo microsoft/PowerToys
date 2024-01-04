@@ -6,9 +6,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using AllExperiments;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Telemetry;
 
@@ -189,6 +191,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 IsCommandNotFoundModuleInstalled = false;
             }
+
+            Logger.LogInfo(result);
         }
 
         public void InstallPowerShell7()
@@ -200,6 +204,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 IsPowerShell7Detected = true;
             }
+
+            Logger.LogInfo(result);
         }
 
         public void InstallWinGetClientModule()
@@ -215,6 +221,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 IsWinGetClientModuleDetected = false;
             }
+
+            Logger.LogInfo(result);
         }
 
         public void InstallModule()
@@ -228,6 +236,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsCommandNotFoundModuleInstalled = true;
                 PowerToysTelemetry.Log.WriteEvent(new CmdNotFoundInstallEvent());
             }
+
+            Logger.LogInfo(result);
         }
 
         public void UninstallModule()
@@ -241,6 +251,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsCommandNotFoundModuleInstalled = false;
                 PowerToysTelemetry.Log.WriteEvent(new CmdNotFoundUninstallEvent());
             }
+
+            Logger.LogInfo(result);
         }
-     }
+    }
 }
