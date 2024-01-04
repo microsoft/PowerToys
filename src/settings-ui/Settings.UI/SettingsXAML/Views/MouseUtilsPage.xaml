@@ -6,13 +6,13 @@
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <Page.Resources>
-        <localConverters:FindMyMouseActivationIntToVisibilityConverter x:Key="FindMyMouseActivationIntToVisibilityConverter" />
+        <converters:FindMyMouseActivationIntToVisibilityConverter x:Key="FindMyMouseActivationIntToVisibilityConverter" />
         <converters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"

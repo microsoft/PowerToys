@@ -5,15 +5,15 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
     <Page.Resources>
-        <localConverters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
-        <localConverters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
+        <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
+        <converters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
     </Page.Resources>
 
     <custom:SettingsPageControl x:Uid="General" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
