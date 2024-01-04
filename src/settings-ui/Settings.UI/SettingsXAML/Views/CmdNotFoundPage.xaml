@@ -64,7 +64,7 @@
                             IsClosable="False"
                             IsOpen="True">
                             <InfoBar.ActionButton>
-                                <HyperlinkButton Command="{x:Bind ViewModel.CheckRequirementsEventHandler}" Content="{ui:FontIcon Glyph=&#xE72C;}">
+                                <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckRequirementsEventHandler}">
                                     <ToolTipService.ToolTip>
                                         <TextBlock x:Uid="CmdNotFound_CheckCompatibilityTooltip" TextWrapping="Wrap" />
                                     </ToolTipService.ToolTip>
