@@ -2,11 +2,11 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.SettingsPageControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -82,7 +82,7 @@
                             IsTabStop="False"
                             ItemsSource="{x:Bind PrimaryLinks}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="controls:PageLink">
+                                <DataTemplate x:DataType="local:PageLink">
                                     <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
                                         <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                     </HyperlinkButton>
@@ -123,7 +123,7 @@
                         IsTabStop="False"
                         ItemsSource="{x:Bind SecondaryLinks}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="controls:PageLink">
+                            <DataTemplate x:DataType="local:PageLink">
                                 <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
                                     <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                 </HyperlinkButton>
