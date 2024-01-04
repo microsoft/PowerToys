@@ -79,12 +79,12 @@
                             <Button
                                 x:Uid="CmdNotFound_InstallButton"
                                 Command="{x:Bind ViewModel.InstallModuleEventHandler}"
-                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled, Converter={StaticResource BoolNegationConverter}}"
-                                Style="{StaticResource AccentButtonStyle}" />
+                                Style="{StaticResource AccentButtonStyle}"
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                             <HyperlinkButton
                                 x:Uid="CmdNotFound_UninstallButton"
                                 Command="{x:Bind ViewModel.UninstallModuleEventHandler}"
-                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled}" />
+                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </StackPanel>
                         <controls:SettingsCard.Description>
                             <StackPanel Orientation="Vertical">
