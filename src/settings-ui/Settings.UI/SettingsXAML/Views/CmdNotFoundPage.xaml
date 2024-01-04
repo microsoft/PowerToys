@@ -69,7 +69,7 @@
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <SymbolIcon
-                                Foreground="Green"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
                                 Symbol="Accept"
                                 Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled, Converter={StaticResource BoolToVisibilityConverter}}" />
                             <SymbolIcon
