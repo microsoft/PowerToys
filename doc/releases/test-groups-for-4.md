@@ -28,6 +28,9 @@ All:
 - Registry Preview
 - Peek
 - MWB
+- Crop And Lock
+- Environment Variables
+- Command Not Found
 ```
 
 ```
@@ -47,6 +50,8 @@ Group 1:
 - Registry Preview
 - Peek
 - MWB
+- Crop And Lock
+- Command Not Found
 ```
 
 ```
@@ -66,6 +71,8 @@ Group 2:
 - GPO
 - Registry Preview
 - Peek
+- Environment Variables
+- Command Not Found
 ```
 
 ```
@@ -83,6 +90,7 @@ Group 3:
 - File Locksmith
 - Paste as plain text
 - MWB
+- Crop And Lock
 ```
 
 ```
@@ -100,4 +108,5 @@ Group 4:
 - Hosts File Editor
 - GPO
 - Paste as plain text
+- Environment Variables
 ```
