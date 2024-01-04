@@ -253,28 +253,28 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <custom:ShortcutControl
+                        <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ToggleEasyMouseShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_LockMachinesShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <custom:ShortcutControl
+                        <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.LockMachinesShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_Switch2AllPcShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <custom:ShortcutControl
+                        <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.HotKeySwitch2AllPC, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ReconnectShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <custom:ShortcutControl
+                        <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ReconnectShortcut, Mode=TwoWay}" />
@@ -323,11 +323,11 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_MouseWithoutBorders" Link="https://aka.ms/PowerToysOverview_MouseWithoutBorders" />
+            <controls:PageLink x:Uid="LearnMore_MouseWithoutBorders" Link="https://aka.ms/PowerToysOverview_MouseWithoutBorders" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <custom:PageLink Link="http://aka.ms/mm" Text="Mouse without Borders" />
-            <custom:PageLink Link="https://github.com/microsoft/PowerToys/blob/main/COMMUNITY.md#mouse-without-borders-original-contributors" Text="Truong Do (Đỗ Đức Trường) and other original contributors" />
+            <controls:PageLink Link="http://aka.ms/mm" Text="Mouse without Borders" />
+            <controls:PageLink Link="https://github.com/microsoft/PowerToys/blob/main/COMMUNITY.md#mouse-without-borders-original-contributors" Text="Truong Do (Đỗ Đức Trường) and other original contributors" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

@@ -82,7 +82,7 @@
                             IsTabStop="False"
                             ItemsSource="{x:Bind PrimaryLinks}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="local:PageLink">
+                                <DataTemplate x:DataType="controls:PageLink">
                                     <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
                                         <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                     </HyperlinkButton>
@@ -123,7 +123,7 @@
                         IsTabStop="False"
                         ItemsSource="{x:Bind SecondaryLinks}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="local:PageLink">
+                            <DataTemplate x:DataType="controls:PageLink">
                                 <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
                                     <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                 </HyperlinkButton>

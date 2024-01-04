@@ -2,10 +2,10 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.CropAndLockPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
@@ -31,13 +31,13 @@
                 <controls:SettingsGroup x:Uid="CropAndLock_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
                     <tkcontrols:SettingsCard x:Uid="CropAndLock_ThumbnailActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <custom:ShortcutControl
+                        <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ThumbnailActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="CropAndLock_ReparentActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <custom:ShortcutControl
+                        <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ReparentActivationShortcut, Mode=TwoWay}" />
@@ -47,11 +47,11 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_CropAndLock" Link="https://aka.ms/PowerToysOverview_CropAndLock" />
+            <controls:PageLink x:Uid="LearnMore_CropAndLock" Link="https://aka.ms/PowerToysOverview_CropAndLock" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <custom:PageLink Link="https://github.com/robmikh" Text="Robert Mikhayelyan" />
-            <custom:PageLink Link="https://github.com/kevinguo305" Text="Kevin Guo" />
+            <controls:PageLink Link="https://github.com/robmikh" Text="Robert Mikhayelyan" />
+            <controls:PageLink Link="https://github.com/kevinguo305" Text="Kevin Guo" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

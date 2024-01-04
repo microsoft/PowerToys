@@ -54,7 +54,7 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_CmdNotFound" Link="https://aka.ms/PowerToysOverview_CmdNotFound" />
+            <controls:PageLink x:Uid="LearnMore_CmdNotFound" Link="https://aka.ms/PowerToysOverview_CmdNotFound" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>
