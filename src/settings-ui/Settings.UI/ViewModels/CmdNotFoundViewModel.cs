@@ -7,9 +7,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Telemetry;
 
