@@ -6,10 +6,17 @@
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
+    <Page.Resources>
+        <toolkitConverters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
+        <toolkitConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <custom:SettingsPageControl x:Uid="CmdNotFound" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
@@ -19,37 +26,70 @@
                     IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
-
-                <controls:SettingsCard
-                    x:Uid="CmdNotFound_Enable"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button
-                            x:Uid="CmdNotFound_InstallButton"
-                            Command="{x:Bind ViewModel.InstallModuleEventHandler}"
-                            Style="{StaticResource AccentButtonStyle}" />
-                        <HyperlinkButton x:Uid="CmdNotFound_UninstallButton" Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
-                    </StackPanel>
-                    <controls:SettingsCard.Description>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock x:Uid="CmdNotFound_Enable_DescriptionText" />
-                            <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckPowershellVersionEventHandler}" />
+                <custom:SettingsGroup x:Uid="CmdNotFound_RequirementsGroup" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <controls:SettingsCard
+                        x:Uid="CmdNotFound_PowerShellDetection">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Foreground="Green" Symbol="Accept" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsPowerShell7Detected, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <SymbolIcon Foreground="Red" Symbol="Cancel" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsPowerShell7Detected, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                            <Button
+                                x:Uid="CmdNotFound_InstallButton"
+                                Command="{x:Bind ViewModel.InstallPowerShell7EventHandler}"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsPowerShell7Detected, Converter={StaticResource BoolNegationConverter}}"
+                                Style="{StaticResource AccentButtonStyle}" />
                         </StackPanel>
-                    </controls:SettingsCard.Description>
-                </controls:SettingsCard>
+                    </controls:SettingsCard>
+                    <controls:SettingsCard
+                        x:Uid="CmdNotFound_WinGetClientDetection">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Foreground="Green" Symbol="Accept" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsWinGetClientModuleDetected, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <SymbolIcon Foreground="Red" Symbol="Cancel" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsWinGetClientModuleDetected, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                            <Button
+                                x:Uid="CmdNotFound_InstallButton"
+                                Command="{x:Bind ViewModel.InstallWinGetClientModuleEventHandler}"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsWinGetClientModuleDetected, Converter={StaticResource BoolNegationConverter}}"
+                                Style="{StaticResource AccentButtonStyle}" />
+                        </StackPanel>
+                    </controls:SettingsCard>
+                </custom:SettingsGroup>
+                <custom:SettingsGroup x:Uid="CmdNotFound_InstallationGroup" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    <controls:SettingsCard
+                        x:Uid="CmdNotFound_Enable"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Foreground="Green" Symbol="Accept" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <SymbolIcon Foreground="Red" Symbol="Cancel" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                            <Button
+                                x:Uid="CmdNotFound_InstallButton"
+                                Command="{x:Bind ViewModel.InstallModuleEventHandler}"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled, Converter={StaticResource BoolNegationConverter}}"
+                                Style="{StaticResource AccentButtonStyle}" />
+                            <HyperlinkButton 
+                                x:Uid="CmdNotFound_UninstallButton"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsCommandNotFoundModuleInstalled}"
+                                Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
+                        </StackPanel>
+                        <controls:SettingsCard.Description>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock x:Uid="CmdNotFound_Enable_DescriptionText" />
+                                <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckRequirementsEventHandler}" />
+                            </StackPanel>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
 
-                <TextBlock
+                    <TextBlock
                     x:Uid="CmdNotFound_ModuleInstallationLogs"
                     Margin="0,12,0,4"
                     Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                <TextBox
+                    <TextBox
                     Height="300"
                     FontFamily="Consolas"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
                     IsReadOnly="True"
                     Text="{x:Bind Mode=OneWay, Path=ViewModel.CommandOutputLog}"
                     TextWrapping="Wrap" />
+                </custom:SettingsGroup>
             </StackPanel>
         </custom:SettingsPageControl.ModuleContent>
 
