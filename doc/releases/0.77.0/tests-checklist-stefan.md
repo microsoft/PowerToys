@@ -6,72 +6,72 @@
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
- - [ ] FancyZones Editor
- - [ ] Power Rename (new WinUI 3 may not be localized)
- - [ ] PowerToys Run ("Start typing" string is localized, for example)
- - [ ] Image Resizer
- - [ ] Shortcut Guide (Windows controls are localized)
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [ ] Hosts File Editor
- - [ ] File Locksmith
- - [ ] Registry Preview
- - [ ] Environment Variables
+ - [x] System tray menu items
+ - [x] Settings
+ - [x] OOBE (What's new)
+ - [x] Keyboard Manager Editor
+ - [x] Color Picker (check the tooltips)
+ - [x] FancyZones Editor
+ - [x] Power Rename (new WinUI 3 may not be localized)
+ - [x] PowerToys Run ("Start typing" string is localized, for example)
+ - [x] Image Resizer
+ - [x] Shortcut Guide (Windows controls are localized)
+ - [x] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [x] Hosts File Editor
+ - [x] File Locksmith
+ - [x] Registry Preview
+ - [x] Environment Variables
 
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
-  - [ ] when PowerToys is running unelevated on start-up
-  - [ ] when PowerToys is running as admin on start-up
-  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
-- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
-- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
-- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
-- [ ] Try to copy color formats to the clipboard from the Editor
-- [ ] Check `Show color name` and verify if color name is shown in the Color picker
-- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [ ] Select a color from the history in the Editor
-- [ ] Remove color from the history in the Editor
-- [ ] Open the Color Picker from the Editor
-- [ ] Open Adjust color from the Editor
-- [ ] Check Color Picker logs for errors
+  - [x] when PowerToys is running unelevated on start-up
+  - [x] when PowerToys is running as admin on start-up
+  - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
+- [x] Change `Activate Color Picker shortcut` and check the new shortcut is working
+- [x] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
+- [x] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
+- [x] Try to copy color formats to the clipboard from the Editor
+- [x] Check `Show color name` and verify if color name is shown in the Color picker
+- [x] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
+- [x] Select a color from the history in the Editor
+- [x] Remove color from the history in the Editor
+- [x] Open the Color Picker from the Editor
+- [x] Open Adjust color from the Editor
+- [x] Check Color Picker logs for errors
 
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane shows the correct content
+   - [x] verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane works for the SVG files
-   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the SVG files
+   - [x] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the PDF file
-   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the PDF file
+   - [x] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the gcode file
-   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the gcode file
+   - [x] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   - [x] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
+   - [x] verify Preview Pane works for source files (shows syntax highlighting)
  * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane doesn't show any content
+   - [x] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane doesn't show the preview for the SVG files
+   - [x] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [x] copy and paste one of the SVG file and verify the new file show the generic SVG icon
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the PDF file
+   - [x] verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the gcode file
+   - [x] verify Preview Pane doesn't show the preview for the gcode file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   - [x] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+   - [] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
 ## Image Resizer
 - [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
@@ -199,33 +199,33 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 
 ## Quick Accent
  * Enable Quick Accent and open notepad. Then:
-   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+   - [x] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [x] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [x] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
  * Test the different settings and verify they are applied:
-   - [ ] Activation key
-   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [ ] Toolbar position (test every option, some had issues before)
-   - [ ] Input delay
-   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [ ] Sort characters by frequency.
-   - [ ] Always start on the first character when using left/right arrows as activation method.
+   - [x] Activation key
+   - [x] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [x] Toolbar position (test every option, some had issues before)
+   - [x] Input delay
+   - [x] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [x] Sort characters by frequency.
+   - [x] Always start on the first character when using left/right arrows as activation method.
 
 ## Text Extractor
  * Enable Text Extractor. Then:
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Press Escape and verify the overlay disappears.
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Right-click and select Cancel. Verify the overlay disappears.
-   - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Press Escape and verify the overlay disappears.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Right-click and select Cancel. Verify the overlay disappears.
+   - [x] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
  * With Text Extractor enabled and activated:
-   - [ ] Try to select text and verify it is copied to the clipboard.
-   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
+   - [x] Try to select text and verify it is copied to the clipboard.
+   - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
  * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify text is correctly captured on all monitors.
+   - [x] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] OCR Language
+   - [x] Activation shortcut
+   - [x] OCR Language
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
