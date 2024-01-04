@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EnvironmentVariables.Models"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     mc:Ignorable="d">
@@ -22,12 +23,12 @@
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
-                <controls:SettingsCard
+                <tkcontrols:SettingsCard
                     CommandParameter="{x:Bind (models:Variable)}"
                     IsActionIconVisible="False"
                     IsClickEnabled="False"
                     Style="{StaticResource DefaultSettingsExpanderItemStyle}">
-                    <controls:SettingsCard.Header>
+                    <tkcontrols:SettingsCard.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{x:Bind Name, Mode=TwoWay}" />
                             <FontIcon
@@ -41,8 +42,8 @@
                                 </ToolTipService.ToolTip>
                             </FontIcon>
                         </StackPanel>
-                    </controls:SettingsCard.Header>
-                    <controls:SettingsCard.Description>
+                    </tkcontrols:SettingsCard.Header>
+                    <tkcontrols:SettingsCard.Description>
                         <StackPanel HorizontalAlignment="Left">
                             <ItemsControl
                                 x:Name="VariableValuesList"
@@ -65,7 +66,7 @@
                                 Text="{x:Bind Values, Mode=TwoWay}"
                                 Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                         </StackPanel>
-                    </controls:SettingsCard.Description>
+                    </tkcontrols:SettingsCard.Description>
                     <Button
                         Content="{ui:FontIcon Glyph=&#xE712;}"
                         IsEnabled="{x:Bind IsEditable}"
@@ -89,7 +90,7 @@
                             <TextBlock x:Uid="More_Options_ButtonTooltip" TextWrapping="Wrap" />
                         </ToolTipService.ToolTip>
                     </Button>
-                </controls:SettingsCard>
+                </tkcontrols:SettingsCard>
             </DataTemplate>
 
             <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
@@ -322,7 +323,7 @@
                     </controls:SettingsExpander>
                 </StackPanel>
             </ScrollViewer>
-            <controls:GridSplitter
+            <tkcontrols:GridSplitter
                 x:Name="Splitter"
                 Grid.Row="2"
                 Grid.Column="1"
