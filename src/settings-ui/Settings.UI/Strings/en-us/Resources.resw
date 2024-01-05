@@ -3677,11 +3677,29 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Command Not Found</value>
     <comment>"Command Not Found" is a product name</comment>
   </data>
+	<data name="InstalledLabel.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+	<data name="DetectedLabel.Text" xml:space="preserve">
+    <value>Detected</value>
+  </data>
+	<data name="NotDetectedLabel.Text" xml:space="preserve">
+    <value>Not detected</value>
+  </data>
+	<data name="CmdNotFound_RequirementsBar.Title" xml:space="preserve">
+    <value>The following components are required</value>
+  </data>
+  <data name="CmdNotFound_PowerShellDetection.Header" xml:space="preserve">
+    <value>PowerShell 7.4 or greater</value>
+  </data>
+  <data name="CmdNotFound_WinGetClientDetection.Header" xml:space="preserve">
+    <value>WinGet Client PowerShell module</value>
+  </data>
 	<data name="CmdNotFound_Enable.Header" xml:space="preserve">
     <value>Command Not Found</value>
     <comment>"Command Not Found" is a product name</comment>
   </data>
-	<data name="CmdNotFound_Enable_DescriptionText.Text" xml:space="preserve">
+	<data name="CmdNotFound_Enable.Description" xml:space="preserve">
     <value>Add this module to the PowerShell 7 profile script so that it is enabled with every new session</value>
   </data>
   <data name="CmdNotFound_ModuleInstallationLogs.Text" xml:space="preserve">
@@ -3691,7 +3709,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>PowerShell 7 is required to use this module</value>
   </data>
 	<data name="CmdNotFound_CheckCompatibility.Content" xml:space="preserve">
-    <value>Check if your PowerShell configuration is compatible</value>
+    <value>Refresh</value>
+  </data>
+	<data name="CmdNotFound_CheckCompatibilityTooltip.Text" xml:space="preserve">
+    <value>Check if your PowerShell configuration is compatible and configured correctly</value>
   </data>
 	<data name="CmdNotFound_InstallButton.Content" xml:space="preserve">
     <value>Install</value>

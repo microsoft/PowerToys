@@ -6,39 +6,133 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
+    <Page.Resources>
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <controls:SettingsPageControl x:Uid="CmdNotFound" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <tkcontrols:SettingsCard
+                <tkcontrols:SettingsExpander
                     x:Uid="CmdNotFound_Enable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button
-                            x:Uid="CmdNotFound_InstallButton"
-                            Command="{x:Bind ViewModel.InstallModuleEventHandler}"
-                            Style="{StaticResource AccentButtonStyle}" />
-                        <HyperlinkButton x:Uid="CmdNotFound_UninstallButton" Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
-                    </StackPanel>
-                    <tkcontrols:SettingsCard.Description>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock x:Uid="CmdNotFound_Enable_DescriptionText" />
-                            <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckPowershellVersionEventHandler}" />
-                        </StackPanel>
-                    </tkcontrols:SettingsCard.Description>
-                </tkcontrols:SettingsCard>
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                    IsExpanded="True">
+                    <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsCommandNotFoundModuleInstalled, Mode=OneWay}">
+                        <tkcontrols:Case Value="True">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock
+                                    x:Uid="InstalledLabel"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <FontIcon
+                                    Margin="0,0,4,0"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                    Glyph="&#xEC61;" />
+                                <HyperlinkButton x:Uid="CmdNotFound_UninstallButton" Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
+                            </StackPanel>
+                        </tkcontrols:Case>
+                        <tkcontrols:Case Value="False">
+                            <Button
+                                x:Uid="CmdNotFound_InstallButton"
+                                Command="{x:Bind ViewModel.InstallModuleEventHandler}"
+                                Style="{StaticResource AccentButtonStyle}" />
+                        </tkcontrols:Case>
+                    </tkcontrols:SwitchPresenter>
+                    <tkcontrols:SettingsExpander.ItemsHeader>
+                        <InfoBar
+                            x:Uid="CmdNotFound_RequirementsBar"
+                            BorderThickness="0"
+                            CornerRadius="0"
+                            IsClosable="False"
+                            IsOpen="True">
+                            <InfoBar.ActionButton>
+                                <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckRequirementsEventHandler}">
+                                    <ToolTipService.ToolTip>
+                                        <TextBlock x:Uid="CmdNotFound_CheckCompatibilityTooltip" TextWrapping="Wrap" />
+                                    </ToolTipService.ToolTip>
+                                </HyperlinkButton>
+                            </InfoBar.ActionButton>
+                        </InfoBar>
+                    </tkcontrols:SettingsExpander.ItemsHeader>
+                    <tkcontrols:SettingsExpander.Items>
+                        <tkcontrols:SettingsCard x:Uid="CmdNotFound_PowerShellDetection">
+                            <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsPowerShell7Detected, Mode=OneWay}">
+                                <tkcontrols:Case Value="True">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            x:Uid="DetectedLabel"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <FontIcon
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                            Glyph="&#xEC61;" />
+                                    </StackPanel>
+                                </tkcontrols:Case>
+                                <tkcontrols:Case Value="False">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            x:Uid="NotDetectedLabel"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <FontIcon
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                            Glyph="&#xEB90;" />
+                                        <Button x:Uid="CmdNotFound_InstallButton" Command="{x:Bind ViewModel.InstallPowerShell7EventHandler}" />
+                                    </StackPanel>
+                                </tkcontrols:Case>
+                            </tkcontrols:SwitchPresenter>
+                        </tkcontrols:SettingsCard>
 
+                        <tkcontrols:SettingsCard x:Uid="CmdNotFound_WinGetClientDetection">
+                            <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsWinGetClientModuleDetected, Mode=OneWay}">
+                                <tkcontrols:Case Value="True">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            x:Uid="DetectedLabel"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <FontIcon
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                            Glyph="&#xEC61;" />
+                                    </StackPanel>
+                                </tkcontrols:Case>
+                                <tkcontrols:Case Value="False">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            x:Uid="NotDetectedLabel"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <FontIcon
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                            Glyph="&#xEB90;" />
+                                        <Button x:Uid="CmdNotFound_InstallButton" Command="{x:Bind ViewModel.InstallWinGetClientModuleEventHandler}" />
+                                    </StackPanel>
+                                </tkcontrols:Case>
+                            </tkcontrols:SwitchPresenter>
+                        </tkcontrols:SettingsCard>
+                    </tkcontrols:SettingsExpander.Items>
+                </tkcontrols:SettingsExpander>
                 <TextBlock
                     x:Uid="CmdNotFound_ModuleInstallationLogs"
                     Margin="0,12,0,4"
@@ -46,9 +140,9 @@
                 <TextBox
                     Height="300"
                     FontFamily="Consolas"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                     IsReadOnly="True"
-                    Text="{x:Bind Mode=OneWay, Path=ViewModel.CommandOutputLog}"
+                    Text="{x:Bind ViewModel.CommandOutputLog, Mode=OneWay}"
                     TextWrapping="Wrap" />
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

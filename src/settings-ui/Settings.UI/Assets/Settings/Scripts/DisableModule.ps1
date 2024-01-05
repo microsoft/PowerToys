@@ -30,6 +30,8 @@ if($atLeastOneInstanceFound)
 {
   Set-Content -Path $PROFILE -Value $newContent
   Write-Host "Removed the Command Not Found reference from the profile file."
+  # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
 } else {
   Write-Host "No instance of Command Not Found was found in the profile file."
+  # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
 }
