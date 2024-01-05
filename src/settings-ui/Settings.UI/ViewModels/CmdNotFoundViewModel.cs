@@ -207,7 +207,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Logger.LogInfo(result);
 
             // Update PATH environment variable to get pwsh.exe on further calls.
-            Environment.SetEnvironmentVariable("PATH", (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty) + ";" + (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? string.Empty), EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("PATH", (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? string.Empty) + ";" + (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty), EnvironmentVariableTarget.Process);
         }
 
         public void InstallWinGetClientModule()
