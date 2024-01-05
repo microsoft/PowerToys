@@ -53,10 +53,10 @@ else
     Write-Host "Downloading to $Env:TMP\microsoft.ui.xaml.2.7.3.zip"
     Invoke-WebRequest -Uri https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/2.7.3 -OutFile "$Env:TMP\microsoft.ui.xaml.2.7.3.zip"
     Write-Host "Extracting $Env:TMP\microsoft.ui.xaml.2.7.3.zip"
-    Expand-Archive "$Env:TMP\microsoft.ui.xaml.2.7.3.zip" -DestinationPath "$Env:TEMP\microsoft.ui.xaml.2.7.3"
+    Expand-Archive "$Env:TMP\microsoft.ui.xaml.2.7.3.zip" -DestinationPath "$Env:TMP\microsoft.ui.xaml.2.7.3"
     Write-Host "Installing $Env:TMP\microsoft.ui.xaml.2.7.3\tools\AppX\$cpuArchitecture\Release\Microsoft.UI.Xaml.2.7.appx"
     Add-AppxPackage "$Env:TMP\microsoft.ui.xaml.2.7.3\tools\AppX\$cpuArchitecture\Release\Microsoft.UI.Xaml.2.7.appx"
-    Remove-Item -Path "$Env:TEMP\microsoft.ui.xaml.2.7.3" -Recurse -Force
+    Remove-Item -Path "$Env:TMP\microsoft.ui.xaml.2.7.3" -Recurse -Force
     Remove-Item -Path "$Env:TMP\microsoft.ui.xaml.2.7.3.zip" -Force
   }
   Write-Host "Getting winget to the latest stable"
