@@ -34,3 +34,4 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Visual Studio](https://github.com/davidegiacometti/PowerToys-Run-VisualStudio) | [davidegiacometti](https://github.com/davidegiacometti) | Open Visual Studio recents |
 | [WinGet](https://github.com/bostrot/PowerToysRunPluginWinget) | [bostrot](https://github.com/bostrot) | Search and install packages from WinGet |
 | [Scoop](https://github.com/Quriz/PowerToysRunScoop) | [Quriz](https://github.com/Quriz) | Search and install packages from Scoop |
+| [Spotify](https://github.com/waaverecords/PowerToys-Run-Spotify) | [waaverecords](https://github.com/waaverecords) | Search Spotify and control its player |
