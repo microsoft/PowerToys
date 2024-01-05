@@ -3999,6 +3999,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Text size of result titles</value>
   </data>
   <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
-    <value>Command Not Found is not support on ARM64 architecture.</value>
+    <value>Currently, Command Not Found is not supported on the ARM64 architecture, since there's no official ARM64 .msi release of PowerShell 7.4.</value>
   </data>
 </root>
