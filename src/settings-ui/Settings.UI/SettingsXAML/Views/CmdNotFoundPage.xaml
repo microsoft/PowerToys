@@ -6,10 +6,17 @@
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
+    <Page.Resources>
+        <toolkitConverters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+        <toolkitConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
     <custom:SettingsPageControl x:Uid="CmdNotFound" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
@@ -20,25 +27,115 @@
                     IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
                     Severity="Informational" />
 
-                <controls:SettingsCard
+                <controls:SettingsExpander
                     x:Uid="CmdNotFound_Enable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button
-                            x:Uid="CmdNotFound_InstallButton"
-                            Command="{x:Bind ViewModel.InstallModuleEventHandler}"
-                            Style="{StaticResource AccentButtonStyle}" />
-                        <HyperlinkButton x:Uid="CmdNotFound_UninstallButton" Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
-                    </StackPanel>
-                    <controls:SettingsCard.Description>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock x:Uid="CmdNotFound_Enable_DescriptionText" />
-                            <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckPowershellVersionEventHandler}" />
-                        </StackPanel>
-                    </controls:SettingsCard.Description>
-                </controls:SettingsCard>
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}"
+                    IsExpanded="True">
+                    <controls:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsCommandNotFoundModuleInstalled, Mode=OneWay}">
+                        <controls:Case Value="True">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock
+                                    x:Uid="InstalledLabel"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <FontIcon
+                                    Margin="0,0,4,0"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                    Glyph="&#xEC61;" />
+                                <HyperlinkButton x:Uid="CmdNotFound_UninstallButton" Command="{x:Bind ViewModel.UninstallModuleEventHandler}" />
+                            </StackPanel>
+                        </controls:Case>
+                        <controls:Case Value="False">
+                            <Button
+                                x:Uid="CmdNotFound_InstallButton"
+                                Command="{x:Bind ViewModel.InstallModuleEventHandler}"
+                                Style="{StaticResource AccentButtonStyle}" />
+                        </controls:Case>
+                    </controls:SwitchPresenter>
+                    <controls:SettingsExpander.ItemsHeader>
+                        <InfoBar
+                            x:Uid="CmdNotFound_RequirementsBar"
+                            BorderThickness="0"
+                            CornerRadius="0"
+                            IsClosable="False"
+                            IsOpen="True">
+                            <InfoBar.ActionButton>
+                                <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckRequirementsEventHandler}">
+                                    <ToolTipService.ToolTip>
+                                        <TextBlock x:Uid="CmdNotFound_CheckCompatibilityTooltip" TextWrapping="Wrap" />
+                                    </ToolTipService.ToolTip>
+                                </HyperlinkButton>
+                            </InfoBar.ActionButton>
+                        </InfoBar>
+                    </controls:SettingsExpander.ItemsHeader>
+                    <controls:SettingsExpander.Items>
 
+                        <controls:SettingsCard x:Uid="CmdNotFound_PowerShellDetection">
+                            <controls:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsPowerShell7Detected, Mode=OneWay}">
+                                <controls:Case Value="True">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            x:Uid="DetectedLabel"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <FontIcon
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                            Glyph="&#xEC61;" />
+                                    </StackPanel>
+                                </controls:Case>
+                                <controls:Case Value="False">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            x:Uid="NotDetectedLabel"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <FontIcon
+                                            Margin="0,0,4,0"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                            Glyph="&#xEB90;" />
+                                        <Button x:Uid="CmdNotFound_InstallButton" Command="{x:Bind ViewModel.InstallPowerShell7EventHandler}" />
+                                    </StackPanel>
+                                </controls:Case>
+                            </controls:SwitchPresenter>
+                        </controls:SettingsCard>
+
+                        <controls:SettingsCard x:Uid="CmdNotFound_WinGetClientDetection">
+                            <controls:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsWinGetClientModuleDetected, Mode=OneWay}">
+                                <controls:Case Value="True">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            x:Uid="DetectedLabel"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <FontIcon
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                            Glyph="&#xEC61;" />
+                                    </StackPanel>
+                                </controls:Case>
+                                <controls:Case Value="False">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            x:Uid="NotDetectedLabel"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <FontIcon
+                                            Margin="0,0,4,0"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                            Glyph="&#xEB90;" />
+                                        <Button x:Uid="CmdNotFound_InstallButton" Command="{x:Bind ViewModel.InstallWinGetClientModuleEventHandler}" />
+                                    </StackPanel>
+                                </controls:Case>
+                            </controls:SwitchPresenter>
+                        </controls:SettingsCard>
+                    </controls:SettingsExpander.Items>
+                </controls:SettingsExpander>
                 <TextBlock
                     x:Uid="CmdNotFound_ModuleInstallationLogs"
                     Margin="0,12,0,4"

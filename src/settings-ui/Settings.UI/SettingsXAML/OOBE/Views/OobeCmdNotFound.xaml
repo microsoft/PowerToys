@@ -12,10 +12,10 @@
     <controls:OOBEPageControl x:Uid="Oobe_CmdNotFound" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/CmdNotFound.png">
 
         <controls:OOBEPageControl.PageContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_CmdNotFound_HowToUse" />
+                <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_CmdNotFound_HowToUse" Background="Transparent" />
 
                 <StackPanel
                     Margin="0,24,0,0"
