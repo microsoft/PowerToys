@@ -105,7 +105,7 @@ In this release, we focused on new features, stability and improvements.
 **Highlights**
 
  - New utility: Command Not Found PowerShell 7.4 module - adds the ability to detect failed commands in PowerShell 7.4 and suggest a package to install using winget. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
- - Keyboard manager does not register low level hook if there're no remappings anymore.
+ - Keyboard manager does not register low level hook if there are no remappings anymore.
  - Added support for QOI file type in Peek.
  - Added support for loading 3rd-party plugins with additional dependencies in PowerToys Run.
 
@@ -149,7 +149,7 @@ In this release, we focused on new features, stability and improvements.
 
 ### Keyboard Manager
 
- - Do not register low level hook if there're no remappings.
+ - Do not register low level hook if there are no remappings.
 
 ### Peek
 
@@ -163,11 +163,11 @@ In this release, we focused on new features, stability and improvements.
  - Fixed search box UI glitch when FlowDirection is RightToLeft. (This was a hotfix for 0.76)
  - Fixed theme setting. (This was a hotfix for 0.76)
  - Fixed error reporting window UI issue. Thanks [@niels9001](https://github.com/niels9001)!
- - UI improvmenets and ability to show/hide plugins overview panel. Thanks [@niels9001](https://github.com/niels9001)!
+ - UI improvements and ability to show/hide plugins overview panel. Thanks [@niels9001](https://github.com/niels9001)!
  - Allow interaction with plugin hints. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Switch to WPF-UI theme manager. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed issue causing 3rd party plugin's dependencies dll not being loaded properly. Thanks [@coreyH](https://github.com/CoreyHayward)!
- - Added configurable fontsizes. Thanks [@niels9001](https://github.com/niels9001)!
+ - Added configurable font sizes. Thanks [@niels9001](https://github.com/niels9001)!
  - Fix plugins preview selection style. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fix scientific notation errors in Calculator plugin. Thanks [@viggyd](https://github.com/viggyd)!
  - Add URI/URL features to Value generator plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
@@ -179,9 +179,9 @@ In this release, we focused on new features, stability and improvements.
 
 ### Settings
 
- - Fixed exception occuring on theme change.
+ - Fixed exception ocurring on theme change.
  - Fix "What's new" icon. Thanks [@niels9001](https://github.com/niels9001)!
- - Remove obsolete UI Fonticon properties. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+ - Remove obsolete UI Font icon properties. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
  - OOBE UI improvements. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
  - XAML Binding improvements. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
  - Fixed crash caused by ThemeListener constructor exceptions.
@@ -194,8 +194,8 @@ In this release, we focused on new features, stability and improvements.
 
 ### Development
 
- - Addopted XamlStyler for PowerToys Run source code. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Consolidate Microsoft.Windows.SDK.BuildTools accross solution.
+ - Adopted XamlStyler for PowerToys Run source code. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Consolidate Microsoft.Windows.SDK.BuildTools across solution.
  - Upgraded Boost's lib to v1.84.
  - Upgraded HelixToolkit packages to the latest versions.
  - Updated sdl baselines.
