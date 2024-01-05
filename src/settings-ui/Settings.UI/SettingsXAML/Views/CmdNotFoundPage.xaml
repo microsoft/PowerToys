@@ -17,7 +17,10 @@
             TrueValue="Collapsed" />
         <toolkitConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
-    <custom:SettingsPageControl x:Uid="CmdNotFound" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
+    <custom:SettingsPageControl
+        x:Uid="CmdNotFound"
+        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsArm64Arch, Converter={StaticResource BoolNegationConverter}}"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <InfoBar
@@ -56,20 +59,28 @@
                         </controls:Case>
                     </controls:SwitchPresenter>
                     <controls:SettingsExpander.ItemsHeader>
-                        <InfoBar
-                            x:Uid="CmdNotFound_RequirementsBar"
-                            BorderThickness="0"
-                            CornerRadius="0"
-                            IsClosable="False"
-                            IsOpen="True">
-                            <InfoBar.ActionButton>
-                                <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckRequirementsEventHandler}">
-                                    <ToolTipService.ToolTip>
-                                        <TextBlock x:Uid="CmdNotFound_CheckCompatibilityTooltip" TextWrapping="Wrap" />
-                                    </ToolTipService.ToolTip>
-                                </HyperlinkButton>
-                            </InfoBar.ActionButton>
-                        </InfoBar>
+                        <StackPanel>
+                            <InfoBar
+                                x:Uid="CmdNotFound_RequirementsBar"
+                                BorderThickness="0"
+                                CornerRadius="0"
+                                IsClosable="False"
+                                IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsArm64Arch, Converter={StaticResource BoolNegationConverter}}">
+                                <InfoBar.ActionButton>
+                                    <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckRequirementsEventHandler}">
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="CmdNotFound_CheckCompatibilityTooltip" TextWrapping="Wrap" />
+                                        </ToolTipService.ToolTip>
+                                    </HyperlinkButton>
+                                </InfoBar.ActionButton>
+                            </InfoBar>
+                            <InfoBar
+                                x:Uid="CmdNotFound_Arm64ArchBar"
+                                BorderThickness="0"
+                                CornerRadius="0"
+                                IsClosable="False"
+                                IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsArm64Arch}" />
+                        </StackPanel>
                     </controls:SettingsExpander.ItemsHeader>
                     <controls:SettingsExpander.Items>
 
