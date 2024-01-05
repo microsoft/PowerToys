@@ -179,7 +179,7 @@ In this release, we focused on new features, stability and improvements.
 
 ### Settings
 
- - Fixed exception ocurring on theme change.
+ - Fixed exception occurring on theme change.
  - Fix "What's new" icon. Thanks [@niels9001](https://github.com/niels9001)!
  - Remove obsolete UI Font icon properties. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
  - OOBE UI improvements. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
