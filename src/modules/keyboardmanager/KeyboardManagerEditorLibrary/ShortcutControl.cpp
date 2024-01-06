@@ -256,8 +256,15 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         target.Width(EditorConstants::ShortcutTargetColumnWidth);
     }
 
+    uint32_t rowIndex = -1;
+    if (!parent.Children().IndexOf(row, rowIndex))
+    {
+        return newShortcutToRemap;
+    }
+
     // add shortcut type choice
     auto actionTypeCombo = ComboBox();
+    actionTypeCombo.Name(L"actionTypeCombo_" + std::to_wstring(rowIndex));
     actionTypeCombo.Width(EditorConstants::RemapTableDropDownWidth);
     actionTypeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeKeyShortcut()));
     actionTypeCombo.Items().Append(winrt::box_value(KeyboardManagerEditorStrings::MappingTypeText()));
@@ -270,13 +277,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     firstLineStackPanel.Children().InsertAt(0, UIHelpers::GetLabelWrapped(actionTypeCombo, L"Action:", runProgramLabelWidth).as<StackPanel>());
 
     // add textbox for when it's a text input
-
-    uint32_t rowIndex = -1;
-
-    if (!parent.Children().IndexOf(row, rowIndex))
-    {
-        return newShortcutToRemap;
-    }
 
     auto unicodeTextKeysInput = TextBox();
 
@@ -698,11 +698,10 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         else if (newKeys.index() == 2)
         {
             shortcutRemapBuffer.back().first[1] = std::get<std::wstring>(newKeys);
-            const auto& remapControl = keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1];
-            const auto& controlChildren = remapControl->GetShortcutControl().Children();
-            const auto& topLineChildren = controlChildren.GetAt(0).as<StackPanel>();
-            topLineChildren.Children().GetAt(0).as<ComboBox>().SelectedIndex(1);
-            controlChildren.GetAt(2).as<TextBox>().Text(std::get<std::wstring>(newKeys));
+            const auto& remapControl = keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1];            
+            actionTypeCombo.SelectedIndex(1);
+            unicodeTextKeysInput.Text(std::get<std::wstring>(newKeys));
+            
         }
     }
     else
