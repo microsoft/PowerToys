@@ -14,11 +14,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public static class InputInterpreter
     {
-        private static string pattern = @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)";
+        private static readonly string Pattern = @"(?<=\d)(?![,.\-])(?=[\D])|(?<=[\D])(?<![,.\-])(?=\d)";
 
         public static string[] RegexSplitter(string[] split)
         {
-            return Regex.Split(split[0], pattern);
+            return Regex.Split(split[0], Pattern);
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return;
             }
 
-            string[] parseInputWithoutSpace = Regex.Split(split[0], pattern);
+            string[] parseInputWithoutSpace = Regex.Split(split[0], Pattern);
 
             if (parseInputWithoutSpace.Length > 1)
             {
@@ -80,6 +80,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                         // ex: 1'2 and 1'2"
                         if (shortsplit[1] == "\'")
                         {
+                            bool isNegative = shortsplit[0].StartsWith('-');
+                            if (isNegative)
+                            {
+                                shortsplit[0] = shortsplit[0].Remove(0, 1);
+                            }
+
                             bool isFeet = double.TryParse(shortsplit[0], NumberStyles.AllowDecimalPoint, culture, out double feet);
                             bool isInches = double.TryParse(shortsplit[2], NumberStyles.AllowDecimalPoint, culture, out double inches);
 
@@ -89,9 +95,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                                 break;
                             }
 
-                            string convertedTotalInFeet = Length.FromFeetInches(feet, inches).Feet.ToString(culture);
+                            double convertedTotalInFeet = Length.FromFeetInches(feet, inches).Feet;
+                            if (isNegative)
+                            {
+                                convertedTotalInFeet *= -1;
+                            }
 
-                            string[] newInput = new string[] { convertedTotalInFeet, "foot", split[1], split[2] };
+                            string[] newInput = new string[] { convertedTotalInFeet.ToString(culture), "foot", split[1], split[2] };
                             split = newInput;
                         }
 
