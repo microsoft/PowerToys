@@ -70,7 +70,7 @@
                     <ItemsControl
                         AutomationProperties.AccessibilityView="Raw"
                         IsTabStop="False"
-                        ItemsSource="{x:Bind Path=Shortcut, Mode=TwoWay}">
+                        ItemsSource="{x:Bind Shortcut, Mode=TwoWay}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" Spacing="12" />
@@ -106,7 +106,7 @@
                         Placement="Bottom"
                         ShouldConstrainToRootBounds="False">
                         <StackPanel Orientation="Vertical" Spacing="4">
-                            <ItemsControl ItemsSource="{x:Bind Path=RemapKeys, Mode=OneWay}">
+                            <ItemsControl ItemsSource="{x:Bind RemapKeys, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Spacing="4" />
@@ -180,7 +180,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <ItemsControl ItemsSource="{x:Bind Path=RemapShortcuts, Mode=OneWay}">
+                            <ItemsControl ItemsSource="{x:Bind RemapShortcuts, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Spacing="4" />

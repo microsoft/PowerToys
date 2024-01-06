@@ -10,18 +10,15 @@
     mc:Ignorable="d">
 
     <custom:OOBEPageControl x:Uid="Oobe_PastePlain" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PastePlain.gif">
-
         <custom:OOBEPageControl.PageContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
                 <custom:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_PastePlain_HowToUse" />
 
-                <StackPanel
-                    Margin="0,24,0,0"
-                    Orientation="Horizontal"
-                    Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+
                     <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PastePlain" Style="{StaticResource TextButtonStyle}">
                         <TextBlock x:Uid="LearnMore_PastePlain" TextWrapping="Wrap" />
                     </HyperlinkButton>
