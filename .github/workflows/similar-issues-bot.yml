@@ -28,4 +28,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
-          BODY: ${{ needs.getsimilarissues.outputs.message }}
+          BODY: ${{ needs.getSimilarIssues.outputs.message }}
