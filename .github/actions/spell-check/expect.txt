@@ -311,6 +311,7 @@ cppruntime
 cppstd
 cppwinrt
 CProj
+craigloewen
 createdump
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -645,6 +646,7 @@ gdi
 gdiplus
 GDISCALED
 GEmoji
+getbody
 GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
 GETDLGCODE
@@ -881,6 +883,7 @@ isfinite
 IShell
 isocpp
 iss
+issuetitle
 ITask
 ith
 ITHUMBNAIL
@@ -1172,6 +1175,7 @@ msclr
 mscorlib
 msdata
 msedge
+msft
 MSGFLT
 MSIFASTINSTALL
 MSIHANDLE
@@ -1631,6 +1635,7 @@ reparent
 reparented
 reparenting
 reparse
+repo
 reportbug
 requery
 requerying
@@ -1810,6 +1815,7 @@ siex
 sigdn
 SIGNINGSCENARIO
 Signtool
+similaritytolerance
 SINGLEKEY
 singlekeyremapcontrol
 singletones
