@@ -5,12 +5,11 @@ on:
     types: [opened]
 
 jobs:
-  getsimilarissues:
+  getSimilarIssues:
     runs-on: ubuntu-latest
     outputs:
       message: ${{ steps.getbody.outputs.message }}
     steps:
-      - uses: actions/checkout@v2
       - id: getbody
         uses: craigloewen-msft/GitGudSimilarIssues@main
         with:
@@ -18,7 +17,7 @@ jobs:
           repo: ${{ github.repository }}
           similaritytolerance: "0.7"
   add-comment:
-    needs: getsimilarissues
+    needs: getSimilarIssues
     runs-on: ubuntu-latest
     permissions:
       issues: write
