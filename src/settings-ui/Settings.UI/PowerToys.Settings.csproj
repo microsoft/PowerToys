@@ -61,11 +61,6 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
-  <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls. -->
-  <PropertyGroup>
-    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
-  </PropertyGroup>
-
   <ItemGroup>
     <Content Include="Assets\Settings\SplashScreen.scale-200.png" />
     <Content Include="Assets\Settings\LockScreenLogo.scale-200.png" />
