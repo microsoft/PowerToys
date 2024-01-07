@@ -51,6 +51,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("enabled")]
         public EnabledModules Enabled { get; set; }
 
+        [JsonPropertyName("show_new_updates_toast_notification")]
+        public bool ShowNewUpdatesToastNotification { get; set; }
+
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
@@ -63,6 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IsAdmin = false;
             EnableWarningsElevatedApps = true;
             IsElevated = false;
+            ShowNewUpdatesToastNotification = true;
             AutoDownloadUpdates = false;
             EnableExperimentation = true;
             Theme = "system";

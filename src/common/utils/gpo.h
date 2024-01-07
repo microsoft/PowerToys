@@ -64,6 +64,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
     const std::wstring POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD = L"AutomaticUpdateDownloadDisabled";
     const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
+    const std::wstring POLICY_DISABLE_NEW_UPDATE_TOAST = L"DisableNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_PERIODIC_UPDATE_CHECK = L"PeriodicUpdateCheckDisabled";
 
     // The registry value names for other PowerToys policies.
@@ -403,6 +404,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getSuspendNewUpdateToastValue()
     {
         return getConfiguredValue(POLICY_SUSPEND_NEW_UPDATE_TOAST);
+    }
+
+    inline gpo_rule_configured_t getDisableNewUpdateToastValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_NEW_UPDATE_TOAST);
     }
 
     inline gpo_rule_configured_t getDisablePeriodicUpdateCheckValue()
