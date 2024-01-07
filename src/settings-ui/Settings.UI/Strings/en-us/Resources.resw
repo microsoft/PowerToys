@@ -4001,4 +4001,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
     <value>Command Not Found is not supported on the ARM64 architecture currently. We are actively working on a solution.</value>
   </data>
+  <data name="ShowUpdateDetails.Content" xml:space="preserve">
+    <value>Install</value>
+    <comment>"Install" like in "install updates".</comment>
+  </data>
 </root>

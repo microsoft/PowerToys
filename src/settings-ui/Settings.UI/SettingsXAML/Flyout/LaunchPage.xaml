@@ -107,7 +107,11 @@
                 x:Uid="UpdateAvailable"
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
-                Severity="Success" />
+                Severity="Informational">
+                <InfoBar.ActionButton>
+                    <HyperlinkButton x:Uid="ShowUpdateDetails" Click="UpdateDetailsBtn_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
 
             <StackPanel
                 Grid.Row="1"
