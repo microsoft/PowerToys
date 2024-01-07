@@ -1321,7 +1321,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
 - Microsoft.Extensions.Logging 8.0.0
 - Microsoft.Extensions.Logging.Abstractions 8.0.0
-- Microsoft.Extensions.ObjectPool 5.0.17
+- Microsoft.Extensions.ObjectPool 8.0.0
 - Microsoft.NET.Test.Sdk 17.6.3
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2088.41
