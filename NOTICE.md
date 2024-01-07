@@ -1337,8 +1337,8 @@ EXHIBIT A -Mozilla Public License.
 - Moq 4.18.4
 - MSTest.TestAdapter 3.1.1
 - MSTest.TestFramework 3.1.1
-- NLog.Extensions.Logging 5.0.4
-- NLog.Schema 5.0.4
+- NLog.Extensions.Logging 5.3.8
+- NLog.Schema 5.2.8
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.33.0
 - StreamJsonRpc 2.14.24
