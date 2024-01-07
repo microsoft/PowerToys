@@ -9,9 +9,8 @@
     mc:Ignorable="d">
 
     <custom:OOBEPageControl x:Uid="Oobe_Awake" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Awake.png">
-
         <custom:OOBEPageControl.PageContent>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_Awake_HowToUse" Background="Transparent" />
@@ -20,11 +19,9 @@
 
                 <toolkitcontrols:MarkdownTextBlock x:Uid="Oobe_Awake_TipsAndTricks" Background="Transparent" />
 
-                <StackPanel
-                    Margin="0,24,0,0"
-                    Orientation="Horizontal"
-                    Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+
                     <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_Awake" Style="{StaticResource TextButtonStyle}">
                         <TextBlock x:Uid="LearnMore_Awake" TextWrapping="Wrap" />
                     </HyperlinkButton>

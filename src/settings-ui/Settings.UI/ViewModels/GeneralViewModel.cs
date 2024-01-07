@@ -126,6 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
+            _enableWarningsElevatedApps = GeneralSettingsConfig.EnableWarningsElevatedApps;
 
             RunningAsUserDefaultText = runAsUserText;
             RunningAsAdminDefaultText = runAsAdminText;
@@ -151,6 +152,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isElevated;
         private bool _runElevated;
         private bool _isAdmin;
+        private bool _enableWarningsElevatedApps;
         private int _themeIndex;
 
         private bool _autoDownloadUpdates;
@@ -269,6 +271,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return _isAdmin;
+            }
+        }
+
+        public bool EnableWarningsElevatedApps
+        {
+            get
+            {
+                return _enableWarningsElevatedApps;
+            }
+
+            set
+            {
+                if (_enableWarningsElevatedApps != value)
+                {
+                    _enableWarningsElevatedApps = value;
+                    GeneralSettingsConfig.EnableWarningsElevatedApps = value;
+                    NotifyPropertyChanged();
+                }
             }
         }
 

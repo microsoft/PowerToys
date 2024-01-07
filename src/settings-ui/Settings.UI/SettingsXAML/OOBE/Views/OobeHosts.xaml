@@ -11,16 +11,14 @@
 
     <custom:OOBEPageControl x:Uid="Oobe_Hosts" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/HostsFileEditor.png">
         <custom:OOBEPageControl.PageContent>
-            <StackPanel Orientation="Vertical">
-                <StackPanel
-                    Margin="0,24,0,0"
-                    Orientation="Horizontal"
-                    Spacing="12">
+            <StackPanel Orientation="Vertical" Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button
                         x:Uid="Launch_Hosts"
                         Click="Launch_Hosts_Click"
                         Style="{StaticResource AccentButtonStyle}" />
                     <Button x:Uid="OOBE_Settings" Click="Launch_Settings_Click" />
+
                     <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_HostsFileEditor" Style="{StaticResource TextButtonStyle}">
                         <TextBlock x:Uid="LearnMore_Hosts" TextWrapping="Wrap" />
                     </HyperlinkButton>

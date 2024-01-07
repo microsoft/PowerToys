@@ -116,6 +116,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAwake.png}" />
 
                 <NavigationViewItem
+                    x:Uid="Shell_CmdNotFound"
+                    helpers:NavHelper.NavigateTo="views:CmdNotFoundPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_ColorPicker"
                     helpers:NavHelper.NavigateTo="views:ColorPickerPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}" />

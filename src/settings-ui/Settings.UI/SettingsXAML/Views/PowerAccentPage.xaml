@@ -19,18 +19,18 @@
                 <controls:SettingsCard
                     x:Uid="QuickAccent_EnableQuickAccent"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerAccent.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="QuickAccent_Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows" />
@@ -40,7 +40,7 @@
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="QuickAccent_SelectedLanguage" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedLangIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in PowerAccentViewModel.cs  -->
@@ -81,7 +81,7 @@
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+                <custom:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="QuickAccent_ToolbarPosition" HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter" />
@@ -96,17 +96,17 @@
                         </ComboBox>
                     </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
-                        <ToggleSwitch x:Uid="QuickAccent_UnicodeDescription_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.ShowUnicodeDescription}" />
+                        <ToggleSwitch x:Uid="QuickAccent_UnicodeDescription_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowUnicodeDescription, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="QuickAccent_SortByUsageFrequency_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}">
-                        <ToggleSwitch x:Uid="QuickAccent_SortByUsageFrequency_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SortByUsageFrequency}" />
+                        <ToggleSwitch x:Uid="QuickAccent_SortByUsageFrequency_ToggleSwitch" IsOn="{x:Bind ViewModel.SortByUsageFrequency, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE974;}">
-                        <ToggleSwitch x:Uid="QuickAccent_StartSelectionFromTheLeft_ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.StartSelectionFromTheLeft}" />
+                        <ToggleSwitch x:Uid="QuickAccent_StartSelectionFromTheLeft_ToggleSwitch" IsOn="{x:Bind ViewModel.StartSelectionFromTheLeft, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="QuickAccent_InputTimeMs" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -114,7 +114,7 @@
                             Minimum="100"
                             SmallChange="10"
                             SpinButtonPlacementMode="Compact"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.InputTimeMs}" />
+                            Value="{x:Bind ViewModel.InputTimeMs, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <controls:SettingsExpander x:Uid="QuickAccent_ExcludedApps" HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}">
@@ -128,7 +128,7 @@
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{x:Bind ViewModel.ExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
