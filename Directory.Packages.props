@@ -33,7 +33,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="5.0.17" />
+    <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="8.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
