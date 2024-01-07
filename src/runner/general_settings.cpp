@@ -18,6 +18,7 @@ static bool run_as_elevated = false;
 static bool download_updates_automatically = true;
 static bool show_whats_new_after_updates = true;
 static bool enable_experimentation = true;
+static bool enable_warnings_elevated_apps = true;
 
 json::JsonObject GeneralSettings::to_json()
 {
@@ -42,6 +43,7 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"show_whats_new_after_updates", json::value(showWhatsNewAfterUpdates));
     result.SetNamedValue(L"enable_experimentation", json::value(enableExperimentation));
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
+    result.SetNamedValue(L"enable_warnings_elevated_apps", json::value(enableWarningsElevatedApps));
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
     result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
@@ -61,6 +63,7 @@ json::JsonObject load_general_settings()
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
     show_whats_new_after_updates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation",true);
+    enable_warnings_elevated_apps = loaded.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
 
     return loaded;
 }
@@ -72,6 +75,7 @@ GeneralSettings get_general_settings()
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
+        .enableWarningsElevatedApps = enable_warnings_elevated_apps,
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .showWhatsNewAfterUpdates = show_whats_new_after_updates,
         .enableExperimentation = enable_experimentation,
@@ -94,6 +98,8 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
 {
     Logger::info(L"apply_general_settings: {}", std::wstring{ general_configs.ToString() });
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
+
+    enable_warnings_elevated_apps = general_configs.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
 
     download_updates_automatically = general_configs.GetNamedBoolean(L"download_updates_automatically", true);
     show_whats_new_after_updates = general_configs.GetNamedBoolean(L"show_whats_new_after_updates", true);

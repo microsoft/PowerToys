@@ -209,7 +209,7 @@
                                     <StackPanel Orientation="Horizontal" Spacing="12">
                                         <ToggleSwitch
                                             x:Uid="ToggleSwitch"
-                                            IsOn="{x:Bind Mode=TwoWay, Path=IsEnabled}"
+                                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                                             Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
                                         <Button Content="{ui:FontIcon Glyph=&#xE712;}" Style="{StaticResource SubtleButtonStyle}">
                                             <Button.Flyout>

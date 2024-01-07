@@ -51,8 +51,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             // Hide menu if Explorer.exe is the shell process or the process name is ApplicationFrameHost.exe
             // In the first case we would crash the windows ui and in the second case we would kill the generic process for uwp apps.
-            if (!windowData.Process.IsShellProcess && !(windowData.Process.IsUwpApp & windowData.Process.Name.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "applicationframehost.exe")
-                && !(windowData.Process.IsFullAccessDenied & WindowWalkerSettings.Instance.HideKillProcessOnElevatedProcesses))
+            if (!windowData.Process.IsShellProcess && !(windowData.Process.IsUwpApp && string.Equals(windowData.Process.Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
+                && !(windowData.Process.IsFullAccessDenied && WindowWalkerSettings.Instance.HideKillProcessOnElevatedProcesses))
             {
                 contextMenu.Add(new ContextMenuResult
                 {

@@ -19,24 +19,24 @@
                 <controls:SettingsCard
                     x:Uid="PowerRename_Toggle_Enable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerRename.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" />
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
-                <custom:SettingsGroup x:Uid="PowerRename_ShellIntegration" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="PowerRename_ShellIntegration" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsExpander x:Uid="PowerRename_Toggle_ContextMenu" IsExpanded="False">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EnabledOnContextExtendedMenu, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="PowerRename_Toggle_StandardContextMenu" />
                             <ComboBoxItem x:Uid="PowerRename_Toggle_ExtendedContextMenu" />
                         </ComboBox>
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerRename_Toggle_HideIcon" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextMenu, Converter={StaticResource BoolNegationConverter}}" />
+                                <CheckBox x:Uid="PowerRename_Toggle_HideIcon" IsChecked="{x:Bind ViewModel.EnabledOnContextMenu, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
@@ -48,28 +48,28 @@
                         Severity="Informational" />
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="PowerRename_AutoCompleteHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="PowerRename_AutoCompleteHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsExpander x:Uid="PowerRename_Toggle_AutoComplete" IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MRUEnabled, Mode=TwoWay}" />
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="PowerRename_Toggle_MaxDispListNum" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}">
+                            <controls:SettingsCard x:Uid="PowerRename_Toggle_MaxDispListNum" IsEnabled="{x:Bind ViewModel.GlobalAndMruEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="20"
                                     Minimum="0"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaxDispListNum}" />
+                                    Value="{x:Bind ViewModel.MaxDispListNum, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
                     <controls:SettingsCard x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch" HeaderIcon="{ui:FontIcon Glyph=&#xe81c;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RestoreFlagsOnLaunch, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
-                <custom:SettingsGroup x:Uid="PowerRename_BehaviorHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="PowerRename_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="PowerRename_Toggle_UseBoostLib">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.UseBoostLib}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UseBoostLib, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </custom:SettingsGroup>
             </StackPanel>
