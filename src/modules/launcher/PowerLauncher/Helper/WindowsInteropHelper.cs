@@ -114,9 +114,9 @@ namespace PowerLauncher.Helper
         {
             // First, check to see if a game is fullscreen, if so, we definitely have
             // a full-screen window
-            UserNotificationState pquns;
-            if (Marshal.GetExceptionForHR(NativeMethods.SHQueryUserNotificationState(out pquns)) == null &&
-                pquns == UserNotificationState.QUNS_RUNNING_D3D_FULL_SCREEN)
+            UserNotificationState state;
+            if (Marshal.GetExceptionForHR(NativeMethods.SHQueryUserNotificationState(out state)) == null &&
+                state == UserNotificationState.QUNS_RUNNING_D3D_FULL_SCREEN)
             {
                 return true;
             }

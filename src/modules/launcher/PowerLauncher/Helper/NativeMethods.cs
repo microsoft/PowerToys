@@ -70,7 +70,7 @@ namespace PowerLauncher.Helper
         internal static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
 
         [DllImport("shell32.dll")]
-        public static extern int SHQueryUserNotificationState(out UserNotificationState pquns);
+        public static extern int SHQueryUserNotificationState(out UserNotificationState state);
 
         public static string[] CommandLineToArgvW(string cmdLine)
         {
