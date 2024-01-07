@@ -1313,7 +1313,7 @@ EXHIBIT A -Mozilla Public License.
 - Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
 - LazyCache 2.4.0
 - Mages 2.0.1
-- Markdig.Signed 0.27.0
+- Markdig.Signed 0.34.0
 - Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
 - Microsoft.Data.Sqlite 8.0.0
 - Microsoft.Extensions.DependencyInjection 8.0.0
