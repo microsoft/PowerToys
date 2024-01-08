@@ -123,4 +123,7 @@
       <Filter>Resource Files</Filter>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
 </Project>
