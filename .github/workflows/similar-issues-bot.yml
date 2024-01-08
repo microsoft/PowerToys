@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
+    if: needs.getSimilarIssues.outputs.message != ''
     steps:
       - name: Add comment
         run: gh issue comment "$NUMBER" --repo "$REPO" --body "$BODY"
