@@ -106,8 +106,8 @@ In this release, we focused on new features, stability and improvements.
 
  - New utility: Command Not Found PowerShell 7.4 module - adds the ability to detect failed commands in PowerShell 7.4 and suggest a package to install using winget. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
  - Keyboard manager does not register low level hook if there are no remappings anymore.
- - Added support for QOI file type in Peek.
- - Added support for loading 3rd-party plugins with additional dependencies in PowerToys Run.
+ - Added support for QOI file type in Peek. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+ - Added support for loading 3rd-party plugins with additional dependencies in PowerToys Run. Thanks [@coreyH](https://github.com/CoreyHayward)!
 
 ### General
 
