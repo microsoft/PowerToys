@@ -168,7 +168,7 @@ In this release, we focused on new features, stability and improvements.
  - Switch to WPF-UI theme manager. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed issue causing 3rd party plugin's dependencies dll not being loaded properly. Thanks [@coreyH](https://github.com/CoreyHayward)!
  - Added configurable font sizes. Thanks [@niels9001](https://github.com/niels9001)!
- - Fix plugins preview selection style. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Changed the text color of plugin hints to improve the contrast when light theme is used. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fix scientific notation errors in Calculator plugin. Thanks [@viggyd](https://github.com/viggyd)!
  - Add URI/URL features to Value generator plugin. Thanks [@htcfreek](https://github.com/htcfreek)!
 
