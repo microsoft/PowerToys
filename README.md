@@ -115,7 +115,7 @@ In this release, we focused on new features, stability and improvements.
  - Fixed typo in version change notification. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Code improvements and fixed silenced warnings introduced by upgrade to .NET 8.
  - Update copyright year for 2024.
- - Added setting to disable warning notifications.
+ - Added setting to disable warning notifications about detecting an application running as Administrator.
 
 ### AlwaysOnTop
 
