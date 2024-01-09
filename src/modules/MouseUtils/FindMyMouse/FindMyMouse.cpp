@@ -75,6 +75,11 @@ protected:
     static constexpr int FinalAlphaDenominator = 100;
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
+    // Don't consider movements started past these milliseconds to detect shaking.
+    int m_shakeIntervalMs = FIND_MY_MOUSE_DEFAULT_SHAKE_INTERVAL_MS;
+    // By which factor must travelled distance be than the diagonal of the rectangle containing the movements. (value in percent)
+    int m_shakeFactor = FIND_MY_MOUSE_DEFAULT_SHAKE_FACTOR;
+
 private:
 
     // Save the mouse movement that occurred in any direction.
@@ -87,10 +92,6 @@ private:
     // Raw Input may give relative or absolute values. Need to take each case into account.
     bool m_seenAnAbsoluteMousePosition = false;
     POINT m_lastAbsolutePosition = { 0, 0 };
-    // Don't consider movements started past these milliseconds to detect shaking.
-    static constexpr LONG ShakeIntervalMs = 1000;
-    // By which factor must travelled distance be than the diagonal of the rectangle containing the movements.
-    static constexpr float ShakeFactor = 4.0f;
 
     static inline byte GetSign(LONG const& num)
     {
@@ -398,7 +399,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
 template<typename D>
 void SuperSonar<D>::DetectShake()
 {
-    ULONGLONG shakeStartTick = GetTickCount64() - ShakeIntervalMs;
+    ULONGLONG shakeStartTick = GetTickCount64() - m_shakeIntervalMs;
     
     // Prune the story of movements for those movements that started too long ago.
     std::erase_if(m_movementHistory, [shakeStartTick](const PointerRecentMovement& movement) { return movement.tick < shakeStartTick; });
@@ -429,7 +430,7 @@ void SuperSonar<D>::DetectShake()
     double rectangleHeight =  static_cast<double>(maxY) - minY;
 
     double diagonal = sqrt(rectangleWidth * rectangleWidth + rectangleHeight * rectangleHeight);
-    if (diagonal > 0 && distanceTravelled / diagonal > ShakeFactor)
+    if (diagonal > 0 && distanceTravelled / diagonal > (m_shakeFactor/100.f))
     {
         m_movementHistory.clear();
         StartSonar();
@@ -767,6 +768,8 @@ public:
             m_sonarZoomFactor = settings.spotlightInitialZoom;
             m_excludedApps = settings.excludedApps;
             m_shakeMinimumDistance = settings.shakeMinimumDistance;
+            m_shakeIntervalMs = settings.shakeIntervalMs;
+            m_shakeFactor = settings.shakeFactor;
         }
         else
         {
@@ -794,6 +797,8 @@ public:
                     m_sonarZoomFactor = localSettings.spotlightInitialZoom;
                     m_excludedApps = localSettings.excludedApps;
                     m_shakeMinimumDistance = localSettings.shakeMinimumDistance;
+                    m_shakeIntervalMs = localSettings.shakeIntervalMs;
+                    m_shakeFactor = localSettings.shakeFactor;
                     UpdateMouseSnooping(); // For the shake mouse activation method
 
                     // Apply new settings to runtime composition objects.
