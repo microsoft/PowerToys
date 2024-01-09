@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters
             var stringBuilder = new StringBuilder();
             var xmlWriterSettings = new XmlWriterSettings()
             {
-                OmitXmlDeclaration = xmlDocument.FirstChild.NodeType != XmlNodeType.XmlDeclaration,
+                OmitXmlDeclaration = xmlDocument.FirstChild?.NodeType != XmlNodeType.XmlDeclaration,
                 Indent = true,
             };
 

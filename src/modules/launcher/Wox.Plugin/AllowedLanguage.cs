@@ -21,14 +21,13 @@ namespace Wox.Plugin
 
         public static bool IsAllowed(string language)
         {
-            if (language == null)
-            {
-                throw new ArgumentNullException(nameof(language));
-            }
+            ArgumentNullException.ThrowIfNull(language);
 
             // Using InvariantCulture since this is a command line arg
-            return language.ToUpper(CultureInfo.InvariantCulture) == CSharp.ToUpper(CultureInfo.InvariantCulture)
-                || language.ToUpper(CultureInfo.InvariantCulture) == Executable.ToUpper(CultureInfo.InvariantCulture);
+            var upperLanguage = language.ToUpper(CultureInfo.InvariantCulture);
+
+            return string.Equals(upperLanguage, CSharp.ToUpper(CultureInfo.InvariantCulture), StringComparison.Ordinal)
+                || string.Equals(upperLanguage, Executable.ToUpper(CultureInfo.InvariantCulture), StringComparison.Ordinal);
         }
     }
 }

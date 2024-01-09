@@ -93,9 +93,9 @@ namespace PowerAccent.Core
         // All
         private static string[] GetDefaultLetterKeyALL(LetterKey letter)
         {
-            if (!_allLanguagesCache.ContainsKey(letter))
+            if (!_allLanguagesCache.TryGetValue(letter, out string[] cachedValue))
             {
-                _allLanguagesCache[letter] = GetDefaultLetterKeyCA(letter)
+                cachedValue = GetDefaultLetterKeyCA(letter)
                 .Union(GetDefaultLetterKeyCUR(letter))
                 .Union(GetDefaultLetterKeyCY(letter))
                 .Union(GetDefaultLetterKeyCZ(letter))
@@ -129,9 +129,11 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyTK(letter))
                 .Union(GetDefaultLetterKeyAllLanguagesOnly(letter))
                 .ToArray();
+
+                _allLanguagesCache[letter] = cachedValue;
             }
 
-            return _allLanguagesCache[letter];
+            return cachedValue;
         }
 
         // Contains all characters that should be shown in all languages but currently don't belong to any of the single languages available for that letter.
@@ -147,38 +149,39 @@ namespace PowerAccent.Core
                 LetterKey.VK_4 => new[] { "⅘" },
                 LetterKey.VK_5 => new[] { "⅚", "⅝" },
                 LetterKey.VK_7 => new[] { "⅞" },
-                LetterKey.VK_A => new[] { "ά", "ȧ" },
+                LetterKey.VK_8 => new[] { "∞" },
+                LetterKey.VK_A => new[] { "ȧ", "∀" },
                 LetterKey.VK_B => new[] { "ḃ" },
-                LetterKey.VK_C => new[] { "ċ", "°C", "©", "ℂ" },
-                LetterKey.VK_D => new[] { "ḍ", "ḋ" },
-                LetterKey.VK_E => new[] { "έ", "ή", "∈" },
+                LetterKey.VK_C => new[] { "ċ", "°C", "©", "ℂ", "∁" },
+                LetterKey.VK_D => new[] { "ḍ", "ḋ", "∂" },
+                LetterKey.VK_E => new[] { "∈", "∃", "∄", "∉" },
                 LetterKey.VK_F => new[] { "ḟ", "°F" },
                 LetterKey.VK_G => new[] { "ģ", "ǧ", "ġ", "ĝ", "ǥ" },
                 LetterKey.VK_H => new[] { "ḣ", "ĥ", "ħ" },
-                LetterKey.VK_I => new[] { "ί" },
                 LetterKey.VK_J => new[] { "ĵ" },
                 LetterKey.VK_K => new[] { "ķ", "ǩ" },
                 LetterKey.VK_L => new[] { "ļ", "₺" }, // ₺ is in VK_T for other languages, but not VK_L, so we add it here.
                 LetterKey.VK_M => new[] { "ṁ" },
                 LetterKey.VK_N => new[] { "ņ", "ṅ", "ⁿ", "ℕ" },
-                LetterKey.VK_O => new[] { "ȯ", "ώ", "ό" },
-                LetterKey.VK_P => new[] { "ṗ", "℗" },
+                LetterKey.VK_O => new[] { "ȯ", "∅" },
+                LetterKey.VK_P => new[] { "ṗ", "℗", "∏" },
                 LetterKey.VK_Q => new[] { "ℚ" },
                 LetterKey.VK_R => new[] { "ṙ", "®", "ℝ" },
-                LetterKey.VK_S => new[] { "ṡ", "\u00A7" },
+                LetterKey.VK_S => new[] { "ṡ", "§", "∑" },
                 LetterKey.VK_T => new[] { "ţ", "ṫ", "ŧ", "™" },
-                LetterKey.VK_U => new[] { "ŭ", "ύ" },
+                LetterKey.VK_U => new[] { "ŭ" },
                 LetterKey.VK_V => new[] { "V̇" },
                 LetterKey.VK_W => new[] { "ẇ" },
                 LetterKey.VK_X => new[] { "ẋ", "×" },
                 LetterKey.VK_Y => new[] { "ẏ", "ꝡ" },
                 LetterKey.VK_Z => new[] { "ʒ", "ǯ", "ℤ" },
-                LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–" }, // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
+                LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–", "√" }, // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
                 LetterKey.VK_PERIOD => new[] { "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030C" },
-                LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "—", "―", "⁓", "−", "⸺", "⸻" },
-                LetterKey.VK_SLASH_ => new[] { "÷" },
-                LetterKey.VK_DIVIDE_ => new[] { "÷" },
+                LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "—", "―", "⁓", "−", "⸺", "⸻", "∓" },
+                LetterKey.VK_SLASH_ => new[] { "÷", "√" },
+                LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
                 LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
+                LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "∓", "≅", "≡" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -531,24 +534,24 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_A => new string[] { "α" },
+                LetterKey.VK_A => new string[] { "α", "ά" },
                 LetterKey.VK_B => new string[] { "β" },
                 LetterKey.VK_C => new string[] { "χ" },
                 LetterKey.VK_D => new string[] { "δ" },
-                LetterKey.VK_E => new string[] { "ε", "η" },
+                LetterKey.VK_E => new string[] { "ε", "έ", "η", "ή" },
                 LetterKey.VK_F => new string[] { "φ" },
                 LetterKey.VK_G => new string[] { "γ" },
-                LetterKey.VK_I => new string[] { "ι" },
+                LetterKey.VK_I => new string[] { "ι", "ί" },
                 LetterKey.VK_K => new string[] { "κ" },
                 LetterKey.VK_L => new string[] { "λ" },
                 LetterKey.VK_M => new string[] { "μ" },
                 LetterKey.VK_N => new string[] { "ν" },
-                LetterKey.VK_O => new string[] { "ο", "ω" },
+                LetterKey.VK_O => new string[] { "ο", "ό", "ω", "ώ" },
                 LetterKey.VK_P => new string[] { "π", "φ", "ψ" },
                 LetterKey.VK_R => new string[] { "ρ" },
                 LetterKey.VK_S => new string[] { "σ" },
                 LetterKey.VK_T => new string[] { "τ", "θ" },
-                LetterKey.VK_U => new string[] { "υ" },
+                LetterKey.VK_U => new string[] { "υ", "ύ" },
                 LetterKey.VK_X => new string[] { "ξ" },
                 LetterKey.VK_Y => new string[] { "υ" },
                 LetterKey.VK_Z => new string[] { "ζ" },

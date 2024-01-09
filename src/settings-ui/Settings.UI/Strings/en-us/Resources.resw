@@ -1022,6 +1022,12 @@
   <data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
     <value>PowerToys will launch automatically</value>
   </data>
+  <data name="GeneralPage_WarningsElevatedApps.Header" xml:space="preserve">
+    <value>Elevated Apps warnings </value>
+  </data>
+  <data name="GeneralPage_WarningsElevatedApps.Description" xml:space="preserve">
+    <value>Show notifications about PowerToys functionality issues when running alongside elevated applications.</value>
+  </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search &amp; replace or regular expressions.</value>
   </data>
@@ -1495,10 +1501,10 @@
     <value>Encoding</value>
   </data>
   <data name="KeyboardManager_RemapKeyboardButton.Description" xml:space="preserve">
-    <value>Remap keys to other keys or shortcuts</value>
+    <value>Remap keys to other keys, shortcuts or text snippets</value>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Description" xml:space="preserve">
-    <value>Remap shortcuts to other shortcuts or keys for all or specific applications</value>
+    <value>Remap shortcuts to other shortcuts, keys or text snippets for all or specific applications</value>
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
@@ -1616,7 +1622,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_Editor_GroupSettings.Header" xml:space="preserve">
     <value>Editor</value>
-    <comment>refers to the FancyZone editor</comment>
+    <comment>refers to the FancyZones editor</comment>
   </data>
   <data name="FancyZones_WindowBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Window behavior</value>
@@ -2015,7 +2021,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
 Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Documentation on Microsoft Docs</value>
+    <value>Documentation on Microsoft Learn</value>
   </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
@@ -2182,6 +2188,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_NavViewItem.Content" xml:space="preserve">
     <value>Welcome to PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
+    <value>What's new</value>
   </data>
   <data name="Feedback_NavViewItem.Content" xml:space="preserve">
     <value>Give feedback</value>
@@ -2354,6 +2363,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="LearnMore_Awake.Text" xml:space="preserve">
     <value>Learn more about Awake</value>
     <comment>Awake is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_CmdNotFound.Text" xml:space="preserve">
+    <value>Learn more about Command Not Found</value>
+    <comment> Command Not Found is the name of the module. </comment>
   </data>
   <data name="SecondaryLink_Awake.Text" xml:space="preserve">
     <value>Den Delimarsky's work on creating Awake</value>
@@ -2993,6 +3006,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
     <value>Wait on slower plugin results before selecting top item in results</value>
   </data>
+  <data name="PowerLauncher_ShowPluginKeywords.Header" xml:space="preserve">
+    <value>Plugin hints</value>
+  </data>
+  <data name="PowerLauncher_ShowPluginKeywords.Description" xml:space="preserve">
+    <value>Choose which plugin keywords to be shown when the searchbox is empty</value>
+  </data>
   <data name="PowerLauncher_PluginWeightBoost.Description" xml:space="preserve">
     <value>Use a higher number to have this plugin's result show higher in the global results. Default is 0.</value>
   </data>
@@ -3361,7 +3380,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>German</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
-  <value>Greek</value>
+    <value>Greek</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
     <value>Hebrew</value>
@@ -3646,6 +3665,72 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Oobe_PastePlain_HowToUse.Text" xml:space="preserve">
     <value>to paste your clipboard data as plain text. Note: this will replace the formatted text in your clipboard with the plain text.</value>
   </data>
+  <data name="Shell_CmdNotFound.Content" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>Product name: Navigation view item name for Command Not Found</comment>
+  </data>
+  <data name="CmdNotFound.ModuleDescription" xml:space="preserve">
+    <value>A PowerShell module that detects an error thrown by a command and suggests a relevant WinGet package to install, if available.</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="CmdNotFound.ModuleTitle" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="InstalledLabel.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="DetectedLabel.Text" xml:space="preserve">
+    <value>Detected</value>
+  </data>
+  <data name="NotDetectedLabel.Text" xml:space="preserve">
+    <value>Not detected</value>
+  </data>
+  <data name="CmdNotFound_RequirementsBar.Title" xml:space="preserve">
+    <value>The following components are required</value>
+  </data>
+  <data name="CmdNotFound_PowerShellDetection.Header" xml:space="preserve">
+    <value>PowerShell 7.4 or greater</value>
+  </data>
+  <data name="CmdNotFound_WinGetClientDetection.Header" xml:space="preserve">
+    <value>WinGet Client PowerShell module</value>
+  </data>
+  <data name="CmdNotFound_Enable.Header" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="CmdNotFound_Enable.Description" xml:space="preserve">
+    <value>Add this module to the PowerShell 7 profile script so that it is enabled with every new session</value>
+  </data>
+  <data name="CmdNotFound_ModuleInstallationLogs.Text" xml:space="preserve">
+    <value>Installation logs</value>
+  </data>
+  <data name="CmdNotFound_CheckPowerShellVersionButtonControl.Description" xml:space="preserve">
+    <value>PowerShell 7 is required to use this module</value>
+  </data>
+  <data name="CmdNotFound_CheckCompatibility.Content" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="CmdNotFound_CheckCompatibilityTooltip.Text" xml:space="preserve">
+    <value>Check if your PowerShell configuration is compatible and configured correctly</value>
+  </data>
+  <data name="CmdNotFound_InstallButton.Content" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="CmdNotFound_UninstallButton.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="Oobe_CmdNotFound.Description" xml:space="preserve">
+    <value>Command Not Found detects an error thrown by a command in PowerShell and suggests a relevant WinGet package to install, if available.</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdNotFound.Title" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdNotFound_HowToUse.Text" xml:space="preserve">
+    <value>If a command returns an error, the module will suggest a WinGet package that may provide the relevant executable.</value>
+  </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>
   </data>
@@ -3894,5 +3979,26 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_SourceCode_WrapText.Content" xml:space="preserve">
     <value>Wrap text</value>
+  </data>
+  <data name="ShowPluginsOverview_All.Content" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ShowPluginsOverview_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="ShowPluginsOverview_NonGlobal.Content" xml:space="preserve">
+    <value>Not included in global results</value>
+  </data>
+  <data name="PowerLauncher_TitleFontSize.Description" xml:space="preserve">
+    <value>The size of result titles and the search query</value>
+  </data>
+  <data name="PowerLauncher_TitleFontSize.Header" xml:space="preserve">
+    <value>Text size (pt)</value>
+  </data>
+  <data name="PowerLauncher_TextFontSizeSlider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Text size of result titles</value>
+  </data>
+  <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
+    <value>Command Not Found is not supported on the ARM64 architecture currently. We are actively working on a solution.</value>
   </data>
 </root>

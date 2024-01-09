@@ -134,7 +134,7 @@ public class Alphabet : IAlphabet
             return _empty2DStringArray;
         }
 
-        if (!_pinyinCache.ContainsKey(characters))
+        if (!_pinyinCache.TryGetValue(characters, out string[][] value))
         {
             var allPinyins = new List<string[]>();
             foreach (var c in characters)
@@ -158,7 +158,7 @@ public class Alphabet : IAlphabet
         }
         else
         {
-            return _pinyinCache[characters];
+            return value;
         }
     }
 

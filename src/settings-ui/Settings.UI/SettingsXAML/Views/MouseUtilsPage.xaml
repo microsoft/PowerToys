@@ -25,14 +25,14 @@
                     <controls:SettingsCard
                         x:Uid="MouseUtils_Enable_FindMyMouse"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png}"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured}"
+                        IsOpen="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}"
                         Severity="Informational" />
                     <controls:SettingsExpander
                         x:Uid="MouseUtils_FindMyMouse_ActivationMethod"
@@ -46,7 +46,7 @@
                             <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_ActivationCustomizedShortcut" />
                         </ComboBox>
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=2}">
+                            <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=2}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="1000"
@@ -54,13 +54,12 @@
                                     Minimum="0"
                                     SmallChange="100"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseShakingMinimumDistance}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseShakingMinimumDistance, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard
                                 x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
-                                HeaderIcon="{ui:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                         Glyph=&#xEDA7;}"
-                                Visibility="{x:Bind Mode=OneWay, Path=ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, ConverterParameter=3}">
+                                HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                                Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=3}">
                                 <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard ContentAlignment="Left">
@@ -80,7 +79,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseOverlayOpacity}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseOverlayOpacity, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
                                 <custom:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
@@ -95,24 +94,24 @@
                                     Minimum="5"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightRadius}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseSpotlightRadius, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="40"
                                     Minimum="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightInitialZoom}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseSpotlightInitialZoom, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAnimationEnabledBySystem}"
+                                    IsEnabled="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay}"
                                     LargeChange="100"
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseAnimationDurationMs}" />
+                                    Value="{x:Bind ViewModel.FindMyMouseAnimationDurationMs, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
@@ -121,7 +120,7 @@
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Informational"
-                        Visibility="{x:Bind Mode=OneWay, Path=ViewModel.IsAnimationEnabledBySystem, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                     <controls:SettingsExpander
                         x:Uid="MouseUtils_FindMyMouse_ExcludedApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
@@ -133,11 +132,11 @@
                                     MinWidth="240"
                                     MinHeight="160"
                                     AcceptsReturn="True"
-                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}"
+                                    IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseExcludedApps, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{x:Bind ViewModel.FindMyMouseExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
@@ -148,14 +147,14 @@
                     <controls:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseHighlighter"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png}"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        IsEnabled="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured}"
+                        IsOpen="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}"
                         Severity="Informational" />
                     <controls:SettingsExpander
                         x:Uid="MouseUtils_MouseHighlighter_ActivationShortcut"
@@ -190,7 +189,7 @@
                                     Minimum="5"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterRadius}" />
+                                    Value="{x:Bind ViewModel.MouseHighlighterRadius, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs">
                                 <NumberBox
@@ -199,7 +198,7 @@
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDelayMs}" />
+                                    Value="{x:Bind ViewModel.MouseHighlighterFadeDelayMs, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs">
                                 <NumberBox
@@ -208,7 +207,7 @@
                                     Minimum="0"
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDurationMs}" />
+                                    Value="{x:Bind ViewModel.MouseHighlighterFadeDurationMs, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
@@ -218,14 +217,14 @@
                     <controls:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseJump"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseJump.png}"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        IsEnabled="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured}"
+                        IsOpen="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
                         Severity="Informational" />
                     <controls:SettingsCard
                         x:Uid="MouseUtils_MouseJump_ActivationShortcut"
@@ -314,14 +313,14 @@
                     <controls:SettingsCard
                         x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png}"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_IsSettingForced"
                         IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured}"
+                        IsOpen="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}"
                         Severity="Informational" />
                     <controls:SettingsExpander
                         x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
@@ -349,7 +348,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsOpacity}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsOpacity, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
@@ -360,7 +359,7 @@
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsRadius}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsRadius, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
@@ -371,7 +370,7 @@
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsThickness}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsThickness, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
@@ -386,7 +385,7 @@
                                     Minimum="0"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsBorderSize}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsBorderSize, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
                             <controls:SettingsCard ContentAlignment="Left">
@@ -404,7 +403,7 @@
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MousePointerCrosshairsFixedLength}" />
+                                    Value="{x:Bind ViewModel.MousePointerCrosshairsFixedLength, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>

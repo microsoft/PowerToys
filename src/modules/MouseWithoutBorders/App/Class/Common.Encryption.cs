@@ -22,7 +22,9 @@ namespace MouseWithoutBorders
 {
     internal partial class Common
     {
-        private static SymmetricAlgorithm symAl;
+#pragma warning disable SYSLIB0021
+        private static AesCryptoServiceProvider symAl;
+#pragma warning restore SYSLIB0021
         private static string myKey;
         private static uint magicNumber;
         private static Random ran = new(); // Used for non encryption related functionality.
@@ -115,7 +117,7 @@ namespace MouseWithoutBorders
             byte[] rv;
             string myKey = Common.MyKey;
 
-            if (!LegalKeyDictionary.ContainsKey(myKey))
+            if (!LegalKeyDictionary.TryGetValue(myKey, out byte[] value))
             {
                 Rfc2898DeriveBytes key = new(
                     myKey,
@@ -127,7 +129,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                rv = LegalKeyDictionary[myKey];
+                rv = value;
             }
 
             return rv;

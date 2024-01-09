@@ -2,12 +2,12 @@
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <RuntimeIdentifiers>win10-x64;win10-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
@@ -31,10 +31,10 @@
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -53,7 +53,7 @@
     <WarningsNotAsErrors>CA1720</WarningsNotAsErrors>
     <Optimize>true</Optimize>
   </PropertyGroup>
-	
+
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
     <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
@@ -61,10 +61,10 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
-	<!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls. -->
-	<PropertyGroup>
-		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
-	</PropertyGroup>
+  <!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls. -->
+  <PropertyGroup>
+    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
+  </PropertyGroup>
 
   <ItemGroup>
     <Content Include="Assets\Settings\SplashScreen.scale-200.png" />
@@ -96,11 +96,11 @@
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget
        package has not yet been restored -->
-	
+
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
-	
+
   <ItemGroup>
     <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
     <ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
@@ -111,7 +111,7 @@
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
-	
+
   <PropertyGroup>
     <!-- TODO: fix issues and reenable -->
     <!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
@@ -124,5 +124,23 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-	
+
+  <ItemGroup>
+    <None Update="Assets\Settings\Scripts\CheckCmdNotFoundRequirements.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Settings\Scripts\InstallWinGetClientModule.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Settings\Scripts\InstallPowerShell7.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Settings\Scripts\EnableModule.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Settings\Scripts\DisableModule.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

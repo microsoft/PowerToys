@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <Import Project="..\..\src\Version.props" />
-
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION
@@ -10,23 +10,23 @@
     using a specific profile. If you're doing local installer builds, this will
     simulate the build pipeline doing that for you. -->
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
-call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0
+call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
 SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" x64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
-</PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
-call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0
+call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
 SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" arm64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
-</PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
@@ -68,7 +68,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
 
   <PropertyGroup>
     <!-- We do not support debug installer builds -->
-    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration> 
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform>$(Platform)</Platform>
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>022a9d30-7c4f-416d-a9df-5ff2661cc0ad</ProjectGuid>
@@ -104,6 +104,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
 
     <Compile Include="Awake.wxs" />
     <Compile Include="BaseApplications.wxs" />
+    <Compile Include="CmdNotFound.wxs" />
     <Compile Include="ColorPicker.wxs" />
     <Compile Include="EnvironmentVariables.wxs" />
     <Compile Include="FileExplorerPreview.wxs" />
@@ -181,18 +182,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
 	<Target Name="AfterBuild">
 	</Target> -->
   <Target Name="BeforeBuild">
-    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\Assets\Monaco\monacoSRC"
-      PreprocessorVariable="var.MonacoSRCHarvestPath"
-      OutputFile="MonacoSRC.wxs"
-      ComponentGroupName="MonacoSRCHeatGenerated"
-      DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder"
-      AutogenerateGuids="false"
-      GenerateGuidsNow="true" 
-      ToolPath="$(WixToolPath)"
-      RunAsSeparateProcess="true"
-      SuppressFragments="false"
-      SuppressRegistry="false"
-      SuppressRootDirectory="true"/>
+    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\Assets\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="true" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true"/>
   </Target>
-
 </Project>

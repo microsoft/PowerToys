@@ -87,16 +87,22 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var results = new List<Result>();
             try
             {
                 IComputeRequest computeRequest = _inputParser.ParseInput(query);
-                results.Add(GetResult(computeRequest));
+                var result = GetResult(computeRequest);
+
+                if (!string.IsNullOrEmpty(result.Title))
+                {
+                    results.Add(result);
+                }
+                else
+                {
+                    return results;
+                }
             }
             catch (ArgumentException e)
             {

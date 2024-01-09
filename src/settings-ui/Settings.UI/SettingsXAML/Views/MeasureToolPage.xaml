@@ -16,16 +16,16 @@
                 <controls:SettingsCard
                     x:Uid="MeasureTool_EnableMeasureTool"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsScreenRuler.png}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </controls:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
                     IsClosable="False"
-                    IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
-                    IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured}"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
-                <custom:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="MeasureTool_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <custom:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </controls:SettingsCard>
@@ -41,15 +41,15 @@
 
                 </custom:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <custom:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:SettingsCard x:Uid="MeasureTool_ContinuousCapture" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
                         <ToggleSwitch x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <InfoBar
                         x:Uid="MeasureTool_ContinuousCapture_Information"
                         IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowContinuousCaptureWarning}"
+                        IsOpen="{x:Bind ViewModel.ShowContinuousCaptureWarning, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowContinuousCaptureWarning, Mode=OneWay}"
                         Severity="Warning" />
 
                     <controls:SettingsCard x:Uid="MeasureTool_PerColorChannelEdgeDetection" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
@@ -61,7 +61,7 @@
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="255"
                             Minimum="0"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.PixelTolerance}" />
+                            Value="{x:Bind ViewModel.PixelTolerance, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--<controls:SettingsCard x:Uid="MeasureTool_UnitsOfMeasure" HeaderIcon="{ui:FontIcon Glyph=&#xECC6;}">

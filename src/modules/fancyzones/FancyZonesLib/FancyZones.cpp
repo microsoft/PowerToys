@@ -394,15 +394,6 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    // Hotfix
-    // Avoid automatically moving popup windows, as they can be just popup menus.
-    bool isPopup = FancyZonesWindowUtils::IsPopupWindow(window);
-    bool hasThickFrame = FancyZonesWindowUtils::HasThickFrame(window);
-    if (isPopup && !hasThickFrame)
-    {
-        return;
-    }
-
     // Avoid already stamped (zoned) windows
     const bool isZoned = !FancyZonesWindowProperties::RetrieveZoneIndexProperty(window).empty();
     if (isZoned)
@@ -1005,41 +996,42 @@ void FancyZones::RefreshLayouts() noexcept
 
 bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
 {
-    auto window = GetForegroundWindow();
+    if (!FancyZonesSettings::settings().overrideSnapHotkeys)
+    {
+        return false;
+    }
 
+    auto window = GetForegroundWindow();
     if (!FancyZonesWindowProcessing::IsProcessable(window))
     {
         return false;
     }
 
-    if (FancyZonesSettings::settings().overrideSnapHotkeys)
+    HMONITOR monitor = WorkAreaKeyFromWindow(window);
+
+    auto workArea = m_workAreaConfiguration.GetWorkArea(monitor);
+    if (!workArea)
     {
-        HMONITOR monitor = WorkAreaKeyFromWindow(window);
+        Logger::error(L"No work area for processing snap hotkey");
+        return false;
+    }
 
-        auto workArea = m_workAreaConfiguration.GetWorkArea(monitor);
-        if (!workArea)
+    const auto& layout = workArea->GetLayout();
+    if (!layout)
+    {
+        Logger::error(L"No layout for processing snap hotkey");
+        return false;
+    }
+
+    if (layout->Zones().size() > 0)
+    {
+        if (vkCode == VK_UP || vkCode == VK_DOWN)
         {
-            Logger::error(L"No work area for processing snap hotkey");
-            return false;
+            return FancyZonesSettings::settings().moveWindowsBasedOnPosition;
         }
-
-        const auto& layout = workArea->GetLayout();
-        if (!layout)
+        else
         {
-            Logger::error(L"No layout for processing snap hotkey");
-            return false;
-        }
-
-        if (layout->Zones().size() > 0)
-        {
-            if (vkCode == VK_UP || vkCode == VK_DOWN)
-            {
-                return FancyZonesSettings::settings().moveWindowsBasedOnPosition;
-            }
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }
 

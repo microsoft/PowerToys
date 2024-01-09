@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="MainWindow"
-    MinWidth="600"
+    MinWidth="0"
     MinHeight="0"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -102,6 +102,7 @@
 
         <Grid
             Grid.Row="1"
+            MinWidth="600"
             Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}"
             Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
             <TextBlock

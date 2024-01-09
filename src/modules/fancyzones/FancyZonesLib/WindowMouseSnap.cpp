@@ -4,7 +4,6 @@
 #include <FancyZonesLib/FancyZonesData/AppZoneHistory.h>
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
-#include <FancyZonesLib/NotificationUtil.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/WindowUtils.h>
 #include <FancyZonesLib/WorkArea.h>
@@ -12,6 +11,7 @@
 #include <FancyZonesLib/trace.h>
 
 #include <common/utils/elevation.h>
+#include <common/notifications/NotificationUtil.h>
 
 WindowMouseSnap::WindowMouseSnap(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas) :
     m_window(window),
@@ -20,8 +20,6 @@ WindowMouseSnap::WindowMouseSnap(HWND window, const std::unordered_map<HMONITOR,
     m_snappingMode(false)
 {
     m_windowProperties.hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(m_window);
-    m_windowProperties.isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(m_window) &&
-                                          (!FancyZonesWindowUtils::IsPopupWindow(m_window) || FancyZonesSettings::settings().allowSnapPopupWindows);
 }
 
 WindowMouseSnap::~WindowMouseSnap()
@@ -31,16 +29,15 @@ WindowMouseSnap::~WindowMouseSnap()
 
 std::unique_ptr<WindowMouseSnap> WindowMouseSnap::Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
 {
-    if (!FancyZonesWindowProcessing::IsProcessable(window) ||
-        FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent())
+    if (FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent() || !FancyZonesWindowProcessing::IsProcessable(window))
     {
         return nullptr;
     }
 
-    if (!is_process_elevated() && FancyZonesWindowUtils::IsProcessOfWindowElevated(window))
+    if (!is_process_elevated() && IsProcessOfWindowElevated(window))
     {
         // Notifies user if unable to drag elevated window
-        FancyZonesNotifications::WarnIfElevationIsRequired();
+        notifications::WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_FANCYZONES), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
         return nullptr;
     }
 
@@ -111,13 +108,8 @@ void WindowMouseSnap::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bo
 void WindowMouseSnap::MoveSizeEnd()
 {
     if (m_snappingMode)
-    {   
-        const bool hasNoVisibleOwner = !FancyZonesWindowUtils::HasVisibleOwner(m_window);
-        const bool isStandardWindow = FancyZonesWindowUtils::IsStandardWindow(m_window);
-
-        if ((isStandardWindow == false && hasNoVisibleOwner == true &&
-             m_windowProperties.isStandardWindow == true && m_windowProperties.hasNoVisibleOwner == true) ||
-             FancyZonesWindowUtils::IsWindowMaximized(m_window))
+    {
+        if (FancyZonesWindowUtils::IsWindowMaximized(m_window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
             // or if the window is maximized by Windows when the cursor hits the screen top border

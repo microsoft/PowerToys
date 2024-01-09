@@ -1,9 +1,8 @@
 ﻿#pragma once
 
 #include "KeyboardListener.g.h"
-
-#include <spdlog/stopwatch.h>
 #include <mutex>
+#include <spdlog/stopwatch.h>
 
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 {
@@ -101,6 +100,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                                                                LetterKey::VK_X,
                                                                LetterKey::VK_Y,
                                                                LetterKey::VK_Z,
+                                                               LetterKey::VK_PLUS,
                                                                LetterKey::VK_COMMA,
                                                                LetterKey::VK_PERIOD,
                                                                LetterKey::VK_MINUS,
