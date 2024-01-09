@@ -20,6 +20,7 @@
 #include <windows.h>
 #include <string>
 #include <urlmon.h>
+#include <mmsystem.h>
 
 using namespace winrt;
 using namespace Windows::UI::Notifications;
@@ -1210,6 +1211,9 @@ namespace KeyboardEventHandlers
 
         if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
         {
+            LPCTSTR soundFilePath = L"C:\\Program Files (x86)\\Steam\\steamui\\sounds\\desktop_toast_short.wav";
+            PlaySound(soundFilePath, NULL, SND_FILENAME | SND_ASYNC);
+
             if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::CloseAndEndTask)
             {
                 /*std::thread myThread(CloseAndTerminateProcessByName, fileNamePart);*/
@@ -1304,8 +1308,13 @@ namespace KeyboardEventHandlers
             {
                 std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
                 std::wstring message = fmt::format(L"The application might not have started.");
-                toast(title, message);
+                toast(title, message);                
                 return;
+            }
+            else
+            {
+                LPCTSTR soundFilePath = L"C:\\Program Files (x86)\\Steam\\steamui\\sounds\\desktop_toast_default.wav";
+                PlaySound(soundFilePath, NULL, SND_FILENAME | SND_ASYNC);
             }
 
             if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
