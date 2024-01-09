@@ -3,9 +3,9 @@ This file contains the documentation for the Mouse Without Borders PowerToy modu
 ## Table of Contents:
 - [Mouse Without Borders module](#mouse-without-borders-module)
   - [Table of Contents](#table-of-contents)
-  - [Status codes](#status-codes)
+  - [Status colors](#status-colors)
 
-## Status codes
+## Status colors
 The following colors are used to indicate the connection status to the user when trying to connect to another computer:
 
 | Connection Status | Color    | Hex Code    |
