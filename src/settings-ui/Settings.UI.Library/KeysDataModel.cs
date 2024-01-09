@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -19,7 +20,7 @@ using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class KeysDataModel
+    public class KeysDataModel : INotifyPropertyChanged
     {
         [JsonPropertyName("originalKeys")]
         public string OriginalKeys { get; set; }
@@ -51,18 +52,43 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private static Process editor;
         private ICommand _editShortcutItemCommand;
         private ICommand _editShortcutDeleteItemCommand;
+        private ICommand _editShortcutCancelDeleteItemCommand;
+        private bool _isConfirmingDelete;
 
         public ICommand EditShortcutItem => _editShortcutItemCommand ?? (_editShortcutItemCommand = new RelayCommand<object>(OnEditShortcutItem));
 
         public ICommand EditShortcutDeleteItem => _editShortcutDeleteItemCommand ?? (_editShortcutDeleteItemCommand = new RelayCommand<object>(OnEditShortcutDeleteItem));
 
+        public ICommand EditShortcutCancelDeleteItem => _editShortcutCancelDeleteItemCommand ?? (_editShortcutCancelDeleteItemCommand = new RelayCommand<object>(OnEditShortcutCancelDeleteItem));
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public void OnEditShortcutCancelDeleteItem(object parameter)
+        {
+            IsConfirmingDelete = false;
+        }
+
         public void OnEditShortcutDeleteItem(object parameter)
         {
-            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor, true);
+            if (IsConfirmingDelete)
+            {
+                OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor, true);
+                IsConfirmingDelete = false;
+            }
+            else
+            {
+                IsConfirmingDelete = true;
+            }
         }
 
         public void OnEditShortcutItem(object parameter)
         {
+            IsConfirmingDelete = false;
             OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor, false);
         }
 
@@ -164,6 +190,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             get
             {
                 return IsOpenURI || IsRunProgram;
+            }
+        }
+
+        public bool IsConfirmingDelete
+        {
+            get
+            {
+                return _isConfirmingDelete;
+            }
+
+            set
+            {
+                if (_isConfirmingDelete != value)
+                {
+                    _isConfirmingDelete = value;
+                    OnPropertyChanged(nameof(IsConfirmingDelete));
+                }
             }
         }
 

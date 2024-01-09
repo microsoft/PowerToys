@@ -239,6 +239,12 @@
   <data name="EditShortcuts_PathToProgram" xml:space="preserve">
     <value>Path to program</value>
   </data>
+  <data name="EditShortcuts_UriExample" xml:space="preserve">
+    <value>E.g.: https://website.url</value>
+  </data>
+  <data name="EditShortcuts_WhatCanIUseLink" xml:space="preserve">
+    <value>What can I use?</value>
+  </data>
   <data name="EditShortcuts_ArgsForProgram" xml:space="preserve">
     <value>Arguments for program</value>
   </data>

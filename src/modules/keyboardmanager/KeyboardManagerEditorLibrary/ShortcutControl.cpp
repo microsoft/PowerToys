@@ -772,14 +772,14 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
     int runProgramLabelWidth = 80;
 
     uriTextBox.Text(shortCut.uriToOpen);
-    uriTextBox.PlaceholderText(L"uriText!!!");
+    uriTextBox.PlaceholderText(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_URIEXAMPLE));    
     uriTextBox.Margin(textInputMargin);
     uriTextBox.Width(EditorConstants::TableDropDownHeight);
     uriTextBox.HorizontalAlignment(HorizontalAlignment::Left);
 
     winrt::Windows::UI::Xaml::Controls::HyperlinkButton hyperlinkButton;
     hyperlinkButton.NavigateUri(Windows::Foundation::Uri(L"https://learn.microsoft.com/windows/uwp/launch-resume/launch-app-with-uri"));
-    hyperlinkButton.Content(winrt::box_value(L"?"));
+    hyperlinkButton.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_WHATCANIUSELINK)));
     hyperlinkButton.Margin(textInputMargin);
 
     StackPanel boxAndLink;

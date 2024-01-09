@@ -140,6 +140,9 @@
                              Content="&#xE710;"
                              FontFamily="{ThemeResource SymbolThemeFontFamily}"
                              Style="{StaticResource SubtleButtonStyle}">
+                            <ToolTipService.ToolTip>
+                                <TextBlock Text="Create new shortcut"/>
+                            </ToolTipService.ToolTip>
                         </Button>
 
                     </controls:SettingsCard>
@@ -210,33 +213,77 @@
 
                                         </StackPanel>
                                     </controls:SettingsCard.Description>
-                                    
+
                                     <StackPanel
                             Grid.Column="2"
                             HorizontalAlignment="Right"
                             Orientation="Horizontal"
-                            Spacing="8">
-                                        <Button
+                            Spacing="0">
+                                        
+                                        <StackPanel Orientation="Horizontal"                                                    
+                                            Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <Button 
+                                                Command="{Binding Path=EditShortcutDeleteItem}"      
+                                                HorizontalAlignment="Right" 
+                                                Width="40"
+                                                Height="36"
+                                                Content="&#xE8FB;"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Style="{StaticResource SubtleButtonStyle}">
+
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="Confirm delete action"/>
+                                                </ToolTipService.ToolTip>
+                                            </Button>
+
+                                            <Button
+                                                Command="{Binding Path=EditShortcutCancelDeleteItem}"
+                                                HorizontalAlignment="Right" 
+                                                Width="40"
+                                                Height="36"
+                                                Content="&#xE7A7;"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Style="{StaticResource SubtleButtonStyle}">
+
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="Cancel delete action"/>
+                                                </ToolTipService.ToolTip>
+
+                                            </Button>
+                                        </StackPanel>
+                                        
+                                        <StackPanel Orientation="Horizontal"
+                                            Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                            <Button
                                                 HorizontalAlignment="Right" 
                                                 Command="{Binding Path=EditShortcutDeleteItem}"   
-                                                x:Uid="EditButton"
                                                 Width="40"
                                                 Height="36"
                                                 Content="&#xE74D;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 Style="{StaticResource SubtleButtonStyle}">
-                                        </Button>
-                                        <Button
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="Delete shortcut"/>
+                                                </ToolTipService.ToolTip>
+                                            </Button>
+
+                                            <Button
                                                 HorizontalAlignment="Right" 
                                                 Command="{Binding Path=EditShortcutItem}"   
-                                                x:Uid="EditButton"
                                                 Width="40"
                                                 Height="36"
                                                 Content="&#xE70F;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 Style="{StaticResource SubtleButtonStyle}">
-                                        </Button>
-                                        
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="Edit shortcut"/>
+                                                </ToolTipService.ToolTip>
+                                            </Button>
+                                        </StackPanel>
+
+
+
+
                                     </StackPanel>
                                 </controls:SettingsCard>
 
