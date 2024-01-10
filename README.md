@@ -174,7 +174,7 @@ In this release, we focused on new features, stability and improvements.
 
 ### Quick Accent
 
- - Moved Greek specific characters from All language set to Greek. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Moved Greek specific characters from All language set to Greek. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Add more mathematical symbols. Thanks [@kevinfu2](https://github.com/kevinfu2)!
 
 ### Settings
