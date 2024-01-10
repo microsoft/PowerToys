@@ -93,4 +93,6 @@ public:
 
 StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel);
 
+void CreateNewTempShortcut(StackPanel& row, Shortcut& tempShortcut, const uint32_t& rowIndex);
+
 StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel);

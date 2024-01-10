@@ -1211,9 +1211,10 @@ namespace KeyboardEventHandlers
 
         if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
         {
-            
-            // LPCTSTR soundFilePath = L"C:\\Users\\jeff\\Source\\Repos\\PowerToys-jefflord\\src\\modules\\keyboardmanager\\KeyboardManagerEngine\\single-blwap.wav";
-            // PlaySound(soundFilePath, NULL, SND_FILENAME | SND_ASYNC);
+            if (shortcut.runProgramAppRunningSound != L"")
+            {
+                PlaySound(shortcut.runProgramAppRunningSound.c_str(), NULL, SND_FILENAME | SND_ASYNC);
+            }
 
             if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::CloseAndEndTask)
             {
@@ -1314,8 +1315,10 @@ namespace KeyboardEventHandlers
             }
             else
             {
-                // LPCTSTR soundFilePath = L"C:\\Users\\jeff\\Source\\Repos\\PowerToys-jefflord\\src\\modules\\keyboardmanager\\KeyboardManagerEngine\\double-blwap.wav";
-                // PlaySound(soundFilePath, NULL, SND_FILENAME | SND_ASYNC);
+                if (shortcut.runProgramAppNotRunningSound != L"")
+                {
+                    PlaySound(shortcut.runProgramAppNotRunningSound.c_str(), NULL, SND_FILENAME | SND_ASYNC);
+                }
             }
 
             if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)

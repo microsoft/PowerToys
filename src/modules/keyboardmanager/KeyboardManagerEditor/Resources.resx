@@ -182,7 +182,7 @@
     <value>Elevation:</value>
   </data>
   <data name="EditShortcuts_LabelStartAs" xml:space="preserve">
-    <value>Start as:</value>
+    <value>Visibility:</value>
   </data>
   <data name="EditShortcuts_LabelProgram" xml:space="preserve">
     <value>App:</value>
@@ -201,17 +201,26 @@
   </data>
   <data name="EditShortcuts_LabelKeys" xml:space="preserve">
     <value>Keys:</value>
-  </data>	
+  </data>
   <data name="EditShortcuts_VizNormal" xml:space="preserve">
     <value>Normal</value>
   </data>
   <data name="EditShortcuts_VizHidden" xml:space="preserve">
     <value>Hidden</value>
-  </data>		
+  </data>
   <data name="EditShortcuts_LabelIfRunning" xml:space="preserve">
     <value>If running:</value>
-  </data>		
-  <data name="EditKeyboard_OrphanedDialogTitle" xml:space="preserve">
+  </data>
+  <data name="EditShortcuts_LabelAppRunningSound" xml:space="preserve">
+    <value>Running sound:</value>
+  </data>
+  <data name="EditShortcuts_LabelAppNotRunningSound" xml:space="preserve">
+    <value>Start sound:</value>
+  </data>
+  <data name="EditShortcuts_BtnSelectFile" xml:space="preserve">
+    <value>Select file</value>
+  </data>
+	<data name="EditKeyboard_OrphanedDialogTitle" xml:space="preserve">
     <value>Warning: The following keys do not have assignments:</value>
     <comment>Key on a keyboard</comment>
   </data>

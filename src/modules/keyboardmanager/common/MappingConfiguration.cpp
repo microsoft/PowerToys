@@ -234,6 +234,9 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                     tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
                     tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
 
+                    tempShortcut.runProgramAppRunningSound = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramAppRunningSoundName, L"");
+                    tempShortcut.runProgramAppNotRunningSound = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramAppNotRunningSoundName, L"");
+
                     AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str(), static_cast<DWORD>(secondKeyOfChord)), tempShortcut);
                 }
                 else if (operationType == 2)
@@ -311,7 +314,7 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             auto runProgramElevationLevel = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramElevationLevelSettingName, 0);
                             auto runProgramStartWindowType = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramStartWindowType, 0);
                             auto secondKeyOfChord = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, 0);
-                            
+
                             auto runProgramAlreadyRunningAction = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramAlreadyRunningAction, 0);
 
                             auto tempShortcut = Shortcut(newRemapKeys.c_str());
@@ -322,6 +325,9 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationLevel);
                             tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
                             tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
+
+                            tempShortcut.runProgramAppRunningSound = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramAppRunningSoundName, L"");
+                            tempShortcut.runProgramAppNotRunningSound = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramAppNotRunningSoundName, L"");
 
                             AddOSLevelShortcut(Shortcut(originalKeys.c_str(), static_cast<DWORD>(secondKeyOfChord)), tempShortcut);
                         }
@@ -497,6 +503,9 @@ bool MappingConfiguration::SaveSettingsToFile()
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramFilePathSettingName, json::value(targetShortcut.runProgramFilePath));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramArgsSettingName, json::value(targetShortcut.runProgramArgs));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));
+
+                keys.SetNamedValue(KeyboardManagerConstants::RunProgramAppRunningSoundName, json::value(targetShortcut.runProgramAppRunningSound));
+                keys.SetNamedValue(KeyboardManagerConstants::RunProgramAppNotRunningSoundName, json::value(targetShortcut.runProgramAppNotRunningSound));
             }
             else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
             {
@@ -561,6 +570,9 @@ bool MappingConfiguration::SaveSettingsToFile()
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramFilePathSettingName, json::value(targetShortcut.runProgramFilePath));
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramArgsSettingName, json::value(targetShortcut.runProgramArgs));
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));
+
+                    keys.SetNamedValue(KeyboardManagerConstants::RunProgramAppRunningSoundName, json::value(targetShortcut.runProgramAppRunningSound));
+                    keys.SetNamedValue(KeyboardManagerConstants::RunProgramAppNotRunningSoundName, json::value(targetShortcut.runProgramAppNotRunningSound));
                 }
                 else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
                 {
