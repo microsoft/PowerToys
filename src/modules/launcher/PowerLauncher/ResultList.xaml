@@ -45,7 +45,7 @@
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
                 <VirtualizingStackPanel
-                    Margin="12,12,0,0"
+                    Margin="12,12,12,0"
                     IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}"
                     VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
             </ItemsPanelTemplate>
