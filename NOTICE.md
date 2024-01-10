@@ -1362,5 +1362,5 @@ EXHIBIT A -Mozilla Public License.
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
-- WPF-UI 3.0.0-preview.12
+- WPF-UI 3.0.0-preview.13
 
