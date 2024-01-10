@@ -1211,8 +1211,9 @@ namespace KeyboardEventHandlers
 
         if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
         {
-            LPCTSTR soundFilePath = L"C:\\Program Files (x86)\\Steam\\steamui\\sounds\\desktop_toast_short.wav";
-            PlaySound(soundFilePath, NULL, SND_FILENAME | SND_ASYNC);
+            
+            // LPCTSTR soundFilePath = L"C:\\Users\\jeff\\Source\\Repos\\PowerToys-jefflord\\src\\modules\\keyboardmanager\\KeyboardManagerEngine\\single-blwap.wav";
+            // PlaySound(soundFilePath, NULL, SND_FILENAME | SND_ASYNC);
 
             if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::CloseAndEndTask)
             {
@@ -1308,13 +1309,13 @@ namespace KeyboardEventHandlers
             {
                 std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
                 std::wstring message = fmt::format(L"The application might not have started.");
-                toast(title, message);                
+                toast(title, message);
                 return;
             }
             else
             {
-                LPCTSTR soundFilePath = L"C:\\Program Files (x86)\\Steam\\steamui\\sounds\\desktop_toast_default.wav";
-                PlaySound(soundFilePath, NULL, SND_FILENAME | SND_ASYNC);
+                // LPCTSTR soundFilePath = L"C:\\Users\\jeff\\Source\\Repos\\PowerToys-jefflord\\src\\modules\\keyboardmanager\\KeyboardManagerEngine\\double-blwap.wav";
+                // PlaySound(soundFilePath, NULL, SND_FILENAME | SND_ASYNC);
             }
 
             if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)

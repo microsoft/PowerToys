@@ -147,13 +147,13 @@
   <data name="EditThisShortcut_WindowName" xml:space="preserve">
     <value>Edit shortcut</value>
   </data>
-	<data name="Browse_For_Program_Button" xml:space="preserve">
+  <data name="Browse_For_Program_Button" xml:space="preserve">
     <value>Select program</value>
   </data>
   <data name="Browse_For_Path_Button" xml:space="preserve">
     <value>Select path</value>
   </data>
-	<data name="Ok_Button" xml:space="preserve">
+  <data name="Ok_Button" xml:space="preserve">
     <value>OK</value>
   </data>
   <data name="Cancel_Button" xml:space="preserve">
@@ -175,6 +175,42 @@
   <data name="EditShortcuts_TargetAppHeader" xml:space="preserve">
     <value>Target app:</value>
   </data>
+  <data name="EditShortcuts_LabelArgs" xml:space="preserve">
+    <value>Args:</value>
+  </data>
+  <data name="EditShortcuts_LabelElevation" xml:space="preserve">
+    <value>Elevation:</value>
+  </data>
+  <data name="EditShortcuts_LabelStartAs" xml:space="preserve">
+    <value>Start as:</value>
+  </data>
+  <data name="EditShortcuts_LabelProgram" xml:space="preserve">
+    <value>App:</value>
+  </data>
+  <data name="EditShortcuts_LabelStartIn" xml:space="preserve">
+    <value>Start in:</value>
+  </data>
+  <data name="EditShortcuts_LabelAction" xml:space="preserve">
+    <value>Action:</value>
+  </data>
+  <data name="EditShortcuts_LabelPathURI" xml:space="preserve">
+    <value>Path/URI:</value>
+  </data>
+  <data name="EditShortcuts_LabelShortcut" xml:space="preserve">
+    <value>Shortcut:</value>
+  </data>
+  <data name="EditShortcuts_LabelKeys" xml:space="preserve">
+    <value>Keys:</value>
+  </data>	
+  <data name="EditShortcuts_VizNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="EditShortcuts_VizHidden" xml:space="preserve">
+    <value>Hidden</value>
+  </data>		
+  <data name="EditShortcuts_LabelIfRunning" xml:space="preserve">
+    <value>If running:</value>
+  </data>		
   <data name="EditKeyboard_OrphanedDialogTitle" xml:space="preserve">
     <value>Warning: The following keys do not have assignments:</value>
     <comment>Key on a keyboard</comment>
@@ -200,7 +236,7 @@
     <value>Edit shortcut to activate and then configure the action to happen when activated.</value>
     <comment>Key on a keyboard</comment>
   </data>
-	<data name="EditShortcuts_InfoExample" xml:space="preserve">
+  <data name="EditShortcuts_InfoExample" xml:space="preserve">
     <value>Example of a remapping: Select "Alt+T" and send "Ctrl+T" only on Microsoft Edge. "MSEdge" (exe name) would be your "Target app". Note: if you remapped a key, that will influence the shortcut.</value>
     <comment>Key on a keyboard</comment>
   </data>
@@ -235,7 +271,7 @@
   </data>
   <data name="EditShortcuts_AllowChords" xml:space="preserve">
     <value>Allow chords</value>
-  </data>	
+  </data>
   <data name="EditShortcuts_PathToProgram" xml:space="preserve">
     <value>Path to program</value>
   </data>
@@ -333,7 +369,7 @@
     <value>Open URI</value>
     <comment>URI to open.</comment>
   </data>
-	<data name="Add_Key_Remap_Button" xml:space="preserve">
+  <data name="Add_Key_Remap_Button" xml:space="preserve">
     <value>Add key remapping</value>
     <comment>Key on a keyboard</comment>
   </data>
@@ -361,7 +397,7 @@
   <data name="AlreadyRunningCloseAndTerminate" xml:space="preserve">
     <value>Close and end task</value>
   </data>
-	<data name="ElevationTypeNormal" xml:space="preserve">
+  <data name="ElevationTypeNormal" xml:space="preserve">
     <value>Normal</value>
   </data>
   <data name="ElevationTypeElevated" xml:space="preserve">
@@ -370,7 +406,7 @@
   <data name="ElevationTypeDifferentUser" xml:space="preserve">
     <value>Different User</value>
   </data>
-	<data name="Delete_Remapping_Event" xml:space="preserve">
+  <data name="Delete_Remapping_Event" xml:space="preserve">
     <value>Remapping deleted</value>
   </data>
   <data name="AutomationProperties_Row" xml:space="preserve">
