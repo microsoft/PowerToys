@@ -126,6 +126,11 @@ bool WindowBorder::Init(HINSTANCE hinstance)
         return false;
     }
 
+    if (!SetLayeredWindowAttributes(m_window, 0, 255, LWA_ALPHA))
+    {
+        return false;
+    }
+
     // set position of the border-window behind the tracking window
     // helps to prevent border overlapping (happens after turning borders off and on)
     SetWindowPos(m_trackingWindow
