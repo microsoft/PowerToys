@@ -10,7 +10,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <custom:SettingsPageControl x:Uid="FileExplorerPreview" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerPreview.png">
+    <custom:SettingsPageControl x:Uid="FileExplorerPreview" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FileExplorerPreview.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <custom:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane">

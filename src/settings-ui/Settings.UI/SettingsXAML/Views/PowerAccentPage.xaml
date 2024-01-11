@@ -13,7 +13,7 @@
     <custom:SettingsPageControl
         x:Uid="QuickAccent"
         IsTabStop="False"
-        ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerAccent.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/QuickAccent.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:SettingsCard

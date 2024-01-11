@@ -13,7 +13,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <custom:SettingsPageControl x:Uid="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerLauncher.png">
+    <custom:SettingsPageControl x:Uid="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Run.png">
         <custom:SettingsPageControl.ModuleContent>
 
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">

@@ -10,7 +10,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <custom:SettingsPageControl x:Uid="TextExtractor" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerOCR.png">
+    <custom:SettingsPageControl x:Uid="TextExtractor" ModuleImageSource="ms-appx:///Assets/Settings/Modules/TextExtractor.png">
         <custom:SettingsPageControl.ModuleContent>
             <StackPanel
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
