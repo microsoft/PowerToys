@@ -10,28 +10,28 @@ namespace UIHelpers
 {
     // This method sets focus to the first Type button on the last row of the Grid
 
-    FrameworkElement FindElementByName(DependencyObject parent, std::wstring const& name)
-    {
-        if (parent == nullptr)
-            return nullptr;
+    //FrameworkElement FindElementByName(DependencyObject parent, std::wstring const& name)
+    //{
+    //    if (parent == nullptr)
+    //        return nullptr;
 
-        if (auto element = parent.try_as<FrameworkElement>())
-        {
-            if (element.Name() == name)
-                return element;
-        }
+    //    if (auto element = parent.try_as<FrameworkElement>())
+    //    {
+    //        if (element.Name() == name)
+    //            return element;
+    //    }
 
-        int childCount = VisualTreeHelper::GetChildrenCount(parent);
-        for (int i = 0; i < childCount; ++i)
-        {
-            DependencyObject child = VisualTreeHelper::GetChild(parent, i);
-            FrameworkElement result = FindElementByName(child, name);
-            if (result != nullptr)
-                return result;
-        }
+    //    int childCount = VisualTreeHelper::GetChildrenCount(parent);
+    //    for (int i = 0; i < childCount; ++i)
+    //    {
+    //        DependencyObject child = VisualTreeHelper::GetChild(parent, i);
+    //        FrameworkElement result = FindElementByName(child, name);
+    //        if (result != nullptr)
+    //            return result;
+    //    }
 
-        return nullptr;
-    }
+    //    return nullptr;
+    //}
 
     void SetFocusOnTypeButtonInLastRow(StackPanel& parent, long colCount)
     {

@@ -6,7 +6,6 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Shortcut.h>
 
-
 class KeyDelay;
 
 namespace Helpers
@@ -24,7 +23,6 @@ namespace winrt::Windows::UI::Xaml::Controls
 {
     struct StackPanel;
     struct TextBlock;
-
 }
 
 namespace KBMEditor
@@ -128,6 +126,7 @@ namespace KBMEditor
         // Function to return the currently detected shortcut which is displayed on the UI
         Shortcut GetDetectedShortcut();
 
+        // Function to SetDetectedShortcut and also UpdateDetectShortcutUI
         void KeyboardManagerState::SetDetectedShortcut(Shortcut shortcut);
 
         // Function to return the currently detected remap key which is displayed on the UI

@@ -78,9 +78,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     std::wstring keysForShortcutToEdit = L"";
-    std::wstring action = L"";
-    
+    std::wstring action = L"";    
 
+
+    // do some parsing of the cmdline arg to see if we need to behave different
+    // like, single edit mode, or "delete" mode.    
+    // These extra args are from "OpenEditor" in the KeyboardManagerViewModel
     if (numArgs >= 3)
     {
         if (numArgs >= 4)

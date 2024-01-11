@@ -62,7 +62,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     }
     else
     {
-        dropDown.as<ComboBox>().Width(EditorConstants::ShortcutTableDropDownWidth / 2);
+        dropDown.as<ComboBox>().Width(EditorConstants::ShortcutTableDropDownWidth / 2); // magic number...
     }
 
     dropDown.as<ComboBox>().MaxDropDownHeight(EditorConstants::TableDropDownHeight);
@@ -443,6 +443,12 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
             ignoreWarning = true;
         }
 
+        /*
+            I hope this mess goes away, but we need draw this shortcut, and it might be a chord and it might
+            be using a key already in use which id "detected" here by a ComboBox without a value, which 
+            will marked as "IDS_EDITSHORTCUTS_BADKEY" for now.             
+        */
+
         StackPanel spForShortcutRowOne;
         StackPanel spForShortcutRowTwo;
         bool hasTwoRows = false;
@@ -477,8 +483,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
                         auto key = keyboardManagerState.AddKeyToLayout(sp, keyText);
                     }
                     else
-                    {
-                        // GET_RESOURCE_STRING(IDS_KEY_DROPDOWN_COMBOBOX)
+                    {                        
                         auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BADKEY).c_str());
                         badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
                     }

@@ -68,11 +68,6 @@ static IAsyncAction OnClickAccept(
     ApplyRemappings();
 }
 
-//static void OnClickAcceptNoCheck()
-//{
-//    //ApplyRemappings();
-//}
-
 static bool isInSingleEditMode = false;
 static bool isInCreateNewMode = false;
 static bool isDelete = false;
@@ -305,6 +300,8 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     {
         auto isHidden = false;
 
+        // check to see if this should be hidden because it's NOT the one we are looking for.
+        // It will still be there for backward compatability, just not visible
         if (!keysForShortcutToEdit.empty())
         {
             isHidden = (keysForShortcutToEdit != it.first.ToHstringVK());
@@ -363,11 +360,8 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         newShortcut.OpenNewShortcutControlRow(shortcutTable, shortcutTable.Children().GetAt(shortcutTable.Children().Size() - 1).as<StackPanel>());
     });
 
-    /*while (true)
-    {
-        Sleep(1000);
-    }*/
-
+    // if this is a delete action we just want to quick load the screen to delete the shortcut and close
+    // this is so we can delete from the KBM settings screen
     if (action == L"isDelete")
     {
         auto indexToDelete = -1;

@@ -315,7 +315,9 @@ namespace KeyboardEventHandlers
                             }
                             else
                             {
-                                toast(L"Error", L"the URI is bad");
+                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get 
+                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
+                                toast(L"Error", L"Could not understand the Path or URI");
                                 return 1;
                             }
                         }
@@ -324,7 +326,9 @@ namespace KeyboardEventHandlers
 
                         if (result == reinterpret_cast<HINSTANCE>(HINSTANCE_ERROR))
                         {
-                            toast(L"Error", L"the URI is bad");
+                            // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
+                            // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
+                            toast(L"Error", L"Could not understand the Path or URI");
                         }
 
                         Logger::trace(L"CKBH:returning..");

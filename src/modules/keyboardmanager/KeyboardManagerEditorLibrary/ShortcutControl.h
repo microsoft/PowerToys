@@ -67,6 +67,7 @@ public:
     // constructor
     ShortcutControl(StackPanel table, StackPanel row, const int colIndex, TextBox targetApp);
 
+    // Function to that will CreateDetectShortcutWindow, created here to it can be done automantically when "new shortcut" is clicked.
     void OpenNewShortcutControlRow(StackPanel table, StackPanel row);
 
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.

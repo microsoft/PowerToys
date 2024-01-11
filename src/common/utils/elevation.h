@@ -384,7 +384,9 @@ inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& param
     {
     }
     if (SUCCEEDED(co_init))
+    {
         CoUninitialize();
+    }
 
     return success;
 }
