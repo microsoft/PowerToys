@@ -1325,6 +1325,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.NET.Test.Sdk 17.6.3
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2088.41
+- Microsoft.Win32.SystemEvents 8.0.0
 - Microsoft.Windows.Compatibility 8.0.0
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.4
@@ -1347,7 +1348,7 @@ EXHIBIT A -Mozilla Public License.
 - System.ComponentModel.Composition 8.0.0
 - System.Configuration.ConfigurationManager 8.0.0
 - System.Data.OleDb 8.0.0
-- System.Drawing.Common 8.0.0
+- System.Drawing.Common 8.0.1
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0
