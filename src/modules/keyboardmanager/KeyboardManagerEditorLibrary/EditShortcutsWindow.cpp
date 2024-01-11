@@ -68,10 +68,10 @@ static IAsyncAction OnClickAccept(
     ApplyRemappings();
 }
 
-static void OnClickAcceptNoCheck()
-{
-    //ApplyRemappings();
-}
+//static void OnClickAcceptNoCheck()
+//{
+//    //ApplyRemappings();
+//}
 
 static bool isInSingleEditMode = false;
 static bool isInCreateNewMode = false;
@@ -116,10 +116,12 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         isEditShortcutsWindowRegistrationCompleted = true;
     }
 
+    // we might be passed via cmdline some keysForShortcutToEdit, this means we're editing just one shortcut
     if (!keysForShortcutToEdit.empty())
     {
         isInSingleEditMode = true;
 
+        // or making a new one
         if (keysForShortcutToEdit == L"inCreateNewMode")
         {
             isInCreateNewMode = true;
@@ -250,18 +252,11 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     auto newShortcutHeaderContainer = UIHelpers::GetWrapped(newShortcutHeader, EditorConstants::ShortcutTargetColumnWidth);
     tableHeader.Children().Append(newShortcutHeaderContainer.as<FrameworkElement>());
 
-    if (isInSingleEditMode)
+    if (!isInSingleEditMode)
     {
-    }
-    else
-    {
+        // add normal header if in normal mode
         tableHeader.Children().Append(targetAppHeader);
     }
-
-    /*if (isInSingleEditMode)
-    {
-        tableHeader.Visibility(Visibility::Collapsed);
-    }*/
 
     // Store handle of edit shortcuts window
     ShortcutControl::editShortcutsWindowHandle = _hWndEditShortcutsWindow;
@@ -314,17 +309,6 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         {
             isHidden = (keysForShortcutToEdit != it.first.ToHstringVK());
         }
-
-        /*
-(
-        StackPanel& parent, 
-        std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects,
-        const Shortcut& originalKeys = Shortcut(),
-        const KeyShortcutTextUnion& newKeys = Shortcut(),
-        const std::wstring& targetAppName = L"",
-        bool isHidden = false
-    );        
-        */
 
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, it.second.targetShortcut, L"", isHidden, isInSingleEditMode, OnClickAcceptNoCheckFn, action);
     }
@@ -405,8 +389,6 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     if (isInCreateNewMode)
     {
-        //ShortcutControl& newShortcut =  ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
-
         ShortcutControl& newShortcut = ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, Shortcut(), Shortcut(), L"", false, true, nullptr, L"");
 
         // Whenever a remap is added move to the bottom of the screen
@@ -415,7 +397,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         // Set focus to the first Type Button in the newly added row
         UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, EditorConstants::ShortcutTableColCount);
 
-        // not working from here, cross thread maybe
+        // not working from here, cross thread maybe, but likely just not finding the correct item
         // newShortcut.OpenNewShortcutControlRow(shortcutTable, shortcutTable.Children().GetAt(shortcutTable.Children().Size() - 1).as<StackPanel>());
     }
 
@@ -440,10 +422,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Remapping table
     StackPanel mappingsPanel;
-    if (isInSingleEditMode)
-    {
-    }
-    else
+    if (!isInSingleEditMode)
     {
         mappingsPanel.Children().Append(tableHeader);
     }
@@ -492,11 +471,10 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     if (isInSingleEditMode)
     {
+        // more regigger of the screen for single mode
         headerText.Text(GET_RESOURCE_STRING(IDS_EDITTHISSHORTCUT_WINDOWNAME));
         addShortcut.Visibility(Visibility::Collapsed);
         headerText.Visibility(Visibility::Collapsed);
-        //shortcutRemapInfoExample.Visibility(Visibility::Collapsed);
-        //shortcutRemapInfoHeader.Visibility(Visibility::Collapsed);
         shortcutRemapInfoHeader.Text(GET_RESOURCE_STRING(IDS_EDITSINGLESHORTCUT_INFO));
 
         StackPanel tempSp;
@@ -506,10 +484,6 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         tempSp.Orientation(Orientation::Horizontal);
         tempSp.Children().Append(applyButton);
         tempSp.Children().Append(cancelButton);
-
-        //mappingsPanel.Children().Append(tempSp);
-        //xamlContainer.Children().Append(tempSp);
-        //xamlContainer.SetBelow(tempSp, scrollViewer);
 
         StackPanel tempSp2;
         tempSp.Margin({ 10, 10, 10, 0 });
@@ -584,12 +558,6 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
 
         mmi->ptMinTrackSize.x = static_cast<LONG>(minWidth);
         mmi->ptMinTrackSize.y = static_cast<LONG>(minHeight);
-
-        //if (isInSingleEditMode)
-        //{
-        //    mmi->ptMaxTrackSize.x = static_cast<LONG>(minWidth);
-        //    mmi->ptMaxTrackSize.y = static_cast<LONG>(minHeight);
-        //}
     }
     break;
     case WM_GETDPISCALEDSIZE:

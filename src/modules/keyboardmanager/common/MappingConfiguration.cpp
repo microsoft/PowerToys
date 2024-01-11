@@ -226,8 +226,7 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
 
                     auto tempShortcut = Shortcut(newRemapKeys.c_str());
                     tempShortcut.operationType = Shortcut::OperationType::RunProgram;
-                    tempShortcut.runProgramFilePath = runProgramFilePath;
-                    //tempShortcut.elevationLevel = elevationLevel;
+                    tempShortcut.runProgramFilePath = runProgramFilePath;                    
                     tempShortcut.runProgramArgs = runProgramArgs;
                     tempShortcut.runProgramStartInDir = runProgramStartInDir;
                     tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationLevel);
@@ -487,9 +486,7 @@ bool MappingConfiguration::SaveSettingsToFile()
         // For shortcut to shortcut remapping
         else if (it.second.targetShortcut.index() == 1)
         {
-            auto targetShortcut = std::get<Shortcut>(it.second.targetShortcut);
-
-            //keys.SetNamedValue(KeyboardManagerConstants::IsRunProgramSettingName, json::value(targetShortcut.isRunProgram));
+            auto targetShortcut = std::get<Shortcut>(it.second.targetShortcut);            
 
             if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
             {
@@ -555,9 +552,7 @@ bool MappingConfiguration::SaveSettingsToFile()
             // For shortcut to shortcut remapping
             else if (itKeys.second.targetShortcut.index() == 1)
             {
-                auto targetShortcut = std::get<Shortcut>(itKeys.second.targetShortcut);
-
-                //keys.SetNamedValue(KeyboardManagerConstants::IsRunProgramSettingName, json::value(targetShortcut.isRunProgram));
+                auto targetShortcut = std::get<Shortcut>(itKeys.second.targetShortcut);                
 
                 if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
                 {

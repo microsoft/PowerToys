@@ -109,7 +109,6 @@ void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const StackPanel& tex
     std::lock_guard<std::mutex> lock(currentSingleKeyUI_mutex);
     currentSingleKeyUI = textBlock.as<winrt::Windows::Foundation::IInspectable>();
 }
-//void xAddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
 
 TextBlock KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring& key)
 {
@@ -193,7 +192,7 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
 
         if (detectedShortcut.HasChord())
         {
-            //TextBlock, to show what shortcut in text, e.g.: "CRTL+j, k" OR "CRTL+j, CRTL+k".
+            // add a TextBlock, to show what shortcut in text, e.g.: "CRTL+j, k" OR "CRTL+j, CRTL+k".
 
             TextBlock txtComma;
             txtComma.Text(L",");

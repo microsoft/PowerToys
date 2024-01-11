@@ -77,11 +77,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
     }
 
-    //while (true)
-    //{
-    //    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    //}
-
     std::wstring keysForShortcutToEdit = L"";
     std::wstring action = L"";
     

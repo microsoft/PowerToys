@@ -26,10 +26,8 @@ private:
     winrt::Windows::Foundation::IInspectable shortcutDropDownVariableSizedWrapGrid;
 
     // Button to type the shortcut
-    //winrt::Windows::Foundation::IInspectable btnPickShortcut;
     Button btnPickShortcut;
-
-    // TODO
+    
     StackPanel spBtnPickShortcut;
 
     // StackPanel to parent the above controls
@@ -74,9 +72,8 @@ public:
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
     static ShortcutControl& AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"", bool isHidden = false, bool closeOnDelete = false, std::function<void()> fn = nullptr, const std::wstring& actio = L"");
 
+    // Function to delete the shortcut control
     static void ShortcutControl::DeleteShortcutControl(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, int index);
-
-    //static winrt::Windows::Foundation::IInspectable ShortcutControl::FindRowChildByName(const winrt::Windows::UI::Xaml::Controls::StackPanel& parent, const wchar_t* nameToFind);
 
     // Function to get the shortcut type
     static ShortcutType GetShortcutType(const Controls::ComboBox& typeCombo);

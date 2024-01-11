@@ -204,8 +204,7 @@ namespace BufferValidationHelpers
                     }
                     else
                     {
-                        // for now, since we will allow Chords, we do allow this:
-                        // warn and reset the drop down
+                        // this used to "warn and reset the drop down" but for now, since we will allow Chords, we do allow this
                         // errorType = ShortcutErrorType::ShortcutNotMoreThanOneActionKey;
                     }
                 }

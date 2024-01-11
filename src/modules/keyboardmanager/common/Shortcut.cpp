@@ -55,25 +55,6 @@ Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD secondKeyOfChord)
     secondKey = secondKeyOfChord;
 }
 
-// Constructor to initialize shortcut from a list of keys and runProgram data
-//Shortcut::Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& _runProgramFilePath, const std::wstring& _runProgramArgs, const std::wstring& _runProgramStartInDir, const Shortcut::ElevationLevel _elevationLevel) :
-//    winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
-//{
-//    Shortcut::isRunProgram = isRunProgram;
-//    if (Shortcut::isRunProgram)
-//    {
-//        operationType = RunProgram;
-//        runProgramFilePath = _runProgramFilePath;
-//        runProgramArgs = _runProgramArgs;
-//        runProgramStartInDir = _runProgramStartInDir;
-//        elevationLevel = _elevationLevel;
-//        //secondKey = _secondKeyOfChord;
-//    }
-//
-//    auto keys = splitwstring(shortcutVK, ';');
-//    SetKeyCodes(ConvertToNumbers(keys));
-//}
-
 // Constructor to initialize shortcut from a list of keys
 Shortcut::Shortcut(const std::vector<int32_t>& keys)
 {
@@ -496,9 +477,8 @@ void Shortcut::ResetKey(const DWORD input)
     {
         shiftKey = ModifierKey::Disabled;
     }
-    else
-    {
-    }
+
+    // we always want to reset these also, I think for now since this got a little weirder when chords
     actionKey = {};
     secondKey = {};
 }
@@ -915,28 +895,29 @@ bool Shortcut::IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInt
     return true;
 }
 
-int Shortcut::GetModifiersCount() const
-{   
-    int modifierCount = 0;
-    if (winKey != ModifierKey::Disabled)
-    {
-        modifierCount += 1;
-    }
-    if (ctrlKey != ModifierKey::Disabled)
-    {
-        modifierCount += 1;
-    }
-    if (altKey != ModifierKey::Disabled)
-    {
-        modifierCount += 1;
-    }
-    if (shiftKey != ModifierKey::Disabled)
-    {
-        modifierCount += 1;
-    }
-
-    return modifierCount;
-}
+// Function to get the number of modifiers.
+//int Shortcut::GetModifiersCount() const
+//{   
+//    int modifierCount = 0;
+//    if (winKey != ModifierKey::Disabled)
+//    {
+//        modifierCount += 1;
+//    }
+//    if (ctrlKey != ModifierKey::Disabled)
+//    {
+//        modifierCount += 1;
+//    }
+//    if (altKey != ModifierKey::Disabled)
+//    {
+//        modifierCount += 1;
+//    }
+//    if (shiftKey != ModifierKey::Disabled)
+//    {
+//        modifierCount += 1;
+//    }
+//
+//    return modifierCount;
+//}
 
 // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
 int Shortcut::GetCommonModifiersCount(const Shortcut& input) const

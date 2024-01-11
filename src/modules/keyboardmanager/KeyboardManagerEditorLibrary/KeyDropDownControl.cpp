@@ -12,7 +12,6 @@
 #include "EditorHelpers.h"
 #include "ShortcutErrorType.h"
 #include "EditorConstants.h"
-#include <Dialog.h>
 
 // Initialized to null
 KBMEditor::KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -437,11 +436,6 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
     if (shortcutKeyCodes.size() != 0 || shortcut.IsRunProgram())
     {
         bool ignoreWarning = false;
-
-        //while (true)
-        //{
-        //    Sleep(1000);
-        //}
 
         // If more than one key is to be added, ignore a shortcut to key warning on partially entering the remapping
         if (shortcutKeyCodes.size() > 1)

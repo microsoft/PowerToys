@@ -63,7 +63,6 @@ public:
     ModifierKey altKey = ModifierKey::Disabled;
     ModifierKey shiftKey = ModifierKey::Disabled;
 
-    //bool isRunProgram = false;
     std::wstring runProgramFilePath;
     std::wstring runProgramArgs;
     std::wstring runProgramStartInDir;
@@ -90,9 +89,6 @@ public:
 
     // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK, const DWORD _secondKeyOfChord);
-
-    // Constructor to initialize shortcut from a list of keys and a runProgram data
-    /*Shortcut(const std::wstring& shortcutVK, const bool isRunProgram, const std::wstring& runProgramFilePath, const std::wstring& runProgramArgs, const std::wstring& runProgramStartInDir, const Shortcut::ElevationLevel elevationLevel);*/
 
     // Constructor to initialize shortcut from a list of keys
     Shortcut(const std::vector<int32_t>& keys);
@@ -123,8 +119,10 @@ public:
     // Function to return the action key
     DWORD GetActionKey() const;
 
+    // Function to return IsRunProgram
     bool Shortcut::IsRunProgram() const;
 
+    // Function to return IsOpenURI
     bool Shortcut::IsOpenURI() const;
 
     // Function to return the second key (of the chord)
@@ -166,6 +164,7 @@ public:
     // Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
     bool SetKey(const DWORD input);
 
+    // Function to SetSecondKey
     bool SetSecondKey(const DWORD input);
 
     // Function to reset the state of a shortcut key based on the passed key code argument
@@ -189,7 +188,7 @@ public:
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;
 
-    int GetModifiersCount() const;
+    //int GetModifiersCount() const;
 };
 
 using KeyShortcutTextUnion = std::variant<DWORD, Shortcut, std::wstring>;

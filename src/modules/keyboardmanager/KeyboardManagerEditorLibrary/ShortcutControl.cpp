@@ -11,7 +11,6 @@
 #include "UIHelpers.h"
 #include "EditorHelpers.h"
 #include "EditorConstants.h"
-//#include <Dialog.h>
 
 //Both static members are initialized to null
 HWND ShortcutControl::editShortcutsWindowHandle = nullptr;
@@ -45,21 +44,13 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
     fontIcon.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets")); // Set the font family to Segoe MDL2 Assets
     // Set the FontIcon as the content of the button
     btnPickShortcut.as<Button>().Content(fontIcon);
-    //btnPickShortcut.as<Button>().Width(EditorConstants::ShortcutTableDropDownWidth / 2);
 
     uint32_t rowIndex;
 
     UIElementCollection children = table.Children();
     bool indexFound = children.IndexOf(row, rowIndex);
 
-    /*while (true)
-    {
-        Sleep(1000);
-    }*/
-
-    //auto nameX = L"btnPickShortcut_" + std::to_wstring(colIndex) + L"-" + std::to_wstring(rowIndex);
     auto nameX = L"btnPickShortcut_" + std::to_wstring(colIndex);
-    //auto nameX = L"btnPickShortcut";
     btnPickShortcut.as<Button>().Name(nameX);
 
     // Set an accessible name for the type shortcut button
@@ -71,19 +62,12 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
     keyComboStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
     keyComboStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
 
-    //keyComboStackPanel.as<StackPanel>().Children().Append(btnPickShortcut.as<Button>());
-
     shortcutControlLayout.as<StackPanel>().Children().Append(keyComboStackPanel.as<StackPanel>());
 
     spBtnPickShortcut = UIHelpers::GetLabelWrapped(btnPickShortcut.as<Button>(), GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELSHORTCUT), 80).as<StackPanel>();
     shortcutControlLayout.as<StackPanel>().Children().Append(spBtnPickShortcut);
 
     shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
-
-    //KeyDropDownControl::AddDropDown(table, row, shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, false);
-
-    //int runProgramLabelWidth = 80;
-    //UIHelpers::GetLabelWrapped(temp, L"XXXX:", runProgramLabelWidth).as<StackPanel>()
 
     try
     {
@@ -97,44 +81,9 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
 
 void ShortcutControl::OpenNewShortcutControlRow(StackPanel table, StackPanel row)
 {
-    //auto newItemIndex = parent.Children().Size() - 1;
-    //auto nameX = L"btnPickShortcut_0";
-
-    //auto btnPickShortcut = row.FindName(nameX).as<Button>();
-    //if (btnPickShortcut == nullptr)
-    //{
-    //    // not good.
-    //    return;
-    //}
-
-    /*while (true)
-    {
-        Sleep(1000);
-    }*/
-
-    if (false)
-    {
-        try
-        {
-            auto _btnPickShortcut = btnPickShortcut;
-            std::vector<std::unique_ptr<KeyDropDownControl>>& _x = keyDropDownControlObjects;
-            btnPickShortcut.Dispatcher().RunAsync(
-                Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [&_x, _btnPickShortcut, table, row] {
-                    keyboardManagerState->SetUIState(KBMEditor::KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
-                    CreateDetectShortcutWindow(_btnPickShortcut, _btnPickShortcut.XamlRoot(), *keyboardManagerState, 0, table, _x, row, nullptr, false, false, editShortcutsWindowHandle, shortcutRemapBuffer);
-                });
-        }
-        catch (...)
-        {
-        }
-    }
-    else
-    {
-        keyboardManagerState->SetUIState(KBMEditor::KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
-        // Using the XamlRoot of the typeShortcut to get the root of the XAML host
-        CreateDetectShortcutWindow(btnPickShortcut, btnPickShortcut.XamlRoot(), *keyboardManagerState, 0, table, keyDropDownControlObjects, row, nullptr, false, false, editShortcutsWindowHandle, shortcutRemapBuffer);
-    }
+    keyboardManagerState->SetUIState(KBMEditor::KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
+    // Using the XamlRoot of the typeShortcut to get the root of the XAML host
+    CreateDetectShortcutWindow(btnPickShortcut, btnPickShortcut.XamlRoot(), *keyboardManagerState, 0, table, keyDropDownControlObjects, row, nullptr, false, false, editShortcutsWindowHandle, shortcutRemapBuffer);
 }
 
 // Function to set the accessible name of the target App text box
@@ -181,16 +130,9 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
 
     row.Name(L"row");
 
-    /*while (true)
-    {
-        Sleep(1000);
-    }*/
-
-    //bool isInSingleEditMode = false;
     if (isHidden)
     {
         row.Visibility(Visibility::Collapsed);
-        //isInSingleEditMode = true;
     }
 
     parent.Children().Append(row);
@@ -198,9 +140,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     newrow.emplace_back(std::make_unique<ShortcutControl>(parent, row, 0, targetAppTextBox));
 
     ShortcutControl& newShortcutToRemap = *(newrow.back());
-
-    //const auto& newShortcutToRemap = newrow.back(); // Get a reference to the last unique_ptr
-    //return *newShortcutToRemap;
 
     newrow.emplace_back(std::make_unique<ShortcutControl>(parent, row, 1, targetAppTextBox));
 
@@ -213,21 +152,12 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     row.BorderBrush(Application::Current().Resources().Lookup(box_value(L"CardStrokeColorDefaultBrush")).as<Media::Brush>());
     row.BorderThickness({ 0, 1, 0, 1 });
 
-    /*if (isInSingleEditMode)
-    {
-        row.Orientation(Orientation::Vertical);
-        row.HorizontalAlignment(HorizontalAlignment::Left);
-    }*/
-
     // ShortcutControl for the original shortcut
     auto origin = keyboardRemapControlObjects.back()[0]->GetShortcutControl();
 
     if (isInSingleEditMode)
     {
-        //const long xd = EditorConstants::ShortcutOriginColumnWidth;
         origin.Width(EditorConstants::ShortcutOriginColumnWidth);
-        //auto x = EditorConstants::ShortcutOriginColumnWidth - 50;
-        //origin.Width(x);
     }
     else
     {
@@ -343,26 +273,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     actionTypeCombo.SelectionChanged([parent, row, controlStackPanel, actionTypeCombo, shortcutItemsGrid, spBtnPickShortcut, spUnicodeTextKeysInput, runProgramStackPanel, openURIStackPanel](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
         const auto shortcutType = ShortcutControl::GetShortcutType(actionTypeCombo);
 
-        /*uint32_t rowIndex;
-        if (!parent.Children().IndexOf(row, rowIndex))
-        {
-            return;
-        }*/
-        /*while (true)
-        {
-            Sleep(1000);
-        }*/
-
-        /*TextBox unicodeTextKeysInput = controlStackPanel.FindName(L"unicodeTextKeysInput_" + std::to_wstring(rowIndex)).as<TextBox>();
-        if (unicodeTextKeysInput == nullptr)
-        {
-            unicodeTextKeysInput = row.FindName(L"unicodeTextKeysInput_" + std::to_wstring(rowIndex)).as<TextBox>();
-            if (unicodeTextKeysInput == nullptr)
-            {
-                return;
-            }
-        }*/
-
         if (shortcutType == ShortcutControl::ShortcutType::Shortcut)
         {
             spBtnPickShortcut.Visibility(Visibility::Visible);
@@ -396,14 +306,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
             openURIStackPanel.Visibility(Visibility::Visible);
         }
     });
-
-    /*while (true)
-    {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }*/
-
-    //target.BorderThickness({ 1, 1, 1, 1 });
-    //target.BorderBrush(Media::SolidColorBrush(Colors::Red()));
 
     target.Width(target.Width() - 120);
 
@@ -493,12 +395,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
             }
             else if (runProgram)
             {
-                //auto parent = targetAppTextBox.Parent().as<StackPanel>();
-
-                /*auto runProgramPathInput = ShortcutControl::FindRowChildByName(parent, L"runProgramPathInput").as<TextBox>();
-                auto runProgramArgsForProgramInput = ShortcutControl::FindRowChildByName(parent, L"runProgramArgsForProgramInput").as<TextBox>();
-                auto runProgramStartInDirInput = ShortcutControl::FindRowChildByName(parent, L"runProgramStartInDirInput").as<TextBox>();*/
-
                 auto runProgramPathInput = row.FindName(L"runProgramPathInput_" + std::to_wstring(rowIndex)).as<TextBox>();
                 auto runProgramArgsForProgramInput = row.FindName(L"runProgramArgsForProgramInput_" + std::to_wstring(rowIndex)).as<TextBox>();
                 auto runProgramStartInDirInput = row.FindName(L"runProgramStartInDirInput_" + std::to_wstring(rowIndex)).as<TextBox>();
@@ -544,11 +440,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         // To set the accessible name of the target app text box when focus is lost
         ShortcutControl::SetAccessibleNameForTextBox(targetAppTextBox, rowIndex + 1);
     });
-
-    /*while (true)
-    {
-        Sleep(1000);
-    }*/
 
     // We need two containers in order to align it horizontally and vertically
 
@@ -599,21 +490,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
             // Get index of delete button
             UIElementCollection children = parent.Children();
             bool indexFound = children.IndexOf(row, rowIndex);
-
-            if (isInSingleEditMode)
-            {
-                // need to confirm this.
-                /*
-            * 
-            auto reallyDelete = GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_PARTIALCONFIRMATIONDIALOGTITLE);
-            reallyDelete = L"REALLY?";
-
-            if (!co_await Dialog::PartialRemappingConfirmationDialog(parent.XamlRoot(), reallyDelete))
-            {
-                co_return;
-            }
-            */
-            }
 
             // IndexOf could fail if the row got deleted and the button handler was invoked twice. In this case it should return
             if (!indexFound)
@@ -717,57 +593,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     return newShortcutToRemap;
 }
 
-//StackPanel* findChildByName(const StackPanel& panel, const std::string& name)
-//{
-//    if (panel.name == name)
-//    {
-//        return const_cast<StackPanel*>(&panel);
-//    }
-//
-//    for (const auto& child : panel.children)
-//    {
-//        StackPanel* found = findChildByName(child, name);
-//        if (found != nullptr)
-//        {
-//            return found;
-//        }
-//    }
-//
-//    return nullptr;
-//}
-
-//winrt::Windows::Foundation::IInspectable ShortcutControl::FindRowChildByName(const StackPanel& panel, const wchar_t* nameToFind)
-//{
-//    StackPanel returnPanel = panel;
-//
-//    while (returnPanel.Name() != winrt::to_hstring(L"row"))
-//    {
-//        if (returnPanel.Parent() == nullptr)
-//        {
-//            return returnPanel;
-//        }
-//        else
-//        {
-//            try
-//            {
-//                returnPanel = returnPanel.Parent().as<StackPanel>();
-//            }
-//            catch (...)
-//            {
-//                // parent must not be StackPanel
-//                return nullptr;
-//            }
-//        }
-//    }
-//
-//    if (returnPanel != nullptr)
-//    {
-//        return returnPanel.FindName(nameToFind);
-//    }
-//
-//    return returnPanel;
-//}
-
 StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& shortCut, winrt::Windows::UI::Xaml::Thickness& textInputMargin, ::StackPanel& _controlStackPanel)
 {
     StackPanel openUriStackPanel;
@@ -803,8 +628,6 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
         tempShortcut.operationType = Shortcut::OperationType::OpenURI;
         tempShortcut.uriToOpen = ShortcutControl::RemoveExtraQuotes(uriTextBox.Text().c_str());
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
-
-        //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
     });
 
     _controlStackPanel.Children().Append(openUriStackPanel);
@@ -847,7 +670,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
 
     runProgramPathInput.AcceptsReturn(false);
     runProgramPathInput.IsSpellCheckEnabled(false);
-    //runProgramPathInput.Visibility(Visibility::Collapsed);
     runProgramPathInput.Width(EditorConstants::TableDropDownHeight);
     runProgramPathInput.HorizontalAlignment(HorizontalAlignment::Left);
 
@@ -868,10 +690,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     stackPanelForRunProgramPath.Orientation(Orientation::Horizontal);
     stackPanelRunProgramStartInDir.Orientation(Orientation::Horizontal);
 
-    /*   while (true)
-    {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }*/
     pickFileBtn.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_BROWSE_FOR_PROGRAM_BUTTON)));
     pickPathBtn.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_BROWSE_FOR_PATH_BUTTON)));
     pickFileBtn.Margin(textInputMargin);
@@ -884,13 +702,11 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     stackPanelRunProgramStartInDir.Children().Append(pickPathBtn);
 
     int runProgramLabelWidth = 90;
-    //controlStackPanel.Children().Append(stackPanelForRunProgramPath);
+
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(stackPanelForRunProgramPath, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELPROGRAM), runProgramLabelWidth).as<StackPanel>());
 
-    //controlStackPanel.Children().Append(runProgramArgsForProgramInput);
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramArgsForProgramInput, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELARGS), runProgramLabelWidth).as<StackPanel>());
 
-    //controlStackPanel.Children().Append(stackPanelRunProgramStartInDir);
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(stackPanelRunProgramStartInDir, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELSTARTIN), runProgramLabelWidth).as<StackPanel>());
 
     auto runProgramAppNotRunningSound = TextBox();
@@ -924,6 +740,8 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGDONOTHING)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGCLOSE)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGTERMINATE)));
+
+    // lets think about this, I like it, some don't
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGCLOSEANDTERMINATE)));
     runProgramAlreadyRunningAction.SelectedIndex(0);
 
@@ -931,12 +749,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
 
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELELEVATION), runProgramLabelWidth).as<StackPanel>());
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramAlreadyRunningAction, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELIFRUNNING), runProgramLabelWidth).as<StackPanel>());
-
-    //StackPanel selectOptionsSP;
-    //selectOptionsSP.Orientation(Orientation::Horizontal);
-    //selectOptionsSP.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELELEVATION), runProgramLabelWidth).as<StackPanel>());
-    //selectOptionsSP.Children().Append(UIHelpers::GetLabelWrapped(runProgramAlreadyRunningAction, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELIFRUNNING), runProgramLabelWidth, HorizontalAlignment::Right).as<StackPanel>());    
-    //controlStackPanel.Children().Append(selectOptionsSP);
 
     auto runProgramStartWindow = ComboBox();
     runProgramStartWindow.Name(L"runProgramStartWindow_" + std::to_wstring(rowIndex));
@@ -957,7 +769,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         CreateNewTempShortcut(row, tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
 
-        //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
     });
 
     runProgramArgsForProgramInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
@@ -970,7 +781,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         Shortcut tempShortcut;
         CreateNewTempShortcut(row, tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
-        //ShortcutControl::RunProgramTextOnChange(rowIndex, shortcutRemapBuffer, runProgramPathInput, runProgramArgsForProgramInput, runProgramStartInDirInput);
+
     });
 
     runProgramAppNotRunningSound.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {

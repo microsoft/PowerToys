@@ -35,33 +35,6 @@ namespace UIHelpers
 
     void SetFocusOnTypeButtonInLastRow(StackPanel& parent, long colCount)
     {
-        //auto newItemIndex = parent.Children().Size() - 1;
-        //auto nameX = L"btnPickShortcut_" + std::to_wstring(0) + L"-" + std::to_wstring(newItemIndex);
-
-        //auto btnPickShortcut = parent.FindName(nameX).as<Button>();
-        //if (btnPickShortcut == nullptr)
-        //{
-        //    btnPickShortcut = FindElementByName(parent, nameX).as<Button>();
-        //}
-
-        //if (btnPickShortcut != nullptr)
-        //{
-        //    btnPickShortcut.Focus(FocusState::Programmatic);
-        //    //btnPickShortcut.Click(nullptr);
-
-        //    ////auto peer = ButtonAutomationPeer::ProviderFromPeer(btnPickShortcut).as<ButtonAutomationPeer>();
-        //    //FrameworkElementAutomationPeer peer = FrameworkElementAutomationPeer::FromElement(btnPickShortcut).as<FrameworkElementAutomationPeer>();
-
-        //    //if (peer != nullptr)
-        //    //{
-        //    //    auto xxx = peer.GetPattern(PatternInterface::Invoke).as<InvokePattern>();
-        //    //
-
-        //    //}
-
-        //    return;
-        //}
-
         // First element in the last row (StackPanel)
         auto lastHotKeyLine = parent.Children().GetAt(parent.Children().Size() - 1).as<StackPanel>();
 
