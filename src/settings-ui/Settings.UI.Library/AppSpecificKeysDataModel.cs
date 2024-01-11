@@ -18,6 +18,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return base.GetMappedOriginalKeys();
         }
 
+        public new List<string> GetMappedOriginalKeys(bool ignoreSecondKeyInChord)
+        {
+            return base.GetMappedOriginalKeys(ignoreSecondKeyInChord);
+        }
+
+        public List<string> GetMappedOriginalKeysWithoutChord()
+        {
+            return base.GetMappedOriginalKeys(true);
+        }
+
+        public new List<string> GetMappedOriginalKeysOnlyChord()
+        {
+            return base.GetMappedOriginalKeysOnlyChord();
+        }
+
         public new List<string> GetMappedNewRemapKeys(int runProgramMaxLength)
         {
             return base.GetMappedNewRemapKeys(runProgramMaxLength);

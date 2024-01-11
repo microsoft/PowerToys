@@ -25,6 +25,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("originalKeys")]
         public string OriginalKeys { get; set; }
 
+        [JsonPropertyName("secondKeyOfChord")]
+        public int SecondKeyOfChord { get; set; }
+
         [JsonPropertyName("newRemapKeys")]
         public string NewRemapKeys { get; set; }
 
@@ -150,23 +153,69 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             NativeMethods.SetForegroundWindow(handle);
         }
 
-        private static List<string> MapKeys(string stringOfKeys)
+        private static List<string> MapKeysOnlyChord(int secondKeyOfChord)
+        {
+            var result = new List<string>();
+            if (secondKeyOfChord <= 0)
+            {
+                return result;
+            }
+
+            result.Add(Helper.GetKeyName((uint)secondKeyOfChord));
+
+            return result;
+        }
+
+        private static List<string> MapKeys(string stringOfKeys, int secondKeyOfChord)
         {
             if (stringOfKeys == null)
             {
                 return new List<string>();
             }
 
-            return stringOfKeys
+            if (secondKeyOfChord > 0)
+            {
+                var keys = stringOfKeys.Split(';');
+                return keys.Take(keys.Length - 1)
+                    .Select(uint.Parse)
+                    .Select(Helper.GetKeyName)
+                    .ToList();
+            }
+            else
+            {
+                return stringOfKeys
                 .Split(';')
                 .Select(uint.Parse)
                 .Select(Helper.GetKeyName)
                 .ToList();
+            }
+        }
+
+        private static List<string> MapKeys(string stringOfKeys)
+        {
+            return MapKeys(stringOfKeys, 0);
+        }
+
+        public List<string> GetMappedOriginalKeys(bool ignoreSecondKeyInChord)
+        {
+            if (ignoreSecondKeyInChord && SecondKeyOfChord > 0)
+            {
+                return MapKeys(OriginalKeys, SecondKeyOfChord);
+            }
+            else
+            {
+                return MapKeys(OriginalKeys);
+            }
+        }
+
+        public List<string> GetMappedOriginalKeysOnlyChord()
+        {
+            return MapKeysOnlyChord(SecondKeyOfChord);
         }
 
         public List<string> GetMappedOriginalKeys()
         {
-            return MapKeys(OriginalKeys);
+            return GetMappedOriginalKeys(false);
         }
 
         public bool IsRunProgram
@@ -190,6 +239,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             get
             {
                 return IsOpenURI || IsRunProgram;
+            }
+        }
+
+        public bool HasChord
+        {
+            get
+            {
+                return SecondKeyOfChord > 0;
             }
         }
 

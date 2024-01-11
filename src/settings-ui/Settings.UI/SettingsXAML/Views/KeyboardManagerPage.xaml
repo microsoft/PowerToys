@@ -163,7 +163,26 @@
                                             <ItemsControl
                                                      IsTabStop="False"
                                                      ItemTemplate="{StaticResource OriginalKeyTemplate}"
-                                                     ItemsSource="{x:Bind GetMappedOriginalKeys()}">
+                                                     ItemsSource="{x:Bind GetMappedOriginalKeysWithoutChord()}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+
+                                            <TextBlock 
+                                                Text=","
+                                                Padding="6,0,6,6"
+                                                VerticalAlignment="Bottom"
+                                                Visibility="{x:Bind Path=HasChord, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            </TextBlock>
+
+                                            <ItemsControl
+                                                   IsTabStop="False"
+                                                    Visibility="{x:Bind Path=HasChord, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                   ItemTemplate="{StaticResource OriginalKeyTemplate}"
+                                                   ItemsSource="{x:Bind GetMappedOriginalKeysOnlyChord()}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -219,7 +238,7 @@
                             HorizontalAlignment="Right"
                             Orientation="Horizontal"
                             Spacing="0">
-                                        
+
                                         <StackPanel Orientation="Horizontal"                                                    
                                             Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <Button 
@@ -251,7 +270,7 @@
 
                                             </Button>
                                         </StackPanel>
-                                        
+
                                         <StackPanel Orientation="Horizontal"
                                             Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                             <Button
