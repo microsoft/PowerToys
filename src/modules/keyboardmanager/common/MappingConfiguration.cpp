@@ -518,7 +518,7 @@ bool MappingConfiguration::SaveSettingsToFile()
             else
             {
                 keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
-
+                keys.SetNamedValue(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, json::value(static_cast<unsigned int>(it.first.secondKey)));
                 keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(targetShortcut.ToHstringVK()));
             }
         }
@@ -527,6 +527,7 @@ bool MappingConfiguration::SaveSettingsToFile()
         {
             remapToText = true;
             keys.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(std::get<std::wstring>(it.second.targetShortcut)));
+            keys.SetNamedValue(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, json::value(static_cast<unsigned int>(it.first.secondKey)));
         }
 
         if (!remapToText)
