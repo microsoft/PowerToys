@@ -35,8 +35,6 @@ namespace UIHelpers
 
     void SetFocusOnTypeButtonInLastRow(StackPanel& parent, long colCount)
     {
-        
-
         //auto newItemIndex = parent.Children().Size() - 1;
         //auto nameX = L"btnPickShortcut_" + std::to_wstring(0) + L"-" + std::to_wstring(newItemIndex);
 
@@ -57,8 +55,7 @@ namespace UIHelpers
         //    //if (peer != nullptr)
         //    //{
         //    //    auto xxx = peer.GetPattern(PatternInterface::Invoke).as<InvokePattern>();
-        //    //    
-
+        //    //
 
         //    //}
 
@@ -112,7 +109,7 @@ namespace UIHelpers
         return parentElement.Children().GetAt(index + 1);
     }
 
-    winrt::Windows::Foundation::IInspectable GetLabelWrapped(const winrt::Windows::Foundation::IInspectable& element, std::wstring label, double textWidth)
+    winrt::Windows::Foundation::IInspectable GetLabelWrapped(const winrt::Windows::Foundation::IInspectable& element, std::wstring label, double textWidth, HorizontalAlignment horizontalAlignment)
     {
         StackPanel sp = StackPanel();
 
@@ -125,7 +122,7 @@ namespace UIHelpers
         }
 
         sp.Orientation(Orientation::Horizontal);
-        sp.HorizontalAlignment(HorizontalAlignment::Left);
+        sp.HorizontalAlignment(horizontalAlignment);
         TextBlock text;
         text.FontWeight(Text::FontWeights::Bold());
         text.Text(label);

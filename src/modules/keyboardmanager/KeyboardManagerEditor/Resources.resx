@@ -217,7 +217,10 @@
   <data name="EditShortcuts_LabelAppNotRunningSound" xml:space="preserve">
     <value>Start sound:</value>
   </data>
-  <data name="EditShortcuts_BtnSelectFile" xml:space="preserve">
+  <data name="EditShortcuts_BadKey" xml:space="preserve">
+    <value>Key in use</value>
+  </data>
+	<data name="EditShortcuts_BtnSelectFile" xml:space="preserve">
     <value>Select file</value>
   </data>
 	<data name="EditKeyboard_OrphanedDialogTitle" xml:space="preserve">

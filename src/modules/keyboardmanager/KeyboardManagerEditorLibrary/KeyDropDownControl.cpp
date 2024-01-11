@@ -12,6 +12,7 @@
 #include "EditorHelpers.h"
 #include "ShortcutErrorType.h"
 #include "EditorConstants.h"
+#include <Dialog.h>
 
 // Initialized to null
 KBMEditor::KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -471,23 +472,26 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
                 ComboBox currentDropDown = tempParent.Children().GetAt(i).as<ComboBox>();
                 currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcutKeyCodes[i])));
 
-                auto keyText = winrt::unbox_value<hstring>(currentDropDown.SelectedItem().as<ComboBoxItem>().Content());
-                sp = spForShortcutRowOne;
-
-                if (i >= 9999)
+                auto currentSelected = currentDropDown.SelectedItem();
+                if (currentSelected != nullptr)
                 {
-                    sp = spForShortcutRowTwo;
-                    spForShortcutRowTwo.Visibility(Visibility::Visible);
-                    hasTwoRows = true;
-                }
+                    auto keyText = winrt::unbox_value<hstring>(currentSelected.as<ComboBoxItem>().Content());
+                    sp = spForShortcutRowOne;
 
-                if (currentDropDown.SelectedItem().as<ComboBoxItem>() != nullptr)
-                {
-                    auto key = keyboardManagerState.AddKeyToLayout(sp, keyText);
+                    if (currentDropDown.SelectedItem().as<ComboBoxItem>() != nullptr)
+                    {
+                        auto key = keyboardManagerState.AddKeyToLayout(sp, keyText);
+                    }
+                    else
+                    {
+                        // GET_RESOURCE_STRING(IDS_KEY_DROPDOWN_COMBOBOX)
+                        auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BADKEY).c_str());
+                        badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
+                    }
                 }
                 else
                 {
-                    auto badKey = keyboardManagerState.AddKeyToLayout(sp, L"BAD_KEY!");
+                    auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BADKEY).c_str());
                     badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
                 }
             }
@@ -517,15 +521,23 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
             ComboBox currentDropDown = tempParent.Children().GetAt(nextI).as<ComboBox>();
             currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcut.GetSecondKey())));
 
-            auto keyText = winrt::unbox_value<hstring>(currentDropDown.SelectedItem().as<ComboBoxItem>().Content());
-
-            if (currentDropDown.SelectedItem().as<ComboBoxItem>() != nullptr)
+            if (currentDropDown.SelectedItem() != nullptr)
             {
-                keyboardManagerState.AddKeyToLayout(sp, keyText);
+                auto keyText = winrt::unbox_value<hstring>(currentDropDown.SelectedItem().as<ComboBoxItem>().Content());
+
+                if (currentDropDown.SelectedItem().as<ComboBoxItem>() != nullptr)
+                {
+                    keyboardManagerState.AddKeyToLayout(sp, keyText);
+                }
+                else
+                {
+                    auto badKey = keyboardManagerState.AddKeyToLayout(sp, L"BAD_KEY!");
+                    badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
+                }
             }
             else
             {
-                auto badKey = keyboardManagerState.AddKeyToLayout(sp, L"BAD_KEY!");
+                auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BADKEY).c_str());
                 badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
             }
         }

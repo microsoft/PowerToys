@@ -909,37 +909,38 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramAppRunningSound.AcceptsReturn(false);
     runProgramAppRunningSound.Width(EditorConstants::TableDropDownHeight);
     runProgramAppRunningSound.HorizontalAlignment(HorizontalAlignment::Left);
-    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramAppRunningSound, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELAPPRUNNINGSOUND), runProgramLabelWidth).as<StackPanel>());
 
     // add shortcut type choice
-    runProgramElevationTypeCombo.Width(EditorConstants::RemapTableDropDownWidth);
+    runProgramElevationTypeCombo.Width(EditorConstants::RemapTableDropDownWidth - 40);
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPENORMAL)));
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPEELEVATED)));
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPEDIFFERENTUSER)));
     runProgramElevationTypeCombo.SelectedIndex(0);
 
     // runProgramAlreadyRunningAction
-    runProgramAlreadyRunningAction.Width(EditorConstants::RemapTableDropDownWidth);
+    runProgramAlreadyRunningAction.Width(EditorConstants::RemapTableDropDownWidth - 40);
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGSHOWWINDOW)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGSTARTANOTHER)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGDONOTHING)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGCLOSE)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGTERMINATE)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGCLOSEANDTERMINATE)));
-
     runProgramAlreadyRunningAction.SelectedIndex(0);
 
-    //auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
-    //auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboAndSelectStackPanel.as<StackPanel>();
-    //controlStackPanel.Children().Append(runProgramElevationTypeCombo);
+    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramAppRunningSound, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELAPPRUNNINGSOUND), runProgramLabelWidth).as<StackPanel>());
 
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELELEVATION), runProgramLabelWidth).as<StackPanel>());
-
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramAlreadyRunningAction, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELIFRUNNING), runProgramLabelWidth).as<StackPanel>());
+
+    //StackPanel selectOptionsSP;
+    //selectOptionsSP.Orientation(Orientation::Horizontal);
+    //selectOptionsSP.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELELEVATION), runProgramLabelWidth).as<StackPanel>());
+    //selectOptionsSP.Children().Append(UIHelpers::GetLabelWrapped(runProgramAlreadyRunningAction, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELIFRUNNING), runProgramLabelWidth, HorizontalAlignment::Right).as<StackPanel>());    
+    //controlStackPanel.Children().Append(selectOptionsSP);
 
     auto runProgramStartWindow = ComboBox();
     runProgramStartWindow.Name(L"runProgramStartWindow_" + std::to_wstring(rowIndex));
-    runProgramStartWindow.Width(EditorConstants::RemapTableDropDownWidth);
+    runProgramStartWindow.Width(EditorConstants::RemapTableDropDownWidth - 40);
     runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VIZNORMAL)));
     runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VIZHIDDEN)));
     runProgramStartWindow.SelectedIndex(0);
