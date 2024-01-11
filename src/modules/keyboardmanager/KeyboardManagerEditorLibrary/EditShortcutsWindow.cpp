@@ -68,6 +68,10 @@ static IAsyncAction OnClickAccept(
     ApplyRemappings();
 }
 
+// This window will now be used for more than just to display the shortcuts to edit
+// using cmdline args it can edit a single shortcut, create a new shortcut (only showing that one)
+// or delete a shortcut, where it will do the delete and go away (just a proxy to get the normal delete code ran). 
+// these flag are for this.
 static bool isInSingleEditMode = false;
 static bool isInCreateNewMode = false;
 static bool isDelete = false;

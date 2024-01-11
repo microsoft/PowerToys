@@ -190,10 +190,9 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
             detectedShortcut.secondKey = NULL;
         }
 
+        // add a TextBlock, to show what shortcut in text, e.g.: "CRTL+j, k" OR "CRTL+j, CRTL+k".
         if (detectedShortcut.HasChord())
-        {
-            // add a TextBlock, to show what shortcut in text, e.g.: "CRTL+j, k" OR "CRTL+j, CRTL+k".
-
+        {            
             TextBlock txtComma;
             txtComma.Text(L",");
             txtComma.FontSize(20);

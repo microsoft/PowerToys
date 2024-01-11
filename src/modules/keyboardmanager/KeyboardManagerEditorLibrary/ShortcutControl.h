@@ -28,6 +28,7 @@ private:
     // Button to type the shortcut
     Button btnPickShortcut;
     
+    // StackPanel to hold the shortcut
     StackPanel spBtnPickShortcut;
 
     // StackPanel to parent the above controls

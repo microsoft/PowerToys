@@ -324,6 +324,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                             // the settings file needs to be updated, update the real one with non-excluded stuff...
                             Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
 
+                            // we needed a new "CustomRestoreSettings" for now, to overwrite because some settings don't merge well (like KBM shortcuts)
                             var overwrite = false;
                             if (backupRestoreSettings["CustomRestoreSettings"] != null && backupRestoreSettings["CustomRestoreSettings"][currentFile.Key] != null)
                             {
