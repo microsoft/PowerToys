@@ -1344,10 +1344,13 @@ EXHIBIT A -Mozilla Public License.
 - SharpCompress 0.33.0
 - StreamJsonRpc 2.14.24
 - StyleCop.Analyzers 1.2.0-beta.507
+- System.CodeDom 8.0.0
 - System.CommandLine 2.0.0-beta4.22272.1
 - System.ComponentModel.Composition 8.0.0
 - System.Configuration.ConfigurationManager 8.0.0
 - System.Data.OleDb 8.0.0
+- System.Diagnostics.EventLog 8.0.0
+- System.Diagnostics.PerformanceCounter 8.0.0
 - System.Drawing.Common 8.0.1
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
@@ -1355,6 +1358,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Management.Automation 7.4.0
 - System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 8.0.0
+- System.Security.Cryptography.ProtectedData 8.0.0
 - System.ServiceProcess.ServiceController 8.0.0
 - System.Text.Encoding.CodePages 8.0.0
 - UnicodeInformation 2.6.0
