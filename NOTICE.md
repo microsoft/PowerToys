@@ -1343,7 +1343,7 @@ EXHIBIT A -Mozilla Public License.
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.33.0
 - StreamJsonRpc 2.14.24
-- StyleCop.Analyzers 1.2.0-beta.507
+- StyleCop.Analyzers 1.2.0-beta.556
 - System.CodeDom 8.0.0
 - System.CommandLine 2.0.0-beta4.22272.1
 - System.ComponentModel.Composition 8.0.0
