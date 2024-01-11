@@ -129,19 +129,19 @@
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{Binding Path=EditShortcutCommand}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
-                        IsClickEnabled="True" >
+                        IsClickEnabled="True">
 
                         <Button
-                             HorizontalAlignment="Right" 
-                             Command="{Binding Path=EditNewShortcutCommand}"   
-                             x:Uid="EditButton"
-                             Width="40"
-                             Height="36"
-                             Content="&#xE710;"
-                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                             Style="{StaticResource SubtleButtonStyle}">
+                            x:Uid="EditButton"
+                            Width="40"
+                            Height="36"
+                            HorizontalAlignment="Right"
+                            Command="{Binding Path=EditNewShortcutCommand}"
+                            Content="&#xE710;"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Style="{StaticResource SubtleButtonStyle}">
                             <ToolTipService.ToolTip>
-                                <TextBlock Text="Create new shortcut"/>
+                                <TextBlock Text="Create new shortcut" />
                             </ToolTipService.ToolTip>
                         </Button>
 
@@ -161,9 +161,9 @@
                                     <controls:SettingsCard.Description>
                                         <StackPanel Orientation="Horizontal">
                                             <ItemsControl
-                                                     IsTabStop="False"
-                                                     ItemTemplate="{StaticResource OriginalKeyTemplate}"
-                                                     ItemsSource="{x:Bind GetMappedOriginalKeysWithoutChord()}">
+                                                IsTabStop="False"
+                                                ItemTemplate="{StaticResource OriginalKeyTemplate}"
+                                                ItemsSource="{x:Bind GetMappedOriginalKeysWithoutChord()}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -171,18 +171,17 @@
                                                 </ItemsControl.ItemsPanel>
                                             </ItemsControl>
 
-                                            <TextBlock 
-                                                Text=","
+                                            <TextBlock
                                                 Padding="6,0,6,6"
                                                 VerticalAlignment="Bottom"
-                                                Visibility="{x:Bind Path=HasChord, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            </TextBlock>
+                                                Text=","
+                                                Visibility="{x:Bind Path=HasChord, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                             <ItemsControl
-                                                   IsTabStop="False"
-                                                    Visibility="{x:Bind Path=HasChord, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                   ItemTemplate="{StaticResource OriginalKeyTemplate}"
-                                                   ItemsSource="{x:Bind GetMappedOriginalKeysOnlyChord()}">
+                                                IsTabStop="False"
+                                                ItemTemplate="{StaticResource OriginalKeyTemplate}"
+                                                ItemsSource="{x:Bind GetMappedOriginalKeysOnlyChord()}"
+                                                Visibility="{x:Bind Path=HasChord, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -191,26 +190,26 @@
                                             </ItemsControl>
 
                                             <custom:IsEnabledTextBlock
-                                                     x:Uid="To"
-                                                     Margin="8,0,8,0"
-                                                     VerticalAlignment="Center"
-                                                     Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
-                                                     Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
+                                                x:Uid="To"
+                                                Margin="8,0,8,0"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
 
                                             <custom:IsEnabledTextBlock
-                                                     x:Uid="Starts"
-                                                     Margin="8,0,8,0"
-                                                     VerticalAlignment="Center"
-                                                     Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay}"
-                                                     Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
+                                                x:Uid="Starts"
+                                                Margin="8,0,8,0"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay}" />
 
 
                                             <ItemsControl
-                                                     Name="KeyboardManager_RemappedTo"
-                                                     x:Uid="KeyboardManager_RemappedTo"
-                                                     IsTabStop="False"
-                                                     ItemTemplate="{StaticResource RemappedKeyTemplate}"
-                                                     ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
+                                                Name="KeyboardManager_RemappedTo"
+                                                x:Uid="KeyboardManager_RemappedTo"
+                                                IsTabStop="False"
+                                                ItemTemplate="{StaticResource RemappedKeyTemplate}"
+                                                ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -218,12 +217,11 @@
                                                 </ItemsControl.ItemsPanel>
                                             </ItemsControl>
                                             <Border
-                                                     Margin="16,0,0,0"
-                                                     Padding="12,4,12,6"
-                                                     VerticalAlignment="Center"
-                                                     CornerRadius="12"
-                                                     Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram,
-                                                     Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                                Margin="16,0,0,0"
+                                                Padding="12,4,12,6"
+                                                VerticalAlignment="Center"
+                                                CornerRadius="12"
+                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                                 <Border.Background>
                                                     <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
                                                 </Border.Background>
@@ -234,68 +232,66 @@
                                     </controls:SettingsCard.Description>
 
                                     <StackPanel
-                            Grid.Column="2"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal"
-                            Spacing="0">
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal"
+                                        Spacing="0">
 
-                                        <StackPanel Orientation="Horizontal"                                                    
-                                            Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <Button 
-                                                Command="{Binding Path=EditShortcutDeleteItem}"      
-                                                HorizontalAlignment="Right" 
+                                        <StackPanel Orientation="Horizontal" Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <Button
                                                 Width="40"
                                                 Height="36"
+                                                HorizontalAlignment="Right"
+                                                Command="{Binding Path=EditShortcutDeleteItem}"
                                                 Content="&#xE8FB;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 Style="{StaticResource SubtleButtonStyle}">
 
                                                 <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Confirm delete action"/>
+                                                    <TextBlock Text="Confirm delete action" />
                                                 </ToolTipService.ToolTip>
                                             </Button>
 
                                             <Button
-                                                Command="{Binding Path=EditShortcutCancelDeleteItem}"
-                                                HorizontalAlignment="Right" 
                                                 Width="40"
                                                 Height="36"
+                                                HorizontalAlignment="Right"
+                                                Command="{Binding Path=EditShortcutCancelDeleteItem}"
                                                 Content="&#xE7A7;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 Style="{StaticResource SubtleButtonStyle}">
 
                                                 <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Cancel delete action"/>
+                                                    <TextBlock Text="Cancel delete action" />
                                                 </ToolTipService.ToolTip>
 
                                             </Button>
                                         </StackPanel>
 
-                                        <StackPanel Orientation="Horizontal"
-                                            Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                        <StackPanel Orientation="Horizontal" Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                             <Button
-                                                HorizontalAlignment="Right" 
-                                                Command="{Binding Path=EditShortcutDeleteItem}"   
                                                 Width="40"
                                                 Height="36"
+                                                HorizontalAlignment="Right"
+                                                Command="{Binding Path=EditShortcutDeleteItem}"
                                                 Content="&#xE74D;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 Style="{StaticResource SubtleButtonStyle}">
                                                 <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Delete shortcut"/>
+                                                    <TextBlock Text="Delete shortcut" />
                                                 </ToolTipService.ToolTip>
                                             </Button>
 
                                             <Button
-                                                HorizontalAlignment="Right" 
-                                                Command="{Binding Path=EditShortcutItem}"   
                                                 Width="40"
                                                 Height="36"
+                                                HorizontalAlignment="Right"
+                                                Command="{Binding Path=EditShortcutItem}"
                                                 Content="&#xE70F;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                 Style="{StaticResource SubtleButtonStyle}">
                                                 <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Edit shortcut"/>
+                                                    <TextBlock Text="Edit shortcut" />
                                                 </ToolTipService.ToolTip>
                                             </Button>
                                         </StackPanel>

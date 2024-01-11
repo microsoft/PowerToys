@@ -216,19 +216,19 @@
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </Border>
-                                            
+
                                             <custom:IsEnabledTextBlock
                                                 x:Uid="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
-                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
-                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                                             <custom:IsEnabledTextBlock
-                                                 x:Uid="Starts"
-                                                 Margin="8,0,8,0"
-                                                 VerticalAlignment="Center"
-                                                 Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay}"
-                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
+                                                x:Uid="Starts"
+                                                Margin="8,0,8,0"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay}" />
                                             <Border
                                                 Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -260,9 +260,9 @@
                                             <TextBlock
                                                 Margin="4,0,0,0"
                                                 VerticalAlignment="Center"
-                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
                                                 Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                                                Text="{x:Bind TargetApp}" />
+                                                Text="{x:Bind TargetApp}"
+                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
