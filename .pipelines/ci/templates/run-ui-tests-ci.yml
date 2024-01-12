@@ -6,7 +6,7 @@ parameters:
 jobs:
 - job: UI tests ${{ parameters.platform }}${{ parameters.configuration }}
   displayName: Run UI tests ${{ parameters.platform }} ${{ parameters.configuration }}
-  dependsOn: Precheck
+  dependsOn: Build${{ parameters.platform }}${{ parameters.configuration }}
   condition: and(succeeded(),ne(dependencies.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes'))
   variables:
     BuildConfiguration: ${{ parameters.configuration }}
