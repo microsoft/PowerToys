@@ -1,6 +1,5 @@
 jobs:
-- job: UI tests
-  displayName: Run UI tests
+- job: UITest
   pool:
     demands: ImageOverride -equals SHINE-VS17-Latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
@@ -8,4 +7,6 @@ jobs:
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: SHINE-INT-L
   steps:
-  - bash: echo "Hello world"
+  - checkout: none
+
+  - bash: echo "##[debug]Debug text"
