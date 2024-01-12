@@ -5,7 +5,6 @@ parameters:
 jobs:
 - job: UI tests ${{ parameters.platform }}${{ parameters.configuration }}
   displayName: Run UI tests ${{ parameters.platform }} ${{ parameters.configuration }}
-  dependsOn: Build${{ parameters.platform }}${{ parameters.configuration }}
   pool:
     demands: ImageOverride -equals SHINE-VS17-Latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
@@ -15,6 +14,7 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
+
   steps:
   - checkout: self
     fetchDepth: 1
