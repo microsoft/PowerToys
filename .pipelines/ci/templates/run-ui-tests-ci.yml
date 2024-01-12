@@ -1,7 +1,6 @@
 parameters:
   configuration: 'Release'
   platform: ''
-  additionalBuildArguments: '/p:RestorePackagesConfig=true -m'
 
 jobs:
 - job: UI tests ${{ parameters.platform }}${{ parameters.configuration }}
