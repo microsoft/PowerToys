@@ -2,9 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Text.Json.Serialization;
 
 using ManagedCommon;
@@ -177,17 +174,9 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
-        public string Language { get; set; } = "en";
-
         public Theme Theme { get; set; } = Theme.System;
 
         public StartupPosition StartupPosition { get; set; } = StartupPosition.Cursor;
-
-        public string QueryBoxFont { get; set; } = FontFamily.GenericSansSerif.Name;
-
-        public string QueryBoxFontStyle { get; set; }
-
-        public string QueryBoxFontWeight { get; set; }
 
         public bool PTRunNonDelayedSearchInParallel { get; set; } = true;
 
@@ -195,55 +184,12 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool PTRSearchQueryFastResultsWithDelay { get; set; }
 
-        // public bool PTRSearchQueryFastResultsWithPartialDelay { get; set; }
-        public string QueryBoxFontStretch { get; set; }
-
-        public string ResultFont { get; set; } = FontFamily.GenericSansSerif.Name;
-
-        public string ResultFontStyle { get; set; }
-
-        public string ResultFontWeight { get; set; }
-
-        public string ResultFontStretch { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether when false Alphabet static service will always return empty results
         /// </summary>
         public bool ShouldUsePinyin { get; set; }
 
         internal StringMatcher.SearchPrecisionScore QuerySearchPrecision { get; private set; } = StringMatcher.SearchPrecisionScore.Regular;
-
-        [JsonIgnore]
-        public string QuerySearchPrecisionString
-        {
-            get
-            {
-                return QuerySearchPrecision.ToString();
-            }
-
-            set
-            {
-                try
-                {
-                    var precisionScore = (StringMatcher.SearchPrecisionScore)Enum
-                                            .Parse(typeof(StringMatcher.SearchPrecisionScore), value);
-
-                    QuerySearchPrecision = precisionScore;
-                    StringMatcher.Instance.UserSettingSearchPrecision = precisionScore;
-                }
-                catch (ArgumentException e)
-                {
-                    Wox.Plugin.Logger.Log.Exception("Failed to load QuerySearchPrecisionString value from Settings file", e, GetType());
-
-                    QuerySearchPrecision = StringMatcher.SearchPrecisionScore.Regular;
-                    StringMatcher.Instance.UserSettingSearchPrecision = StringMatcher.SearchPrecisionScore.Regular;
-
-                    throw;
-                }
-            }
-        }
-
-        public bool AutoUpdates { get; set; }
 
         public double WindowLeft { get; set; }
 
@@ -283,34 +229,6 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
-        public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; } = new ObservableCollection<CustomPluginHotkey>();
-
-        public bool DontPromptUpdateMsg { get; set; }
-
-        public bool EnableUpdateLog { get; set; }
-
-        public bool StartWoxOnSystemStartup { get; set; } = true;
-
-        public bool HideOnStartup { get; set; }
-
-        private bool _hideNotifyIcon;
-
-        public bool HideNotifyIcon
-        {
-            get
-            {
-                return _hideNotifyIcon;
-            }
-
-            set
-            {
-                _hideNotifyIcon = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool LeaveCmdOpen { get; set; }
-
         public bool HideWhenDeactivated { get; set; } = true;
 
         public bool ClearInputOnLaunch { get; set; }
@@ -348,8 +266,6 @@ namespace Wox.Infrastructure.UserSettings
         public bool StartedFromPowerToysRunner { get; set; }
 
         public bool GenerateThumbnailsFromFiles { get; set; } = true;
-
-        public HttpProxy Proxy { get; set; } = new HttpProxy();
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LastQueryMode LastQueryMode { get; set; } = LastQueryMode.Selected;
