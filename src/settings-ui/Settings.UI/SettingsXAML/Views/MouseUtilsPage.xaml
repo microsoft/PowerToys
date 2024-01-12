@@ -24,7 +24,7 @@
                 <custom:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
                     <controls:SettingsCard
                         x:Uid="MouseUtils_Enable_FindMyMouse"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFindMyMouse.png}"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FindMyMouse.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
@@ -147,7 +147,7 @@
                 <custom:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
                     <controls:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseHighlighter"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseHighlighter.png}"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseHighlighter.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsHighlighterEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
@@ -217,7 +217,7 @@
                 <custom:SettingsGroup x:Uid="MouseUtils_MouseJump">
                     <controls:SettingsCard
                         x:Uid="MouseUtils_Enable_MouseJump"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseJump.png}"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsJumpEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
@@ -313,7 +313,7 @@
                 <custom:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
                     <controls:SettingsCard
                         x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png}"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrosshairs.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>

@@ -23,7 +23,7 @@
                 <custom:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
                     <controls:SettingsCard
                         x:Uid="MouseWithoutBorders_Toggle_Enable"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"

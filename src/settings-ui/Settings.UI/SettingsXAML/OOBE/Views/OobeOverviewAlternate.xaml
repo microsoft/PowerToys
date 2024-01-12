@@ -4,13 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
     <custom:OOBEPageControl
         x:Uid="Oobe_Overview"
-        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/OOBEPTHeroShort.png"
+        HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PTHeroShort.png"
         HeroImageHeight="120">
 
         <custom:OOBEPageControl.PageContent>
@@ -40,7 +39,7 @@
                             <Image
                                 Width="36"
                                 HorizontalAlignment="Left"
-                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsFancyZones.png" />
+                                Source="ms-appx:///Assets/Settings/Icons/FancyZones.png" />
                             <TextBlock
                                 x:Uid="Alternate_OOBE_FancyZones_Title"
                                 Grid.Row="1"
@@ -81,7 +80,7 @@
                             <Image
                                 Width="36"
                                 HorizontalAlignment="Left"
-                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png" />
+                                Source="ms-appx:///Assets/Settings/Icons/PowerToysRun.png" />
                             <TextBlock
                                 x:Uid="Alternate_OOBE_Run_Title"
                                 Grid.Row="1"
@@ -122,7 +121,7 @@
                             <Image
                                 Width="36"
                                 HorizontalAlignment="Left"
-                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsColorPicker.png" />
+                                Source="ms-appx:///Assets/Settings/Icons/ColorPicker.png" />
                             <TextBlock
                                 x:Uid="Alternate_OOBE_ColorPicker_Title"
                                 Grid.Row="1"
@@ -164,7 +163,7 @@
                             <Image
                                 Width="36"
                                 HorizontalAlignment="Left"
-                                Source="ms-appx:///Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png" />
+                                Source="ms-appx:///Assets/Settings/Icons/AlwaysOnTop.png" />
                             <TextBlock
                                 x:Uid="Alternate_OOBE_AlwaysOnTop_Title"
                                 Grid.Row="1"

@@ -9,7 +9,7 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <custom:OOBEPageControl x:Uid="Oobe_TextExtractor" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerOCR.gif">
+    <custom:OOBEPageControl x:Uid="Oobe_TextExtractor" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/TextExtractor.gif">
 
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

@@ -30,10 +30,13 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             switch (moduleType)
             {
-                case ModuleType.MousePointerCrosshairs: return "ms-appx:///Assets/Settings/FluentIcons/FluentIconsMouseCrosshairs.png";
-                case ModuleType.MeasureTool: return "ms-appx:///Assets/Settings/FluentIcons/FluentIconsScreenRuler.png";
-                case ModuleType.PowerLauncher: return $"ms-appx:///Assets/Settings/FluentIcons/FluentIconsPowerToysRun.png";
-                default: return $"ms-appx:///Assets/Settings/FluentIcons/FluentIcons{moduleType}.png";
+                case ModuleType.PowerOCR: return "ms-appx:///Assets/Settings/Icons/TextExtractor.png";
+                case ModuleType.PastePlain: return "ms-appx:///Assets/Settings/Icons/PasteAsPlainText.png";
+                case ModuleType.PowerAccent: return "ms-appx:///Assets/Settings/Icons/QuickAccent.png";
+                case ModuleType.MousePointerCrosshairs: return "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png";
+                case ModuleType.MeasureTool: return "ms-appx:///Assets/Settings/Icons/ScreenRuler.png";
+                case ModuleType.PowerLauncher: return $"ms-appx:///Assets/Settings/Icons/PowerToysRun.png";
+                default: return $"ms-appx:///Assets/Settings/Icons/{moduleType}.png";
             }
         }
 

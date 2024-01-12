@@ -9,7 +9,7 @@
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <custom:OOBEPageControl x:Uid="Oobe_QuickAccent" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerAccent.gif">
+    <custom:OOBEPageControl x:Uid="Oobe_QuickAccent" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/QuickAccent.gif">
 
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">

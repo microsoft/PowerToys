@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
-    <custom:OOBEPageControl x:Uid="Oobe_ShortcutGuide" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/OOBEShortcutGuide.png">
+    <custom:OOBEPageControl x:Uid="Oobe_ShortcutGuide" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ShortcutGuide.png">
         <custom:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical">
 
