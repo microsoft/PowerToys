@@ -747,6 +747,7 @@ languagesjson
 lastbuildstate
 lastcodeanalysissucceeded
 Lastdevice
+LASTEXITCODE
 LAYOUTRTL
 LCIDTo
 lcl
@@ -919,6 +920,7 @@ MSIFASTINSTALL
 MSIHANDLE
 msiquery
 MSIRESTARTMANAGERCONTROL
+msixbundle
 MSIXCA
 MSLLHOOKSTRUCT
 Mso
@@ -1566,6 +1568,8 @@ timediff
 timeunion
 timeutil
 Titlecase
+tkcontrols
+tkconverters
 TKey
 TLayout
 tlb

@@ -49,6 +49,7 @@
 		<PackageReference Include="Microsoft.Extensions.ObjectPool">
 			<ExcludeAssets>contentFiles</ExcludeAssets>
 			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; compile; build; native; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="System.Management.Automation">
 			<ExcludeAssets>contentFiles</ExcludeAssets>
@@ -61,6 +62,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 	  <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
 	</ItemGroup>
 

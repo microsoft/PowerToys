@@ -208,8 +208,15 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 if (SelectedTheme() == ElementTheme.Default)
                 {
-                    themeListener = new ThemeListener();
-                    themeListener.ThemeChanged += (_) => HandleThemeChange();
+                    try
+                    {
+                        themeListener = new ThemeListener();
+                        themeListener.ThemeChanged += (_) => HandleThemeChange();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", ex);
+                    }
                 }
             }
             else

@@ -2,10 +2,10 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.ShortcutDialogContentControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
     <Grid MinWidth="498" MinHeight="220">
@@ -33,7 +33,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <local:KeyVisual
+                    <controls:KeyVisual
                         Height="56"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
@@ -66,7 +66,7 @@
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                     Severity="Warning" />
             </Grid>
-            <toolkitcontrols:MarkdownTextBlock
+            <tk7controls:MarkdownTextBlock
                 x:Uid="InvalidShortcutWarningLabel"
                 Background="Transparent"
                 FontSize="12"

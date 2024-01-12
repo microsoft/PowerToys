@@ -93,10 +93,7 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_CMD_NOT_FOUND_NAME);
         app_key = ModuleKey;
-
-        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
-        logFilePath.append(LogSettings::cmdNotFoundLogPath);
-        Logger::init(LogSettings::cmdNotFoundLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::cmdNotFoundLoggerName);
         Logger::info("CmdNotFound object is constructing");
 
         powertoys_gpo::gpo_rule_configured_t gpo_rule_configured_value = gpo_policy_enabled_configuration();

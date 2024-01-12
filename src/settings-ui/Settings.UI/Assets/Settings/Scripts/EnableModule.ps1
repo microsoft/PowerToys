@@ -28,6 +28,7 @@ $profileContent = Get-Content -Path $PROFILE -Raw
 if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contains("34de4b3d-13a8-4540-b76d-b9e8d3851756")))
 {
   Write-Host "Module is already registered in the profile file."
+  # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
 }
 else
 {
@@ -35,4 +36,5 @@ else
   Add-Content -Path $PROFILE  -Value "`r`nImport-Module `"$scriptPath\WinGetCommandNotFound.psd1`""
   Add-Content -Path $PROFILE  -Value "#34de4b3d-13a8-4540-b76d-b9e8d3851756"  
   Write-Host "Module was successfully registered in the profile file."
+  # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
 }
