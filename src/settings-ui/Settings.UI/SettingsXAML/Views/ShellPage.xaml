@@ -118,7 +118,7 @@
                 <NavigationViewItem
                     x:Uid="Shell_CmdNotFound"
                     helpers:NavHelper.NavigateTo="views:CmdNotFoundPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}" />
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_ColorPicker"
@@ -151,7 +151,7 @@
                 <NavigationViewItem
                     x:Uid="Shell_FileLocksmith"
                     helpers:NavHelper.NavigateTo="views:FileLocksmithPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsFileLocksmith.png}" />
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icon/FileLocksmith.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_Hosts"
