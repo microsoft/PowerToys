@@ -1,20 +1,11 @@
-parameters:
-  configuration: 'Release'
-  platform: ''
-
 jobs:
-- job: UI tests ${{ parameters.platform }}${{ parameters.configuration }}
-  displayName: Run UI tests ${{ parameters.platform }} ${{ parameters.configuration }}
+- job: UI tests
+  displayName: Run UI tests
   pool:
     demands: ImageOverride -equals SHINE-VS17-Latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: SHINE-OSS-L
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: SHINE-INT-L
-  timeoutInMinutes: 120
-  strategy:
-    maxParallel: 10
   steps:
-  - checkout: self
-    fetchDepth: 1
-    submodules: true
+  - bash: echo "Hello world"
