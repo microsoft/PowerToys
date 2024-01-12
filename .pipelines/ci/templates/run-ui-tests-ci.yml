@@ -17,8 +17,9 @@ jobs:
   strategy:
     maxParallel: 10
   steps:
-    - checkout: self
-      fetchDepth: 1
-      submodules: true
-    - bash: |
-        echo "##[debug]Debug text"
+  - checkout: self
+    fetchDepth: 1
+    submodules: true
+    
+  - bash: |
+      echo "##[debug]Debug text"
