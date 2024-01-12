@@ -4,7 +4,7 @@ parameters:
   additionalBuildArguments: '/p:RestorePackagesConfig=true -m'
 
 jobs:
-- job: Build${{ parameters.platform }}${{ parameters.configuration }}
+- job: UI tests ${{ parameters.platform }}${{ parameters.configuration }}
   displayName: Run UI tests ${{ parameters.platform }} ${{ parameters.configuration }}
   dependsOn: Precheck
   condition: and(succeeded(),ne(dependencies.Precheck.outputs['verifyBuildRequest.skipBuild'], 'Yes'))
