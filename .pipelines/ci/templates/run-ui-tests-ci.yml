@@ -6,6 +6,4 @@ steps:
   fetchDepth: 1
   submodules: true
 - bash: |
-    echo "##[group]Beginning of a group"
     echo "##[debug]Debug text"
-    echo "##[endgroup]"
