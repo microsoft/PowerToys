@@ -17,7 +17,7 @@ namespace Peek.UI
         private const string PeekModuleName = "Peek";
         private const int MaxNumberOfRetry = 5;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly IFileSystemWatcher _watcher;
         private readonly object _loadingSettingsLock = new object();
 

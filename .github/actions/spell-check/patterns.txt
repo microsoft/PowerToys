@@ -118,6 +118,9 @@ aka\.ms/[a-zA-Z0-9]+
 # YouTube url
 \b(?:(?:www\.|)youtube\.com|youtu.be)/(?:channel/|embed/|user/|playlist\?list=|watch\?v=|v/|)[-a-zA-Z0-9?&=_%]*
 
+# power shell gallery website
+\bpowershellgallery.com/[-_a-zA-Z0-9()=./%]*
+
 # uuid: (or CompGUIDPrefix)
 L?(["']|[-<({>]|\b)[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{10,12}(?:\g{-1}|[<})>])
 

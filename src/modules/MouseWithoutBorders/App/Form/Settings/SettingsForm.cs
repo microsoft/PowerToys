@@ -123,13 +123,14 @@ namespace MouseWithoutBorders
         }
 
         private string lastMessage = string.Empty;
+        private static readonly string[] Separator = new string[] { "\r\n" };
 
         internal void ShowTip(ToolTipIcon icon, string msg, int durationInMilliseconds)
         {
             int x = 0;
             string text = msg + $"\r\n {(lastMessage.Equals(msg, StringComparison.OrdinalIgnoreCase) ? string.Empty : $"\r\nPrevious message/error: {lastMessage}")} ";
             lastMessage = msg;
-            int y = (-text.Split(new string[] { "\r\n" }, StringSplitOptions.None).Length * 15) - 30;
+            int y = (-text.Split(Separator, StringSplitOptions.None).Length * 15) - 30;
 
             toolTipManual.Hide(this);
 

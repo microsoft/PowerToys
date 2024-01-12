@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text;
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
 
 namespace Microsoft.PowerToys.Run.Plugin.System.Components
@@ -113,6 +114,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// Gets the list of WINS server IPs as string
         /// </summary>
         internal IPAddressCollection WinsServers { get; private set; }
+
+        private static readonly CompositeFormat MicrosoftPluginSysGbps = CompositeFormat.Parse(Properties.Resources.Microsoft_plugin_sys_Gbps);
+        private static readonly CompositeFormat MicrosoftPluginSysMbps = CompositeFormat.Parse(Properties.Resources.Microsoft_plugin_sys_Mbps);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkConnectionProperties"/> class.
@@ -286,7 +290,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
         /// <returns>A formatted string like `100 MB/s`</returns>
         private static string GetFormattedSpeedValue(long speed)
         {
-            return (speed >= 1000000000) ? string.Format(CultureInfo.InvariantCulture, Resources.Microsoft_plugin_sys_Gbps, speed / 1000000000) : string.Format(CultureInfo.InvariantCulture, Resources.Microsoft_plugin_sys_Mbps, speed / 1000000);
+            return (speed >= 1000000000) ? string.Format(CultureInfo.InvariantCulture, MicrosoftPluginSysGbps, speed / 1000000000) : string.Format(CultureInfo.InvariantCulture, MicrosoftPluginSysMbps, speed / 1000000);
         }
 
         /// <summary>

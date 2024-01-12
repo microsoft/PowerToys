@@ -80,7 +80,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 return new List<Result>(0);
             }
 
-            ICollection<KeyValuePair<string, object>> valueList = new List<KeyValuePair<string, object>>(key.ValueCount);
+            List<KeyValuePair<string, object>> valueList = new List<KeyValuePair<string, object>>(key.ValueCount);
 
             var resultList = new List<Result>();
 

@@ -158,33 +158,6 @@ bool FancyZonesWindowUtils::IsRoot(HWND window) noexcept
     return GetAncestor(window, GA_ROOT) == window;
 }
 
-bool FancyZonesWindowUtils::IsProcessOfWindowElevated(HWND window)
-{
-    DWORD pid = 0;
-    GetWindowThreadProcessId(window, &pid);
-    if (!pid)
-    {
-        return false;
-    }
-
-    wil::unique_handle hProcess{ OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
-                                             FALSE,
-                                             pid) };
-
-    wil::unique_handle token;
-
-    if (OpenProcessToken(hProcess.get(), TOKEN_QUERY, &token))
-    {
-        TOKEN_ELEVATION elevation;
-        DWORD size;
-        if (GetTokenInformation(token.get(), TokenElevation, &elevation, sizeof(elevation), &size))
-        {
-            return elevation.TokenIsElevated != 0;
-        }
-    }
-    return false;
-}
-
 bool FancyZonesWindowUtils::IsExcluded(HWND window)
 {
     std::wstring processPath = get_process_path_waiting_uwp(window);

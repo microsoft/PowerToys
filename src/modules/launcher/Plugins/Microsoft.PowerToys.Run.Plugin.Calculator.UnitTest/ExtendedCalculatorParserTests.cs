@@ -245,5 +245,30 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
+
+        private static IEnumerable<object[]> Interpret_TestScientificNotation_WhenCalled_Data =>
+           new[]
+           {
+               new object[] { "0.2E1", "en-US", 2M },
+               new object[] { "0,2E1", "pt-PT", 2M },
+           };
+
+        [DataTestMethod]
+        [DynamicData(nameof(Interpret_TestScientificNotation_WhenCalled_Data))]
+        public void Interpret_TestScientificNotation_WhenCalled(string input, string sourceCultureName, decimal expectedResult)
+        {
+            // Arrange
+            var translator = NumberTranslator.Create(new CultureInfo(sourceCultureName, false), new CultureInfo("en-US", false));
+            var engine = new CalculateEngine();
+
+            // Act
+            // Using en-us culture to have a fixed number style
+            var translatedInput = translator.Translate(input);
+            var result = engine.Interpret(translatedInput, new CultureInfo("en-US", false), out _);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result.Result);
+        }
     }
 }

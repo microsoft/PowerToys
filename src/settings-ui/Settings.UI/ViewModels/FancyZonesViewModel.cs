@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
-        private ISettingsUtils SettingsUtils { get; set; }
+        private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 

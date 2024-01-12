@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using System.Text;
 using Settings.UI.Library.Enumerations;
 
 namespace SvgPreviewHandler
@@ -39,14 +40,17 @@ namespace SvgPreviewHandler
 
         private readonly Settings settings = new();
 
+        private static readonly CompositeFormat HtmlTemplateSolidColorCompositeFormat = System.Text.CompositeFormat.Parse(HtmlTemplateSolidColor);
+        private static readonly CompositeFormat HtmlTemplateCheckeredCompositeFormat = System.Text.CompositeFormat.Parse(HtmlTemplateCheckered);
+
         public string GeneratePreview(string svgData)
         {
             var colorMode = (SvgPreviewColorMode)settings.ColorMode;
             return colorMode switch
             {
-                SvgPreviewColorMode.SolidColor => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColor, ColorTranslator.ToHtml(settings.SolidColor), svgData),
-                SvgPreviewColorMode.Checkered => string.Format(CultureInfo.InvariantCulture, HtmlTemplateCheckered, GetConfiguredCheckeredShadeImage(), svgData),
-                SvgPreviewColorMode.Default or _ => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColor, ColorTranslator.ToHtml(settings.ThemeColor), svgData),
+                SvgPreviewColorMode.SolidColor => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColorCompositeFormat, ColorTranslator.ToHtml(settings.SolidColor), svgData),
+                SvgPreviewColorMode.Checkered => string.Format(CultureInfo.InvariantCulture, HtmlTemplateCheckeredCompositeFormat, GetConfiguredCheckeredShadeImage(), svgData),
+                SvgPreviewColorMode.Default or _ => string.Format(CultureInfo.InvariantCulture, HtmlTemplateSolidColorCompositeFormat, ColorTranslator.ToHtml(settings.ThemeColor), svgData),
             };
         }
 

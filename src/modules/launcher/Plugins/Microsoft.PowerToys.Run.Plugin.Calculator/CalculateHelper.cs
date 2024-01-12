@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
@@ -18,6 +20,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +
             @"pi|" +
             @"==|~=|&&|\|\||" +
+            @"((-?(\d+(\.\d*)?)|-?(\.\d+))[E](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
             @"e|[0-9]|0x[0-9a-fA-F]+|0b[01]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
             @")+$",
             RegexOptions.Compiled);
@@ -51,13 +54,30 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public static string FixHumanMultiplicationExpressions(string input)
         {
-            var output = CheckNumberOrConstantThenParenthesisExpr(input);
+            var output = CheckScientificNotation(input);
+            output = CheckNumberOrConstantThenParenthesisExpr(output);
             output = CheckNumberOrConstantThenFunc(output);
             output = CheckParenthesisExprThenFunc(output);
             output = CheckParenthesisExprThenParenthesisExpr(output);
             output = CheckNumberThenConstant(output);
             output = CheckConstantThenConstant(output);
             return output;
+        }
+
+        private static string CheckScientificNotation(string input)
+        {
+            /**
+             * NOTE: By the time the expression gets to us, it's already in English format.
+             *
+             * Regex explanation:
+             * (-?(\d+({0}\d*)?)|-?({0}\d+)): Used to capture one of two types:
+             * -?(\d+({0}\d*)?): Captures a decimal number starting with a number (e.g. "-1.23")
+             * -?({0}\d+): Captures a decimal number without leading number (e.g. ".23")
+             * E: Captures capital 'E'
+             * (-?\d+): Captures an integer number (e.g. "-1" or "23")
+             */
+            var p = @"(-?(\d+(\.\d*)?)|-?(\.\d+))E(-?\d+)";
+            return Regex.Replace(input, p, "($1 * 10^($5))");
         }
 
         /*

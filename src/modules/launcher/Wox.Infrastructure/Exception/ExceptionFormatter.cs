@@ -127,7 +127,7 @@ namespace Wox.Infrastructure.Exception
                     foreach (string versionKeyName in ndpKey.GetSubKeyNames())
                     {
                         // Using InvariantCulture since this is internal and involves version key
-                        if (versionKeyName.StartsWith("v", StringComparison.InvariantCulture))
+                        if (versionKeyName.StartsWith('v'))
                         {
                             RegistryKey versionKey = ndpKey.OpenSubKey(versionKeyName);
                             string name = (string)versionKey.GetValue("Version", string.Empty);
