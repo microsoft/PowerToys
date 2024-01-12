@@ -2,10 +2,10 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.PowerAccentShortcutControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkitcontrols="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">
@@ -27,7 +27,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <custom:KeyVisual
+                    <controls:KeyVisual
                         VerticalAlignment="Center"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
@@ -36,7 +36,7 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <toolkitcontrols:MarkdownTextBlock
+        <tk7controls:MarkdownTextBlock
             Grid.Column="1"
             Margin="8,0,0,0"
             VerticalAlignment="Center"
