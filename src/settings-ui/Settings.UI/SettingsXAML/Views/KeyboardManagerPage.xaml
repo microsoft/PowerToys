@@ -14,11 +14,12 @@
 
     <Page.Resources>
         <tkconverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
-        <tkconverters:BoolToVisibilityConverter x:Key="BoolToInvertedVisibilityConverter"
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
             TrueValue="Collapsed" />
         <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        
+
         <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
             <Setter Property="IsTabStop" Value="False" />
         </Style>
@@ -209,12 +210,12 @@
                                                 Name="KeyboardManager_RemappedTo"
                                                 x:Uid="KeyboardManager_RemappedTo"
                                                 IsTabStop="False"
-                                            ItemTemplate="{StaticResource RemappedKeyTemplate}"
-                                            ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
+                                                ItemTemplate="{StaticResource RemappedKeyTemplate}"
+                                                ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                             </ItemsControl>
                                             <Border
