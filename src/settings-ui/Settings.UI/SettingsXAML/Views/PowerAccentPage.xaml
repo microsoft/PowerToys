@@ -2,26 +2,26 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerAccentPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <custom:SettingsPageControl
+    <controls:SettingsPageControl
         x:Uid="QuickAccent"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerAccent.png">
-        <custom:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsCard
+                <tkcontrols:SettingsCard
                     x:Uid="QuickAccent_EnableQuickAccent"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerAccent.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </controls:SettingsCard>
+                </tkcontrols:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_IsSettingForced"
@@ -30,18 +30,18 @@
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <custom:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard x:Uid="QuickAccent_Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either" />
                         </ComboBox>
-                    </controls:SettingsCard>
-                </custom:SettingsGroup>
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard x:Uid="QuickAccent_SelectedLanguage" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+                <controls:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_SelectedLanguage" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedLangIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in PowerAccentViewModel.cs  -->
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_All" />
@@ -78,11 +78,11 @@
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Turkish" />
                             <ComboBoxItem x:Uid="QuickAccent_SelectedLanguage_Welsh" />
                         </ComboBox>
-                    </controls:SettingsCard>
-                </custom:SettingsGroup>
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard x:Uid="QuickAccent_ToolbarPosition" HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
+                <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_ToolbarPosition" HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter" />
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomCenter" />
@@ -94,20 +94,20 @@
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner" />
                             <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Center" />
                         </ComboBox>
-                    </controls:SettingsCard>
-                    <controls:SettingsCard x:Uid="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
                         <ToggleSwitch x:Uid="QuickAccent_UnicodeDescription_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowUnicodeDescription, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-                    <controls:SettingsCard x:Uid="QuickAccent_SortByUsageFrequency_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_SortByUsageFrequency_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}">
                         <ToggleSwitch x:Uid="QuickAccent_SortByUsageFrequency_ToggleSwitch" IsOn="{x:Bind ViewModel.SortByUsageFrequency, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-                    <controls:SettingsCard x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE974;}">
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE974;}">
                         <ToggleSwitch x:Uid="QuickAccent_StartSelectionFromTheLeft_ToggleSwitch" IsOn="{x:Bind ViewModel.StartSelectionFromTheLeft, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-                </custom:SettingsGroup>
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
 
-                <custom:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:SettingsCard x:Uid="QuickAccent_InputTimeMs" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_InputTimeMs" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="100"
@@ -115,11 +115,11 @@
                             SmallChange="10"
                             SpinButtonPlacementMode="Compact"
                             Value="{x:Bind ViewModel.InputTimeMs, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                    </tkcontrols:SettingsCard>
 
-                    <controls:SettingsExpander x:Uid="QuickAccent_ExcludedApps" HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}">
-                        <controls:SettingsExpander.Items>
-                            <controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                    <tkcontrols:SettingsExpander x:Uid="QuickAccent_ExcludedApps" HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="QuickAccent_ExcludedApps_TextBoxControl"
                                     MinWidth="240"
@@ -130,18 +130,18 @@
                                     ScrollViewer.VerticalScrollMode="Enabled"
                                     Text="{x:Bind ViewModel.ExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
-                </custom:SettingsGroup>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
             </StackPanel>
-        </custom:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
 
-        <custom:SettingsPageControl.PrimaryLinks>
-            <custom:PageLink x:Uid="LearnMore_QuickAccent" Link="https://aka.ms/PowerToysOverview_QuickAccent" />
-        </custom:SettingsPageControl.PrimaryLinks>
-        <custom:SettingsPageControl.SecondaryLinks>
-            <custom:PageLink Link="https://github.com/damienleroy/PowerAccent" Text="Damien Leroy's PowerAccent" />
-        </custom:SettingsPageControl.SecondaryLinks>
-    </custom:SettingsPageControl>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_QuickAccent" Link="https://aka.ms/PowerToysOverview_QuickAccent" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="https://github.com/damienleroy/PowerAccent" Text="Damien Leroy's PowerAccent" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>

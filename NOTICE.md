@@ -1325,6 +1325,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.NET.Test.Sdk 17.6.3
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2088.41
+- Microsoft.Win32.SystemEvents 8.0.0
 - Microsoft.Windows.Compatibility 8.0.0
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.4
@@ -1342,18 +1343,22 @@ EXHIBIT A -Mozilla Public License.
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.33.0
 - StreamJsonRpc 2.14.24
-- StyleCop.Analyzers 1.2.0-beta.507
+- StyleCop.Analyzers 1.2.0-beta.556
+- System.CodeDom 8.0.0
 - System.CommandLine 2.0.0-beta4.22272.1
 - System.ComponentModel.Composition 8.0.0
 - System.Configuration.ConfigurationManager 8.0.0
 - System.Data.OleDb 8.0.0
-- System.Drawing.Common 8.0.0
+- System.Diagnostics.EventLog 8.0.0
+- System.Diagnostics.PerformanceCounter 8.0.0
+- System.Drawing.Common 8.0.1
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0
 - System.Management.Automation 7.4.0
 - System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 8.0.0
+- System.Security.Cryptography.ProtectedData 8.0.0
 - System.ServiceProcess.ServiceController 8.0.0
 - System.Text.Encoding.CodePages 8.0.0
 - UnicodeInformation 2.6.0
@@ -1362,5 +1367,5 @@ EXHIBIT A -Mozilla Public License.
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
-- WPF-UI 3.0.0-preview.12
+- WPF-UI 3.0.0-preview.13
 
