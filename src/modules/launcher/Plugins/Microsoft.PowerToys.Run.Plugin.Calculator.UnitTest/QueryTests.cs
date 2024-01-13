@@ -145,6 +145,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("pipipie", "pi * pi * pi * e")]
         [DataRow("(1+1)(3+2)(1+1)(1+1)", "(1+1) * (3+2) * (1+1) * (1+1)")]
         [DataRow("(1+1) (3+2)  (1+1)(1+1)", "(1+1) * (3+2) * (1+1) * (1+1)")]
+        [DataRow("1.0E2", "(1.0 * 10^(2))")]
+        [DataRow("-1.0E-2", "(-1.0 * 10^(-2))")]
+        [DataRow("1.2E2", "(1.2 * 10^(2))")]
+        [DataRow("5/1.0E2", "5/(1.0 * 10^(2))")]
+        [DataRow("0.1E2", "(0.1 * 10^(2))")]
+        [DataRow(".1E2", "(.1 * 10^(2))")]
+        [DataRow(".1E2", "(.1 * 10^(2))")]
+        [DataRow("5/5E3", "5/(5 * 10^(3))")]
+        [DataRow("1.E2", "(1. * 10^(2))")]
         public void RightHumanMultiplicationExpressionTransformation(string typedString, string expectedQuery)
         {
             // Setup
@@ -200,6 +209,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("pilog(100)", 6.2831853072)]
         [DataRow("3log(100)", 6)]
         [DataRow("2e", 5.4365636569)]
+        [DataRow("2E2", 200)]
+        [DataRow("2E-2", 0.02)]
+        [DataRow("1.2E2", 120)]
+        [DataRow("1.2E-1", 0.12)]
+        [DataRow("5/5E3", 0.001)]
+        [DataRow("-5/5E3", -0.001)]
         [DataRow("(1+1)(3+2)", 10)]
         [DataRow("(1+1)cos(pi)", -2)]
         [DataRow("log(100)cos(pi)", -2)]

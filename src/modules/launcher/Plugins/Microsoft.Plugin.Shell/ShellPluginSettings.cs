@@ -25,13 +25,13 @@ namespace Microsoft.Plugin.Shell
 
         public void AddCmdHistory(string cmdName)
         {
-            if (Count.ContainsKey(cmdName))
+            if (Count.TryGetValue(cmdName, out int currentCount))
             {
-                Count[cmdName] += 1;
+                Count[cmdName] = currentCount + 1;
             }
             else
             {
-                Count.Add(cmdName, 1);
+                Count[cmdName] = 1;
             }
         }
     }

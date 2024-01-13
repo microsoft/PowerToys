@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using System.Text;
 using Microsoft.Plugin.Folder.Sources;
 using Microsoft.Plugin.Folder.Sources.Result;
 using Wox.Infrastructure;
@@ -12,7 +13,7 @@ namespace Microsoft.Plugin.Folder
 {
     public class UserFolderResult : IItemResult
     {
-        private readonly IShellAction _shellAction = new ShellAction();
+        private readonly ShellAction _shellAction = new ShellAction();
 
         public string Search { get; set; }
 
@@ -22,6 +23,8 @@ namespace Microsoft.Plugin.Folder
 
         public string Subtitle { get; set; }
 
+        private static readonly CompositeFormat WoxPluginFolderSelectFolderResultSubtitle = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_folder_select_folder_result_subtitle);
+
         public Result Create(IPublicAPI contextApi)
         {
             return new Result(StringMatcher.FuzzySearch(Search, Title).MatchData)
@@ -30,7 +33,7 @@ namespace Microsoft.Plugin.Folder
                 IcoPath = Path,
 
                 // Using CurrentCulture since this is user facing
-                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Subtitle),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, WoxPluginFolderSelectFolderResultSubtitle, Subtitle),
                 QueryTextDisplay = Path,
                 ContextData = new SearchResult { Type = ResultType.Folder, Path = Path },
                 Action = c => _shellAction.Execute(Path, contextApi),

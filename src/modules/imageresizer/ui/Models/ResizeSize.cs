@@ -12,7 +12,7 @@ namespace ImageResizer.Models
 {
     public class ResizeSize : Observable
     {
-        private static readonly IDictionary<string, string> _tokens = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> _tokens = new Dictionary<string, string>
         {
             ["$small$"] = Resources.Small,
             ["$medium$"] = Resources.Medium,

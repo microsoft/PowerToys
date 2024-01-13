@@ -13,6 +13,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string ModuleName = "Image Resizer";
 
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
+
         [JsonPropertyName("properties")]
         public ImageResizerProperties Properties { get; set; }
 
@@ -31,10 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public override string ToJsonString()
         {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
+            var options = _serializerOptions;
             return JsonSerializer.Serialize(this, options);
         }
 

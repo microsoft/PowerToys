@@ -1,5 +1,7 @@
 # Classes and structures
 
+> This document is outdated and will soon be renewed.
+
 #### class Animation: [header](/src/common/animation.h) [source](/src/common/animation.cpp)
 Animation helper class with two easing-in animations: linear and exponential.
 

@@ -32,7 +32,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
             // A network path must start with \\
             // Using Ordinal since this is internal and used with a symbol
-            if (!sanitizedPath.StartsWith("\\", StringComparison.Ordinal))
+            if (!sanitizedPath.StartsWith('\\'))
             {
                 return sanitizedPath;
             }

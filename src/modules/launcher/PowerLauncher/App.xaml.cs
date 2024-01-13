@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
-using Common.UI;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
@@ -81,7 +80,7 @@ namespace PowerLauncher
             {
                 application.InitializeComponent();
 
-                NativeEventWaiter.WaitForEventLoop(
+                Common.UI.NativeEventWaiter.WaitForEventLoop(
                     Constants.RunExitEvent(),
                     () =>
                     {
@@ -121,8 +120,7 @@ namespace PowerLauncher
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
-                _themeManager = new ThemeManager(this);
-                ImageLoader.Initialize(_themeManager.GetCurrentTheme());
+                ImageLoader.Initialize();
 
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
@@ -135,6 +133,7 @@ namespace PowerLauncher
 
                 _mainVM = new MainViewModel(_settings, NativeThreadCTS.Token);
                 _mainWindow = new MainWindow(_settings, _mainVM, NativeThreadCTS.Token);
+                _themeManager = new ThemeManager(_settings, _mainWindow);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 _settingsReader = new SettingsReader(_settings, _themeManager);
                 _settingsReader.ReadSettings();
@@ -151,7 +150,6 @@ namespace PowerLauncher
 
                 _settingsReader.ReadSettingsOnChange();
 
-                _themeManager.ThemeChanged += OnThemeChanged;
                 textToLog.AppendLine("End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
@@ -211,17 +209,6 @@ namespace PowerLauncher
         }
 
         /// <summary>
-        /// Callback when windows theme is changed.
-        /// </summary>
-        /// <param name="oldTheme">Previous Theme</param>
-        /// <param name="newTheme">Current Theme</param>
-        private void OnThemeChanged(Theme oldTheme, Theme newTheme)
-        {
-            ImageLoader.UpdateIconPath(newTheme);
-            _mainVM.Query();
-        }
-
-        /// <summary>
         /// let exception throw as normal is better for Debug
         /// </summary>
         [Conditional("RELEASE")]
@@ -267,19 +254,12 @@ namespace PowerLauncher
                 Log.Info("Start PowerToys Run Exit----------------------------------------------------  ", GetType());
                 if (disposing)
                 {
-                    if (_themeManager != null)
-                    {
-                        _themeManager.ThemeChanged -= OnThemeChanged;
-                    }
-
                     API?.SaveAppAllSettings();
                     PluginManager.Dispose();
 
                     // Dispose needs to be called on the main Windows thread, since some resources owned by the thread need to be disposed.
                     _mainWindow?.Dispatcher.Invoke(Dispose);
-                    API?.Dispose();
                     _mainVM?.Dispose();
-                    _themeManager?.Dispose();
                 }
 
                 Log.Info("End PowerToys Run Exit ----------------------------------------------------  ", GetType());

@@ -18,7 +18,8 @@ namespace ImageResizer.Views
         public MainWindow(MainViewModel viewModel)
         {
             DataContext = viewModel;
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+
+            InitializeComponent();
 
             if (OSVersionHelper.IsWindows11())
             {
@@ -29,7 +30,7 @@ namespace ImageResizer.Views
                 WindowBackdropType = WindowBackdropType.None;
             }
 
-            InitializeComponent();
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
         }
 
         public IEnumerable<string> OpenPictureFiles()

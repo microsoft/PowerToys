@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -157,12 +158,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         public static void FeetToFt(ref string[] split)
         {
-            if (split[1].ToLowerInvariant() == "feet")
+            if (string.Equals(split[1], "feet", StringComparison.OrdinalIgnoreCase))
             {
                 split[1] = "ft";
             }
 
-            if (split[3].ToLowerInvariant() == "feet")
+            if (string.Equals(split[3], "feet", StringComparison.OrdinalIgnoreCase))
             {
                 split[3] = "ft";
             }
@@ -183,7 +184,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         public static void GallonHandler(ref string[] split, CultureInfo culture)
         {
             HashSet<string> britishCultureNames = new HashSet<string>() { "en-AI", "en-VG", "en-GB", "en-KY", "en-MS", "en-AG", "en-DM", "en-GD", "en-KN", "en-LC", "en-VC", "en-IE", "en-GY", "en-AE" };
-            if (split[1].ToLowerInvariant() == "gal" || split[1].ToLowerInvariant() == "gallon")
+            if (string.Equals(split[1], "gal", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(split[1], "gallon", StringComparison.OrdinalIgnoreCase))
             {
                 if (britishCultureNames.Contains(culture.Name))
                 {
@@ -195,7 +197,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 }
             }
 
-            if (split[3].ToLowerInvariant() == "gal" || split[3].ToLowerInvariant() == "gallon")
+            if (string.Equals(split[3], "gal", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(split[3], "gallon", StringComparison.OrdinalIgnoreCase))
             {
                 if (britishCultureNames.Contains(culture.Name))
                 {

@@ -433,7 +433,29 @@ UINT __stdcall RemoveWindowsServiceByName(std::wstring serviceName)
     return ERROR_SUCCESS;
 }
 
+UINT __stdcall UninstallCommandNotFoundModuleCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+    std::string command;
 
+    hr = WcaInitialize(hInstall, "UninstallCommandNotFoundModule");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    command = "pwsh.exe";
+    command += " ";
+    command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "\"";
+
+    system(command.c_str());
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
 
 UINT __stdcall UninstallServicesCA(MSIHANDLE hInstall)
 {

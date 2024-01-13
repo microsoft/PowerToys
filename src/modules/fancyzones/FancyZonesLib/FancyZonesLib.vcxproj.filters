@@ -153,9 +153,6 @@
     <ClInclude Include="HighlightedZones.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NotificationUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HighlightedZones.h">
       <Filter>Header Files</Filter>
     </ClInclude>

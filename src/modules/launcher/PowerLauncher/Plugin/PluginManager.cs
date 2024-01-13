@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using global::PowerToys.GPOWrapper;
@@ -28,6 +29,8 @@ namespace PowerLauncher.Plugin
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IDirectory Directory = FileSystem.Directory;
         private static readonly object AllPluginsLock = new object();
+
+        private static readonly CompositeFormat FailedToInitializePluginsTitle = System.Text.CompositeFormat.Parse(Properties.Resources.FailedToInitializePluginsTitle);
 
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
@@ -53,7 +56,7 @@ namespace PowerLauncher.Plugin
                         if (_allPlugins == null)
                         {
                             _allPlugins = PluginConfig.Parse(Directories)
-                                .Where(x => x.Language.ToUpperInvariant() == AllowedLanguage.CSharp)
+                                .Where(x => string.Equals(x.Language, AllowedLanguage.CSharp, StringComparison.OrdinalIgnoreCase))
                                 .GroupBy(x => x.ID) // Deduplicates plugins by ID, choosing for each ID the highest DLL product version. This fixes issues such as https://github.com/microsoft/PowerToys/issues/14701
                                 .Select(g => g.OrderByDescending(x => // , where an upgrade didn't remove older versions of the plugins.
                                 {
@@ -178,10 +181,10 @@ namespace PowerLauncher.Plugin
 
             _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
 
-            if (failedPlugins.Any())
+            if (!failedPlugins.IsEmpty)
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
-                var description = string.Format(CultureInfo.CurrentCulture, Resources.FailedToInitializePluginsDescription, failed);
+                var description = string.Format(CultureInfo.CurrentCulture, FailedToInitializePluginsTitle, failed);
                 Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false));
             }
         }

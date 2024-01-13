@@ -38,7 +38,9 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
     public Selector()
     {
         InitializeComponent();
+
         Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+
         Application.Current.MainWindow.ShowActivated = false;
         Application.Current.MainWindow.Topmost = true;
     }

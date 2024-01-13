@@ -52,6 +52,7 @@ void Trace::SettingsChanged(const GeneralSettings& settings)
         g_hProvider,
         "GeneralSettingsChanged",
         TraceLoggingBoolean(settings.isStartupEnabled, "RunAtStartup"),
+        TraceLoggingBoolean(settings.enableWarningsElevatedApps, "EnableWarningsElevatedApps"),
         TraceLoggingWideString(settings.startupDisabledReason.c_str(), "StartupDisabledReason"),
         TraceLoggingWideString(enabledModules.c_str(), "ModulesEnabled"),
         TraceLoggingBoolean(settings.isRunElevated, "AlwaysRunElevated"),

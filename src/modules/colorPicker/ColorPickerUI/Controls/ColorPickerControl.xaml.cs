@@ -329,7 +329,7 @@ namespace ColorPicker.Controls
             newHexString = newHexString.ToLowerInvariant();
 
             // Return only with hashtag if user typed it before
-            bool addHashtag = oldValue.StartsWith("#", StringComparison.InvariantCulture);
+            bool addHashtag = oldValue.StartsWith('#');
             return addHashtag ? "#" + newHexString : newHexString;
         }
 
@@ -348,7 +348,7 @@ namespace ColorPicker.Controls
             else
             {
                 // Hex with or without hashtag and six characters
-                return hexCodeText.StartsWith("#", StringComparison.InvariantCulture) ? hexCodeText : "#" + hexCodeText;
+                return hexCodeText.StartsWith('#') ? hexCodeText : "#" + hexCodeText;
             }
         }
 

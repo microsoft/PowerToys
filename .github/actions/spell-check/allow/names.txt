@@ -94,6 +94,7 @@ peteblois
 phoboslab
 Ponten
 Pooja
+Quriz
 randyrants
 ricardosantos
 robmikh
@@ -115,6 +116,7 @@ talynone
 TBM
 tilovell
 Triet
+waaverecords
 ycv
 Yuniardi
 yuyoyuppe
@@ -139,6 +141,7 @@ onenote
 Quickime
 regedit
 roslyn
+Spotify
 Vanara
 WEX
 windowwalker

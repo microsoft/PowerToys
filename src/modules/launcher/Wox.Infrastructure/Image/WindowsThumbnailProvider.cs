@@ -83,17 +83,10 @@ namespace Wox.Infrastructure.Image
         public static BitmapSource GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
         {
             IntPtr hBitmap = IntPtr.Zero;
-            string targetLinkedFilePath = string.Empty;
+
             if (Path.GetExtension(fileName).Equals(".lnk", StringComparison.OrdinalIgnoreCase))
             {
-                // If the file has a '.lnk' extension, it is a shortcut file. Use the shellLinkHelper to retrieve the actual target file path from the shortcut.
-                IShellLinkHelper shellLinkHelper = new ShellLinkHelper();
-                targetLinkedFilePath = shellLinkHelper.RetrieveTargetPath(fileName);
-            }
-
-            if (!string.IsNullOrEmpty(targetLinkedFilePath))
-            {
-                hBitmap = ExtractIconToHBitmap(targetLinkedFilePath);
+                hBitmap = ExtractIconToHBitmap(fileName);
             }
             else
             {

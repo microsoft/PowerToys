@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Common.Utilities
+namespace Microsoft.PowerToys.FilePreviewCommon
 {
     /// <summary>
     /// Gcode file helper class.

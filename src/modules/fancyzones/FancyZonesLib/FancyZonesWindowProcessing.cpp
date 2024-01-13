@@ -34,12 +34,13 @@ FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::Defin
 
     bool isPopup = FancyZonesWindowUtils::HasStyle(style, WS_POPUP);
     bool hasThickFrame = FancyZonesWindowUtils::HasStyle(style, WS_THICKFRAME);
-    bool hasCaption = FancyZonesWindowUtils::HasStyle(style, WS_CAPTION); 
-    if (isPopup && !(hasThickFrame && hasCaption))
+    bool hasCaption = FancyZonesWindowUtils::HasStyle(style, WS_CAPTION);
+    bool hasMinimizeMaximizeButtons = FancyZonesWindowUtils::HasStyle(style, WS_MINIMIZEBOX) || FancyZonesWindowUtils::HasStyle(style, WS_MAXIMIZEBOX);
+    if (isPopup && !(hasThickFrame && (hasCaption || hasMinimizeMaximizeButtons)))
     {
         // popup windows we want to snap: e.g. Calculator, Telegram   
         // popup windows we don't want to snap: start menu, notification popup, tray window, etc.
-        // WS_CAPTION is used for filtering out menus,
+        // WS_CAPTION, WS_MINIMIZEBOX, WS_MAXIMIZEBOX are used for filtering out menus,
         // e.g., in Edge "Running as admin" menu when creating a new PowerToys issue.
         return ProcessabilityType::NonProcessablePopupWindow;
     }

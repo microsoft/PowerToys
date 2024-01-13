@@ -9,6 +9,7 @@ namespace ManagedCommon
         AlwaysOnTop,
         Awake,
         ColorPicker,
+        CmdNotFound,
         CropAndLock,
         EnvironmentVariables,
         FancyZones,
