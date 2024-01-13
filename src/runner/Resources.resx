@@ -107,7 +107,7 @@
     <value>PowerToys Update</value>
   </data>
   <data name="QUICK_ACCESS_MENU_TEXT" xml:space="preserve">
-    <value>Quick access</value>
+    <value>Quick access\tLeft-click</value>
   </data>
   <data name="SETTINGS_MENU_TEXT" xml:space="preserve">
     <value>Settings</value>
