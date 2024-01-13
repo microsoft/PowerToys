@@ -110,7 +110,7 @@
     <value>Quick access\tLeft-click</value>
   </data>
   <data name="SETTINGS_MENU_TEXT" xml:space="preserve">
-    <value>Settings</value>
+    <value>Settings\tDouble-click</value>
   </data>
   <data name="DOCUMENTATION_MENU_TEXT" xml:space="preserve">
     <value>Documentation</value>
