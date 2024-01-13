@@ -1296,7 +1296,17 @@ EXHIBIT A -Mozilla Public License.
 
 ## NuGet Packages used by PowerToys
 
-
+- CommunityToolkit.Mvvm 8.2.0
+- CommunityToolkit.WinUI.Animations 8.0.240109
+- CommunityToolkit.WinUI.Controls.Primitives 8.0.240109
+- CommunityToolkit.WinUI.Controls.Segmented 8.0.240109
+- CommunityToolkit.WinUI.Controls.SettingsControls 8.0.240109
+- CommunityToolkit.WinUI.Controls.Sizers 8.0.240109
+- CommunityToolkit.WinUI.Converters 8.0.240109
+- CommunityToolkit.WinUI.Extensions 8.0.240109
+- CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
+- CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
+- ControlzEx 6.0.0
 - HelixToolkit 2.24.0
 - HelixToolkit.Core.Wpf 2.24.0
 - hyjiacan.pinyin4net 4.1.1
@@ -1358,5 +1368,3 @@ EXHIBIT A -Mozilla Public License.
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
 - WPF-UI 3.0.0-preview.13
-
-
