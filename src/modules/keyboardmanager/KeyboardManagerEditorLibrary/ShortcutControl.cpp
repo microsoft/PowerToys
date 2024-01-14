@@ -768,7 +768,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         Shortcut tempShortcut;
         CreateNewTempShortcut(row, tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
-
     });
 
     runProgramArgsForProgramInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
@@ -781,7 +780,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         Shortcut tempShortcut;
         CreateNewTempShortcut(row, tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
-
     });
 
     runProgramAppNotRunningSound.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
@@ -1069,6 +1067,13 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     }
     else
     {
+        if (shortcutRemapBuffer[rowIndex].first[1].index() != 1)
+        {
+            // not a shortcut, let's fix that.
+            Shortcut newShortcut;
+            shortcutRemapBuffer[rowIndex].first[1] = newShortcut;
+        }
+
         shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[1]);
     }
 
