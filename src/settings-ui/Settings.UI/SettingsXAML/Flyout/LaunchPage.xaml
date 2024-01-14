@@ -103,15 +103,11 @@
             </Grid>
         </Grid>
         <Grid Grid.Row="2">
-            <InfoBar
-                x:Uid="UpdateAvailable"
-                IsClosable="False"
-                IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
-                Severity="Informational">
-                <InfoBar.ActionButton>
-                    <HyperlinkButton x:Uid="ShowUpdateDetails" Click="UpdateDetailsBtn_Click" />
-                </InfoBar.ActionButton>
-            </InfoBar>
+            <StackPanel Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}" Orientation="Horizontal">
+                <InfoBadge Margin="12,0,0,0"
+                           CharacterSpacing="8"/>
+                <HyperlinkButton Content="Update available" />
+            </StackPanel>
 
             <StackPanel
                 Grid.Row="1"
