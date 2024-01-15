@@ -6,11 +6,16 @@ jobs:
 - job: UITest
   displayName: UI Test ${{ parameters.platform }} ${{ parameters.configuration }}
   pool:
-    demands: ImageOverride -equals SHINE-VS17-Latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: SHINE-OSS-L
+      ${{ if ne(parameters.platform, 'ARM64') }}:
+        name: SHINE-OSS-Testing-x64
+      ${{ else }}:
+        name: SHINE-OSS-Testing-arm64
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: SHINE-INT-L
+      ${{ if ne(parameters.platform, 'ARM64') }}:
+        name: SHINE-INT-Testing-x64
+      ${{ else }}:
+        name: SHINE-INT-Testing-arm64
   steps:
   - checkout: none
 
