@@ -7,15 +7,9 @@ jobs:
   displayName: UI Test ${{ parameters.platform }} ${{ parameters.configuration }}
   pool:
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      ${{ if ne(parameters.platform, 'ARM64') }}:
-        name: SHINE-OSS-Testing-x64
-      ${{ else }}:
-        name: SHINE-OSS-Testing-arm64
+      name: SHINE-OSS-Testing-x64
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      ${{ if ne(parameters.platform, 'ARM64') }}:
-        name: SHINE-INT-Testing-x64
-      ${{ else }}:
-        name: SHINE-INT-Testing-arm64
+      name: SHINE-INT-Testing-x64
   steps:
   - checkout: none
 
