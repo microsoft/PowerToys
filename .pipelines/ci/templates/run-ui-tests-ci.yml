@@ -1,5 +1,10 @@
+parameters:
+  configuration: 'Release'
+  platform: ''
+  
 jobs:
 - job: UITest
+  displayName: UI Test ${{ parameters.platform }} ${{ parameters.configuration }}
   pool:
     demands: ImageOverride -equals SHINE-VS17-Latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
