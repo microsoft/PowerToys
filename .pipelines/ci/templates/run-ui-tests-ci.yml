@@ -6,11 +6,21 @@ jobs:
 - job: UITest
   displayName: UI Test ${{ parameters.platform }} ${{ parameters.configuration }}
   pool:
+    demands: ImageOverride -equals SHINE-VS17-Latest
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: SHINE-OSS-Testing-x64
+      name: SHINE-OSS-L
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: SHINE-INT-Testing-x64
+      name: SHINE-INT-L
   steps:
   - checkout: none
 
-  - bash: echo "##[debug]Debug text"
+  - task: VSTest@2
+    displayName: 'UI Tests'
+    condition: ne(variables['BuildPlatform'], 'arm64') # No arm64 agents to run the tests.
+    inputs:
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      testSelector: 'testAssemblies'
+      testAssemblyVer2: |
+        **\UITests-FancyZones.dll
+        **\UITests-FancyZonesEditor.dll
