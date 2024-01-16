@@ -3,41 +3,41 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
     mc:Ignorable="d">
 
     <Page.Resources>
-        <localConverters:ModuleItemTemplateSelector
+        <converters:ModuleItemTemplateSelector
             x:Key="ModuleItemTemplateSelector"
             ButtonTemplate="{StaticResource ModuleItemButtonTemplate}"
             KBMTemplate="{StaticResource ModuleItemKBMTemplate}"
             ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}"
             TextTemplate="{StaticResource ModuleItemTextTemplate}" />
-        <converters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
+        <tkconverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
         <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
             <Setter Property="IsTabStop" Value="False" />
         </Style>
-        <localConverters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
-        <converters:BoolToVisibilityConverter
+        <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
             TrueValue="Collapsed" />
         <DataTemplate x:Key="OriginalKeyTemplate" x:DataType="x:String">
-            <custom:KeyVisual Content="{Binding}" VisualType="SmallOutline" />
+            <controls:KeyVisual Content="{Binding}" VisualType="SmallOutline" />
         </DataTemplate>
 
         <DataTemplate x:Key="RemappedKeyTemplate" x:DataType="x:String">
-            <custom:KeyVisual Content="{Binding}" VisualType="Small" />
+            <controls:KeyVisual Content="{Binding}" VisualType="Small" />
         </DataTemplate>
 
         <DataTemplate x:Key="ModuleItemTextTemplate" x:DataType="viewmodels:DashboardModuleTextItem">
@@ -78,7 +78,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <custom:KeyVisual
+                                <controls:KeyVisual
                                     VerticalAlignment="Center"
                                     AutomationProperties.AccessibilityView="Raw"
                                     Content="{Binding}"
@@ -132,7 +132,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <custom:KeyVisual
+                                                            <controls:KeyVisual
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 Content="{Binding}"
@@ -142,7 +142,7 @@
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </Border>
-                                            <custom:IsEnabledTextBlock
+                                            <controls:IsEnabledTextBlock
                                                 x:Uid="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
@@ -164,7 +164,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <custom:KeyVisual
+                                                            <controls:KeyVisual
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 Content="{Binding}"
@@ -206,7 +206,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <custom:KeyVisual
+                                                            <controls:KeyVisual
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 Content="{Binding}"
@@ -216,7 +216,7 @@
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </Border>
-                                            <custom:IsEnabledTextBlock
+                                            <controls:IsEnabledTextBlock
                                                 x:Uid="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
@@ -238,7 +238,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <custom:KeyVisual
+                                                            <controls:KeyVisual
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 Content="{Binding}"
@@ -296,7 +296,7 @@
                     Style="{StaticResource SubtitleTextBlockStyle}" />
                 <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
-                        <controls:StaggeredLayout
+                        <tkcontrols:StaggeredLayout
                             ColumnSpacing="8"
                             DesiredColumnWidth="378"
                             RowSpacing="8" />
@@ -394,7 +394,7 @@
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
                     <ItemsRepeater.Layout>
-                        <controls:StaggeredLayout
+                        <tkcontrols:StaggeredLayout
                             ColumnSpacing="8"
                             DesiredColumnWidth="378"
                             RowSpacing="8" />
