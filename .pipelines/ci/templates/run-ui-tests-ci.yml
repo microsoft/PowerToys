@@ -15,6 +15,11 @@ jobs:
   steps:
   - checkout: none
 
+  - task: DownloadPipelineArtifact@2
+    displayName: Download artifacts
+    inputs:
+      downloadPath: $(Build.SourcesDirectory)/${{ parameters.platform }}/${{ parameters.configuration }}
+
   - task: VSTest@2
     displayName: 'UI Tests'
     condition: ne(variables['BuildPlatform'], 'arm64') # No arm64 agents to run the tests.
