@@ -2,7 +2,6 @@
     x:Class="Hosts.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Hosts.Helpers"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
@@ -10,6 +9,7 @@
     xmlns:local="using:Hosts.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Hosts.Models"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="Page"
     Loaded="Page_Loaded"
@@ -21,17 +21,17 @@
     </i:Interaction.Behaviors>
 
     <Page.Resources>
-        <converters:StringVisibilityConverter
+        <tkconverters:StringVisibilityConverter
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
-        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <converters:BoolToVisibilityConverter
+        <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
             TrueValue="Collapsed" />
-        <converters:DoubleToVisibilityConverter
+        <tkconverters:DoubleToVisibilityConverter
             x:Key="DoubleToVisibilityConverter"
             FalseValue="Visible"
             GreaterThan="0"

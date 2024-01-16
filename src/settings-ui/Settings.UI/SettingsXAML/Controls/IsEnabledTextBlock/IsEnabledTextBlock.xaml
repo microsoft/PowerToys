@@ -1,14 +1,14 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls">
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls">
 
-    <Style x:Key="DefaultIsEnabledTextBlockStyle" TargetType="local:IsEnabledTextBlock">
+    <Style x:Key="DefaultIsEnabledTextBlockStyle" TargetType="controls:IsEnabledTextBlock">
         <Setter Property="Foreground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:IsEnabledTextBlock">
+                <ControlTemplate TargetType="controls:IsEnabledTextBlock">
                     <Grid>
                         <TextBlock
                             x:Name="Label"
@@ -36,7 +36,7 @@
     <Style
         x:Key="SecondaryIsEnabledTextBlockStyle"
         BasedOn="{StaticResource DefaultIsEnabledTextBlockStyle}"
-        TargetType="local:IsEnabledTextBlock">
+        TargetType="controls:IsEnabledTextBlock">
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
         <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}" />
     </Style>
