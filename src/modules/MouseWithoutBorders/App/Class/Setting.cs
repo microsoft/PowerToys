@@ -38,7 +38,7 @@ namespace MouseWithoutBorders.Class
     {
         internal bool Changed;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly object _loadingSettingsLock = new object();
         private readonly IFileSystemWatcher _watcher;
 

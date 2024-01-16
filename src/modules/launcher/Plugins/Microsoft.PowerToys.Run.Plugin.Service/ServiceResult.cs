@@ -19,10 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
 
         public ServiceResult(ServiceController serviceController)
         {
-            if (serviceController == null)
-            {
-                throw new ArgumentNullException(nameof(serviceController));
-            }
+            ArgumentNullException.ThrowIfNull(serviceController);
 
             ServiceName = serviceController.ServiceName;
             DisplayName = serviceController.DisplayName;

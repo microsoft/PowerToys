@@ -1,9 +1,10 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                    xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
-                    xmlns:system="clr-namespace:System;assembly=System.Runtime"
-                    mc:Ignorable="options">
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+    xmlns:system="clr-namespace:System;assembly=System.Runtime"
+    mc:Ignorable="options">
 
     <!--  Metadata  -->
     <system:String x:Key="Theme.Name">HighContrast.Accent2</system:String>
@@ -12,20 +13,4 @@
     <system:String x:Key="Theme.BaseColorScheme">HighContrast</system:String>
     <system:String x:Key="Theme.ColorScheme">Accent2</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
-
-    <Color x:Key="SystemBaseMediumLowColor">#ffff00</Color>
-    <SolidColorBrush x:Key="SystemChromeLow" Color="Black" options:Freeze="True" />
-    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF008000" />
-    <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Black" />
-    <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="White" />
-    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="White" />
-    <SolidColorBrush x:Key="ButtonBorderPressed" Color="White" />
-    <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF003300" />
-    <SolidColorBrush x:Key="ControlTextBrushKey" Color="#FFffff00" />
-    <SolidColorBrush x:Key="SecondaryTextForeground" Color="#FF008000" />
-    <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="DialogBorderBrush" Color="#FF373737" />
 </ResourceDictionary>

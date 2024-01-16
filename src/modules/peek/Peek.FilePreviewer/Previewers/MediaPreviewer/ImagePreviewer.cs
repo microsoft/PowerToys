@@ -8,6 +8,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ManagedCommon;
+using Microsoft.PowerToys.FilePreviewCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -85,6 +87,14 @@ namespace Peek.FilePreviewer.Previewers
             if (IsSvg(Item))
             {
                 var size = await Task.Run(Item.GetSvgSize);
+                if (size != null)
+                {
+                    ImageSize = size.Value;
+                }
+            }
+            else if (IsQoi(Item))
+            {
+                var size = await Task.Run(Item.GetQoiSize);
                 if (size != null)
                 {
                     ImageSize = size.Value;
@@ -256,6 +266,12 @@ namespace Peek.FilePreviewer.Previewers
 
                         Preview = source;
                     }
+                    else if (IsQoi(Item))
+                    {
+                        using var bitmap = QoiImage.FromStream(stream);
+
+                        Preview = await BitmapHelper.BitmapToImageSource(bitmap, true, cancellationToken);
+                    }
                     else
                     {
                         var bitmap = new BitmapImage();
@@ -283,6 +299,11 @@ namespace Peek.FilePreviewer.Previewers
         private bool IsSvg(IFileSystemItem item)
         {
             return item.Extension == ".svg";
+        }
+
+        private bool IsQoi(IFileSystemItem item)
+        {
+            return item.Extension == ".qoi";
         }
 
         private void Clear()
@@ -366,6 +387,8 @@ namespace Peek.FilePreviewer.Previewers
                 ".cr3",
 
                 ".svg",
+
+                ".qoi",
         };
     }
 }

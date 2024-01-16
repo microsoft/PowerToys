@@ -60,8 +60,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             if (isKeywordSearch || !TimeDateSettings.Instance.OnlyDateTimeNowGlobal)
             {
                 // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
-                long unixTimestamp = (long)dateTimeNowUtc.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-                long unixTimestampMilliseconds = (long)dateTimeNowUtc.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
+                long unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
+                long unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
                 int weekOfYear = calendar.GetWeekOfYear(dateTimeNow, DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
                 string era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
                 string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
@@ -217,7 +217,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.Ticks.ToString(CultureInfo.CurrentCulture),
+                        Value = dateTimeNow.ToFileTime().ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                         IconType = ResultIconType.DateTime,

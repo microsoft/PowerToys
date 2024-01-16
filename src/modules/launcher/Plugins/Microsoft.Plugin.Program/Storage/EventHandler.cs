@@ -14,10 +14,7 @@ namespace Microsoft.Plugin.Program.Storage
         // On the first occurrence of a different file path, the existing app path is to be returned without removing any more elements from the queue.
         public static async Task<string> GetAppPathFromQueueAsync(ConcurrentQueue<string> eventHandlingQueue, int dequeueDelay)
         {
-            if (eventHandlingQueue == null)
-            {
-                throw new ArgumentNullException(nameof(eventHandlingQueue));
-            }
+            ArgumentNullException.ThrowIfNull(eventHandlingQueue);
 
             string previousAppPath = string.Empty;
 

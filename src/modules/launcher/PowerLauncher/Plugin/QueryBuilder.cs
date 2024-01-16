@@ -12,10 +12,7 @@ namespace PowerLauncher.Plugin
     {
         public static Dictionary<PluginPair, Query> Build(string text)
         {
-            if (text == null)
-            {
-                throw new ArgumentNullException(nameof(text));
-            }
+            ArgumentNullException.ThrowIfNull(text);
 
             text = text.Trim();
             int longestActionKeywordLength = 0;

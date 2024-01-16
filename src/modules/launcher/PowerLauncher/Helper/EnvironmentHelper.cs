@@ -50,9 +50,9 @@ namespace PowerLauncher.Helper
                     string pVarKey = (string)pVar.Key;
                     string pVarValue = (string)pVar.Value;
 
-                    if (machineAndUserVars.ContainsKey(pVarKey))
+                    if (machineAndUserVars.TryGetValue(pVarKey, out string value))
                     {
-                        if (machineAndUserVars[pVarKey] != pVarValue)
+                        if (value != pVarValue)
                         {
                             // Variable value for this process differs form merged machine/user value.
                             _protectedProcessVariables.Add(pVarKey);

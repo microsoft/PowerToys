@@ -24,6 +24,7 @@ $versionExceptions = @(
 $nullVersionExceptions = @(
     "codicon.ttf",
     "e_sqlite3.dll",
+    "getfilesiginforedist.dll",
     "vcamp140_app.dll",
     "vcruntime140_app.dll",
     "vcruntime140_1_app.dll",

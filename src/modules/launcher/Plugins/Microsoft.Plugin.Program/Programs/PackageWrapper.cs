@@ -44,10 +44,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public static PackageWrapper GetWrapperFromPackage(Package package)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
+            ArgumentNullException.ThrowIfNull(package);
 
             string path;
             try

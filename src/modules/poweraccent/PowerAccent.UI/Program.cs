@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using interop;
 using ManagedCommon;
-using PowerAccent.Core.Tools;
 
 namespace PowerAccent.UI;
 

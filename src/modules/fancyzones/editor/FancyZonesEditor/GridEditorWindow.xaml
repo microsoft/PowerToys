@@ -72,8 +72,8 @@
                     TabIndex="1" />
                 <Button
                     HorizontalAlignment="Stretch"
-                    Click="OnSaveApplyTemplate"
-                    Content="{x:Static props:Resources.Save_Apply}"
+                    Click="OnSave"
+                    Content="{x:Static props:Resources.Save}"
                     Style="{StaticResource AccentButtonStyle}"
                     TabIndex="0" />
             </Grid>

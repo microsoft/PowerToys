@@ -29,19 +29,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             SettingsUtils = settingsUtils;
 
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 
-            if (measureToolSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(measureToolSettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(measureToolSettingsRepository);
 
             Settings = measureToolSettingsRepository.SettingsConfig;
 

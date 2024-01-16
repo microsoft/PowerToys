@@ -20,7 +20,7 @@ namespace ColorPicker.Behaviors
         private static readonly TimeSpan _animationTimeSmaller = _animationTime;
         private static readonly IEasingFunction _easeFunctionSmaller = new QuadraticEase() { EasingMode = EasingMode.EaseIn };
 
-        private static void CustomAnimation(DependencyProperty prop, IAnimatable sender, double fromValue, double toValue)
+        private static void CustomAnimation(DependencyProperty prop, FrameworkElement sender, double fromValue, double toValue)
         {
             // if the animation is to/from a value of 0, it will cancel the current animation
             DoubleAnimation move = null;

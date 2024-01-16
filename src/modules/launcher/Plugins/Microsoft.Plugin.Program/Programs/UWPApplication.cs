@@ -91,10 +91,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public Result Result(string query, string queryArguments, IPublicAPI api)
         {
-            if (api == null)
-            {
-                throw new ArgumentNullException(nameof(api));
-            }
+            ArgumentNullException.ThrowIfNull(api);
 
             var score = Score(query);
             if (score <= 0)
@@ -121,8 +118,8 @@ namespace Microsoft.Plugin.Program.Programs
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
             // Using CurrentCulture since this is user facing
-            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
-            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, LocationLocalized);
+            var toolTipTitle = result.Title;
+            var toolTipText = LocationLocalized;
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
@@ -130,10 +127,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
-            if (api == null)
-            {
-                throw new ArgumentNullException(nameof(api));
-            }
+            ArgumentNullException.ThrowIfNull(api);
 
             var contextMenus = new List<ContextMenuResult>();
 
@@ -145,7 +139,7 @@ namespace Microsoft.Plugin.Program.Programs
                             PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                             Title = Properties.Resources.wox_plugin_program_run_as_administrator,
                             Glyph = "\xE7EF",
-                            FontFamily = "Segoe MDL2 Assets",
+                            FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                             AcceleratorKey = Key.Enter,
                             AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                             Action = _ =>
@@ -170,7 +164,7 @@ namespace Microsoft.Plugin.Program.Programs
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.wox_plugin_program_open_containing_folder,
                     Glyph = "\xE838",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.E,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
@@ -186,7 +180,7 @@ namespace Microsoft.Plugin.Program.Programs
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = Properties.Resources.wox_plugin_program_open_in_console,
                 Glyph = "\xE756",
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = Key.C,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = (context) =>
@@ -229,10 +223,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public UWPApplication(IAppxManifestApplication manifestApp, UWP package)
         {
-            if (manifestApp == null)
-            {
-                throw new ArgumentNullException(nameof(manifestApp));
-            }
+            ArgumentNullException.ThrowIfNull(manifestApp);
 
             var hr = manifestApp.GetAppUserModelId(out var tmpUserModelId);
             UserModelId = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpUserModelId);
@@ -317,7 +308,7 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     parsed = prefix + key;
                 }
-                else if (key.StartsWith("/", StringComparison.Ordinal))
+                else if (key.StartsWith('/'))
                 {
                     parsed = prefix + "//" + key;
                 }

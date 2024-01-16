@@ -4,8 +4,7 @@
 
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
-using Peek.Common.Helpers;
+using ManagedCommon;
 using Peek.Common.Models;
 
 namespace Peek.UI.Extensions

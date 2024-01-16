@@ -71,7 +71,7 @@ namespace KBMEditor
         winrt::Windows::Foundation::IInspectable currentSingleKeyUI;
         std::mutex currentSingleKeyUI_mutex;
 
-        // Stores the UI element which is to be updated based on the shortcut entered (each stackpanel represents a row of keys)
+        // Stores the UI element which is to be updated based on the shortcut entered (each StackPanel represents a row of keys)
         winrt::Windows::Foundation::IInspectable currentShortcutUI1;
         winrt::Windows::Foundation::IInspectable currentShortcutUI2;
         std::mutex currentShortcutUI_mutex;

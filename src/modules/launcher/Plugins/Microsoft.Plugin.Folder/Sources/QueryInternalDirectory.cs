@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
@@ -15,6 +16,7 @@ namespace Microsoft.Plugin.Folder.Sources
 {
     public class QueryInternalDirectory : IQueryInternalDirectory
     {
+        private static readonly SearchValues<char> PathChars = SearchValues.Create("\\/");
         private readonly FolderSettings _settings;
         private readonly IQueryFileSystemInfo _queryFileSystemInfo;
         private readonly IDirectory _directory;
@@ -51,7 +53,7 @@ namespace Microsoft.Plugin.Folder.Sources
             {
                 // if folder doesn't exist, we want to take the last part and use it afterwards to help the user
                 // find the right folder.
-                int index = search.LastIndexOfAny(new char[] { '\\', '/' });
+                int index = search.AsSpan().LastIndexOfAny(PathChars);
 
                 // No slashes found, so probably not a folder
                 if (index <= 0 || index >= search.Length - 1)
@@ -73,7 +75,7 @@ namespace Microsoft.Plugin.Folder.Sources
             {
                 // folder exist, add \ at the end of doesn't exist
                 // Using Ordinal since this is internal and is used for a symbol
-                if (!search.EndsWith(@"\", StringComparison.Ordinal))
+                if (!search.EndsWith('\\'))
                 {
                     search += @"\";
                 }
@@ -84,10 +86,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public IEnumerable<IItemResult> Query(string search)
         {
-            if (search == null)
-            {
-                throw new ArgumentNullException(nameof(search));
-            }
+            ArgumentNullException.ThrowIfNull(search);
 
             var processed = Process(search);
 

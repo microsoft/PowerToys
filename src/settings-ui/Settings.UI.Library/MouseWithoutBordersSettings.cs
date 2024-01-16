@@ -14,6 +14,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string ModuleName = "MouseWithoutBorders";
 
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            MaxDepth = 0,
+            IncludeFields = true,
+        };
+
         [JsonPropertyName("properties")]
         public MouseWithoutBordersProperties Properties { get; set; }
 
@@ -91,17 +98,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public virtual void Save(ISettingsUtils settingsUtils)
         {
             // Save settings to file
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                MaxDepth = 0,
-                IncludeFields = true,
-            };
+            var options = _serializerOptions;
 
-            if (settingsUtils == null)
-            {
-                throw new ArgumentNullException(nameof(settingsUtils));
-            }
+            ArgumentNullException.ThrowIfNull(settingsUtils);
 
             settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }

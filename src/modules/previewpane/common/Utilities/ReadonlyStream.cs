@@ -242,10 +242,7 @@ namespace Common.Utilities
         [MemberNotNull(nameof(_stream))]
         private void CheckDisposed()
         {
-            if (_stream == null)
-            {
-                throw new ObjectDisposedException(nameof(ReadonlyStream));
-            }
+            ObjectDisposedException.ThrowIf(_stream == null, this);
         }
     }
 }

@@ -742,11 +742,13 @@ namespace MouseWithoutBorders
             LoadMachines();
         }
 
+        internal static readonly string[] Separator = new string[] { "\r\n" };
+
         internal void ShowTip(ToolTipIcon icon, string text, int duration)
         {
             int x = 0;
             text += "\r\n ";
-            int y = (-text.Split(new string[] { "\r\n" }, StringSplitOptions.None).Length * 15) - 30;
+            int y = (-text.Split(Separator, StringSplitOptions.None).Length * 15) - 30;
 
             toolTipManual.Hide(this);
 

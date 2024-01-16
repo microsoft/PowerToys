@@ -32,6 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "GA",
             "GD",
             "NL",
+            "EL",
             "EST",
             "FI",
             "FR",
@@ -75,10 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public PowerAccentViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             GeneralSettingsConfig = settingsRepository.SettingsConfig;

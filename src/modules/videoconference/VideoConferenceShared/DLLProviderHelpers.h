@@ -28,6 +28,6 @@
             return result;                                         \
         }
 
-#define DECLAR_DLL_PROVIDER_END \
+#define DECLARE_DLL_PROVIDER_END \
     }                           \
     ;

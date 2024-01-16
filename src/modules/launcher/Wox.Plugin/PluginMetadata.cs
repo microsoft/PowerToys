@@ -65,6 +65,8 @@ namespace Wox.Plugin
 
         public string IcoPathLight { get; set; }
 
+        public bool DynamicLoading { get; set; }
+
         public override string ToString()
         {
             return Name;

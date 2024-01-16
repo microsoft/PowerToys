@@ -7,6 +7,7 @@ using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -22,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
-        public MainWindow(bool isDark, bool createHidden = false)
+        public MainWindow(bool createHidden = false)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
@@ -35,12 +36,6 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("Assets\\Settings\\icon.ico");
-
-            // Passed by parameter, as it needs to be evaluated ASAP, otherwise there is a white flash
-            if (isDark)
-            {
-                ThemeHelpers.SetImmersiveDarkMode(hWnd, isDark);
-            }
 
             var placement = Utils.DeserializePlacementOrDefault(hWnd);
             if (createHidden)
@@ -106,7 +101,22 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.Overview, App.IsDarkTheme()));
+                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.Overview));
+                }
+
+                App.GetOobeWindow().Activate();
+            });
+
+            // open whats new window
+            ShellPage.SetOpenWhatIsNewCallback(() =>
+            {
+                if (App.GetOobeWindow() == null)
+                {
+                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.WhatsNew));
+                }
+                else
+                {
+                    App.GetOobeWindow().SetAppWindow(OOBE.Enums.PowerToysModules.WhatsNew);
                 }
 
                 App.GetOobeWindow().Activate();
@@ -147,8 +157,6 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             this.InitializeComponent();
-
-            SetTheme(isDark);
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
@@ -208,11 +216,6 @@ namespace Microsoft.PowerToys.Settings.UI
         internal void EnsurePageIsSelected()
         {
             ShellPage.EnsurePageIsSelected();
-        }
-
-        private void SetTheme(bool isDark)
-        {
-            shellPage.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
     }
 }

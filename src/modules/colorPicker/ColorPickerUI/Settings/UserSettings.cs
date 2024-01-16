@@ -22,7 +22,7 @@ namespace ColorPicker.Settings
     [Export(typeof(IUserSettings))]
     public class UserSettings : IUserSettings
     {
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private const string ColorPickerModuleName = "ColorPicker";
         private const string ColorPickerHistoryFilename = "colorHistory.json";
         private const string DefaultActivationShortcut = "Ctrl + Break";
@@ -35,6 +35,11 @@ namespace ColorPicker.Settings
         private readonly object _loadingSettingsLock = new object();
 
         private bool _loadingColorsHistory;
+
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
 
         [ImportingConstructor]
         public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
@@ -58,7 +63,7 @@ namespace ColorPicker.Settings
         {
             if (!_loadingColorsHistory)
             {
-                _settingsUtils.SaveSettings(JsonSerializer.Serialize(ColorHistory, new JsonSerializerOptions { WriteIndented = true }), ColorPickerModuleName, ColorPickerHistoryFilename);
+                _settingsUtils.SaveSettings(JsonSerializer.Serialize(ColorHistory, _serializerOptions), ColorPickerModuleName, ColorPickerHistoryFilename);
             }
         }
 

@@ -2,7 +2,7 @@
 	<Import Project="..\..\..\Version.props" />
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net7.0-windows10.0.20348.0</TargetFramework>
+		<TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
 		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<Platforms>x86;x64;arm64</Platforms>
@@ -38,10 +38,10 @@
 
 	<!-- SelfContained=true requires RuntimeIdentifier to be set -->
 	<PropertyGroup Condition="'$(Platform)'=='x64'">
-		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Platform)'=='ARM64'">
-		<RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+		<RuntimeIdentifier>win-arm64</RuntimeIdentifier>
 	</PropertyGroup>
 	
 	<ItemGroup>
@@ -53,11 +53,6 @@
 		<CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
 		<CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-	</PropertyGroup>
-
-	<!-- Needed for CommunityToolkit.Labs.WinUI.SettingsControls, on local builds and PR CI. -->
-	<PropertyGroup Condition="'$(IsPipeline)' == ''">
-		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json</RestoreAdditionalProjectSources>
 	</PropertyGroup>
 	
 	<ItemGroup>

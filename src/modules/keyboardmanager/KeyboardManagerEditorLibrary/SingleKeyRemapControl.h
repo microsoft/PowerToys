@@ -35,6 +35,8 @@ private:
     // Function to set the accessible names for all the controls in a row
     static void UpdateAccessibleNames(StackPanel sourceColumn, StackPanel mappedToColumn, Button deleteButton, int rowIndex);
 
+    void TextToMapChangedHandler(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e);
+
 public:
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
@@ -52,7 +54,7 @@ public:
     SingleKeyRemapControl(StackPanel table, StackPanel row, const int colIndex);
 
     // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-    static void AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey = 0, const KeyShortcutUnion newKey = (DWORD)0);
+    static void AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey = 0, const KeyShortcutTextUnion newKey = (DWORD)0);
 
     // Function to return the stack panel element of the SingleKeyRemapControl. This is the externally visible UI element which can be used to add it to other layouts
     winrt::Windows::UI::Xaml::Controls::StackPanel getSingleKeyRemapControl();

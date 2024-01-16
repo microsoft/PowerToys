@@ -194,4 +194,7 @@
   <data name="ContextMenuItemsAvailable" xml:space="preserve">
     <value>Appended controls available</value>
   </data>
+  <data name="PluginKeywords" xml:space="preserve">
+    <value>Plugin keywords</value>
+  </data>
 </root>

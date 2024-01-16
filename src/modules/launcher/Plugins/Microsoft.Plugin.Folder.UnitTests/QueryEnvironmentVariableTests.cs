@@ -14,7 +14,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
     [TestClass]
     public class QueryEnvironmentVariableTests
     {
-        private static IQueryEnvironmentVariable _queryEnvironmentVariable;
+        private static QueryEnvironmentVariable _queryEnvironmentVariable;
         private static MockFileSystem _fileSystem;
 
         [TestInitialize]

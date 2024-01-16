@@ -170,6 +170,7 @@ inline registry::ChangeSet getSvgThumbnailHandlerChangeSet(const std::wstring in
                                   L"SvgThumbnailProvider",
                                   L"Svg Thumbnail Provider",
                                   NonLocalizable::ExtSVG,
+                                  L"image",
                                   L"Picture");
 }
 
@@ -222,7 +223,9 @@ inline registry::ChangeSet getQoiThumbnailHandlerChangeSet(const std::wstring in
                                   (fs::path{ installationDir } / LR"d(PowerToys.QoiThumbnailProviderCpp.dll)d").wstring(),
                                   L"QoiThumbnailProvider",
                                   L"Qoi Thumbnail Provider",
-                                  NonLocalizable::ExtQOI);
+                                  NonLocalizable::ExtQOI,
+                                  L"image",
+                                  L"Picture");
 }
 
 inline registry::ChangeSet getRegistryPreviewSetDefaultAppChangeSet(const std::wstring installationDir, const bool perUser)

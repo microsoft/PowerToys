@@ -9,13 +9,19 @@ namespace UIHelpers
     void SetFocusOnTypeButtonInLastRow(StackPanel& parent, long colCount)
     {
         // First element in the last row (StackPanel)
-        StackPanel firstElementInLastRow = parent.Children().GetAt(parent.Children().Size() - 1).as<StackPanel>().Children().GetAt(0).as<StackPanel>();
+        auto lastHotKeyLine = parent.Children().GetAt(parent.Children().Size() - 1).as<StackPanel>();
 
-        // Type button is the first child in the StackPanel
-        Button firstTypeButtonInLastRow = firstElementInLastRow.Children().GetAt(0).as<Button>();
+        // Get "To" Column
+        auto toColumn = lastHotKeyLine.Children().GetAt(2).as<StackPanel>();
+
+        // Get first line in "To" Column
+        auto firstLineIntoColumn = toColumn.Children().GetAt(0).as<StackPanel>();
+
+        // Get Type Button from the first line
+        Button typeButton = firstLineIntoColumn.Children().GetAt(1).as<Button>();
 
         // Set programmatic focus on the button
-        firstTypeButtonInLastRow.Focus(FocusState::Programmatic);
+        typeButton.Focus(FocusState::Programmatic);
     }
 
     RECT GetForegroundWindowDesktopRect()
@@ -68,4 +74,22 @@ namespace UIHelpers
 
         return boxList;
     }
+
+#ifndef NDEBUG
+    std::vector<std::wstring> GetChildrenNames(StackPanel& s)
+    {
+        std::vector<std::wstring> result;
+        for (auto child : s.Children())
+        {
+            std::wstring nameAndClass =
+                child.as<IFrameworkElement>().Name().c_str();
+
+            nameAndClass += L" ";
+            nameAndClass += winrt::get_class_name(child.try_as<winrt::Windows::Foundation::IInspectable>()).c_str();
+            result.push_back(nameAndClass);
+        }
+
+        return result;
+    }
+#endif
 }
