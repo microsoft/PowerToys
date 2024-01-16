@@ -8,6 +8,7 @@ accctrl
 Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
+ACCESSTOKEN
 aclapi
 AClient
 AColumn
@@ -161,7 +162,6 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
-CHT
 cidl
 cim
 CImage
@@ -182,6 +182,7 @@ clrcall
 CLSCTX
 Clusion
 cmder
+CMDNOTFOUNDMODULEINTERFACE
 Cmds
 CMIC
 CMINVOKECOMMANDINFO
@@ -219,7 +220,6 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
-constexpr
 consts
 contentdialog
 contentfiles
@@ -319,7 +319,6 @@ DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-DEU
 devblogs
 devdocs
 devenum
@@ -508,6 +507,7 @@ GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
+getfilesiginforedist
 GETICON
 GETMINMAXINFO
 GETPROPERTYSTOREFLAGS
@@ -538,7 +538,6 @@ Hanzi
 Hardlines
 hardlinks
 HARDWAREINPUT
-hashcode
 Hashset
 hashtag
 HASHVAL
@@ -557,7 +556,6 @@ hcwhite
 hdc
 hdrop
 hdwwiz
-HEB
 Helpline
 helptext
 HGFE
@@ -720,7 +718,6 @@ jif
 jjw
 jobject
 jpe
-JPN
 jpnime
 Jsons
 jsonval
@@ -746,12 +743,11 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
-LAlt
-Lambson
 languagesjson
-langword
+lastbuildstate
 lastcodeanalysissucceeded
 Lastdevice
+LASTEXITCODE
 LAYOUTRTL
 LCIDTo
 lcl
@@ -907,6 +903,8 @@ MOUSEHWHEEL
 MOUSEINPUT
 MOVESIZEEND
 MOVESIZESTART
+MOZILLAPL
+MOZPL
 mpmc
 MRM
 MRT
@@ -922,6 +920,7 @@ MSIFASTINSTALL
 MSIHANDLE
 msiquery
 MSIRESTARTMANAGERCONTROL
+msixbundle
 MSIXCA
 MSLLHOOKSTRUCT
 Mso
@@ -972,6 +971,7 @@ newdev
 newitem
 newpath
 newrow
+newsgroups
 NIF
 NLD
 NLog
@@ -984,7 +984,6 @@ NOCLOSEPROCESS
 NOCOALESCE
 NOCOPYBITS
 nodeca
-nodiscard
 nodoc
 NODRAWCAPTION
 NODRAWICON
@@ -1093,7 +1092,6 @@ pcch
 pcelt
 pch
 PCIDLIST
-pcs
 PCWSTR
 pdisp
 pdo
@@ -1277,6 +1275,7 @@ reparented
 reparenting
 reparse
 reportbug
+reportfileaccesses
 requery
 requerying
 rescap
@@ -1304,7 +1303,6 @@ RKey
 RNumber
 roadmap
 rop
-roundf
 ROUNDSMALL
 rpcrt
 RRF
@@ -1320,12 +1318,11 @@ rundll
 rungameid
 RUNLEVEL
 runsettings
+runspace
 runtimeclass
 runtimeobject
 runtimepack
 runtimes
-RUS
-RValue
 rvm
 rwin
 rwl
@@ -1506,7 +1503,6 @@ subquery
 Superbar
 sut
 svchost
-SVE
 SVGIn
 SVGIO
 svgz
@@ -1572,6 +1568,8 @@ timediff
 timeunion
 timeutil
 Titlecase
+tkcontrols
+tkconverters
 TKey
 TLayout
 tlb
@@ -1579,7 +1577,6 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
-tonos
 toolkitcontrols
 toolkitconverters
 Toolset
@@ -1610,6 +1607,7 @@ UAL
 uap
 udit
 uefi
+uesc
 UHash
 UIA
 UIEx
@@ -1618,6 +1616,7 @@ ums
 uncompilable
 UNCPRIORITY
 UNDNAME
+unescape
 UNICODETEXT
 uninstantiated
 uniquifier
@@ -1636,6 +1635,7 @@ UOI
 Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
+urld
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
@@ -1715,7 +1715,6 @@ wcsnicmp
 WDA
 wdp
 wdupenv
-weakme
 webbrowsers
 webcam
 webpage
@@ -1724,7 +1723,6 @@ wekyb
 Wevtapi
 wgpocpl
 WIC
-wifi
 wil
 winapi
 winappdriver
@@ -1852,9 +1850,6 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-newsgroups
-MOZILLAPL
-MOZPL
 
 # FALSE POSITIVES
 

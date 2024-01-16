@@ -8,6 +8,7 @@ using System.Text;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Base64;
 using Community.PowerToys.Run.Plugin.ValueGenerator.GUID;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Hashing;
+using Community.PowerToys.Run.Plugin.ValueGenerator.Uri;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -126,6 +127,69 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
                 string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
                 request = new Base64DecodeRequest(content);
+            }
+            else if (command.StartsWith("esc:", StringComparison.OrdinalIgnoreCase))
+            {
+                // Escape things
+                if (command.Equals("esc:data", StringComparison.OrdinalIgnoreCase))
+                {
+                    int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                    string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                    request = new DataEscapeRequest(content);
+                }
+                else if (command.Equals("esc:hex", StringComparison.OrdinalIgnoreCase))
+                {
+                    int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                    string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+
+                    // This is only for single chars
+                    if (content.Length > 1)
+                    {
+                        throw new ArgumentException($"Invalid Query: {query.RawUserQuery} (To many characters.)");
+                    }
+                    else if (content.Length == 0)
+                    {
+                        throw new FormatException($"Invalid Query: {query.RawUserQuery}");
+                    }
+
+                    request = new HexEscapeRequest(content);
+                }
+                else
+                {
+                    throw new FormatException($"Invalid Query: {query.RawUserQuery}");
+                }
+            }
+            else if (command.StartsWith("uesc:", StringComparison.OrdinalIgnoreCase))
+            {
+                // Unescape things
+                if (command.Equals("uesc:data", StringComparison.OrdinalIgnoreCase))
+                {
+                    int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                    string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                    request = new DataUnescapeRequest(content);
+                }
+                else if (command.Equals("uesc:hex", StringComparison.OrdinalIgnoreCase))
+                {
+                    int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                    string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                    request = new HexUnescapeRequest(content);
+                }
+                else
+                {
+                    throw new FormatException($"Invalid Query: {query.RawUserQuery}");
+                }
+            }
+            else if (command.Equals("url", StringComparison.OrdinalIgnoreCase))
+            {
+                int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                request = new UrlEncodeRequest(content);
+            }
+            else if (command.Equals("urld", StringComparison.OrdinalIgnoreCase))
+            {
+                int commandIndex = query.RawUserQuery.IndexOf(command, StringComparison.InvariantCultureIgnoreCase);
+                string content = query.RawUserQuery.Substring(commandIndex + command.Length).Trim();
+                request = new UrlDecodeRequest(content);
             }
             else
             {
