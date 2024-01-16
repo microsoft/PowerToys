@@ -1296,14 +1296,15 @@ EXHIBIT A -Mozilla Public License.
 
 ## NuGet Packages used by PowerToys
 
-- CommunityToolkit.Mvvm 8.2.0
-- CommunityToolkit.WinUI.Animations 8.0.230907
-- CommunityToolkit.WinUI.Controls.Primitives 8.0.230907
-- CommunityToolkit.WinUI.Controls.Segmented 8.0.230907
-- CommunityToolkit.WinUI.Controls.SettingsControls 8.0.230907
-- CommunityToolkit.WinUI.Controls.Sizers 8.0.230907
-- CommunityToolkit.WinUI.Converters 8.0.230907
-- CommunityToolkit.WinUI.Extensions 8.0.230907
+- CommunityToolkit.Mvvm 8.2.2
+- CommunityToolkit.WinUI.Animations 8.0.240109
+- CommunityToolkit.WinUI.Collections 8.0.240109
+- CommunityToolkit.WinUI.Controls.Primitives 8.0.240109
+- CommunityToolkit.WinUI.Controls.Segmented 8.0.240109
+- CommunityToolkit.WinUI.Controls.SettingsControls 8.0.240109
+- CommunityToolkit.WinUI.Controls.Sizers 8.0.240109
+- CommunityToolkit.WinUI.Converters 8.0.240109
+- CommunityToolkit.WinUI.Extensions 8.0.240109
 - CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
 - CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
 - ControlzEx 6.0.0
@@ -1313,7 +1314,7 @@ EXHIBIT A -Mozilla Public License.
 - Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
 - LazyCache 2.4.0
 - Mages 2.0.1
-- Markdig.Signed 0.27.0
+- Markdig.Signed 0.34.0
 - Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
 - Microsoft.Data.Sqlite 8.0.0
 - Microsoft.Extensions.DependencyInjection 8.0.0
@@ -1322,24 +1323,24 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Logging 8.0.0
 - Microsoft.Extensions.Logging.Abstractions 8.0.0
 - Microsoft.Extensions.ObjectPool 8.0.0
-- Microsoft.NET.Test.Sdk 17.6.3
+- Microsoft.NET.Test.Sdk 17.8.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2088.41
 - Microsoft.Win32.SystemEvents 8.0.0
 - Microsoft.Windows.Compatibility 8.0.0
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.4
-- Microsoft.Windows.SDK.BuildTools 10.0.22621.756
+- Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
-- Microsoft.WindowsAppSDK 1.4.231115000
+- Microsoft.WindowsAppSDK 1.4.231219000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
 - Moq 4.18.4
 - MSTest.TestAdapter 3.1.1
 - MSTest.TestFramework 3.1.1
-- NLog.Extensions.Logging 5.0.4
-- NLog.Schema 5.0.4
+- NLog.Extensions.Logging 5.3.8
+- NLog.Schema 5.2.8
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.33.0
 - StreamJsonRpc 2.14.24
@@ -1368,4 +1369,3 @@ EXHIBIT A -Mozilla Public License.
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
 - WPF-UI 3.0.0-preview.13
-
