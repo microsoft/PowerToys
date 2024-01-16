@@ -39,4 +39,7 @@
   <ItemGroup>
     <ResourceCompile Include="..\FancyZonesLib\Generated Files\fancyzones.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
 </Project>
