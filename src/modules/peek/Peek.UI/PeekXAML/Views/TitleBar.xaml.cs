@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
@@ -131,7 +132,7 @@ namespace Peek.UI.Views
         }
 
         [RelayCommand]
-        private async void LaunchDefaultAppButtonAsync()
+        private async Task LaunchDefaultAppButtonAsync()
         {
             if (Item is not FileItem fileItem)
             {
