@@ -68,11 +68,11 @@ public:
     // constructor
     ShortcutControl(StackPanel table, StackPanel row, const int colIndex, TextBox targetApp);
 
-    // Function to that will CreateDetectShortcutWindow, created here to it can be done automantically when "new shortcut" is clicked.
+    // Function to that will CreateDetectShortcutWindow, created here to it can be done automatically when "new shortcut" is clicked.
     void OpenNewShortcutControlRow(StackPanel table, StackPanel row);
 
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-    static ShortcutControl& AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"", bool isHidden = false, bool closeOnDelete = false, std::function<void()> fn = nullptr, const std::wstring& actio = L"");
+    static ShortcutControl& AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"", bool isHidden = false, bool closeOnDelete = false, std::function<void()> fn = nullptr, const std::wstring& action = L"");
 
     // Function to delete the shortcut control
     static void ShortcutControl::DeleteShortcutControl(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, int index);

@@ -846,7 +846,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         }
 
         Shortcut tempShortcut;
-        //StackPanel rowx = row; // I DO NOT KNOW
         CreateNewTempShortcut(static_cast<StackPanel>(row), tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
     });
@@ -863,7 +862,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
             return;
         }
         Shortcut tempShortcut;
-        //StackPanel rowx = row; // I DO NOT KNOW
         CreateNewTempShortcut(static_cast<StackPanel>(row), tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
     });
@@ -881,7 +879,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         }
 
         Shortcut tempShortcut;
-        //StackPanel rowx = row; // I DO NOT KNOW
         CreateNewTempShortcut(static_cast<StackPanel>(row), tempShortcut, rowIndex);
 
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
