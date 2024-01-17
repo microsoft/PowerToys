@@ -11,6 +11,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
     [TestClass]
     public class InputInterpreterTests
     {
+#pragma warning disable CA1861 // Avoid constant arrays as arguments
         [DataTestMethod]
         [DataRow(new string[] { "1,5'" }, new string[] { "1,5", "'" })]
         [DataRow(new string[] { "1.5'" }, new string[] { "1.5", "'" })]
@@ -18,6 +19,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataRow(new string[] { "1'5\"" }, new string[] { "1", "'", "5", "\"" })]
         [DataRow(new string[] { "5\"" }, new string[] { "5", "\"" })]
         [DataRow(new string[] { "1'5" }, new string[] { "1", "'", "5" })]
+        [DataRow(new string[] { "-1,5'" }, new string[] { "-1,5", "'" })]
+        [DataRow(new string[] { "-1.5'" }, new string[] { "-1.5", "'" })]
+        [DataRow(new string[] { "-1'" }, new string[] { "-1", "'" })]
+        [DataRow(new string[] { "-1'5\"" }, new string[] { "-1", "'", "5", "\"" })]
+        [DataRow(new string[] { "-5\"" }, new string[] { "-5", "\"" })]
+        [DataRow(new string[] { "-1'5" }, new string[] { "-1", "'", "5" })]
         public void RegexSplitsInput(string[] input, string[] expectedResult)
         {
             string[] shortsplit = InputInterpreter.RegexSplitter(input);
@@ -26,6 +33,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
 
         [DataTestMethod]
         [DataRow(new string[] { "1cm", "to", "mm" }, new string[] { "1", "cm", "to", "mm" })]
+        [DataRow(new string[] { "-1cm", "to", "mm" }, new string[] { "-1", "cm", "to", "mm" })]
         public void InsertsSpaces(string[] input, string[] expectedResult)
         {
             InputInterpreter.InputSpaceInserter(ref input);
@@ -37,6 +45,10 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataRow(new string[] { "1\"", "in", "cm" }, new string[] { "1", "inch", "in", "cm" })]
         [DataRow(new string[] { "1'6", "in", "cm" }, new string[] { "1.5", "foot", "in", "cm" })]
         [DataRow(new string[] { "1'6\"", "in", "cm" }, new string[] { "1.5", "foot", "in", "cm" })]
+        [DataRow(new string[] { "-1'", "in", "cm" }, new string[] { "-1", "foot", "in", "cm" })]
+        [DataRow(new string[] { "-1\"", "in", "cm" }, new string[] { "-1", "inch", "in", "cm" })]
+        [DataRow(new string[] { "-1'6", "in", "cm" }, new string[] { "-1.5", "foot", "in", "cm" })]
+        [DataRow(new string[] { "-1'6\"", "in", "cm" }, new string[] { "-1.5", "foot", "in", "cm" })]
         public void HandlesShorthandFeetInchNotation(string[] input, string[] expectedResult)
         {
             InputInterpreter.ShorthandFeetInchHandler(ref input, CultureInfo.InvariantCulture);
@@ -58,6 +70,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataRow(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "°f", "in", "DegreeCelsius" })]
         [DataRow(new string[] { "5", "c", "in", "f" }, new string[] { "5", "°c", "in", "°f" })]
         [DataRow(new string[] { "5", "f", "in", "c" }, new string[] { "5", "°f", "in", "°c" })]
+#pragma warning restore CA1861 // Avoid constant arrays as arguments
         public void PrefixesDegrees(string[] input, string[] expectedResult)
         {
             InputInterpreter.DegreePrefixer(ref input);
@@ -67,6 +80,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataTestMethod]
         [DataRow("a f in c")]
         [DataRow("12 f in")]
+        [DataRow("1-2 f in c")]
+        [DataRow("12- f in c")]
         public void ParseInvalidQueries(string queryString)
         {
             Query query = new Query(queryString);
@@ -77,6 +92,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataTestMethod]
         [DataRow("12 f in c", 12)]
         [DataRow("10m to cm", 10)]
+        [DataRow("-12 f in c", -12)]
+        [DataRow("-10m to cm", -10)]
         public void ParseValidQueries(string queryString, double result)
         {
             Query query = new Query(queryString);

@@ -887,14 +887,14 @@ namespace MouseWithoutBorders.Class
 
                 if (!string.IsNullOrEmpty(Setting.Values.Name2IP))
                 {
-                    string[] name2ip = Setting.Values.Name2IP.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] name2ip = Setting.Values.Name2IP.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
                     string[] nameNip;
 
                     if (name2ip != null)
                     {
                         foreach (string st in name2ip)
                         {
-                            nameNip = st.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            nameNip = st.Split(BlankSeparator, StringSplitOptions.RemoveEmptyEntries);
 
                             if (nameNip != null && nameNip.Length >= 2 && nameNip[0].Trim().Equals(machineName, StringComparison.OrdinalIgnoreCase)
                                 && IPAddress.TryParse(nameNip[1].Trim(), out IPAddress ip) && !validAddressesSt.Contains("[" + ip.ToString() + "]")
@@ -1063,7 +1063,7 @@ namespace MouseWithoutBorders.Class
 
             List<IPAddress> localIPv4Addresses = GetMyIPv4Addresses().ToList();
 
-            if (!localIPv4Addresses.Any())
+            if (localIPv4Addresses.Count == 0)
             {
                 Common.Log($"No IPv4 resolved from the local machine: {Common.MachineName}");
                 return true;
@@ -1234,6 +1234,8 @@ namespace MouseWithoutBorders.Class
         }
 
         private long lastRemoteMachineID;
+        internal static readonly string[] Separator = new string[] { "\r\n" };
+        internal static readonly char[] BlankSeparator = new char[] { ' ' };
 
         private void MainTCPRoutine(TcpSk tcp, string machineName, bool isClient)
         {

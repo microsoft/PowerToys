@@ -22,7 +22,9 @@ namespace MouseWithoutBorders
 {
     internal partial class Common
     {
-        private static SymmetricAlgorithm symAl;
+#pragma warning disable SYSLIB0021
+        private static AesCryptoServiceProvider symAl;
+#pragma warning restore SYSLIB0021
         private static string myKey;
         private static uint magicNumber;
         private static Random ran = new(); // Used for non encryption related functionality.

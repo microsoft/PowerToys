@@ -11,6 +11,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.Plugin.Shell.Properties;
@@ -32,6 +33,8 @@ namespace Microsoft.Plugin.Shell
 
         private readonly ShellPluginSettings _settings;
         private readonly PluginJsonStorage<ShellPluginSettings> _storage;
+
+        private static readonly CompositeFormat WoxPluginCmdCmdHasBeenExecutedTimes = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times);
 
         private string IconPath { get; set; }
 
@@ -71,6 +74,7 @@ namespace Microsoft.Plugin.Shell
         };
 
         private PluginInitContext _context;
+        private static readonly char[] Separator = new[] { ' ' };
 
         public Main()
         {
@@ -123,7 +127,7 @@ namespace Microsoft.Plugin.Shell
                     if (m.Key == cmd)
                     {
                         // Using CurrentCulture since this is user facing
-                        result.SubTitle = Properties.Resources.wox_plugin_cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times, m.Value);
+                        result.SubTitle = Properties.Resources.wox_plugin_cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, WoxPluginCmdCmdHasBeenExecutedTimes, m.Value);
                         return null;
                     }
 
@@ -132,7 +136,7 @@ namespace Microsoft.Plugin.Shell
                         Title = m.Key,
 
                         // Using CurrentCulture since this is user facing
-                        SubTitle = Properties.Resources.wox_plugin_cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times, m.Value),
+                        SubTitle = Properties.Resources.wox_plugin_cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, WoxPluginCmdCmdHasBeenExecutedTimes, m.Value),
                         IcoPath = IconPath,
                         Action = c =>
                         {
@@ -171,7 +175,7 @@ namespace Microsoft.Plugin.Shell
                     Title = m.Key,
 
                     // Using CurrentCulture since this is user facing
-                    SubTitle = Properties.Resources.wox_plugin_cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times, m.Value),
+                    SubTitle = Properties.Resources.wox_plugin_cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, WoxPluginCmdCmdHasBeenExecutedTimes, m.Value),
                     IcoPath = IconPath,
                     Action = c =>
                     {
@@ -285,7 +289,7 @@ namespace Microsoft.Plugin.Shell
                 }
                 else
                 {
-                    var parts = command.Split(new[] { ' ' }, 2);
+                    var parts = command.Split(Separator, 2);
                     if (parts.Length == 2)
                     {
                         var filename = parts[0];

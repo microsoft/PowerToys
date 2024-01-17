@@ -6,9 +6,13 @@
 
 #include <array>
 #include <optional>
+#include <functional>
+#include <unordered_map>
 
 // Initializes and runs windows message loop
-inline int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_ms = {})
+inline int run_message_loop(const bool until_idle = false,
+                            const std::optional<uint32_t> timeout_ms = {},
+                            std::unordered_map<DWORD, std::function<void()>> wm_app_msg_callbacks = {})
 {
     MSG msg{};
     bool stop = false;
@@ -24,11 +28,16 @@ inline int run_message_loop(const bool until_idle = false, const std::optional<u
         DispatchMessageW(&msg);
         stop = until_idle && !PeekMessageW(&msg, nullptr, 0, 0, PM_NOREMOVE);
         stop = stop || (msg.message == WM_TIMER && msg.wParam == timerId);
+
+        if (auto it = wm_app_msg_callbacks.find(msg.message); it != end(wm_app_msg_callbacks))
+            it->second();
     }
+
     if (timeout_ms.has_value())
     {
         KillTimer(nullptr, timerId);
     }
+
     return static_cast<int>(msg.wParam);
 }
 
@@ -60,7 +69,7 @@ template<typename T>
 inline T GetWindowCreateParam(LPARAM lparam)
 {
     static_assert(sizeof(T) <= sizeof(void*));
-    T data{ static_cast <T>(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams) };
+    T data{ static_cast<T>(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams) };
     return data;
 }
 
@@ -74,5 +83,5 @@ inline void StoreWindowParam(HWND window, T data)
 template<typename T>
 inline T GetWindowParam(HWND window)
 {
-    return reinterpret_cast <T>(GetWindowLongPtrW(window, GWLP_USERDATA));
+    return reinterpret_cast<T>(GetWindowLongPtrW(window, GWLP_USERDATA));
 }

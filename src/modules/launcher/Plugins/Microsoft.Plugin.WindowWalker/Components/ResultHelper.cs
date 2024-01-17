@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using System;
 using System.Collections.Generic;
 using Microsoft.Plugin.WindowWalker.Properties;
 using Wox.Infrastructure;
@@ -26,7 +27,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             foreach (SearchResult x in searchControllerResults)
             {
-                if (x.Result.Process.Name.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "explorer.exe" && x.Result.Process.IsShellProcess)
+                if (string.Equals(x.Result.Process.Name, "explorer.exe", StringComparison.OrdinalIgnoreCase) && x.Result.Process.IsShellProcess)
                 {
                     addExplorerInfo = true;
                 }

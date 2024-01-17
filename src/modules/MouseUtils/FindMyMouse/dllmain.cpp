@@ -23,6 +23,8 @@ namespace
     const wchar_t JSON_KEY_SPOTLIGHT_INITIAL_ZOOM[] = L"spotlight_initial_zoom";
     const wchar_t JSON_KEY_EXCLUDED_APPS[] = L"excluded_apps";
     const wchar_t JSON_KEY_SHAKING_MINIMUM_DISTANCE[] = L"shaking_minimum_distance";
+    const wchar_t JSON_KEY_SHAKING_INTERVAL_MS[] = L"shaking_interval_ms";
+    const wchar_t JSON_KEY_SHAKING_FACTOR[] = L"shaking_factor";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
 }
 
@@ -395,6 +397,42 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         catch (...)
         {
             Logger::warn("Failed to initialize Shaking Minimum Distance from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Shaking Interval Milliseconds
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHAKING_INTERVAL_MS);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value >= 0)
+            {
+                findMyMouseSettings.shakeIntervalMs = value;
+            }
+            else
+            {
+                throw std::runtime_error("Invalid Shaking Interval Milliseconds value");
+            }
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Shaking Interval Milliseconds from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Shaking Factor
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHAKING_FACTOR);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value >= 0)
+            {
+                findMyMouseSettings.shakeFactor = value;
+            }
+            else
+            {
+                throw std::runtime_error("Invalid Shaking Factor value");
+            }
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Shaking Factor from settings. Will use default value");
         }
 
         try

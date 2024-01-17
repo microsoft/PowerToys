@@ -308,7 +308,7 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     parsed = prefix + key;
                 }
-                else if (key.StartsWith("/", StringComparison.Ordinal))
+                else if (key.StartsWith('/'))
                 {
                     parsed = prefix + "//" + key;
                 }

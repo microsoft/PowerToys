@@ -63,7 +63,7 @@ namespace Microsoft.Plugin.Indexer
             },
         };
 
-        private IContextMenu _contextMenuLoader;
+        private ContextMenuLoader _contextMenuLoader;
         private bool disposedValue;
 
         // To save the configurations of plugins

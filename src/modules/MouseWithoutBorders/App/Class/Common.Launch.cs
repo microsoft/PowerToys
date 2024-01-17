@@ -84,12 +84,11 @@ namespace MouseWithoutBorders
             }
         }
 
-        [SuppressMessage("Microsoft.Globalization", "CA1304:SpecifyCultureInfo", MessageId = "System.String.ToLower", Justification = "Dotnet port with style preservation")]
         internal static int CreateProcessInInputDesktopSession(string commandLine, string arg, string desktop, short wShowWindow, bool lowIntegrity = false)
 
         // As user who runs explorer.exe
         {
-            if (!Program.User.ToLower(CultureInfo.InvariantCulture).Contains("system"))
+            if (!Program.User.Contains("system", StringComparison.InvariantCultureIgnoreCase))
             {
                 ProcessStartInfo s = new(commandLine, arg);
                 s.WindowStyle = wShowWindow != 0 ? ProcessWindowStyle.Normal : ProcessWindowStyle.Hidden;

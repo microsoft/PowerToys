@@ -353,6 +353,7 @@ namespace MouseWithoutBorders.Class
         private static bool ctrlDown;
         private static bool altDown;
         private static bool shiftDown;
+        internal static readonly string[] Args = new string[] { "CAD" };
 
         private static void ResetModifiersState(HotkeySettings matchingHotkey)
         {
@@ -456,7 +457,7 @@ namespace MouseWithoutBorders.Class
                         if (ctrlDown && altDown)
                         {
                             ctrlDown = altDown = false;
-                            new ServiceController("MouseWithoutBordersSvc").Start(new string[] { "CAD" });
+                            new ServiceController("MouseWithoutBordersSvc").Start(Args);
                         }
 
                         break;

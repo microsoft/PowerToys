@@ -148,6 +148,8 @@ internal sealed class ImageMethods
         return resultText.Trim();
     }
 
+    internal static readonly char[] Separator = new char[] { '\n', '\r' };
+
     public static async Task<string> ExtractText(Bitmap bmp, Language? preferredLanguage, System.Windows.Point? singlePoint = null)
     {
         Language? selectedLanguage = preferredLanguage ?? GetOCRLanguage();
@@ -211,7 +213,7 @@ internal sealed class ImageMethods
 
         if (culture.TextInfo.IsRightToLeft)
         {
-            string[] textListLines = text.ToString().Split(new char[] { '\n', '\r' });
+            string[] textListLines = text.ToString().Split(Separator);
 
             _ = text.Clear();
             foreach (string textLine in textListLines)

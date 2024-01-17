@@ -28,6 +28,9 @@ namespace Awake.Core
     /// </summary>
     public class Manager
     {
+        private static readonly CompositeFormat AwakeMinutes = System.Text.CompositeFormat.Parse(Properties.Resources.AWAKE_MINUTES);
+        private static readonly CompositeFormat AwakeHours = System.Text.CompositeFormat.Parse(Properties.Resources.AWAKE_HOURS);
+
         private static BlockingCollection<ExecutionState> _stateQueue;
 
         private static CancellationTokenSource _tokenSource;
@@ -276,9 +279,9 @@ namespace Awake.Core
         {
             Dictionary<string, int> optionsList = new Dictionary<string, int>
             {
-                { string.Format(CultureInfo.InvariantCulture, Resources.AWAKE_MINUTES, 30), 1800 },
+                { string.Format(CultureInfo.InvariantCulture, AwakeMinutes, 30), 1800 },
                 { Resources.AWAKE_1_HOUR, 3600 },
-                { string.Format(CultureInfo.InvariantCulture, Resources.AWAKE_HOURS, 2), 7200 },
+                { string.Format(CultureInfo.InvariantCulture, AwakeHours, 2), 7200 },
             };
             return optionsList;
         }

@@ -29,7 +29,7 @@ namespace Wox.Infrastructure.Image
         private static readonly ImageCache ImageCache = new ImageCache();
         private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
 
-        private static IImageHashGenerator _hashGenerator;
+        private static ImageHashGenerator _hashGenerator;
 
         public static string ErrorIconPath { get; set; } = Constant.LightThemedErrorIcon;
 

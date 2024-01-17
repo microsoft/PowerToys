@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.Folder
                 .Select(item => CreateFolderResult(item.Nickname, item.Path, item.Path, search));
         }
 
-        private static IItemResult CreateFolderResult(string title, string subtitle, string path, string search)
+        private static UserFolderResult CreateFolderResult(string title, string subtitle, string path, string search)
         {
             return new UserFolderResult
             {

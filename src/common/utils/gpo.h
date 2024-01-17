@@ -24,6 +24,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_GLOBAL_ALL_UTILITIES = L"ConfigureGlobalUtilityEnabledState";
     const std::wstring POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP = L"ConfigureEnabledUtilityAlwaysOnTop";
     const std::wstring POLICY_CONFIGURE_ENABLED_AWAKE = L"ConfigureEnabledUtilityAwake";
+    const std::wstring POLICY_CONFIGURE_ENABLED_CMD_NOT_FOUND = L"ConfigureEnabledUtilityCmdNotFound";
     const std::wstring POLICY_CONFIGURE_ENABLED_COLOR_PICKER = L"ConfigureEnabledUtilityColorPicker";
     const std::wstring POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK = L"ConfigureEnabledUtilityCropAndLock";
     const std::wstring POLICY_CONFIGURE_ENABLED_FANCYZONES = L"ConfigureEnabledUtilityFancyZones";
@@ -222,6 +223,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredAwakeEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_AWAKE);
+    }
+
+    inline gpo_rule_configured_t getConfiguredCmdNotFoundEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CMD_NOT_FOUND);
     }
 
     inline gpo_rule_configured_t getConfiguredColorPickerEnabledValue()

@@ -761,7 +761,7 @@ namespace Microsoft.Plugin.Program.Programs
                 .ToList() ?? Enumerable.Empty<string>();
 
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
-        private static IEnumerable<string> PathEnvironmentProgramPaths(IList<string> suffixes)
+        private static List<string> PathEnvironmentProgramPaths(IList<string> suffixes)
         {
             // To get all the locations stored in the PATH env variable
             var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
@@ -788,7 +788,7 @@ namespace Microsoft.Plugin.Program.Programs
                 .SelectMany(indexLocation => ProgramPaths(indexLocation, suffixes))
                 .ToList();
 
-        private static IEnumerable<string> StartMenuProgramPaths(IList<string> suffixes)
+        private static List<string> StartMenuProgramPaths(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu);
@@ -797,7 +797,7 @@ namespace Microsoft.Plugin.Program.Programs
             return IndexPath(suffixes, indexLocation);
         }
 
-        private static IEnumerable<string> DesktopProgramPaths(IList<string> suffixes)
+        private static List<string> DesktopProgramPaths(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
@@ -807,7 +807,7 @@ namespace Microsoft.Plugin.Program.Programs
             return IndexPath(suffixes, indexLocation);
         }
 
-        private static IEnumerable<string> RegistryAppProgramPaths(IList<string> suffixes)
+        private static List<string> RegistryAppProgramPaths(IList<string> suffixes)
         {
             // https://msdn.microsoft.com/library/windows/desktop/ee872121
             const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";

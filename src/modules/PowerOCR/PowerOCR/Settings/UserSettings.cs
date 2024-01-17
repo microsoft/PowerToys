@@ -16,7 +16,7 @@ namespace PowerOCR.Settings
     [Export(typeof(IUserSettings))]
     public class UserSettings : IUserSettings
     {
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private const string PowerOcrModuleName = "TextExtractor";
         private const string DefaultActivationShortcut = "Win + Shift + O";
         private const int MaxNumberOfRetry = 5;
