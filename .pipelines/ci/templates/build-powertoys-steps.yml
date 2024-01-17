@@ -299,3 +299,14 @@ steps:
   displayName: Publish Logs
   artifact: '$(System.JobDisplayName) logs'
   condition: always()
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '$(BuildPlatform)/$(BuildConfiguration)/**/?(*.exe|*.dll|*.pdb)'
+    targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    artifactName: build-$(BuildPlatform)-$(BuildConfiguration)

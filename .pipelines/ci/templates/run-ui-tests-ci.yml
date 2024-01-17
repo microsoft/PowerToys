@@ -18,7 +18,7 @@ jobs:
   - task: DownloadPipelineArtifact@2
     displayName: Download artifacts
     inputs:
-      downloadPath: $(Build.SourcesDirectory)/${{ parameters.platform }}/${{ parameters.configuration }}
+      downloadPath: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
 
   - task: VSTest@2
     displayName: 'UI Tests'
