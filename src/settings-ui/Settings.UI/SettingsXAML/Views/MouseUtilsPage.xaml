@@ -56,6 +56,26 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.FindMyMouseShakingMinimumDistance, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingIntervalMs" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=2}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="1000"
+                                    Maximum="10000"
+                                    Minimum="100"
+                                    SmallChange="100"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.FindMyMouseShakingIntervalMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingFactor" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=2}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="100"
+                                    Maximum="10000"
+                                    Minimum="150"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.FindMyMouseShakingFactor, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
