@@ -758,7 +758,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramStartWindow.SelectedIndex(0);
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramStartWindow, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELSTARTAS), runProgramLabelWidth).as<StackPanel>());
 
-    // add events to TextBoxes for runProgram fields
+    // add events to TextBoxes for runProgram fields.
     runProgramPathInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;
         if (!parent.Children().IndexOf(row, rowIndex))
