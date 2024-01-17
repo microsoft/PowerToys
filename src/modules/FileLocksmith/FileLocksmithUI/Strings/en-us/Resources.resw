@@ -164,4 +164,7 @@
     <value>Administrator: File Locksmith</value>
     <comment>Title of the window when running as administrator.</comment>
   </data>
+  <data name="NotRunningAsAdminInfoBar.Message" xml:space="preserve">
+    <value>Some results might be missing because of insufficient permission. Restart as administrator to dismiss.</value>
+  </data>
 </root>

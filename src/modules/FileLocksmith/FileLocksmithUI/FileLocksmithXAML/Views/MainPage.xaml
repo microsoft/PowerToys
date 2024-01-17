@@ -23,6 +23,8 @@
             FalseValue="Visible"
             GreaterThan="0"
             TrueValue="Collapsed" />
+
+        <tkconverters:BoolNegationConverter x:Key="boolNegationConverter"/>
         <converters:FileCountConverter x:Key="fileCountConverter" />
         <converters:PidToIconConverter x:Key="pidToIconConverter" />
         <converters:UserToSystemWarningVisibilityConverter x:Key="userToSystemWarningVisibilityConverter" />
@@ -38,6 +40,7 @@
     <Grid RowSpacing="8">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="ButtonsRow" Height="Auto" />
+            <RowDefinition x:Name="InfoBarRow" Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -83,7 +86,16 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1">
+        <InfoBar 
+            Grid.Row="1"                 
+            Margin="16,0"
+            x:Uid="NotRunningAsAdminInfoBar"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolNegationConverter}, Mode=OneWay}"
+            IsTabStop="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolNegationConverter}, Mode=OneWay}"
+            Severity="Informational" />
+
+        <Grid Grid.Row="2">            
             <Grid Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource boolToVisibilityConverter}, Mode=OneWay}">
                 <ListView
                     x:Name="ProcessesListView"
