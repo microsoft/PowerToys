@@ -45,6 +45,10 @@ namespace MouseWithoutBorders
         private static string lastDragDropFile;
         private static long clipboardCopiedTime;
 
+        internal static readonly char[] Comma = new char[] { ',' };
+        internal static readonly char[] Star = new char[] { '*' };
+        internal static readonly char[] NullSeparator = new char[] { '\0' };
+
         internal static ID LastIDWithClipboardData { get; set; }
 
         internal static string LastDragDropFile
@@ -406,7 +410,7 @@ namespace MouseWithoutBorders
 
             try
             {
-                remoteMachine = postAct.Contains("mspaint,") ? postAct.Split(new char[] { ',' })[1] : Common.LastMachineWithClipboardData;
+                remoteMachine = postAct.Contains("mspaint,") ? postAct.Split(Comma)[1] : Common.LastMachineWithClipboardData;
 
                 remoteMachine = remoteMachine.Trim();
 
@@ -518,7 +522,7 @@ namespace MouseWithoutBorders
 
                 fileName = Common.GetStringU(header).Replace("\0", string.Empty);
                 Common.LogDebug("Header: " + fileName);
-                string[] headers = fileName.Split(new char[] { '*' });
+                string[] headers = fileName.Split(Star);
 
                 if (headers.Length < 2 || !long.TryParse(headers[0], out long dataSize))
                 {
@@ -973,7 +977,7 @@ namespace MouseWithoutBorders
 
             foreach (string txt in texts)
             {
-                if (string.IsNullOrEmpty(txt.Trim(new char[] { '\0' })))
+                if (string.IsNullOrEmpty(txt.Trim(NullSeparator)))
                 {
                     continue;
                 }

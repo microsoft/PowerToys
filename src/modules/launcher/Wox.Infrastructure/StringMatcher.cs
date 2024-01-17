@@ -29,6 +29,8 @@ namespace Wox.Infrastructure
 
         public static StringMatcher Instance { get; internal set; }
 
+        private static readonly char[] Separator = new[] { ' ' };
+
         [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
         public static int Score(string source, string target)
         {
@@ -104,7 +106,7 @@ namespace Wox.Infrastructure
             var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
             var queryWithoutCase = opt.IgnoreCase ? query.ToUpper(CultureInfo.InvariantCulture) : query;
 
-            var querySubstrings = queryWithoutCase.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var querySubstrings = queryWithoutCase.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
             int currentQuerySubstringIndex = 0;
             var currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
             var currentQuerySubstringCharacterIndex = 0;

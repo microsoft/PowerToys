@@ -158,6 +158,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"WinUI3Apps/PowerToys.EnvironmentVariablesModuleInterface.dll",
             L"PowerToys.MouseWithoutBordersModuleInterface.dll",
             L"PowerToys.CropAndLockModuleInterface.dll",
+            L"PowerToys.CmdNotFoundModuleInterface.dll",
         };
         const auto VCM_PATH = L"PowerToys.VideoConferenceModule.dll";
         if (const auto mf = LoadLibraryA("mf.dll"))
@@ -274,7 +275,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
     if (param == cant_drag_elevated_disable)
     {
-        return notifications::disable_toast(notifications::CantDragElevatedDontShowAgainRegistryPath) ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
+        return notifications::disable_toast(notifications::ElevatedDontShowAgainRegistryPath) ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
     }
     else if (param.starts_with(update_now))
     {

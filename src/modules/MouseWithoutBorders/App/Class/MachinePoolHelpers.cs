@@ -8,6 +8,9 @@ namespace MouseWithoutBorders.Class
 {
     internal static class MachinePoolHelpers
     {
+        internal static readonly char[] Comma = new char[] { ',' };
+        internal static readonly char[] Colon = new char[] { ':' };
+
         internal static MachineInf[] LoadMachineInfoFromMachinePoolStringSetting(string s)
         {
             if (s == null)
@@ -15,7 +18,7 @@ namespace MouseWithoutBorders.Class
                 throw new ArgumentNullException(s);
             }
 
-            string[] st = s.Split(new char[] { ',' });
+            string[] st = s.Split(Comma);
 
             if (st.Length < Common.MAX_MACHINE)
             {
@@ -25,7 +28,7 @@ namespace MouseWithoutBorders.Class
             MachineInf[] rv = new MachineInf[Common.MAX_MACHINE];
             for (int i = 0; i < Common.MAX_MACHINE; i++)
             {
-                string[] mc = st[i].Split(new char[] { ':' });
+                string[] mc = st[i].Split(Colon);
                 if (mc.Length == 2)
                 {
                     rv[i].Name = mc[0];

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows.Media;
 using ColorPicker.Models;
 
@@ -21,6 +22,9 @@ namespace ColorPicker.Helpers
 
     internal static class SerializationHelper
     {
+        public static readonly JsonSerializerOptions DefaultOptions = new JsonSerializerOptions { WriteIndented = false };
+        public static readonly JsonSerializerOptions IndentedOptions = new JsonSerializerOptions { WriteIndented = true };
+
         public static Dictionary<string, Dictionary<string, string>> ConvertToDesiredColorFormats(
             IList colorsToExport,
             IEnumerable<ColorFormatModel> colorRepresentations,
@@ -116,10 +120,7 @@ namespace ColorPicker.Helpers
 
         public static string ToJson(this Dictionary<string, Dictionary<string, string>> source, bool indented = true)
         {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = indented,
-            };
+            var options = indented ? IndentedOptions : DefaultOptions;
 
             return JsonSerializer.Serialize(source, options);
         }

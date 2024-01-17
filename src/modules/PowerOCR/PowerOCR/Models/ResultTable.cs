@@ -239,7 +239,7 @@ public class ResultTable
         return rowAreas;
     }
 
-    private static void CheckIntersectionsWithWordBorders(int hitGridSpacing, ICollection<WordBorder> wordBorders, ICollection<int> rowAreas, int i, Rect horizontalLineRect)
+    private static void CheckIntersectionsWithWordBorders(int hitGridSpacing, ICollection<WordBorder> wordBorders, List<int> rowAreas, int i, Rect horizontalLineRect)
     {
         foreach (WordBorder wb in wordBorders)
         {

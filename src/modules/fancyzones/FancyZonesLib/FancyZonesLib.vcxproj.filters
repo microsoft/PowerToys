@@ -153,9 +153,6 @@
     <ClInclude Include="HighlightedZones.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NotificationUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HighlightedZones.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -298,5 +295,8 @@
     <ResourceCompile Include="Generated Files/fancyzones.rc">
       <Filter>Generated Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

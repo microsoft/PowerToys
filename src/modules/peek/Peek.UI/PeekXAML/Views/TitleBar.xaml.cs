@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
@@ -21,7 +22,6 @@ using Peek.UI.Telemetry.Events;
 using Windows.Graphics;
 using Windows.Storage;
 using Windows.System;
-using WinUIEx;
 
 namespace Peek.UI.Views
 {
@@ -123,11 +123,6 @@ namespace Peek.UI.Views
                 var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
                 ThemeHelpers.SetImmersiveDarkMode(hWnd, ThemeHelpers.GetAppTheme() == AppTheme.Dark);
                 Visibility = Visibility.Collapsed;
-
-                // Set window icon
-                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-                AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-                appWindow.SetIcon("Assets/Peek/Icon.ico");
             }
         }
 
@@ -137,7 +132,7 @@ namespace Peek.UI.Views
         }
 
         [RelayCommand]
-        private async void LaunchDefaultAppButtonAsync()
+        private async Task LaunchDefaultAppButtonAsync()
         {
             if (Item is not FileItem fileItem)
             {

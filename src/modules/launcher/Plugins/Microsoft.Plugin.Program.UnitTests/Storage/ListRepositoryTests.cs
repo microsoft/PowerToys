@@ -16,7 +16,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         {
             // Arrange
             var itemName = "originalItem1";
-            IRepository<string> repository = new ListRepository<string>() { itemName };
+            ListRepository<string> repository = new ListRepository<string>() { itemName };
 
             // Act
             var result = repository.Contains(itemName);
@@ -29,7 +29,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         public void ContainsShouldReturnTrueWhenListIsUpdatedWithAdd()
         {
             // Arrange
-            IRepository<string> repository = new ListRepository<string>();
+            ListRepository<string> repository = new ListRepository<string>();
 
             // Act
             var itemName = "newItem";
@@ -45,7 +45,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         {
             // Arrange
             var itemName = "originalItem1";
-            IRepository<string> repository = new ListRepository<string>() { itemName };
+            ListRepository<string> repository = new ListRepository<string>() { itemName };
 
             // Act
             repository.Remove(itemName);

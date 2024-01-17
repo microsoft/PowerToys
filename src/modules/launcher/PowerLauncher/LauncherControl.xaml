@@ -33,7 +33,7 @@
                             <TextBlock
                                 Margin="6,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="16"
+                                FontSize="{DynamicResource TitleFontSize}"
                                 Text="{TemplateBinding Tag}">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
@@ -84,10 +84,10 @@
     </UserControl.Resources>
     <Grid
         MinHeight="32"
-        Margin="12"
+        Margin="8,12,8,12"
         VerticalAlignment="Top">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="32" />
+            <ColumnDefinition Width="38" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -98,25 +98,27 @@
         <local:CustomSearchBox
             x:Name="QueryTextBox"
             Grid.Column="1"
+            MinHeight="0"
+            Margin="0"
             VerticalAlignment="Center"
             x:FieldModifier="public"
             AutomationProperties.Name="{x:Static p:Resources.Query}"
             Canvas.ZIndex="0"
-            FontSize="18"
+            FontSize="{DynamicResource TitleFontSize}"
             Style="{StaticResource QueryTextBoxStyle}"
             Tag="{x:Static p:Resources.startTyping}" />
         <TextBlock
             x:Name="AutoCompleteTextBlock"
             Grid.Column="1"
-            Margin="7,0,14,0"
+            Margin="7,0,7,0"
             VerticalAlignment="Center"
             x:FieldModifier="public"
             Canvas.ZIndex="-1"
-            FontSize="18"
+            FontSize="{DynamicResource TitleFontSize}"
             Foreground="{DynamicResource TextPlaceholderColorBrush}" />
         <ui:SymbolIcon
             AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
-            FontSize="18"
+            FontSize="20"
             Foreground="{DynamicResource TextPlaceholderColorBrush}"
             Symbol="Search12" />
     </Grid>

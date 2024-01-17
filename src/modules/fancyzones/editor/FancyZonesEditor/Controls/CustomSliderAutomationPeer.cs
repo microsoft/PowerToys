@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using System.Text;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 
@@ -10,6 +11,8 @@ namespace FancyZonesEditor.Controls
 {
     internal sealed class CustomSliderAutomationPeer : SliderAutomationPeer
     {
+        private static readonly CompositeFormat CustomSliderAnnounce = System.Text.CompositeFormat.Parse(Properties.Resources.Custom_slider_announce);
+
         private string name = string.Empty;
 
         public CustomSliderAutomationPeer(Slider owner)
@@ -29,7 +32,7 @@ namespace FancyZonesEditor.Controls
 
             string announce = string.Format(
                 CultureInfo.CurrentCulture,
-                Properties.Resources.Custom_slider_announce,
+                CustomSliderAnnounce,
                 name,
                 element.Minimum,
                 element.Maximum,
