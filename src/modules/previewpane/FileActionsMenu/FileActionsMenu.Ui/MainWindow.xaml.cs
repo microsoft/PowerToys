@@ -8,27 +8,14 @@ using Wpf.Ui.Controls;
 
 namespace FileActionsMenu
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
-            if (Wpf.Ui.Appearance.Theme.GetSystemTheme() == Wpf.Ui.Appearance.SystemThemeType.Light)
-            {
-                Wpf.Ui.Appearance.Theme.Apply(Wpf.Ui.Appearance.ThemeType.Light);
-            }
-            else
-            {
-                Wpf.Ui.Appearance.Theme.Apply(Wpf.Ui.Appearance.ThemeType.Dark);
-            }
-
-            Wpf.Ui.Appearance.Watcher.Watch(this, Wpf.Ui.Appearance.BackgroundType.None, true);
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.None, true);
             InitializeComponent();
             ContextMenu cm = (ContextMenu)FindResource("Menu");
             cm.IsOpen = true;
-
             cm.Closed += (sender, args) => Close();
         }
 

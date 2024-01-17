@@ -18,16 +18,13 @@
                 <MenuItem Header="Sha256 hash" />
             </MenuItem>
             <Separator/>
-            <MenuItem Header="Copy to">
-                <MenuItem.Icon>
-                    <ui:FontIcon Glyph="&#xE8C8;" />
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem Header="Move to">
-                <MenuItem.Icon>
+            <ui:MenuItem Header="Copy to" Icon="{ui:FontIcon '&#xE8C3;'}">
+            </ui:MenuItem>
+            <ui:MenuItem Header="Move to">
+                <ui:MenuItem.Icon>
                     <ui:FontIcon Glyph="&#xE8C6;" />
-                </MenuItem.Icon>
-            </MenuItem>
+                </ui:MenuItem.Icon>
+            </ui:MenuItem>
             <MenuItem Header="New folder with selection">
                 <MenuItem.Icon>
                     <ui:FontIcon Glyph="&#xE8DE;" />
