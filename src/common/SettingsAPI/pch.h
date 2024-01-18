@@ -9,3 +9,5 @@
 #include <filesystem>
 #include <fstream>
 
+#include <common/logger/logger.h>
+#include <wil/filesystem.h>

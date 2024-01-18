@@ -2647,6 +2647,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Description" xml:space="preserve">
     <value>The minimum distance for mouse shaking activation, for adjusting sensitivity</value>
   </data>
+  <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Header" xml:space="preserve">
+    <value>Shake Interval (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Description" xml:space="preserve">
+    <value>The span of time during which we track mouse movement to detect shaking, for adjusting sensitivity</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingFactor.Header" xml:space="preserve">
+    <value>Shake factor (percent)</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingFactor.Description" xml:space="preserve">
+    <value>Mouse shaking is detected by checking how much the mouse pointer has travelled when compared to the diagonal of the movement area. Reducing this factor increases sensitivity.</value>
+  </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
     <comment>Refers to the utility name</comment>
