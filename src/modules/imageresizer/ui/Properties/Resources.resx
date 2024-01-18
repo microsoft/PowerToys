@@ -140,19 +140,19 @@
     <value>Custom</value>
   </data>
   <data name="Input_IgnoreOrientation" xml:space="preserve">
-    <value>Ign_ore the orientation of pictures</value>
+    <value>Ignore the orientation of pictures</value>
   </data>
   <data name="Input_GifWarning" xml:space="preserve">
     <value>Gif files with animations may not be correctly resized.</value>
   </data>
   <data name="Input_Replace" xml:space="preserve">
-    <value>R_esize the original pictures (don't create copies)</value>
+    <value>Resize the original pictures (don't create copies)</value>
   </data>
   <data name="Input_Resize" xml:space="preserve">
     <value>Resize</value>
   </data>
   <data name="Input_ShrinkOnly" xml:space="preserve">
-    <value>_Make pictures smaller but not larger</value>
+    <value>Make pictures smaller but not larger</value>
   </data>
   <data name="Large" xml:space="preserve">
     <value>Large</value>
