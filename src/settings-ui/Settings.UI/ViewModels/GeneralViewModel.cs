@@ -122,6 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _startup = GeneralSettingsConfig.Startup;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
+            _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
             _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
 
             _isElevated = isElevated;
@@ -140,6 +141,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
+            _showWhatsNewAfterUpdatesIsGpoDisabled = GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue() == GpoRuleConfigured.Enabled;
 
             if (dispatcherAction != null)
             {
@@ -156,6 +158,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private bool _autoDownloadUpdates;
         private bool _autoDownloadUpdatesIsGpoDisabled;
+        private bool _showWhatsNewAfterUpdates;
+        private bool _showWhatsNewAfterUpdatesIsGpoDisabled;
         private bool _enableExperimentation;
         private bool _experimentationIsGpoDisallowed;
 
@@ -327,6 +331,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowAutoDownloadUpdatesGpoInformation
         {
             get => _isAdmin && _autoDownloadUpdatesIsGpoDisabled;
+        }
+
+        public bool ShowWhatsNewAfterUpdates
+        {
+            get
+            {
+                return _showWhatsNewAfterUpdates && !_showWhatsNewAfterUpdatesIsGpoDisabled;
+            }
+
+            set
+            {
+                if (_showWhatsNewAfterUpdates != value)
+                {
+                    _showWhatsNewAfterUpdates = value;
+                    GeneralSettingsConfig.ShowWhatsNewAfterUpdates = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowWhatsNewAfterUpdatesIsGpoDisabled
+        {
+            get => _showWhatsNewAfterUpdatesIsGpoDisabled;
         }
 
         public bool EnableExperimentation

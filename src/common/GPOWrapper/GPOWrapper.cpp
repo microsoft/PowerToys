@@ -144,6 +144,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableAutomaticUpdateDownloadValue());
     }
+    GpoRuleConfigured GPOWrapper::GetDisableShowWhatsNewAfterUpdatesValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableShowWhatsNewAfterUpdatesValue());
+    }
     GpoRuleConfigured GPOWrapper::GetAllowExperimentationValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowExperimentationValue());

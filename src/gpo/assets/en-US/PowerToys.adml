@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.7" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.8" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -18,6 +18,7 @@
       <string id="SUPPORTED_POWERTOYS_0_75_0">PowerToys version 0.75.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_76_0">PowerToys version 0.76.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_77_0">PowerToys version 0.77.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_78_0">PowerToys version 0.78.0 or later</string>
 
             <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -77,6 +78,12 @@ Note: The notification about new major versions is always displayed.
 If enabled, the automatic update checks are disabled.
 
 If disabled or not configured, the automatic update checks are enabled.
+</string>
+      <string id="DoNotShowWhatsNewAfterUpdatesDescription">This policy allows you to configure if the window with the release notes is shown after updates.
+
+If enabled, the window with the release notes is not shown automatically.
+
+If disabled or not configured, the user can control this in the settings of PowerToys.
 </string>
       <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
 
@@ -147,6 +154,7 @@ Note: Changes require a restart of PowerToys Run.
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
       <string id="DisablePerUserInstallation">Disable per-user installation</string>
       <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
+      <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>
       <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
       <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
       <string id="AllowExperimentation">Allow Experimentation</string>

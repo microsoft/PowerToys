@@ -4011,6 +4011,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="PowerLauncher_TextFontSizeSlider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Text size of result titles</value>
   </data>
+  <data name="GeneralPage_ToggleSwitch_ShowWhatsNewAfterUpdates.Header" xml:space="preserve">
+    <value>Show the release notes after updates</value>
+  </data>
   <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
     <value>Command Not Found is not supported on the ARM64 architecture currently. We are actively working on a solution.</value>
   </data>

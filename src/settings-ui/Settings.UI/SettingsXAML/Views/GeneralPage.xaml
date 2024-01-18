@@ -188,6 +188,16 @@
                         IsOpen="{x:Bind ViewModel.ShowAutoDownloadUpdatesGpoInformation, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowAutoDownloadUpdatesGpoInformation, Mode=OneWay}"
                         Severity="Informational" />
+
+                    <tkcontrols:SettingsCard x:Uid="GeneralPage_ToggleSwitch_ShowWhatsNewAfterUpdates" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
+                    </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_IsSettingForced"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled}"
+                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled}"
+                        Severity="Informational" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Admin_Mode">

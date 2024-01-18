@@ -54,6 +54,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
+        [JsonPropertyName("show_whats_new_after_updates")]
+        public bool ShowWhatsNewAfterUpdates { get; set; }
+
         [JsonPropertyName("enable_experimentation")]
         public bool EnableExperimentation { get; set; }
 
