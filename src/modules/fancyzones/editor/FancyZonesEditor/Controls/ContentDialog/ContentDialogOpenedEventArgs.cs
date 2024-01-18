@@ -1,6 +1,10 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-namespace ModernWpf.Controls
+using System;
+
+namespace FancyZonesEditor.Controls
 {
     public class ContentDialogOpenedEventArgs : EventArgs
     {

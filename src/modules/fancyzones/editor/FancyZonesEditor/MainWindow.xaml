@@ -15,102 +15,14 @@
     x:Name="MainWindow1"
     Title="{x:Static props:Resources.Fancy_Zones_Editor_App_Title}"
     MinWidth="360"
+    ui:ExtendsContentIntoTitleBar="True"
     AutomationProperties.Name="{x:Static props:Resources.Fancy_Zones_Main_Editor}"
-    Background="{DynamicResource PrimaryBackgroundBrush}"
     Closing="OnClosing"
     ContentRendered="OnContentRendered"
     ResizeMode="CanResize"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
     <ui:FluentWindow.Resources>
-        <ResourceDictionary>
-            <StackPanel x:Key="NewLayoutDialogContent" Margin="0,16,24,0">
-                <TextBlock x:Name="NameHeaderText" Text="{x:Static props:Resources.Name}" />
-                <TextBox
-                    x:Name="LayoutNameText"
-                    Margin="3,6,3,0"
-                    AutomationProperties.LabeledBy="{Binding ElementName=NameHeaderText}" />
-                <RadioButton
-                    x:Name="GridLayoutRadioButton"
-                    Margin="0,24,0,0"
-                    AutomationProperties.HelpText="{x:Static props:Resources.Layout_Grid_Description}"
-                    AutomationProperties.Name="{x:Static props:Resources.Layout_Grid_Title}"
-                    GroupName="LayoutTypeGroup"
-                    IsChecked="True"
-                    Style="{StaticResource LayoutTypeRadioButtonStyle}">
-                    <RadioButton.Content>
-                        <Grid Width="420" Margin="4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="32" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock
-                                Margin="0,4,0,0"
-                                HorizontalAlignment="Left"
-                                AutomationProperties.Name="{x:Static props:Resources.Layout_Grid_Title}"
-                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                FontSize="16"
-                                Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
-                                Text="&#xF0E2;" />
-                            <StackPanel Grid.Column="1" Orientation="Vertical">
-                                <TextBlock
-                                    Margin="0,3,0,0"
-                                    FontWeight="Bold"
-                                    Text="{x:Static props:Resources.Layout_Grid_Title}"
-                                    TextWrapping="Wrap" />
-                                <TextBlock
-                                    Margin="0,4,0,0"
-                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                    Text="{x:Static props:Resources.Layout_Grid_Description}"
-                                    TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Grid>
-                    </RadioButton.Content>
-                </RadioButton>
-
-                <RadioButton
-                    x:Name="CanvasLayoutRadioButton"
-                    Margin="0,0,0,64"
-                    AutomationProperties.HelpText="{x:Static props:Resources.Layout_Canvas_Description}"
-                    AutomationProperties.Name="{x:Static props:Resources.Layout_Canvas_Title}"
-                    GroupName="LayoutTypeGroup"
-                    IsChecked="True"
-                    Style="{StaticResource LayoutTypeRadioButtonStyle}">
-                    <RadioButton.Content>
-                        <Grid Width="420" Margin="4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="32" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock
-                                Margin="0,4,0,0"
-                                HorizontalAlignment="Left"
-                                AutomationProperties.Name="{x:Static props:Resources.Layout_Canvas_Title}"
-                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                FontSize="16"
-                                Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
-                                Text="&#xF5ED;" />
-                            <StackPanel Grid.Column="1" Orientation="Vertical">
-                                <TextBlock
-                                    Margin="0,3,0,0"
-                                    FontWeight="Bold"
-                                    Text="{x:Static props:Resources.Layout_Canvas_Title}"
-                                    TextWrapping="Wrap" />
-                                <TextBlock
-                                    Margin="0,4,0,0"
-                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                    Text="{x:Static props:Resources.Layout_Canvas_Description}"
-                                    TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Grid>
-                    </RadioButton.Content>
-                </RadioButton>
-            </StackPanel>
-        </ResourceDictionary>
-
-
-
-
         <Thickness x:Key="ContentDialogPadding">24,16,0,24</Thickness>
         <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,24,0</Thickness>
         <Converters:LayoutModelTypeToVisibilityConverter x:Key="LayoutModelTypeToVisibilityConverter" />
@@ -234,7 +146,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch" />
                 </Grid>
-                <Button
+                <ui:Button
                     x:Name="EditLayoutButton"
                     Grid.RowSpan="4"
                     Width="36"
@@ -243,23 +155,22 @@
                     Padding="0"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
+                    Appearance="Primary"
                     AutomationProperties.HelpText="{x:Static props:Resources.Edit}"
                     AutomationProperties.Name="{Binding Name}"
                     Background="Transparent"
                     BorderBrush="Transparent"
                     Click="EditLayout_Click"
                     Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}"
-                    Style="{StaticResource AccentButtonStyle}"
                     ToolTip="{x:Static props:Resources.Edit}"
                     Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}">
                     <Button.Content>
-                        <TextBlock
+                        <ui:FontIcon
                             AutomationProperties.Name="{x:Static props:Resources.Edit}"
-                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
                             FontSize="16"
-                            Text="&#xE70F;" />
+                            Glyph="&#xE70F;" />
                     </Button.Content>
-                </Button>
+                </ui:Button>
             </Grid>
         </DataTemplate>
 
@@ -369,7 +280,7 @@
                 </Grid>
             </ScrollViewer>
 
-            <Button
+            <ui:Button
                 x:Name="NewLayoutButton"
                 Grid.Row="3"
                 Height="36"
@@ -377,9 +288,9 @@
                 Padding="0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
+                Appearance="Primary"
                 AutomationProperties.Name="{x:Static props:Resources.Create_new_layout}"
                 Click="NewLayoutButton_Click"
-                Style="{StaticResource AccentButtonStyle}"
                 TabIndex="3">
                 <StackPanel Margin="8" Orientation="Horizontal">
                     <TextBlock
@@ -392,13 +303,7 @@
                         Foreground="{DynamicResource AccentButtonForeground}"
                         Text="{x:Static props:Resources.Create_new_layout}" />
                 </StackPanel>
-                <Button.Effect>
-                    <DropShadowEffect
-                        BlurRadius="6"
-                        Opacity="0.32"
-                        ShadowDepth="1" />
-                </Button.Effect>
-            </Button>
+            </ui:Button>
         </Grid>
 
         <Grid Background="{DynamicResource TertiaryBackgroundBrush}">
@@ -454,16 +359,18 @@
             -->
         </Grid>
 
-        <ui:ContentDialog
+        <fancyZonesControls:ContentDialog
+            x:Name="EditLayoutDialog"
             MaxWidth="320"
             Background="{DynamicResource PrimaryBackgroundBrush}"
-            ButtonClicked="EditLayoutDialog_ButtonClicked"
             Closed="Dialog_Closed"
             Opened="Dialog_Opened"
+            PrimaryButtonClick="EditLayoutDialog_PrimaryButtonClick"
             PrimaryButtonText="{x:Static props:Resources.Save}"
             ScrollViewer.VerticalScrollBarVisibility="Auto"
+            SecondaryButtonClick="EditLayoutDialog_SecondaryButtonClick"
             SecondaryButtonText="{x:Static props:Resources.Cancel}">
-            <ui:ContentDialog.Title>
+            <fancyZonesControls:ContentDialog.Title>
                 <local:HeadingTextBlock
                     x:Name="EditLayoutDialogTitle"
                     MaxWidth="320"
@@ -471,7 +378,7 @@
                     AutomationProperties.HeadingLevel="Level1"
                     Loaded="EditLayoutDialogTitle_Loaded"
                     Style="{StaticResource HeadingTextBlock}" />
-            </ui:ContentDialog.Title>
+            </fancyZonesControls:ContentDialog.Title>
             <Grid Margin="4,4,24,32" DataContext="{Binding SelectedModel}">
 
                 <StackPanel
@@ -610,20 +517,20 @@
                         HorizontalAlignment="Left">
                         <local:LayoutPreview />
 
-                        <Button
+                        <ui:Button
                             x:Name="editZoneLayoutButton"
                             Width="36"
                             Height="36"
                             Padding="0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
+                            Appearance="Primary"
                             AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                             BorderBrush="Transparent"
                             Click="EditZones_Click"
                             Content="&#xE70F;"
                             FontFamily="{DynamicResource SymbolThemeFontFamily}"
                             FontSize="16"
-                            Style="{StaticResource AccentButtonStyle}"
                             ToolTip="{x:Static props:Resources.Edit_zones}"
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
 
@@ -865,30 +772,107 @@
                     </StackPanel>
                 </StackPanel>
             </Grid>
-        </ui:ContentDialog>
-<<<<<<< Updated upstream
+        </fancyZonesControls:ContentDialog>
 
-        <ui:ContentDialog
+        <fancyZonesControls:ContentDialog
             x:Name="NewLayoutDialog"
             Background="{DynamicResource PrimaryBackgroundBrush}"
-            ButtonClicked="NewLayoutDialog_ButtonClicked"
             Closed="Dialog_Closed"
             IsPrimaryButtonEnabled="{Binding ElementName=LayoutNameText, Path=Text.Length}"
             Opened="Dialog_Opened"
+            PrimaryButtonClick="NewLayoutDialog_PrimaryButtonClick"
             PrimaryButtonText="{x:Static props:Resources.Create}"
             SecondaryButtonText="{x:Static props:Resources.Cancel}">
-            <ui:ContentDialog.TitleTemplate>
+            <fancyZonesControls:ContentDialog.TitleTemplate>
                 <DataTemplate>
                     <local:HeadingTextBlock
                         AutomationProperties.HeadingLevel="Level1"
                         Style="{StaticResource HeadingTextBlock}"
                         Text="{x:Static props:Resources.Choose_layout_type}" />
                 </DataTemplate>
-            </ui:ContentDialog.TitleTemplate>
+            </fancyZonesControls:ContentDialog.TitleTemplate>
+            <StackPanel Margin="0,16,24,0">
+                <TextBlock x:Name="NameHeaderText" Text="{x:Static props:Resources.Name}" />
+                <TextBox
+                    x:Name="LayoutNameText"
+                    Margin="3,6,3,0"
+                    AutomationProperties.LabeledBy="{Binding ElementName=NameHeaderText}" />
+                <RadioButton
+                    x:Name="GridLayoutRadioButton"
+                    Margin="0,24,0,0"
+                    AutomationProperties.HelpText="{x:Static props:Resources.Layout_Grid_Description}"
+                    AutomationProperties.Name="{x:Static props:Resources.Layout_Grid_Title}"
+                    GroupName="LayoutTypeGroup"
+                    IsChecked="True"
+                    Style="{StaticResource LayoutTypeRadioButtonStyle}">
+                    <RadioButton.Content>
+                        <Grid Width="420" Margin="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="32" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                HorizontalAlignment="Left"
+                                AutomationProperties.Name="{x:Static props:Resources.Layout_Grid_Title}"
+                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                FontSize="16"
+                                Foreground="Green"
+                                Text="&#xF0E2;" />
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <TextBlock
+                                    Margin="0,3,0,0"
+                                    FontWeight="Bold"
+                                    Text="{x:Static props:Resources.Layout_Grid_Title}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    Foreground="Red"
+                                    Text="{x:Static props:Resources.Layout_Grid_Description}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </RadioButton.Content>
+                </RadioButton>
 
-        </ui:ContentDialog>
-=======
-     
->>>>>>> Stashed changes
+                <RadioButton
+                    x:Name="CanvasLayoutRadioButton"
+                    Margin="0,0,0,64"
+                    AutomationProperties.HelpText="{x:Static props:Resources.Layout_Canvas_Description}"
+                    AutomationProperties.Name="{x:Static props:Resources.Layout_Canvas_Title}"
+                    GroupName="LayoutTypeGroup"
+                    IsChecked="True"
+                    Style="{StaticResource LayoutTypeRadioButtonStyle}">
+                    <RadioButton.Content>
+                        <Grid Width="420" Margin="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="32" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                HorizontalAlignment="Left"
+                                AutomationProperties.Name="{x:Static props:Resources.Layout_Canvas_Title}"
+                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                FontSize="16"
+                                Foreground="Green"
+                                Text="&#xF5ED;" />
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <TextBlock
+                                    Margin="0,3,0,0"
+                                    FontWeight="Bold"
+                                    Text="{x:Static props:Resources.Layout_Canvas_Title}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    Foreground="Red"
+                                    Text="{x:Static props:Resources.Layout_Canvas_Description}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </RadioButton.Content>
+                </RadioButton>
+            </StackPanel>
+        </fancyZonesControls:ContentDialog>
     </Grid>
 </ui:FluentWindow>

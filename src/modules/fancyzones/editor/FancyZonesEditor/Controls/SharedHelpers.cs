@@ -2,17 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
+using System.Linq;
+using System.Windows;
 
 namespace FancyZonesEditor.Controls
 {
-    public class ContentDialogClosedEventArgs : EventArgs
+    internal static class SharedHelpers
     {
-        internal ContentDialogClosedEventArgs(ContentDialogResult result)
+        public static Window GetActiveWindow()
         {
-            Result = result;
+            return Application.Current.Windows.OfType<Window>().SingleOrDefault(x => x.IsActive);
         }
-
-        public ContentDialogResult Result { get; }
     }
 }

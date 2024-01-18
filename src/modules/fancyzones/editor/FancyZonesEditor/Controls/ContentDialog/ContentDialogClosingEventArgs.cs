@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Diagnostics;
 
-namespace ModernWpf.Controls
+namespace FancyZonesEditor.Controls
 {
     public sealed class ContentDialogClosingEventArgs : EventArgs
     {
@@ -34,7 +38,6 @@ namespace ModernWpf.Controls
 
         internal void DecrementDeferralCount()
         {
-            Debug.Assert(_deferralCount > 0);
             _deferralCount--;
             if (_deferralCount == 0)
             {

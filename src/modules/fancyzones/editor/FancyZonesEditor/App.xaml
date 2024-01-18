@@ -15,6 +15,7 @@
                 <ResourceDictionary Source="pack://application:,,,/Styles/LayoutPreviewStyles.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Controls/GridView/ListView.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Controls/GridView/GridView.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Controls/ContentDialog/ContentDialog.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <Style x:Key="HeadingTextBlock" TargetType="TextBlock" />

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -10,7 +14,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace ModernWpf.Controls
+namespace FancyZonesEditor.Controls
 {
     [TemplatePart(Name = nameof(Container), Type = typeof(Border))]
     [TemplatePart(Name = nameof(LayoutRoot), Type = typeof(FrameworkElement))]
@@ -43,23 +47,19 @@ namespace ModernWpf.Controls
     {
         static ContentDialog()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(ContentDialog),
-                new FrameworkPropertyMetadata(typeof(ContentDialog)));
-
-            EventManager.RegisterClassHandler(typeof(Window), TitleBar.BackRequestedEvent,
-                new EventHandler<BackRequestedEventArgs>(OnBackRequested));
+            DefaultStyleKeyProperty.OverrideMetadata(
+                typeof(ContentDialog),
+                new FrameworkPropertyMetadata(defaultValue: typeof(ContentDialog)));
         }
 
         public ContentDialog()
         {
             m_closeTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(0.6)
+                Interval = TimeSpan.FromSeconds(0.6),
             };
             m_closeTimer.Tick += OnCloseTimerTick;
         }
-
-        #region Title
 
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register(
@@ -74,10 +74,6 @@ namespace ModernWpf.Controls
             set => SetValue(TitleProperty, value);
         }
 
-        #endregion
-
-        #region TitleTemplate
-
         public static readonly DependencyProperty TitleTemplateProperty =
             DependencyProperty.Register(
                 nameof(TitleTemplate),
@@ -90,10 +86,6 @@ namespace ModernWpf.Controls
             get => (DataTemplate)GetValue(TitleTemplateProperty);
             set => SetValue(TitleTemplateProperty, value);
         }
-
-        #endregion
-
-        #region PrimaryButtonText
 
         public static readonly DependencyProperty PrimaryButtonTextProperty =
             DependencyProperty.Register(
@@ -108,10 +100,6 @@ namespace ModernWpf.Controls
             set => SetValue(PrimaryButtonTextProperty, value);
         }
 
-        #endregion
-
-        #region PrimaryButtonCommand
-
         public static readonly DependencyProperty PrimaryButtonCommandProperty =
             DependencyProperty.Register(
                 nameof(PrimaryButtonCommand),
@@ -124,10 +112,6 @@ namespace ModernWpf.Controls
             get => (ICommand)GetValue(PrimaryButtonCommandProperty);
             set => SetValue(PrimaryButtonCommandProperty, value);
         }
-
-        #endregion
-
-        #region PrimaryButtonCommandParameter
 
         public static readonly DependencyProperty PrimaryButtonCommandParameterProperty =
             DependencyProperty.Register(
@@ -142,10 +126,6 @@ namespace ModernWpf.Controls
             set => SetValue(PrimaryButtonCommandParameterProperty, value);
         }
 
-        #endregion
-
-        #region PrimaryButtonStyle
-
         public static readonly DependencyProperty PrimaryButtonStyleProperty =
             DependencyProperty.Register(
                 nameof(PrimaryButtonStyle),
@@ -158,10 +138,6 @@ namespace ModernWpf.Controls
             get => (Style)GetValue(PrimaryButtonStyleProperty);
             set => SetValue(PrimaryButtonStyleProperty, value);
         }
-
-        #endregion
-
-        #region IsPrimaryButtonEnabled
 
         public static readonly DependencyProperty IsPrimaryButtonEnabledProperty =
             DependencyProperty.Register(
@@ -176,10 +152,6 @@ namespace ModernWpf.Controls
             set => SetValue(IsPrimaryButtonEnabledProperty, value);
         }
 
-        #endregion
-
-        #region SecondaryButtonText
-
         public static readonly DependencyProperty SecondaryButtonTextProperty =
             DependencyProperty.Register(
                 nameof(SecondaryButtonText),
@@ -192,10 +164,6 @@ namespace ModernWpf.Controls
             get => (string)GetValue(SecondaryButtonTextProperty);
             set => SetValue(SecondaryButtonTextProperty, value);
         }
-
-        #endregion
-
-        #region SecondaryButtonCommand
 
         public static readonly DependencyProperty SecondaryButtonCommandProperty =
             DependencyProperty.Register(
@@ -210,10 +178,6 @@ namespace ModernWpf.Controls
             set => SetValue(SecondaryButtonCommandProperty, value);
         }
 
-        #endregion
-
-        #region SecondaryButtonCommandParameter
-
         public static readonly DependencyProperty SecondaryButtonCommandParameterProperty =
             DependencyProperty.Register(
                 nameof(SecondaryButtonCommandParameter),
@@ -226,10 +190,6 @@ namespace ModernWpf.Controls
             get => GetValue(SecondaryButtonCommandParameterProperty);
             set => SetValue(SecondaryButtonCommandParameterProperty, value);
         }
-
-        #endregion
-
-        #region SecondaryButtonStyle
 
         public static readonly DependencyProperty SecondaryButtonStyleProperty =
             DependencyProperty.Register(
@@ -244,10 +204,6 @@ namespace ModernWpf.Controls
             set => SetValue(SecondaryButtonStyleProperty, value);
         }
 
-        #endregion
-
-        #region IsSecondaryButtonEnabled
-
         public static readonly DependencyProperty IsSecondaryButtonEnabledProperty =
             DependencyProperty.Register(
                 nameof(IsSecondaryButtonEnabled),
@@ -260,10 +216,6 @@ namespace ModernWpf.Controls
             get => (bool)GetValue(IsSecondaryButtonEnabledProperty);
             set => SetValue(IsSecondaryButtonEnabledProperty, value);
         }
-
-        #endregion
-
-        #region CloseButtonText
 
         public static readonly DependencyProperty CloseButtonTextProperty =
             DependencyProperty.Register(
@@ -278,10 +230,6 @@ namespace ModernWpf.Controls
             set => SetValue(CloseButtonTextProperty, value);
         }
 
-        #endregion
-
-        #region CloseButtonCommand
-
         public static readonly DependencyProperty CloseButtonCommandProperty =
             DependencyProperty.Register(
                 nameof(CloseButtonCommand),
@@ -294,10 +242,6 @@ namespace ModernWpf.Controls
             get => (ICommand)GetValue(CloseButtonCommandProperty);
             set => SetValue(CloseButtonCommandProperty, value);
         }
-
-        #endregion
-
-        #region CloseButtonCommandParameter
 
         public static readonly DependencyProperty CloseButtonCommandParameterProperty =
             DependencyProperty.Register(
@@ -312,10 +256,6 @@ namespace ModernWpf.Controls
             set => SetValue(CloseButtonCommandParameterProperty, value);
         }
 
-        #endregion
-
-        #region CloseButtonStyle
-
         public static readonly DependencyProperty CloseButtonStyleProperty =
             DependencyProperty.Register(
                 nameof(CloseButtonStyle),
@@ -328,10 +268,6 @@ namespace ModernWpf.Controls
             get => (Style)GetValue(CloseButtonStyleProperty);
             set => SetValue(CloseButtonStyleProperty, value);
         }
-
-        #endregion
-
-        #region DefaultButton
 
         public static readonly DependencyProperty DefaultButtonProperty =
             DependencyProperty.Register(
@@ -351,10 +287,6 @@ namespace ModernWpf.Controls
             ((ContentDialog)d).UpdateDefaultButtonStates(true);
         }
 
-        #endregion
-
-        #region FullSizeDesired
-
         public static readonly DependencyProperty FullSizeDesiredProperty =
             DependencyProperty.Register(
                 nameof(FullSizeDesired),
@@ -373,10 +305,6 @@ namespace ModernWpf.Controls
             ((ContentDialog)d).UpdateVisualStates(true);
         }
 
-        #endregion
-
-        #region CornerRadius
-
         public static readonly DependencyProperty CornerRadiusProperty =
             DependencyProperty.Register(
                 nameof(CornerRadius),
@@ -390,10 +318,6 @@ namespace ModernWpf.Controls
             set => SetValue(CornerRadiusProperty, value);
         }
 
-        #endregion
-
-        #region IsShadowEnabled
-
         public static readonly DependencyProperty IsShadowEnabledProperty =
             DependencyProperty.Register(
                 nameof(IsShadowEnabled),
@@ -406,10 +330,6 @@ namespace ModernWpf.Controls
             get => (bool)GetValue(IsShadowEnabledProperty);
             set => SetValue(IsShadowEnabledProperty, value);
         }
-
-        #endregion
-
-        #region OpenDialog
 
         private static readonly DependencyProperty OpenDialogProperty =
             DependencyProperty.RegisterAttached(
@@ -426,8 +346,6 @@ namespace ModernWpf.Controls
         {
             window.SetValue(OpenDialogProperty, value);
         }
-
-        #endregion
 
         public Window Owner { get; set; }
 
@@ -567,6 +485,7 @@ namespace ModernWpf.Controls
                 {
                     ThrowAlreadyOpenException();
                 }
+
                 RemovePopup();
                 IsShowing = true;
                 m_isShowingInPlace = true;
@@ -637,13 +556,6 @@ namespace ModernWpf.Controls
                 CloseButton.Click += OnButtonClick;
             }
 
-#if DEBUG
-            //if (GetTemplateChild(DialogShowingStatesGroup) is VisualStateGroup dialogShowingStates)
-            //{
-            //    dialogShowingStates.CurrentStateChanging += DialogShowingStates_CurrentStateChanging;
-            //    dialogShowingStates.CurrentStateChanged += DialogShowingStates_CurrentStateChanged;
-            //}
-#endif
             UpdateVisualStates(false);
         }
 
@@ -854,6 +766,7 @@ namespace ModernWpf.Controls
                             e.Handled = true;
                         }
                     }
+
                     break;
 
                 case Key.Escape:
@@ -1001,6 +914,7 @@ namespace ModernWpf.Controls
             }
         }
 
+        /*
         private static void OnBackRequested(object sender, BackRequestedEventArgs e)
         {
             if (e.Source is Window window)
@@ -1013,6 +927,7 @@ namespace ModernWpf.Controls
                 }
             }
         }
+        */
 
         private void OnApplicationActivated(object sender, EventArgs e)
         {
@@ -1035,14 +950,18 @@ namespace ModernWpf.Controls
             }
         }
 
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
         private Task WaitUntilApplicationActivated()
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
         {
             m_activatedTcs = new TaskCompletionSource<bool>();
             Application.Current.Activated += OnApplicationActivated;
             return m_activatedTcs.Task;
         }
 
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
         private Task WaitUntilOwnerActivated(Window owner)
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
         {
             m_activatedTcs = new TaskCompletionSource<bool>();
             owner.Activated += OnOwnerActivated;
@@ -1116,11 +1035,14 @@ namespace ModernWpf.Controls
             element.ClearValue(KeyboardNavigation.ControlTabNavigationProperty);
         }
 
+#pragma warning disable CA1852 // Seal internal types
         private class ContentDialogAdorner : Adorner
+#pragma warning restore CA1852 // Seal internal types
         {
             private UIElement _child;
 
-            public ContentDialogAdorner(UIElement adornedElement, UIElement child) : base(adornedElement)
+            public ContentDialogAdorner(UIElement adornedElement, UIElement child)
+                : base(adornedElement)
             {
                 Child = child ?? throw new ArgumentNullException(nameof(child));
             }
@@ -1172,7 +1094,9 @@ namespace ModernWpf.Controls
             protected override Size ArrangeOverride(Size size)
             {
                 var finalSize = base.ArrangeOverride(size);
+#pragma warning disable SA1129 // Do not use default value type constructor
                 Child?.Arrange(new Rect(new Point(), finalSize));
+#pragma warning restore SA1129 // Do not use default value type constructor
                 return finalSize;
             }
         }
@@ -1194,7 +1118,6 @@ namespace ModernWpf.Controls
                 Dispatcher.BeginInvoke(() =>
                 {
                     var tabNavigation = KeyboardNavigation.GetTabNavigation(GetTemplateChild("BackgroundElement"));
-                    Debug.Assert(tabNavigation == KeyboardNavigationMode.Cycle);
                 });
             }
         }
@@ -1229,7 +1152,9 @@ namespace ModernWpf.Controls
         private const string NoBorderState = "NoBorder";
         private const string AccentColorBorderState = "AccentColorBorder";
 
+#pragma warning disable SA1308 // Variable names should not be prefixed
         private TaskCompletionSource<ContentDialogResult> m_showTcs;
+
         private TaskCompletionSource<bool> m_activatedTcs;
         private ContentDialogAdorner m_adorner;
         private AdornerLayer m_adornerLayer;
@@ -1239,7 +1164,10 @@ namespace ModernWpf.Controls
         private bool m_isShowingInPlace;
         private Window m_openDialogOwner;
         private ContentDialogResult m_result;
+#pragma warning disable SA1214 // Readonly fields should appear before non-readonly fields
         private readonly DispatcherTimer m_closeTimer;
+#pragma warning restore SA1214 // Readonly fields should appear before non-readonly fields
         private WeakReference<IInputElement> m_weakRefToPreviousFocus; // Keep the previously focused element before ContentDialog to open
+#pragma warning restore SA1308 // Variable names should not be prefixed
     }
 }
