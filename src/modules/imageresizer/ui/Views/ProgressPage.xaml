@@ -34,13 +34,12 @@
             Margin="0,12,0,0"
             Padding="12,12"
             BorderThickness="0,1,0,0">
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button
-                    MinWidth="76"
-                    Command="{Binding StopCommand}"
-                    Content="{x:Static p:Resources.Progress_Stop}"
-                    IsCancel="True" />
-            </StackPanel>
+            <Button
+                MinWidth="76"
+                HorizontalAlignment="Right"
+                Command="{Binding StopCommand}"
+                Content="{x:Static p:Resources.Progress_Stop}"
+                IsCancel="True" />
         </Border>
     </StackPanel>
 </UserControl>

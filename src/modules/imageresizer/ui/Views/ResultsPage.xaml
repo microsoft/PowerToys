@@ -10,8 +10,7 @@
             FontSize="16"
             Text="{x:Static p:Resources.Results_MainInstruction}" />
         <ScrollViewer
-            MaxWidth="363"
-            MaxHeight="350"
+            MaxHeight="360"
             HorizontalAlignment="Stretch"
             VerticalScrollBarVisibility="Auto">
             <ItemsControl Margin="12,4,12,0" ItemsSource="{Binding Errors}">
@@ -28,20 +27,20 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
         <Border
             Margin="0,12,0,0"
             Padding="12,12"
             Background="{DynamicResource LayerFillColorDefaultBrush}"
             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0">
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button
-                    MinWidth="76"
-                    Command="{Binding CloseCommand}"
-                    Content="{x:Static p:Resources.Results_Close}"
-                    IsCancel="True"
-                    IsDefault="True" />
-            </StackPanel>
+            <Button
+                MinWidth="76"
+                HorizontalAlignment="Right"
+                Command="{Binding CloseCommand}"
+                Content="{x:Static p:Resources.Results_Close}"
+                IsCancel="True"
+                IsDefault="True" />
         </Border>
     </StackPanel>
 </UserControl>
