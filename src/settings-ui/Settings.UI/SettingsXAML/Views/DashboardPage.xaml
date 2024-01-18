@@ -310,6 +310,7 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
                                 Tag="{x:Bind Tag, Mode=OneWay}">
                                 <Grid
                                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -401,6 +402,7 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
                                 Tag="{x:Bind Tag, Mode=OneWay}">
                                 <Grid
                                     Padding="16,12"
