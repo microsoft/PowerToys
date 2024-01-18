@@ -32,7 +32,7 @@
             Margin="0,12,0,0"
             Padding="12,12"
             Background="{DynamicResource LayerFillColorDefaultBrush}"
-            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0">
             <Button
                 MinWidth="76"

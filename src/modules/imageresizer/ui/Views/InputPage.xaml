@@ -70,7 +70,7 @@
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="*" MinHeight="160" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -215,7 +215,6 @@
                 Height="1"
                 Margin="0,8"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
                 Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
 
             <ui:InfoBar
@@ -252,7 +251,9 @@
                     MinWidth="76"
                     Margin="8,0,0,0"
                     AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
+                    Background="{DynamicResource AccentFillColorDefaultBrush}"
                     Command="{Binding ResizeCommand}"
+                    Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                     IsDefault="True">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon FontSize="18" Symbol="ResizeImage20" />

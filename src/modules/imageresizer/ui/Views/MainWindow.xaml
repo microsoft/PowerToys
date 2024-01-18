@@ -1,4 +1,4 @@
-﻿<ui:FluentWindow
+<ui:FluentWindow
     x:Class="ImageResizer.Views.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,9 +9,6 @@
     xmlns:vm="clr-namespace:ImageResizer.ViewModels"
     Name="_this"
     Width="360"
-    Height="506"
-    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
-    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="{x:Static p:Resources.ImageResizer}"
     ExtendsContentIntoTitleBar="True"
     Icon="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico"
