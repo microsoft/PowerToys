@@ -112,6 +112,15 @@ namespace PowerLauncher.Helper
 
         public static bool IsWindowFullscreen()
         {
+            // First, check to see if a game is fullscreen, if so, we definitely have
+            // a full-screen window
+            UserNotificationState state;
+            if (Marshal.GetExceptionForHR(NativeMethods.SHQueryUserNotificationState(out state)) == null &&
+                state == UserNotificationState.QUNS_RUNNING_D3D_FULL_SCREEN)
+            {
+                return true;
+            }
+
             // get current active window
             IntPtr hWnd = NativeMethods.GetForegroundWindow();
 

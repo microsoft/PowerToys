@@ -44,7 +44,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.AlwaysOnTop: return generalSettingsConfig.Enabled.AlwaysOnTop;
                 case ModuleType.Awake: return generalSettingsConfig.Enabled.Awake;
                 case ModuleType.ColorPicker: return generalSettingsConfig.Enabled.ColorPicker;
-                case ModuleType.CmdNotFound: return generalSettingsConfig.Enabled.CmdNotFound;
                 case ModuleType.CropAndLock: return generalSettingsConfig.Enabled.CropAndLock;
                 case ModuleType.EnvironmentVariables: return generalSettingsConfig.Enabled.EnvironmentVariables;
                 case ModuleType.FancyZones: return generalSettingsConfig.Enabled.FancyZones;
@@ -77,7 +76,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.AlwaysOnTop: generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
                 case ModuleType.Awake: generalSettingsConfig.Enabled.Awake = isEnabled; break;
                 case ModuleType.ColorPicker: generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
-                case ModuleType.CmdNotFound: generalSettingsConfig.Enabled.CmdNotFound = isEnabled; break;
                 case ModuleType.CropAndLock: generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
                 case ModuleType.EnvironmentVariables: generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
                 case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
@@ -109,7 +107,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.AlwaysOnTop: return GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
                 case ModuleType.Awake: return GPOWrapper.GetConfiguredAwakeEnabledValue();
                 case ModuleType.ColorPicker: return GPOWrapper.GetConfiguredColorPickerEnabledValue();
-                case ModuleType.CmdNotFound: return GPOWrapper.GetConfiguredCmdNotFoundEnabledValue();
                 case ModuleType.CropAndLock: return GPOWrapper.GetConfiguredCropAndLockEnabledValue();
                 case ModuleType.EnvironmentVariables: return GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
                 case ModuleType.FancyZones: return GPOWrapper.GetConfiguredFancyZonesEnabledValue();
@@ -142,7 +139,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.AlwaysOnTop => Color.FromArgb(255, 74, 196, 242), // #4ac4f2
                 ModuleType.Awake => Color.FromArgb(255, 40, 177, 233), // #28b1e9
                 ModuleType.ColorPicker => Color.FromArgb(255, 7, 129, 211), // #0781d3
-                ModuleType.CmdNotFound => Color.FromArgb(255, 31, 164, 227), // #1fa4e3
                 ModuleType.CropAndLock => Color.FromArgb(255, 32, 166, 228), // #20a6e4
                 ModuleType.EnvironmentVariables => Color.FromArgb(255, 16, 132, 208), // #1084d0
                 ModuleType.FancyZones => Color.FromArgb(255, 65, 209, 247), // #41d1f7
@@ -175,7 +171,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.AlwaysOnTop => typeof(AlwaysOnTopPage),
                 ModuleType.Awake => typeof(AwakePage),
                 ModuleType.ColorPicker => typeof(ColorPickerPage),
-                ModuleType.CmdNotFound => typeof(CmdNotFoundPage),
                 ModuleType.CropAndLock => typeof(CropAndLockPage),
                 ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
                 ModuleType.FancyZones => typeof(FancyZonesPage),

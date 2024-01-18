@@ -19,6 +19,8 @@ constexpr int FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS = 500;
 constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM = 9;
 constexpr FindMyMouseActivationMethod FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD = FindMyMouseActivationMethod::DoubleLeftControlKey;
 constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE = 1000;
+constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_INTERVAL_MS = 1000;
+constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_FACTOR = 400; // 400 percent
 
 struct FindMyMouseSettings
 {
@@ -31,6 +33,8 @@ struct FindMyMouseSettings
     int animationDurationMs = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
     int spotlightInitialZoom = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
     int shakeMinimumDistance = FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE;
+    int shakeIntervalMs = FIND_MY_MOUSE_DEFAULT_SHAKE_INTERVAL_MS;
+    int shakeFactor = FIND_MY_MOUSE_DEFAULT_SHAKE_FACTOR;
     std::vector<std::wstring> excludedApps;
 };
 
