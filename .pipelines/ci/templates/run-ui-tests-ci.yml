@@ -19,6 +19,7 @@ jobs:
     displayName: Download artifacts
     inputs:
       artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}
+      path: $(Build.ArtifactStagingDirectory)
 
   - task: VSTest@2
     displayName: 'UI Tests'
@@ -27,6 +28,7 @@ jobs:
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       testSelector: 'testAssemblies'
+      searchFolder: '$(Build.ArtifactStagingDirectory)'
       testAssemblyVer2: |
         **\UITests-FancyZones.dll
         **\UITests-FancyZonesEditor.dll
