@@ -47,6 +47,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredPeekEnabledValue();
             static GpoRuleConfigured GetDisableNewUpdateToastValue();
             static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
+            static GpoRuleConfigured GetDisableShowWhatsNewAfterUpdatesValue();
             static GpoRuleConfigured GetAllowExperimentationValue();
             static GpoRuleConfigured GetRunPluginEnabledValue(String pluginID);
             static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();

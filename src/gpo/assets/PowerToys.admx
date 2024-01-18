@@ -463,6 +463,16 @@
       </disabledValue>
     </policy>
 	-->
+	<policy name="DoNotShowWhatsNewAfterUpdates" class="Both" displayName="$(string.DoNotShowWhatsNewAfterUpdates)" explainText="$(string.DoNotShowWhatsNewAfterUpdatesDescription)" key="Software\Policies\PowerToys" valueName="DoNotShowWhatsNewAfterUpdates">
+      <parentCategory ref="InstallerUpdates" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_78_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="AllowExperimentation" class="Both" displayName="$(string.AllowExperimentation)" explainText="$(string.AllowExperimentationDescription)" key="Software\Policies\PowerToys" valueName="AllowExperimentation">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />

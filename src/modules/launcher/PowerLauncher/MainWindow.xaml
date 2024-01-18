@@ -72,6 +72,7 @@
                 x:Name="pluginsHintsList"
                 Grid.Row="1"
                 Margin="16,0,0,0"
+                Padding="0,0,32,0"
                 ItemContainerStyle="{StaticResource PluginsListViewItemStyle}"
                 ItemsSource="{Binding Plugins}"
                 PreviewMouseLeftButtonUp="PluginsHintsList_PreviewMouseLeftButtonUp"
@@ -79,6 +80,14 @@
                 ScrollViewer.VerticalScrollBarVisibility="Auto"
                 SelectedItem="{Binding SelectedPlugin, Mode=TwoWay}"
                 SelectionMode="Single">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel
+                            Margin="16,0"
+                            IsVirtualizing="{TemplateBinding VirtualizingPanel.IsVirtualizing}"
+                            VirtualizationMode="{TemplateBinding VirtualizingPanel.VirtualizationMode}" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid>

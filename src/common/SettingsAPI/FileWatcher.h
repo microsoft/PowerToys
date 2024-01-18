@@ -11,16 +11,14 @@
 
 class FileWatcher
 {
-    DWORD m_refreshPeriod;
     std::wstring m_path;
+    std::wstring m_file_name;
     std::optional<FILETIME> m_lastWrite;
     std::function<void()> m_callback;
-    HANDLE m_abortEvent;
-    std::thread m_thread;
-    
+    wil::unique_folder_change_reader_nothrow m_folder_change_reader;
+
     std::optional<FILETIME> MyFileTime();
-    void Run();
 public:
-    FileWatcher(const std::wstring& path, std::function<void()> callback, DWORD refreshPeriod = 1000);
+    FileWatcher(const std::wstring& path, std::function<void()> callback);
     ~FileWatcher();
 };

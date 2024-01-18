@@ -46,6 +46,11 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                 path = path[1..];
             }
 
+            if (!DoesPathExist(path, workspaceEnv.Value, machineName))
+            {
+                return null;
+            }
+
             var folderName = Path.GetFileName(path);
 
             // Check we haven't returned '' if we have a path like C:\
@@ -65,6 +70,24 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                 WorkspaceEnvironment = workspaceEnv ?? default,
                 VSCodeInstance = vscodeInstance,
             };
+        }
+
+        private bool DoesPathExist(string path, WorkspaceEnvironment workspaceEnv, string machineName)
+        {
+            if (workspaceEnv == WorkspaceEnvironment.Local || workspaceEnv == WorkspaceEnvironment.RemoteWSL)
+            {
+                var resolvedPath = path;
+
+                if (workspaceEnv == WorkspaceEnvironment.RemoteWSL)
+                {
+                    resolvedPath = $"\\\\wsl$\\{machineName}{resolvedPath.Replace('/', '\\')}";
+                }
+
+                return Directory.Exists(resolvedPath) || File.Exists(resolvedPath);
+            }
+
+            // If the workspace environment is not Local or WSL, assume the path exists
+            return true;
         }
 
         public List<VSCodeWorkspace> Workspaces

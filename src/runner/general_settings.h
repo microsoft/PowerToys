@@ -13,6 +13,7 @@ struct GeneralSettings
     bool enableWarningsElevatedApps;
     bool showNewUpdatesToastNotification;
     bool downloadUpdatesAutomatically;
+    bool showWhatsNewAfterUpdates;
     bool enableExperimentation;
     std::wstring theme;
     std::wstring systemTheme;
