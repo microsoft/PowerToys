@@ -70,7 +70,7 @@
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" MinHeight="160" />
+                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -182,31 +182,35 @@
             <!--  CheckBoxes  -->
             <StackPanel
                 Grid.Row="1"
-                VerticalAlignment="Top"
-                Orientation="Vertical">
+                Margin="16,12,16,0"
+                VerticalAlignment="Top">
+                <!--  Note: TextBlock because text wrapping is not supported by CheckBox  -->
+                <CheckBox IsChecked="{Binding Settings.ShrinkOnly}">
+                    <CheckBox.Content>
+                        <TextBlock Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
+                    </CheckBox.Content>
+                </CheckBox>
 
-                <CheckBox
-                    Margin="16,12,16,0"
-                    Content="{x:Static p:Resources.Input_ShrinkOnly}"
-                    IsChecked="{Binding Settings.ShrinkOnly}" />
-
-                <CheckBox
-                    Margin="16,2,16,0"
-                    Content="{x:Static p:Resources.Input_IgnoreOrientation}"
-                    IsChecked="{Binding Settings.IgnoreOrientation}" />
+                <CheckBox IsChecked="{Binding Settings.IgnoreOrientation}">
+                    <CheckBox.Content>
+                        <TextBlock Text="{x:Static p:Resources.Input_IgnoreOrientation}" TextWrapping="Wrap" />
+                    </CheckBox.Content>
+                </CheckBox>
                 <!--
                     TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
                     to overwrite any files in the directory instead (issue #88)
                 -->
-                <CheckBox
-                    Margin="16,2,16,0"
-                    Content="{x:Static p:Resources.Input_Replace}"
-                    IsChecked="{Binding Settings.Replace}" />
+                <CheckBox IsChecked="{Binding Settings.Replace}">
+                    <CheckBox.Content>
+                        <TextBlock Text="{x:Static p:Resources.Input_Replace}" TextWrapping="Wrap" />
+                    </CheckBox.Content>
+                </CheckBox>
 
-                <CheckBox
-                    Margin="16,2,16,0"
-                    Content="{x:Static p:Resources.Input_RemoveMetadata}"
-                    IsChecked="{Binding Settings.RemoveMetadata}" />
+                <CheckBox IsChecked="{Binding Settings.RemoveMetadata}">
+                    <CheckBox.Content>
+                        <TextBlock Text="{x:Static p:Resources.Input_RemoveMetadata}" TextWrapping="Wrap" />
+                    </CheckBox.Content>
+                </CheckBox>
             </StackPanel>
 
             <!--  Separator line  -->
