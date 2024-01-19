@@ -305,7 +305,7 @@ steps:
   condition: and(succeeded(), ne(variables['BuildPlatform'],'arm64')) 
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)'
-    contents: '$(BuildPlatform)/$(BuildConfiguration)/**/?(*.exe|*.dll|*.pdb)'
+    contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
     targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
 
 - task: PublishBuildArtifacts@1
