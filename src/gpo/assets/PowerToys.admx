@@ -441,6 +441,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+	<policy name="DisableNewUpdateToast" class="Both" displayName="$(string.DisableNewUpdateToast)" explainText="$(string.DisableNewUpdateToastDescription)" key="Software\Policies\PowerToys" valueName="DisableNewUpdateAvailableToast">
+      <parentCategory ref="InstallerUpdates" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_78_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
 	<!-- This policy is implemented for later usage (PT v1.0 and later) and therefore inactive. (To make it working please update `src/runner/UpdateUtils.cpp`)
 	<policy name="DisablePeriodicUpdateCheck" class="Both" displayName="$(string.DisablePeriodicUpdateCheck)" explainText="$(string.DisablePeriodicUpdateCheckDescription)" key="Software\Policies\PowerToys" valueName="PeriodicUpdateCheckDisabled">
       <parentCategory ref="InstallerUpdates" />

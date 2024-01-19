@@ -72,6 +72,14 @@ If enabled, the notification is suspended.
 If disabled or not configured, the notification is shown.
 
 Note: The notification about new major versions is always displayed.
+
+This policy has no effect if the update notification is disabled by the policy "Disable Action Center notification for new updates" or the user setting.
+</string>
+      <string id="DisableNewUpdateToastDescription">This policy configures whether the action center notification for new updates is shown or not.
+
+If enabled, the notification is disabled.
+
+If disabled or not configured, the user can control if the notification is shown or not.
 </string>
       <string id="DisablePeriodicUpdateCheckDescription">This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
 
@@ -156,6 +164,7 @@ Note: Changes require a restart of PowerToys Run.
       <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
       <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>
       <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
+      <string id="DisableNewUpdateToast">Disable Action Center notification for new updates</string>
       <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
       <string id="AllowExperimentation">Allow Experimentation</string>
       <string id="PowerToysRunAllPluginsEnabledState">Configure enabled state for all plugins</string>
