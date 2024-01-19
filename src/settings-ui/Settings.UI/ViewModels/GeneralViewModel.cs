@@ -121,7 +121,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _startup = GeneralSettingsConfig.Startup;
+            _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
+            _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
             _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
 
             _isElevated = isElevated;
@@ -138,8 +140,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
-            _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
+            _newUpdatesToastIsGpoDisabled = GPOWrapper.GetDisableNewUpdateToastValue() == GpoRuleConfigured.Enabled;
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
+            _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
+            _showWhatsNewAfterUpdatesIsGpoDisabled = GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue() == GpoRuleConfigured.Enabled;
 
             if (dispatcherAction != null)
             {
@@ -154,8 +158,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enableWarningsElevatedApps;
         private int _themeIndex;
 
+        private bool _showNewUpdatesToastNotification;
+        private bool _newUpdatesToastIsGpoDisabled;
         private bool _autoDownloadUpdates;
         private bool _autoDownloadUpdatesIsGpoDisabled;
+        private bool _showWhatsNewAfterUpdates;
+        private bool _showWhatsNewAfterUpdatesIsGpoDisabled;
         private bool _enableExperimentation;
         private bool _experimentationIsGpoDisallowed;
 
@@ -299,6 +307,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowNewUpdatesToastNotification
+        {
+            get
+            {
+                return _showNewUpdatesToastNotification && !_newUpdatesToastIsGpoDisabled;
+            }
+
+            set
+            {
+                if (_showNewUpdatesToastNotification != value)
+                {
+                    _showNewUpdatesToastNotification = value;
+                    GeneralSettingsConfig.ShowNewUpdatesToastNotification = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsNewUpdatesToastDisabledGpoConfigured
+        {
+            get => _newUpdatesToastIsGpoDisabled;
+        }
+
         public bool AutoDownloadUpdates
         {
             get
@@ -327,6 +358,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowAutoDownloadUpdatesGpoInformation
         {
             get => _isAdmin && _autoDownloadUpdatesIsGpoDisabled;
+        }
+
+        public bool ShowWhatsNewAfterUpdates
+        {
+            get
+            {
+                return _showWhatsNewAfterUpdates && !_showWhatsNewAfterUpdatesIsGpoDisabled;
+            }
+
+            set
+            {
+                if (_showWhatsNewAfterUpdates != value)
+                {
+                    _showWhatsNewAfterUpdates = value;
+                    GeneralSettingsConfig.ShowWhatsNewAfterUpdates = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowWhatsNewAfterUpdatesIsGpoDisabled
+        {
+            get => _showWhatsNewAfterUpdatesIsGpoDisabled;
         }
 
         public bool EnableExperimentation

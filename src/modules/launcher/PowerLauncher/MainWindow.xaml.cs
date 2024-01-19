@@ -55,6 +55,10 @@ namespace PowerLauncher
             _viewModel = mainVM;
             _nativeWaiterCancelToken = nativeWaiterCancelToken;
             _settings = settings;
+
+            // Fixes #30850
+            AppContext.SetSwitch("Switch.System.Windows.Controls.Grid.StarDefinitionsCanExceedAvailableSpace", true);
+
             InitializeComponent();
 
             if (OSVersionHelper.IsWindows11())
