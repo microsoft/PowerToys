@@ -15,6 +15,7 @@
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
+static bool show_new_updates_toast_notification = true;
 static bool download_updates_automatically = true;
 static bool show_whats_new_after_updates = true;
 static bool enable_experimentation = true;
@@ -39,6 +40,7 @@ json::JsonObject GeneralSettings::to_json()
 
     result.SetNamedValue(L"is_elevated", json::value(isElevated));
     result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
+    result.SetNamedValue(L"show_new_updates_toast_notification", json::value(showNewUpdatesToastNotification));
     result.SetNamedValue(L"download_updates_automatically", json::value(downloadUpdatesAutomatically));
     result.SetNamedValue(L"show_whats_new_after_updates", json::value(showWhatsNewAfterUpdates));
     result.SetNamedValue(L"enable_experimentation", json::value(enableExperimentation));
@@ -60,6 +62,7 @@ json::JsonObject load_general_settings()
         settings_theme = L"system";
     }
     run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
+    show_new_updates_toast_notification = loaded.GetNamedBoolean(L"show_new_updates_toast_notification", true);
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
     show_whats_new_after_updates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation",true);
@@ -76,6 +79,7 @@ GeneralSettings get_general_settings()
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
         .enableWarningsElevatedApps = enable_warnings_elevated_apps,
+        .showNewUpdatesToastNotification = show_new_updates_toast_notification,
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .showWhatsNewAfterUpdates = show_whats_new_after_updates,
         .enableExperimentation = enable_experimentation,
@@ -100,6 +104,8 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
 
     enable_warnings_elevated_apps = general_configs.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
+
+    show_new_updates_toast_notification = general_configs.GetNamedBoolean(L"show_new_updates_toast_notification", true);
 
     download_updates_automatically = general_configs.GetNamedBoolean(L"download_updates_automatically", true);
     show_whats_new_after_updates = general_configs.GetNamedBoolean(L"show_whats_new_after_updates", true);
