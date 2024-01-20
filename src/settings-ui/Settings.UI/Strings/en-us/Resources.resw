@@ -2932,7 +2932,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to pin or unpin an app window</value>
-    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
