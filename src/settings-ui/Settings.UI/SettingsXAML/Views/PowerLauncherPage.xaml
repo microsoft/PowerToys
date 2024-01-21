@@ -24,7 +24,7 @@
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
-                    x:Uid="GPO_IsSettingForced"
+                    x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -273,7 +273,7 @@
 
 
                     <InfoBar
-                        x:Uid="Run_SomePluginsAreGpoManaged"
+                        x:Uid="GPO_SomeRunPluginsAreManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"

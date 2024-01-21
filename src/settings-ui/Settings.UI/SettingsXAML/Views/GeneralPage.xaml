@@ -364,7 +364,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableExperimentation, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_ExperimentationIsDisallowed"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
