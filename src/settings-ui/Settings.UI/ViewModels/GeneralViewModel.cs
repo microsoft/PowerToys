@@ -741,7 +741,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return !AutoUpdatesDisabledOnDevBuild && !IsNewVersionDownloading;
+                return !_isDevBuild && !IsNewVersionDownloading;
             }
         }
 
