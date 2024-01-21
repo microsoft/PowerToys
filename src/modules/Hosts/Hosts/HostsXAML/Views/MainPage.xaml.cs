@@ -108,7 +108,7 @@ namespace Hosts.Views
             }
         }
 
-        private async void Clone_Click(object sender, RoutedEventArgs e)
+        private async void Duplicate_Click(object sender, RoutedEventArgs e)
         {
             if (Entries.SelectedItem is Entry entry)
             {
