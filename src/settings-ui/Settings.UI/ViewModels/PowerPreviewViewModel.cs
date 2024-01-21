@@ -397,9 +397,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsSVGRenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool SVGRenderIsGpoEnabled
         {
-            get => _svgRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _svgRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool SVGRenderIsGpoDisabled
+        {
+            get
+            {
+                return _svgRenderIsGpoDisabled;
+            }
         }
 
         public bool SVGThumbnailIsEnabled
@@ -426,9 +439,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsSVGThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool SVGThumbnailIsGpoEnabled
         {
-            get => _svgThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _svgThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool SVGThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _svgThumbnailIsGpoDisabled;
+            }
         }
 
         public bool MDRenderIsEnabled
@@ -455,9 +481,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsMDRenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool MDRenderIsGpoEnabled
         {
-            get => _mdRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _mdRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool MDRenderIsGpoDisabled
+        {
+            get
+            {
+                return _mdRenderIsGpoDisabled;
+            }
         }
 
         public bool MonacoRenderIsEnabled
@@ -489,7 +528,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _monacoRenderIsEnabled;
+                return _monacoRenderIsGpoEnabled;
             }
         }
 
@@ -580,9 +619,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsPDFRenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool PDFRenderIsGpoEnabled
         {
-            get => _pdfRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _pdfRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool PDFRenderIsGpoDisabled
+        {
+            get
+            {
+                return _pdfRenderIsGpoDisabled;
+            }
         }
 
         public bool PDFThumbnailIsEnabled
@@ -609,9 +661,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsPDFThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool PDFThumbnailIsGpoEnabled
         {
-            get => _pdfThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _pdfThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool PDFThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _pdfThumbnailIsGpoDisabled;
+            }
         }
 
         public bool GCODERenderIsEnabled
@@ -638,9 +703,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsGCODERenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool GCODERenderIsGpoEnabled
         {
-            get => _gcodeRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _gcodeRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool GCODERenderIsGpoDisabled
+        {
+            get
+            {
+                return _gcodeRenderIsGpoDisabled;
+            }
         }
 
         public bool GCODEThumbnailIsEnabled
@@ -667,9 +745,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsGCODEThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool GCODEThumbnailIsGpoEnabled
         {
-            get => _gcodeThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _gcodeThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool GCODEThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _gcodeThumbnailIsGpoDisabled;
+            }
         }
 
         public bool STLThumbnailIsEnabled
@@ -696,9 +787,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsSTLThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool STLThumbnailIsGpoEnabled
         {
-            get => _stlThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _stlThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool STLThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _stlThumbnailIsGpoDisabled;
+            }
         }
 
         public string STLThumbnailColor
@@ -743,9 +847,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsQOIRenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool QOIRenderIsGpoEnabled
         {
-            get => _qoiRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _qoiRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool QOIRenderIsGpoDisabled
+        {
+            get
+            {
+                return _qoiRenderIsGpoDisabled;
+            }
         }
 
         public bool QOIThumbnailIsEnabled
@@ -772,9 +889,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsQOIThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool QOIThumbnailIsGpoEnabled
         {
-            get => _qoiThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _qoiRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool QOIThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _qoiThumbnailIsGpoDisabled;
+            }
         }
 
         public string GetSettingsSubPath()
