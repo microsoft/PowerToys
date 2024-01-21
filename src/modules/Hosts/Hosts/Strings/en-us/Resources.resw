@@ -173,6 +173,9 @@
   <data name="ClearFiltersLink.Content" xml:space="preserve">
     <value>Clear filters</value>
   </data>
+  <data name="Clone.Text" xml:space="preserve">
+    <value>Clone</value>
+  </data>
   <data name="Comment.Header" xml:space="preserve">
     <value>Comment</value>
     <comment>"Comment" refers to the comment of the entry</comment>

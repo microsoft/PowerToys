@@ -186,6 +186,19 @@
                             </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
                         <MenuFlyoutItem
+                            x:Uid="Clone"
+                            Click="Clone_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xF413;" />
+                            </MenuFlyoutItem.Icon>
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="C"
+                                    Modifiers="Control"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
                             x:Uid="Ping"
                             Click="Ping_Click"
                             Icon="TwoBars">
