@@ -298,12 +298,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from GitHub too.)
-        public static bool AutoUpdatesDisabledOnDevBuild
+        public bool SomeUpdateSettingsAreGpoManaged
         {
             get
             {
-                return Helper.GetProductVersion() == "v0.0.1";
+                return _newUpdatesToastIsGpoDisabled ||
+                    (_isAdmin && _autoDownloadUpdatesIsGpoDisabled) ||
+                    _showWhatsNewAfterUpdatesIsGpoDisabled;
             }
         }
 
@@ -325,9 +326,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsNewUpdatesToastDisabledGpoConfigured
+        public bool ShowNewUpdatesToastNotificationCardEnabled
         {
-            get => _newUpdatesToastIsGpoDisabled;
+            get => Helper.GetProductVersion() != "v0.0.1" && !_newUpdatesToastIsGpoDisabled;
+        }
+
+        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from GitHub too.)
+        public static bool AutoUpdatesDisabledOnDevBuild
+        {
+            get
+            {
+                return Helper.GetProductVersion() == "v0.0.1";
+            }
         }
 
         public bool AutoDownloadUpdates
@@ -353,13 +363,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => !AutoUpdatesDisabledOnDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
         }
 
-        // The settings card is hidden for users who are not a member of the Administrators group and in this case the GPO info should be hidden too.
-        // We hide it, because we don't want a normal user to enable the setting. He can't install the updates.
-        public bool ShowAutoDownloadUpdatesGpoInformation
-        {
-            get => _isAdmin && _autoDownloadUpdatesIsGpoDisabled;
-        }
-
         public bool ShowWhatsNewAfterUpdates
         {
             get
@@ -378,9 +381,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowWhatsNewAfterUpdatesIsGpoDisabled
+        public bool ShowWhatsNewAfterUpdatesCardEnabled
         {
-            get => _showWhatsNewAfterUpdatesIsGpoDisabled;
+            get => Helper.GetProductVersion() != "v0.0.1" && !_showWhatsNewAfterUpdatesIsGpoDisabled;
         }
 
         public bool EnableExperimentation
