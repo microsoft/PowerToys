@@ -120,6 +120,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     break;
             }
 
+            _isDevBuild = Helper.GetProductVersion() == "v0.0.1";
+
             _startup = GeneralSettingsConfig.Startup;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
@@ -151,6 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private bool _isDevBuild;
         private bool _startup;
         private bool _isElevated;
         private bool _runElevated;
@@ -328,16 +331,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsShowNewUpdatesToastNotificationCardEnabled
         {
-            get => Helper.GetProductVersion() != "v0.0.1" && !_newUpdatesToastIsGpoDisabled;
+            get => !_isDevBuild && !_newUpdatesToastIsGpoDisabled;
         }
 
         // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from GitHub too.)
-        public static bool AutoUpdatesDisabledOnDevBuild
+        public bool AutoUpdatesDisabledOnDevBuild
         {
-            get
-            {
-                return Helper.GetProductVersion() == "v0.0.1";
-            }
+            get => _isDevBuild;
         }
 
         public bool AutoDownloadUpdates
@@ -383,7 +383,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsShowWhatsNewAfterUpdatesCardEnabled
         {
-            get => Helper.GetProductVersion() != "v0.0.1" && !_showWhatsNewAfterUpdatesIsGpoDisabled;
+            get => !_isDevBuild && !_showWhatsNewAfterUpdatesIsGpoDisabled;
         }
 
         public bool EnableExperimentation
