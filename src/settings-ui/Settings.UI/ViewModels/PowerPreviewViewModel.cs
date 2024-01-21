@@ -49,6 +49,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _svgRenderEnabledStateIsGPOConfigured = true;
                 _svgRenderIsEnabled = _svgRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _svgRenderIsGpoEnabled = _svgRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _svgRenderIsGpoDisabled = _svgRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -59,24 +61,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _svgBackgroundSolidColor = Settings.Properties.SvgBackgroundSolidColor.Value;
             _svgBackgroundCheckeredShade = Settings.Properties.SvgBackgroundCheckeredShade.Value;
 
-            _svgThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgThumbnailsEnabledValue();
-            if (_svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _svgThumbnailEnabledStateIsGPOConfigured = true;
-                _svgThumbnailIsEnabled = _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
-            }
-
             _mdRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMarkdownPreviewEnabledValue();
             if (_mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.
                 _mdRenderEnabledStateIsGPOConfigured = true;
                 _mdRenderIsEnabled = _mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _mdRenderIsGpoEnabled = _mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _mdRenderIsGpoDisabled = _mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -90,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _monacoRenderEnabledStateIsGPOConfigured = true;
                 _monacoRenderIsEnabled = _monacoRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
                 _monacoRenderIsGpoEnabled = _monacoRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-                _gcodeRenderIsGpoDisabled = _monacoRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+                _monacoRenderIsGpoDisabled = _monacoRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -107,6 +99,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _pdfRenderEnabledStateIsGPOConfigured = true;
                 _pdfRenderIsEnabled = _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _pdfRenderIsGpoEnabled = _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _pdfRenderIsGpoDisabled = _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -119,6 +113,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _gcodeRenderEnabledStateIsGPOConfigured = true;
                 _gcodeRenderIsEnabled = _gcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _gcodeRenderIsGpoEnabled = _gcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _gcodeRenderIsGpoDisabled = _gcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -131,10 +127,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _qoiRenderEnabledStateIsGPOConfigured = true;
                 _qoiRenderIsEnabled = _qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _qoiRenderIsGpoEnabled = _qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _qoiRenderIsGpoDisabled = _qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
                 _qoiRenderIsEnabled = Settings.Properties.EnableQoiPreview;
+            }
+
+            _svgThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgThumbnailsEnabledValue();
+            if (_svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _svgThumbnailEnabledStateIsGPOConfigured = true;
+                _svgThumbnailIsEnabled = _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _svgThumbnailIsGpoEnabled = _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _svgThumbnailIsGpoDisabled = _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+            }
+            else
+            {
+                _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
             }
 
             _pdfThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPdfThumbnailsEnabledValue();
@@ -143,6 +155,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _pdfThumbnailEnabledStateIsGPOConfigured = true;
                 _pdfThumbnailIsEnabled = _pdfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _pdfThumbnailIsGpoEnabled = _pdfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _pdfThumbnailIsGpoDisabled = _pdfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -155,6 +169,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _gcodeThumbnailEnabledStateIsGPOConfigured = true;
                 _gcodeThumbnailIsEnabled = _gcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _gcodeThumbnailIsGpoEnabled = _gcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _gcodeThumbnailIsGpoDisabled = _gcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -167,6 +183,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _stlThumbnailEnabledStateIsGPOConfigured = true;
                 _stlThumbnailIsEnabled = _stlThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _stlThumbnailIsGpoEnabled = _stlThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _stlThumbnailIsGpoDisabled = _stlThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -181,6 +199,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _qoiThumbnailEnabledStateIsGPOConfigured = true;
                 _qoiThumbnailIsEnabled = _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _qoiThumbnailIsGpoEnabled = _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _qoiThumbnailIsGpoDisabled = _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {

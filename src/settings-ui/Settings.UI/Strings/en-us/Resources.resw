@@ -4021,9 +4021,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>This setting is managed by your organization.</value>
   </data>
   <data name="GPO_SomePreviewPanesAreManaged.Title" xml:space="preserve">
-    <value>The enabled state of some preview panes is managed by your organization.</value>
+    <value>The enabled state of some preview handlers is managed by your organization.</value>
   </data>
   <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
-    <value>The enabled state of some thumbnail providers is managed by your organization.</value>
+    <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
   </data>
 </root>

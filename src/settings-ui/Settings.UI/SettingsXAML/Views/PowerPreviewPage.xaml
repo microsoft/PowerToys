@@ -73,7 +73,7 @@
                         IsEnabled="{x:Bind ViewModel.MonacoRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
-                            IsEnabled="{x:Bind ViewModel.MonacoRenderIsGpoEnabled, Mode=OneWay}"
+                            IsEnabled="{x:Bind ViewModel.MonacoRenderIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                             IsOn="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
