@@ -334,12 +334,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => !_isDevBuild && !_newUpdatesToastIsGpoDisabled;
         }
 
-        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from GitHub too.)
-        public bool AutoUpdatesDisabledOnDevBuild
-        {
-            get => _isDevBuild;
-        }
-
         public bool AutoDownloadUpdates
         {
             get
@@ -360,7 +354,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsAutoDownloadUpdatesCardEnabled
         {
-            get => !AutoUpdatesDisabledOnDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
+            get => !_isDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
         }
 
         public bool ShowWhatsNewAfterUpdates
