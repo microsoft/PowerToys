@@ -187,14 +187,17 @@
                                 IsOpen="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
                                 IsTabStop="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
                                 Severity="Informational" />
-                            <tkcontrols:SettingsCard IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.ShowNewUpdatesToastNotificationCardEnabled, Converter={StaticResource BoolNegationConverter}}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" Checked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowNewUpdatesToastNotificationCardEnabled}">
+                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAutoDownloadUpdatesCardEnabled}" Visibility="{x:Bind ViewModel.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" Checked="{Binding Mode=TwoWay, Path=ViewModel.AutoDownloadUpdates}" />
+                            <tkcontrols:SettingsCard
+                                ContentAlignment="Left"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAutoDownloadUpdatesCardEnabled}"
+                                Visibility="{x:Bind ViewModel.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesCardEnabled, Converter={StaticResource BoolNegationConverter}}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowWhatsNewAfterUpdates" Checked="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowWhatsNewAfterUpdatesCardEnabled}">
+                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowWhatsNewAfterUpdates" IsChecked="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

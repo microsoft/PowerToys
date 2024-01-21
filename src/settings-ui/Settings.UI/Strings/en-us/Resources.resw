@@ -4020,7 +4020,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GeneralPage_ShowNewUpdatesToast.Header" xml:space="preserve">
     <value>Show notifications for new updates</value>
   </data>
-  <data name="General_UpdateSettings" xml:space="preserve">
+  <data name="General_UpdateSettings.Header" xml:space="preserve">
     <value>Update settings</value>
   </data>
   <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">

@@ -326,7 +326,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowNewUpdatesToastNotificationCardEnabled
+        public bool IsShowNewUpdatesToastNotificationCardEnabled
         {
             get => Helper.GetProductVersion() != "v0.0.1" && !_newUpdatesToastIsGpoDisabled;
         }
@@ -381,7 +381,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowWhatsNewAfterUpdatesCardEnabled
+        public bool IsShowWhatsNewAfterUpdatesCardEnabled
         {
             get => Helper.GetProductVersion() != "v0.0.1" && !_showWhatsNewAfterUpdatesIsGpoDisabled;
         }
