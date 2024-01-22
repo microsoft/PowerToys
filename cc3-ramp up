@@ -1,0 +1,205 @@
+ using System;
+
+
+
+class MainClass {
+
+    public static void Main(string[] args) {
+
+        Console.WriteLine("Please enter a value in pounds (lbs): ");
+
+        double lbs = Convert.ToDouble(Console.ReadLine());
+
+        double kg = lbs * 0.45359237;
+
+        Console.WriteLine($"The value in kilograms (kg) is: {kg}");
+
+
+
+        Console.WriteLine("Please enter a value in miles (mi): ");
+
+        double mi = Convert.ToDouble(Console.ReadLine());
+
+        double km2 = mi * 1.60934;
+
+        Console.WriteLine($"The value in kilometers (km) is: {km2}");
+
+
+
+        Console.WriteLine("Please enter a value in Fahrenheit (°F): ");
+
+        double f = Convert.ToDouble(Console.ReadLine());
+
+        double c = (f - 32) * 5 / 9;
+
+        Console.WriteLine($"The value in Celsius (°C) is: {c}");
+
+
+
+        double totalAge = 0;
+
+        Console.WriteLine("Please enter 10 values for age of students: ");
+
+        for (int i = 0; i < 10; i++) {
+
+            int age = Convert.ToInt32(Console.ReadLine());
+
+            totalAge += age;
+
+        }
+
+        double averageAge = totalAge / 10;
+
+        Console.WriteLine($"The average age of the students is: {averageAge}");
+
+
+
+        string fantasyStory = "In the kingdom of Alderan, there was a legendary knight named Sir Balor, who wielded a powerful sword called Flameshadow. ";
+
+        fantasyStory += "He protected the kingdom from the clutches of the dark lord, Sauron, and his evil minions, including the sinister sorcerer, Lord Thane. ";
+
+        fantasyStory += "The valiant knight and his loyal steed, Gryff, embarked on countless quests, battling against great odds. ";
+
+        fantasyStory += "Their heroic deeds and selfless acts were remembered for generations, inspiring countless future champions. ";
+
+        Console.WriteLine(fantasyStory);
+
+    }
+
+}
+activity 2
+using System;
+
+
+
+class MainClass {
+
+    public static void Main(string[] args) {
+
+        Console.WriteLine("Please enter a positive integer: ");
+
+        int input = Convert.ToInt32(Console.ReadLine());
+
+        if (input <= 0) {
+
+            Console.WriteLine("Invalid input");
+
+            return;
+
+        }
+
+        for (int i = 1; i <= input; i++) {
+
+            for (int j = 1; j <= i; j++) {
+
+                Console.Write(j);
+
+                if (j < i) {
+
+                    Console.Write(" ");
+
+                }
+
+            }
+
+            Console.WriteLine();
+
+        }
+
+    }
+
+}
+activity 3
+using System;
+
+
+
+namespace NumberPattern
+
+{
+
+    class Program
+
+    {
+
+        static void Main(string[] args)
+
+        {
+
+            Console.Write("Enter a non-negative integer: ");
+
+            int n = Convert.ToInt32(Console.ReadLine());
+
+
+
+            if (n < 0)
+
+            {
+
+                Console.WriteLine("Invalid input");
+
+            }
+
+            else
+
+            {
+
+                int start = 1;
+
+                while (start <= n)
+
+                {
+
+                    Console.Write(start + " ");
+
+                    start++;
+
+                }
+
+
+
+                int prev = n;
+
+                while (prev >= 1)
+
+                {
+
+                    Console.Write(prev + " ");
+
+                    prev--;
+
+                }
+
+
+
+                prev = n - 1;
+
+                while (prev >= 1)
+
+                {
+
+                    int next = prev + 1;
+
+                    if (next <= n)
+
+                    {
+
+                        Console.Write(next + " ");
+
+                    }
+
+                    prev--;
+
+                }
+
+
+
+                Console.ReadKey();
+
+            }
+
+        }
+
+    }
+
+}
