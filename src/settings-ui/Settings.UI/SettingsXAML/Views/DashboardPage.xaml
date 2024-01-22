@@ -310,6 +310,7 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
                                 Tag="{x:Bind Tag, Mode=OneWay}">
                                 <Grid
                                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -321,14 +322,6 @@
                                         <RowDefinition />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
-                                    <Border Grid.RowSpan="2" Opacity="0.05">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,3">
-                                                <GradientStop Offset="0.5" Color="{x:Bind AccentColor, Mode=OneWay}" />
-                                                <GradientStop Offset="0.9" Color="Transparent" />
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                    </Border>
                                     <Grid Margin="16,8,16,0" ColumnSpacing="12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
@@ -408,6 +401,7 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
                                 Tag="{x:Bind Tag, Mode=OneWay}">
                                 <Grid
                                     Padding="16,12"
