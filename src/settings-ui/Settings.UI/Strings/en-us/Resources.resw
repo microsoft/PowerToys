@@ -4017,6 +4017,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
     <value>Command Not Found is not supported on the ARM64 architecture currently. We are actively working on a solution.</value>
   </data>
+  <data name="QuickAccent_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+    <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
+  </data>
   <data name="GeneralPage_ToggleSwitch_ShowNewUpdatesToast.Description" xml:space="preserve">
     <value>Notifications in the settings and the tray flyout are always shown</value>
   </data>
