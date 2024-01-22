@@ -1,7 +1,16 @@
 parameters:
-  configuration: 'Release'
-  platform: ''
-  additionalBuildArguments: '/p:RestorePackagesConfig=true -m'
+  - name: configuration
+    type: string
+    default: 'Release'
+  - name: platform
+    type: string
+    default: '/p:RestorePackagesConfig=true -m'
+  - name: additionalBuildArguments
+    type: string
+    default: '/p:RestorePackagesConfig=true -m'
+  - name: enableCaching
+    type: boolean
+    default: false
 
 jobs:
 - job: Build${{ parameters.platform }}${{ parameters.configuration }}
@@ -26,6 +35,7 @@ jobs:
   - template: build-powertoys-steps.yml
     parameters:
       additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
+      enableCaching: ${{ parameters.enableCaching }}
 
   # It appears that the Component Governance build task that gets automatically injected stopped working
   # when we renamed our main branch.
