@@ -35,3 +35,5 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [WinGet](https://github.com/bostrot/PowerToysRunPluginWinget) | [bostrot](https://github.com/bostrot) | Search and install packages from WinGet |
 | [Scoop](https://github.com/Quriz/PowerToysRunScoop) | [Quriz](https://github.com/Quriz) | Search and install packages from Scoop |
 | [Spotify](https://github.com/waaverecords/PowerToys-Run-Spotify) | [waaverecords](https://github.com/waaverecords) | Search Spotify and control its player |
+| [Input Typer](https://github.com/CoreyHayward/PowerToys-Run-InputTyper) | [CoreyHayward](https://github.com/CoreyHayward) | Type the input as if sent from a keyboard |
+| [Clipboard Manager](https://github.com/CoreyHayward/PowerToys-Run-ClipboardManager) | [CoreyHayward](https://github.com/CoreyHayward) | Search and paste text from your clipboard history |

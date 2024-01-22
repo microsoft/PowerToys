@@ -185,6 +185,9 @@
   <ItemGroup>
     <None Include="Resources.resx" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Assets\AlwaysOnTop.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">

@@ -1296,7 +1296,7 @@ EXHIBIT A -Mozilla Public License.
 
 ## NuGet Packages used by PowerToys
 
-- CommunityToolkit.Mvvm 8.2.0
+- CommunityToolkit.Mvvm 8.2.2
 - CommunityToolkit.WinUI.Animations 8.0.240109
 - CommunityToolkit.WinUI.Collections 8.0.240109
 - CommunityToolkit.WinUI.Controls.Primitives 8.0.240109
@@ -1332,7 +1332,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Windows.CsWinRT 2.0.4
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
-- Microsoft.WindowsAppSDK 1.4.231115000
+- Microsoft.WindowsAppSDK 1.4.231219000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4

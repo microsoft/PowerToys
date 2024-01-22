@@ -5,7 +5,9 @@
         {
             "MatchedPath": [
                 "*.resources.dll",
-
+                
+                "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
+                
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
                 "PowerToys.BackgroundActivatorDLL.dll",

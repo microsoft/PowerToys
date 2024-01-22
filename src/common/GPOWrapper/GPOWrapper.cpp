@@ -140,9 +140,17 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPeekEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetDisableNewUpdateToastValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableNewUpdateToastValue());
+    }
     GpoRuleConfigured GPOWrapper::GetDisableAutomaticUpdateDownloadValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableAutomaticUpdateDownloadValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetDisableShowWhatsNewAfterUpdatesValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableShowWhatsNewAfterUpdatesValue());
     }
     GpoRuleConfigured GPOWrapper::GetAllowExperimentationValue()
     {

@@ -46,6 +46,7 @@
 #include <common/utils/window.h>
 #include <common/version/version.h>
 #include <common/utils/string_utils.h>
+#include <common/utils/gpo.h>
 
 // disabling warning 4458 - declaration of 'identifier' hides class member
 // to avoid warnings from GDI files - can't add winRT directory to external code
@@ -89,9 +90,9 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
 }
 
-int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe)
+int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe, bool showRestartNotificationAfterUpdate)
 {
-    Logger::info("Runner is starting. Elevated={} openOobe={} openScoobe={}", isProcessElevated, openOobe, openScoobe);
+    Logger::info("Runner is starting. Elevated={} openOobe={} openScoobe={} showRestartNotificationAfterUpdate={}", isProcessElevated, openOobe, openScoobe, showRestartNotificationAfterUpdate);
     DPIAware::EnableDPIAwarenessForThisProcess();
 
 #if _DEBUG && _WIN64
@@ -106,7 +107,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
     int result = -1;
     try
     {
-        if (!openOobe && openScoobe)
+        if (!openOobe && showRestartNotificationAfterUpdate)
         {
             std::thread{
                 [] {
@@ -386,11 +387,13 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     }
 
     bool openScoobe = false;
+    bool showRestartNotificationAfterUpdate = false;
     try
     {
         std::wstring last_version_run = PTSettingsHelper::get_last_version_run();
         const auto product_version = get_product_version();
         openScoobe = product_version != last_version_run;
+        showRestartNotificationAfterUpdate = openScoobe;
         Logger::info(L"Scoobe: product_version={} last_version_run={}", product_version, last_version_run);
     }
     catch (const std::exception& e)
@@ -422,6 +425,16 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
         const bool with_restartedElevated_arg = cmdLine.find("--restartedElevated") != std::string::npos;
 
+        // Update scoobe behavior based on setting and gpo
+        bool scoobeSettingDisabled = general_settings.GetNamedBoolean(L"show_whats_new_after_updates", true) == false;
+        bool scoobeDisabledByGpo = powertoys_gpo::getDisableShowWhatsNewAfterUpdatesValue() == powertoys_gpo::gpo_rule_configured_enabled;
+        if (openScoobe && (scoobeSettingDisabled || scoobeDisabledByGpo))
+        {
+            // Scoobe should show after an update, but is disabled by policy or setting
+            Logger::info(L"Scoobe: Showing scoobe after updates is disabled by setting or by GPO.");
+            openScoobe = false;
+        }
+
         if (elevated && with_dont_elevate_arg && !run_elevated_setting)
         {
             Logger::info("Scheduling restart as non elevated");
@@ -436,7 +449,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
                 Logger::info("Restart as elevated failed. Running non-elevated.");
             }
 
-            result = runner(elevated, open_settings, settings_window, openOobe, openScoobe);
+            result = runner(elevated, open_settings, settings_window, openOobe, openScoobe, showRestartNotificationAfterUpdate);
 
             if (result == 0)
             {
