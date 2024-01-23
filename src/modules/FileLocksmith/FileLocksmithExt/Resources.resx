@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="FileLocksmith_CommandTitle" xml:space="preserve">
-    <value>Find blocking processes</value>
+    <value>Unlock with File Locksmith</value>
     <comment>This text will be shown when the user opens the context menu (right clicks) a file.</comment>
   </data>
   <data name="FileLocksmith_PowerToyName" xml:space="preserve">
