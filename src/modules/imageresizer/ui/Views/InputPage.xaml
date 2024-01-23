@@ -6,7 +6,7 @@
     xmlns:p="clr-namespace:ImageResizer.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
 
-    <Grid>
+    <Grid Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <!--  ComboBox  -->
@@ -81,7 +81,7 @@
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
 
-            <!--  input matrix  -->
+            <!--  "Custom" input matrix  -->
             <Grid Margin="16" Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="20" />
@@ -184,7 +184,7 @@
                 Grid.Row="1"
                 Margin="16,12,16,0"
                 VerticalAlignment="Top">
-                <!--  Note: TextBlock because text wrapping is not supported by CheckBox  -->
+                <!--  Note Jay: TextBlock because text wrapping is not supported by CheckBox  -->
                 <CheckBox IsChecked="{Binding Settings.ShrinkOnly}">
                     <CheckBox.Content>
                         <TextBlock Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
@@ -197,8 +197,8 @@
                     </CheckBox.Content>
                 </CheckBox>
                 <!--
-                    TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
-                    to overwrite any files in the directory instead (issue #88)
+                    TODO @bricelam: This option doesn't make much sense when resizing into a directory. We should swap it for an option
+                    to overwrite any files in the directory instead (issue https://github.com/bricelam/ImageResizer/issues/88)
                 -->
                 <CheckBox IsChecked="{Binding Settings.Replace}">
                     <CheckBox.Content>
