@@ -1350,6 +1350,7 @@ EXHIBIT A -Mozilla Public License.
 - System.ComponentModel.Composition 8.0.0
 - System.Configuration.ConfigurationManager 8.0.0
 - System.Data.OleDb 8.0.0
+- System.Data.SqlClient 4.8.6
 - System.Diagnostics.EventLog 8.0.0
 - System.Diagnostics.PerformanceCounter 8.0.0
 - System.Drawing.Common 8.0.1
