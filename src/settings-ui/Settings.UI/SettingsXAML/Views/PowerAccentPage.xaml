@@ -31,13 +31,21 @@
                     Severity="Informational" />
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="QuickAccent_Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsExpander
+                        x:Uid="QuickAccent_Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either" />
                         </ComboBox>
-                    </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="QuickAccent_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Language" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

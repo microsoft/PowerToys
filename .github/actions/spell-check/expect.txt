@@ -8,6 +8,7 @@ accctrl
 Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
+ACCESSTOKEN
 aclapi
 AClient
 AColumn
@@ -743,6 +744,7 @@ Knownfolders
 KSPROPERTY
 Kybd
 languagesjson
+lastbuildstate
 lastcodeanalysissucceeded
 Lastdevice
 LASTEXITCODE
@@ -1273,6 +1275,7 @@ reparented
 reparenting
 reparse
 reportbug
+reportfileaccesses
 requery
 requerying
 rescap
