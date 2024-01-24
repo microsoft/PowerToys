@@ -22,7 +22,7 @@ struct InvokeStruct
 CPowerRenameMenu::CPowerRenameMenu()
 {
     ModuleAddRef();
-    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME_APP_NAME);
+    context_menu_caption = GET_RESOURCE_STRING(IDS_POWERRENAME_CONTEXT_MENU_ENTRY);
 }
 
 CPowerRenameMenu::~CPowerRenameMenu()
@@ -251,7 +251,7 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
 
 HRESULT __stdcall CPowerRenameMenu::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
 {
-    return SHStrDup(app_name.c_str(), ppszName);
+    return SHStrDup(context_menu_caption.c_str(), ppszName);
 }
 
 HRESULT __stdcall CPowerRenameMenu::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
