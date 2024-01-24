@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace Wox.Infrastructure.Storage
@@ -20,6 +21,11 @@ namespace Wox.Infrastructure.Storage
         private readonly string currentPowerToysVersion = string.Empty;
 
         private string FilePath { get; set; } = string.Empty;
+
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
 
         // As of now this information is not pertinent but may be in the future
         // There may be cases when we want to delete only the .cache files and not the .json storage files
