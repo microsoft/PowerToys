@@ -88,7 +88,7 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
     if (m_spdo && !(uFlags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE)))
     {
         wchar_t menuName[64] = { 0 };
-        LoadString(g_hInst, IDS_POWERRENAME, menuName, ARRAYSIZE(menuName));
+        LoadString(g_hInst, IDS_POWERRENAME_CONTEXT_MENU_ENTRY, menuName, ARRAYSIZE(menuName));
 
         MENUITEMINFO mii;
         mii.cbSize = sizeof(MENUITEMINFO);
