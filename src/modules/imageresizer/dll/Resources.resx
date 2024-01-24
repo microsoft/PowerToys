@@ -118,7 +118,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Resize_Pictures" xml:space="preserve">
-    <value>Resize pictures</value>
+    <value>Resize with Image Resizer</value>
+    <comment>Image Resizer is the product name, do not loc</comment>
   </data>
   <data name="Resize_Pictures_Here" xml:space="preserve">
     <value>Resize pictures here</value>
