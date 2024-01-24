@@ -30,6 +30,11 @@ DWORD KeyDropDownControl::GetSelectedValue(ComboBox comboBox)
     return stoul(std::wstring(value));
 }
 
+DWORD KeyDropDownControl::GetSelectedValue(TextBlock text)
+{
+    return keyboardManagerState->keyboardMap.GetKeyFromName(std::wstring{text.Text()});
+}
+
 void KeyDropDownControl::SetSelectedValue(std::wstring value)
 {
     this->dropDown.as<ComboBox>().SelectedValue(winrt::box_value(value));
@@ -362,10 +367,23 @@ std::vector<int32_t> KeyDropDownControl::GetSelectedCodesFromStackPanel(Variable
     std::vector<int32_t> selectedKeyCodes;
 
     // Get selected indices for each drop down
-    for (int i = 0; i < (int)parent.Children().Size(); i++)
+    for (uint32_t i = 0; i < parent.Children().Size(); i++)
     {
-        ComboBox ItDropDown = parent.Children().GetAt(i).as<ComboBox>();
-        selectedKeyCodes.push_back(GetSelectedValue(ItDropDown));
+        if (auto ItDropDown = parent.Children().GetAt(i).try_as<ComboBox>(); ItDropDown)
+        {
+            selectedKeyCodes.push_back(GetSelectedValue(ItDropDown));
+        }
+
+        // If it's a ShortcutControl -> use its layout, see KeyboardManagerState::AddKeyToLayout
+        else if (auto sp = parent.Children().GetAt(i).try_as<StackPanel>(); sp)
+        {
+            for (uint32_t j = 0; j < sp.Children().Size(); ++j)
+            {
+                auto border = sp.Children().GetAt(j).try_as<Border>();
+                auto textBlock = border.Child().try_as<TextBlock>();
+                selectedKeyCodes.push_back(GetSelectedValue(textBlock));
+            }
+        }
     }
 
     return selectedKeyCodes;
@@ -483,7 +501,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
                         auto key = keyboardManagerState.AddKeyToLayout(sp, keyText);
                     }
                     else
-                    {                        
+                    {
                         auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BADKEY).c_str());
                         badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
                     }

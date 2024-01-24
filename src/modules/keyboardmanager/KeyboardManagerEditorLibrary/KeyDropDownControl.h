@@ -63,6 +63,7 @@ private:
 
     // Get selected value of dropdown or -1 if nothing is selected
     static DWORD GetSelectedValue(ComboBox comboBox);
+    static DWORD GetSelectedValue(TextBlock text);
 
     // Function to set accessible name for combobox
     static void SetAccessibleNameForComboBox(ComboBox dropDown, int index);
