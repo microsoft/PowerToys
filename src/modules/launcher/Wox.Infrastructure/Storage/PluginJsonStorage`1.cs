@@ -36,7 +36,7 @@ namespace Wox.Infrastructure.Storage
                 var informationData = new T();
                 if (informationData != null)
                 {
-                    if (CheckVersionMismatch(informationData))
+                    if (CheckVersionMismatch())
                     {
                         if (!CheckWithInformationFileToClear(informationData))
                         {

@@ -25,12 +25,12 @@ namespace PowerLauncher.ViewModel
                 PowerToysRunSettings data = new PowerToysRunSettings();
                 if (data != null)
                 {
-                    if (_storage.CheckVersionMismatch(data))
+                    if (_storage.CheckVersionMismatch())
                     {
-                        if (!_storage.CheckWithInformationFileToClear(Settings))
+                        if (!_storage.CheckWithInformationFileToClear(data))
                         {
                             _storage.Clear();
-                            _storage.SaveInformationFile(Settings);
+                            _storage.SaveInformationFile(data);
                         }
                     }
                 }

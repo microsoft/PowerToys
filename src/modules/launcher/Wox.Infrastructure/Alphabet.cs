@@ -203,9 +203,4 @@ public class Alphabet : IAlphabet
     {
         return new Dictionary<string, string[][]>(_pinyinCache);
     }
-
-    private void SetPinyinCacheAsDictionary(Dictionary<string, string[][]> usage)
-    {
-        _pinyinCache = new ConcurrentDictionary<string, string[][]>(usage);
-    }
 }
