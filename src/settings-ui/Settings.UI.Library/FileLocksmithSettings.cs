@@ -25,10 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public FileLocksmithSettings(FileLocksmithLocalProperties localProperties)
         {
-            if (localProperties == null)
-            {
-                throw new ArgumentNullException(nameof(localProperties));
-            }
+            ArgumentNullException.ThrowIfNull(localProperties);
 
             Properties = new FileLocksmithProperties();
             Properties.ExtendedContextMenuOnly.Value = localProperties.ExtendedContextMenuOnly;

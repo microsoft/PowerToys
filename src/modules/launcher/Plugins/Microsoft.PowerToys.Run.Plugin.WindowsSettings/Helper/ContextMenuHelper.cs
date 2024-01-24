@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ => TryToCopyToClipBoard(entry.Command),
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
                     Title = $"{Resources.CopyCommand} (Ctrl+C)",

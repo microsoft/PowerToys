@@ -24,10 +24,7 @@ namespace Microsoft.PowerToys.STATestExtension
 
         public override TestResult[] Execute(ITestMethod testMethod)
         {
-            if (testMethod == null)
-            {
-                throw new ArgumentNullException(nameof(testMethod));
-            }
+            ArgumentNullException.ThrowIfNull(testMethod);
 
             if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
             {

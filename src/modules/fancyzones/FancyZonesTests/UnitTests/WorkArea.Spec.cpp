@@ -249,7 +249,7 @@ namespace FancyZonesUnitTests
             AppliedLayouts::instance().ApplyLayout(m_workAreaId, layout);
 
             const auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
-            const auto window = Mocks::WindowCreate(m_hInst);
+            const auto window = Mocks::WindowCreate(m_hInst, L"", L"", 0, WS_THICKFRAME);
 
             SetWindowPos(window, nullptr, 150, 150, 450, 550, SWP_SHOWWINDOW);
             

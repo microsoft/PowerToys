@@ -65,6 +65,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();
             UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
+
+            App.UpdateUIThemeMethod(generalSettingsConfig.Theme);
         }
 
         private void AddDashboardListItem(ModuleType moduleType)
@@ -78,7 +80,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                 EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = ModuleHelper.GetModuleAccentColor(moduleType),
                 DashboardModuleItems = GetModuleItems(moduleType),
             });
             if (moduleType == ModuleType.KeyboardManager && gpo != GpoRuleConfigured.Disabled)
@@ -306,6 +307,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             KeyboardManagerProfile kbmProfile = GetKBMProfile();
             _kbmItem = new DashboardModuleKBMItem() { RemapKeys = kbmProfile?.RemapKeys.InProcessRemapKeys, RemapShortcuts = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcuts.GlobalRemapShortcuts, kbmProfile?.RemapShortcuts.AppSpecificRemapShortcuts) };
+
+            _kbmItem.RemapKeys = _kbmItem.RemapKeys.Concat(kbmProfile?.RemapKeysToText.InProcessRemapKeys).ToList();
+
+            var shortcutsToTextRemappings = KeyboardManagerViewModel.CombineShortcutLists(kbmProfile?.RemapShortcutsToText.GlobalRemapShortcuts, kbmProfile?.RemapShortcutsToText.AppSpecificRemapShortcuts);
+
+            _kbmItem.RemapShortcuts = _kbmItem.RemapShortcuts.Concat(shortcutsToTextRemappings).ToList();
+
             var list = new List<DashboardModuleItem>
             {
                 _kbmItem,

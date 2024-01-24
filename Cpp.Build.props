@@ -63,6 +63,7 @@
       <!-- CLR + CFG are not compatible >:{ -->
       <ControlFlowGuard Condition="'$(CLRSupport)' == ''">Guard</ControlFlowGuard>
       <DebugInformationFormat Condition="'%(ControlFlowGuard)' == 'Guard'">ProgramDatabase</DebugInformationFormat>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -77,7 +78,6 @@
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -88,7 +88,6 @@
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>MaxSpeed</Optimization>
-      <SDLCheck>false</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -113,6 +112,7 @@
     <PlatformToolset Condition="'$(OverridePlatformToolset)'!='True'">v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
+    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
 
   <!-- Debug/Release props -->

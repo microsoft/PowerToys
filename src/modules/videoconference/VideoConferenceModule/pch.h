@@ -9,6 +9,7 @@
 
 #include <wil/resource.h>
 #include <wil/com.h>
+#include <wil/filesystem.h>
 
 #include <string_view>
 #include <optional>

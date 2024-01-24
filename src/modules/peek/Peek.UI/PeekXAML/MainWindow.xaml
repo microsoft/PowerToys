@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="using:Peek.UI.Views"
     xmlns:winuiex="using:WinUIEx"
+    Title="{x:Bind ViewModel.WindowTitle, Mode=OneWay}"
     MinWidth="450"
     MinHeight="400"
     mc:Ignorable="d">
@@ -22,7 +23,11 @@
             <KeyboardAccelerator Key="Up" Invoked="PreviousNavigationInvoked" />
             <KeyboardAccelerator Key="Right" Invoked="NextNavigationInvoked" />
             <KeyboardAccelerator Key="Down" Invoked="NextNavigationInvoked" />
-            <KeyboardAccelerator Key="Escape" Invoked="EscKeyInvoked" />
+            <KeyboardAccelerator Key="Escape" Invoked="CloseInvoked" />
+            <KeyboardAccelerator
+                Key="W"
+                Invoked="CloseInvoked"
+                Modifiers="Control" />
         </Grid.KeyboardAccelerators>
 
         <Grid.RowDefinitions>

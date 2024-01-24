@@ -33,7 +33,6 @@ namespace NonLocalizable
     const wchar_t ShowOnAllMonitorsID[] = L"fancyzones_show_on_all_monitors";
     const wchar_t SpanZonesAcrossMonitorsID[] = L"fancyzones_span_zones_across_monitors";
     const wchar_t MakeDraggedWindowTransparentID[] = L"fancyzones_makeDraggedWindowTransparent";
-    const wchar_t AllowPopupWindowSnapID[] = L"fancyzones_allowPopupWindowSnap";
     const wchar_t AllowChildWindowSnapID[] = L"fancyzones_allowChildWindowSnap";
     const wchar_t DisableRoundCornersOnSnapping[] = L"fancyzones_disableRoundCornersOnSnap";
 
@@ -127,7 +126,6 @@ void FancyZonesSettings::LoadSettings()
         SetBoolFlag(values, NonLocalizable::WindowSwitchingToggleID, SettingId::WindowSwitching, m_settings.windowSwitching);
         SetBoolFlag(values, NonLocalizable::SystemThemeID, SettingId::SystemTheme, m_settings.systemTheme);
         SetBoolFlag(values, NonLocalizable::ShowZoneNumberID, SettingId::ShowZoneNumber, m_settings.showZoneNumber);
-        SetBoolFlag(values, NonLocalizable::AllowPopupWindowSnapID, SettingId::AllowSnapPopupWindows, m_settings.allowSnapPopupWindows);
         SetBoolFlag(values, NonLocalizable::AllowChildWindowSnapID, SettingId::AllowSnapChildWindows, m_settings.allowSnapChildWindows);
         SetBoolFlag(values, NonLocalizable::DisableRoundCornersOnSnapping, SettingId::DisableRoundCornersOnSnapping, m_settings.disableRoundCorners);
 

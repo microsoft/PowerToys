@@ -15,7 +15,7 @@ namespace PowerAccent.Core.Services;
 public class SettingsService
 {
     private const string PowerAccentModuleName = "QuickAccent";
-    private readonly ISettingsUtils _settingsUtils;
+    private readonly SettingsUtils _settingsUtils;
     private readonly IFileSystemWatcher _watcher;
     private readonly object _loadingSettingsLock = new object();
     private KeyboardListener _keyboardListener;
@@ -27,6 +27,11 @@ public class SettingsService
         ReadSettings();
         _watcher = Helper.GetFileWatcher(PowerAccentModuleName, "settings.json", () => { ReadSettings(); });
     }
+
+    private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true,
+    };
 
     private void ReadSettings()
     {
@@ -40,10 +45,7 @@ public class SettingsService
                     {
                         Logger.LogInfo("QuickAccent settings.json was missing, creating a new one");
                         var defaultSettings = new PowerAccentSettings();
-                        var options = new JsonSerializerOptions
-                        {
-                            WriteIndented = true,
-                        };
+                        var options = _serializerOptions;
 
                         _settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), PowerAccentModuleName);
                     }
@@ -53,6 +55,9 @@ public class SettingsService
                     {
                         ActivationKey = settings.Properties.ActivationKey;
                         _keyboardListener.UpdateActivationKey((int)ActivationKey);
+
+                        DoNotActivateOnGameMode = settings.Properties.DoNotActivateOnGameMode;
+                        _keyboardListener.UpdateDoNotActivateOnGameMode(DoNotActivateOnGameMode);
 
                         InputTime = settings.Properties.InputTime.Value;
                         _keyboardListener.UpdateInputTime(InputTime);
@@ -118,6 +123,21 @@ public class SettingsService
         set
         {
             _activationKey = value;
+        }
+    }
+
+    private bool _doNotActivateOnGameMode = true;
+
+    public bool DoNotActivateOnGameMode
+    {
+        get
+        {
+            return _doNotActivateOnGameMode;
+        }
+
+        set
+        {
+            _doNotActivateOnGameMode = value;
         }
     }
 

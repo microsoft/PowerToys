@@ -11,15 +11,9 @@ namespace Awake.Core
     {
         public static void AddRange<T>(this ICollection<T> target, IEnumerable<T> source)
         {
-            if (target == null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
+            ArgumentNullException.ThrowIfNull(target);
 
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+            ArgumentNullException.ThrowIfNull(source);
 
             foreach (var element in source)
             {

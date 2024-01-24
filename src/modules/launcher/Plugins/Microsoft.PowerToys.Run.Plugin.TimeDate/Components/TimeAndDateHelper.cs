@@ -98,22 +98,23 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
             else if (Regex.IsMatch(input, @"^u[\+-]?\d{1,10}$") && long.TryParse(input.TrimStart('u'), out long secondsU))
             {
-                // unix time stamp
-                // we use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
-                timestamp = new DateTime(1970, 1, 1).AddSeconds(secondsU).ToLocalTime();
+                // Unix time stamp
+                // We use long instead of int, because int is too small after 03:14:07 UTC 2038-01-19
+                timestamp = DateTimeOffset.FromUnixTimeSeconds(secondsU).LocalDateTime;
                 return true;
             }
             else if (Regex.IsMatch(input, @"^ums[\+-]?\d{1,13}$") && long.TryParse(input.TrimStart("ums".ToCharArray()), out long millisecondsUms))
             {
-                // unix time stamp in milliseconds
-                // we use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
-                timestamp = new DateTime(1970, 1, 1).AddMilliseconds(millisecondsUms).ToLocalTime();
+                // Unix time stamp in milliseconds
+                // We use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
+                timestamp = DateTimeOffset.FromUnixTimeMilliseconds(millisecondsUms).LocalDateTime;
                 return true;
             }
             else if (Regex.IsMatch(input, @"^ft\d+$") && long.TryParse(input.TrimStart("ft".ToCharArray()), out long secondsFt))
             {
-                // windows file time
-                timestamp = new DateTime(secondsFt);
+                // Windows file time
+                // DateTime.FromFileTime returns as local time.
+                timestamp = DateTime.FromFileTime(secondsFt);
                 return true;
             }
             else

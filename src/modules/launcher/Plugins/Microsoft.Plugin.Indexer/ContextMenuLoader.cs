@@ -60,7 +60,7 @@ namespace Microsoft.Plugin.Indexer
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.Microsoft_plugin_indexer_copy_path,
                     Glyph = "\xE8C8",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
 
@@ -86,7 +86,7 @@ namespace Microsoft.Plugin.Indexer
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.Microsoft_plugin_indexer_open_in_console,
                     Glyph = "\xE756",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
 
@@ -125,7 +125,7 @@ namespace Microsoft.Plugin.Indexer
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = Properties.Resources.Microsoft_plugin_indexer_run_as_administrator,
                 Glyph = "\xE7EF",
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
@@ -152,7 +152,7 @@ namespace Microsoft.Plugin.Indexer
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = Properties.Resources.Microsoft_plugin_indexer_run_as_user,
                 Glyph = "\xE7EE",
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = Key.U,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
@@ -194,7 +194,7 @@ namespace Microsoft.Plugin.Indexer
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = Properties.Resources.Microsoft_plugin_indexer_open_containing_folder,
                 Glyph = "\xE838",
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>

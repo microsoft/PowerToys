@@ -9,6 +9,6 @@
   "Website": "https://github.com/ricardosantos9521/PowerToys/",
   "ExecuteFileName": "Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll",
   "IsGlobal": false,
-  "IcoPathDark": "Images\\code-dark.png",
-  "IcoPathLight": "Images\\code-light.png"
+  "IcoPathDark": "Images\\code.dark.png",
+  "IcoPathLight": "Images\\code.light.png"
 }

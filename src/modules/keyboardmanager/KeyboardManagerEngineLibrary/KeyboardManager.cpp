@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "KeyboardManager.h"
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
@@ -21,8 +21,15 @@ HHOOK KeyboardManager::hookHandleCopy;
 HHOOK KeyboardManager::hookHandle;
 KeyboardManager* KeyboardManager::keyboardManagerObjectPtr;
 
+namespace
+{
+    DWORD mainThreadId = {};
+}
+
 KeyboardManager::KeyboardManager()
 {
+    mainThreadId = GetCurrentThreadId();
+
     // Load the initial settings.
     LoadSettings();
 
@@ -38,9 +45,11 @@ KeyboardManager::KeyboardManager()
         }
 
         loadingSettings = true;
+        bool loadedSuccessfully = false;
         try
         {
             LoadSettings();
+            loadedSuccessfully = true;
         }
         catch (...)
         {
@@ -48,6 +57,18 @@ KeyboardManager::KeyboardManager()
         }
 
         loadingSettings = false;
+
+        if (!loadedSuccessfully)
+            return;
+
+        const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
+        // We didn't have any bindings before and we have now
+        if (newHasRemappings && !hookHandle)
+            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+
+        // All bindings were removed
+        if (!newHasRemappings && hookHandle)
+            StopLowlevelKeyboardHook();
     };
 
     editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -68,12 +89,13 @@ void KeyboardManager::LoadSettings()
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
 {
-    LowlevelKeyboardEvent event;
+    LowlevelKeyboardEvent event{};
     if (nCode == HC_ACTION)
     {
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
         event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
+
         if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
         {
             // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
@@ -120,6 +142,32 @@ void KeyboardManager::StopLowlevelKeyboardHook()
     }
 }
 
+bool KeyboardManager::HasRegisteredRemappings() const
+{
+    constexpr int MaxAttempts = 5;
+
+    if (loadingSettings)
+    {
+        for (int currentAttempt = 0; currentAttempt < MaxAttempts; ++currentAttempt)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            if (!loadingSettings)
+                break;
+        }
+    }
+
+    // Assume that we have registered remappings to be on the safe side if we couldn't check
+    if (loadingSettings)
+        return true;
+
+    return HasRegisteredRemappingsUnchecked();
+}
+
+bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
+{
+    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty());
+}
+
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
     if (loadingSettings)
@@ -158,6 +206,13 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
 
     // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
     if (AppSpecificShortcutRemapResult == 1)
+    {
+        return 1;
+    }
+
+    intptr_t SingleKeyToTextRemapResult = KeyboardEventHandlers::HandleSingleKeyToTextRemapEvent(inputHandler, data, state);
+
+    if (SingleKeyToTextRemapResult == 1)
     {
         return 1;
     }

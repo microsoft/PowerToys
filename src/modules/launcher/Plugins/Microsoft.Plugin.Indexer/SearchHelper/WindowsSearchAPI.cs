@@ -25,10 +25,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
         {
-            if (queryHelper == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(queryHelper));
-            }
+            ArgumentNullException.ThrowIfNull(queryHelper);
 
             List<SearchResult> results = new List<SearchResult>();
 
@@ -70,15 +67,9 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         public static void ModifyQueryHelper(ref ISearchQueryHelper queryHelper, string pattern)
         {
-            if (pattern == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(pattern));
-            }
+            ArgumentNullException.ThrowIfNull(pattern);
 
-            if (queryHelper == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(queryHelper));
-            }
+            ArgumentNullException.ThrowIfNull(queryHelper);
 
             // convert file pattern if it is not '*'. Don't create restriction for '*' as it includes all files.
             if (pattern != "*")
@@ -101,10 +92,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         public static void InitQueryHelper(out ISearchQueryHelper queryHelper, ISearchManager manager, int maxCount, bool displayHiddenFiles)
         {
-            if (manager == null)
-            {
-                throw new ArgumentNullException(nameof(manager));
-            }
+            ArgumentNullException.ThrowIfNull(manager);
 
             // SystemIndex catalog is the default catalog in Windows
             ISearchCatalogManager catalogManager = manager.GetCatalog("SystemIndex");
@@ -136,10 +124,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         public IEnumerable<SearchResult> Search(string keyword, ISearchManager manager, string pattern = "*", int maxCount = 30)
         {
-            if (manager == null)
-            {
-                throw new ArgumentNullException(nameof(manager));
-            }
+            ArgumentNullException.ThrowIfNull(manager);
 
             ISearchQueryHelper queryHelper;
             InitQueryHelper(out queryHelper, manager, maxCount, DisplayHiddenFiles);

@@ -18,6 +18,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("newRemapKeys")]
         public string NewRemapKeys { get; set; }
 
+        [JsonPropertyName("unicodeText")]
+        public string NewRemapString { get; set; }
+
         private static List<string> MapKeys(string stringOfKeys)
         {
             return stringOfKeys
@@ -34,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public List<string> GetMappedNewRemapKeys()
         {
-            return MapKeys(NewRemapKeys);
+            return string.IsNullOrEmpty(NewRemapString) ? MapKeys(NewRemapKeys) : new List<string> { NewRemapString };
         }
 
         public string ToJsonString()

@@ -32,10 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils = settingsUtils;
 
             // To obtain the general settings configurations of PowerToys Settings.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
@@ -43,10 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // To obtain the find my mouse settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
-            if (findMyMouseSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(findMyMouseSettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(findMyMouseSettingsRepository);
 
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
             _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value < 4 ? FindMyMouseSettingsConfig.Properties.ActivationMethod.Value : 0;
@@ -64,11 +58,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _findMyMouseSpotlightInitialZoom = FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value;
             _findMyMouseExcludedApps = FindMyMouseSettingsConfig.Properties.ExcludedApps.Value;
             _findMyMouseShakingMinimumDistance = FindMyMouseSettingsConfig.Properties.ShakingMinimumDistance.Value;
+            _findMyMouseShakingIntervalMs = FindMyMouseSettingsConfig.Properties.ShakingIntervalMs.Value;
+            _findMyMouseShakingFactor = FindMyMouseSettingsConfig.Properties.ShakingFactor.Value;
 
-            if (mouseHighlighterSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(mouseHighlighterSettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(mouseHighlighterSettingsRepository);
 
             MouseHighlighterSettingsConfig = mouseHighlighterSettingsRepository.SettingsConfig;
             string leftClickColor = MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value;
@@ -85,18 +78,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
             _highlighterAutoActivate = MouseHighlighterSettingsConfig.Properties.AutoActivate.Value;
 
-            if (mouseJumpSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(mouseJumpSettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(mouseJumpSettingsRepository);
 
             MouseJumpSettingsConfig = mouseJumpSettingsRepository.SettingsConfig;
             MouseJumpSettingsConfig.Properties.ThumbnailSize.PropertyChanged += MouseJumpThumbnailSizePropertyChanged;
 
-            if (mousePointerCrosshairsSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(mousePointerCrosshairsSettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(mousePointerCrosshairsSettingsRepository);
 
             MousePointerCrosshairsSettingsConfig = mousePointerCrosshairsSettingsRepository.SettingsConfig;
 
@@ -412,6 +399,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _findMyMouseShakingMinimumDistance = value;
                     FindMyMouseSettingsConfig.Properties.ShakingMinimumDistance.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseShakingIntervalMs
+        {
+            get
+            {
+                return _findMyMouseShakingIntervalMs;
+            }
+
+            set
+            {
+                if (value != _findMyMouseShakingIntervalMs)
+                {
+                    _findMyMouseShakingIntervalMs = value;
+                    FindMyMouseSettingsConfig.Properties.ShakingIntervalMs.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseShakingFactor
+        {
+            get
+            {
+                return _findMyMouseShakingFactor;
+            }
+
+            set
+            {
+                if (value != _findMyMouseShakingFactor)
+                {
+                    _findMyMouseShakingFactor = value;
+                    FindMyMouseSettingsConfig.Properties.ShakingFactor.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -959,6 +982,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _findMyMouseSpotlightInitialZoom;
         private string _findMyMouseExcludedApps;
         private int _findMyMouseShakingMinimumDistance;
+        private int _findMyMouseShakingIntervalMs;
+        private int _findMyMouseShakingFactor;
 
         private GpoRuleConfigured _highlighterEnabledGpoRuleConfiguration;
         private bool _highlighterEnabledStateIsGPOConfigured;

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Plugin.Folder.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

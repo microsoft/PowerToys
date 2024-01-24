@@ -11,10 +11,7 @@ namespace Microsoft.Plugin.Folder.Sources
     {
         public bool IsEnvironmentVariable(string search)
         {
-            if (search == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(search));
-            }
+            ArgumentNullException.ThrowIfNull(search);
 
             return search.StartsWith('%');
         }

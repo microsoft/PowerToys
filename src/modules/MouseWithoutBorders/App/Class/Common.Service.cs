@@ -45,7 +45,7 @@ namespace MouseWithoutBorders
             {
                 Process[] ps = Process.GetProcessesByName("MouseWithoutBordersSvc");
 
-                if (ps.Any())
+                if (ps.Length != 0)
                 {
                     if (DateTime.UtcNow - lastStartServiceTime < TimeSpan.FromSeconds(5))
                     {

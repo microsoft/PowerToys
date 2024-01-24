@@ -43,12 +43,12 @@ namespace FancyZonesEditor.Models
 
         public bool SelectKey(string key, string uuid)
         {
-            if (!SelectedKeys.ContainsKey(key))
+            if (!SelectedKeys.TryGetValue(key, out string value))
             {
                 return false;
             }
 
-            if (SelectedKeys[key] == uuid)
+            if (value == uuid)
             {
                 return true;
             }

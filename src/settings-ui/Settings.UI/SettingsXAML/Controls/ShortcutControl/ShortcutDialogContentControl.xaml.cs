@@ -30,5 +30,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         public static readonly DependencyProperty IsErrorProperty = DependencyProperty.Register("IsError", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
+
+        public bool IsWarningAltGr
+        {
+            get => (bool)GetValue(IsWarningAltGrProperty);
+            set => SetValue(IsWarningAltGrProperty, value);
+        }
+
+        public static readonly DependencyProperty IsWarningAltGrProperty = DependencyProperty.Register("IsWarningAltGr", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
     }
 }

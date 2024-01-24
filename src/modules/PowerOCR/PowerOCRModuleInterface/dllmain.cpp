@@ -12,6 +12,7 @@
 #include <common/interop/shared_constants.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/package.h>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/,
                       DWORD ul_reason_for_call,
@@ -292,6 +293,13 @@ public:
     virtual bool is_enabled() override
     {
         return m_enabled;
+    }
+
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        // disabled by default for Windows 11 and enabled by default on Windows 10
+        return !package::IsWin11OrGreater();
     }
 };
 

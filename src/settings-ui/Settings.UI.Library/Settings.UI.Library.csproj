@@ -3,7 +3,7 @@
 	<Import Project="..\..\Version.props" />
 
     <PropertyGroup>
-        <TargetFramework>net7.0-windows</TargetFramework>
+        <TargetFramework>net8.0-windows</TargetFramework>
         <Version>$(Version).0</Version>
         <Authors>Microsoft Corporation</Authors>
         <Product>PowerToys</Product>
@@ -14,10 +14,10 @@
 
     <!-- SelfContained=true requires RuntimeIdentifier to be set -->
     <PropertyGroup Condition="'$(Platform)'=='x64'">
-        <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-        <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+        <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
     </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using Common.Utilities;
+using Microsoft.PowerToys.FilePreviewCommon;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 {

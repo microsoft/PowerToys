@@ -377,6 +377,7 @@ namespace FancyZonesEditor.Models
         public void Persist()
         {
             PersistData();
+            FirePropertyChanged(nameof(PersistData));
         }
 
         public void LayoutHotkeys_PropertyChanged(object sender, PropertyChangedEventArgs e)

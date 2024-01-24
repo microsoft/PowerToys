@@ -107,31 +107,36 @@ jobs:
         use_sarif: ${{ (!github.event.pull_request || (github.event.pull_request.head.repo.full_name == github.repository)) && 1 }}
         extra_dictionary_limit: 20
         extra_dictionaries:
-          cspell:software-terms/dict/softwareTerms.txt
-          cspell:cpp/src/stdlib-cpp.txt
-          cspell:filetypes/filetypes.txt
-          cspell:cpp/src/stdlib-c.txt
-          cspell:python/src/python/python-lib.txt
-          cspell:lorem-ipsum/dictionary.txt
-          cspell:php/dict/php.txt
-          cspell:typescript/dict/typescript.txt
-          cspell:swift/src/swift.txt
-          cspell:fullstack/dict/fullstack.txt
-          cspell:node/dict/node.txt
-          cspell:dotnet/dict/dotnet.txt
-          cspell:django/dict/django.txt
-          cspell:python/src/python/python.txt
-          cspell:csharp/csharp.txt
-          cspell:python/src/common/extra.txt
-          cspell:cpp/src/compiler-msvc.txt
           cspell:aws/aws.txt
-          cspell:golang/dict/go.txt
-          cspell:java/src/java.txt
-          cspell:html/dict/html.txt
+          cspell:cpp/src/compiler-clang-attributes.txt
+          cspell:cpp/src/compiler-msvc.txt
+          cspell:cpp/src/lang-keywords.txt
+          cspell:cpp/src/stdlib-c.txt
+          cspell:cpp/src/stdlib-cmath.txt
+          cspell:cpp/src/stdlib-cpp.txt
+          cspell:csharp/csharp.txt
           cspell:css/dict/css.txt
-          cspell:k8s/dict/k8s.txt
+          cspell:django/dict/django.txt
+          cspell:dotnet/dict/dotnet.txt
+          cspell:filetypes/filetypes.txt
+          cspell:fullstack/dict/fullstack.txt
+          cspell:golang/dict/go.txt
+          cspell:html/dict/html.txt
+          cspell:java/src/java.txt
           cspell:java/src/java-terms.txt
+          cspell:k8s/dict/k8s.txt
+          cspell:lorem-ipsum/dictionary.txt
+          cspell:monkeyc/src/monkeyc_keywords.txt
+          cspell:node/dict/node.txt
+          cspell:php/dict/php.txt
           cspell:powershell/dict/powershell.txt
+          cspell:python/src/common/extra.txt
+          cspell:python/src/python/python.txt
+          cspell:python/src/python/python-lib.txt
+          cspell:scala/dict/scala.txt
+          cspell:software-terms/dict/softwareTerms.txt
+          cspell:swift/src/swift.txt
+          cspell:typescript/dict/typescript.txt
 
   comment-push:
     name: Report (Push)

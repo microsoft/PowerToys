@@ -42,7 +42,11 @@
                     <ToolTip Content="{x:Bind FormatFileType(Source.FileType), Mode=OneWay}" />
                 </ToolTipService.ToolTip>
             </TextBlock>
-            <TextBlock Text="{x:Bind FormatFileSize(Source.FileSize), Mode=OneWay}" />
+            <TextBlock Text="{x:Bind FormatFileSize(Source.FileSize), Mode=OneWay}">
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="{x:Bind FormatFileSize(Source.FileSize), Mode=OneWay}" />
+                </ToolTipService.ToolTip>
+            </TextBlock>
             <TextBlock Text="{x:Bind FormatFileDateModified(Source.DateModified), Mode=OneWay}">
                 <ToolTipService.ToolTip>
                     <ToolTip Content="{x:Bind FormatFileDateModified(Source.DateModified), Mode=OneWay}" />

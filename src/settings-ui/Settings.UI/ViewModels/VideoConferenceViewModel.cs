@@ -44,10 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             PickFileDialog = pickFileDialog;
 
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
@@ -57,10 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsConfigFileFolder = configFileSubfolder;
 
-            if (videoConferenceSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(videoConferenceSettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(videoConferenceSettingsRepository);
 
             Settings = videoConferenceSettingsRepository.SettingsConfig;
 

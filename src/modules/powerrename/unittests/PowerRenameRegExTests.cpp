@@ -133,7 +133,7 @@ TEST_METHOD (VerifyFileAttributesPadding)
     }
 }
 
-TEST_METHOD (VerifyFileAttributesMonthandDayNames)
+TEST_METHOD (VerifyFileAttributesMonthAndDayNames)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);

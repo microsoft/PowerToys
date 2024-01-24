@@ -328,13 +328,13 @@ namespace ManagedCommon
                 char paramFormat;
                 string paramType = formatString.Substring(formatterPosition + 1, 2);
                 int paramCount = 3;
-                if (DefaultFormatTypes.ContainsKey(paramType))
+                if (DefaultFormatTypes.TryGetValue(paramType, out char value))
                 {
                     // check the next char, which could be a formatter
                     if (formatterPosition >= formatString.Length - 3)
                     {
                         // not enough characters, end of string, no formatter, use the default one
-                        paramFormat = DefaultFormatTypes[paramType];
+                        paramFormat = value;
                         paramCount = 2;
                     }
                     else
@@ -344,7 +344,7 @@ namespace ManagedCommon
                         // check if it a valid formatter
                         if (!FormatTypeToStringFormatters.ContainsKey(paramFormat))
                         {
-                            paramFormat = DefaultFormatTypes[paramType];
+                            paramFormat = value;
                             paramCount = 2;
                         }
                     }

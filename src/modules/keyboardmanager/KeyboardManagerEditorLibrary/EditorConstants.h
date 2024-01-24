@@ -35,7 +35,7 @@ namespace EditorConstants
     inline const long ShortcutTableRemoveColIndex = 4;
     inline const long ShortcutArrowColumnWidth = 90;
     inline const DWORD64 ShortcutTableDropDownWidth = 160;
-    inline const DWORD64 ShortcutTableDropDownSpacing = 10;
+    inline const long ShortcutTableDropDownSpacing = 10;
     inline const long ShortcutOriginColumnWidth = 3 * ShortcutTableDropDownWidth + 3 * ShortcutTableDropDownSpacing;
     inline const long ShortcutTargetColumnWidth = 3 * ShortcutTableDropDownWidth + 3 * ShortcutTableDropDownSpacing + 15;
 

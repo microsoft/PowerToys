@@ -220,9 +220,6 @@ public class WrappingStream : Stream
     private void ThrowIfDisposed()
     {
         // throws an ObjectDisposedException if this object has been disposed
-        if (_streamBase == null)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedException.ThrowIf(_streamBase == null, this);
     }
 }

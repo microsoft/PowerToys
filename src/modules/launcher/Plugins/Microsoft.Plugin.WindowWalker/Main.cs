@@ -35,10 +35,7 @@ namespace Microsoft.Plugin.WindowWalker
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();

@@ -18,7 +18,7 @@ namespace FancyZonesEditor
             EditingLayout = editingLayout;
         }
 
-        protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
+        protected void OnSave(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
 
@@ -31,15 +31,8 @@ namespace FancyZonesEditor
 
             EditingLayout.Persist();
 
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-            settings.SetAppliedModel(EditingLayout);
-            App.Overlay.Monitors[App.Overlay.CurrentDesktop].SetLayoutSettings(EditingLayout);
-
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
             App.FancyZonesEditorIO.SerializeCustomLayouts();
-            App.FancyZonesEditorIO.SerializeAppliedLayouts();
-            App.FancyZonesEditorIO.SerializeDefaultLayouts();
-            App.FancyZonesEditorIO.SerializeLayoutHotkeys();
 
             Close();
         }

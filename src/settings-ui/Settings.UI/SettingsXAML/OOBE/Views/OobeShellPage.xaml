@@ -9,9 +9,10 @@
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
     mc:Ignorable="d">
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Button
@@ -23,9 +24,9 @@
             Style="{StaticResource PaneToggleButtonStyle}" />
         <Grid
             x:Name="AppTitleBar"
-            Height="{Binding ElementName=navigationView, Path=CompactPaneLength}"
+            Height="48"
             Margin="48,0,0,0"
-            VerticalAlignment="Top"
+            VerticalAlignment="Center"
             IsHitTestVisible="True">
             <animations:Implicit.Animations>
                 <animations:OffsetAnimation Duration="0:0:0.3" />
@@ -34,17 +35,16 @@
                 <Image
                     Width="16"
                     Height="16"
-                    HorizontalAlignment="Left"
                     Source="/Assets/Settings/icon.ico" />
                 <TextBlock
                     x:Name="AppTitleBarText"
                     x:Uid="OobeWindow_TitleTxt"
-                    Margin="12,0,0,0"
                     VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     TextWrapping="NoWrap" />
             </StackPanel>
         </Grid>
+
         <NavigationView
             x:Name="navigationView"
             Grid.Row="1"
@@ -69,6 +69,10 @@
                     x:Uid="Shell_Awake"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAwake.png}"
                     Tag="Awake" />
+                <NavigationViewItem
+                    x:Uid="Shell_CmdNotFound"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
+                    Tag="CmdNotFound" />
                 <NavigationViewItem
                     x:Uid="Shell_ColorPicker"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}"
@@ -157,13 +161,14 @@
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem
                     x:Uid="Shell_WhatsNew"
-                    Icon="{ui:FontIcon Glyph=&#xF133;}"
+                    Icon="{ui:FontIcon Glyph=&#xE789;}"
                     Tag="WhatsNew" />
             </NavigationView.FooterMenuItems>
             <NavigationView.Content>
                 <Frame x:Name="NavigationFrame" />
             </NavigationView.Content>
         </NavigationView>
+
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">

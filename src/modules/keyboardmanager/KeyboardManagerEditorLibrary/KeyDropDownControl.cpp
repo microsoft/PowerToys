@@ -66,7 +66,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     }
 
     dropDown.as<ComboBox>().MaxDropDownHeight(EditorConstants::TableDropDownHeight);
-    
+
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     dropDown.as<ComboBox>().SelectedValuePath(L"DataContext");
@@ -83,7 +83,20 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     // Attach the tip to the drop down
     warningTip.Target(dropDown.as<ComboBox>());
     dropDown.as<ComboBox>().Loaded([&](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
-        Media::VisualTreeHelper::GetChild(dropDown.as<ComboBox>(), 0).as<Grid>().Children().Append(warningTip);
+        auto combo = dropDown.as<ComboBox>();
+        auto child0 = Media::VisualTreeHelper::GetChild(combo, 0);
+        if (!child0)
+            return;
+        
+        auto grid = child0.as<Grid>();
+        if (!grid)
+            return;
+
+        auto& gridChildren = grid.Children();
+        if (!gridChildren)
+            return;
+        
+        gridChildren.Append(warningTip);
     });
 
     // Tip properties
@@ -102,7 +115,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     warningFlyout.as<Flyout>().FlyoutPresenterStyle(style);
     dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
 #endif
-    
+
     // To set the accessible name of the combo-box (by default index 1)
     SetAccessibleNameForComboBox(dropDown.as<ComboBox>(), 1);
 }
@@ -141,7 +154,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
 
         ComboBox currentDropDown = sender.as<ComboBox>();
         int selectedKeyCode = GetSelectedValue(currentDropDown);
-        
+
         // Validate current remap selection
         ShortcutErrorType errorType = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(rowIndex, colIndex, selectedKeyCode, singleKeyRemapBuffer);
 
@@ -228,7 +241,7 @@ std::pair<ShortcutErrorType, int> KeyDropDownControl::ValidateShortcutSelection(
             }
 
             parent.Children().RemoveAt(dropDownIndex);
-            
+
             // delete drop down control object from the vector so that it can be destructed
             keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
         }
@@ -368,7 +381,7 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(StackPanel table, Stac
     {
         // Check for errors only if the current selection is a valid shortcut
         std::vector<int32_t> selectedKeyCodes = GetSelectedCodesFromStackPanel(parent);
-        KeyShortcutUnion currentShortcut;
+        KeyShortcutTextUnion currentShortcut;
         if (GetNumberOfSelectedKeys(selectedKeyCodes) == 1 && isHybridControl)
         {
             currentShortcut = (DWORD)selectedKeyCodes[0];
@@ -415,7 +428,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
 {
     // Delete the existing drop down menus
     parent.Children().Clear();
-    
+
     // Remove references to the old drop down objects to destroy them
     keyDropDownControlObjects.clear();
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();

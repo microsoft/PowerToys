@@ -8,6 +8,7 @@
 #include <common/utils/string_utils.h>
 #include <common/utils/process_path.h>
 #include <common/utils/excluded_apps.h>
+#include <common/utils/game_mode.h>
 
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 {
@@ -85,6 +86,11 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         m_settings.activationKey = static_cast<PowerAccentActivationKey>(activationKey);
     }
 
+    void KeyboardListener::UpdateDoNotActivateOnGameMode(bool doNotActivateOnGameMode)
+    {
+        m_settings.doNotActivateOnGameMode = doNotActivateOnGameMode;
+    }
+
     void KeyboardListener::UpdateInputTime(int32_t inputTime)
     {
         m_settings.inputTime = std::chrono::milliseconds(inputTime);
@@ -110,6 +116,11 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_settings.excludedApps = std::move(excludedApps);
             m_prevForegroundAppExcl = { NULL, false };
         }
+    }
+
+    bool KeyboardListener::IsSuppressedByGameMode()
+    {
+        return m_settings.doNotActivateOnGameMode && detect_game_mode();
     }
 
     bool KeyboardListener::IsForegroundAppExcluded()
@@ -180,7 +191,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             }
         }
 
-        if (!m_toolbarVisible && letterPressed != LetterKey::None && triggerPressed && !IsForegroundAppExcluded())
+        if (!m_toolbarVisible && letterPressed != LetterKey::None && triggerPressed && !IsSuppressedByGameMode() && !IsForegroundAppExcluded())
         {
             Logger::debug(L"Show toolbar. Letter: {}, Trigger: {}", letterPressed, triggerPressed);
 

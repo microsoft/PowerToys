@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Timers;
+using Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels.Flyout
@@ -39,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels.Flyout
             _hideTimer.Elapsed += HideTimer_Elapsed;
             _hideTimer.Interval = 1000;
             _hideTimer.Enabled = false;
-            _windows10 = !Helper.Windows11();
+            _windows10 = !OSVersionHelper.IsWindows11();
         }
 
         private void HideTimer_Elapsed(object sender, ElapsedEventArgs e)

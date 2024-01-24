@@ -28,12 +28,12 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             new XmlFormatter(),
         }.AsReadOnly();
 
-        private static string _monacoDirectory;
+        private static string? _monacoDirectory;
 
         public static string GetRuntimeMonacoDirectory()
         {
             string codeBase = Assembly.GetExecutingAssembly().Location;
-            string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase), "Assets", "Monaco"));
+            string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase) ?? string.Empty, "Assets", "Monaco"));
             if (Path.Exists(path))
             {
                 return path;
@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             else
             {
                 // We're likely in WinUI3Apps directory and need to go back to the base directory.
-                return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase), "..", "Assets", "Monaco"));
+                return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase) ?? string.Empty, "..", "Assets", "Monaco"));
             }
         }
 

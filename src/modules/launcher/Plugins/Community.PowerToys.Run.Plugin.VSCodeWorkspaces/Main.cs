@@ -138,7 +138,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                 });
             }
 
-            results = results.Where(a => a.Title.ToLowerInvariant().Contains(query.Search.ToLowerInvariant())).ToList();
+            results = results.Where(a => a.Title.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase)).ToList();
 
             results.ForEach(x =>
                     {

@@ -23,10 +23,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public IEnumerable<FolderLink> GetUserFolderResults(string query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             // Using OrdinalIgnoreCase since this is internal
             return _folderLinks.FolderLinks()
@@ -35,10 +32,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public bool IsDriveOrSharedFolder(string search)
         {
-            if (search == null)
-            {
-                throw new ArgumentNullException(nameof(search));
-            }
+            ArgumentNullException.ThrowIfNull(search);
 
             // Using Ordinal this is internal and we're comparing symbols
             if (search.StartsWith(@"\\", StringComparison.Ordinal))
@@ -79,10 +73,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public static string Expand(string search)
         {
-            if (search == null)
-            {
-                throw new ArgumentNullException(nameof(search));
-            }
+            ArgumentNullException.ThrowIfNull(search);
 
             search = Environment.ExpandEnvironmentVariables(search);
 

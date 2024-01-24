@@ -123,7 +123,8 @@ namespace Mocks
         return reinterpret_cast<HINSTANCE>(++s_nextInstance);
     }
 
-    HWND WindowCreate(HINSTANCE hInst);
+    HWND WindowCreate(HINSTANCE hInst, const std::wstring& title = L"", const std::wstring& className = L""
+        , DWORD exStyle = 0, DWORD style = 0, HWND parentWindow = nullptr);
 }
 
 namespace Helpers

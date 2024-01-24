@@ -289,7 +289,7 @@ namespace Hosts.ViewModels
                 Entries.RefreshFilter();
             }
 
-            // Ping and duplicate should't trigger a file save
+            // Ping and duplicate should not trigger a file save
             if (e.PropertyName == nameof(Entry.Ping)
                 || e.PropertyName == nameof(Entry.Pinging)
                 || e.PropertyName == nameof(Entry.Duplicate))

@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Timers;
+using Common.UI;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -73,25 +74,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // To obtain the settings configurations of Fancy zones.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            if (powerOcrsettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(powerOcrsettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(powerOcrsettingsRepository);
 
             _powerOcrSettings = powerOcrsettingsRepository.SettingsConfig;
 
@@ -144,6 +136,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(outgoing.ToString());
                 }
             }
+        }
+
+        public bool IsWin11OrGreater
+        {
+            get => OSVersionHelper.IsWindows11();
         }
 
         public bool IsEnabledGpoConfigured

@@ -41,25 +41,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // To obtain the settings configurations of Fancy zones.
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(settingsRepository);
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            if (pastePlainSettingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(pastePlainSettingsRepository));
-            }
+            ArgumentNullException.ThrowIfNull(pastePlainSettingsRepository);
 
             _pastePlainSettings = pastePlainSettingsRepository.SettingsConfig;
 

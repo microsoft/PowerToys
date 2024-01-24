@@ -1,17 +1,16 @@
-﻿<Application x:Class="PowerLauncher.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:theming="clr-namespace:Common.UI;assembly=PowerToys.Common.UI"
-             xmlns:ui="http://schemas.modernwpf.com/2019"
-             ShutdownMode="OnMainWindowClose"
-             Startup="OnStartup">
+﻿<Application
+    x:Class="PowerLauncher.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    ShutdownMode="OnMainWindowClose"
+    Startup="OnStartup">
     <Application.Resources>
         <ResourceDictionary>
-            <theming:CustomLibraryThemeProvider x:Key="{x:Static theming:CustomLibraryThemeProvider.DefaultInstance}" />
             <ResourceDictionary.MergedDictionaries>
-                <ui:ThemeResources />
-                <ui:XamlControlsResources />
-                <ResourceDictionary Source="pack://application:,,,/Themes/Dark.xaml" />
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
+                <ResourceDictionary Source="pack://application:,,,/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

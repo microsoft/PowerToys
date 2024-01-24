@@ -411,6 +411,24 @@
         </RegistryKey>
         <File Id="QoiPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.QoiPreviewHandler.resources.dll" />
       </Component>
+      <Component
+          Id="Awake_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)1F">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Awake_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Awake_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.Awake.resources.dll" />
+      </Component>
+      <Component
+          Id="PowerOCR_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)20">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="PowerOCR_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="PowerOCR_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.PowerOCR.resources.dll" />
+      </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>

@@ -70,7 +70,6 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.FancyzonesZoneHighlightColor.Value, viewModel.ZoneHighlightColor);
             Assert.AreEqual(originalSettings.Properties.FancyzonesZoneSetChangeMoveWindows.Value, viewModel.ZoneSetChangeMoveWindows);
             Assert.AreEqual(originalSettings.Properties.UseCursorposEditorStartupscreen.Value, viewModel.UseCursorPosEditorStartupScreen);
-            Assert.AreEqual(originalSettings.Properties.FancyzonesAllowPopupWindowSnap.Value, viewModel.AllowPopupWindowSnap);
             Assert.AreEqual(originalSettings.Properties.FancyzonesAllowChildWindowSnap.Value, viewModel.AllowChildWindowSnap);
             Assert.AreEqual(originalSettings.Properties.FancyzonesDisableRoundCornersOnSnap.Value, viewModel.DisableRoundCornersOnWindowSnap);
 
@@ -446,24 +445,6 @@ namespace ViewModelTests
             // assert
             var expected = viewModel.AllowChildWindowSnap;
             var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesAllowChildWindowSnap.Value;
-            Assert.AreEqual(expected, actual);
-        }
-
-        [TestMethod]
-        public void AllowPopupWindowsToSnapShouldSetValue2TrueWhenSuccessful()
-        {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
-
-            // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
-            Assert.IsFalse(viewModel.AllowPopupWindowSnap); // check if value was initialized to false.
-
-            // act
-            viewModel.AllowPopupWindowSnap = true;
-
-            // assert
-            var expected = viewModel.AllowPopupWindowSnap;
-            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesAllowPopupWindowSnap.Value;
             Assert.AreEqual(expected, actual);
         }
 

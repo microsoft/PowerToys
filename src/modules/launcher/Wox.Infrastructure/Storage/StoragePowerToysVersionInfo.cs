@@ -29,6 +29,11 @@ namespace Wox.Infrastructure.Storage
             JSON_STORAGE = 1,
         }
 
+        private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
+
         private class StorageObject
         {
             public string Version { get; set; }
@@ -37,7 +42,7 @@ namespace Wox.Infrastructure.Storage
         }
 
         // To compare the version numbers
-        public static bool Lessthan(string version1, string version2)
+        public static bool LessThan(string version1, string version2)
         {
             string version = "v";
             string period = ".";
@@ -129,10 +134,7 @@ namespace Wox.Infrastructure.Storage
 
         public StoragePowerToysVersionInfo(string associatedFilePath, int type)
         {
-            if (associatedFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(associatedFilePath));
-            }
+            ArgumentNullException.ThrowIfNull(associatedFilePath);
 
             FilePath = GetFilePath(associatedFilePath, type);
 
@@ -142,7 +144,7 @@ namespace Wox.Infrastructure.Storage
 
             // If the previous version is below a set threshold, then we want to delete the file
             // However, we do not want to delete the cache if the same version of powerToys is being launched
-            if (Lessthan(previousVersion, currentPowerToysVersion))
+            if (LessThan(previousVersion, currentPowerToysVersion))
             {
                 ClearCache = true;
             }
@@ -160,7 +162,7 @@ namespace Wox.Infrastructure.Storage
                 };
 
                 // Serialize the StorageObject to a JSON string
-                string json = JsonSerializer.Serialize(dataToSerialize, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonSerializer.Serialize(dataToSerialize, _serializerOptions);
 
                 // Write the JSON string to the file
                 File.WriteAllText(FilePath, json);
