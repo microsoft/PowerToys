@@ -123,6 +123,7 @@
   </data>
   <data name="ImageResizer_Context_Menu_Entry_Here" xml:space="preserve">
     <value>Resize with Image Resizer here</value>
+    <comment>Image Resizer is the product name, do not loc</comment>
   </data>
   <data name="ImageResizer" xml:space="preserve">
     <value>Image Resizer</value>
