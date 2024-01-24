@@ -18,7 +18,7 @@ CContextMenuHandler::CContextMenuHandler()
 {
     m_pidlFolder = NULL;
     m_pdtobj = NULL;
-    app_name = GET_RESOURCE_STRING(IDS_RESIZE_PICTURES);
+    app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY);
 }
 
 CContextMenuHandler::~CContextMenuHandler()
@@ -112,7 +112,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
             // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
             // Load 'Resize pictures here' string
-            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
+            LoadString(g_hInst_imageResizer, IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
             dragDropFlag = true;
         }
         else
@@ -120,7 +120,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
             // Suppressing C6031 warning since return value is not required.
 #pragma warning(suppress : 6031)
             // Load 'Resize pictures' string
-            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
+            LoadString(g_hInst_imageResizer, IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY, strResizePictures, ARRAYSIZE(strResizePictures));
         }
 
         MENUITEMINFO mii;

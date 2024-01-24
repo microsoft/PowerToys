@@ -43,7 +43,7 @@ IFACEMETHODIMP_(ULONG) ExplorerCommand::Release()
 IFACEMETHODIMP ExplorerCommand::GetTitle(IShellItemArray* psiItemArray, LPWSTR* ppszName)
 {
     WCHAR buffer[128];
-    LoadStringW(globals::instance, IDS_FILELOCKSMITH_COMMANDTITLE, buffer, ARRAYSIZE(buffer));
+    LoadStringW(globals::instance, IDS_FILELOCKSMITH_CONTEXT_MENU_ENTRY, buffer, ARRAYSIZE(buffer));
     return SHStrDupW(buffer, ppszName);
 }
 
