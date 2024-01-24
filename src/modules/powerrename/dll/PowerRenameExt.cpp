@@ -22,7 +22,7 @@ struct InvokeStruct
 CPowerRenameMenu::CPowerRenameMenu()
 {
     ModuleAddRef();
-    context_menu_caption = GET_RESOURCE_STRING(IDS_POWERRENAME_CONTEXT_MENU_ENTRY);
+    context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_POWERRENAME_CONTEXT_MENU_ENTRY, L"Rename with PowerRename");
 }
 
 CPowerRenameMenu::~CPowerRenameMenu()
@@ -87,8 +87,8 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
     HRESULT hr = E_UNEXPECTED;
     if (m_spdo && !(uFlags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE)))
     {
-        wchar_t menuName[64] = { 0 };
-        LoadString(g_hInst, IDS_POWERRENAME_CONTEXT_MENU_ENTRY, menuName, ARRAYSIZE(menuName));
+        wchar_t menuName[128] = { 0 };
+        wcscpy_s(menuName, ARRAYSIZE(menuName), context_menu_caption.c_str());
 
         MENUITEMINFO mii;
         mii.cbSize = sizeof(MENUITEMINFO);
