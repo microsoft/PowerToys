@@ -1205,6 +1205,11 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
         auto toggleHandler = [allowChordSwitch, &keyboardManagerState](auto const& sender, auto const& e) {
             keyboardManagerState.AllowChord = allowChordSwitch.IsOn();
+
+            if (!allowChordSwitch.IsOn())
+            {
+                keyboardManagerState.ClearStoredShortcut();
+            }
         };
 
         allowChordSwitch.Toggled(toggleHandler);
@@ -1237,7 +1242,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     // Show the dialog
     detectShortcutBox.ShowAsync();
 
-    if (!shortcut.IsEmpty())
+    if (!shortcut.IsEmpty() && keyboardManagerState.AllowChord)
     {
         keyboardManagerState.SetDetectedShortcut(shortcut);
     }

@@ -155,6 +155,8 @@ namespace KBMEditor
         // Function to clear all the registered key delays
         void ClearRegisteredKeyDelays();
 
+        void ClearStoredShortcut();
+
         // Handle a key event, for a delayed key.
         bool HandleKeyDelayEvent(LowlevelKeyboardEvent* ev);
 

@@ -192,7 +192,7 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
 
         // add a TextBlock, to show what shortcut in text, e.g.: "CRTL+j, k" OR "CRTL+j, CRTL+k".
         if (detectedShortcut.HasChord())
-        {            
+        {
             TextBlock txtComma;
             txtComma.Text(L",");
             txtComma.FontSize(20);
@@ -452,6 +452,12 @@ void KeyboardManagerState::ClearRegisteredKeyDelays()
 {
     std::lock_guard l(keyDelays_mutex);
     keyDelays.clear();
+}
+
+void KBMEditor::KeyboardManagerState::ClearStoredShortcut()
+{
+    std::scoped_lock<std::mutex> detectedShortcut_lock(detectedShortcut_mutex);
+    detectedShortcut.Reset();
 }
 
 bool KeyboardManagerState::HandleKeyDelayEvent(LowlevelKeyboardEvent* ev)
