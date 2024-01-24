@@ -21,7 +21,7 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="Generated Files/resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,9 +38,18 @@
     <None Include="Assets\PowerRename\**">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="PowerRenameContextMenu.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="PowerRenameContextMenu.rc">
+    <ResourceCompile Include="Generated Files/PowerRenameContextMenu.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
