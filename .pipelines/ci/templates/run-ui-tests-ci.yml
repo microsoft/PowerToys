@@ -43,8 +43,9 @@ jobs:
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       testSelector: 'testAssemblies'
-      uiTests: true
       searchFolder: '$(Build.ArtifactStagingDirectory)'
+      vstestLocationMethod: 'version'
+      vsTestVersion: '17.0'
       testAssemblyVer2: |
         **\UITests-FancyZones.dll
         **\UITests-FancyZonesEditor.dll
