@@ -35,6 +35,7 @@ jobs:
 
   - task: VisualStudioTestPlatformInstaller@1
     displayName: Ensure VSTest Platform
+    packageFeedSelector: 'nugetOrg'
     versionSelector: 'specificVersion'
     testPlatformVersion: '17.0'
 
