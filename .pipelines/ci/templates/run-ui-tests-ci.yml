@@ -35,9 +35,6 @@ jobs:
 
   - task: VisualStudioTestPlatformInstaller@1
     displayName: Ensure VSTest Platform
-    packageFeedSelector: 'nugetOrg'
-    versionSelector: 'specificVersion'
-    testPlatformVersion: '17.0'
 
   - task: VSTest@2
     displayName: 'UI Tests'
@@ -47,8 +44,8 @@ jobs:
       configuration: '$(BuildConfiguration)'
       testSelector: 'testAssemblies'
       searchFolder: '$(Build.ArtifactStagingDirectory)'
-      vstestLocationMethod: 'version'
-      vsTestVersion: '17.0'
+      vstestLocationMethod: 'location'
+      vstestLocation: 'D:\a\_work\_temp\VsTest'
       testAssemblyVer2: |
         **\UITests-FancyZones.dll
         **\UITests-FancyZonesEditor.dll
