@@ -35,6 +35,8 @@ jobs:
 
   - task: VisualStudioTestPlatformInstaller@1
     displayName: Ensure VSTest Platform
+    versionSelector: 'specificVersion'
+    testPlatformVersion: '17.0'
 
   - task: VSTest@2
     displayName: 'UI Tests'
