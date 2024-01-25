@@ -3605,8 +3605,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Shell integration</value>
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
-  <data name="GPO_IsSettingForced.Title" xml:space="preserve">
-    <value>This setting is enforced by your System Administrator.</value>
+  <data name="GPO_SettingIsManaged.Title" xml:space="preserve">
+    <value>This setting is managed by your organization.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
@@ -3649,9 +3649,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
-  </data>
-  <data name="GPO_ExperimentationIsDisallowed.Title" xml:space="preserve">
-    <value>The system administrator has disabled experimentation.</value>
   </data>
   <data name="Shell_PastePlain.Content" xml:space="preserve">
     <value>Paste As Plain Text</value>
@@ -3848,9 +3845,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Enable Mouse Jump</value>
     <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
-  <data name="GPO_AutoDownloadUpdatesIsDisabled.Title" xml:space="preserve">
-    <value>The system administrator has disabled the automatic download of updates.</value>
-  </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
     <comment>"127.0.0.1 and ::1" are well known loopback addresses, do not loc</comment>
@@ -3937,8 +3931,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
     <value>Find more plugins</value>
   </data>
-  <data name="Run_SomePluginsAreGpoManaged.Title" xml:space="preserve">
-    <value>The system administrator is managing the enabled state of some plugins.</value>
+  <data name="GPO_SomeRunPluginsAreManaged.Title" xml:space="preserve">
+    <value>The enabled state of some plugins is managed by your organization.</value>
   </data>
   <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
@@ -3966,8 +3960,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-  <data name="GPO_IsSettingForcedText.Text" xml:space="preserve">
-    <value>This setting is enforced by your System Administrator.</value>
+  <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">
+    <value>Some settings are managed by your organization.</value>
   </data>
   <data name="DisabledModules.Text" xml:space="preserve">
     <value>Disabled modules</value>
@@ -4026,5 +4020,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_ToggleSwitch_ShowNewUpdatesToast.Header" xml:space="preserve">
     <value>Show notifications for new updates</value>
+  </data>
+  <data name="GPO_SettingIsManaged_ToolTip.Text" xml:space="preserve">
+    <value>This setting is managed by your organization.</value>
+  </data>
+  <data name="GPO_SomePreviewPanesAreManaged.Title" xml:space="preserve">
+    <value>The enabled state of some preview handlers is managed by your organization.</value>
+  </data>
+  <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
+    <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
   </data>
 </root>

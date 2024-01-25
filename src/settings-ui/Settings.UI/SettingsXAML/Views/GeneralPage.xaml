@@ -183,7 +183,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AutoDownloadUpdates, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_AutoDownloadUpdatesIsDisabled"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.ShowAutoDownloadUpdatesGpoInformation, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowAutoDownloadUpdatesGpoInformation, Mode=OneWay}"
@@ -193,7 +193,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_IsSettingForced"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled}"
@@ -206,7 +206,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_IsSettingForced"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsNewUpdatesToastDisabledGpoConfigured}"
                         IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsNewUpdatesToastDisabledGpoConfigured}"
@@ -364,7 +364,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableExperimentation, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_ExperimentationIsDisallowed"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
