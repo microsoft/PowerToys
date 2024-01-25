@@ -4023,6 +4023,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">
     <value>Some settings are managed by your organization.</value>
+  </data>
   <data name="GPO_SettingIsManaged_ToolTip.Text" xml:space="preserve">
     <value>This setting is managed by your organization.</value>
   </data>
