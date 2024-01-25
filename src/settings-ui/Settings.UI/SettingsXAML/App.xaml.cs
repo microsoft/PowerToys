@@ -90,7 +90,9 @@ namespace Microsoft.PowerToys.Settings.UI
             if (type != null)
             {
                 settingsWindow.NavigateToSection(type);
-            }
+
+                WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
+             }
 
             if (ensurePageIsSelected)
             {

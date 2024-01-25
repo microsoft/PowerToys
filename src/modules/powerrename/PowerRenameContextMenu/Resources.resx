@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,10 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PowerRename" xml:space="preserve">
-    <value>Po&amp;werRename</value>
-    <comment>do not loc, product name</comment>
-  </data>
   <data name="PowerRename_App_Name" xml:space="preserve">
     <value>PowerRename</value>
     <comment>do not loc, product name</comment>
@@ -128,28 +124,5 @@
   <data name="PowerRename_Context_Menu_Entry" xml:space="preserve">
     <value>Rename with PowerRename</value>
     <comment>PowerRename is a product name. do not loc it</comment>
-  </data>
-  <data name="Settings_Description" xml:space="preserve">
-    <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
-  </data>
-  <data name="Restore_Search" xml:space="preserve">
-    <value>Restore search, replace and flags values on launch from previous run.</value>
-  </data>
-  <data name="Enable_Auto" xml:space="preserve">
-    <value>Enable autocomplete and autosuggest of recently used inputs for search and replace values.</value>
-  </data>
-  <data name="Max_Items" xml:space="preserve">
-    <value>Maximum number of items to show in recently used list for autocomplete dropdown.</value>
-  </data>
-  <data name="Icon_Context_Menu" xml:space="preserve">
-    <value>Show icon on context menu.</value>
-    <comment>The icon for PowerRename to be inside with Windows File Explorer right click context menu</comment>
-  </data>
-  <data name="Extended_Menu_Info" xml:space="preserve">
-    <value>Only show the PowerRename menu item on the extended context menu (Shift + Right-click).</value>
-  </data>
-  <data name="Use_Boost_Lib" xml:space="preserve">
-    <value>Use Boost library (provides extended features but may use different regex syntax).</value>
-    <comment>Boost is a product name, should not be translated</comment>
   </data>
 </root>

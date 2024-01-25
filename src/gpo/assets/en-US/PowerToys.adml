@@ -81,12 +81,6 @@ If enabled, the notification is disabled.
 
 If disabled or not configured, the user can control if the notification is shown or not.
 </string>
-      <string id="DisablePeriodicUpdateCheckDescription">This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
-
-If enabled, the automatic update checks are disabled.
-
-If disabled or not configured, the automatic update checks are enabled.
-</string>
       <string id="DoNotShowWhatsNewAfterUpdatesDescription">This policy allows you to configure if the window with the release notes is shown after updates.
 
 If enabled, the window with the release notes is not shown automatically.
@@ -165,7 +159,6 @@ Note: Changes require a restart of PowerToys Run.
       <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>
       <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
       <string id="DisableNewUpdateToast">Disable Action Center notification for new updates</string>
-      <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
       <string id="AllowExperimentation">Allow Experimentation</string>
       <string id="PowerToysRunAllPluginsEnabledState">Configure enabled state for all plugins</string>
       <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>
