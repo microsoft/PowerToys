@@ -38,7 +38,7 @@
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="8.0.0" /> <!-- Package added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.4" />
@@ -65,6 +65,7 @@
     <PackageVersion Include="System.ComponentModel.Composition" Version="8.0.0" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageVersion Include="System.Data.OleDb" Version="8.0.0" />
+    <PackageVersion Include="System.Data.SqlClient" Version="4.8.6" /> <!-- Package added to force it as a dependency of Microsoft.Windows.Compatibility to the latest version available at this time. -->
     <PackageVersion Include="System.Diagnostics.EventLog" Version="8.0.0" /> <!-- Package added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" /> <!-- Package added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.Drawing.Common" Version="8.0.1" />
