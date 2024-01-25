@@ -400,18 +400,13 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
                 auto runProgramStartInDirInput = row.FindName(L"runProgramStartInDirInput_" + std::to_wstring(rowIndex)).as<TextBox>();
                 auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
                 auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
-                auto runProgramAppRunningSound = row.FindName(L"runProgramAppRunningSound_" + std::to_wstring(rowIndex)).as<TextBox>();
-                auto runProgramAppNotRunningSound = row.FindName(L"runProgramAppNotRunningSound_" + std::to_wstring(rowIndex)).as<TextBox>();
-
+                
                 Shortcut tempShortcut;
                 tempShortcut.operationType = Shortcut::OperationType::RunProgram;
 
                 tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
                 tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
                 tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
-
-                tempShortcut.runProgramAppRunningSound = (row.FindName(L"runProgramAppRunningSound_" + std::to_wstring(rowIndex)).as<TextBox>().Text().c_str());
-                tempShortcut.runProgramAppNotRunningSound = (row.FindName(L"runProgramAppNotRunningSound_" + std::to_wstring(rowIndex)).as<TextBox>().Text().c_str());
 
                 tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationTypeCombo.SelectedIndex());
                 tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction.SelectedIndex());
@@ -709,23 +704,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
 
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(stackPanelRunProgramStartInDir, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELSTARTIN), runProgramLabelWidth).as<StackPanel>());
 
-    auto runProgramAppNotRunningSound = TextBox();
-    runProgramAppNotRunningSound.Name(L"runProgramAppNotRunningSound_" + std::to_wstring(rowIndex));
-    runProgramAppNotRunningSound.IsSpellCheckEnabled(false);
-    runProgramAppNotRunningSound.Margin(textInputMargin);
-    runProgramAppNotRunningSound.AcceptsReturn(false);
-    runProgramAppNotRunningSound.Width(EditorConstants::TableDropDownHeight);
-    runProgramAppNotRunningSound.HorizontalAlignment(HorizontalAlignment::Left);
-    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramAppNotRunningSound, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELAPPNOTRUNNINGSOUND), runProgramLabelWidth).as<StackPanel>());
-
-    auto runProgramAppRunningSound = TextBox();
-    runProgramAppRunningSound.Name(L"runProgramAppRunningSound_" + std::to_wstring(rowIndex));
-    runProgramAppRunningSound.IsSpellCheckEnabled(false);
-    runProgramAppRunningSound.Margin(textInputMargin);
-    runProgramAppRunningSound.AcceptsReturn(false);
-    runProgramAppRunningSound.Width(EditorConstants::TableDropDownHeight);
-    runProgramAppRunningSound.HorizontalAlignment(HorizontalAlignment::Left);
-
     // add shortcut type choice
     runProgramElevationTypeCombo.Width(EditorConstants::RemapTableDropDownWidth - 40);
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPENORMAL)));
@@ -744,8 +722,6 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     // lets think about this, I like it, some don't
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGCLOSEANDTERMINATE)));
     runProgramAlreadyRunningAction.SelectedIndex(0);
-
-    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramAppRunningSound, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELAPPRUNNINGSOUND), runProgramLabelWidth).as<StackPanel>());
 
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELELEVATION), runProgramLabelWidth).as<StackPanel>());
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramAlreadyRunningAction, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELIFRUNNING), runProgramLabelWidth).as<StackPanel>());
@@ -781,41 +757,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         CreateNewTempShortcut(row, tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
     });
-
-    runProgramAppNotRunningSound.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
-        uint32_t rowIndex = -1;
-        if (!parent.Children().IndexOf(row, rowIndex))
-        {
-            return;
-        }
-
-        if (ShortcutControl::shortcutRemapBuffer.size() <= rowIndex)
-        {
-            return;
-        }
-
-        Shortcut tempShortcut;
-        CreateNewTempShortcut(row, tempShortcut, rowIndex);
-        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
-    });
-
-    runProgramAppRunningSound.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
-        uint32_t rowIndex = -1;
-        if (!parent.Children().IndexOf(row, rowIndex))
-        {
-            return;
-        }
-
-        if (ShortcutControl::shortcutRemapBuffer.size() <= rowIndex)
-        {
-            return;
-        }
-
-        Shortcut tempShortcut;
-        CreateNewTempShortcut(row, tempShortcut, rowIndex);
-        ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
-    });
-
+   
     runProgramStartInDirInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;
         if (!parent.Children().IndexOf(row, rowIndex))
@@ -971,10 +913,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramPathInput.Text(shortCut.runProgramFilePath);
     runProgramArgsForProgramInput.Text(shortCut.runProgramArgs);
     runProgramStartInDirInput.Text(shortCut.runProgramStartInDir);
-
-    runProgramAppRunningSound.Text(shortCut.runProgramAppRunningSound);
-    runProgramAppNotRunningSound.Text(shortCut.runProgramAppNotRunningSound);
-
+    
     runProgramElevationTypeCombo.SelectedIndex(shortCut.elevationLevel);
     runProgramAlreadyRunningAction.SelectedIndex(shortCut.alreadyRunningAction);
     runProgramStartWindow.SelectedIndex(shortCut.startWindowType);
@@ -993,15 +932,10 @@ void CreateNewTempShortcut(StackPanel& row, Shortcut& tempShortcut, const uint32
     auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
     auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
     auto runProgramStartWindow = row.FindName(L"runProgramStartWindow_" + std::to_wstring(rowIndex)).as<ComboBox>();
-    auto runProgramAppRunningSound = row.FindName(L"runProgramAppRunningSound_" + std::to_wstring(rowIndex)).as<TextBox>();
-    auto runProgramAppNotRunningSound = row.FindName(L"runProgramAppNotRunningSound_" + std::to_wstring(rowIndex)).as<TextBox>();
-
+    
     tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
     tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
     tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
-
-    tempShortcut.runProgramAppRunningSound = ShortcutControl::RemoveExtraQuotes((row.FindName(L"runProgramAppRunningSound_" + std::to_wstring(rowIndex)).as<TextBox>().Text().c_str()));
-    tempShortcut.runProgramAppNotRunningSound = ShortcutControl::RemoveExtraQuotes((row.FindName(L"runProgramAppNotRunningSound_" + std::to_wstring(rowIndex)).as<TextBox>().Text().c_str()));
 
     // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
 

@@ -67,9 +67,7 @@ public:
     std::wstring runProgramArgs;
     std::wstring runProgramStartInDir;
     std::wstring uriToOpen;
-    std::wstring runProgramAppRunningSound;
-    std::wstring runProgramAppNotRunningSound;
-
+    
     ProgramAlreadyRunningAction alreadyRunningAction = ProgramAlreadyRunningAction::ShowWindow;
     ElevationLevel elevationLevel = ElevationLevel::NonElevated;
     OperationType operationType = OperationType::RemapShortcut;

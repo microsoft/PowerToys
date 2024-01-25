@@ -315,7 +315,7 @@ namespace KeyboardEventHandlers
                             }
                             else
                             {
-                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get 
+                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
                                 // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
                                 toast(L"Error", L"Could not understand the Path or URI");
                                 return 1;
@@ -1215,11 +1215,6 @@ namespace KeyboardEventHandlers
 
         if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
         {
-            if (shortcut.runProgramAppRunningSound != L"")
-            {
-                PlaySound(shortcut.runProgramAppRunningSound.c_str(), NULL, SND_FILENAME | SND_ASYNC);
-            }
-
             if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::CloseAndEndTask)
             {
                 /*std::thread myThread(CloseAndTerminateProcessByName, fileNamePart);*/
@@ -1316,13 +1311,6 @@ namespace KeyboardEventHandlers
                 std::wstring message = fmt::format(L"The application might not have started.");
                 toast(title, message);
                 return;
-            }
-            else
-            {
-                if (shortcut.runProgramAppNotRunningSound != L"")
-                {
-                    PlaySound(shortcut.runProgramAppNotRunningSound.c_str(), NULL, SND_FILENAME | SND_ASYNC);
-                }
             }
 
             if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
