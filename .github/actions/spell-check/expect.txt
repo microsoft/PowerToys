@@ -1698,6 +1698,7 @@ VSM
 vso
 vsonline
 vstemplate
+vstest
 VSTHRD
 VSTT
 vswhere
