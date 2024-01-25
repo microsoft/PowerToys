@@ -221,8 +221,8 @@ namespace PowerLauncher.ViewModel
                         try
                         {
                             // UserSelectedRecord
-                            var userSelectedRecordItemData = new UserSelectedRecord.UserSelectedRecordItem();
-                            var userSelectedRecordItemStorage = new WoxJsonStorage<UserSelectedRecord.UserSelectedRecordItem>(_userSelectedRecordStorage.GetFileName());
+                            var userSelectedRecordItemData = new UserSelectedRecord();
+                            var userSelectedRecordItemStorage = new WoxJsonStorage<UserSelectedRecord>(_userSelectedRecordStorage.GetFileName());
                             userSelectedRecordItemStorage.Load();
 
                             if (userSelectedRecordItemData != null)
@@ -238,8 +238,8 @@ namespace PowerLauncher.ViewModel
                             }
 
                             // History
-                            var historyItemData = new HistoryItem();
-                            var historyItemStorage = new WoxJsonStorage<HistoryItem>(_historyItemsStorage.GetFileName());
+                            var historyItemData = new QueryHistory();
+                            var historyItemStorage = new WoxJsonStorage<QueryHistory>(_historyItemsStorage.GetFileName());
                             historyItemStorage.Load();
 
                             if (historyItemData != null)

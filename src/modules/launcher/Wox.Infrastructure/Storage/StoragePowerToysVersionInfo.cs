@@ -35,11 +35,6 @@ namespace Wox.Infrastructure.Storage
             JSON_STORAGE = 1,
         }
 
-        private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-        };
-
         private class StorageObject
         {
             public string Version { get; set; }
