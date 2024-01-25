@@ -180,13 +180,15 @@
                         Margin="0,-6,0,0"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
                         IsExpanded="True">
-                        <tkcontrols:SettingsExpander.Items>
+                        <tkcontrols:SettingsExpander.ItemsHeader>
                             <InfoBar
                                 x:Uid="GPO_SomeSettingsAreManaged"
                                 IsClosable="False"
                                 IsOpen="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
                                 IsTabStop="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
                                 Severity="Informational" />
+                        </tkcontrols:SettingsExpander.ItemsHeader>
+                        <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowNewUpdatesToastNotificationCardEnabled}">
                                 <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
                             </tkcontrols:SettingsCard>
