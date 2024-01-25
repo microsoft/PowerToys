@@ -19,7 +19,7 @@ CContextMenuHandler::CContextMenuHandler()
     m_pidlFolder = NULL;
     m_pdtobj = NULL;
     context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY, L"Resize with Image Resizer");
-    context_menu_caption_here = GET_RESOURCE_STRING_FALLBACK(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY_HERE, L"Resize with Image Resizer");
+    context_menu_caption_here = GET_RESOURCE_STRING_FALLBACK(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY_HERE, L"Resize with Image Resizer here");
 }
 
 CContextMenuHandler::~CContextMenuHandler()
