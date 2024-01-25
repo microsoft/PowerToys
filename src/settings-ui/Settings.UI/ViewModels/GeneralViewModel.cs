@@ -153,7 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private bool _isDevBuild;
+        private static bool _isDevBuild;
         private bool _startup;
         private bool _isElevated;
         private bool _runElevated;
