@@ -32,9 +32,10 @@ namespace Wox.Infrastructure.Storage
             IncludeFields = true,
             PropertyNameCaseInsensitive = true,
             WriteIndented = true,
+            UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow,
         };
 
-        private static readonly JsonSerializerOptions _informationSerializerOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions _deserializerOptions = new JsonSerializerOptions
         {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never,
             IncludeFields = true,
@@ -86,7 +87,7 @@ namespace Wox.Infrastructure.Storage
         {
             try
             {
-                _data = JsonSerializer.Deserialize<T>(serialized, _serializerOptions);
+                _data = JsonSerializer.Deserialize<T>(serialized, _deserializerOptions);
             }
             catch (JsonException e)
             {
@@ -132,6 +133,7 @@ namespace Wox.Infrastructure.Storage
                 {
                     string serialized = JsonSerializer.Serialize(_data, _serializerOptions);
                     File.WriteAllText(FilePath, serialized);
+                    _storageHelper.Close();
 
                     Log.Info($"Saving cached data at <{FilePath}>", GetType());
                 }
@@ -152,15 +154,6 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        public void SaveInformationFile(T data)
-        {
-            lock (_saveLock)
-            {
-                DefaultFileContent = JsonSerializer.Serialize(data, _informationSerializerOptions);
-                _storageHelper.Close(DefaultFileContent);
-            }
-        }
-
         public bool CheckVersionMismatch()
         {
             // Skip the fields check if the version hasn't changed.
@@ -171,93 +164,26 @@ namespace Wox.Infrastructure.Storage
                 return false;
             }
 
+            _storageHelper.ClearCache = false;
             return true;
         }
 
         public bool CheckWithInformationFileToClear(T actualData)
         {
-            var infoFilePath = _storageHelper.GetFilePath(FilePath, _jsonStorage);
-
             if (actualData == null)
             {
                 return false;
             }
-            else if (!File.Exists(infoFilePath))
-            {
-                // Check if information file exist
-                DefaultFileContent = JsonSerializer.Serialize(actualData, _informationSerializerOptions);
-
-                _storageHelper.Close(DefaultFileContent);
-                return true;
-            }
 
             try
             {
-                var infoFields = JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(infoFilePath), _informationSerializerOptions);
-
-                if (infoFields != null && infoFields.TryGetValue("DefaultContent", out var defaultContent))
-                {
-                    // Check if defaultContent is neither null nor an empty string
-                    if (!string.IsNullOrEmpty(defaultContent?.ToString()))
-                    {
-                        var defaultContentFields = JsonSerializer.Deserialize<Dictionary<string, object>>(defaultContent?.ToString(), _informationSerializerOptions);
-                        var actualFields = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(actualData), _informationSerializerOptions);
-
-                        if (defaultContentFields != null && actualFields != null)
-                        {
-                            Func<Dictionary<string, object>, Dictionary<string, object>, bool> areFieldNamesMatching = (fields1, fields2) =>
-                            {
-                                return fields1.Count == fields2.Count && !fields1.Keys.Except(fields2.Keys).Any();
-                            };
-
-                            // Compare the field names in DefaultContent with the field names in the actual JSON
-                            bool isFieldNamesMatching = areFieldNamesMatching(defaultContentFields, actualFields);
-
-                            // If there is a mismatch, update DefaultFileContent with the contents of filePath
-                            DefaultFileContent = isFieldNamesMatching ? defaultContent?.ToString() : JsonSerializer.Serialize(actualData, _informationSerializerOptions);
-
-                            _storageHelper.Close(DefaultFileContent);
-                            return isFieldNamesMatching;
-                        }
-                        else if (defaultContentFields == null)
-                        {
-                            DefaultFileContent = JsonSerializer.Serialize(actualData, _informationSerializerOptions);
-                            _storageHelper.Close(DefaultFileContent);
-                            return true;
-                        }
-                        else if (actualFields == null)
-                        {
-                            DefaultFileContent = JsonSerializer.Serialize(defaultContentFields, _informationSerializerOptions);
-                            _storageHelper.Close(DefaultFileContent);
-
-                            _data = JsonSerializer.Deserialize<T>(defaultContent.ToString(), _informationSerializerOptions);
-                            return false;
-                        }
-
-                        return true;
-                    }
-                    else
-                    {
-                        // Check if information file exist
-                        DefaultFileContent = JsonSerializer.Serialize(actualData, _informationSerializerOptions);
-                        _storageHelper.Close(DefaultFileContent);
-
-                        return true;
-                    }
-                }
-                else
-                {
-                    // Check if information file exist
-                    DefaultFileContent = JsonSerializer.Serialize(actualData, _informationSerializerOptions);
-                    _storageHelper.Close(DefaultFileContent);
-
-                    return true;
-                }
+                JsonSerializer.Deserialize<T>(File.ReadAllText(FilePath), _serializerOptions);
+                return true;
             }
             catch (JsonException e)
             {
                 Log.Exception($"Error in CheckWithInformationFileToClear at <{FilePath}>", e, GetType());
-                return true;
+                return false;
             }
         }
     }

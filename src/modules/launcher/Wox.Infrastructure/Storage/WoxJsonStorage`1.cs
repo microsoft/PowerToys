@@ -28,10 +28,5 @@ namespace Wox.Infrastructure.Storage
 
             FilePath = Path.Combine(directoryPath, $"{fileName}{FileSuffix}");
         }
-
-        public string GetFileName()
-        {
-            return fileNameJSON;
-        }
     }
 }

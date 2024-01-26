@@ -30,7 +30,6 @@ namespace PowerLauncher.ViewModel
                         if (!_storage.CheckWithInformationFileToClear(data))
                         {
                             _storage.Clear();
-                            _storage.SaveInformationFile(data);
                         }
                     }
                 }

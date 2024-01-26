@@ -5,8 +5,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
-using System.Text.Encodings.Web;
-using System.Text.Json;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -22,24 +21,12 @@ namespace Wox.Infrastructure.Storage
 
         private string FilePath { get; set; } = string.Empty;
 
-        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-        };
-
         // As of now this information is not pertinent but may be in the future
         // There may be cases when we want to delete only the .cache files and not the .json storage files
         private enum StorageType
         {
             BINARY_STORAGE = 0,
             JSON_STORAGE = 1,
-        }
-
-        private class StorageObject
-        {
-            public string Version { get; set; }
-
-            public string DefaultContent { get; set; }
         }
 
         // To compare the version numbers
@@ -89,47 +76,32 @@ namespace Wox.Infrastructure.Storage
         {
             if (File.Exists(FilePath))
             {
-                if (Path.GetExtension(FilePath).Equals(".json", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Read and deserialize the JSON file
-                    string json = File.ReadAllText(FilePath);
-                    var versionObject = JsonSerializer.Deserialize<StorageObject>(json);
-                    return versionObject?.Version ?? "v0.0.0"; // Returns "v0.0.0" if version is null
-                }
-                else if (Path.GetExtension(FilePath).Equals(".txt", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Read the txt file content directly
-                    return File.ReadAllText(FilePath);
-                }
+                return File.ReadAllText(FilePath);
             }
-
-            // If the file doesn't exist or is not a recognized format, assume an old version
-            return "v0.0.0";
+            else
+            {
+                // which means it's an old version of PowerToys
+                string oldVersion = "v0.0.0";
+                return oldVersion;
+            }
         }
 
-        public string GetFilePath(string associatedFilePath, int type)
+        private static string GetFilePath(string associatedFilePath, int type)
         {
             string suffix = string.Empty;
-            string fileType = string.Empty;
-
             string cacheSuffix = ".cache";
             string jsonSuffix = ".json";
-
-            string cacheFileType = "_version.txt";
-            string jsonFileType = "_information.json";
 
             if (type == (uint)StorageType.BINARY_STORAGE)
             {
                 suffix = cacheSuffix;
-                fileType = cacheFileType;
             }
             else if (type == (uint)StorageType.JSON_STORAGE)
             {
                 suffix = jsonSuffix;
-                fileType = jsonFileType;
             }
 
-            string filePath = string.Concat(associatedFilePath.AsSpan(0, associatedFilePath.Length - suffix.Length), fileType);
+            string filePath = string.Concat(associatedFilePath.AsSpan(0, associatedFilePath.Length - suffix.Length), "_version.txt");
             return filePath;
         }
 
@@ -151,27 +123,16 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        public void Close(string defaultContent)
+        public void Close()
         {
-            if (Path.GetExtension(FilePath).Equals(".json", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                // Create an object that includes both the current version and default content
-                var dataToSerialize = new StorageObject
-                {
-                    Version = currentPowerToysVersion,
-                    DefaultContent = defaultContent,
-                };
-
-                // Serialize the StorageObject to a JSON string
-                string json = JsonSerializer.Serialize(dataToSerialize, _serializerOptions);
-
-                // Write the JSON string to the file
-                File.WriteAllText(FilePath, json);
-            }
-            else if (Path.GetExtension(FilePath).Equals(".txt", StringComparison.OrdinalIgnoreCase))
-            {
-                // For a txt file, just write the version as plain text
+                // Update the Version file to the current version of powertoys
                 File.WriteAllText(FilePath, currentPowerToysVersion);
+            }
+            catch (System.Exception e)
+            {
+                Log.Exception($"Error in saving version at <{FilePath}>", e, GetType());
             }
         }
     }

@@ -217,48 +217,6 @@ namespace PowerLauncher.ViewModel
                             Hide();
                         }
 
-                        // Check information file for version mismatch
-                        try
-                        {
-                            // UserSelectedRecord
-                            var userSelectedRecordItemData = new UserSelectedRecord.UserSelectedRecordItem();
-                            var userSelectedRecordItemStorage = new WoxJsonStorage<UserSelectedRecord.UserSelectedRecordItem>(_userSelectedRecordStorage.GetFileName());
-                            userSelectedRecordItemStorage.Load();
-
-                            if (userSelectedRecordItemData != null)
-                            {
-                                if (userSelectedRecordItemStorage.CheckVersionMismatch())
-                                {
-                                    if (!userSelectedRecordItemStorage.CheckWithInformationFileToClear(userSelectedRecordItemData))
-                                    {
-                                        userSelectedRecordItemStorage.Clear();
-                                        userSelectedRecordItemStorage.SaveInformationFile(userSelectedRecordItemData);
-                                    }
-                                }
-                            }
-
-                            // History
-                            var historyItemData = new HistoryItem();
-                            var historyItemStorage = new WoxJsonStorage<HistoryItem>(_historyItemsStorage.GetFileName());
-                            historyItemStorage.Load();
-
-                            if (historyItemData != null)
-                            {
-                                if (historyItemStorage.CheckVersionMismatch())
-                                {
-                                    if (!historyItemStorage.CheckWithInformationFileToClear(historyItemData))
-                                    {
-                                        historyItemStorage.Clear();
-                                        historyItemStorage.SaveInformationFile(historyItemData);
-                                    }
-                                }
-                            }
-                        }
-                        catch (JsonException e)
-                        {
-                            Log.Exception($"Error in Load of PluginJsonStorage: {e.Message}", e, GetType());
-                        }
-
                         if (SelectedIsFromQueryResults())
                         {
                             _userSelectedRecord.Add(result);
@@ -1076,7 +1034,32 @@ namespace PowerLauncher.ViewModel
         {
             if (!_saved)
             {
+                var historyItemData = new QueryHistory();
+                if (historyItemData != null)
+                {
+                    if (_historyItemsStorage.CheckVersionMismatch())
+                    {
+                        if (!_historyItemsStorage.CheckWithInformationFileToClear(historyItemData))
+                        {
+                            _history.Update();
+                        }
+                    }
+                }
+
                 _historyItemsStorage.Save();
+
+                var userSelectedRecordItemData = new UserSelectedRecord();
+                if (userSelectedRecordItemData != null)
+                {
+                    if (_userSelectedRecordStorage.CheckVersionMismatch())
+                    {
+                        if (!_userSelectedRecordStorage.CheckWithInformationFileToClear(userSelectedRecordItemData))
+                        {
+                            _userSelectedRecord.Update();
+                        }
+                    }
+                }
+
                 _userSelectedRecordStorage.Save();
 
                 _saved = true;

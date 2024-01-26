@@ -41,7 +41,6 @@ namespace Wox.Infrastructure.Storage
                         if (!CheckWithInformationFileToClear(informationData))
                         {
                             Clear();
-                            SaveInformationFile(informationData);
                         }
                     }
                 }
