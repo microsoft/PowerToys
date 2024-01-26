@@ -23,7 +23,7 @@
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseWithoutBorders_Toggle_Enable"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                         IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"

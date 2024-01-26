@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_PastePlain" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PastePlain.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_PastePlain" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PasteAsPlainText.gif">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />

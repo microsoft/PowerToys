@@ -41,7 +41,7 @@
 
                 <tkcontrols:SettingsCard
                     x:Uid="VideoConference_Enable"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsVideoConferenceMute.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
                     IsEnabled="{x:Bind ViewModel.IsElevated, Mode=OneWay}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>

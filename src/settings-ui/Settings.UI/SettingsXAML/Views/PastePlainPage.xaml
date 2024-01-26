@@ -10,7 +10,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="PastePlain" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PastePlain.png">
+    <controls:SettingsPageControl x:Uid="PastePlain" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PasteAsPlainText.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
@@ -18,7 +18,7 @@
                 Spacing="2">
                 <tkcontrols:SettingsCard
                     x:Uid="PastePlain_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPastePlain.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PasteAsPlainText.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>

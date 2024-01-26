@@ -28,7 +28,7 @@
                 Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="ColorPicker_EnableColorPicker"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsColorPicker.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
