@@ -1,3 +1,6 @@
+# FALSE POSITIVES
+## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
+## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -35,8 +38,8 @@ ALPHATYPE
 AModifier
 AMPROPERTY
 AMPROPSETID
-animatedvisuals
 ANDSCANS
+animatedvisuals
 ansicolor
 ANull
 AOC
@@ -52,7 +55,6 @@ appdata
 APPEXECLINK
 appium
 Applicationcan
-applicationframehost
 appmanifest
 APPNAME
 appref
@@ -296,6 +298,7 @@ ddf
 DDxgi
 Deact
 debugbreak
+declatory
 decryptor
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -723,7 +726,6 @@ Jsons
 jsonval
 junja
 jxr
-Kazakhstani
 kdc
 keybd
 KEYBDDATA
@@ -744,7 +746,6 @@ Knownfolders
 KSPROPERTY
 Kybd
 languagesjson
-lastbuildstate
 lastcodeanalysissucceeded
 Lastdevice
 LASTEXITCODE
@@ -1070,6 +1071,7 @@ overlaywindow
 Oversampling
 OWNDC
 OWNERDRAW
+Packagemanager
 PACL
 PAINTSTRUCT
 PALETTEWINDOW
@@ -1215,7 +1217,6 @@ qit
 QITAB
 QITABENT
 qoi
-qps
 Quarternary
 QUERYENDSESSION
 QUERYOPEN
@@ -1549,7 +1550,6 @@ TDevice
 telem
 telephon
 templatenamespace
-Tenge
 testhost
 testprocess
 TEXCOORD
@@ -1570,14 +1570,12 @@ timeutil
 Titlecase
 tkcontrols
 tkconverters
-TKey
 TLayout
 tlb
 tlbimp
 TMPVAR
 TNP
 toggleswitch
-toolkitcontrols
 toolkitconverters
 Toolset
 toolwindow
@@ -1595,7 +1593,6 @@ trl
 Tsd
 TServer
 TStr
-TValue
 tweakme
 TWF
 tymed
@@ -1616,7 +1613,6 @@ ums
 uncompilable
 UNCPRIORITY
 UNDNAME
-unescape
 UNICODETEXT
 uninstantiated
 uniquifier
@@ -1850,10 +1846,3 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-
-# FALSE POSITIVES
-
-## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
-declatory
-## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
-Packagemanager
