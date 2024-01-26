@@ -19,7 +19,7 @@
     <controls:SettingsPageControl x:Uid="General" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
+                <controls:SettingsGroup x:Uid="General_VersionAndUpdate" Margin="0,-32,0,0">
                     <tkcontrols:SettingsCard Header="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
                         <tkcontrols:SettingsCard.Description>
                             <StackPanel Orientation="Vertical">
@@ -175,42 +175,34 @@
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <tkcontrols:SettingsCard
-                        x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
+                    <tkcontrols:SettingsExpander
+                        x:Uid="General_UpdateSettings"
                         Margin="0,-6,0,0"
-                        IsEnabled="{x:Bind ViewModel.IsAutoDownloadUpdatesCardEnabled, Mode=OneWay}"
-                        Visibility="{x:Bind ViewModel.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AutoDownloadUpdates, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.ShowAutoDownloadUpdatesGpoInformation, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.ShowAutoDownloadUpdatesGpoInformation, Mode=OneWay}"
-                        Severity="Informational" />
-
-                    <tkcontrols:SettingsCard x:Uid="GeneralPage_ToggleSwitch_ShowWhatsNewAfterUpdates" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ShowWhatsNewAfterUpdatesIsGpoDisabled}"
-                        Severity="Informational" />
-
-                    <tkcontrols:SettingsCard
-                        x:Uid="GeneralPage_ToggleSwitch_ShowNewUpdatesToast"
-                        Margin="0,-6,0,0"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsNewUpdatesToastDisabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsNewUpdatesToastDisabledGpoConfigured}"
-                        IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.IsNewUpdatesToastDisabledGpoConfigured}"
-                        Severity="Informational" />
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
+                        IsExpanded="True">
+                        <tkcontrols:SettingsExpander.ItemsHeader>
+                            <InfoBar
+                                x:Uid="GPO_SomeSettingsAreManaged"
+                                IsClosable="False"
+                                IsOpen="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
+                                IsTabStop="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
+                                Severity="Informational" />
+                        </tkcontrols:SettingsExpander.ItemsHeader>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowNewUpdatesToastNotificationCardEnabled}">
+                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                ContentAlignment="Left"
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAutoDownloadUpdatesCardEnabled}"
+                                Visibility="{x:Bind ViewModel.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowWhatsNewAfterUpdatesCardEnabled}">
+                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowWhatsNewAfterUpdates" IsChecked="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Admin_Mode">

@@ -1386,10 +1386,10 @@
   <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Content" xml:space="preserve">
     <value>Learn more about administrator mode</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
-    <value>Download updates automatically</value>
+  <data name="GeneralPage_AutoDownloadAndInstallUpdates.Header" xml:space="preserve">
+    <value>Download and install updates automatically</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Description" xml:space="preserve">
+  <data name="GeneralPage_AutoDownloadAndInstallUpdates.Description" xml:space="preserve">
     <value>Except on metered connections</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
@@ -1449,8 +1449,8 @@
   <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
   </data>
-  <data name="General_Version.Header" xml:space="preserve">
-    <value>Version</value>
+  <data name="General_VersionAndUpdate.Header" xml:space="preserve">
+    <value>Version &amp; updates</value>
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
@@ -1467,8 +1467,8 @@
   <data name="General_SettingsBackupInfo_StatusHeader.Text" xml:space="preserve">
     <value>Status:</value>
   </data>
-  <data name="General_Version.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Version</value>
+  <data name="General_VersionAndUpdate.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Version and updates</value>
   </data>
   <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
@@ -3960,9 +3960,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-  <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">
-    <value>Some settings are managed by your organization.</value>
-  </data>
   <data name="DisabledModules.Text" xml:space="preserve">
     <value>Disabled modules</value>
   </data>
@@ -4005,7 +4002,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="PowerLauncher_TextFontSizeSlider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Text size of result titles</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_ShowWhatsNewAfterUpdates.Header" xml:space="preserve">
+  <data name="GeneralPage_ShowWhatsNewAfterUpdates.Header" xml:space="preserve">
     <value>Show the release notes after updates</value>
   </data>
   <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
@@ -4015,11 +4012,17 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
   </data>
-  <data name="GeneralPage_ToggleSwitch_ShowNewUpdatesToast.Description" xml:space="preserve">
+  <data name="GeneralPage_ShowNewUpdatesToast.Description" xml:space="preserve">
     <value>Notifications in the settings and the tray flyout are always shown</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_ShowNewUpdatesToast.Header" xml:space="preserve">
+  <data name="GeneralPage_ShowNewUpdatesToast.Header" xml:space="preserve">
     <value>Show notifications for new updates</value>
+  </data>
+  <data name="General_UpdateSettings.Header" xml:space="preserve">
+    <value>Update settings</value>
+  </data>
+  <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">
+    <value>Some settings are managed by your organization.</value>
   </data>
   <data name="GPO_SettingIsManaged_ToolTip.Text" xml:space="preserve">
     <value>This setting is managed by your organization.</value>
