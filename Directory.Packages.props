@@ -23,7 +23,7 @@
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageVersion Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
     <PackageVersion Include="LazyCache" Version="2.4.0" />
-    <PackageVersion Include="Mages" Version="2.0.1" />
+    <PackageVersion Include="Mages" Version="2.0.2" />
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.0" />
