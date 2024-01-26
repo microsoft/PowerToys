@@ -70,13 +70,13 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
                     Tag="Awake" />
                 <NavigationViewItem
-                    x:Uid="Shell_CmdNotFound"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}"
-                    Tag="CmdNotFound" />
-                <NavigationViewItem
                     x:Uid="Shell_ColorPicker"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}"
                     Tag="ColorPicker" />
+                <NavigationViewItem
+                    x:Uid="Shell_CmdNotFound"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}"
+                    Tag="CmdNotFound" />
                 <NavigationViewItem
                     x:Uid="Shell_CropAndLock"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}"

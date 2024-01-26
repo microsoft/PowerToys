@@ -116,14 +116,14 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}" />
 
                 <NavigationViewItem
-                    x:Uid="Shell_CmdNotFound"
-                    helpers:NavHelper.NavigateTo="views:CmdNotFoundPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}" />
-
-                <NavigationViewItem
                     x:Uid="Shell_ColorPicker"
                     helpers:NavHelper.NavigateTo="views:ColorPickerPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}" />
+
+                <NavigationViewItem
+                    x:Uid="Shell_CmdNotFound"
+                    helpers:NavHelper.NavigateTo="views:CmdNotFoundPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}" />
 
                 <NavigationViewItem
                     x:Uid="Shell_CropAndLock"
