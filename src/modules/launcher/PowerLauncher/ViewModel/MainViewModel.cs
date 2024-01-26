@@ -1034,29 +1034,21 @@ namespace PowerLauncher.ViewModel
         {
             if (!_saved)
             {
-                var historyItemData = new QueryHistory();
-                if (historyItemData != null)
+                if (_historyItemsStorage.CheckVersionMismatch())
                 {
-                    if (_historyItemsStorage.CheckVersionMismatch())
+                    if (!_historyItemsStorage.CheckFileToUpdateOrClear())
                     {
-                        if (!_historyItemsStorage.CheckFileToUpdateOrClear())
-                        {
-                            _history.Update();
-                        }
+                        _history.Update();
                     }
                 }
 
                 _historyItemsStorage.Save();
 
-                var userSelectedRecordItemData = new UserSelectedRecord();
-                if (userSelectedRecordItemData != null)
+                if (_userSelectedRecordStorage.CheckVersionMismatch())
                 {
-                    if (_userSelectedRecordStorage.CheckVersionMismatch())
+                    if (!_userSelectedRecordStorage.CheckFileToUpdateOrClear())
                     {
-                        if (!_userSelectedRecordStorage.CheckFileToUpdateOrClear())
-                        {
-                            _userSelectedRecord.Update();
-                        }
+                        _userSelectedRecord.Update();
                     }
                 }
 

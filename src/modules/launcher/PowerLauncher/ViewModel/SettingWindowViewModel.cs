@@ -22,15 +22,11 @@ namespace PowerLauncher.ViewModel
             // Check information file for version mismatch
             try
             {
-                PowerToysRunSettings data = new PowerToysRunSettings();
-                if (data != null)
+                if (_storage.CheckVersionMismatch())
                 {
-                    if (_storage.CheckVersionMismatch())
+                    if (!_storage.CheckFileToUpdateOrClear())
                     {
-                        if (!_storage.CheckFileToUpdateOrClear())
-                        {
-                            _storage.Clear();
-                        }
+                        _storage.Clear();
                     }
                 }
             }

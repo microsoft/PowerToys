@@ -33,15 +33,11 @@ namespace Wox.Infrastructure.Storage
             // Check information file for version mismatch
             try
             {
-                var informationData = new T();
-                if (informationData != null)
+                if (CheckVersionMismatch())
                 {
-                    if (CheckVersionMismatch())
+                    if (!CheckFileToUpdateOrClear())
                     {
-                        if (!CheckFileToUpdateOrClear())
-                        {
-                            Clear();
-                        }
+                        Clear();
                     }
                 }
             }
