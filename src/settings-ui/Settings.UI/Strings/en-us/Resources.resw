@@ -1022,11 +1022,8 @@
   <data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
     <value>PowerToys will launch automatically</value>
   </data>
-  <data name="GeneralPage_WarningsElevatedApps.Header" xml:space="preserve">
-    <value>Elevated Apps warnings </value>
-  </data>
-  <data name="GeneralPage_WarningsElevatedApps.Description" xml:space="preserve">
-    <value>Show notifications about PowerToys functionality issues when running alongside elevated applications.</value>
+  <data name="GeneralPage_WarningsElevatedApps.Content" xml:space="preserve">
+    <value>Show a warning for functionality issues when running alongside elevated applications</value>
   </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search &amp; replace or regular expressions.</value>
@@ -4002,8 +3999,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="PowerLauncher_TextFontSizeSlider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Text size of result titles</value>
   </data>
-  <data name="GeneralPage_ShowWhatsNewAfterUpdates.Header" xml:space="preserve">
-    <value>Show the release notes after updates</value>
+  <data name="GeneralPage_ShowWhatsNewAfterUpdates.Content" xml:space="preserve">
+    <value>Show the release notes after an update</value>
   </data>
   <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
     <value>Command Not Found is not supported on the ARM64 architecture currently. We are actively working on a solution.</value>
@@ -4012,14 +4009,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
   </data>
-  <data name="GeneralPage_ShowNewUpdatesToast.Description" xml:space="preserve">
-    <value>Notifications in the settings and the tray flyout are always shown</value>
-  </data>
   <data name="GeneralPage_ShowNewUpdatesToast.Header" xml:space="preserve">
     <value>Show notifications for new updates</value>
-  </data>
-  <data name="General_UpdateSettings.Header" xml:space="preserve">
-    <value>Update settings</value>
   </data>
   <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">
     <value>Some settings are managed by your organization.</value>
