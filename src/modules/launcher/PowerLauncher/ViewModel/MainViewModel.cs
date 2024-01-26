@@ -1039,7 +1039,7 @@ namespace PowerLauncher.ViewModel
                 {
                     if (_historyItemsStorage.CheckVersionMismatch())
                     {
-                        if (!_historyItemsStorage.CheckWithInformationFileToClear(historyItemData))
+                        if (!_historyItemsStorage.CheckFileToUpdateOrClear())
                         {
                             _history.Update();
                         }
@@ -1053,7 +1053,7 @@ namespace PowerLauncher.ViewModel
                 {
                     if (_userSelectedRecordStorage.CheckVersionMismatch())
                     {
-                        if (!_userSelectedRecordStorage.CheckWithInformationFileToClear(userSelectedRecordItemData))
+                        if (!_userSelectedRecordStorage.CheckFileToUpdateOrClear())
                         {
                             _userSelectedRecord.Update();
                         }

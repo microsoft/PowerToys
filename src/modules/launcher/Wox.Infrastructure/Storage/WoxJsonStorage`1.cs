@@ -12,7 +12,6 @@ namespace Wox.Infrastructure.Storage
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
-        private static string fileNameJSON;
 
         public WoxJsonStorage()
             : this(typeof(T).Name)
@@ -23,8 +22,6 @@ namespace Wox.Infrastructure.Storage
         {
             var directoryPath = Path.Combine(Constant.DataDirectory, DirectoryName);
             Helper.ValidateDirectory(directoryPath);
-
-            fileNameJSON = fileName;
 
             FilePath = Path.Combine(directoryPath, $"{fileName}{FileSuffix}");
         }

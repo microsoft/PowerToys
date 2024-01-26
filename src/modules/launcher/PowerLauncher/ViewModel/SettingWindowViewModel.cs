@@ -27,7 +27,7 @@ namespace PowerLauncher.ViewModel
                 {
                     if (_storage.CheckVersionMismatch())
                     {
-                        if (!_storage.CheckWithInformationFileToClear(data))
+                        if (!_storage.CheckFileToUpdateOrClear())
                         {
                             _storage.Clear();
                         }

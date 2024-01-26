@@ -38,7 +38,7 @@ namespace Wox.Infrastructure.Storage
                 {
                     if (CheckVersionMismatch())
                     {
-                        if (!CheckWithInformationFileToClear(informationData))
+                        if (!CheckFileToUpdateOrClear())
                         {
                             Clear();
                         }

@@ -57,8 +57,6 @@ namespace Wox.Infrastructure.Storage
         private const int _jsonStorage = 1;
         private StoragePowerToysVersionInfo _storageHelper;
 
-        private string DefaultFileContent { get; set; }
-
         public virtual T Load()
         {
             _storageHelper = new StoragePowerToysVersionInfo(FilePath, _jsonStorage);
@@ -168,13 +166,8 @@ namespace Wox.Infrastructure.Storage
             return true;
         }
 
-        public bool CheckWithInformationFileToClear(T actualData)
+        public bool CheckFileToUpdateOrClear()
         {
-            if (actualData == null)
-            {
-                return false;
-            }
-
             try
             {
                 JsonSerializer.Deserialize<T>(File.ReadAllText(FilePath), _serializerOptions);
@@ -182,7 +175,7 @@ namespace Wox.Infrastructure.Storage
             }
             catch (JsonException e)
             {
-                Log.Exception($"Error in CheckWithInformationFileToClear at <{FilePath}>", e, GetType());
+                Log.Exception($"Error in CheckFileToUpdateOrClear at <{FilePath}>", e, GetType());
                 return false;
             }
         }
