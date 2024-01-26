@@ -58,6 +58,8 @@
                         <tkcontrols:SettingsExpander.ItemsHeader>
                             <InfoBar
                                 x:Uid="GPO_SomeSettingsAreManaged"
+                                BorderThickness="0"
+                                CornerRadius="0"
                                 IsClosable="False"
                                 IsOpen="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
                                 IsTabStop="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
