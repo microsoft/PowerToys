@@ -43,6 +43,9 @@ jobs:
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       testSelector: 'testAssemblies'
+      searchFolder: '$(Build.ArtifactStagingDirectory)'
+      vstestLocationMethod: 'location'
+      vstestLocation: 'D:\a\_work\_temp\VsTest'
       testAssemblyVer2: |
         **\UnitTests-FancyZonesEditor.dll
         !**\obj\**
