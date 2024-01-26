@@ -2039,10 +2039,10 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.</value>
   </data>
   <data name="Oobe_FileLocksmith_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, right-click one or more selected files and select **What's using this file?** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **Unlock with File Locksmith** from the context menu.</value>
   </data>
   <data name="Oobe_FileLocksmith_TipsAndTricks.Text" xml:space="preserve">
-    <value>Press the **Restart Elevated** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
+    <value>Press the **Restart as administrator** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**. 
@@ -2061,7 +2061,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>How to use</value>
   </data>
   <data name="Oobe_ImageResizer_HowToLaunch.Text" xml:space="preserve">
-    <value>In File Explorer, right-click one or more image files and select **Resize pictures** from the context menu.</value>
+    <value>In File Explorer, right-click one or more image files and select **Resize with Image Resizer** from the context menu.</value>
   </data>
   <data name="Oobe_ImageResizer_TipsAndTricks.Text" xml:space="preserve">
     <value>Want a custom size? You can add them in the PowerToys Settings!</value>
@@ -2079,7 +2079,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Use the service option in Settings to install a service enabling Mouse Without Borders to function even in the lock screen.</value>
   </data>
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, right-click one or more selected files and select **PowerRename** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
