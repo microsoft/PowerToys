@@ -29,7 +29,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_IsSettingForced"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}"
@@ -171,7 +171,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_IsSettingForced"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}"
@@ -241,7 +241,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_IsSettingForced"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
@@ -337,7 +337,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_IsSettingForced"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}"

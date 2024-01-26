@@ -24,7 +24,7 @@
                 </tkcontrols:SettingsCard>
 
                 <InfoBar
-                    x:Uid="GPO_IsSettingForced"
+                    x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"

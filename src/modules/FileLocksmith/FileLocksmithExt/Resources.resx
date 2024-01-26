@@ -117,9 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="FileLocksmith_CommandTitle" xml:space="preserve">
-    <value>What's using this file?</value>
-    <comment>This text will be shown when the user opens the context menu (right clicks) a file.</comment>
+  <data name="FileLocksmith_Context_Menu_Entry" xml:space="preserve">
+    <value>Unlock with File Locksmith</value>
+    <comment>This text will be shown when the user opens the context menu (right clicks) a file. File Locksmith is the product name, do not loc.</comment>
   </data>
   <data name="FileLocksmith_PowerToyName" xml:space="preserve">
     <value>File Locksmith</value>

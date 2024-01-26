@@ -348,7 +348,7 @@
                                             Glyph="&#xE72E;"
                                             Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="GPO_IsSettingForcedText" TextWrapping="WrapWholeWords" />
+                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch
@@ -436,7 +436,7 @@
                                             Glyph="&#xE72E;"
                                             Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="GPO_IsSettingForcedText" TextWrapping="WrapWholeWords" />
+                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch
