@@ -142,7 +142,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ignore the orientation of pictures.
+        ///   Looks up a localized string similar to Ignore the _orientation of pictures.
         /// </summary>
         public static string Input_IgnoreOrientation {
             get {
@@ -151,7 +151,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Remove metadata that doesn&apos;t affect rendering.
+        ///   Looks up a localized string similar to Remove _metadata that doesn&apos;t affect rendering.
         /// </summary>
         public static string Input_RemoveMetadata {
             get {
@@ -160,7 +160,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resize the original pictures (don&apos;t create copies).
+        ///   Looks up a localized string similar to Resize the original pictures (don&apos;t create _copies).
         /// </summary>
         public static string Input_Replace {
             get {
@@ -178,7 +178,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Make pictures smaller but not larger.
+        ///   Looks up a localized string similar to Make pictures _smaller but not larger.
         /// </summary>
         public static string Input_ShrinkOnly {
             get {

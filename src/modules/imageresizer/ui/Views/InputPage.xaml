@@ -187,13 +187,13 @@
                 <!--  Note Jay: TextBlock because text wrapping is not supported by CheckBox  -->
                 <CheckBox IsChecked="{Binding Settings.ShrinkOnly}">
                     <CheckBox.Content>
-                        <TextBlock Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
+                        <AccessText Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
                 <CheckBox IsChecked="{Binding Settings.IgnoreOrientation}">
                     <CheckBox.Content>
-                        <TextBlock Text="{x:Static p:Resources.Input_IgnoreOrientation}" TextWrapping="Wrap" />
+                        <AccessText Text="{x:Static p:Resources.Input_IgnoreOrientation}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
                 <!--
@@ -202,13 +202,13 @@
                 -->
                 <CheckBox IsChecked="{Binding Settings.Replace}">
                     <CheckBox.Content>
-                        <TextBlock Text="{x:Static p:Resources.Input_Replace}" TextWrapping="Wrap" />
+                        <AccessText Text="{x:Static p:Resources.Input_Replace}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
                 <CheckBox IsChecked="{Binding Settings.RemoveMetadata}">
                     <CheckBox.Content>
-                        <TextBlock Text="{x:Static p:Resources.Input_RemoveMetadata}" TextWrapping="Wrap" />
+                        <AccessText Text="{x:Static p:Resources.Input_RemoveMetadata}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
             </StackPanel>
