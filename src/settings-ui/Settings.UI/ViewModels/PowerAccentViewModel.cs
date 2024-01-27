@@ -165,6 +165,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool DoNotActivateOnGameMode
+        {
+            get
+            {
+                return _powerAccentSettings.Properties.DoNotActivateOnGameMode;
+            }
+
+            set
+            {
+                if (value != _powerAccentSettings.Properties.DoNotActivateOnGameMode)
+                {
+                    _powerAccentSettings.Properties.DoNotActivateOnGameMode = value;
+                    OnPropertyChanged(nameof(DoNotActivateOnGameMode));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         private int _inputTimeMs = PowerAccentSettings.DefaultInputTimeMs;
 
         public int InputTimeMs

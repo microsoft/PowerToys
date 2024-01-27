@@ -6,7 +6,7 @@
 
   <!-- Languages for localization on build farm -->
   <!-- qps-ploc;qps-ploca;qps-plocm; -->
-  <?define LocLanguageList = cs-CZ;de-DE;es-ES;fr-FR;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;ru-RU;sv-SE;tr-TR;zh-CN;zh-TW?>
+  <?define LocLanguageList = ar-SA;cs-CZ;de-DE;es-ES;fa-IR;fr-FR;he-IL;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;ru-RU;sv-SE;tr-TR;uk-UA;zh-CN;zh-TW?>
 
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
@@ -16,14 +16,20 @@
           <!-- Resource file directories -->
           <?foreach Language in $(var.LocLanguageList)?>
           <!--NB: Ids can't contain hyphens-->
-          <?if $(var.Language) = cs-CZ?>
+          <?if $(var.Language) = ar-SA?>
+          <?define IdSafeLanguage = ar_SA?>
+          <?elseif $(var.Language) = cs-CZ?>
           <?define IdSafeLanguage = cs_CZ?>
           <?elseif $(var.Language) = de-DE?>
           <?define IdSafeLanguage = de_DE?>
           <?elseif $(var.Language) = es-ES?>
           <?define IdSafeLanguage = es_ES?>
+          <?elseif $(var.Language) = fa-IR?>
+          <?define IdSafeLanguage = fa_IR?>
           <?elseif $(var.Language) = fr-FR?>
           <?define IdSafeLanguage = fr_FR?>
+          <?elseif $(var.Language) = he-IL?>
+          <?define IdSafeLanguage = he_IL?>
           <?elseif $(var.Language) = hu-HU?>
           <?define IdSafeLanguage = hu_HU?>
           <?elseif $(var.Language) = it-IT?>
@@ -54,6 +60,8 @@
           <?define IdSafeLanguage = sv_SE?>
           <?elseif $(var.Language) = tr-TR?>
           <?define IdSafeLanguage = tr_TR?>
+          <?elseif $(var.Language) = uk-UA?>
+          <?define IdSafeLanguage = uk_UA?>
           <?elseif $(var.Language) = zh-CN?>
           <?define IdSafeLanguage = zh_CN?>
           <?elseif $(var.Language) = zh-TW?>
@@ -74,8 +82,11 @@
       <!-- Components for adding resource files -->
       <?foreach Language in $(var.LocLanguageList)?>
       <!--NB: Ids can't contain hyphens-->
-      <?if $(var.Language) = cs-CZ?>
+      <?if $(var.Language) = ar-SA?>
       <!-- CompGUIDPrefix is language-dependent guid prefix missing the last 2 digits. -->
+      <?define CompGUIDPrefix = 4CF0A1CD-CA13-408B-AAC1-6E024B86A9?>
+      <?define IdSafeLanguage = ar_SA?>
+      <?elseif $(var.Language) = cs-CZ?>
       <?define CompGUIDPrefix = 3E93405A-B91B-4E04-BAEC-26BEEE60F9?>
       <?define IdSafeLanguage = cs_CZ?>
       <?elseif $(var.Language) = de-DE?>
@@ -84,9 +95,15 @@
       <?elseif $(var.Language) = es-ES?>
       <?define CompGUIDPrefix = DD1FEEBD-55F0-44BA-A0FF-62C5C1C952?>
       <?define IdSafeLanguage = es_ES?>
+      <?elseif $(var.Language) = fa-IR?>
+      <?define CompGUIDPrefix = 157411C9-CAB8-4CC5-AEA4-5ABEB91E59?>
+      <?define IdSafeLanguage = fa_IR?>
       <?elseif $(var.Language) = fr-FR?>
       <?define CompGUIDPrefix = F9F86D61-C747-43FC-8509-F3D1F198E1?>
       <?define IdSafeLanguage = fr_FR?>
+      <?elseif $(var.Language) = he-IL?>
+      <?define CompGUIDPrefix = AFEA6E19-5B93-4CBB-B0CB-AFB2565C7D?>
+      <?define IdSafeLanguage = he_IL?>
       <?elseif $(var.Language) = hu-HU?>
       <?define CompGUIDPrefix = 9A919A40-E457-47F5-97C8-E886F06DDE?>
       <?define IdSafeLanguage = hu_HU?>
@@ -131,6 +148,9 @@
       <?elseif $(var.Language) = tr-TR?>
       <?define CompGUIDPrefix = EA375345-F52A-499B-A45E-108CE67EAF?>
       <?define IdSafeLanguage = tr_TR?>
+      <?elseif $(var.Language) = uk-UA?>
+      <?define CompGUIDPrefix = 17BA6BA7-8CB6-47CA-BEB1-2FE87A0724?>
+      <?define IdSafeLanguage = uk_UA?>
       <?elseif $(var.Language) = zh-CN?>
       <?define CompGUIDPrefix = F8EE7CE9-58EA-4850-B76F-C22362DC0E?>
       <?define IdSafeLanguage = zh_CN?>
@@ -441,14 +461,20 @@
         </RegistryKey>
       <?foreach Language in $(var.LocLanguageList)?>
       <!--NB: Ids can't contain hyphens-->
-      <?if $(var.Language) = cs-CZ?>
+      <?if $(var.Language) = ar-SA?>
+      <?define IdSafeLanguage = ar_SA?>
+      <?elseif $(var.Language) = cs-CZ?>
       <?define IdSafeLanguage = cs_CZ?>
       <?elseif $(var.Language) = de-DE?>
       <?define IdSafeLanguage = de_DE?>
       <?elseif $(var.Language) = es-ES?>
       <?define IdSafeLanguage = es_ES?>
+      <?elseif $(var.Language) = fa-IR?>
+      <?define IdSafeLanguage = fa_IR?>
       <?elseif $(var.Language) = fr-FR?>
       <?define IdSafeLanguage = fr_FR?>
+      <?elseif $(var.Language) = he-IL?>
+      <?define IdSafeLanguage = he_IL?>
       <?elseif $(var.Language) = hu-HU?>
       <?define IdSafeLanguage = hu_HU?>
       <?elseif $(var.Language) = it-IT?>
@@ -479,6 +505,8 @@
       <?define IdSafeLanguage = sv_SE?>
       <?elseif $(var.Language) = tr-TR?>
       <?define IdSafeLanguage = tr_TR?>
+      <?elseif $(var.Language) = uk-UA?>
+      <?define IdSafeLanguage = uk_UA?>
       <?elseif $(var.Language) = zh-CN?>
       <?define IdSafeLanguage = zh_CN?>
       <?elseif $(var.Language) = zh-TW?>

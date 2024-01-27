@@ -9,6 +9,7 @@
 
 #include <common/themes/icon_helpers.h>
 #include <common/utils/process_path.h>
+#include <common/utils/resources.h>
 
 // Implementations of inherited IUnknown methods
 
@@ -42,9 +43,7 @@ IFACEMETHODIMP_(ULONG) ExplorerCommand::Release()
 
 IFACEMETHODIMP ExplorerCommand::GetTitle(IShellItemArray* psiItemArray, LPWSTR* ppszName)
 {
-    WCHAR buffer[128];
-    LoadStringW(globals::instance, IDS_FILELOCKSMITH_COMMANDTITLE, buffer, ARRAYSIZE(buffer));
-    return SHStrDupW(buffer, ppszName);
+    return SHStrDup(context_menu_caption.c_str(), ppszName);
 }
 
 IFACEMETHODIMP ExplorerCommand::GetIcon(IShellItemArray* psiItemArray, LPWSTR* ppszIcon)
@@ -126,18 +125,15 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
     HRESULT hr = E_UNEXPECTED;
     if (m_data_obj && !(uFlags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE)))
     {
+        wchar_t menuName[128] = { 0 };
+        wcscpy_s(menuName, ARRAYSIZE(menuName), context_menu_caption.c_str());
+
         MENUITEMINFO mii;
         mii.cbSize = sizeof(MENUITEMINFO);
         mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_STATE;
         mii.wID = idCmdFirst++;
         mii.fType = MFT_STRING;
-
-        hr = GetTitle(NULL, &mii.dwTypeData);
-        if (FAILED(hr))
-        {
-            return hr;
-        }
-
+        mii.dwTypeData = (PWSTR)menuName;
         mii.fState = MFS_ENABLED;
 
         // icon from file
@@ -237,6 +233,7 @@ HRESULT ExplorerCommand::s_CreateInstance(IUnknown* pUnkOuter, REFIID riid, void
 ExplorerCommand::ExplorerCommand()
 {
     ++globals::ref_count;
+    context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_FILELOCKSMITH_CONTEXT_MENU_ENTRY, L"Unlock with File Locksmith");
 }
 
 ExplorerCommand::~ExplorerCommand()

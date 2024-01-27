@@ -74,7 +74,25 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             {
                 if (hexToken.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    outputBuilder.Append(hexToken);
+                    // Mages engine has issues processing large hex number (larger than 7 hex digits + 0x prefix = 9 characters). So we convert it to decimal and pass it to the engine.
+                    if (hexToken.Length > 9)
+                    {
+                        try
+                        {
+                            long num = Convert.ToInt64(hexToken, 16);
+                            string numStr = num.ToString(cultureFrom);
+                            outputBuilder.Append(numStr);
+                        }
+                        catch (Exception)
+                        {
+                            outputBuilder.Append(hexToken);
+                        }
+                    }
+                    else
+                    {
+                        outputBuilder.Append(hexToken);
+                    }
+
                     continue;
                 }
 
