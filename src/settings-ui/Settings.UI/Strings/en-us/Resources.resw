@@ -1066,7 +1066,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Description" xml:space="preserve">
     <value>.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext</value>
-    <comment>File extensions, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
     <value>Source code files (Monaco)</value>
@@ -1074,7 +1074,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
     <value>.cpp, .py, .json, .xml, .csproj, ...</value>
-    <comment>File extensions should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
@@ -1082,7 +1082,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Description" xml:space="preserve">
     <value>.svg</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_Preview_SVG_Color_Mode.Header" xml:space="preserve">
     <value>Color mode</value>
@@ -1113,54 +1113,51 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Description" xml:space="preserve">
     <value>.svg</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
-    <comment>File type, do not translate</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
     <value>Color</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Header" xml:space="preserve">
     <value>Quite Ok Image</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Description" xml:space="preserve">
     <value>.qoi</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Header" xml:space="preserve">
     <value>Quite OK Image</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
     <value>.qoi</value>
-    <comment>File extension, should not be altered</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
-    <comment>File type, do not translate</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
-    <comment>File extension, should not be altered</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
@@ -1288,12 +1285,15 @@
   </data>
   <data name="ImageResizer_Encoding.Header" xml:space="preserve">
     <value>JPEG quality level (%)</value>
+    <comment>{Locked="JPEG"}</comment>
   </data>
   <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
     <value>PNG interlacing</value>
+    <comment>{Locked="PNG"}</comment>
   </data>
   <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
     <value>TIFF compression</value>
+    <comment>{Locked="TIFF"}</comment>
   </data>
   <data name="File.Header" xml:space="preserve">
     <value>File</value>
@@ -1304,47 +1304,53 @@
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT3.Content" xml:space="preserve">
     <value>CCITT3</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT4.Content" xml:space="preserve">
     <value>CCITT4</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Default.Content" xml:space="preserve">
     <value>Default</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_LZW.Content" xml:space="preserve">
     <value>LZW</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_None.Content" xml:space="preserve">
     <value>None</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_RLE.Content" xml:space="preserve">
     <value>RLE</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Zip.Content" xml:space="preserve">
     <value>Zip</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
     <value>BMP encoder</value>
+    <comment>{Locked="BMP"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_GIF.Content" xml:space="preserve">
     <value>GIF encoder</value>
+    <comment>{Locked="GIF"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_JPEG.Content" xml:space="preserve">
     <value>JPEG encoder</value>
+    <comment>{Locked="JPEG"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_PNG.Content" xml:space="preserve">
     <value>PNG encoder</value>
+    <comment>{Locked="PNG"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_TIFF.Content" xml:space="preserve">
     <value>TIFF encoder</value>
+    <comment>{Locked="TIFF"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_WMPhoto.Content" xml:space="preserve">
     <value>WMPhoto encoder</value>
+    <comment>{Locked="WMPhoto"}</comment>
   </data>
   <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
     <value>Fill</value>
