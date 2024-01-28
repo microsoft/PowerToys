@@ -8,7 +8,7 @@
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_TextExtractor" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerOCR.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_TextExtractor" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/TextExtractor.gif">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
