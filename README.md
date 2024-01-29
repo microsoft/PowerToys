@@ -167,8 +167,8 @@ In this release, we focused on stability and improvements.
  - Fixed stale results in the Visual Studio Code Workspaces plugin by checking if files still exist. Thanks [@anderspk](https://github.com/anderspk)!
  - Fixed an activation crash that occurred after 0.77 on some configurations.
  - Fixed a startup crash that occurred when saving the new version of settings after an upgrade.
- - Allow calculating bigger hexadecimal numbers in the Calculator plugin.
- - Apply the "max results to show before scrolling" setting to the initial plugin hint listing as well.
+ - You can now calculate bigger hexadecimal numbers in the Calculator plugin.
+ - The "max results to show before scrolling" setting can now also be applied to the initial plugin hint listing.
 
 ### Quick Accent
 
