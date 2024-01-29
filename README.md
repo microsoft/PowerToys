@@ -184,7 +184,7 @@ In this release, we focused on stability and improvements.
  - Fixed an issue causing the Settings window to not be brought to the foreground after activating through the system tray icon.
  - Standardized accent brush and corner radius on the dashboard page.
  - Improved UI and messages for GPO locked settings. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed an issue causing the OOBE window to maximize and hide the system task bar.
+ - Fixed an issue causing the OOBE window to maximize and hide the system taskbar.
  - Reworked the update settings in the General page. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Tweaked UI for the update settings in the General page. Thanks [@niels9001](https://github.com/niels9001)!
  - Updated the modules images in the Settings and OOBE screens. Thanks [@niels9001](https://github.com/niels9001)!
