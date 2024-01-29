@@ -18,7 +18,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return base.GetMappedOriginalKeys();
         }
 
-        public new List<string> GetMappedOriginalKeys(bool ignoreSecondKeyInChord)
+        public new List<string> GetMappedOriginalKeysWithSplitChord()
+        {
+            return base.GetMappedOriginalKeysWithSplitChord();
+        }
+
+        public List<string> GetMappedOriginalKeys(bool ignoreSecondKeyInChord)
         {
             return base.GetMappedOriginalKeys(ignoreSecondKeyInChord);
         }

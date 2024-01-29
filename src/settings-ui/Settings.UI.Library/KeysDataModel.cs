@@ -52,6 +52,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShortcutEditor,
         }
 
+        public const string CommaSeparator = "<comma>";
+
         private static Process editor;
         private ICommand _editShortcutItemCommand;
         private ICommand _editShortcutDeleteItemCommand;
@@ -166,7 +168,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return result;
         }
 
-        private static List<string> MapKeys(string stringOfKeys, int secondKeyOfChord)
+        private static List<string> MapKeys(string stringOfKeys, int secondKeyOfChord, bool splitChordsWithComma = false)
         {
             if (stringOfKeys == null)
             {
@@ -183,11 +185,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
             else
             {
-                return stringOfKeys
-                .Split(';')
-                .Select(uint.Parse)
-                .Select(Helper.GetKeyName)
-                .ToList();
+                if (splitChordsWithComma)
+                {
+                    var keys = stringOfKeys.Split(';')
+                        .Select(uint.Parse)
+                        .Select(Helper.GetKeyName)
+                        .ToList();
+                    keys.Insert(keys.Count - 1, CommaSeparator);
+                    return keys;
+                }
+                else
+                {
+                    return stringOfKeys
+                    .Split(';')
+                    .Select(uint.Parse)
+                    .Select(Helper.GetKeyName)
+                    .ToList();
+                }
             }
         }
 
@@ -196,7 +210,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return MapKeys(stringOfKeys, 0);
         }
 
-        public List<string> GetMappedOriginalKeys(bool ignoreSecondKeyInChord)
+        public List<string> GetMappedOriginalKeys(bool ignoreSecondKeyInChord, bool splitChordsWithComma = false)
         {
             if (ignoreSecondKeyInChord && SecondKeyOfChord > 0)
             {
@@ -204,7 +218,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
             else
             {
-                return MapKeys(OriginalKeys);
+                return MapKeys(OriginalKeys, -1, splitChordsWithComma);
             }
         }
 
@@ -216,6 +230,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public List<string> GetMappedOriginalKeys()
         {
             return GetMappedOriginalKeys(false);
+        }
+
+        public List<string> GetMappedOriginalKeysWithSplitChord()
+        {
+            return GetMappedOriginalKeys(false, true);
         }
 
         public bool IsRunProgram

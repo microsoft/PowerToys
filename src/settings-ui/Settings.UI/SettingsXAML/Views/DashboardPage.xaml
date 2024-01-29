@@ -15,6 +15,19 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <DataTemplate x:Key="KeyVisualTemplate">
+            <controls:KeyVisual VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
+                Content="{Binding}" IsTabStop="False" VisualType="TextOnly" />
+        </DataTemplate>
+        <DataTemplate x:Key="CommaTemplate">
+            <StackPanel Background="{ThemeResource SystemFillColorSolidAttentionBackground}">
+                <TextBlock VerticalAlignment="Bottom" Margin="4,0" Text="," />
+            </StackPanel>
+        </DataTemplate>
+        <converters:KeyVisualTemplateSelector x:Key="KeyVisualTemplateSelector"
+            KeyVisualTemplate="{StaticResource KeyVisualTemplate}"
+            CommaTemplate="{StaticResource CommaTemplate}" />
         <converters:ModuleItemTemplateSelector
             x:Key="ModuleItemTemplateSelector"
             ButtonTemplate="{StaticResource ModuleItemButtonTemplate}"
@@ -190,7 +203,7 @@
                                     <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
                                         <StackPanel Orientation="Horizontal">
                                             <Border
-                                                Padding="8,4"
+                                                Padding="8,0"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1"
@@ -198,22 +211,14 @@
                                                 <ItemsControl
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     IsTabStop="False"
-                                                    ItemsSource="{x:Bind GetMappedOriginalKeys()}">
+                                                    ItemsSource="{x:Bind GetMappedOriginalKeysWithSplitChord()}"
+                                                    ItemTemplateSelector="{StaticResource KeyVisualTemplateSelector}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal" Spacing="12" />
+                                                            <StackPanel Orientation="Horizontal"
+                                                                Spacing="12" />
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <controls:KeyVisual
-                                                                VerticalAlignment="Center"
-                                                                AutomationProperties.AccessibilityView="Raw"
-                                                                Content="{Binding}"
-                                                                IsTabStop="False"
-                                                                VisualType="TextOnly" />
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </Border>
                                             <controls:IsEnabledTextBlock
