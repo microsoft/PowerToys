@@ -1186,16 +1186,18 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     if (isOrigShortcut)
     {
+        constexpr double verticalMargin = 20.f;
         TextBlock allowChordText;
         allowChordText.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLOW_CHORDS));
         allowChordText.FontSize(12);
-        allowChordText.Margin({ 0, 20, 0, 0 });
+        allowChordText.Margin({ 0, 12 + verticalMargin, 0, 0 });
         chordStackPanel.VerticalAlignment(VerticalAlignment::Center);
         allowChordText.TextAlignment(TextAlignment::Center);
         chordStackPanel.Orientation(Orientation::Horizontal);
 
         allowChordSwitch.OnContent(nullptr);
         allowChordSwitch.OffContent(nullptr);
+        allowChordSwitch.Margin({ 12, verticalMargin, 0, 0 });
 
         chordStackPanel.Children().Append(allowChordText);
         chordStackPanel.Children().Append(allowChordSwitch);
