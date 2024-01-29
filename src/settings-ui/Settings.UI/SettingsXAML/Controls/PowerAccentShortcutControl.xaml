@@ -30,9 +30,7 @@
                     <controls:KeyVisual
                         VerticalAlignment="Center"
                         AutomationProperties.AccessibilityView="Raw"
-                        Content="{Binding}"
-                        IsTabStop="False"
-                        VisualType="SmallOutline" />
+                        Content="{Binding}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

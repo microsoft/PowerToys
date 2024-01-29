@@ -28,14 +28,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(object), typeof(KeyVisual), new PropertyMetadata(default(string), OnContentChanged));
 
-        public VisualType VisualType
-        {
-            get => (VisualType)GetValue(VisualTypeProperty);
-            set => SetValue(VisualTypeProperty, value);
-        }
-
-        public static readonly DependencyProperty VisualTypeProperty = DependencyProperty.Register("VisualType", typeof(VisualType), typeof(KeyVisual), new PropertyMetadata(default(VisualType), OnSizeChanged));
-
         public bool IsError
         {
             get => (bool)GetValue(IsErrorProperty);
@@ -47,7 +39,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public KeyVisual()
         {
             this.DefaultStyleKey = typeof(KeyVisual);
-            this.Style = GetStyleSize("TextKeyVisualStyle");
         }
 
         protected override void OnApplyTemplate()
@@ -88,13 +79,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (_keyVisual.Content.GetType() == typeof(string))
                 {
-                    _keyVisual.Style = GetStyleSize("TextKeyVisualStyle");
                     _keyVisual._keyPresenter.Content = _keyVisual.Content;
                 }
                 else
                 {
-                    _keyVisual.Style = GetStyleSize("IconKeyVisualStyle");
-
                     switch ((int)_keyVisual.Content)
                     {
                         /* We can enable other glyphs in the future
@@ -116,52 +104,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                         case 91: // The left Windows key
                         case 92: // The right Windows key
-                            PathIcon winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M683 1229H0V546h683v683zm819 0H819V546h683v683zm-819 819H0v-683h683v683zm819 0H819v-683h683v683z"" />") as PathIcon;
+                            PathIcon winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M683 683H0V0H683V683ZM1502 683H819V0H1502V683ZM683 1502H0V819H683V1502ZM1502 1502H819V819H1502V1502Z"" />") as PathIcon;
+                            winIcon.Margin = new Thickness(0, 12, 0, 0);
                             Viewbox winIconContainer = new Viewbox();
                             winIconContainer.Child = winIcon;
+                            winIconContainer.MinWidth = 10;
+                            winIconContainer.MaxWidth = this.FontSize;
                             winIconContainer.HorizontalAlignment = HorizontalAlignment.Center;
                             winIconContainer.VerticalAlignment = VerticalAlignment.Center;
-
-                            double iconDimensions = GetIconSize();
-                            winIconContainer.Height = iconDimensions;
-                            winIconContainer.Width = iconDimensions;
                             _keyVisual._keyPresenter.Content = winIconContainer;
                             break;
                         default: _keyVisual._keyPresenter.Content = ((VirtualKey)_keyVisual.Content).ToString(); break;
                     }
                 }
-            }
-        }
-
-        public Style GetStyleSize(string styleName)
-        {
-            if (VisualType == VisualType.Small)
-            {
-                return (Style)App.Current.Resources["Small" + styleName];
-            }
-            else if (VisualType == VisualType.SmallOutline)
-            {
-                return (Style)App.Current.Resources["SmallOutline" + styleName];
-            }
-            else if (VisualType == VisualType.TextOnly)
-            {
-                return (Style)App.Current.Resources["Only" + styleName];
-            }
-            else
-            {
-                return (Style)App.Current.Resources["Default" + styleName];
-            }
-        }
-
-        public double GetIconSize()
-        {
-            if (VisualType == VisualType.Small || VisualType == VisualType.SmallOutline)
-            {
-                return (double)App.Current.Resources["SmallIconSize"];
-            }
-            else
-            {
-                return (double)App.Current.Resources["DefaultIconSize"];
             }
         }
 
@@ -179,13 +134,5 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
         }
-    }
-
-    public enum VisualType
-    {
-        Small,
-        SmallOutline,
-        TextOnly,
-        Large,
     }
 }

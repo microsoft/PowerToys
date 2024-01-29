@@ -37,9 +37,9 @@
                         Height="56"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
+                        FontSize="18"
                         IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
-                        IsTabStop="False"
-                        VisualType="Large" />
+                        IsTabStop="False" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

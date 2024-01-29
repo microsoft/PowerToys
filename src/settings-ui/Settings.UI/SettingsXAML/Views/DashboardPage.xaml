@@ -33,11 +33,11 @@
             FalseValue="Visible"
             TrueValue="Collapsed" />
         <DataTemplate x:Key="OriginalKeyTemplate" x:DataType="x:String">
-            <controls:KeyVisual Content="{Binding}" VisualType="SmallOutline" />
+            <controls:KeyVisual Content="{Binding}" />
         </DataTemplate>
 
         <DataTemplate x:Key="RemappedKeyTemplate" x:DataType="x:String">
-            <controls:KeyVisual Content="{Binding}" VisualType="Small" />
+            <controls:KeyVisual Content="{Binding}"/>
         </DataTemplate>
 
         <DataTemplate x:Key="ModuleItemTextTemplate" x:DataType="viewmodels:DashboardModuleTextItem">
@@ -70,6 +70,7 @@
                     <ItemsControl
                         AutomationProperties.AccessibilityView="Raw"
                         IsTabStop="False"
+                        VerticalContentAlignment="Center"
                         ItemsSource="{x:Bind Shortcut, Mode=TwoWay}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -80,10 +81,10 @@
                             <DataTemplate>
                                 <controls:KeyVisual
                                     VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Style="{StaticResource TextKeyVisualStyle}"
                                     AutomationProperties.AccessibilityView="Raw"
-                                    Content="{Binding}"
-                                    IsTabStop="False"
-                                    VisualType="TextOnly" />
+                                    Content="{Binding}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -135,9 +136,7 @@
                                                             <controls:KeyVisual
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
-                                                                Content="{Binding}"
-                                                                IsTabStop="False"
-                                                                VisualType="TextOnly" />
+                                                                Content="{Binding}" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -169,9 +168,7 @@
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 Content="{Binding}"
                                                                 FontSize="12"
-                                                                Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                                                                IsTabStop="False"
-                                                                VisualType="TextOnly" />
+                                                                Foreground="{ThemeResource AccentFillColorDefaultBrush}"/>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -209,9 +206,7 @@
                                                             <controls:KeyVisual
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
-                                                                Content="{Binding}"
-                                                                IsTabStop="False"
-                                                                VisualType="TextOnly" />
+                                                                Content="{Binding}"/>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -242,9 +237,7 @@
                                                                 VerticalAlignment="Center"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 Content="{Binding}"
-                                                                Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                                                                IsTabStop="False"
-                                                                VisualType="TextOnly" />
+                                                                Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
