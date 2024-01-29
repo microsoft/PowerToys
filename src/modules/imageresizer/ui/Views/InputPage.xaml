@@ -184,7 +184,7 @@
                 Grid.Row="1"
                 Margin="16,12,16,0"
                 VerticalAlignment="Top">
-                <!--  Note Jay: TextBlock because text wrapping is not supported by CheckBox  -->
+                <!--  Note Jay: AccessText because text wrapping is not supported by CheckBox  -->
                 <CheckBox IsChecked="{Binding Settings.ShrinkOnly}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
