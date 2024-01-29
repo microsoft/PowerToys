@@ -51,7 +51,8 @@ private:
     PCIDLIST_ABSOLUTE m_pidlFolder;
     IDataObject* m_pdtobj;
     HBITMAP m_hbmpIcon = nullptr;
-    std::wstring app_name;
+    std::wstring context_menu_caption;
+    std::wstring context_menu_caption_here;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(ContextMenuHandler), CContextMenuHandler)

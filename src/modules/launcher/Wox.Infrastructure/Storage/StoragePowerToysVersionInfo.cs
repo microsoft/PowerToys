@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.IO.Abstractions;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -123,8 +125,15 @@ namespace Wox.Infrastructure.Storage
 
         public void Close()
         {
-            // Update the Version file to the current version of powertoys
-            File.WriteAllText(FilePath, currentPowerToysVersion);
+            try
+            {
+                // Update the Version file to the current version of powertoys
+                File.WriteAllText(FilePath, currentPowerToysVersion);
+            }
+            catch (System.Exception e)
+            {
+                Log.Exception($"Error in saving version at <{FilePath}>", e, GetType());
+            }
         }
     }
 }

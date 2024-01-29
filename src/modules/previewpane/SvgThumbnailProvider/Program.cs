@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 {
@@ -17,6 +18,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         public static void Main(string[] args)
         {
             ApplicationConfiguration.Initialize();
+            Logger.InitializeLogger("\\FileExplorer_localLow\\SvgThumbnails\\logs", true);
             if (args != null)
             {
                 if (args.Length == 2)

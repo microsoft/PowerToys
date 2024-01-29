@@ -193,6 +193,10 @@
   <data name="DeleteDialogAreYouSure.Text" xml:space="preserve">
     <value>Are you sure you want to delete this entry?</value>
   </data>
+  <data name="Duplicate.Text" xml:space="preserve">
+    <value>Duplicate</value>
+    <comment>Refers to the action of duplicate an existing entry</comment>
+  </data>
   <data name="DuplicateEntryIcon.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Duplicate entry</value>
   </data>
