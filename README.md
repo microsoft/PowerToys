@@ -200,13 +200,8 @@ In this release, we focused on stability and improvements.
 
 ### Development
 
- - Upgraded Microsoft.Extensions.ObjectPool from .NET 5 to .NET 8.
  - Fixed dependency issues on upgrading .NET from 8.0.0 to 8.0.1.
- - Upgraded WPFUI version to 3.0.0-preview.13. Thanks [@niels9001](https://github.com/niels9001)!
- - Upgraded StyleCop.Analyzers to 1.2.0-beta.556. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Consolidate XAML Namespaces across the solutions. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
- - Removed the toolkit labs package source reference, since the controls we were using made it to the generally available community toolkit.
- - Added Microsoft.MSBuildCache to experiment with build caching to reduce pipeline runs duration. Thanks [@dfederm](https://github.com/dfederm)!
+ - Upgraded Microsoft.Extensions.ObjectPool from .NET 5 to .NET 8.
  - Upgraded the Windows SDK Build Tools to 10.0.22621.2428.
  - Upgraded the Windows Implementation Library to 1.0.231216.1.
  - Upgraded NLog.Schema to 5.2.8 and NLog.Extensions.Logging to 5.3.8.
@@ -215,12 +210,17 @@ In this release, we focused on stability and improvements.
  - Upgraded CommunityToolkit.WinUI dependencies to 8.0.240109.
  - Upgraded CommunityToolkit.Mvvm to 8.2.2. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Upgraded Windows App SDK to 1.4.4. Thanks [@snickler](https://github.com/snickler)!
+ - Upgraded WPFUI version to 3.0.0-preview.13. Thanks [@niels9001](https://github.com/niels9001)!
+ - Upgraded StyleCop.Analyzers to 1.2.0-beta.556. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Upgraded Microsoft.Windows.Compatibility to 8.0.1.
+ - Upgraded System.Data.SqlClient to 4.8.6.
+ - Consolidate XAML Namespaces across the solutions. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+ - Removed the toolkit labs package source reference, since the controls we were using made it to the generally available community toolkit.
+ - Added Microsoft.MSBuildCache to experiment with build caching to reduce pipeline runs duration. Thanks [@dfederm](https://github.com/dfederm)!
  - Configured the release CI to follow the latest 1ES pipeline release version again.
  - Removed the copyright year from assembly information. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
  - Added the Command Not Found entry to the GitHub templates.
  - Removed unused code for a GPO policy to control auto updating of PowerToys. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Upgraded Microsoft.Windows.Compatibility to 8.0.1.
- - Upgraded System.Data.SqlClient to 4.8.6.
  - Improved code behind for getting the localization of context menu entries.
  - Locked some terms in resource files to avoid localization.
 
