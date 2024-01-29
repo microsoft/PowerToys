@@ -12,7 +12,7 @@ jobs:
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: SHINE-INT-Testing-x64
   steps:
-  - checkout: none
+  - checkout: self
 
   - task: DownloadPipelineArtifact@2
     displayName: Download artifacts
@@ -40,7 +40,7 @@ jobs:
     displayName: 'Run UI Tests'
     inputs:
       targetType: filePath
-      filePath: .pipelines\scripts\runUiTests.ps1
+      filePath: $(build.sourcesdirectory)\.pipelines\scripts\runUiTests.ps1
       arguments: >-
         -SearchFolder '$(Build.ArtifactStagingDirectory)\x64\**\UITests-FancyZonesEditor.dll'
         -VsConsolePath 'D:\a\_work\_temp\VsTest'
