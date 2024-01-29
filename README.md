@@ -124,7 +124,7 @@ In this release, we focused on stability and improvements.
 
 ### Command Not Found
 
- - Signed the PowerShell scripts used by Command Not Found installation process.
+ - Signed the PowerShell scripts used by the Command Not Found installation process.
 
 ### File Explorer add-ons
 
