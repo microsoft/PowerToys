@@ -105,7 +105,7 @@ In this release, we focused on stability and improvements.
 **Highlights**
 
  - New languages added: Arabic (Saudi Arabia), Hebrew, Persian and Ukrainian. We are going to assume we have some bugs. We want to identify & fix them and are open for community help.
- - Many dependency updates, aiming for security and stability.
+ - Many dependencies updated, aiming for security and stability.
  - Fixed commonly reported PowerToys Run startup crashes after an upgrade.
  - New settings and GPO policies to help control behavior after an upgrade. Thanks [@htcfreek](https://github.com/htcfreek)!
 
