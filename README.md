@@ -136,7 +136,7 @@ In this release, we focused on stability and improvements.
 
 ### Find My Mouse
 
- - Added more settings to allow tuning shake detection when activating through mouse shake.
+ - Added more settings to tune shake detection when activating through mouse shake.
 
 ### Hosts File Editor
 
