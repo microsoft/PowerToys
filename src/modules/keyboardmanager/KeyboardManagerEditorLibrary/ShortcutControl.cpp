@@ -218,7 +218,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     unicodeTextKeysInput.Name(L"unicodeTextKeysInput_" + std::to_wstring(rowIndex));
 
     auto textInputMargin = Windows::UI::Xaml::Thickness();
-    textInputMargin.Top = -EditorConstants::ShortcutTableDropDownSpacing;
     textInputMargin.Bottom = EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed UIElement
     unicodeTextKeysInput.Margin(textInputMargin);
 
@@ -258,6 +257,8 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     // add TextBoxes for when it's a runProgram fields
 
     auto runProgramStackPanel = SetupRunProgramControls(parent, row, shortCut, textInputMargin, controlStackPanel);
+
+    runProgramStackPanel.Margin({0, -30, 0, 0});
 
     auto openURIStackPanel = SetupOpenURIControls(parent, row, shortCut, textInputMargin, controlStackPanel);
 
