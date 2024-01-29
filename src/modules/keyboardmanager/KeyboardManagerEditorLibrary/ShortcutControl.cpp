@@ -706,14 +706,13 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(stackPanelRunProgramStartInDir, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_START_IN), runProgramLabelWidth).as<StackPanel>());
 
     // add shortcut type choice
-    runProgramElevationTypeCombo.Width(EditorConstants::RemapTableDropDownWidth - 40);
+    runProgramElevationTypeCombo.Width(EditorConstants::TableDropDownHeight);
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATION_TYPE_NORMAL)));
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATION_TYPE_ELEVATED)));
     runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATION_TYPE_DIFFERENT_USER)));
     runProgramElevationTypeCombo.SelectedIndex(0);
-
     // runProgramAlreadyRunningAction
-    runProgramAlreadyRunningAction.Width(EditorConstants::RemapTableDropDownWidth - 40);
+    runProgramAlreadyRunningAction.Width(EditorConstants::TableDropDownHeight);
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_SHOW_WINDOW)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_START_ANOTHER)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_DO_NOTHING)));
@@ -729,7 +728,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
 
     auto runProgramStartWindow = ComboBox();
     runProgramStartWindow.Name(L"runProgramStartWindow_" + std::to_wstring(rowIndex));
-    runProgramStartWindow.Width(EditorConstants::RemapTableDropDownWidth - 40);
+    runProgramStartWindow.Width(EditorConstants::TableDropDownHeight);
     runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VISIBILITY_NORMAL)));
     runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VISIBILITY_HIDDEN)));
     runProgramStartWindow.SelectedIndex(0);
