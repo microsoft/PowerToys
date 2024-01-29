@@ -744,7 +744,7 @@ Mouse Jump:
 
  * Test Settings:
    - [ ] Change the rest of available settings on MWB page and verify that each setting works as described.
-   
+
 ## Crop And Lock
  * Thumbnail mode
    - [ ] Test with win32 app
