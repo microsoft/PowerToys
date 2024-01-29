@@ -30,6 +30,7 @@ All:
 - MWB
 - Crop And Lock
 - Environment Variables
+- Command Not Found
 ```
 
 ```
@@ -60,6 +61,7 @@ Group 2:
 - File Locksmith
 - Registry Preview
 - Peek
+- Command Not Found
 ```
 
 ```
@@ -90,6 +92,7 @@ Group 4:
 - Quick Accent
 - Hosts File Editor
 - MWB
+- Command Not Found
 ```
 
 ```
