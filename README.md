@@ -172,7 +172,7 @@ In this release, we focused on stability and improvements.
 
 ### Quick Accent
 
- - Added the Ellipses character to all languages. Thanks [@HydroH](https://github.com/HydroH)!
+ - Added the ellipses character to all languages. Thanks [@HydroH](https://github.com/HydroH)!
  - Added an option to try and not activate when playing a game. Thanks [@HydroH](https://github.com/HydroH)!
  - Added the E with breve and pilcrow characters to all languages. Thanks [@PesBandi](https://github.com/PesBandi)!
 
