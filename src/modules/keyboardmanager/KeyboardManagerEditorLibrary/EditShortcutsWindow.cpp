@@ -469,7 +469,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     if (isInSingleEditMode)
     {
-        // more regigger of the screen for single mode
+        // more rejigger of the screen for single mode
         headerText.Text(GET_RESOURCE_STRING(IDS_EDITTHISSHORTCUT_WINDOWNAME));
         addShortcut.Visibility(Visibility::Collapsed);
         headerText.Visibility(Visibility::Collapsed);

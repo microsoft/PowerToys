@@ -32,7 +32,7 @@ DWORD KeyDropDownControl::GetSelectedValue(ComboBox comboBox)
 
 DWORD KeyDropDownControl::GetSelectedValue(TextBlock text)
 {
-    return keyboardManagerState->keyboardMap.GetKeyFromName(std::wstring{text.Text()});
+    return keyboardManagerState->keyboardMap.GetKeyFromName(std::wstring{ text.Text() });
 }
 
 void KeyDropDownControl::SetSelectedValue(std::wstring value)
@@ -464,7 +464,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
         /*
             I hope this mess goes away, but we need draw this shortcut, and it might be a chord and it might
             be using a key already in use which id "detected" here by a ComboBox without a value, which 
-            will marked as "IDS_EDITSHORTCUTS_BADKEY" for now.             
+            will marked as "IDS_EDITSHORTCUTS_BAD_KEY" for now.
         */
 
         StackPanel spForShortcutRowOne;
@@ -502,13 +502,13 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
                     }
                     else
                     {
-                        auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BADKEY).c_str());
+                        auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BAD_KEY).c_str());
                         badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
                     }
                 }
                 else
                 {
-                    auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BADKEY).c_str());
+                    auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BAD_KEY).c_str());
                     badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
                 }
             }
@@ -554,7 +554,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
             }
             else
             {
-                auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BADKEY).c_str());
+                auto badKey = keyboardManagerState.AddKeyToLayout(sp, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_BAD_KEY).c_str());
                 badKey.Foreground(Media::SolidColorBrush(Colors::Red()));
             }
         }

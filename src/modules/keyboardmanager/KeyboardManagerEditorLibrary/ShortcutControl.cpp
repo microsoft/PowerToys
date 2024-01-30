@@ -64,7 +64,7 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
 
     shortcutControlLayout.as<StackPanel>().Children().Append(keyComboStackPanel.as<StackPanel>());
 
-    spBtnPickShortcut = UIHelpers::GetLabelWrapped(btnPickShortcut.as<Button>(), GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELSHORTCUT), 80).as<StackPanel>();
+    spBtnPickShortcut = UIHelpers::GetLabelWrapped(btnPickShortcut.as<Button>(), GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_SHORTCUT), 80).as<StackPanel>();
     shortcutControlLayout.as<StackPanel>().Children().Append(spBtnPickShortcut);
 
     shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>());
@@ -204,7 +204,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     auto controlStackPanel = keyboardRemapControlObjects.back()[1]->shortcutControlLayout.as<StackPanel>();
     auto firstLineStackPanel = keyboardRemapControlObjects.back()[1]->keyComboStackPanel.as<StackPanel>();
 
-    firstLineStackPanel.Children().InsertAt(0, UIHelpers::GetLabelWrapped(actionTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELACTION), runProgramLabelWidth).as<StackPanel>());
+    firstLineStackPanel.Children().InsertAt(0, UIHelpers::GetLabelWrapped(actionTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_ACTION), runProgramLabelWidth).as<StackPanel>());
 
     // add textbox for when it's a text input
 
@@ -226,7 +226,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     //unicodeTextKeysInput.Visibility(Visibility::Collapsed);
     unicodeTextKeysInput.Width(EditorConstants::TableDropDownHeight);
 
-    StackPanel spUnicodeTextKeysInput = UIHelpers::GetLabelWrapped(unicodeTextKeysInput, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELKEYS), runProgramLabelWidth).as<StackPanel>();
+    StackPanel spUnicodeTextKeysInput = UIHelpers::GetLabelWrapped(unicodeTextKeysInput, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_KEYS), runProgramLabelWidth).as<StackPanel>();
     controlStackPanel.Children().Append(spUnicodeTextKeysInput);
 
     unicodeTextKeysInput.HorizontalAlignment(HorizontalAlignment::Left);
@@ -611,7 +611,7 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
     boxAndLink.Children().Append(uriTextBox);
     boxAndLink.Children().Append(hyperlinkButton);
 
-    openUriStackPanel.Children().Append(UIHelpers::GetLabelWrapped(boxAndLink, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELPATHURI), runProgramLabelWidth).as<StackPanel>());
+    openUriStackPanel.Children().Append(UIHelpers::GetLabelWrapped(boxAndLink, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_PATH_URI), runProgramLabelWidth).as<StackPanel>());
 
     uriTextBox.TextChanged([parent, row, uriTextBox](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;
@@ -698,41 +698,41 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
 
     int runProgramLabelWidth = 90;
 
-    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(stackPanelForRunProgramPath, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELPROGRAM), runProgramLabelWidth).as<StackPanel>());
+    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(stackPanelForRunProgramPath, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_PROGRAM), runProgramLabelWidth).as<StackPanel>());
 
-    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramArgsForProgramInput, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELARGS), runProgramLabelWidth).as<StackPanel>());
+    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramArgsForProgramInput, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_ARGS), runProgramLabelWidth).as<StackPanel>());
 
-    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(stackPanelRunProgramStartInDir, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELSTARTIN), runProgramLabelWidth).as<StackPanel>());
+    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(stackPanelRunProgramStartInDir, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_START_IN), runProgramLabelWidth).as<StackPanel>());
 
     // add shortcut type choice
     runProgramElevationTypeCombo.Width(EditorConstants::RemapTableDropDownWidth - 40);
-    runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPENORMAL)));
-    runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPEELEVATED)));
-    runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATIONTYPEDIFFERENTUSER)));
+    runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATION_TYPE_NORMAL)));
+    runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATION_TYPE_ELEVATED)));
+    runProgramElevationTypeCombo.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ELEVATION_TYPE_DIFFERENT_USER)));
     runProgramElevationTypeCombo.SelectedIndex(0);
 
     // runProgramAlreadyRunningAction
     runProgramAlreadyRunningAction.Width(EditorConstants::RemapTableDropDownWidth - 40);
-    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGSHOWWINDOW)));
-    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGSTARTANOTHER)));
-    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGDONOTHING)));
-    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGCLOSE)));
-    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGTERMINATE)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_SHOW_WINDOW)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_START_ANOTHER)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_DO_NOTHING)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_CLOSE)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_TERMINATE)));
 
     // lets think about this, I like it, some don't
-    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADYRUNNINGCLOSEANDTERMINATE)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_CLOSE_AND_TERMINATE)));
     runProgramAlreadyRunningAction.SelectedIndex(0);
 
-    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELELEVATION), runProgramLabelWidth).as<StackPanel>());
-    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramAlreadyRunningAction, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELIFRUNNING), runProgramLabelWidth).as<StackPanel>());
+    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_ELEVATION), runProgramLabelWidth).as<StackPanel>());
+    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramAlreadyRunningAction, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_IF_RUNNING), runProgramLabelWidth).as<StackPanel>());
 
     auto runProgramStartWindow = ComboBox();
     runProgramStartWindow.Name(L"runProgramStartWindow_" + std::to_wstring(rowIndex));
     runProgramStartWindow.Width(EditorConstants::RemapTableDropDownWidth - 40);
-    runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VIZNORMAL)));
-    runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VIZHIDDEN)));
+    runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VISIBILITY_NORMAL)));
+    runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VISIBILITY_HIDDEN)));
     runProgramStartWindow.SelectedIndex(0);
-    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramStartWindow, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABELSTARTAS), runProgramLabelWidth).as<StackPanel>());
+    controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramStartWindow, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_START_AS), runProgramLabelWidth).as<StackPanel>());
 
     // add events to TextBoxes for runProgram fields.
     runProgramPathInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
