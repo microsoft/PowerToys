@@ -603,7 +603,7 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
 
     winrt::Windows::UI::Xaml::Controls::HyperlinkButton hyperlinkButton;
     hyperlinkButton.NavigateUri(Windows::Foundation::Uri(L"https://learn.microsoft.com/windows/uwp/launch-resume/launch-app-with-uri"));
-    hyperlinkButton.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_WHATCANIUSELINK)));
+    hyperlinkButton.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_WHAT_CAN_I_USE_LINK)));
     hyperlinkButton.Margin(textInputMargin);
 
     StackPanel boxAndLink;
@@ -668,7 +668,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramPathInput.Width(EditorConstants::TableDropDownHeight);
     runProgramPathInput.HorizontalAlignment(HorizontalAlignment::Left);
 
-    runProgramArgsForProgramInput.PlaceholderText(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ARGSFORPROGRAM));
+    runProgramArgsForProgramInput.PlaceholderText(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ARGS_FOR_PROGRAM));
     runProgramArgsForProgramInput.Margin(textInputMargin);
     runProgramArgsForProgramInput.AcceptsReturn(false);
     runProgramArgsForProgramInput.IsSpellCheckEnabled(false);
@@ -676,7 +676,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramArgsForProgramInput.HorizontalAlignment(HorizontalAlignment::Left);
 
     runProgramStartInDirInput.IsSpellCheckEnabled(false);
-    runProgramStartInDirInput.PlaceholderText(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_STARTINDIRFORPROGRAM));
+    runProgramStartInDirInput.PlaceholderText(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_START_IN_DIR_FOR_PROGRAM));
     runProgramStartInDirInput.Margin(textInputMargin);
     runProgramStartInDirInput.AcceptsReturn(false);
     runProgramStartInDirInput.Width(EditorConstants::TableDropDownHeight);
@@ -1187,7 +1187,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     if (isOrigShortcut)
     {
         TextBlock allowChordText;
-        allowChordText.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLOWCHORDS));
+        allowChordText.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLOW_CHORDS));
         allowChordText.FontSize(12);
         allowChordText.Margin({ 0, 20, 0, 0 });
         chordStackPanel.VerticalAlignment(VerticalAlignment::Center);

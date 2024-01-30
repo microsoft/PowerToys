@@ -144,7 +144,7 @@
   <data name="EditShortcuts_WindowName" xml:space="preserve">
     <value>Remap shortcuts</value>
   </data>
-  <data name="EditThisShortcut_WindowName" xml:space="preserve">
+  <data name="Edit_This_Shortcut_WindowName" xml:space="preserve">
     <value>Edit shortcut</value>
   </data>
   <data name="Browse_For_Program_Button" xml:space="preserve">
@@ -281,7 +281,7 @@
   <data name="EditShortcuts_AllApps" xml:space="preserve">
     <value>All apps</value>
   </data>
-  <data name="EditShortcuts_AllowChords" xml:space="preserve">
+  <data name="EditShortcuts_Allow_Chords" xml:space="preserve">
     <value>Allow chords</value>
   </data>
   <data name="EditShortcuts_PathToProgram" xml:space="preserve">
@@ -290,13 +290,13 @@
   <data name="EditShortcuts_UriExample" xml:space="preserve">
     <value>E.g.: https://website.url</value>
   </data>
-  <data name="EditShortcuts_WhatCanIUseLink" xml:space="preserve">
+  <data name="EditShortcuts_What_Can_I_Use_Link" xml:space="preserve">
     <value>What can I use?</value>
   </data>
-  <data name="EditShortcuts_ArgsForProgram" xml:space="preserve">
+  <data name="EditShortcuts_Args_For_Program" xml:space="preserve">
     <value>Arguments for program</value>
   </data>
-  <data name="EditShortcuts_StartInDirForProgram" xml:space="preserve">
+  <data name="EditShortcuts_Start_In_Dir_For_Program" xml:space="preserve">
     <value>Start in directory</value>
   </data>
   <data name="ErrorMessage_RemapSuccessful" xml:space="preserve">
