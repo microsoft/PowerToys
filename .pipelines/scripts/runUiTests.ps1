@@ -14,5 +14,5 @@ Param(
 
 Write-Output "Starting UI tests"
 
-$Cmd = "$VsConsolePath\vstest.console.exe $SearchFolder /ResultsDirectory:$ResultPath"
-Invoke-Expression -Command $Cmd
+$Command = "$VsConsolePath\vstest.console.exe $SearchFolder /ResultsDirectory:$ResultPath"
+Invoke-Expression $Command
