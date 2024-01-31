@@ -43,7 +43,7 @@ jobs:
       filePath: $(build.sourcesdirectory)\.pipelines\scripts\runUiTests.ps1
       arguments: >-
         -SearchFolder '$(Build.ArtifactStagingDirectory)\x64\**\UITests-FancyZonesEditor.dll'
-        -VsConsolePath '$(Agent.ToolsDirectory)\VsTest\**'
+        -VsConsolePath '$(Agent.ToolsDirectory)\VsTest\17.10.0-preview-24080-01\x64\tools\net462\Common7\IDE\Extensions\TestPlatform'
         -MatchPattern '**\UITests-*.dll'
         -LogPath '$(Build.ArtifactStagingDirectory)\Logs'
         -ResultPath "$(Build.ArtifactStagingDirectory)\TestResults"
