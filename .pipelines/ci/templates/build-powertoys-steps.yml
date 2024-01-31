@@ -67,12 +67,6 @@ steps:
     arguments: -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
     pwsh: true
 
-- task: PowerShell@2
-  displayName: Verify and set latest VCToolsVersion usage
-  inputs:
-    filePath: '$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1'
-    pwsh: true
-
 - task: UseDotNet@2
   displayName: 'Use .NET 8 SDK'
   inputs:
