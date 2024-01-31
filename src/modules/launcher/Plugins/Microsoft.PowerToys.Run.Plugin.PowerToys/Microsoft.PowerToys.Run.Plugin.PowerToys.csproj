@@ -81,39 +81,39 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
-    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsColorPicker.png">
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\ColorPicker.png">
       <Link>Images\ColorPicker.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsFancyZones.png">
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\FancyZones.png">
       <Link>Images\FancyZones.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsCropAndLock.png">
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\CropAndLock.png">
       <Link>Images\CropAndLock.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsHosts.png">
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Hosts.png">
       <Link>Images\Hosts.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsPowerOcr.png">
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\TextExtractor.png">
       <Link>Images\PowerOcr.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsRegistryPreview.png">
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\RegistryPreview.png">
       <Link>Images\RegistryPreview.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsScreenRuler.png">
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\ScreenRuler.png">
       <Link>Images\ScreenRuler.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsShortcutGuide.png">
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\ShortcutGuide.png">
       <Link>Images\ShortcutGuide.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\FluentIcons\FluentIconsEnvironmentVariables.png">
+    <Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\EnvironmentVariables.png">
       <Link>Images\EnvironmentVariables.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

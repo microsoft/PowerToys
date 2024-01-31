@@ -15,7 +15,7 @@
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="RegistryPreview_Enable_RegistryPreview"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsRegistryPreview.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsRegistryPreviewEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </tkcontrols:SettingsCard>

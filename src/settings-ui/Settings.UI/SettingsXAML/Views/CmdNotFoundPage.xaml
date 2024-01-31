@@ -32,7 +32,7 @@
 
                 <tkcontrols:SettingsExpander
                     x:Uid="CmdNotFound_Enable"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsCmdNotFound.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                     IsExpanded="True">
                     <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsCommandNotFoundModuleInstalled, Mode=OneWay}">
