@@ -184,8 +184,7 @@
                         <DataTemplate DataType="sys:Enum">
                             <TextBlock
                                 Margin="4,0,0,0"
-                                FontSize="12"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                FontSize="14"
                                 Text="{Binding {}, Converter={StaticResource EnumValueConverter}}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
@@ -212,8 +211,7 @@
                         <DataTemplate DataType="sys:Enum">
                             <TextBlock
                                 Margin="4,0,0,0"
-                                FontSize="12"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                FontSize="14"
                                 Text="{Binding {}, Converter={StaticResource EnumValueConverter}}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
