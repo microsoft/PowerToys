@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using AllExperiments;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
@@ -63,6 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             DataContext = ViewModel;
             OobeShellHandler = this;
             Modules = new ObservableCollection<OobePowerToysModule>();
+            ShellPageHelper.SortNavigationPaneItems(navigationView);
 
             Modules.Insert((int)PowerToysModules.Overview, new OobePowerToysModule()
             {

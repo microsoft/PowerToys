@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             ShellHandler = this;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
-            SortNavigationPaneItems();
+            ShellPageHelper.SortNavigationPaneItems(navigationView);
 
             // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
             // shellFrame.Navigate(typeof(GeneralPage));
@@ -274,33 +274,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void OobeButton_Click(object sender, RoutedEventArgs e)
         {
             OpenOobeWindowCallback();
-        }
-
-        /// <summary>
-        /// Sort the Navigation-Pane items alphabetically based on their display names
-        /// </summary>
-        private void SortNavigationPaneItems()
-        {
-            // We want to sort the items after the separator
-            int separatorIndex = navigationView.MenuItems.IndexOf(
-                navigationView.MenuItems.OfType<NavigationViewItemSeparator>().FirstOrDefault());
-
-            var itemsToSort = navigationView.MenuItems
-                .OfType<NavigationViewItem>()
-                .Skip(separatorIndex)
-                .OrderBy(item => item.Content.ToString())
-                .ToList();
-
-            // Arrange the items in the sorted order
-            for (int i = navigationView.MenuItems.Count - 1; i > separatorIndex; i--)
-            {
-                navigationView.MenuItems.RemoveAt(i);
-            }
-
-            foreach (var sortedItem in itemsToSort)
-            {
-                navigationView.MenuItems.Add(sortedItem);
-            }
         }
 
         private bool navigationViewInitialStateProcessed; // avoid announcing initial state of the navigation pane.

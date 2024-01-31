@@ -61,6 +61,7 @@
                     x:Uid="Shell_General"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsPowerToys.png}"
                     Tag="Overview" />
+                <NavigationViewItemSeparator />
                 <NavigationViewItem
                     x:Uid="Shell_AlwaysOnTop"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsAlwaysOnTop.png}"
