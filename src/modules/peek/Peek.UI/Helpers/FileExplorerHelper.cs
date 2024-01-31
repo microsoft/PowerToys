@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text;
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 using SHDocVw;
@@ -10,6 +11,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using IServiceProvider = Peek.Common.Models.IServiceProvider;
+using NativeMethods = Peek.UI.Native.NativeMethods;
 
 namespace Peek.UI.Helpers
 {
@@ -63,21 +65,31 @@ namespace Peek.UI.Helpers
 
             var shell = new Shell32.Shell();
             ShellWindows shellWindows = shell.Windows();
-            foreach (IWebBrowserApp webBrowserApp in shell.Windows())
+            foreach (IWebBrowserApp webBrowserApp in shellWindows)
             {
-                var shellFolderView = (Shell32.IShellFolderViewDual2)webBrowserApp.Document;
-                var folderTitle = shellFolderView.Folder.Title;
-
-                if (webBrowserApp.HWND == foregroundWindowHandle)
+                StringBuilder className = new StringBuilder(256);
+                if (NativeMethods.GetClassName(new IntPtr(webBrowserApp.HWND), className, className.Capacity) == 0)
                 {
-                    var serviceProvider = (IServiceProvider)webBrowserApp;
-                    var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
-                    shellBrowser.GetWindow(out IntPtr shellBrowserHandle);
+                    continue;
+                }
 
-                    if (activeTab == shellBrowserHandle)
+                // This is the class name for File Explorer
+                if (className.ToString() == "CabinetWClass")
+                {
+                    var shellFolderView = (Shell32.IShellFolderViewDual2)webBrowserApp.Document;
+                    var folderTitle = shellFolderView.Folder.Title;
+
+                    if (webBrowserApp.HWND == foregroundWindowHandle)
                     {
-                        shellItemArray = GetShellItemArray(shellBrowser, onlySelectedFiles);
-                        return shellItemArray;
+                        var serviceProvider = (IServiceProvider)webBrowserApp;
+                        var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
+                        shellBrowser.GetWindow(out IntPtr shellBrowserHandle);
+
+                        if (activeTab == shellBrowserHandle)
+                        {
+                            shellItemArray = GetShellItemArray(shellBrowser, onlySelectedFiles);
+                            return shellItemArray;
+                        }
                     }
                 }
             }
