@@ -6,7 +6,6 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using Peek.Common.Models;
-using Peek.UI.Helpers;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions

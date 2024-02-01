@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -29,7 +32,20 @@ namespace FileActionsMenu.Ui.Actions
 
         public void Execute(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            StringBuilder arguments = new();
+
+            foreach (string item in SelectedItems)
+            {
+                arguments.Append(CultureInfo.InvariantCulture, $"\"{item}\" ");
+            }
+
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = "PowerToys.ImageResizer.exe",
+                Arguments = arguments.ToString(),
+                UseShellExecute = true,
+            };
+            Process.Start(startInfo);
         }
     }
 }

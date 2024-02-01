@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Windows;
@@ -30,7 +31,21 @@ namespace FileActionsMenu.Ui.Actions
 
         public void Execute(object sender, RoutedEventArgs e)
         {
-            Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection"));
+            string path = Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection");
+
+            int i = 0;
+            while (Directory.Exists(path))
+            {
+                if (path.EndsWith(')'))
+                {
+                    path = path[..^(3 + i.ToString(CultureInfo.InvariantCulture).Length)];
+                }
+
+                i++;
+                path += " (" + i + ")";
+            }
+
+            Directory.CreateDirectory(path);
 
             CancellationTokenSource cancellationTokenSource = new() { };
             CopyMoveUi copyMoveUi = new("Moving", SelectedItems.Length, cancellationTokenSource);
