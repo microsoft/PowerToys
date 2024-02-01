@@ -36,6 +36,23 @@ jobs:
   - task: VisualStudioTestPlatformInstaller@1
     displayName: Ensure VSTest Platform
 
+  - task: VSTest@2
+    displayName: 'UI Tests'
+    condition: ne(variables['BuildPlatform'], 'arm64') # No arm64 agents to run the tests.
+    inputs:
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      testSelector: 'testAssemblies'
+      searchFolder: '$(Build.ArtifactStagingDirectory)'
+      vstestLocationMethod: 'location' # otherwise fails to find vstest.console.exe 
+      vstestLocation: '$(Agent.ToolsDirectory)\VsTest\**\$(BuildPlatform)\tools\net462\Common7\IDE\Extensions\TestPlatform'
+      uiTests: true
+      testAssemblyVer2: |
+        **\UITests-FancyZones.dll
+        **\UITests-FancyZonesEditor.dll
+        !**\obj\**
+        !**\ref\**
+
   - task: PowerShell@2
     displayName: 'Run UI Tests'
     inputs:
@@ -43,7 +60,7 @@ jobs:
       filePath: $(build.sourcesdirectory)\.pipelines\scripts\runUiTests.ps1
       arguments: >-
         -SearchFolder '$(Build.ArtifactStagingDirectory)\x64\**\UITests-FancyZonesEditor.dll'
-        -VsConsolePath '$(Agent.ToolsDirectory)\VsTest\17.10.0-preview-24080-01\x64\tools\net462\Common7\IDE\Extensions\TestPlatform'
+        -VsConsolePath '$(Agent.ToolsDirectory)\VsTest\**\$(BuildPlatform)\tools\net462\Common7\IDE\Extensions\TestPlatform'
         -MatchPattern '**\UITests-*.dll'
         -LogPath '$(Build.ArtifactStagingDirectory)\Logs'
         -ResultPath "$(Build.ArtifactStagingDirectory)\TestResults"

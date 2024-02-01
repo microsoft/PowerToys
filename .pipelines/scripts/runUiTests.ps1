@@ -13,7 +13,6 @@ Param(
 )
 
 Write-Output "Starting UI tests"
-Invoke-Expression "ls -R $VsConsolePath"
 
 $Command = "$VsConsolePath\vstest.console.exe $SearchFolder /ResultsDirectory:$ResultPath"
 Invoke-Expression $Command
