@@ -289,9 +289,18 @@ extends:
             targetType: 'inline'
             script: |
               $p = "$(System.ArtifactsDirectory)\";
+              $pp = "$(System.DefaultWorkingDirectory)\";
+              $ppp = "$(Build.ArtifactStagingDirectory)\";
               
               echo $p
+              echo $pp
+              echo $ppp
               Get-ChildItem $p
+              echo "AAAAAAAAAAAAAAAAAAAAA"
+              Get-ChildItem $pp
+              echo "AAAAAAAAAAAAAAAAAAAAA"
+              Get-ChildItem $ppp
+              
             pwsh: true
 
 ...
