@@ -13,8 +13,8 @@ namespace FileActionsMenu.Ui.Actions
     /// </summary>
     public partial class CopyMoveConflictUi : FluentWindow
     {
-        private Action _replaceAction;
-        private Action _ignoreAction;
+        private readonly Action _replaceAction;
+        private readonly Action _ignoreAction;
         private bool _executed;
 
         public CopyMoveConflictUi(string name, Action replaceAction, Action ignoreAction)

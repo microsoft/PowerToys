@@ -15,7 +15,7 @@ namespace Peek.UI.Helpers
 {
     public static class FileExplorerHelper
     {
-        internal static IShellItemArray? GetSelectedItems(HWND foregroundWindowHandle)
+        public static IShellItemArray? GetSelectedItems(HWND foregroundWindowHandle)
         {
             return GetItemsInternal(foregroundWindowHandle, onlySelectedFiles: true);
         }

@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Version.props" />
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
 	 <TargetFramework>net8.0-windows10.0.20348</TargetFramework>
@@ -9,6 +8,7 @@
     <Description>PowerToys File Actions Menu</Description>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -42,7 +42,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="WPF-UI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\peek\Peek.Common\Peek.Common.csproj" />
+    <ProjectReference Include="..\..\..\peek\Peek.UI\Peek.UI.csproj" />
+    <ProjectReference Include="..\..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+	  <ProjectReference Include="..\..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+	  <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
   </ItemGroup>
 
 </Project>

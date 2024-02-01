@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Windows;
+using Peek.Common.Models;
+using Peek.UI.Helpers;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions
@@ -28,7 +31,10 @@ namespace FileActionsMenu.Ui.Actions
 
         public void Execute(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            _ = RunPowerRename(ExplorerHelper.CreateShellItemArrayFromPaths(SelectedItems));
         }
+
+        [DllImport("K:\\PowerToys\\x64\\Debug\\WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll", CharSet = CharSet.Unicode)]
+        public static extern int RunPowerRename(IShellItemArray psiItemArray);
     }
 }
