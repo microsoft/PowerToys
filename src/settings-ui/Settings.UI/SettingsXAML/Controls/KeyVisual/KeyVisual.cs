@@ -105,8 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         case 91: // The left Windows key
                         case 92: // The right Windows key
                             PathIcon winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M683 683H0V0H683V683ZM1502 683H819V0H1502V683ZM683 1502H0V819H683V1502ZM1502 1502H819V819H1502V1502Z"" />") as PathIcon;
-                            winIcon.Margin = new Thickness(0, 12, 0, 0);
-                            Viewbox winIconContainer = new Viewbox();
+                            Viewbox winIconContainer = new();
                             winIconContainer.Child = winIcon;
                             winIconContainer.MinWidth = 10;
                             winIconContainer.MaxWidth = this.FontSize;
