@@ -34,7 +34,7 @@ namespace FileActionsMenu.Ui.Actions
             _ = RunPowerRename(ExplorerHelper.CreateShellItemArrayFromPaths(SelectedItems));
         }
 
-        [DllImport("K:\\PowerToys\\x64\\Debug\\WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll", CharSet = CharSet.Unicode)]
+        [DllImport("\\WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll", CharSet = CharSet.Unicode)]
         public static extern int RunPowerRename(IShellItemArray psiItemArray);
     }
 }
