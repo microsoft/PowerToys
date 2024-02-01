@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
@@ -69,6 +70,11 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 
             FluentWindow window = new();
             window.Content = new ContentPresenter();
+            /*window.AllowsTransparency = true;
+            window.Background = Brushes.Transparent;*/
+
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(window);
+
             ContentDialog contentDialog = new((ContentPresenter)window.Content);
             contentDialog.Title = "Save hashes to ... file(s)?";
             contentDialog.PrimaryButtonText = "Multiple";

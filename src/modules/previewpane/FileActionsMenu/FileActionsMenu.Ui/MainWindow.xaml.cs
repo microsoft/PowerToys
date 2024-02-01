@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Windows;
 using System.Windows.Controls;
 using FileActionsMenu.Ui.Actions;
 using FileActionsMenu.Ui.Actions.CopyPath;
@@ -41,70 +42,56 @@ namespace FileActionsMenu.Ui
 
             int currentCategory = -1;
 
-            foreach (IAction action in Actions)
+            void HandleItems(IAction[] actions, ItemsControl cm, bool firstLayer = true)
             {
-                action.SelectedItems = selectedItems;
-                if (action.IsVisible)
+                foreach (IAction action in actions)
                 {
-                    if (action.Category != currentCategory)
+                    action.SelectedItems = selectedItems;
+                    if (action.IsVisible)
                     {
-                        currentCategory = action.Category;
-                        cm.Items.Add(new Separator());
-                    }
-
-                    MenuItem menuItem = new()
-                    {
-                        Header = action.Header,
-                    };
-
-                    if (action.Icon != null)
-                    {
-                        menuItem.Icon = action.Icon;
-                        if (menuItem.Icon is FontIcon fontIcon)
+                        // Categories only apply to the first layer of items
+                        if (firstLayer && action.Category != currentCategory)
                         {
-                            fontIcon.FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets");
+                            currentCategory = action.Category;
+                            cm.Items.Add(new Separator());
                         }
-                    }
 
-                    if (action.HasSubMenu)
-                    {
-                        foreach (IAction subAction in action.SubMenuItems!)
+                        MenuItem menuItem = new()
                         {
-                            subAction.SelectedItems = selectedItems;
+                            Header = action.Header,
+                        };
 
-                            if (subAction.IsVisible)
+                        if (action.Icon != null)
+                        {
+                            menuItem.Icon = action.Icon;
+                            if (menuItem.Icon is FontIcon fontIcon)
                             {
-                                MenuItem subMenuItem = new()
-                                {
-                                    Header = subAction.Header,
-                                };
-
-                                if (action.Icon != null)
-                                {
-                                    menuItem.Icon = action.Icon;
-                                    if (menuItem.Icon is FontIcon fontIcon)
-                                    {
-                                        fontIcon.FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets");
-                                    }
-                                }
-
-                                subMenuItem.Click += subAction.Execute;
-
-                                menuItem.Items.Add(subMenuItem);
+                                fontIcon.FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets");
                             }
                         }
-                    }
-                    else
-                    {
-                        menuItem.Click += action.Execute;
-                    }
 
-                    cm.Items.Add(menuItem);
+                        if (action.HasSubMenu)
+                        {
+                            HandleItems(action.SubMenuItems!, menuItem, false);
+                        }
+                        else
+                        {
+                            menuItem.Click += (object sender, RoutedEventArgs e) =>
+                            {
+                                action.Execute(sender, e);
+                                Environment.Exit(0);
+                            };
+                        }
+
+                        cm.Items.Add(menuItem);
+                    }
                 }
             }
 
+            HandleItems(Actions, cm);
+
             cm.IsOpen = true;
-            cm.Closed += (sender, args) => Close();
+            /*cm.Closed += (sender, args) => Close();*/
         }
     }
 }

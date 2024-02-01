@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
+using System.Threading;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -28,7 +30,24 @@ namespace FileActionsMenu.Ui.Actions
 
         public void Execute(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection"));
+
+            CancellationTokenSource cancellationTokenSource = new() { };
+            CopyMoveUi copyMoveUi = new("Moving", SelectedItems.Length, cancellationTokenSource);
+
+            foreach (string item in SelectedItems)
+            {
+                if (cancellationTokenSource.IsCancellationRequested)
+                {
+                    copyMoveUi.Close();
+                    break;
+                }
+
+                copyMoveUi.CurrentFile = Path.GetFileName(item);
+
+                File.Move(item, Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection", Path.GetFileName(item)));
+                copyMoveUi.Progress++;
+            }
         }
     }
 }

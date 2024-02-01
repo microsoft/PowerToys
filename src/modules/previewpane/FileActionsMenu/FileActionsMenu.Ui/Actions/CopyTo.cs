@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
+using System.Threading;
 using System.Windows;
+using System.Windows.Forms;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions
@@ -28,7 +31,60 @@ namespace FileActionsMenu.Ui.Actions
 
         public void Execute(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            FolderBrowserDialog dialog = new()
+            {
+                AddToRecent = false,
+                Description = "Copy to",
+                UseDescriptionForTitle = true,
+                AutoUpgradeEnabled = true,
+                ShowNewFolderButton = true,
+                SelectedPath = Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                CancellationTokenSource cancellationTokenSource = new() { };
+
+                CopyMoveUi copyMoveUi = new("Copying", SelectedItems.Length, cancellationTokenSource);
+
+                copyMoveUi.Show();
+
+                foreach (string item in SelectedItems)
+                {
+                    if (cancellationTokenSource.IsCancellationRequested)
+                    {
+                        copyMoveUi.Close();
+                        break;
+                    }
+
+                    copyMoveUi.CurrentFile = Path.GetFileName(item);
+
+                    string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
+                    if (File.Exists(destination))
+                    {
+                        CopyMoveConflictUi conflictUi = new(
+                            Path.GetFileName(destination),
+                            () =>
+                            {
+                                File.Copy(item, destination, true);
+                                copyMoveUi.Progress++;
+                            },
+                            () =>
+                            {
+                                copyMoveUi.Progress++;
+                            }
+                        );
+                        conflictUi.ShowDialog();
+                        continue;
+                    }
+
+                    File.Copy(item, destination);
+                    copyMoveUi.Progress++;
+                }
+
+                dialog.Dispose();
+                copyMoveUi.Close();
+            }
         }
     }
 }

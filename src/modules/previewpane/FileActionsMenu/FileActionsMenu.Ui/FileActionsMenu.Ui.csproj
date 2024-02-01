@@ -16,6 +16,8 @@
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AssemblyName>PowerToys.FileActionsMenu.Ui</AssemblyName>
     <SelfContained>true</SelfContained>
+    <UseWindowsForms>True</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
