@@ -59,16 +59,23 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         public static bool Navigate(Type pageType, object parameter = null, NavigationTransitionInfo infoOverride = null)
         {
-            // Don't open the same page multiple times
-            if (Frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(lastParamUsed)))
+            if (pageType != null)
             {
-                var navigationResult = Frame.Navigate(pageType, parameter, infoOverride);
-                if (navigationResult)
+                // Don't open the same page multiple times
+                if (Frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(lastParamUsed)))
                 {
-                    lastParamUsed = parameter;
-                }
+                    var navigationResult = Frame.Navigate(pageType, parameter, infoOverride);
+                    if (navigationResult)
+                    {
+                        lastParamUsed = parameter;
+                    }
 
-                return navigationResult;
+                    return navigationResult;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
