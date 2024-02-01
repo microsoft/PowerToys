@@ -18,61 +18,6 @@
             <ContextMenu x:Key="Menu">
                 <ui:MenuItem Header="PowerToys File actions" IsEnabled="False"></ui:MenuItem>
                 <Separator/>
-                <Separator/>
-                <ui:MenuItem Header="Generate Checksum">
-                    <ui:MenuItem x:Name="Md5HashMenuItem" Header="Md5 hash" Click="GenerateHashes"/>
-                    <ui:MenuItem x:Name="Sha1HashMenuItem" Header="Sha1 hash" Click="GenerateHashes"/>
-                    <ui:MenuItem x:Name="Sha256HashMenuItem" Header="Sha256 hash" Click="GenerateHashes"/>
-                </ui:MenuItem>
-                <Separator/>
-                <ui:MenuItem Header="Copy to">
-                    <ui:MenuItem.Icon>
-                        <ui:FontIcon Glyph="&#xE8C3;" />
-                    </ui:MenuItem.Icon>
-                </ui:MenuItem>
-                <ui:MenuItem Header="Move to">
-                    <ui:MenuItem.Icon>
-                        <ui:FontIcon Glyph="&#xE8C6;" />
-                    </ui:MenuItem.Icon>
-                </ui:MenuItem>
-                <ui:MenuItem Header="New folder with selection">
-                    <ui:MenuItem.Icon>
-                        <ui:FontIcon Glyph="&#xE8DE;" />
-                    </ui:MenuItem.Icon>
-                </ui:MenuItem>
-                <Separator/>
-                <ui:MenuItem Header="Copy path of files sperated by">
-                    <ui:MenuItem Header='";"' Click="CopyPath_Click"/>
-                    <ui:MenuItem Header='" "' Click="CopyPath_Click"/>
-                    <ui:MenuItem Header='","' Click="CopyPath_Click"/>
-                    <ui:MenuItem Header='Newline' Click="CopyPath_Click"/>
-                    <ui:MenuItem Header='Custom...' Click="CopyPath_Click"/>
-                </ui:MenuItem>
-                <Separator />
-                <ui:MenuItem Header="Rename with PowerRename">
-                    <ui:MenuItem.Icon>
-                        <ui:FontIcon Glyph="&#xE8AC;" />
-                    </ui:MenuItem.Icon>
-                </ui:MenuItem>
-                <ui:MenuItem Header="Transform images with Image Resizer">
-                    <ui:MenuItem.Icon>
-                        <ui:FontIcon Glyph="&#xEE71;" />
-                    </ui:MenuItem.Icon>
-                </ui:MenuItem>
-                <Separator />
-                <ui:MenuItem Header="Following items only apply to the first-selected file" IsEnabled="False"/>
-                <ui:MenuItem Tag="SingleItem"  Header="What's using this file?">
-                    <ui:MenuItem.Icon>
-                        <ui:FontIcon Glyph="&#xE72E;" />
-                    </ui:MenuItem.Icon>
-                </ui:MenuItem>
-                <ui:MenuItem IsEnabled="{Binding SingleItem, RelativeSource={RelativeSource AncestorType=Window}}" Header="Copy image to clipboard">
-                    <ui:MenuItem.Icon>
-                        <ui:FontIcon Glyph="&#xF413;" />
-                    </ui:MenuItem.Icon>
-                </ui:MenuItem>
-                <Separator/>
-                <ui:MenuItem Header="Close Menu"></ui:MenuItem>
             </ContextMenu>
         </ResourceDictionary>
     </ui:FluentWindow.Resources>

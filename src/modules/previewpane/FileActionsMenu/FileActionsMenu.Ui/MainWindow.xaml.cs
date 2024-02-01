@@ -3,91 +3,108 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Interop;
+using FileActionsMenu.Ui.Actions;
+using FileActionsMenu.Ui.Actions.CopyPath;
+using FileActionsMenu.Ui.Actions.Hashes.Hashes;
 using Wpf.Ui.Controls;
+using MenuItem = Wpf.Ui.Controls.MenuItem;
 
 namespace FileActionsMenu.Ui
 {
-    public partial class MainWindow : FluentWindow, INotifyPropertyChanged
+    public partial class MainWindow : FluentWindow
     {
-        private string[] _selectedItems;
-
-        private bool _singleItem;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string? name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-
-        public virtual bool SingleItem
-        {
-            get
-            {
-                return _singleItem;
-            }
-
-            set
-            {
-                _singleItem = value;
-                OnPropertyChanged();
-            }
-        }
+        private static readonly IAction[] Actions =
+        [
+            new CopyPath(),
+            new Hashes(),
+            new FileLocksmith(),
+            new CopyImageToClipboard(),
+            new CopyTo(),
+            new PowerRename(),
+            new ImageResizer(),
+            new MoveTo(),
+            new NewFolderWithSelection(),
+            new Close(),
+        ];
 
         public MainWindow(string[] selectedItems)
         {
-            SingleItem = selectedItems.Length == 1;
-
             InitializeComponent();
 
             // WindowStyle = WindowStyle.None;
             // AllowsTransparency = true;
-            _selectedItems = selectedItems;
 
             // Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.None);
             ContextMenu cm = (ContextMenu)FindResource("Menu");
+            Array.Sort(Actions, (a, b) => a.Category.CompareTo(b.Category));
+
+            int currentCategory = -1;
+
+            foreach (IAction action in Actions)
+            {
+                action.SelectedItems = selectedItems;
+                if (action.IsVisible)
+                {
+                    if (action.Category != currentCategory)
+                    {
+                        currentCategory = action.Category;
+                        cm.Items.Add(new Separator());
+                    }
+
+                    MenuItem menuItem = new()
+                    {
+                        Header = action.Header,
+                    };
+
+                    if (action.Icon != null)
+                    {
+                        menuItem.Icon = action.Icon;
+                        if (menuItem.Icon is FontIcon fontIcon)
+                        {
+                            fontIcon.FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets");
+                        }
+                    }
+
+                    if (action.HasSubMenu)
+                    {
+                        foreach (IAction subAction in action.SubMenuItems!)
+                        {
+                            subAction.SelectedItems = selectedItems;
+
+                            if (subAction.IsVisible)
+                            {
+                                MenuItem subMenuItem = new()
+                                {
+                                    Header = subAction.Header,
+                                };
+
+                                if (action.Icon != null)
+                                {
+                                    menuItem.Icon = action.Icon;
+                                    if (menuItem.Icon is FontIcon fontIcon)
+                                    {
+                                        fontIcon.FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets");
+                                    }
+                                }
+
+                                subMenuItem.Click += subAction.Execute;
+
+                                menuItem.Items.Add(subMenuItem);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        menuItem.Click += action.Execute;
+                    }
+
+                    cm.Items.Add(menuItem);
+                }
+            }
+
             cm.IsOpen = true;
             cm.Closed += (sender, args) => Close();
-        }
-
-        private void GenerateHashes(object sender, RoutedEventArgs e)
-        {
-            Actions.Hashes.GenerateHashes(sender, _selectedItems);
-        }
-
-        private void CopyPath_Click(object sender, RoutedEventArgs e)
-        {
-            StringBuilder text = new StringBuilder();
-
-            string delimiter;
-
-            switch (((System.Windows.Controls.MenuItem)sender).Header)
-            {
-                case "Newline":
-                    delimiter = Environment.NewLine;
-                    break;
-                default:
-                    delimiter = ((string)((System.Windows.Controls.MenuItem)sender).Header).Replace("\"", string.Empty);
-                    break;
-            }
-
-            foreach (string filename in _selectedItems)
-            {
-                text.Append(filename);
-                text.Append(delimiter);
-            }
-
-            text.Length -= delimiter.Length;
-
-            Clipboard.SetText(text.ToString());
         }
     }
 }

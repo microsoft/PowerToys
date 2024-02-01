@@ -19,7 +19,7 @@ namespace FileActionsMenu.Ui
                 return;
             }
 
-            MainWindow main = new MainWindow(items);
+            _ = new MainWindow(items);
 
             // main.AllowsTransparency = true;
             // main.WindowStyle = WindowStyle.None;
