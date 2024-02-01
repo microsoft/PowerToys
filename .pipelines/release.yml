@@ -445,8 +445,25 @@ extends:
 
         # Publishing the GPO files
         - pwsh: |-
-            New-Item "$(Build.ArtifactStagingDirectory)/gpo" -Type Directory
-            Copy-Item src\gpo\assets\* "$(Build.ArtifactStagingDirectory)/gpo" -Recurse
           displayName: Stage the GPO files
+    - stage: PostBuild
+      displayName: Post-build
+      pool:
+        name: SHINE-INT-L
+        image: SHINE-VS17-Latest
+        os: windows
+      jobs:
+      - job: A
+        steps:
+        - task: PowerShell@2
+          displayName: 'Calculating SHA256 hash'
+          inputs:
+            targetType: 'inline'
+            script: |
+              $p = "$(System.ArtifactsDirectory)\";
+              
+              echo $p
+              Get-ChildItem $p
+            pwsh: true
 
 ...
