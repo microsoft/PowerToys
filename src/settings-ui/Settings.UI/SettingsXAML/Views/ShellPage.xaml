@@ -107,7 +107,7 @@
 
                 <NavigationViewItem
                     Content="File Explorer Add-ons"
-                    Icon="{ui:FontIcon Glyph=&#xE8B7;}"
+                    Icon="{ui:FontIcon Glyph=&#xEC50;}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
@@ -127,7 +127,7 @@
 
                 <NavigationViewItem
                     Content="Mouse &amp; Keyboard"
-                    Icon="{ui:FontIcon Glyph=&#xE8B7;}"
+                    Icon="{ui:FontIcon Glyph=&#xE961;}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
@@ -160,7 +160,7 @@
 
                 <NavigationViewItem
                     Content="System"
-                    Icon="{ui:FontIcon Glyph=&#xE8B7;}"
+                    Icon="{ui:FontIcon Glyph=&#xE770;}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
@@ -189,8 +189,6 @@
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PasteAsPlainText.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
-
-
 
                 <NavigationViewItem
                     Content="Utilities"
@@ -222,36 +220,37 @@
                             helpers:NavHelper.NavigateTo="views:PowerLauncherPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}" />
                     </NavigationViewItem.MenuItems>
-
-                    <NavigationViewItem
-                        Content="Windowing"
-                        Icon="{ui:FontIcon Glyph=&#xE8B7;}"
-                        SelectsOnInvoked="False">
-                        <NavigationViewItem.MenuItems>
-                            <NavigationViewItem
-                                x:Uid="Shell_AlwaysOnTop"
-                                helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
-                                Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}" />
-                            <NavigationViewItem
-                                x:Uid="Shell_CropAndLock"
-                                helpers:NavHelper.NavigateTo="views:CropAndLockPage"
-                                Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}" />
-                            <NavigationViewItem
-                                x:Uid="Shell_FancyZones"
-                                helpers:NavHelper.NavigateTo="views:FancyZonesPage"
-                                Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
-                        </NavigationViewItem.MenuItems>
-                    </NavigationViewItem>
                 </NavigationViewItem>
 
                 <NavigationViewItem
+                    Content="Windowing"
+                    Icon="{ui:FontIcon Glyph=&#xEE40;}"
+                    SelectsOnInvoked="False">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem
+                            x:Uid="Shell_AlwaysOnTop"
+                            helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_CropAndLock"
+                            helpers:NavHelper.NavigateTo="views:CropAndLockPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_FancyZones"
+                            helpers:NavHelper.NavigateTo="views:FancyZonesPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
+
+                <NavigationViewItemSeparator />
+                <NavigationViewItem
                     Content="Maintenance mode"
-                    Icon="{ui:FontIcon Glyph=&#xE8B7;}"
+                    Icon="{ui:FontIcon Glyph=&#xE81B;}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
-                            Content="Mouse Jump"
+                            Content="Mouse Crosshairs"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrossHairs.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_TextExtractor"
@@ -264,20 +263,6 @@
                             IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">
