@@ -49,9 +49,15 @@ namespace FileActionsMenu.Ui
                     }
 
                     Shell32.FolderItems items = ((Shell32.IShellFolderViewDual2)window.Document).SelectedItems();
+                    bool isLibrarySelected = !windowText.Contains(':')
+                        && windowText.Contains('\\')
+                        && window.LocationName.EndsWith(window.LocationName, StringComparison.InvariantCultureIgnoreCase);
 
                     // Workaround for selection in multiple tabs
-                    if (Path.GetDirectoryName(items.Item(0).Path) != windowText)
+                    if (!(window.LocationName == windowText
+                          || window.LocationURL == windowText
+                          || isLibrarySelected
+                          || Path.GetDirectoryName(items.Item(0).Path) == windowText))
                     {
                         continue;
                     }
