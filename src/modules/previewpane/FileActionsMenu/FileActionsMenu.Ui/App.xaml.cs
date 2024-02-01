@@ -2,16 +2,27 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.Versioning;
+using System;
+using System.Collections;
 using System.Windows;
-using Wpf.Ui.Markup;
 
-namespace FileActionsMenu
+namespace FileActionsMenu.Ui
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
+        public App()
+        {
+            string[] items = ExplorerHelper.GetSelectedItems();
+            if (items.Length == 0)
+            {
+                Environment.Exit(0);
+                return;
+            }
+
+            MainWindow main = new MainWindow(items);
+
+            // main.AllowsTransparency = true;
+            // main.WindowStyle = WindowStyle.None;
+        }
     }
 }
