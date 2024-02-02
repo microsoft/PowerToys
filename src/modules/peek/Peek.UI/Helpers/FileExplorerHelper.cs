@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Text;
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 using SHDocVw;
@@ -11,7 +10,6 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using IServiceProvider = Peek.Common.Models.IServiceProvider;
-using NativeMethods = Peek.UI.Native.NativeMethods;
 
 namespace Peek.UI.Helpers
 {
@@ -67,16 +65,8 @@ namespace Peek.UI.Helpers
             ShellWindows shellWindows = shell.Windows();
             foreach (IWebBrowserApp webBrowserApp in shellWindows)
             {
-                StringBuilder className = new StringBuilder(256);
-                if (NativeMethods.GetClassName(new IntPtr(webBrowserApp.HWND), className, className.Capacity) == 0)
+                if (webBrowserApp.Document is Shell32.IShellFolderViewDual2 shellFolderView)
                 {
-                    continue;
-                }
-
-                // This is the class name for File Explorer
-                if (className.ToString() == "CabinetWClass")
-                {
-                    var shellFolderView = (Shell32.IShellFolderViewDual2)webBrowserApp.Document;
                     var folderTitle = shellFolderView.Folder.Title;
 
                     if (webBrowserApp.HWND == foregroundWindowHandle)
