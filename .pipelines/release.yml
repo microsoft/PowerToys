@@ -455,6 +455,10 @@ extends:
       jobs:
       - job: A
         steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            buildType: 'current'
+            targetPath: '$(Pipeline.Workspace)' # string. Alias: path | downloadPath. Required. Destination directory. Default: $(Pipeline.Workspace).
         - task: PowerShell@2
           displayName: 'Calculating SHA256 hash'
           inputs:
