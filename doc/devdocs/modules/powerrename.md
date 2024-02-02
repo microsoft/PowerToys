@@ -6,7 +6,7 @@ The **PowerRename Module** is a component of [PowerToys](https://github.com/micr
 ## Features
 - **Advanced Renaming Options:** PowerRename introduces advanced renaming options, allowing users to efficiently rename multiple files and folders with ease.
 - **Context Menu Integration:** Seamlessly integrates with the Windows Explorer context menu for quick and convenient access to renaming functionality.
-- **Persistent Settings:** Offers persistent settings, allowing users to customize and save their preferred renaming configurations.
+- **Persistent Settings:** Allows users to customize and save their preferred renaming configurations.
 
 ## Usage
 1. Right-click on a file or folder in Windows Explorer.
