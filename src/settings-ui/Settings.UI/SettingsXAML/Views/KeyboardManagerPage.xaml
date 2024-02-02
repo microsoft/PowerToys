@@ -23,10 +23,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="RemappedKeyTemplate" x:DataType="x:String">
-            <controls:KeyVisual
-                Content="{Binding}"
-                FontWeight="SemiBold"
-                Style="{StaticResource AccentKeyVisualStyle}" />
+            <controls:KeyVisual Content="{Binding}" Style="{StaticResource AccentKeyVisualStyle}" />
         </DataTemplate>
 
         <!--<DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
@@ -77,14 +74,17 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}"
                         IsClickEnabled="True" />
 
-                    <ListView
+                    <ItemsControl
                         x:Name="RemapKeysList"
                         x:Uid="RemapKeysList"
-                        IsSwipeEnabled="False"
                         ItemsSource="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay}"
-                        SelectionMode="None"
                         Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
-                        <ListView.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="Lib:KeysDataModel">
                                 <tkcontrols:SettingsCard ContentAlignment="Left">
                                     <StackPanel Orientation="Horizontal">
@@ -118,8 +118,8 @@
                                     </StackPanel>
                                 </tkcontrols:SettingsCard>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
@@ -130,14 +130,17 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}"
                         IsClickEnabled="True" />
 
-                    <ListView
+                    <ItemsControl
                         x:Name="RemapShortcutsList"
                         x:Uid="RemapShortcutsList"
-                        IsSwipeEnabled="False"
                         ItemsSource="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay}"
-                        SelectionMode="None"
                         Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
-                        <ListView.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
                                 <tkcontrols:SettingsCard ContentAlignment="Left">
                                     <StackPanel Orientation="Horizontal">
@@ -175,13 +178,16 @@
                                             VerticalAlignment="Center"
                                             Background="{ThemeResource ControlAltFillColorSecondaryBrush}"
                                             CornerRadius="4">
-                                            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="{x:Bind TargetApp}" />
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind TargetApp}" />
                                         </Border>
                                     </StackPanel>
                                 </tkcontrols:SettingsCard>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

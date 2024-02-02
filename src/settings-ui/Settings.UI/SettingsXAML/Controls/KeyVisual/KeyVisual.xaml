@@ -8,7 +8,7 @@
     <Style x:Key="DefaultKeyVisualStyle" TargetType="controls:KeyVisual">
         <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="BorderBrush" Value="{ThemeResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
         <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Padding" Value="16,8,16,8" />
@@ -130,6 +130,7 @@
         <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:KeyVisual">
@@ -156,7 +157,7 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{ThemeResource TextOnAccentFillColorDisabledBrush}" />
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource AccentFillColorDisabledBrush}" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorDisabledBrush}" />
                                         <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource ControlStrokeColorOnAccentDisabledBrush}" />
                                     </VisualState.Setters>
