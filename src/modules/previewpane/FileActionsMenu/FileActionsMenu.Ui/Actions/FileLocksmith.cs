@@ -3,7 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
 using System.Windows;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions
@@ -24,11 +28,25 @@ namespace FileActionsMenu.Ui.Actions
 
         public IconElement? Icon => null;
 
-        public bool IsVisible => SelectedItems.Length == 1;
+        public bool IsVisible => true;
 
         public void Execute(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            SettingsUtils fileLocksmithSettings = new SettingsUtils();
+
+            string paths = string.Join("\n", SelectedItems);
+            paths += "\n";
+
+            File.WriteAllText(fileLocksmithSettings.GetSettingsFilePath("File Locksmith", "last-run.log"), string.Empty);
+            using (BinaryWriter streamWriter = new(File.Open(fileLocksmithSettings.GetSettingsFilePath("File Locksmith", "last-run.log"), FileMode.OpenOrCreate), Encoding.ASCII))
+            {
+                foreach (char c in paths)
+                {
+                    streamWriter.Write((ushort)c);
+                }
+            }
+
+            Process.Start("WinUI3Apps\\PowerToys.FileLocksmithUI.exe");
         }
     }
 }
