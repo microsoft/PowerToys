@@ -32,7 +32,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public void Execute(object sender, RoutedEventArgs e)
         {
-            SettingsUtils fileLocksmithSettings = new SettingsUtils();
+            SettingsUtils fileLocksmithSettings = new();
 
             string paths = string.Join("\n", SelectedItems);
             paths += "\n";

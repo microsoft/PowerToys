@@ -29,7 +29,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public void Execute(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            Clipboard.SetImage(new System.Windows.Media.Imaging.BitmapImage(new Uri(SelectedItems[0])));
         }
     }
 }

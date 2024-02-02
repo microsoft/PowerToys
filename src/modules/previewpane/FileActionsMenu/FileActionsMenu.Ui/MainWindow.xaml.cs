@@ -27,6 +27,7 @@ namespace FileActionsMenu.Ui
             new MoveTo(),
             new NewFolderWithSelection(),
             new Close(),
+            new CopyImageFromClipboardToFolder(),
         ];
 
         public MainWindow(string[] selectedItems)
