@@ -15,25 +15,34 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <ItemsControl
-            VerticalAlignment="Center"
-            AutomationProperties.AccessibilityView="Raw"
-            IsTabStop="False"
-            ItemsSource="{x:Bind Keys}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <controls:KeyVisual
-                        VerticalAlignment="Center"
-                        AutomationProperties.AccessibilityView="Raw"
-                        Content="{Binding}" />
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <Border
+            Background="{ThemeResource ControlFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+            Padding="12,6,12,6"
+            BorderThickness="1" CornerRadius="{StaticResource ControlCornerRadius}">
+
+
+            <ItemsControl
+                VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
+                IsTabStop="False"
+                ItemsSource="{x:Bind Keys}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="12" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:KeyVisual
+                            VerticalAlignment="Center"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Content="{Binding}"
+                            Style="{StaticResource TextKeyVisualStyle}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
         <tk7controls:MarkdownTextBlock
             Grid.Column="1"
             VerticalAlignment="Center"

@@ -32,13 +32,11 @@
 
                     <tkcontrols:SettingsCard x:Uid="CropAndLock_ThumbnailActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ThumbnailActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="CropAndLock_ReparentActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ReparentActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>

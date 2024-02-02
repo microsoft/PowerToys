@@ -80,7 +80,7 @@
                                 x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                                 Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource FindMyMouseActivationIntToVisibilityConverter}, Mode=OneWay, ConverterParameter=3}">
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
+                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}" />
@@ -181,7 +181,7 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MouseHighlighterAutoActivate, Mode=TwoWay}" />
@@ -250,7 +250,7 @@
                         x:Uid="MouseUtils_MouseJump_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         x:Uid="MouseUtils_MouseJump_ThumbnailSize"
@@ -347,7 +347,7 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoActivate, Mode=TwoWay}" />

@@ -59,19 +59,19 @@
                     Severity="Informational" />
                 <controls:SettingsGroup x:Uid="VideoConference_Shortcuts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="VideoConference_MicrophoneMuteHotkeyControl_Header">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="VideoConference_MicrophonePushToTalkHotkeyControl_Header">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.MicrophonePushToTalkHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.MicrophonePushToTalkHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="VideoConference_CameraMuteHotkeyControl_Header">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.CameraMuteHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.CameraMuteHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 

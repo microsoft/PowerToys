@@ -39,7 +39,8 @@
                         Content="{Binding}"
                         FontSize="18"
                         IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
-                        IsTabStop="False" />
+                        IsTabStop="False"
+                        Style="{StaticResource AccentKeyVisualStyle}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
@@ -51,7 +52,6 @@
             Orientation="Vertical"
             Spacing="8">
             <Grid Height="62">
-
                 <InfoBar
                     x:Uid="InvalidShortcut"
                     IsClosable="False"

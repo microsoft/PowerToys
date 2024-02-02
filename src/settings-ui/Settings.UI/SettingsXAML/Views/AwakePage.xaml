@@ -67,7 +67,7 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
 
-                        <StackPanel MinWidth="{StaticResource SettingActionControlMinWidth}" Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal">
                             <NumberBox
                                 x:Uid="Awake_IntervalHoursInput"
                                 Width="96"

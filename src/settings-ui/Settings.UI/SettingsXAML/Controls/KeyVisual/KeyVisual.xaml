@@ -3,18 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls">
 
-    <ResourceDictionary>
-        <
-    </ResourceDictionary>
-    <x:Double x:Key="DefaultIconSize">16</x:Double>
-    <x:Double x:Key="SmallIconSize">12</x:Double>
-
     <Style BasedOn="{StaticResource DefaultKeyVisualStyle}" TargetType="controls:KeyVisual" />
 
     <Style x:Key="DefaultKeyVisualStyle" TargetType="controls:KeyVisual">
         <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <!--<Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />-->
         <Setter Property="BorderBrush" Value="{ThemeResource ControlElevationBorderBrush}" />
         <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
         <Setter Property="IsTabStop" Value="False" />
@@ -79,33 +72,36 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Padding" Value="0" />
-        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="CornerRadius" Value="0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:KeyVisual">
                     <Grid
-                  x:Name="RootGrid"
-                  Padding="{TemplateBinding Padding}"
-                  Background="{TemplateBinding Background}"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{TemplateBinding CornerRadius}">
+                        x:Name="RootGrid"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
                         <ContentPresenter
-                      x:Name="KeyPresenter"
-                      Content="{TemplateBinding Content}"
-                      FontFamily="{TemplateBinding FontFamily}"
-                      FontSize="{TemplateBinding FontSize}"
-                      FontWeight="{TemplateBinding FontWeight}"
-                      Foreground="{TemplateBinding Foreground}" />
+                            x:Name="KeyPresenter"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontWeight="{TemplateBinding FontWeight}"
+                            Foreground="{TemplateBinding Foreground}" />
+
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{ThemeResource TextOnAccentFillColorDisabledBrush}" />
+                                        <Setter Target="RootGrid.Background" Value="Transparent" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorDisabledBrush}" />
-                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource ControlStrokeColorOnAccentDisabledBrush}" />
+                                        <Setter Target="RootGrid.BorderBrush" Value="Transparent" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -113,10 +109,10 @@
                                 <VisualState x:Name="Default" />
                                 <VisualState x:Name="Error">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
+                                        <Setter Target="RootGrid.Background" Value="Transparent" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
-                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
-                                        <Setter Target="RootGrid.BorderThickness" Value="2" />
+                                        <Setter Target="RootGrid.BorderBrush" Value="Transparent" />
+                                        <Setter Target="RootGrid.BorderThickness" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -124,10 +120,13 @@
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
-        </Setter>d
+        </Setter>
     </Style>
 
-    <Style x:Key="AccentKeyVisualStyle" TargetType="controls:KeyVisual">
+    <Style
+        x:Key="AccentKeyVisualStyle"
+        BasedOn="{StaticResource DefaultKeyVisualStyle}"
+        TargetType="controls:KeyVisual">
         <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
@@ -143,11 +142,14 @@
                         CornerRadius="{TemplateBinding CornerRadius}">
                         <ContentPresenter
                             x:Name="KeyPresenter"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             Content="{TemplateBinding Content}"
                             FontFamily="{TemplateBinding FontFamily}"
                             FontSize="{TemplateBinding FontSize}"
                             FontWeight="{TemplateBinding FontWeight}"
                             Foreground="{TemplateBinding Foreground}" />
+
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
