@@ -632,7 +632,7 @@
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
-    <comment>{Locked="FancyZones"}</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
     <value>Image Resizer</value>
@@ -1410,7 +1410,7 @@
   </data>
   <data name="FancyZones.ModuleTitle" xml:space="preserve">
     <value>FancyZones</value>
-	<comment>{Locked}</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
     <value>File Explorer</value>
@@ -1573,7 +1573,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
-    <comment>{Locked="outlook.exe"</comment>
+    <comment>{Locked="outlook.exe"}</comment>
   </data>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
@@ -1836,11 +1836,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" xml:space="preserve">
     <value>Windows key +    or </value>
-    <comment>{Locked="Windows key +   ",""</comment>
+    <comment>{Locked="Windows key +   ",""}</comment>
   </data>
   <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description.Text" xml:space="preserve">
     <value>Windows key +  or </value>
-    <comment>{Locked}</comment>
+    <comment>{Locked="Windows key + ",""}</comment>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition.Text" xml:space="preserve">
     <value>Relative position</value>
@@ -2871,7 +2871,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop.ModuleTitle" xml:space="preserve">
-    <value>Always On Top </value>
+    <value>Always On Top</value>
     <comment>{Locked}</comment>
   </data>
   <data name="AlwaysOnTop_Activation_GroupSettings.Header" xml:space="preserve">
@@ -3657,7 +3657,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
     <value>Note: Only Windows Insider builds may be selected for experimentation</value>
-	<comment>{Locked="Windows Insiders"}</comment>
+	<comment>{Locked="Windows Insider"}</comment>
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
