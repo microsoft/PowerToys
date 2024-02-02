@@ -139,11 +139,6 @@ The `CPowerRenameItem` class provides an implementation for the `IPowerRenameIte
 - **IsItemVisible**: Check if the item is visible based on specified filters and flags.
 - **Reset**: Reset the new name.
 
-
-
-#### [`PowerRenameManager.cpp`](/src/modules/powerrename/lib/PowerRenameManager.cpp)
-TODO
-
 #### [`PowerRenameRegEx.cpp`](/src/modules/powerrename/lib/PowerRenameRegEx.cpp)
 # PowerRenameRegEx
 
