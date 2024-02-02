@@ -77,9 +77,9 @@ namespace FileActionsMenu.Ui
                         }
                         else
                         {
-                            menuItem.Click += (object sender, RoutedEventArgs e) =>
+                            menuItem.Click += async (object sender, RoutedEventArgs e) =>
                             {
-                                action.Execute(sender, e);
+                                await action.Execute(sender, e);
                                 Environment.Exit(0);
                             };
                         }

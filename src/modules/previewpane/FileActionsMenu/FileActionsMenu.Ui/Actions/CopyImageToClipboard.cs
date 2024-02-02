@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -27,9 +28,10 @@ namespace FileActionsMenu.Ui.Actions
         // Todo: Only if image file is selected
         public bool IsVisible => SelectedItems.Length == 1;
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             Clipboard.SetImage(new System.Windows.Media.Imaging.BitmapImage(new Uri(SelectedItems[0])));
+            return Task.CompletedTask;
         }
     }
 }

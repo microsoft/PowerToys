@@ -4,6 +4,7 @@
 
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -44,7 +45,7 @@ namespace FileActionsMenu.Ui.Actions.CopyPath
 
         public bool IsVisible => _isVisible;
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             throw new InvalidOperationException();
         }

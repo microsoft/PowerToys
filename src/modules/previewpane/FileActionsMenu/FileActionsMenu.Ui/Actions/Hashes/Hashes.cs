@@ -6,6 +6,8 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -41,7 +43,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
             Sha256,
         }
 
-        public static void GenerateHashes(HashType hashType, string[] selectedItems)
+        public static async Task GenerateHashes(HashType hashType, string[] selectedItems)
         {
             Func<string, string> hashGeneratorFunction;
             string fileExtension;
@@ -93,36 +95,37 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 
             window.Focus();
             window.Activate();
-            contentDialog.ShowAsync().ContinueWith((task) =>
+
+            ManualResetEvent finishedEvent = new(false);
+
+            ContentDialogResult result = await contentDialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
             {
-                if (task.Result == ContentDialogResult.Primary)
+                window.Dispatcher.Invoke(window.Close);
+                foreach (string filename in selectedItems)
                 {
-                    foreach (string filename in selectedItems)
-                    {
-                        string hash = hashGeneratorFunction(filename);
+                    string hash = hashGeneratorFunction(filename);
 
-                        string hashFilename = filename + fileExtension;
+                    string hashFilename = filename + fileExtension;
 
-                        File.WriteAllText(hashFilename, hash);
-                    }
+                    File.WriteAllText(hashFilename, hash);
                 }
-                else if (task.Result == ContentDialogResult.Secondary)
+            }
+            else if (result == ContentDialogResult.Secondary)
+            {
+                window.Dispatcher.Invoke(window.Close);
+                StringBuilder fileContent = new();
+
+                foreach (string filename in selectedItems)
                 {
-                    StringBuilder fileContent = new();
-
-                    foreach (string filename in selectedItems)
-                    {
-                        fileContent.Append(filename + ":\n" + hashGeneratorFunction(filename) + "\n\n");
-                    }
-
-                    File.WriteAllText((Path.GetDirectoryName(selectedItems[0]) ?? throw new ArgumentNullException(nameof(selectedItems))) + "\\hashes" + fileExtension, fileContent.ToString());
+                    fileContent.Append(filename + ":\n" + hashGeneratorFunction(filename) + "\n\n");
                 }
 
-                window.Dispatcher.Invoke(() => window.Close());
-            });
+                File.WriteAllText((Path.GetDirectoryName(selectedItems[0]) ?? throw new ArgumentNullException(nameof(selectedItems))) + "\\hashes" + fileExtension, fileContent.ToString());
+            }
         }
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             throw new InvalidOperationException("Inaccessible");
         }

@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -30,7 +31,7 @@ namespace FileActionsMenu.Ui.Actions
         // Todo: Only visible if only Image Files are selected
         public bool IsVisible => true;
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             StringBuilder arguments = new();
 
@@ -46,6 +47,7 @@ namespace FileActionsMenu.Ui.Actions
                 UseShellExecute = true,
             };
             Process.Start(startInfo);
+            return Task.CompletedTask;
         }
     }
 }

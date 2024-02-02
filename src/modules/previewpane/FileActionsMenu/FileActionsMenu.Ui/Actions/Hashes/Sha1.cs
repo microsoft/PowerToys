@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -26,9 +27,9 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public IAction[]? SubMenuItems { get; }
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public async Task Execute(object sender, RoutedEventArgs e)
         {
-            Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.Sha1, SelectedItems);
+            await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.Sha1, SelectedItems);
         }
     }
 }

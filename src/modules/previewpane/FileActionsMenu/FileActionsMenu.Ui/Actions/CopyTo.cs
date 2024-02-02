@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using Wpf.Ui.Controls;
@@ -29,7 +30,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public bool IsVisible => true;
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             FolderBrowserDialog dialog = new()
             {
@@ -85,6 +86,8 @@ namespace FileActionsMenu.Ui.Actions
                 dialog.Dispose();
                 copyMoveUi.Close();
             }
+
+            return Task.CompletedTask;
         }
     }
 }

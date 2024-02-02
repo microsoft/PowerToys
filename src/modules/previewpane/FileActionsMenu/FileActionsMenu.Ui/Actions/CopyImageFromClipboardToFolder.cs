@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Controls;
@@ -28,11 +29,11 @@ namespace FileActionsMenu.Ui.Actions
 
         public bool IsVisible => SelectedItems.Length == 1 && Directory.Exists(SelectedItems[0]) && Clipboard.ContainsImage();
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             if (!Directory.Exists(SelectedItems[0]) || !Clipboard.ContainsImage())
             {
-                return;
+                return Task.CompletedTask;
             }
 
             string path = Path.Combine(SelectedItems[0], "clipboard_image.png");
@@ -48,6 +49,7 @@ namespace FileActionsMenu.Ui.Actions
             BitmapEncoder encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(source));
             encoder.Save(fileStream);
+            return Task.CompletedTask;
         }
     }
 }

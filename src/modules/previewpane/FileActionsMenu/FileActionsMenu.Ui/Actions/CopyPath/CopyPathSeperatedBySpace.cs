@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -26,9 +27,10 @@ namespace FileActionsMenu.Ui.Actions.CopyPath
 
         public bool IsVisible => true;
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             CopyPath.SeperateFilePathByDelimiterAndAddToClipboard(" ", SelectedItems);
+            return Task.CompletedTask;
         }
     }
 }

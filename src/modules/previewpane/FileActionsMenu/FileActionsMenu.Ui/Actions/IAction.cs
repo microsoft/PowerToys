@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -23,6 +24,6 @@ namespace FileActionsMenu.Ui.Actions
 
         public bool IsVisible { get; }
 
-        public void Execute(object sender, RoutedEventArgs e);
+        public Task Execute(object sender, RoutedEventArgs e);
     }
 }

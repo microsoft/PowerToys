@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -29,7 +30,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public bool IsVisible => true;
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             string path = Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection");
 
@@ -63,6 +64,8 @@ namespace FileActionsMenu.Ui.Actions
                 File.Move(item, Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection", Path.GetFileName(item)));
                 copyMoveUi.Progress++;
             }
+
+            return Task.CompletedTask;
         }
     }
 }

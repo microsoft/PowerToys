@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wpf.Ui.Controls;
@@ -30,7 +31,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public bool IsVisible => true;
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             SettingsUtils fileLocksmithSettings = new();
 
@@ -47,6 +48,7 @@ namespace FileActionsMenu.Ui.Actions
             }
 
             Process.Start("WinUI3Apps\\PowerToys.FileLocksmithUI.exe");
+            return Task.CompletedTask;
         }
     }
 }

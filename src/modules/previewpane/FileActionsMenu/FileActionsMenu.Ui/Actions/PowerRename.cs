@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using Peek.Common.Models;
 using Wpf.Ui.Controls;
@@ -28,9 +29,10 @@ namespace FileActionsMenu.Ui.Actions
 
         public bool IsVisible => true;
 
-        public void Execute(object sender, RoutedEventArgs e)
+        public Task Execute(object sender, RoutedEventArgs e)
         {
             _ = RunPowerRename(ExplorerHelper.CreateShellItemArrayFromPaths(SelectedItems));
+            return Task.CompletedTask;
         }
 
         [DllImport("\\WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll", CharSet = CharSet.Unicode)]
