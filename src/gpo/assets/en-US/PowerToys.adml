@@ -59,11 +59,11 @@ If enabled, per-user installation is not allowed.
 
 If disabled or not configured, per-user installation is allowed.
 </string>
-      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
+      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether the automatic download and installation of available updates is disabled or not. (On metered connections updates are never downloaded.)
 
-If enabled, automatic downloads are disabled.
+If enabled, automatic download and installation is disabled.
 
-If disabled or not configured, the user is in control of automatic downloads setting.
+If disabled or not configured, the user can control this in the settings.
 </string>
       <string id="SuspendNewUpdateToastDescription">This policy configures whether the action center notification for new updates is suspended for 2 minor releases. (Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
 
@@ -80,12 +80,6 @@ This policy has no effect if the update notification is disabled by the policy "
 If enabled, the notification is disabled.
 
 If disabled or not configured, the user can control if the notification is shown or not.
-</string>
-      <string id="DisablePeriodicUpdateCheckDescription">This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
-
-If enabled, the automatic update checks are disabled.
-
-If disabled or not configured, the automatic update checks are enabled.
 </string>
       <string id="DoNotShowWhatsNewAfterUpdatesDescription">This policy allows you to configure if the window with the release notes is shown after updates.
 
@@ -165,7 +159,6 @@ Note: Changes require a restart of PowerToys Run.
       <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>
       <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
       <string id="DisableNewUpdateToast">Disable Action Center notification for new updates</string>
-      <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
       <string id="AllowExperimentation">Allow Experimentation</string>
       <string id="PowerToysRunAllPluginsEnabledState">Configure enabled state for all plugins</string>
       <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>

@@ -18,7 +18,8 @@ CContextMenuHandler::CContextMenuHandler()
 {
     m_pidlFolder = NULL;
     m_pdtobj = NULL;
-    app_name = GET_RESOURCE_STRING(IDS_RESIZE_PICTURES);
+    context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY, L"Resize with Image Resizer");
+    context_menu_caption_here = GET_RESOURCE_STRING_FALLBACK(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY_HERE, L"Resize with Image Resizer here");
 }
 
 CContextMenuHandler::~CContextMenuHandler()
@@ -105,22 +106,16 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     if (type == PERCEIVED_TYPE_IMAGE)
     {
         HRESULT hr = E_UNEXPECTED;
-        wchar_t strResizePictures[64] = { 0 };
+        wchar_t strResizePictures[128] = { 0 };
         // If handling drag-and-drop...
         if (m_pidlFolder)
         {
-            // Suppressing C6031 warning since return value is not required.
-#pragma warning(suppress : 6031)
-            // Load 'Resize pictures here' string
-            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
-            dragDropFlag = true;
+            dragDropFlag=true;
+            wcscpy_s(strResizePictures, ARRAYSIZE(strResizePictures), context_menu_caption_here.c_str());
         }
         else
         {
-            // Suppressing C6031 warning since return value is not required.
-#pragma warning(suppress : 6031)
-            // Load 'Resize pictures' string
-            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
+            wcscpy_s(strResizePictures, ARRAYSIZE(strResizePictures), context_menu_caption.c_str());
         }
 
         MENUITEMINFO mii;
@@ -348,7 +343,7 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
 
 HRESULT __stdcall CContextMenuHandler::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
 {
-    return SHStrDup(app_name.c_str(), ppszName);
+    return SHStrDup(context_menu_caption.c_str(), ppszName);
 }
 
 HRESULT __stdcall CContextMenuHandler::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)

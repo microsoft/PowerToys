@@ -120,6 +120,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     break;
             }
 
+            _isDevBuild = Helper.GetProductVersion() == "v0.0.1";
+
             _startup = GeneralSettingsConfig.Startup;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
@@ -151,6 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private static bool _isDevBuild;
         private bool _startup;
         private bool _isElevated;
         private bool _runElevated;
@@ -298,12 +301,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        // Are we running a dev build? (Please note that we verify this in the code that gets the newest version from GitHub too.)
-        public static bool AutoUpdatesDisabledOnDevBuild
+        public bool SomeUpdateSettingsAreGpoManaged
         {
             get
             {
-                return Helper.GetProductVersion() == "v0.0.1";
+                return _newUpdatesToastIsGpoDisabled ||
+                    (_isAdmin && _autoDownloadUpdatesIsGpoDisabled) ||
+                    _showWhatsNewAfterUpdatesIsGpoDisabled;
             }
         }
 
@@ -325,9 +329,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsNewUpdatesToastDisabledGpoConfigured
+        public bool IsShowNewUpdatesToastNotificationCardEnabled
         {
-            get => _newUpdatesToastIsGpoDisabled;
+            get => !_isDevBuild && !_newUpdatesToastIsGpoDisabled;
         }
 
         public bool AutoDownloadUpdates
@@ -350,14 +354,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsAutoDownloadUpdatesCardEnabled
         {
-            get => !AutoUpdatesDisabledOnDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
-        }
-
-        // The settings card is hidden for users who are not a member of the Administrators group and in this case the GPO info should be hidden too.
-        // We hide it, because we don't want a normal user to enable the setting. He can't install the updates.
-        public bool ShowAutoDownloadUpdatesGpoInformation
-        {
-            get => _isAdmin && _autoDownloadUpdatesIsGpoDisabled;
+            get => !_isDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
         }
 
         public bool ShowWhatsNewAfterUpdates
@@ -378,9 +375,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowWhatsNewAfterUpdatesIsGpoDisabled
+        public bool IsShowWhatsNewAfterUpdatesCardEnabled
         {
-            get => _showWhatsNewAfterUpdatesIsGpoDisabled;
+            get => !_isDevBuild && !_showWhatsNewAfterUpdatesIsGpoDisabled;
         }
 
         public bool EnableExperimentation
@@ -744,7 +741,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return !AutoUpdatesDisabledOnDevBuild && !IsNewVersionDownloading;
+                return !_isDevBuild && !IsNewVersionDownloading;
             }
         }
 
