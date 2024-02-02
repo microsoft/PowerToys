@@ -59,10 +59,17 @@
     <MSBuildCacheCacheUniverse Condition="'$(MSBuildCacheCacheUniverse)' == ''">202310210737</MSBuildCacheCacheUniverse>
 
     <!--
-      A tool inside Microsoft.WindowsAppSDK uses AppInsights which appears to read packages\Microsoft.WindowsAppSDK.1.4.230913002\tools\net472\ApplicationInsights.config
-      after the project is finished, likely in a detached process. This is acceptable and should not impact cache correctness.
+      Visual Studio telemetry reads various ApplicationInsights.config files and other files after the project is finished, likely in a detached process.
+      This is acceptable and should not impact cache correctness.
     -->
-    <MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>$(MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns);packages\Microsoft.WindowsAppSDK.*\tools\net472\ApplicationInsights.config</MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+    <MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+      $(MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns);
+      \**\ApplicationInsights.config;
+      $(LocalAppData)\Microsoft\VSApplicationInsights\**;
+      $(LocalAppData)\Microsoft\Windows\INetCache\**;
+      A:\;
+      E:\;
+    </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
 
     <!-- 
       This repo uses a common output directory with many projects writing duplicate outputs. Allow everything, but note this costs some performance in the form of requiring
