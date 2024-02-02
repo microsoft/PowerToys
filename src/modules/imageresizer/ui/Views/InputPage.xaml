@@ -178,7 +178,7 @@
                     Grid.Column="1"
                     HorizontalAlignment="Stretch"
                     AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
-                    ItemsSource="{Binding ResizeFitValues}"
+                    ItemsSource="{Binding ResizeFitValues, Mode=OneWay}"
                     SelectedIndex="0">
                     <ComboBox.ItemTemplate>
                         <DataTemplate DataType="sys:Enum">
@@ -205,7 +205,7 @@
                     Grid.Row="2"
                     Grid.Column="4"
                     AutomationProperties.Name="{x:Static p:Resources.Unit}"
-                    ItemsSource="{Binding ResizeUnitValues}"
+                    ItemsSource="{Binding ResizeUnitValues, Mode=OneWay}"
                     SelectedIndex="0">
                     <ComboBox.ItemTemplate>
                         <DataTemplate DataType="sys:Enum">
