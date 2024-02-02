@@ -179,6 +179,13 @@ bool MappingConfiguration::LoadSingleKeyToTextRemaps(const json::JsonObject& jso
             {
                 auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
                 auto newText = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewTextSettingName);
+
+                // undo dummy data for backwards compatibility
+                if (newText == L"*Unsupported*")
+                {
+                    newText == L"";
+                }
+
                 AddSingleKeyToTextRemap(std::stoul(originalKey.c_str()), newText.c_str());
             }
             catch (...)
@@ -214,6 +221,12 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                 auto targetApp = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetAppSettingName);
                 auto operationType = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::ShortcutOperationType, 0);
 
+                // undo dummy data for backwards compatibility
+                if (newRemapText == L"*Unsupported*")
+                {
+                    newRemapText == L"";
+                }
+
                 // check Shortcut::OperationType
                 if (operationType == 1)
                 {
@@ -227,12 +240,12 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
 
                     auto tempShortcut = Shortcut(newRemapKeys.c_str());
                     tempShortcut.operationType = Shortcut::OperationType::RunProgram;
-                    tempShortcut.runProgramFilePath = runProgramFilePath;                    
+                    tempShortcut.runProgramFilePath = runProgramFilePath;
                     tempShortcut.runProgramArgs = runProgramArgs;
                     tempShortcut.runProgramStartInDir = runProgramStartInDir;
                     tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationLevel);
                     tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
-                    tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);                    
+                    tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
 
                     AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str(), static_cast<DWORD>(secondKeyOfChord)), tempShortcut);
                 }
@@ -303,6 +316,12 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                         auto newRemapText = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewTextSettingName, {});
                         auto operationType = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::ShortcutOperationType, 0);
 
+                        // undo dummy data for backwards compatibility
+                        if (newRemapText == L"*Unsupported*")
+                        {
+                            newRemapText == L"";
+                        }
+
                         // check Shortcut::OperationType
                         if (operationType == 1)
                         {
@@ -323,7 +342,7 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationLevel);
                             tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
                             tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
-                            
+
                             AddOSLevelShortcut(Shortcut(originalKeys.c_str(), static_cast<DWORD>(secondKeyOfChord)), tempShortcut);
                         }
                         else if (operationType == 2)
@@ -482,7 +501,7 @@ bool MappingConfiguration::SaveSettingsToFile()
         // For shortcut to shortcut remapping
         else if (it.second.targetShortcut.index() == 1)
         {
-            auto targetShortcut = std::get<Shortcut>(it.second.targetShortcut);            
+            auto targetShortcut = std::get<Shortcut>(it.second.targetShortcut);
 
             if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
             {
@@ -495,7 +514,10 @@ bool MappingConfiguration::SaveSettingsToFile()
 
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramFilePathSettingName, json::value(targetShortcut.runProgramFilePath));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramArgsSettingName, json::value(targetShortcut.runProgramArgs));
-                keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));                
+                keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));
+
+                // we need to add this dummy data for backwards compatibility
+                keys.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(L"*Unsupported*"));
             }
             else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
             {
@@ -504,6 +526,9 @@ bool MappingConfiguration::SaveSettingsToFile()
                 keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
 
                 keys.SetNamedValue(KeyboardManagerConstants::ShortcutOpenURI, json::value(targetShortcut.uriToOpen));
+
+                // we need to add this dummy data for backwards compatibility
+                keys.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(L"*Unsupported*"));
             }
             else
             {
@@ -545,7 +570,7 @@ bool MappingConfiguration::SaveSettingsToFile()
             // For shortcut to shortcut remapping
             else if (itKeys.second.targetShortcut.index() == 1)
             {
-                auto targetShortcut = std::get<Shortcut>(itKeys.second.targetShortcut);                
+                auto targetShortcut = std::get<Shortcut>(itKeys.second.targetShortcut);
 
                 if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
                 {
@@ -558,7 +583,10 @@ bool MappingConfiguration::SaveSettingsToFile()
 
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramFilePathSettingName, json::value(targetShortcut.runProgramFilePath));
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramArgsSettingName, json::value(targetShortcut.runProgramArgs));
-                    keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));                    
+                    keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));
+
+                    // we need to add this dummy data for backwards compatibility
+                    keys.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(L"*Unsupported*"));
                 }
                 else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
                 {
@@ -567,6 +595,9 @@ bool MappingConfiguration::SaveSettingsToFile()
                     keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
 
                     keys.SetNamedValue(KeyboardManagerConstants::ShortcutOpenURI, json::value(targetShortcut.uriToOpen));
+
+                    // we need to add this dummy data for backwards compatibility
+                    keys.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(L"*Unsupported*"));
                 }
                 else
                 {

@@ -320,7 +320,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
             }
 
-            return string.IsNullOrEmpty(NewRemapString) ? MapKeys(NewRemapKeys) : new List<string> { NewRemapString };
+            return (string.IsNullOrEmpty(NewRemapString) || NewRemapString == "*Unsupported*") ? MapKeys(NewRemapKeys) : new List<string> { NewRemapString };
         }
 
         // Instead of doing something fancy pants, we 'll just display the RunProgramFilePath data when it's IsRunProgram
