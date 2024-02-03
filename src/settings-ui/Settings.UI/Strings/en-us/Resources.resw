@@ -960,7 +960,7 @@
   </data>
   <data name="FancyZones_ZoneBehavior_GroupSettings.Description" xml:space="preserve">
     <value>Manage how zones behave when using FancyZones</value>
-	<comment>{Locked="FancyZones"}</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="FancyZones_Zones.Header" xml:space="preserve">
     <value>Zones</value>
@@ -1130,7 +1130,8 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
     <comment>{Locked}</comment>
@@ -1152,13 +1153,16 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
     <value>.qoi</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
@@ -1634,11 +1638,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_WindowBehavior_GroupSettings.Description" xml:space="preserve">
     <value>Manage how windows behave when using FancyZones</value>
-	<comment>{Locked="FancyZones"}</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="FancyZones_Windows.Header" xml:space="preserve">
     <value>Windows</value>
-    <comment>Do translate: refers to a set of application windows, not the product name</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="PowerRename_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>
@@ -1831,11 +1835,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Windows key + Up, down, left or right arrow key to move windows based on relative position</value>
-	  <comment>{Locked="Windows"}</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Windows key + Left or right arrow keys to move windows based on zone index</value>
-	  <comment>{Locked="Windows"}</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" xml:space="preserve">
     <value>Windows key +    or </value>
@@ -1988,7 +1992,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Oobe_FancyZones.Description" xml:space="preserve">
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
-	<comment>{Locked="FancyZones"}</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="Oobe_FileLocksmith.Description" xml:space="preserve">
     <value>File Locksmith lists which processes are using the selected files or directories and allows closing those processes.</value>
@@ -2046,7 +2050,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_FancyZones_HowToUse_Shortcut.Text" xml:space="preserve">
     <value>to open the FancyZones editor.</value>
-	<comment>{Locked="FancyZones"}</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="Oobe_FancyZones_TipsAndTricks.Text" xml:space="preserve">
     <value>Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.</value>
@@ -3122,14 +3126,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="RegistryPreview_ShortDescription" xml:space="preserve">
     <value>Visualize and edit Windows Registry files</value>
-	<comment>{Locked="Windows"}</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ScreenRuler_ShortDescription" xml:space="preserve">
     <value>Measure pixels on your screen</value>
   </data>
   <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
     <value>Show a help overlay with Windows shortcuts</value>
-	<comment>{Locked="Windows"}</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="PowerOcr_ShortDescription" xml:space="preserve">
     <value>A convenient way to copy text from anywhere on screen</value>
@@ -3592,7 +3596,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
     <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
-	<comment>{Locked="Windows"}</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FileLocksmith.ModuleTitle" xml:space="preserve">
     <value>File Locksmith</value>
@@ -3660,7 +3664,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
     <value>Note: Only Windows Insider builds may be selected for experimentation</value>
-	<comment>{Locked="Windows Insider"}</comment>
+    <comment>{Locked="Windows Insider"}</comment>
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
@@ -3809,7 +3813,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="RegistryPreview.ModuleDescription" xml:space="preserve">
     <value>A quick little utility to visualize and edit complex Windows Registry files.</value>
-	<comment>{Locked="Windows"}</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="RegistryPreview.ModuleTitle" xml:space="preserve">
     <value>Registry Preview</value>
@@ -3830,7 +3834,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_RegistryPreview.Description" xml:space="preserve">
     <value>Registry Preview is a quick little utility to visualize and edit complex Windows Registry files.</value>
-	<comment>{Locked="Windows"}</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="Oobe_RegistryPreview.Title" xml:space="preserve">
     <value>Registry Preview</value>
@@ -3907,7 +3911,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
-	<comment>{Locked="Windows"}</comment>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="Oobe_Peek.Title" xml:space="preserve">
     <value>Peek</value>
