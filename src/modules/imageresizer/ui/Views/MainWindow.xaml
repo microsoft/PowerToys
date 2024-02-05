@@ -13,6 +13,7 @@
     ExtendsContentIntoTitleBar="True"
     Icon="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico"
     ResizeMode="NoResize"
+    SizeToContent="Height"
     WindowCornerPreference="Default"
     WindowStartupLocation="CenterScreen">
 
