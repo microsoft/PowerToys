@@ -36,6 +36,12 @@ jobs:
   - task: VisualStudioTestPlatformInstaller@1
     displayName: Ensure VSTest Platform
 
+  - task: WinAppDriver.winappdriver-pipelines-task.winappdriver-pipelines-task.Windows Application Driver@0
+    displayName: 'Start - WinAppDriver'
+    inputs:
+      WADArguments: 127.0.0.1 4723/wd/hub
+      AgentResolution: 1080p
+
   - task: VSTest@2
     displayName: 'UI Tests'
     condition: ne(variables['BuildPlatform'], 'arm64') # No arm64 agents to run the tests.
@@ -53,3 +59,9 @@ jobs:
         **\UITests-FancyZonesEditor.dll
         !**\obj\**
         !**\ref\**
+
+  - task: WinAppDriver.winappdriver-pipelines-task.winappdriver-pipelines-task.Windows Application Driver@0
+    displayName: 'Stop - WinAppDriver'
+    inputs:
+      OperationType: Stop
+    condition: succeededOrFailed()
