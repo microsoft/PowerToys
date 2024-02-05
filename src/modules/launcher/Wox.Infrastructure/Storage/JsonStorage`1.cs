@@ -166,7 +166,7 @@ namespace Wox.Infrastructure.Storage
             return true;
         }
 
-        public bool CheckFileToUpdateOrClear()
+        public bool TryLoadData()
         {
             try
             {
@@ -175,7 +175,7 @@ namespace Wox.Infrastructure.Storage
             }
             catch (JsonException e)
             {
-                Log.Exception($"Error in CheckFileToUpdateOrClear at <{FilePath}>", e, GetType());
+                Log.Exception($"Error in TryLoadData at <{FilePath}>", e, GetType());
                 return false;
             }
         }

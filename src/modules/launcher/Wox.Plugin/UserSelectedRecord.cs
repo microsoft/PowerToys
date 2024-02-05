@@ -78,26 +78,27 @@ namespace Wox.Plugin
         {
             foreach (var key in Records.Keys.ToList())
             {
-                var record = Records[key];
-
-                if (record.SelectedCount == 0)
+                // Check if any of the specified fields are empty
+                if (string.IsNullOrEmpty(Records[key].IconPath) ||
+                    string.IsNullOrEmpty(Records[key].Title) ||
+                    string.IsNullOrEmpty(Records[key].SubTitle) ||
+                    string.IsNullOrEmpty(Records[key].Search) ||
+                    string.IsNullOrEmpty(Records[key].PluginID))
                 {
-                    record.SelectedCount = 1;
+                    Records.Remove(key);
                 }
-
-                if (record.LastSelected == DateTime.MinValue)
+                else
                 {
-                    record.LastSelected = DateTime.UtcNow;
+                    if (Records[key].SelectedCount == 0)
+                    {
+                        Records[key].SelectedCount = 1;
+                    }
+
+                    if (Records[key].LastSelected == DateTime.MinValue)
+                    {
+                        Records[key].LastSelected = DateTime.UtcNow;
+                    }
                 }
-
-                record.IconPath ??= string.Empty;
-                record.Title ??= string.Empty;
-                record.SubTitle ??= string.Empty;
-                record.Search ??= string.Empty;
-                record.PluginID ??= string.Empty;
-
-                // Update the record in the dictionary
-                Records[key] = record;
             }
         }
 

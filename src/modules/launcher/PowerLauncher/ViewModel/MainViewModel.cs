@@ -1036,7 +1036,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (_historyItemsStorage.CheckVersionMismatch())
                 {
-                    if (!_historyItemsStorage.CheckFileToUpdateOrClear())
+                    if (!_historyItemsStorage.TryLoadData())
                     {
                         _history.Update();
                     }
@@ -1046,7 +1046,7 @@ namespace PowerLauncher.ViewModel
 
                 if (_userSelectedRecordStorage.CheckVersionMismatch())
                 {
-                    if (!_userSelectedRecordStorage.CheckFileToUpdateOrClear())
+                    if (!_userSelectedRecordStorage.TryLoadData())
                     {
                         _userSelectedRecord.Update();
                     }

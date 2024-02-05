@@ -44,16 +44,18 @@ namespace PowerLauncher.Storage
 
         public void Update()
         {
-            foreach (var item in Items)
+            for (int i = Items.Count - 1; i >= 0; i--)
             {
-                if (item.ExecutedDateTime == DateTime.MinValue)
+                if (string.IsNullOrEmpty(Items[i].Query))
                 {
-                    item.ExecutedDateTime = DateTime.Now;
+                    Items.RemoveAt(i);
                 }
-
-                if (string.IsNullOrEmpty(item.Query))
+                else
                 {
-                    item.Query = "Default Query";
+                    if (Items[i].ExecutedDateTime == DateTime.MinValue)
+                    {
+                        Items[i].ExecutedDateTime = DateTime.Now;
+                    }
                 }
             }
         }
