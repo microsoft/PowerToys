@@ -275,6 +275,15 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
                 return ResourceManager.GetString("wox_plugin_windowwalker_SettingResultsVisibleDesktop", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Only show the top window of each processes.
+        /// </summary>
+        public static string wox_plugin_windowwalker_SettingsTopWindowPerProcess {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_SettingsTopWindowPerProcess", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Show desktop name in the subtitle.

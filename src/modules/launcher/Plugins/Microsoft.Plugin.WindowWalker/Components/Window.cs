@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using Wox.Plugin.Common.VirtualDesktop.Helper;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
@@ -30,6 +31,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// that we don't have to query the data every time
         /// </summary>
         private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new Dictionary<IntPtr, WindowProcess>();
+
+        /// <summary>
+        /// A static cache for all windows z-index
+        /// that we don't have to query the data for each window every time as well
+        /// </summary>
+        private static readonly Dictionary<IntPtr, int> _handlesToZIndex = new Dictionary<IntPtr, int>();
 
         /// <summary>
         /// An instance of <see cref="WindowProcess"/> that contains the process information for the window
@@ -195,6 +202,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
         }
 
+        internal int ZIndex
+        {
+            get
+            {
+                return GetWindowZIndex(hwnd);
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Window"/> class.
         /// Initializes a new Window representation
@@ -321,6 +336,46 @@ namespace Microsoft.Plugin.WindowWalker.Components
             Inherited,
             OtherDesktop,
             Unknown,
+        }
+
+        /// <summary>
+        /// Gets the Z-Index for the window handle. Must call RefreshWindowZIndex() first.
+        /// </summary>
+        /// <param name="hwnd">The handle to the window</param>
+        /// <returns>The window z-index</returns>
+        internal static int GetWindowZIndex(IntPtr hwnd)
+        {
+            if (_handlesToZIndex.TryGetValue(hwnd, out var zIndex))
+            {
+                return zIndex;
+            }
+
+            return _handlesToZIndex.Count + 1;
+        }
+
+        /// <summary>
+        /// Refresh all windows z-index
+        /// </summary>
+        internal static void RefreshWindowZIndex()
+        {
+            _handlesToZIndex.Clear();
+
+            var hDesktopWnd = NativeMethods.GetDesktopWindow();
+            var hNextWnd = NativeMethods.GetTopWindow(hDesktopWnd);
+            _handlesToZIndex[hNextWnd] = 0;
+
+            var z = 1;
+            while (true)
+            {
+                hNextWnd = NativeMethods.GetWindow(hNextWnd, GetWindowCmd.GW_HWNDNEXT);
+                if (hNextWnd == IntPtr.Zero)
+                {
+                    break;
+                }
+
+                _handlesToZIndex[hNextWnd] = z;
+                z++;
+            }
         }
 
         /// <summary>

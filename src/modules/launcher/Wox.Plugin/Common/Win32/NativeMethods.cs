@@ -89,6 +89,12 @@ namespace Wox.Plugin.Common.Win32
         public static extern IntPtr GetShellWindow();
 
         [DllImport("user32.dll")]
+        public static extern IntPtr GetDesktopWindow();
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetTopWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumThreadWindows(uint threadId, ShellCommand.EnumThreadDelegate lpfn, IntPtr lParam);
 

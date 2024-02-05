@@ -34,6 +34,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal bool ResultsFromVisibleDesktopOnly { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether only show the top window of each process.
+        /// </summary>
+        internal bool ResultsFromTopWindowPerProcess { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether the process id is shown in the subtitle.
         /// </summary>
         internal bool SubtitleShowPid { get; private set; }
@@ -116,6 +121,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 },
                 new PluginAdditionalOption
                 {
+                    Key = nameof(ResultsFromTopWindowPerProcess),
+                    DisplayLabel = Resources.wox_plugin_windowwalker_SettingsTopWindowPerProcess,
+                    Value = false,
+                },
+                new PluginAdditionalOption
+                {
                     Key = nameof(SubtitleShowPid),
                     DisplayLabel = Resources.wox_plugin_windowwalker_SettingSubtitlePid,
                     Value = false,
@@ -177,6 +188,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
 
             ResultsFromVisibleDesktopOnly = GetSettingOrDefault(settings, nameof(ResultsFromVisibleDesktopOnly));
+            ResultsFromTopWindowPerProcess = GetSettingOrDefault(settings, nameof(ResultsFromTopWindowPerProcess));
             SubtitleShowPid = GetSettingOrDefault(settings, nameof(SubtitleShowPid));
             SubtitleShowDesktopName = GetSettingOrDefault(settings, nameof(SubtitleShowDesktopName));
             ConfirmKillProcess = GetSettingOrDefault(settings, nameof(ConfirmKillProcess));

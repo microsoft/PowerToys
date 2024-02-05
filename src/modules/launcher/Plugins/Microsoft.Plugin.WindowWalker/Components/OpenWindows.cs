@@ -84,6 +84,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     EnumWindowsProc callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
                     _ = NativeMethods.EnumWindows(callbackptr, tokenHandleParam);
                 }
+
+                if (WindowWalkerSettings.Instance.ResultsFromTopWindowPerProcess)
+                {
+                    Window.RefreshWindowZIndex();
+                }
             }
             finally
             {
