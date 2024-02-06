@@ -16,6 +16,7 @@
     ExtendsContentIntoTitleBar="True"
     Icon="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico"
     ResizeMode="NoResize"
+    SizeToContent="Height"
     WindowCornerPreference="Default"
     WindowStartupLocation="CenterScreen">
 
@@ -58,6 +59,7 @@
                 <ui:ImageIcon Source="/PowerToys.ImageResizer;component/Resources/ImageResizer.ico" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
+
         <ContentPresenter Grid.Row="1" Content="{Binding CurrentPage}" />
     </Grid>
 </ui:FluentWindow>
