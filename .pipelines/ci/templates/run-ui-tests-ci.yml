@@ -39,7 +39,7 @@ jobs:
   - task: WinAppDriver.winappdriver-pipelines-task.winappdriver-pipelines-task.Windows Application Driver@0
     displayName: 'Start - WinAppDriver'
     inputs:
-      WADArguments: 127.0.0.1 4723/wd/hub
+      WADArguments: 127.0.0.1 4723
 
   - task: VSTest@2
     displayName: 'UI Tests'
