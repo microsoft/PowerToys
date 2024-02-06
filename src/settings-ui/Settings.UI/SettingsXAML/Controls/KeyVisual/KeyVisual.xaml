@@ -49,9 +49,9 @@
                                 <VisualState x:Name="Default" />
                                 <VisualState x:Name="Error">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
-                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
-                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
                                         <Setter Target="RootGrid.BorderThickness" Value="2" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -110,7 +110,7 @@
                                 <VisualState x:Name="Error">
                                     <VisualState.Setters>
                                         <Setter Target="RootGrid.Background" Value="Transparent" />
-                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
                                         <Setter Target="RootGrid.BorderBrush" Value="Transparent" />
                                         <Setter Target="RootGrid.BorderThickness" Value="0" />
                                     </VisualState.Setters>
@@ -157,8 +157,8 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{ThemeResource AccentFillColorDisabledBrush}" />
-                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorDisabledBrush}" />
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource ControlFillColorDisabledBrush}" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
                                         <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource ControlStrokeColorOnAccentDisabledBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -167,9 +167,9 @@
                                 <VisualState x:Name="Default" />
                                 <VisualState x:Name="Error">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
-                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
-                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
                                         <Setter Target="RootGrid.BorderThickness" Value="2" />
                                     </VisualState.Setters>
                                 </VisualState>
