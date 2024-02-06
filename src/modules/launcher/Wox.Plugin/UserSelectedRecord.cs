@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Wox.Plugin
@@ -70,6 +71,34 @@ namespace Wox.Plugin
                     PluginID = result.PluginID,
                     Search = result.OriginQuery.Search,
                 });
+            }
+        }
+
+        public void Update()
+        {
+            foreach (var key in Records.Keys.ToList())
+            {
+                // Check if any of the specified fields are empty
+                if (string.IsNullOrEmpty(Records[key].IconPath) ||
+                    string.IsNullOrEmpty(Records[key].Title) ||
+                    string.IsNullOrEmpty(Records[key].SubTitle) ||
+                    string.IsNullOrEmpty(Records[key].Search) ||
+                    string.IsNullOrEmpty(Records[key].PluginID))
+                {
+                    Records.Remove(key);
+                }
+                else
+                {
+                    if (Records[key].SelectedCount == 0)
+                    {
+                        Records[key].SelectedCount = 1;
+                    }
+
+                    if (Records[key].LastSelected == DateTime.MinValue)
+                    {
+                        Records[key].LastSelected = DateTime.UtcNow;
+                    }
+                }
             }
         }
 

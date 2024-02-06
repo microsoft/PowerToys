@@ -41,5 +41,23 @@ namespace PowerLauncher.Storage
                 });
             }
         }
+
+        public void Update()
+        {
+            for (int i = Items.Count - 1; i >= 0; i--)
+            {
+                if (string.IsNullOrEmpty(Items[i].Query))
+                {
+                    Items.RemoveAt(i);
+                }
+                else
+                {
+                    if (Items[i].ExecutedDateTime == DateTime.MinValue)
+                    {
+                        Items[i].ExecutedDateTime = DateTime.Now;
+                    }
+                }
+            }
+        }
     }
 }
