@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -9,6 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.CustomAction
 {
     public class SendCustomAction
     {
+        private static readonly ConcurrentDictionary<string, JsonSerializerOptions> OptionsCache = new ConcurrentDictionary<string, JsonSerializerOptions>();
+
         private readonly string moduleName;
 
         public SendCustomAction(string moduleName)
@@ -21,7 +24,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.CustomAction
 
         public string ToJsonString()
         {
-            var jsonSerializerOptions = new JsonSerializerOptions
+            var jsonSerializerOptions = OptionsCache.GetOrAdd(moduleName, CreateOptionsForModuleName);
+            return JsonSerializer.Serialize(this, jsonSerializerOptions);
+        }
+
+        private JsonSerializerOptions CreateOptionsForModuleName(string moduleName)
+        {
+            return new JsonSerializerOptions
             {
                 PropertyNamingPolicy = new CustomNamePolicy((propertyName) =>
                 {
@@ -29,8 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.CustomAction
                     return propertyName.Equals("ModuleAction", System.StringComparison.Ordinal) ? moduleName : propertyName;
                 }),
             };
-
-            return JsonSerializer.Serialize(this, jsonSerializerOptions);
         }
     }
 }

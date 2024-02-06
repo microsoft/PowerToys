@@ -80,7 +80,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                 EnabledChangedCallback = EnabledChangedOnUI,
-                AccentColor = ModuleHelper.GetModuleAccentColor(moduleType),
                 DashboardModuleItems = GetModuleItems(moduleType),
             });
             if (moduleType == ModuleType.KeyboardManager && gpo != GpoRuleConfigured.Disabled)

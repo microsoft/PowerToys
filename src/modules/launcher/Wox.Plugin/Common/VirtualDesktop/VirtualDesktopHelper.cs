@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using Common.UI;
 using Microsoft.Win32;
 using Wox.Plugin.Common.VirtualDesktop.Interop;
@@ -53,6 +54,8 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// Id of the current visible Desktop.
         /// </summary>
         private Guid _currentDesktop;
+
+        private static readonly CompositeFormat VirtualDesktopHelperDesktop = System.Text.CompositeFormat.Parse(Properties.Resources.VirtualDesktopHelper_Desktop);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VirtualDesktopHelper"/> class.
@@ -260,7 +263,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
             }
 
             // If the desktop name was not changed by the user, it isn't saved to the registry. Then we need the default name for the desktop.
-            var defaultName = string.Format(System.Globalization.CultureInfo.InvariantCulture, Resources.VirtualDesktopHelper_Desktop, GetDesktopNumber(desktop));
+            var defaultName = string.Format(System.Globalization.CultureInfo.InvariantCulture, VirtualDesktopHelperDesktop, GetDesktopNumber(desktop));
 
             string registryPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + desktop.ToString().ToUpper(System.Globalization.CultureInfo.InvariantCulture) + "}";
             using RegistryKey deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);

@@ -1439,7 +1439,8 @@
     <comment>Area Gaming</comment>
   </data>
   <data name="PluginDescription" xml:space="preserve">
-    <value>Plugin to search for Windows settings</value>
+    <value>Searches Windows settings</value>
+	<comment>{Locked="Windows"}</comment>
   </data>
   <data name="PluginTitle" xml:space="preserve">
     <value>Windows settings</value>

@@ -85,7 +85,7 @@ namespace Wox.Plugin.Common
                     if (appName != null)
                     {
                         // Handle indirect strings:
-                        if (appName.StartsWith("@", StringComparison.Ordinal))
+                        if (appName.StartsWith('@'))
                         {
                             appName = GetIndirectString(appName);
                         }

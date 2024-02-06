@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ManagedCommon;
@@ -26,6 +27,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
         public string Description => GetTranslatedPluginDescription();
 
         public static string PluginID => "5D69806A5A474115821C3E4C56B9C793";
+
+        private static readonly CompositeFormat MicrosoftPluginTimedatePluginDescription = System.Text.CompositeFormat.Parse(Properties.Resources.Microsoft_plugin_timedate_plugin_description);
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions
         {
@@ -93,7 +96,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate
             string timeExample = Resources.Microsoft_plugin_timedate_plugin_description_example_time + "::" + DateTime.Now.ToString("T", CultureInfo.CurrentCulture);
             string dayExample = Resources.Microsoft_plugin_timedate_plugin_description_example_day + "::" + DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
             string calendarWeekExample = Resources.Microsoft_plugin_timedate_plugin_description_example_calendarWeek + "::" + DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
-            return string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_plugin_description, Resources.Microsoft_plugin_timedate_plugin_description_example_day, dayExample, timeExample, calendarWeekExample);
+            return string.Format(CultureInfo.CurrentCulture, MicrosoftPluginTimedatePluginDescription, Resources.Microsoft_plugin_timedate_plugin_description_example_day, dayExample, timeExample, calendarWeekExample);
         }
 
         public string GetTranslatedPluginTitle()

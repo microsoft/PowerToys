@@ -1,3 +1,6 @@
+# FALSE POSITIVES
+## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
+## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -8,6 +11,7 @@ accctrl
 Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
+ACCESSTOKEN
 aclapi
 AClient
 AColumn
@@ -35,6 +39,7 @@ AModifier
 AMPROPERTY
 AMPROPSETID
 ANDSCANS
+animatedvisuals
 ansicolor
 ANull
 AOC
@@ -50,7 +55,6 @@ appdata
 APPEXECLINK
 appium
 Applicationcan
-applicationframehost
 appmanifest
 APPNAME
 appref
@@ -160,7 +164,6 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
-CHT
 cidl
 cim
 CImage
@@ -181,6 +184,7 @@ clrcall
 CLSCTX
 Clusion
 cmder
+CMDNOTFOUNDMODULEINTERFACE
 Cmds
 CMIC
 CMINVOKECOMMANDINFO
@@ -218,7 +222,6 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
-constexpr
 consts
 contentdialog
 contentfiles
@@ -295,6 +298,7 @@ ddf
 DDxgi
 Deact
 debugbreak
+declatory
 decryptor
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -318,7 +322,6 @@ DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-DEU
 devblogs
 devdocs
 devenum
@@ -507,6 +510,7 @@ GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
+getfilesiginforedist
 GETICON
 GETMINMAXINFO
 GETPROPERTYSTOREFLAGS
@@ -537,7 +541,6 @@ Hanzi
 Hardlines
 hardlinks
 HARDWAREINPUT
-hashcode
 Hashset
 hashtag
 HASHVAL
@@ -556,7 +559,6 @@ hcwhite
 hdc
 hdrop
 hdwwiz
-HEB
 Helpline
 helptext
 HGFE
@@ -719,13 +721,11 @@ jif
 jjw
 jobject
 jpe
-JPN
 jpnime
 Jsons
 jsonval
 junja
 jxr
-Kazakhstani
 kdc
 keybd
 KEYBDDATA
@@ -745,8 +745,10 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
+languagesjson
 lastcodeanalysissucceeded
 Lastdevice
+LASTEXITCODE
 LAYOUTRTL
 LCIDTo
 lcl
@@ -902,6 +904,8 @@ MOUSEHWHEEL
 MOUSEINPUT
 MOVESIZEEND
 MOVESIZESTART
+MOZILLAPL
+MOZPL
 mpmc
 MRM
 MRT
@@ -917,6 +921,7 @@ MSIFASTINSTALL
 MSIHANDLE
 msiquery
 MSIRESTARTMANAGERCONTROL
+msixbundle
 MSIXCA
 MSLLHOOKSTRUCT
 Mso
@@ -967,6 +972,7 @@ newdev
 newitem
 newpath
 newrow
+newsgroups
 NIF
 NLD
 NLog
@@ -979,7 +985,6 @@ NOCLOSEPROCESS
 NOCOALESCE
 NOCOPYBITS
 nodeca
-nodiscard
 nodoc
 NODRAWCAPTION
 NODRAWICON
@@ -1016,6 +1021,7 @@ NOTSRCCOPY
 NOTSRCERASE
 NOZORDER
 NPH
+npmjs
 NResize
 nrw
 nsunt
@@ -1065,6 +1071,7 @@ overlaywindow
 Oversampling
 OWNDC
 OWNERDRAW
+Packagemanager
 PACL
 PAINTSTRUCT
 PALETTEWINDOW
@@ -1087,7 +1094,6 @@ pcch
 pcelt
 pch
 PCIDLIST
-pcs
 PCWSTR
 pdisp
 pdo
@@ -1211,7 +1217,7 @@ qit
 QITAB
 QITABENT
 qoi
-qps
+Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
@@ -1270,6 +1276,7 @@ reparented
 reparenting
 reparse
 reportbug
+reportfileaccesses
 requery
 requerying
 rescap
@@ -1297,7 +1304,6 @@ RKey
 RNumber
 roadmap
 rop
-roundf
 ROUNDSMALL
 rpcrt
 RRF
@@ -1313,12 +1319,11 @@ rundll
 rungameid
 RUNLEVEL
 runsettings
+runspace
 runtimeclass
 runtimeobject
 runtimepack
 runtimes
-RUS
-RValue
 rvm
 rwin
 rwl
@@ -1499,7 +1504,6 @@ subquery
 Superbar
 sut
 svchost
-SVE
 SVGIn
 SVGIO
 svgz
@@ -1546,7 +1550,6 @@ TDevice
 telem
 telephon
 templatenamespace
-Tenge
 testhost
 testprocess
 TEXCOORD
@@ -1565,15 +1568,14 @@ timediff
 timeunion
 timeutil
 Titlecase
-TKey
+tkcontrols
+tkconverters
 TLayout
 tlb
 tlbimp
 TMPVAR
 TNP
 toggleswitch
-tonos
-toolkitcontrols
 toolkitconverters
 Toolset
 toolwindow
@@ -1591,7 +1593,6 @@ trl
 Tsd
 TServer
 TStr
-TValue
 tweakme
 TWF
 tymed
@@ -1603,6 +1604,7 @@ UAL
 uap
 udit
 uefi
+uesc
 UHash
 UIA
 UIEx
@@ -1629,6 +1631,7 @@ UOI
 Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
+urld
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
@@ -1708,6 +1711,7 @@ wcsnicmp
 WDA
 wdp
 wdupenv
+webbrowsers
 webcam
 webpage
 websites
@@ -1715,7 +1719,6 @@ wekyb
 Wevtapi
 wgpocpl
 WIC
-wifi
 wil
 winapi
 winappdriver
@@ -1843,13 +1846,3 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-newsgroups
-MOZILLAPL
-MOZPL
-
-# FALSE POSITIVES
-
-## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
-declatory
-## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
-Packagemanager

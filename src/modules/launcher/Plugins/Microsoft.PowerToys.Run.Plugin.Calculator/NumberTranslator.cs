@@ -66,35 +66,65 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
         {
             var outputBuilder = new StringBuilder();
+            var hexRegex = new Regex(@"(?:(0x[\da-fA-F]+))");
 
-            string[] tokens = splitRegex.Split(input);
-            foreach (string token in tokens)
+            string[] hexTokens = hexRegex.Split(input);
+
+            foreach (string hexToken in hexTokens)
             {
-                int leadingZeroCount = 0;
-
-                // Count leading zero characters.
-                foreach (char c in token)
+                if (hexToken.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    if (c != '0')
+                    // Mages engine has issues processing large hex number (larger than 7 hex digits + 0x prefix = 9 characters). So we convert it to decimal and pass it to the engine.
+                    if (hexToken.Length > 9)
                     {
-                        break;
+                        try
+                        {
+                            long num = Convert.ToInt64(hexToken, 16);
+                            string numStr = num.ToString(cultureFrom);
+                            outputBuilder.Append(numStr);
+                        }
+                        catch (Exception)
+                        {
+                            outputBuilder.Append(hexToken);
+                        }
+                    }
+                    else
+                    {
+                        outputBuilder.Append(hexToken);
                     }
 
-                    leadingZeroCount++;
+                    continue;
                 }
 
-                // number is all zero characters. no need to add zero characters at the end.
-                if (token.Length == leadingZeroCount)
+                string[] tokens = splitRegex.Split(hexToken);
+                foreach (string token in tokens)
                 {
-                    leadingZeroCount = 0;
+                    int leadingZeroCount = 0;
+
+                    // Count leading zero characters.
+                    foreach (char c in token)
+                    {
+                        if (c != '0')
+                        {
+                            break;
+                        }
+
+                        leadingZeroCount++;
+                    }
+
+                    // number is all zero characters. no need to add zero characters at the end.
+                    if (token.Length == leadingZeroCount)
+                    {
+                        leadingZeroCount = 0;
+                    }
+
+                    decimal number;
+
+                    outputBuilder.Append(
+                        decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
+                        ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
+                        : token);
                 }
-
-                decimal number;
-
-                outputBuilder.Append(
-                    decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
-                    ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
-                    : token);
             }
 
             return outputBuilder.ToString();
@@ -102,7 +132,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private static Regex GetSplitRegex(CultureInfo culture)
         {
-            var splitPattern = $"((?:\\d|[a-fA-F]|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
+            var splitPattern = $"((?:\\d|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
             if (!string.IsNullOrEmpty(culture.NumberFormat.NumberGroupSeparator))
             {
                 splitPattern += $"|{Regex.Escape(culture.NumberFormat.NumberGroupSeparator)}";

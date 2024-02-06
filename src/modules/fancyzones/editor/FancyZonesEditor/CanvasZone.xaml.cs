@@ -237,7 +237,7 @@ namespace FancyZonesEditor
         private SnappyHelperBase snappyX;
         private SnappyHelperBase snappyY;
 
-        private SnappyHelperBase NewMagneticSnapper(bool isX, ResizeMode mode)
+        private SnappyHelperMagnetic NewMagneticSnapper(bool isX, ResizeMode mode)
         {
             Rect workingArea = App.Overlay.WorkArea;
             int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);
@@ -245,7 +245,7 @@ namespace FancyZonesEditor
             return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);
         }
 
-        private SnappyHelperBase NewNonMagneticSnapper(bool isX, ResizeMode mode)
+        private SnappyHelperNonMagnetic NewNonMagneticSnapper(bool isX, ResizeMode mode)
         {
             Rect workingArea = App.Overlay.WorkArea;
             int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);

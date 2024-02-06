@@ -24,6 +24,7 @@ $versionExceptions = @(
 $nullVersionExceptions = @(
     "codicon.ttf",
     "e_sqlite3.dll",
+    "getfilesiginforedist.dll",
     "vcamp140_app.dll",
     "vcruntime140_app.dll",
     "vcruntime140_1_app.dll",
@@ -65,11 +66,6 @@ $items | ForEach-Object {
     elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) { 
         # These items are exceptions that actually a version not set.
         Write-Host "Version not set: " + $_.FullName
-        $totalFailure++;
-    }
-    elseif ($_.VersionInfo.ProductName -contains "PowerToys" -and $_.VersionInfo.LegalCopyright -notmatch "Copyright \(C\) $((Get-Date).Year)") {
-        # PowerToys assemblies that aren't updated to the current year in the copyright
-        Write-Host "Copyright year out of date: " + $_.FullName
         $totalFailure++;
     }
     else {

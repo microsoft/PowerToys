@@ -1022,6 +1022,9 @@
   <data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
     <value>PowerToys will launch automatically</value>
   </data>
+  <data name="GeneralPage_WarningsElevatedApps.Content" xml:space="preserve">
+    <value>Show a warning for functionality issues when running alongside elevated applications</value>
+  </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search &amp; replace or regular expressions.</value>
   </data>
@@ -1063,7 +1066,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Description" xml:space="preserve">
     <value>.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext</value>
-    <comment>File extensions, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
     <value>Source code files (Monaco)</value>
@@ -1071,7 +1074,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
     <value>.cpp, .py, .json, .xml, .csproj, ...</value>
-    <comment>File extensions should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
@@ -1079,7 +1082,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Description" xml:space="preserve">
     <value>.svg</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_Preview_SVG_Color_Mode.Header" xml:space="preserve">
     <value>Color mode</value>
@@ -1110,54 +1113,51 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Description" xml:space="preserve">
     <value>.svg</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
-    <comment>File type, do not translate</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
     <value>Color</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Header" xml:space="preserve">
     <value>Quite Ok Image</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Description" xml:space="preserve">
     <value>.qoi</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Header" xml:space="preserve">
     <value>Quite OK Image</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
     <value>.qoi</value>
-    <comment>File extension, should not be altered</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
-    <comment>File type, do not translate</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
-    <comment>File extension, should not be altered</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
@@ -1285,12 +1285,15 @@
   </data>
   <data name="ImageResizer_Encoding.Header" xml:space="preserve">
     <value>JPEG quality level (%)</value>
+    <comment>{Locked="JPEG"}</comment>
   </data>
   <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
     <value>PNG interlacing</value>
+    <comment>{Locked="PNG"}</comment>
   </data>
   <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
     <value>TIFF compression</value>
+    <comment>{Locked="TIFF"}</comment>
   </data>
   <data name="File.Header" xml:space="preserve">
     <value>File</value>
@@ -1301,47 +1304,53 @@
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT3.Content" xml:space="preserve">
     <value>CCITT3</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT4.Content" xml:space="preserve">
     <value>CCITT4</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Default.Content" xml:space="preserve">
     <value>Default</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_LZW.Content" xml:space="preserve">
     <value>LZW</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_None.Content" xml:space="preserve">
     <value>None</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_RLE.Content" xml:space="preserve">
     <value>RLE</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Zip.Content" xml:space="preserve">
     <value>Zip</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
     <value>BMP encoder</value>
+    <comment>{Locked="BMP"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_GIF.Content" xml:space="preserve">
     <value>GIF encoder</value>
+    <comment>{Locked="GIF"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_JPEG.Content" xml:space="preserve">
     <value>JPEG encoder</value>
+    <comment>{Locked="JPEG"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_PNG.Content" xml:space="preserve">
     <value>PNG encoder</value>
+    <comment>{Locked="PNG"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_TIFF.Content" xml:space="preserve">
     <value>TIFF encoder</value>
+    <comment>{Locked="TIFF"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_WMPhoto.Content" xml:space="preserve">
     <value>WMPhoto encoder</value>
+    <comment>{Locked="WMPhoto"}</comment>
   </data>
   <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
     <value>Fill</value>
@@ -1380,10 +1389,10 @@
   <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Content" xml:space="preserve">
     <value>Learn more about administrator mode</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
-    <value>Download updates automatically</value>
+  <data name="GeneralPage_AutoDownloadAndInstallUpdates.Header" xml:space="preserve">
+    <value>Download and install updates automatically</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Description" xml:space="preserve">
+  <data name="GeneralPage_AutoDownloadAndInstallUpdates.Description" xml:space="preserve">
     <value>Except on metered connections</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
@@ -1443,8 +1452,8 @@
   <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
   </data>
-  <data name="General_Version.Header" xml:space="preserve">
-    <value>Version</value>
+  <data name="General_VersionAndUpdate.Header" xml:space="preserve">
+    <value>Version &amp; updates</value>
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
@@ -1461,8 +1470,8 @@
   <data name="General_SettingsBackupInfo_StatusHeader.Text" xml:space="preserve">
     <value>Status:</value>
   </data>
-  <data name="General_Version.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Version</value>
+  <data name="General_VersionAndUpdate.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Version and updates</value>
   </data>
   <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
@@ -2036,10 +2045,10 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.</value>
   </data>
   <data name="Oobe_FileLocksmith_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, right-click one or more selected files and select **What's using this file?** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **Unlock with File Locksmith** from the context menu.</value>
   </data>
   <data name="Oobe_FileLocksmith_TipsAndTricks.Text" xml:space="preserve">
-    <value>Press the **Restart Elevated** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
+    <value>Press the **Restart as administrator** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**. 
@@ -2058,7 +2067,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>How to use</value>
   </data>
   <data name="Oobe_ImageResizer_HowToLaunch.Text" xml:space="preserve">
-    <value>In File Explorer, right-click one or more image files and select **Resize pictures** from the context menu.</value>
+    <value>In File Explorer, right-click one or more image files and select **Resize with Image Resizer** from the context menu.</value>
   </data>
   <data name="Oobe_ImageResizer_TipsAndTricks.Text" xml:space="preserve">
     <value>Want a custom size? You can add them in the PowerToys Settings!</value>
@@ -2076,7 +2085,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Use the service option in Settings to install a service enabling Mouse Without Borders to function even in the lock screen.</value>
   </data>
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, right-click one or more selected files and select **PowerRename** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
@@ -2183,8 +2192,8 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Welcome to PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
   </data>
-	<data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
-    <value>What's New</value>
+  <data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
+    <value>What's new</value>
   </data>
   <data name="Feedback_NavViewItem.Content" xml:space="preserve">
     <value>Give feedback</value>
@@ -2357,6 +2366,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="LearnMore_Awake.Text" xml:space="preserve">
     <value>Learn more about Awake</value>
     <comment>Awake is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_CmdNotFound.Text" xml:space="preserve">
+    <value>Learn more about Command Not Found</value>
+    <comment> Command Not Found is the name of the module. </comment>
   </data>
   <data name="SecondaryLink_Awake.Text" xml:space="preserve">
     <value>Den Delimarsky's work on creating Awake</value>
@@ -2636,6 +2649,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Description" xml:space="preserve">
     <value>The minimum distance for mouse shaking activation, for adjusting sensitivity</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Header" xml:space="preserve">
+    <value>Shake Interval (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Description" xml:space="preserve">
+    <value>The span of time during which we track mouse movement to detect shaking, for adjusting sensitivity</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingFactor.Header" xml:space="preserve">
+    <value>Shake factor (percent)</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_ShakingFactor.Description" xml:space="preserve">
+    <value>Mouse shaking is detected by checking how much the mouse pointer has travelled when compared to the diagonal of the movement area. Reducing this factor increases sensitivity.</value>
   </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
@@ -2995,6 +3021,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="PowerLauncher_WaitForSlowResults.Header" xml:space="preserve">
     <value>Wait on slower plugin results before selecting top item in results</value>
+  </data>
+  <data name="PowerLauncher_ShowPluginKeywords.Header" xml:space="preserve">
+    <value>Plugin hints</value>
+  </data>
+  <data name="PowerLauncher_ShowPluginKeywords.Description" xml:space="preserve">
+    <value>Choose which plugin keywords to be shown when the searchbox is empty</value>
   </data>
   <data name="PowerLauncher_PluginWeightBoost.Description" xml:space="preserve">
     <value>Use a higher number to have this plugin's result show higher in the global results. Default is 0.</value>
@@ -3364,7 +3396,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>German</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
-  <value>Greek</value>
+    <value>Greek</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
     <value>Hebrew</value>
@@ -3576,8 +3608,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Shell integration</value>
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
-  <data name="GPO_IsSettingForced.Title" xml:space="preserve">
-    <value>This setting is enforced by your System Administrator.</value>
+  <data name="GPO_SettingIsManaged.Title" xml:space="preserve">
+    <value>This setting is managed by your organization.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
@@ -3621,9 +3653,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
   </data>
-  <data name="GPO_ExperimentationIsDisallowed.Title" xml:space="preserve">
-    <value>The system administrator has disabled experimentation.</value>
-  </data>
   <data name="Shell_PastePlain.Content" xml:space="preserve">
     <value>Paste As Plain Text</value>
     <comment>Product name: Navigation view item name for Paste as Plain Text</comment>
@@ -3648,6 +3677,72 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_PastePlain_HowToUse.Text" xml:space="preserve">
     <value>to paste your clipboard data as plain text. Note: this will replace the formatted text in your clipboard with the plain text.</value>
+  </data>
+  <data name="Shell_CmdNotFound.Content" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>Product name: Navigation view item name for Command Not Found</comment>
+  </data>
+  <data name="CmdNotFound.ModuleDescription" xml:space="preserve">
+    <value>A PowerShell module that detects an error thrown by a command and suggests a relevant WinGet package to install, if available.</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="CmdNotFound.ModuleTitle" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="InstalledLabel.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="DetectedLabel.Text" xml:space="preserve">
+    <value>Detected</value>
+  </data>
+  <data name="NotDetectedLabel.Text" xml:space="preserve">
+    <value>Not detected</value>
+  </data>
+  <data name="CmdNotFound_RequirementsBar.Title" xml:space="preserve">
+    <value>The following components are required</value>
+  </data>
+  <data name="CmdNotFound_PowerShellDetection.Header" xml:space="preserve">
+    <value>PowerShell 7.4 or greater</value>
+  </data>
+  <data name="CmdNotFound_WinGetClientDetection.Header" xml:space="preserve">
+    <value>WinGet Client PowerShell module</value>
+  </data>
+  <data name="CmdNotFound_Enable.Header" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="CmdNotFound_Enable.Description" xml:space="preserve">
+    <value>Add this module to the PowerShell 7 profile script so that it is enabled with every new session</value>
+  </data>
+  <data name="CmdNotFound_ModuleInstallationLogs.Text" xml:space="preserve">
+    <value>Installation logs</value>
+  </data>
+  <data name="CmdNotFound_CheckPowerShellVersionButtonControl.Description" xml:space="preserve">
+    <value>PowerShell 7 is required to use this module</value>
+  </data>
+  <data name="CmdNotFound_CheckCompatibility.Content" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="CmdNotFound_CheckCompatibilityTooltip.Text" xml:space="preserve">
+    <value>Check if your PowerShell configuration is compatible and configured correctly</value>
+  </data>
+  <data name="CmdNotFound_InstallButton.Content" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="CmdNotFound_UninstallButton.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="Oobe_CmdNotFound.Description" xml:space="preserve">
+    <value>Command Not Found detects an error thrown by a command in PowerShell and suggests a relevant WinGet package to install, if available.</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdNotFound.Title" xml:space="preserve">
+    <value>Command Not Found</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdNotFound_HowToUse.Text" xml:space="preserve">
+    <value>If a command returns an error, the module will suggest a WinGet package that may provide the relevant executable.</value>
   </data>
   <data name="AllAppsTxt.Text" xml:space="preserve">
     <value>All apps</value>
@@ -3753,9 +3848,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Enable Mouse Jump</value>
     <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
-  <data name="GPO_AutoDownloadUpdatesIsDisabled.Title" xml:space="preserve">
-    <value>The system administrator has disabled the automatic download of updates.</value>
-  </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
     <comment>"127.0.0.1 and ::1" are well known loopback addresses, do not loc</comment>
@@ -3842,8 +3934,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
     <value>Find more plugins</value>
   </data>
-  <data name="Run_SomePluginsAreGpoManaged.Title" xml:space="preserve">
-    <value>The system administrator is managing the enabled state of some plugins.</value>
+  <data name="GPO_SomeRunPluginsAreManaged.Title" xml:space="preserve">
+    <value>The enabled state of some plugins is managed by your organization.</value>
   </data>
   <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
@@ -3871,9 +3963,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-  <data name="GPO_IsSettingForcedText.Text" xml:space="preserve">
-    <value>This setting is enforced by your System Administrator.</value>
-  </data>
   <data name="DisabledModules.Text" xml:space="preserve">
     <value>Disabled modules</value>
   </data>
@@ -3897,5 +3986,48 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_SourceCode_WrapText.Content" xml:space="preserve">
     <value>Wrap text</value>
+  </data>
+  <data name="ShowPluginsOverview_All.Content" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ShowPluginsOverview_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="ShowPluginsOverview_NonGlobal.Content" xml:space="preserve">
+    <value>Not included in global results</value>
+  </data>
+  <data name="PowerLauncher_TitleFontSize.Description" xml:space="preserve">
+    <value>The size of result titles and the search query</value>
+  </data>
+  <data name="PowerLauncher_TitleFontSize.Header" xml:space="preserve">
+    <value>Text size (pt)</value>
+  </data>
+  <data name="PowerLauncher_TextFontSizeSlider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Text size of result titles</value>
+  </data>
+  <data name="GeneralPage_ShowWhatsNewAfterUpdates.Content" xml:space="preserve">
+    <value>Show the release notes after an update</value>
+  </data>
+  <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
+    <value>Command Not Found is not supported on the ARM64 architecture currently. We are actively working on a solution.</value>
+  </data>
+  <data name="QuickAccent_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+    <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
+  </data>
+  <data name="GeneralPage_ShowNewUpdatesToast.Header" xml:space="preserve">
+    <value>Show notifications for new updates</value>
+  </data>
+  <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">
+    <value>Some settings are managed by your organization.</value>
+  </data>
+  <data name="GPO_SettingIsManaged_ToolTip.Text" xml:space="preserve">
+    <value>This setting is managed by your organization.</value>
+  </data>
+  <data name="GPO_SomePreviewPanesAreManaged.Title" xml:space="preserve">
+    <value>The enabled state of some preview handlers is managed by your organization.</value>
+  </data>
+  <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
+    <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
   </data>
 </root>
