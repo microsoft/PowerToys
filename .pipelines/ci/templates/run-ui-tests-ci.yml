@@ -39,6 +39,7 @@ jobs:
   - task: WinAppDriver.winappdriver-pipelines-task.winappdriver-pipelines-task.Windows Application Driver@0
     displayName: 'Start - WinAppDriver'
     inputs:
+      OperationType: Start
       WADArguments: 127.0.0.1 4723
 
   - task: VSTest@2
