@@ -178,8 +178,17 @@
                     Grid.Column="1"
                     HorizontalAlignment="Stretch"
                     AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
-                    ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
-                    Text="{Binding ElementName=SizeComboBox, Path=SelectedValue.Fit, Mode=TwoWay}" />
+                    ItemsSource="{Binding ResizeFitValues, Mode=OneWay}"
+                    SelectedIndex="0">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="sys:Enum">
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                FontSize="14"
+                                Text="{Binding {}, Converter={StaticResource EnumValueConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
                 <ui:SymbolIcon
                     Grid.Row="2"
@@ -196,8 +205,17 @@
                     Grid.Row="2"
                     Grid.Column="4"
                     AutomationProperties.Name="{x:Static p:Resources.Unit}"
-                    ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
-                    Text="{Binding ElementName=SizeComboBox, Path=SelectedValue.Unit, Mode=TwoWay}" />
+                    ItemsSource="{Binding ResizeUnitValues, Mode=OneWay}"
+                    SelectedIndex="0">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="sys:Enum">
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                FontSize="14"
+                                Text="{Binding {}, Converter={StaticResource EnumValueConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
             </Grid>
 

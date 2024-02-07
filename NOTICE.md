@@ -1337,8 +1337,8 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
 - Moq 4.18.4
-- MSTest.TestAdapter 3.1.1
-- MSTest.TestFramework 3.1.1
+- MSTest.TestAdapter 3.2.0
+- MSTest.TestFramework 3.2.0
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
 - ScipBe.Common.Office.OneNote 3.0.1

@@ -63,21 +63,23 @@ namespace Peek.UI.Helpers
 
             var shell = new Shell32.Shell();
             ShellWindows shellWindows = shell.Windows();
-            foreach (IWebBrowserApp webBrowserApp in shell.Windows())
+            foreach (IWebBrowserApp webBrowserApp in shellWindows)
             {
-                var shellFolderView = (Shell32.IShellFolderViewDual2)webBrowserApp.Document;
-                var folderTitle = shellFolderView.Folder.Title;
-
-                if (webBrowserApp.HWND == foregroundWindowHandle)
+                if (webBrowserApp.Document is Shell32.IShellFolderViewDual2 shellFolderView)
                 {
-                    var serviceProvider = (IServiceProvider)webBrowserApp;
-                    var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
-                    shellBrowser.GetWindow(out IntPtr shellBrowserHandle);
+                    var folderTitle = shellFolderView.Folder.Title;
 
-                    if (activeTab == shellBrowserHandle)
+                    if (webBrowserApp.HWND == foregroundWindowHandle)
                     {
-                        shellItemArray = GetShellItemArray(shellBrowser, onlySelectedFiles);
-                        return shellItemArray;
+                        var serviceProvider = (IServiceProvider)webBrowserApp;
+                        var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
+                        shellBrowser.GetWindow(out IntPtr shellBrowserHandle);
+
+                        if (activeTab == shellBrowserHandle)
+                        {
+                            shellItemArray = GetShellItemArray(shellBrowser, onlySelectedFiles);
+                            return shellItemArray;
+                        }
                     }
                 }
             }

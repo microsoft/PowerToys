@@ -13,24 +13,6 @@
                 <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
 
-            <ObjectDataProvider
-                x:Key="ResizeFitValues"
-                MethodName="GetValues"
-                ObjectType="sys:Enum">
-                <ObjectDataProvider.MethodParameters>
-                    <x:Type Type="{x:Type m:ResizeFit}" />
-                </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
-
-            <ObjectDataProvider
-                x:Key="ResizeUnitValues"
-                MethodName="GetValues"
-                ObjectType="sys:Enum">
-                <ObjectDataProvider.MethodParameters>
-                    <x:Type Type="{x:Type m:ResizeUnit}" />
-                </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
-
             <v:SizeTypeToVisibilityConverter x:Key="SizeTypeToVisibilityConverter" />
             <v:EnumValueConverter x:Key="EnumValueConverter" />
             <v:AutoDoubleConverter x:Key="AutoDoubleConverter" />

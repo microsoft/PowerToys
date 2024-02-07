@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO.Abstractions;
+using System.Text.Json;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -22,6 +24,29 @@ namespace Wox.Infrastructure.Storage
             Helper.ValidateDirectory(DirectoryPath);
 
             FilePath = Path.Combine(DirectoryPath, $"{dataType.Name}{FileSuffix}");
+        }
+
+        public override T Load()
+        {
+            var data = base.Load();
+
+            // Check information file for version mismatch
+            try
+            {
+                if (CheckVersionMismatch())
+                {
+                    if (!TryLoadData())
+                    {
+                        Clear();
+                    }
+                }
+            }
+            catch (JsonException e)
+            {
+                Log.Exception($"Error in Load of PluginJsonStorage: {e.Message}", e, GetType());
+            }
+
+            return data.NonNull();
         }
     }
 }

@@ -79,7 +79,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Terminal supports a &quot;quake&quot; feature where a terminal window is accessible using a global hotkey. Enable this option to open profiles in this window..
+        ///   Looks up a localized string similar to Windows Terminal supports a &quot;quake&quot; feature where a terminal window is accessible using a global hotkey. Enable this option to open profiles in a new tab in this window..
         /// </summary>
         internal static string open_quake_description {
             get {
@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Windows Terminal profiles..
+        ///   Looks up a localized string similar to Opens Windows Terminal profiles..
         /// </summary>
         internal static string plugin_description {
             get {
