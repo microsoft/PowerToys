@@ -597,7 +597,7 @@ StackPanel SetupOpenURIControls(StackPanel& parent, StackPanel& row, Shortcut& s
     int runProgramLabelWidth = 80;
 
     uriTextBox.Text(shortCut.uriToOpen);
-    uriTextBox.PlaceholderText(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_URIEXAMPLE));
+    uriTextBox.PlaceholderText(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_URI_EXAMPLE));
     uriTextBox.Margin(textInputMargin);
     uriTextBox.Width(EditorConstants::TableDropDownHeight);
     uriTextBox.HorizontalAlignment(HorizontalAlignment::Left);
@@ -660,7 +660,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     StackPanel stackPanelForRunProgramPath;
     StackPanel stackPanelRunProgramStartInDir;
 
-    runProgramPathInput.PlaceholderText(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_PATHTOPROGRAM));
+    runProgramPathInput.PlaceholderText(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_PATH_TO_PROGRAM));
 
     runProgramPathInput.Margin(textInputMargin);
 
@@ -837,24 +837,24 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
             return;
         }
 
-        OPENFILENAME ofn;
+        OPENFILENAME openFileName;
         TCHAR szFile[260] = { 0 };
 
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = NULL;
-        ofn.lpstrFile = szFile;
-        ofn.nMaxFile = sizeof(szFile);
-        ofn.lpstrFilter = TEXT("All Files (*.*)\0*.*\0");
-        ofn.nFilterIndex = 1;
-        ofn.lpstrFileTitle = NULL;
-        ofn.nMaxFileTitle = 0;
-        ofn.lpstrInitialDir = NULL;
-        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+        ZeroMemory(&openFileName, sizeof(openFileName));
+        openFileName.lStructSize = sizeof(openFileName);
+        openFileName.hwndOwner = NULL;
+        openFileName.lpstrFile = szFile;
+        openFileName.nMaxFile = sizeof(szFile);
+        openFileName.lpstrFilter = TEXT("All Files (*.*)\0*.*\0");
+        openFileName.nFilterIndex = 1;
+        openFileName.lpstrFileTitle = NULL;
+        openFileName.nMaxFileTitle = 0;
+        openFileName.lpstrInitialDir = NULL;
+        openFileName.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
         auto runProgramPathInput = row.FindName(L"runProgramPathInput_" + std::to_wstring(rowIndex)).as<TextBox>();
 
-        if (GetOpenFileName(&ofn) == TRUE)
+        if (GetOpenFileName(&openFileName) == TRUE)
         {
             runProgramPathInput.Text(szFile);
         }

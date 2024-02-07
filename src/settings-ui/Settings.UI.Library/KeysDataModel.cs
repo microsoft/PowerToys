@@ -253,7 +253,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        public bool IsOpenURIOrIsRunProgram
+        public bool IsOpenUriOrIsRunProgram
         {
             get
             {

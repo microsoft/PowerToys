@@ -232,13 +232,13 @@
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
-                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="Starts"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
-                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay}" />
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay}" />
                                             <Border
                                                 Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -272,7 +272,7 @@
                                                 VerticalAlignment="Center"
                                                 Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                                                 Text="{x:Bind TargetApp}"
-                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

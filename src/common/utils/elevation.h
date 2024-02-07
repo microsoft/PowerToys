@@ -213,7 +213,7 @@ inline HANDLE run_as_different_user(const std::wstring& file, const std::wstring
     Logger::info(L"run_elevated with params={}", params);
     SHELLEXECUTEINFOW exec_info = { 0 };
     exec_info.cbSize = sizeof(SHELLEXECUTEINFOW);
-    exec_info.lpVerb = L"runasuser";
+    exec_info.lpVerb = L"runAsUser";
     exec_info.lpFile = file.c_str();
     exec_info.lpParameters = params.c_str();
     exec_info.hwnd = 0;

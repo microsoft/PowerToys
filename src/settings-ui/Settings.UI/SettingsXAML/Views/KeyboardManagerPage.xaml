@@ -196,14 +196,14 @@
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
-                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
 
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="Starts"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
-                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay}" />
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay}" />
 
 
                                             <ItemsControl
@@ -223,7 +223,7 @@
                                                 Padding="12,4,12,6"
                                                 VerticalAlignment="Center"
                                                 CornerRadius="12"
-                                                Visibility="{x:Bind Path=IsOpenURIOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                                 <Border.Background>
                                                     <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
                                                 </Border.Background>

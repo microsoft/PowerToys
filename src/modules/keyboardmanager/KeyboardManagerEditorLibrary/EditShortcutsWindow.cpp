@@ -473,7 +473,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         headerText.Text(GET_RESOURCE_STRING(IDS_EDIT_THIS_SHORTCUT_WINDOWNAME));
         addShortcut.Visibility(Visibility::Collapsed);
         headerText.Visibility(Visibility::Collapsed);
-        shortcutRemapInfoHeader.Text(GET_RESOURCE_STRING(IDS_EDITSINGLESHORTCUT_INFO));
+        shortcutRemapInfoHeader.Text(GET_RESOURCE_STRING(IDS_EDIT_SINGLE_SHORTCUT_INFO));
 
         StackPanel tempSp;
 

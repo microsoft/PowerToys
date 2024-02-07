@@ -9,7 +9,7 @@
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
 
-#include <tlhelp32.h>
+#include <TlHelp32.h>
 #include <thread>
 #include <future>
 #include <chrono>
@@ -242,7 +242,7 @@ namespace KeyboardEventHandlers
                         if (!resetChordsResults.AnyChordStarted && data->lParam->vkCode == itShortcut.GetActionKey() && !itShortcut.IsChordStarted() && itShortcut.HasChord())
                         {
                             // start new chord
-                            // Logger::trace(L"CKBH:new chord started for {}", data->lParam->vkCode);
+                            // Logger::trace(L"ChordKeyboardHandler:new chord started for {}", data->lParam->vkCode);
                             isMatchOnChordStart = true;
                             ResetAllOtherStartedChords(state, activatedApp, data->lParam->vkCode);
                             itShortcut.SetChordStarted(true);
@@ -251,13 +251,13 @@ namespace KeyboardEventHandlers
 
                         if (data->lParam->vkCode == itShortcut.GetSecondKey() && itShortcut.IsChordStarted() && itShortcut.HasChord())
                         {
-                            Logger::trace(L"CKBH:found chord match {}, {}", itShortcut.GetActionKey(), itShortcut.GetSecondKey());
+                            Logger::trace(L"ChordKeyboardHandler:found chord match {}, {}", itShortcut.GetActionKey(), itShortcut.GetSecondKey());
                             isMatchOnChordEnd = true;
                         }
 
                         if (resetChordsResults.AnyChordStarted && !isMatchOnChordEnd)
                         {
-                            // Logger::trace(L"CKBH:waiting on second key of chord, checked {} for {}", itShortcut.GetSecondKey(), data->lParam->vkCode);
+                            // Logger::trace(L"ChordKeyboardHandler:waiting on second key of chord, checked {} for {}", itShortcut.GetSecondKey(), data->lParam->vkCode);
                             // this is a key and there is a mod, but it's not the second key of a chord.
                             // we can't do anything with this key, we're waiting.
                             continue;
@@ -293,7 +293,7 @@ namespace KeyboardEventHandlers
                     {
                         CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
 
-                        Logger::trace(L"CKBH:returning..");
+                        Logger::trace(L"ChordKeyboardHandler:returning..");
                         return 1;
                     }
                     else if (isOpenUri)
@@ -311,7 +311,7 @@ namespace KeyboardEventHandlers
                             if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
                             {
                                 newUri = url;
-                                Logger::trace(L"CKBH:ConvertPathToURI from {} to {}", uri, url);
+                                Logger::trace(L"ChordKeyboardHandler:ConvertPathToURI from {} to {}", uri, url);
                             }
                             else
                             {
@@ -331,7 +331,7 @@ namespace KeyboardEventHandlers
                             toast(L"Error", L"Could not understand the Path or URI");
                         }
 
-                        Logger::trace(L"CKBH:returning..");
+                        Logger::trace(L"ChordKeyboardHandler:returning..");
                         return 1;
                     }
                     else if (remapToShortcut)
@@ -450,7 +450,7 @@ namespace KeyboardEventHandlers
                         state.SetActivatedApp(*activatedApp);
                     }
 
-                    Logger::trace(L"CKBH:key_count:{}", key_count);
+                    Logger::trace(L"ChordKeyboardHandler:key_count:{}", key_count);
 
                     UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
                     delete[] keyEventList;
@@ -930,7 +930,7 @@ namespace KeyboardEventHandlers
         return 0;
     }
 
-    std::wstring URLencode(const std::wstring& filepath)
+    std::wstring URL_encode(const std::wstring& filepath)
     {
         std::wostringstream escaped;
         escaped.fill('0');
@@ -959,7 +959,7 @@ namespace KeyboardEventHandlers
     {
         std::wstring fileUri = std::filesystem::absolute(filePath).wstring();
         std::replace(fileUri.begin(), fileUri.end(), L'\\', L'/');
-        fileUri = L"file:///" + URLencode(fileUri);
+        fileUri = L"file:///" + URL_encode(fileUri);
 
         return fileUri;
     }
@@ -1007,7 +1007,7 @@ namespace KeyboardEventHandlers
 
         if (isNewControlKey)
         {
-            //Logger::trace(L"CKBH:reset");
+            //Logger::trace(L"ChordKeyboardHandler:reset");
 
             for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
             {
@@ -1090,7 +1090,7 @@ namespace KeyboardEventHandlers
 
     std::vector<DWORD> GetProcessesIdByName(const std::wstring& processName)
     {
-        std::vector<DWORD> pids;
+        std::vector<DWORD> processIds;
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
         if (snapshot != INVALID_HANDLE_VALUE)
@@ -1104,7 +1104,7 @@ namespace KeyboardEventHandlers
                 {
                     if (_wcsicmp(processEntry.szExeFile, processName.c_str()) == 0)
                     {
-                        pids.push_back(processEntry.th32ProcessID);
+                        processIds.push_back(processEntry.th32ProcessID);
                     }
                 } while (Process32Next(snapshot, &processEntry));
             }
@@ -1112,7 +1112,7 @@ namespace KeyboardEventHandlers
             CloseHandle(snapshot);
         }
 
-        return pids;
+        return processIds;
     }
 
     DWORD GetProcessIdByName(const std::wstring& processName)
@@ -1178,7 +1178,7 @@ namespace KeyboardEventHandlers
             textElement1.InnerText(message1);
             textElement2.InnerText(message2);
 
-            Logger::trace(L"CKBH:toastXml {}", toastXml.GetXml());
+            Logger::trace(L"ChordKeyboardHandler:toastXml {}", toastXml.GetXml());
             std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
             const auto notifier = ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
 
@@ -1201,7 +1201,7 @@ namespace KeyboardEventHandlers
 
         auto fileNamePart = GetFileNameFromPath(fullExpandedFilePath);
 
-        Logger::trace(L"CKBH:{}, trying to run {}", fileNamePart, fullExpandedFilePath);
+        Logger::trace(L"ChordKeyboardHandler:{}, trying to run {}", fileNamePart, fullExpandedFilePath);
         //lastKeyInChord = 0;
 
         DWORD targetPid = GetProcessIdByName(fileNamePart);
@@ -1211,7 +1211,7 @@ namespace KeyboardEventHandlers
             targetPid = GetProcessIdByName(fileNamePart);
         }*/
 
-        Logger::trace(L"CKBH:{}, already running, pid:{}, alreadyRunningAction:{}", fileNamePart, targetPid, shortcut.alreadyRunningAction);
+        Logger::trace(L"ChordKeyboardHandler:{}, already running, pid:{}, alreadyRunningAction:{}", fileNamePart, targetPid, shortcut.alreadyRunningAction);
 
         if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
         {
@@ -1222,20 +1222,20 @@ namespace KeyboardEventHandlers
             }
             else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
             {
-                TerminateProcsesByName(fileNamePart);
+                TerminateProcessesByName(fileNamePart);
                 return;
             }
             else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
             {
                 CloseProcessByName(fileNamePart);
-                Logger::trace(L"CKBH:{}, CloseProcessByName returning 3", fileNamePart);
+                Logger::trace(L"ChordKeyboardHandler:{}, CloseProcessByName returning 3", fileNamePart);
                 return;
             }
             else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
             {
-                auto pids = GetProcessesIdByName(fileNamePart);
+                auto processIds = GetProcessesIdByName(fileNamePart);
 
-                for (DWORD pid : pids)
+                for (DWORD pid : processIds)
                 {
                     ShowProgram(targetPid, fileNamePart, false, false, 0);
                 }
@@ -1244,7 +1244,7 @@ namespace KeyboardEventHandlers
                 //{
                 //    /*auto future = std::async(std::launch::async, [=] {
                 //    std::this_thread::sleep_for(std::chrono::milliseconds(30));
-                //    Logger::trace(L"CKBH:{}, second try, pid:{}", fileNamePart, targetPid);
+                //    Logger::trace(L"ChordKeyboardHandler:{}, second try, pid:{}", fileNamePart, targetPid);
                 //    ShowProgram(targetPid, fileNamePart, false, false);
                 //});*/
                 //}
@@ -1326,36 +1326,36 @@ namespace KeyboardEventHandlers
     {
         CloseProcessByName(fileNamePart);
         Sleep(1000);
-        TerminateProcsesByName(fileNamePart);
+        TerminateProcessesByName(fileNamePart);
     }
 
     void CloseProcessByName(const std::wstring& fileNamePart)
     {
-        auto pids = GetProcessesIdByName(fileNamePart);
+        auto processIds = GetProcessesIdByName(fileNamePart);
 
-        if (pids.size() == 0)
+        if (processIds.size() == 0)
         {
-            Logger::trace(L"CKBH:{}, Nothing To WM_CLOSE", fileNamePart);
+            Logger::trace(L"ChordKeyboardHandler:{}, Nothing To WM_CLOSE", fileNamePart);
             return;
         }
 
         if (false)
         {
             auto retryCount = 10;
-            while (pids.size() > 0 && retryCount-- > 0)
+            while (processIds.size() > 0 && retryCount-- > 0)
             {
-                for (DWORD pid : pids)
+                for (DWORD pid : processIds)
                 {
-                    //Logger::trace(L"CKBH:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
+                    //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
                     HWND hwnd = FindMainWindow(pid, false);
                     SendMessage(hwnd, WM_CLOSE, 0, 0);
                 }
 
                 Sleep(500);
-                pids = GetProcessesIdByName(fileNamePart);
-                if (pids.size() <= 0)
+                processIds = GetProcessesIdByName(fileNamePart);
+                if (processIds.size() <= 0)
                 {
-                    Logger::trace(L"CKBH:{}, WM_CLOSE done", fileNamePart);
+                    Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE done", fileNamePart);
                     break;
                 }
                 else
@@ -1367,14 +1367,14 @@ namespace KeyboardEventHandlers
         else
         {
             auto threadFunction = [fileNamePart]() {
-                auto pids = GetProcessesIdByName(fileNamePart);
+                auto processIds = GetProcessesIdByName(fileNamePart);
                 auto retryCount = 10;
-                while (pids.size() > 0 && retryCount-- > 0)
+                while (processIds.size() > 0 && retryCount-- > 0)
                 {
-                    //Logger::trace(L"CKBH:{}, WM_CLOSE'ing {}pids ", fileNamePart, pids.size());
-                    for (DWORD pid : pids)
+                    //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE 'ing {}processIds ", fileNamePart, processIds.size());
+                    for (DWORD pid : processIds)
                     {
-                        //Logger::trace(L"CKBH:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
+                        //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
                         HWND hwnd = FindMainWindow(pid, false);
                         SendMessage(hwnd, WM_CLOSE, 0, 0);
 
@@ -1382,10 +1382,10 @@ namespace KeyboardEventHandlers
                         Sleep(10);
                     }
 
-                    pids = GetProcessesIdByName(fileNamePart);
-                    if (pids.size() <= 0)
+                    processIds = GetProcessesIdByName(fileNamePart);
+                    if (processIds.size() <= 0)
                     {
-                        Logger::trace(L"CKBH:{}, WM_CLOSE done", fileNamePart);
+                        Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE done", fileNamePart);
                         break;
                     }
                     else
@@ -1396,9 +1396,9 @@ namespace KeyboardEventHandlers
             };
 
             Sleep(100);
-            pids = GetProcessesIdByName(fileNamePart);
+            processIds = GetProcessesIdByName(fileNamePart);
 
-            if (pids.size() > 0)
+            if (processIds.size() > 0)
             {
                 std::thread myThread(threadFunction);
                 if (myThread.joinable())
@@ -1408,23 +1408,23 @@ namespace KeyboardEventHandlers
             }
         }
 
-        Logger::trace(L"CKBH:{}, CloseProcessByName returning", fileNamePart);
+        Logger::trace(L"ChordKeyboardHandler:{}, CloseProcessByName returning", fileNamePart);
     }
 
-    void TerminateProcsesByName(const std::wstring& fileNamePart)
+    void TerminateProcessesByName(const std::wstring& fileNamePart)
     {
-        auto pids = GetProcessesIdByName(fileNamePart);
+        auto processIds = GetProcessesIdByName(fileNamePart);
 
-        if (pids.size() == 0)
+        if (processIds.size() == 0)
         {
-            Logger::trace(L"CKBH:{}, Nothing To PROCESS_TERMINATE", fileNamePart);
+            Logger::trace(L"ChordKeyboardHandler:{}, Nothing To PROCESS_TERMINATE", fileNamePart);
             return;
         }
 
-        for (DWORD pid : pids)
+        for (DWORD pid : processIds)
         {
             HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
-            Logger::trace(L"CKBH:{}, PROCESS_TERMINATE (1) -> pid:{}", fileNamePart, pid);
+            Logger::trace(L"ChordKeyboardHandler:{}, PROCESS_TERMINATE (1) -> pid:{}", fileNamePart, pid);
             if (hProcess != NULL)
             {
                 if (!TerminateProcess(hProcess, 0))
@@ -1441,14 +1441,14 @@ namespace KeyboardEventHandlers
 
     bool HideProgram(DWORD pid, std::wstring programName, int retryCount)
     {
-        Logger::trace(L"CKBH:HideProgram starting with {},{}, retryCount:{}", pid, programName, retryCount);
+        Logger::trace(L"ChordKeyboardHandler:HideProgram starting with {},{}, retryCount:{}", pid, programName, retryCount);
 
         HWND hwnd = FindMainWindow(pid, false);
         if (hwnd == NULL)
         {
             if (retryCount < 20)
             {
-                Logger::trace(L"CKBH:hwnd not found will retry for pid:{}", pid);
+                Logger::trace(L"ChordKeyboardHandler:hwnd not found will retry for pid:{}", pid);
                 auto future = std::async(std::launch::async, [=] {
                     std::this_thread::sleep_for(std::chrono::milliseconds(50));
                     auto result = HideProgram(pid, programName, retryCount + 1);
@@ -1461,7 +1461,7 @@ namespace KeyboardEventHandlers
 
         auto anyHideResultFailed = false;
 
-        Logger::trace(L"CKBH:{}:{},{}, FindWindow, HideProgram (all)", programName, pid, retryCount);
+        Logger::trace(L"ChordKeyboardHandler:{}:{},{}, FindWindow, HideProgram (all)", programName, pid, retryCount);
         while (hwnd)
         {
             DWORD pidForHwnd;
@@ -1471,7 +1471,7 @@ namespace KeyboardEventHandlers
                 if (IsWindowVisible(hwnd))
                 {
                     ShowWindow(hwnd, SW_HIDE);
-                    Logger::trace(L"CKBH:{}, tryToHide {}, {}", programName, reinterpret_cast<uintptr_t>(hwnd), anyHideResultFailed);
+                    Logger::trace(L"ChordKeyboardHandler:{}, tryToHide {}, {}", programName, reinterpret_cast<uintptr_t>(hwnd), anyHideResultFailed);
                 }
             }
             hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
@@ -1482,7 +1482,7 @@ namespace KeyboardEventHandlers
 
     bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool minimizeIfVisible, int retryCount)
     {
-        Logger::trace(L"CKBH:ShowProgram starting with {},{},isNewProcess:{}, tryToHide:{} retryCount:{}", pid, programName, isNewProcess, retryCount);
+        Logger::trace(L"ChordKeyboardHandler:ShowProgram starting with {},{},isNewProcess:{}, tryToHide:{} retryCount:{}", pid, programName, isNewProcess, retryCount);
 
         // a good place to look for this...
         // https://github.com/ritchielawrence/cmdow
@@ -1496,7 +1496,7 @@ namespace KeyboardEventHandlers
         {
             if (retryCount < 20)
             {
-                Logger::trace(L"CKBH:hwnd not found will retry for pid:{}, allowNonVisible:{}", pid, allowNonVisible);
+                Logger::trace(L"ChordKeyboardHandler:hwnd not found will retry for pid:{}, allowNonVisible:{}", pid, allowNonVisible);
 
                 auto future = std::async(std::launch::async, [=] {
                     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -1507,21 +1507,21 @@ namespace KeyboardEventHandlers
         }
         else
         {
-            Logger::trace(L"CKBH:{}, got hwnd from FindMainWindow", programName);
+            Logger::trace(L"ChordKeyboardHandler:{}, got hwnd from FindMainWindow", programName);
 
             if (hwnd == GetForegroundWindow())
             {
                 // only hide if this was a call from a already open program, don't make small if we just opened it.
                 if (!isNewProcess && minimizeIfVisible)
                 {
-                    Logger::trace(L"CKBH:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
+                    Logger::trace(L"ChordKeyboardHandler:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
                     return ShowWindow(hwnd, SW_MINIMIZE);
                 }
                 return false;
             }
             else
             {
-                Logger::trace(L"CKBH:{}, not ForegroundWindow, doing SW_RESTORE", programName);
+                Logger::trace(L"ChordKeyboardHandler:{}, not ForegroundWindow, doing SW_RESTORE", programName);
 
                 // Check if the window is minimized
                 if (IsIconic(hwnd))
@@ -1539,12 +1539,12 @@ namespace KeyboardEventHandlers
                 if (!SetForegroundWindow(hwnd))
                 {
                     auto errorCode = GetLastError();
-                    Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                    Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
                     return false;
                 }
                 else
                 {
-                    Logger::trace(L"CKBH:{}, success on SetForegroundWindow", programName);
+                    Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
                     return true;
                 }
             }
@@ -1561,25 +1561,25 @@ namespace KeyboardEventHandlers
             hwnd = FindWindow(nullptr, nullptr);
             if (AttachConsole(pid))
             {
-                Logger::trace(L"CKBH:{}, success on AttachConsole", programName);
+                Logger::trace(L"ChordKeyboardHandler:{}, success on AttachConsole", programName);
 
                 // Get the console window handle
                 hwnd = GetConsoleWindow();
                 auto showByConsoleSuccess = false;
                 if (hwnd != NULL)
                 {
-                    Logger::trace(L"CKBH:{}, success on GetConsoleWindow, doing SW_RESTORE", programName);
+                    Logger::trace(L"ChordKeyboardHandler:{}, success on GetConsoleWindow, doing SW_RESTORE", programName);
 
                     ShowWindow(hwnd, SW_RESTORE);
 
                     if (!SetForegroundWindow(hwnd))
                     {
                         auto errorCode = GetLastError();
-                        Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                        Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
                     }
                     else
                     {
-                        Logger::trace(L"CKBH:{}, success on SetForegroundWindow", programName);
+                        Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
                         showByConsoleSuccess = true;
                     }
                 }
@@ -1599,7 +1599,7 @@ namespace KeyboardEventHandlers
         auto anyHideResultFailed = false;
         if (hwnd)
         {
-            Logger::trace(L"CKBH:{}:{},{}, FindWindow (show all mode)", programName, pid, retryCount);
+            Logger::trace(L"ChordKeyboardHandler:{}:{},{}, FindWindow (show all mode)", programName, pid, retryCount);
             while (hwnd)
             {
                 DWORD pidForHwnd;
@@ -1615,13 +1615,13 @@ namespace KeyboardEventHandlers
                         // hwnd is the window handle with targetPid
                         if (SetForegroundWindow(hwnd))
                         {
-                            Logger::trace(L"CKBH:{}, success on SetForegroundWindow", programName);
+                            Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
                             return true;
                         }
                         else
                         {
                             auto errorCode = GetLastError();
-                            Logger::warn(L"CKBH:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                            Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
                         }
                     }
                 }

@@ -244,7 +244,7 @@
     <value>Edit shortcuts to activate and then configure the actions to happen when activated.</value>
     <comment>Key on a keyboard</comment>
   </data>
-  <data name="EditSingleShortcut_Info" xml:space="preserve">
+  <data name="Edit_Single_Shortcut_Info" xml:space="preserve">
     <value>Edit shortcut to activate and then configure the action to happen when activated.</value>
     <comment>Key on a keyboard</comment>
   </data>
@@ -284,10 +284,10 @@
   <data name="EditShortcuts_Allow_Chords" xml:space="preserve">
     <value>Allow chords</value>
   </data>
-  <data name="EditShortcuts_PathToProgram" xml:space="preserve">
+  <data name="EditShortcuts_Path_To_Program" xml:space="preserve">
     <value>Path to program</value>
   </data>
-  <data name="EditShortcuts_UriExample" xml:space="preserve">
+  <data name="EditShortcuts_Uri_Example" xml:space="preserve">
     <value>E.g.: https://website.url</value>
   </data>
   <data name="EditShortcuts_What_Can_I_Use_Link" xml:space="preserve">

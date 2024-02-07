@@ -99,6 +99,7 @@ Pooja
 Quriz
 randyrants
 ricardosantos
+ritchielawrence
 robmikh
 Rutkas
 ryanbodrug
@@ -128,6 +129,7 @@ Zykova
 
 # OTHERS
 
+cmdow
 Controlz
 cortana
 fancymouse

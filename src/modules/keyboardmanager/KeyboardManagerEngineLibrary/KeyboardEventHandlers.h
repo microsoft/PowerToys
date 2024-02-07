@@ -34,7 +34,7 @@ namespace KeyboardEventHandlers
     // Function to reset chord matching
     void ResetAllOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, DWORD keyToKeep);
 
-    std::wstring URLencode(const std::wstring& value);
+    std::wstring URL_encode(const std::wstring& value);
 
     std::wstring ConvertPathToURI(const std::wstring& filePath);
 
@@ -46,7 +46,7 @@ namespace KeyboardEventHandlers
 
     void CloseProcessByName(const std::wstring& fileNamePart);
 
-    void TerminateProcsesByName(const std::wstring& fileNamePart);
+    void TerminateProcessesByName(const std::wstring& fileNamePart);
 
     void CloseAndTerminateProcessByName(const std::wstring& fileNamePart);
 
