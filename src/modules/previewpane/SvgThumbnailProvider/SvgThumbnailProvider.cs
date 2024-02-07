@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Common.Utilities;
+using ManagedCommon;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
@@ -197,8 +198,10 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                         _browser.NavigateToString(SvgContents);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.LogError($"Failed running webView2Environment completed for {FilePath} : ", ex);
+                    thumbnailDone.Set();
                 }
             });
 

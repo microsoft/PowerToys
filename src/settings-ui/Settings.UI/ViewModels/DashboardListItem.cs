@@ -25,8 +25,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ModuleType Tag { get; set; }
 
-        public Color AccentColor { get; set; } = Colors.Transparent;
-
         public bool IsLocked { get; set; }
 
         public bool IsEnabled

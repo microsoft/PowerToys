@@ -44,12 +44,7 @@ namespace Hosts.Views
 
         private async Task OpenNewDialogAsync()
         {
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            EntryDialog.Title = resourceLoader.GetString("AddNewEntryDialog_Title");
-            EntryDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
-            EntryDialog.PrimaryButtonCommand = AddCommand;
-            EntryDialog.DataContext = new Entry(ViewModel.NextId, string.Empty, string.Empty, string.Empty, true);
-            await EntryDialog.ShowAsync();
+            await ShowAddDialogAsync();
         }
 
         private async Task OpenAdditionalLinesDialogAsync()
@@ -110,6 +105,14 @@ namespace Hosts.Views
             if (Entries.SelectedItem is Entry entry)
             {
                 await ShowEditDialogAsync(entry);
+            }
+        }
+
+        private async void Duplicate_Click(object sender, RoutedEventArgs e)
+        {
+            if (Entries.SelectedItem is Entry entry)
+            {
+                await ShowAddDialogAsync(entry);
             }
         }
 
@@ -187,6 +190,20 @@ namespace Hosts.Views
         {
             var entry = (e.OriginalSource as FrameworkElement).DataContext as Entry;
             ViewModel.Selected = entry;
+        }
+
+        private async Task ShowAddDialogAsync(Entry template = null)
+        {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            EntryDialog.Title = resourceLoader.GetString("AddNewEntryDialog_Title");
+            EntryDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
+            EntryDialog.PrimaryButtonCommand = AddCommand;
+
+            EntryDialog.DataContext = template == null
+                ? new Entry(ViewModel.NextId, string.Empty, string.Empty, string.Empty, true)
+                : new Entry(ViewModel.NextId, template.Address, template.Hosts, template.Comment, template.Active);
+
+            await EntryDialog.ShowAsync();
         }
 
         private void ContentDialog_Loaded_ApplyMargin(object sender, RoutedEventArgs e)

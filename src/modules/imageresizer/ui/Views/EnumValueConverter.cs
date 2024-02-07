@@ -35,7 +35,10 @@ namespace ImageResizer.Views
                     .Append(parameter);
             }
 
-            var targetValue = Resources.ResourceManager.GetString(builder.ToString(), culture);
+            // Fixes #16792 - Looks like culture defaults to en-US, so wrong resource is being fetched.
+#pragma warning disable CA1304 // Specify CultureInfo
+            var targetValue = Resources.ResourceManager.GetString(builder.ToString());
+#pragma warning restore CA1304 // Specify CultureInfo
 
             if (toLower)
             {

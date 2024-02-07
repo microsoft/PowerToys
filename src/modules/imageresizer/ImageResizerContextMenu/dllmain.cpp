@@ -51,10 +51,7 @@ public:
     // IExplorerCommand
     IFACEMETHODIMP GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* name)
     {
-        wchar_t strResizePictures[64] = { 0 };
-        LoadString(g_hInst, IDS_RESIZE_PICTURES_TITLE, strResizePictures, ARRAYSIZE(strResizePictures));
-
-        return SHStrDup(strResizePictures, name);
+        return SHStrDup(context_menu_caption.c_str(), name);
     }
 
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
@@ -272,7 +269,7 @@ private:
 
     std::thread create_pipe_thread;
     HANDLE hPipe = INVALID_HANDLE_VALUE;
-    std::wstring app_name = L"ImageResizer";
+    std::wstring context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY, L"Resize with Image Resizer");
 };
 
 CoCreatableClass(ImageResizerContextMenuCommand)

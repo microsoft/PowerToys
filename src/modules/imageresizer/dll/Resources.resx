@@ -117,11 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Resize_Pictures" xml:space="preserve">
-    <value>Resize pictures</value>
+  <data name="ImageResizer_Context_Menu_Entry" xml:space="preserve">
+    <value>Resize with Image Resizer</value>
   </data>
-  <data name="Resize_Pictures_Here" xml:space="preserve">
-    <value>Resize pictures here</value>
+  <data name="ImageResizer_Context_Menu_Entry_Here" xml:space="preserve">
+    <value>Resize with Image Resizer here</value>
   </data>
   <data name="ImageResizer" xml:space="preserve">
     <value>Image Resizer</value>

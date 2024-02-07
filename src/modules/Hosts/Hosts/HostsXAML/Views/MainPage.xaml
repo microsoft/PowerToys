@@ -185,6 +185,17 @@
                                     ScopeOwner="{x:Bind Entries}" />
                             </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="Duplicate" Click="Duplicate_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xF413;" />
+                            </MenuFlyoutItem.Icon>
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="D"
+                                    Modifiers="Control"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
                         <MenuFlyoutItem
                             x:Uid="Ping"
                             Click="Ping_Click"

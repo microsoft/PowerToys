@@ -930,15 +930,15 @@ namespace Microsoft.Plugin.Program.Programs
 
         private static bool TryGetIcoPathForRunCommandProgram(Win32Program program, out string icoPath)
         {
+            icoPath = null;
+
             if (program.AppType != ApplicationType.RunCommand)
             {
-                icoPath = null;
                 return false;
             }
 
             if (string.IsNullOrEmpty(program.FullPath))
             {
-                icoPath = null;
                 return false;
             }
 
@@ -946,6 +946,11 @@ namespace Microsoft.Plugin.Program.Programs
             try
             {
                 var redirectionPath = ReparsePoint.GetTarget(program.FullPath);
+                if (string.IsNullOrEmpty(redirectionPath))
+                {
+                    return false;
+                }
+
                 icoPath = ExpandEnvironmentVariables(redirectionPath);
                 return true;
             }

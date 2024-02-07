@@ -56,6 +56,9 @@ public class SettingsService
                         ActivationKey = settings.Properties.ActivationKey;
                         _keyboardListener.UpdateActivationKey((int)ActivationKey);
 
+                        DoNotActivateOnGameMode = settings.Properties.DoNotActivateOnGameMode;
+                        _keyboardListener.UpdateDoNotActivateOnGameMode(DoNotActivateOnGameMode);
+
                         InputTime = settings.Properties.InputTime.Value;
                         _keyboardListener.UpdateInputTime(InputTime);
 
@@ -120,6 +123,21 @@ public class SettingsService
         set
         {
             _activationKey = value;
+        }
+    }
+
+    private bool _doNotActivateOnGameMode = true;
+
+    public bool DoNotActivateOnGameMode
+    {
+        get
+        {
+            return _doNotActivateOnGameMode;
+        }
+
+        set
+        {
+            _doNotActivateOnGameMode = value;
         }
     }
 

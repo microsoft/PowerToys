@@ -61,7 +61,7 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Find and run executable file.
+        ///   Looks up a localized string similar to Find and run the executable file.
         /// </summary>
         public static string find_executable_file_and_run_it {
             get {
@@ -178,7 +178,7 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Executes commands (e.g &apos;ping&apos;, &apos;cmd&apos;)..
+        ///   Looks up a localized string similar to Executes commands (e.g. &apos;ping&apos;, &apos;cmd&apos;)..
         /// </summary>
         public static string wox_plugin_cmd_plugin_description {
             get {
@@ -223,7 +223,7 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to All entries that using the Windows Terminal forcing the Windows Terminal as console host regardless of the system setting.
+        ///   Looks up a localized string similar to All entries using the Windows Terminal force the Windows Terminal as the console host regardless of the system settings.
         /// </summary>
         public static string wox_shell_command_execution_description {
             get {

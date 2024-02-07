@@ -1022,11 +1022,8 @@
   <data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
     <value>PowerToys will launch automatically</value>
   </data>
-  <data name="GeneralPage_WarningsElevatedApps.Header" xml:space="preserve">
-    <value>Elevated Apps warnings </value>
-  </data>
-  <data name="GeneralPage_WarningsElevatedApps.Description" xml:space="preserve">
-    <value>Show notifications about PowerToys functionality issues when running alongside elevated applications.</value>
+  <data name="GeneralPage_WarningsElevatedApps.Content" xml:space="preserve">
+    <value>Show a warning for functionality issues when running alongside elevated applications</value>
   </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search &amp; replace or regular expressions.</value>
@@ -1069,7 +1066,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Description" xml:space="preserve">
     <value>.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext</value>
-    <comment>File extensions, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
     <value>Source code files (Monaco)</value>
@@ -1077,7 +1074,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
     <value>.cpp, .py, .json, .xml, .csproj, ...</value>
-    <comment>File extensions should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
@@ -1085,7 +1082,7 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Description" xml:space="preserve">
     <value>.svg</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_Preview_SVG_Color_Mode.Header" xml:space="preserve">
     <value>Color mode</value>
@@ -1116,54 +1113,51 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Description" xml:space="preserve">
     <value>.svg</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
-    <comment>File type, do not translate</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
-    <comment>File extension, should not be altered</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
     <value>Color</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Header" xml:space="preserve">
     <value>Quite Ok Image</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Description" xml:space="preserve">
     <value>.qoi</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Header" xml:space="preserve">
     <value>Quite OK Image</value>
-    <comment>File type, do not translate</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
     <value>.qoi</value>
-    <comment>File extension, should not be altered</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
-    <comment>File type, do not translate</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
-    <comment>File extension, should not be altered</comment>
-  </data>
+    <comment>{Locked}</comment>  </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
@@ -1291,12 +1285,15 @@
   </data>
   <data name="ImageResizer_Encoding.Header" xml:space="preserve">
     <value>JPEG quality level (%)</value>
+    <comment>{Locked="JPEG"}</comment>
   </data>
   <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
     <value>PNG interlacing</value>
+    <comment>{Locked="PNG"}</comment>
   </data>
   <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
     <value>TIFF compression</value>
+    <comment>{Locked="TIFF"}</comment>
   </data>
   <data name="File.Header" xml:space="preserve">
     <value>File</value>
@@ -1307,47 +1304,53 @@
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT3.Content" xml:space="preserve">
     <value>CCITT3</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT4.Content" xml:space="preserve">
     <value>CCITT4</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Default.Content" xml:space="preserve">
     <value>Default</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_LZW.Content" xml:space="preserve">
     <value>LZW</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_None.Content" xml:space="preserve">
     <value>None</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_RLE.Content" xml:space="preserve">
     <value>RLE</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Zip.Content" xml:space="preserve">
     <value>Zip</value>
-    <comment>do not loc</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
     <value>BMP encoder</value>
+    <comment>{Locked="BMP"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_GIF.Content" xml:space="preserve">
     <value>GIF encoder</value>
+    <comment>{Locked="GIF"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_JPEG.Content" xml:space="preserve">
     <value>JPEG encoder</value>
+    <comment>{Locked="JPEG"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_PNG.Content" xml:space="preserve">
     <value>PNG encoder</value>
+    <comment>{Locked="PNG"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_TIFF.Content" xml:space="preserve">
     <value>TIFF encoder</value>
+    <comment>{Locked="TIFF"}</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_WMPhoto.Content" xml:space="preserve">
     <value>WMPhoto encoder</value>
+    <comment>{Locked="WMPhoto"}</comment>
   </data>
   <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
     <value>Fill</value>
@@ -1386,10 +1389,10 @@
   <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Content" xml:space="preserve">
     <value>Learn more about administrator mode</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
-    <value>Download updates automatically</value>
+  <data name="GeneralPage_AutoDownloadAndInstallUpdates.Header" xml:space="preserve">
+    <value>Download and install updates automatically</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Description" xml:space="preserve">
+  <data name="GeneralPage_AutoDownloadAndInstallUpdates.Description" xml:space="preserve">
     <value>Except on metered connections</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
@@ -1449,8 +1452,8 @@
   <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
   </data>
-  <data name="General_Version.Header" xml:space="preserve">
-    <value>Version</value>
+  <data name="General_VersionAndUpdate.Header" xml:space="preserve">
+    <value>Version &amp; updates</value>
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
@@ -1467,8 +1470,8 @@
   <data name="General_SettingsBackupInfo_StatusHeader.Text" xml:space="preserve">
     <value>Status:</value>
   </data>
-  <data name="General_Version.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Version</value>
+  <data name="General_VersionAndUpdate.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Version and updates</value>
   </data>
   <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
@@ -2042,10 +2045,10 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.</value>
   </data>
   <data name="Oobe_FileLocksmith_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, right-click one or more selected files and select **What's using this file?** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **Unlock with File Locksmith** from the context menu.</value>
   </data>
   <data name="Oobe_FileLocksmith_TipsAndTricks.Text" xml:space="preserve">
-    <value>Press the **Restart Elevated** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
+    <value>Press the **Restart as administrator** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**. 
@@ -2064,7 +2067,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>How to use</value>
   </data>
   <data name="Oobe_ImageResizer_HowToLaunch.Text" xml:space="preserve">
-    <value>In File Explorer, right-click one or more image files and select **Resize pictures** from the context menu.</value>
+    <value>In File Explorer, right-click one or more image files and select **Resize with Image Resizer** from the context menu.</value>
   </data>
   <data name="Oobe_ImageResizer_TipsAndTricks.Text" xml:space="preserve">
     <value>Want a custom size? You can add them in the PowerToys Settings!</value>
@@ -2082,7 +2085,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Use the service option in Settings to install a service enabling Mouse Without Borders to function even in the lock screen.</value>
   </data>
   <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
-    <value>In File Explorer, right-click one or more selected files and select **PowerRename** from the context menu.</value>
+    <value>In File Explorer, right-click one or more selected files and select **Rename with PowerRename** from the context menu.</value>
   </data>
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
@@ -3605,8 +3608,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Shell integration</value>
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
-  <data name="GPO_IsSettingForced.Title" xml:space="preserve">
-    <value>This setting is enforced by your System Administrator.</value>
+  <data name="GPO_SettingIsManaged.Title" xml:space="preserve">
+    <value>This setting is managed by your organization.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
     <value>Additional content includes the file header and lines that can't parse</value>
@@ -3649,9 +3652,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
-  </data>
-  <data name="GPO_ExperimentationIsDisallowed.Title" xml:space="preserve">
-    <value>The system administrator has disabled experimentation.</value>
   </data>
   <data name="Shell_PastePlain.Content" xml:space="preserve">
     <value>Paste As Plain Text</value>
@@ -3848,9 +3848,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Enable Mouse Jump</value>
     <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
-  <data name="GPO_AutoDownloadUpdatesIsDisabled.Title" xml:space="preserve">
-    <value>The system administrator has disabled the automatic download of updates.</value>
-  </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
     <comment>"127.0.0.1 and ::1" are well known loopback addresses, do not loc</comment>
@@ -3937,8 +3934,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Run_PluginUseFindMorePlugins.Content" xml:space="preserve">
     <value>Find more plugins</value>
   </data>
-  <data name="Run_SomePluginsAreGpoManaged.Title" xml:space="preserve">
-    <value>The system administrator is managing the enabled state of some plugins.</value>
+  <data name="GPO_SomeRunPluginsAreManaged.Title" xml:space="preserve">
+    <value>The enabled state of some plugins is managed by your organization.</value>
   </data>
   <data name="AlwaysOnTop_FrameOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
@@ -3965,9 +3962,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Dashboard</value>
-  </data>
-  <data name="GPO_IsSettingForcedText.Text" xml:space="preserve">
-    <value>This setting is enforced by your System Administrator.</value>
   </data>
   <data name="DisabledModules.Text" xml:space="preserve">
     <value>Disabled modules</value>
@@ -4011,16 +4005,29 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="PowerLauncher_TextFontSizeSlider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Text size of result titles</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_ShowWhatsNewAfterUpdates.Header" xml:space="preserve">
-    <value>Show the release notes after updates</value>
+  <data name="GeneralPage_ShowWhatsNewAfterUpdates.Content" xml:space="preserve">
+    <value>Show the release notes after an update</value>
   </data>
   <data name="CmdNotFound_Arm64ArchBar.Title" xml:space="preserve">
     <value>Command Not Found is not supported on the ARM64 architecture currently. We are actively working on a solution.</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_ShowNewUpdatesToast.Description" xml:space="preserve">
-    <value>Notifications in the settings and the tray flyout are always shown</value>
+  <data name="QuickAccent_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+    <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
   </data>
-  <data name="GeneralPage_ToggleSwitch_ShowNewUpdatesToast.Header" xml:space="preserve">
+  <data name="GeneralPage_ShowNewUpdatesToast.Header" xml:space="preserve">
     <value>Show notifications for new updates</value>
+  </data>
+  <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">
+    <value>Some settings are managed by your organization.</value>
+  </data>
+  <data name="GPO_SettingIsManaged_ToolTip.Text" xml:space="preserve">
+    <value>This setting is managed by your organization.</value>
+  </data>
+  <data name="GPO_SomePreviewPanesAreManaged.Title" xml:space="preserve">
+    <value>The enabled state of some preview handlers is managed by your organization.</value>
+  </data>
+  <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
+    <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
   </data>
 </root>
