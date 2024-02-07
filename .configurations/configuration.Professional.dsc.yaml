@@ -11,7 +11,7 @@ properties:
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: vsPackage
       directives:
-        description: Install Professional Visual Studio 2022 (Any edition will work)
+        description: Install Visual Studio 2022 Professional (Any edition will work)
         allowPrerelease: true
       settings:
         id: Microsoft.VisualStudio.2022.Professional
