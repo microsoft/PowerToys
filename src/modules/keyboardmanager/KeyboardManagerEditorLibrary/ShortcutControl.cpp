@@ -992,6 +992,9 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     bool indexFound = children.IndexOf(row, rowIndex);
 
     Shortcut shortcut;
+
+    if (shortcutRemapBuffer.size() > 0)
+    {
     if (colIndex == 0)
     {
         shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]);
@@ -1004,13 +1007,13 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
             Shortcut newShortcut;
             shortcutRemapBuffer[rowIndex].first[1] = newShortcut;
         }
-
         shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[1]);
     }
 
     if (!shortcut.IsEmpty() && shortcut.HasChord())
     {
         keyboardManagerState.AllowChord = true;
+    }
     }
 
     //remapBuffer[rowIndex].first.
