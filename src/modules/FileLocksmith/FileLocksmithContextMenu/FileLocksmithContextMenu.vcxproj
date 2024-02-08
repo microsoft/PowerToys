@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h FileLocksmithContextMenu.base.rc FileLocksmithContextMenu.rc" />
   </Target>
@@ -11,6 +12,12 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <TargetName>PowerToys.FileLocksmithContextMenu</TargetName>
+    <!-- Needs a different int dir to avoid conflicts in msix creation. -->
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -40,12 +47,19 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;FILELOCKSMITHCONTEXTMENU_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>..;../../..;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
+    <PreBuildEvent>
+      <Command>del $(OutDir)\FileLocksmithContextMenuPackage.msix /q
+MakeAppx.exe pack /d . /p $(OutDir)FileLocksmithContextMenuPackage.msix /nv</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
@@ -56,6 +70,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;FILELOCKSMITHCONTEXTMENU_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>..;../../..;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -63,11 +78,18 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
+    <PreBuildEvent>
+      <Command>del $(OutDir)\FileLocksmithContextMenuPackage.msix /q
+MakeAppx.exe pack /d . /p $(OutDir)FileLocksmithContextMenuPackage.msix /nv</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.base.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -79,9 +101,18 @@
     <None Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
+      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\common\version\version.vcxproj">
       <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\FileLocksmithLib\FileLocksmithLib.vcxproj">
+      <Project>{9d52fd25-ef90-4f9a-a015-91efc5daf54f}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FileLocksmithContextMenu.base.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
