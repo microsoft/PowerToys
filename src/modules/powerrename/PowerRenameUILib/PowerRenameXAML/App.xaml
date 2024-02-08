@@ -180,10 +180,7 @@
                                                                 </VisualState>
                                                                 <VisualState x:Name="Disabled">
                                                                     <VisualState.Setters>
-                                                                        <Setter Target="RootGrid.Background" Value="Transparent" />
                                                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentSplitButtonForegroundCheckedDisabled}" />
-                                                                        <!--<Setter Target="RootGrid.Background" Value="Transparent" />-->
-                                                                        <Setter Target="ContentPresenter.BorderBrush" Value="Transparent" />
                                                                     </VisualState.Setters>
                                                                 </VisualState>
                                                             </VisualStateGroup>
