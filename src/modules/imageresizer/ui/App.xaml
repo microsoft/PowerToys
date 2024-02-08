@@ -18,6 +18,7 @@
             <v:AutoDoubleConverter x:Key="AutoDoubleConverter" />
             <v:BoolValueConverter x:Key="BoolValueConverter" />
             <v:VisibilityBoolConverter x:Key="VisibilityBoolConverter" />
+            <v:EnumToIntConverter x:Key="EnumToIntConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
