@@ -2,7 +2,7 @@
 
 #include "FileLocksmith.h"
 
-#include "../FileLocksmithExt/Constants.h"
+#include "../FileLocksmithLib/Constants.h"
 
 namespace FileLocksmith::Interop
 {

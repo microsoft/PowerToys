@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include <fstream>
+
 namespace ipc
 {
     class Writer

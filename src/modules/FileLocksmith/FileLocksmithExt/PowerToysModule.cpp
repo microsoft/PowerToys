@@ -7,10 +7,11 @@
 #include <common/utils/logger_helper.h>
 #include <optional>
 
-#include "Constants.h"
+#include "FileLocksmithLib/Constants.h"
+#include "FileLocksmithLib/Settings.h"
+#include "FileLocksmithLib/Trace.h"
+
 #include "dllmain.h"
-#include "Settings.h"
-#include "Trace.h"
 #include "Generated Files/resource.h"
 
 class FileLocksmithModule : public PowertoyModuleIface
