@@ -9,9 +9,7 @@
             Margin="12,12,12,0"
             FontSize="16"
             Text="{x:Static p:Resources.Results_MainInstruction}" />
-        <ScrollViewer
-            HorizontalAlignment="Stretch"
-            VerticalScrollBarVisibility="Auto">
+        <ScrollViewer HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
             <ItemsControl Margin="12,4,12,0" ItemsSource="{Binding Errors}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="ResizeError">

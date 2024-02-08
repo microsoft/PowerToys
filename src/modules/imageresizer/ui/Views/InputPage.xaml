@@ -197,25 +197,25 @@
                 Grid.Row="1"
                 Margin="16"
                 Orientation="Vertical">
-                <CheckBox VerticalAlignment="Top" IsChecked="{Binding Settings.ShrinkOnly}">
+                <CheckBox IsChecked="{Binding Settings.ShrinkOnly}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
-                <CheckBox VerticalAlignment="Top" IsChecked="{Binding Settings.IgnoreOrientation}">
+                <CheckBox IsChecked="{Binding Settings.IgnoreOrientation}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_IgnoreOrientation}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
-                <CheckBox VerticalAlignment="Top" IsChecked="{Binding Settings.Replace}">
+                <CheckBox IsChecked="{Binding Settings.Replace}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_Replace}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
-                <CheckBox VerticalAlignment="Top" IsChecked="{Binding Settings.RemoveMetadata}">
+                <CheckBox IsChecked="{Binding Settings.RemoveMetadata}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_RemoveMetadata}" TextWrapping="Wrap" />
                     </CheckBox.Content>
