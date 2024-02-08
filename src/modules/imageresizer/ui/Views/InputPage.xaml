@@ -181,7 +181,7 @@
                     ItemsSource="{Binding ResizeFitValues, Mode=OneWay}"
                     SelectedIndex="{Binding ElementName=SizeComboBox, Path=SelectedValue.Fit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
                     <ComboBox.ItemTemplate>
-                        <DataTemplate DataType="sys:Enum">
+                        <DataTemplate DataType="{x:Type m:ResizeFit}">
                             <TextBlock
                                 Margin="4,0,0,0"
                                 FontSize="14"
@@ -208,7 +208,7 @@
                     ItemsSource="{Binding ResizeUnitValues, Mode=OneWay}"
                     SelectedIndex="{Binding ElementName=SizeComboBox, Path=SelectedValue.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
                     <ComboBox.ItemTemplate>
-                        <DataTemplate DataType="sys:Enum">
+                        <DataTemplate DataType="{x:Type m:ResizeUnit}">
                             <TextBlock
                                 Margin="4,0,0,0"
                                 FontSize="14"
