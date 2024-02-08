@@ -46,7 +46,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                 path = path[1..];
             }
 
-            if (!DoesPathExist(path, workspaceEnv.Value, machineName))
+            if (!DoesPathExist(path, workspaceEnv.Value))
             {
                 return null;
             }
@@ -72,18 +72,11 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
             };
         }
 
-        private bool DoesPathExist(string path, WorkspaceEnvironment workspaceEnv, string machineName)
+        private bool DoesPathExist(string path, WorkspaceEnvironment workspaceEnv)
         {
-            if (workspaceEnv == WorkspaceEnvironment.Local || workspaceEnv == WorkspaceEnvironment.RemoteWSL)
+            if (workspaceEnv == WorkspaceEnvironment.Local)
             {
-                var resolvedPath = path;
-
-                if (workspaceEnv == WorkspaceEnvironment.RemoteWSL)
-                {
-                    resolvedPath = $"\\\\wsl$\\{machineName}{resolvedPath.Replace('/', '\\')}";
-                }
-
-                return Directory.Exists(resolvedPath) || File.Exists(resolvedPath);
+                return Directory.Exists(path) || File.Exists(path);
             }
 
             // If the workspace environment is not Local or WSL, assume the path exists
