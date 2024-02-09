@@ -39,7 +39,7 @@ jobs:
   - task: Windows Application Driver@0
     displayName: 'Start - WinAppDriver'
     inputs:
-      OperationType: Start
+      OperationType: 'Start'
       #WADArguments: 127.0.0.1 4723
 
   - task: VSTest@2
@@ -63,5 +63,5 @@ jobs:
   - task: Windows Application Driver@0
     displayName: 'Stop - WinAppDriver'
     inputs:
-      OperationType: Stop
+      OperationType: 'Stop'
     condition: succeededOrFailed()
