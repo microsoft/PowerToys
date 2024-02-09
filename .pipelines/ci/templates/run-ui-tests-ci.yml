@@ -40,7 +40,7 @@ jobs:
     displayName: 'Start - WinAppDriver'
     inputs:
       OperationType: Start
-      WADArguments: 127.0.0.1 4723
+      #WADArguments: 127.0.0.1 4723
 
   - task: VSTest@2
     displayName: 'UI Tests'
