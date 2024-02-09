@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -106,16 +107,16 @@ namespace ColorPicker.Controls
             ColorCopiedNotificationBorder.BeginAnimation(Border.HeightProperty, resize);
 
             var clipboardNotification = ((Decorator)ColorCopiedNotificationBorder).Child;
-
             if (clipboardNotification == null)
             {
                 return;
             }
 
-            var peer = UIElementAutomationPeer.FromElement(clipboardNotification);
+            var innerTextBlock = ((StackPanel)clipboardNotification).Children.OfType<TextBlock>().FirstOrDefault();
+            var peer = UIElementAutomationPeer.FromElement(innerTextBlock);
             if (peer == null)
             {
-                peer = UIElementAutomationPeer.CreatePeerForElement(clipboardNotification);
+                peer = UIElementAutomationPeer.CreatePeerForElement(innerTextBlock);
             }
 
             peer.RaiseAutomationEvent(AutomationEvents.MenuOpened);

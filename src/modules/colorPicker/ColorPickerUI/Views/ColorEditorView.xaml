@@ -286,16 +286,22 @@
             <Border.Background>
                 <SolidColorBrush Color="{DynamicResource SystemAccentColorPrimary}" />
             </Border.Background>
-            <TextBlock
+            <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 AutomationProperties.LiveSetting="Assertive"
                 AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}"
-                FontSize="16"
-                Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}">
-                <Run FontFamily="Segoe Fluent Icons" Text="&#xE8C8;" />
-                <Run Text="{x:Static p:Resources.Copied_to_clipboard}" />
-            </TextBlock>
+                Orientation="Horizontal">
+                <ui:SymbolIcon
+                    Margin="0,0,8,0"
+                    FontSize="20"
+                    Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                    Symbol="Copy20" />
+                <TextBlock
+                    FontSize="16"
+                    Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                    Text="{x:Static p:Resources.Copied_to_clipboard}" />
+            </StackPanel>
         </Border>
     </Grid>
 </UserControl>
