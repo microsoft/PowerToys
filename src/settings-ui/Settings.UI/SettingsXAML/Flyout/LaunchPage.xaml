@@ -5,9 +5,8 @@
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Flyout"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d">
@@ -65,13 +64,13 @@
             <Grid Grid.Row="1">
                 <ItemsControl
                     Margin="12,26,12,24"
-                    HorizontalAlignment="Center"
+                    HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
                     ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
                     TabNavigation="Local">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <tk7controls:WrapPanel VerticalSpacing="12" />
+                            <tkcontrols:WrapPanel HorizontalAlignment="Stretch" VerticalSpacing="12" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>

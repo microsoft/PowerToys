@@ -1,19 +1,19 @@
 $ProgressPreference = 'SilentlyContinue'
 
-$WixDownloadUrl = "https://wixtoolset.org/downloads/v3.14.0.6526/wix314.exe"
-$WixBinariesDownloadUrl = "https://wixtoolset.org/downloads/v3.14.0.6526/wix314-binaries.zip"
+$WixDownloadUrl = "https://github.com/wixtoolset/wix3/releases/download/wix314rtm/wix314.exe"
+$WixBinariesDownloadUrl = "https://github.com/wixtoolset/wix3/releases/download/wix314rtm/wix314-binaries.zip"
 
 # Download WiX binaries and verify their hash sums
 Invoke-WebRequest -Uri $WixDownloadUrl -OutFile "$($ENV:Temp)\wix314.exe"
 $Hash = (Get-FileHash -Algorithm SHA256 "$($ENV:Temp)\wix314.exe").Hash
-if ($Hash -ne 'FADEB00B1FCCD9BB2FDD6CE28D4C3ECDA339C8906A72586515C14A93CEADB6FE')
+if ($Hash -ne '704439EA88FC9E5A3647EEDEEB45943F9A392E3D209F58512280130096847937')
 {
     Write-Error "$WixHash"
     throw "wix314.exe has unexpected SHA256 hash: $Hash"
 }
 Invoke-WebRequest -Uri $WixBinariesDownloadUrl -OutFile "$($ENV:Temp)\wix314-binaries.zip"
 $Hash = (Get-FileHash -Algorithm SHA256 "$($ENV:Temp)\wix314-binaries.zip").Hash
-if($Hash -ne '4C89898DF3BCAB13E12F7CA54399C35AD273475AD2CB6284611D00AE2D063C2C')
+if($Hash -ne '13F067F38969FAF163D93A804B48EA0576790A202C8F10291F2000F0E356E934')
 {
     throw "wix314-binaries.zip has unexpected SHA256 hash: $Hash"
 }
