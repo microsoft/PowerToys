@@ -261,7 +261,7 @@
             VerticalAlignment="Center"
             Orientation="Vertical"
             Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
-            <ui:SymbolIcon FontSize="44" Symbol="Eyedropper20" />
+            <ui:SymbolIcon FontSize="40" Symbol="Eyedropper20" />
             <TextBlock
                 Margin="24,16,24,16"
                 HorizontalAlignment="Center"
@@ -271,7 +271,6 @@
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
         </StackPanel>
-
 
         <Border
             x:Name="CopiedBorderIndicator"
