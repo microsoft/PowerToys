@@ -1,13 +1,13 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
-#include "FileLocksmithLib/AppLaunch.h"
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
+#include <common/utils/elevation.h>
+
 #include "FileLocksmithLib/IPC.h"
 #include "FileLocksmithLib/Settings.h"
 #include "FileLocksmithLib/Trace.h"
-
-#include <common/utils/process_path.h>
-#include <common/utils/resources.h>
 
 #include <Shlwapi.h>
 #include <shobjidl_core.h>
@@ -15,6 +15,7 @@
 #include <wrl/module.h>
 
 #include "Generated Files/resource.h"
+
 
 using namespace Microsoft::WRL;
 
@@ -54,8 +55,8 @@ public:
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
     {
         std::wstring iconResourcePath = get_module_folderpath(g_hInst);
-        iconResourcePath += L"\\Assets\\FileLockmsith\\";
-        iconResourcePath += L"FileLockmsith.ico";
+        iconResourcePath += L"\\Assets\\FileLocksmith\\";
+        iconResourcePath += L"FileLocksmith.ico";
         return SHStrDup(iconResourcePath.c_str(), icon);
     }
 
@@ -93,13 +94,18 @@ public:
             return result;
         }
 
-        if (HRESULT result = LaunchUI(g_hInst); FAILED(result))
+        std::wstring path = get_module_folderpath(g_hInst);
+        path = path + L"\\PowerToys.FileLocksmithUI.exe";
+
+        HRESULT result;
+
+        if (!RunNonElevatedEx(path.c_str(), L"", get_module_folderpath(g_hInst)))
         {
+            result = E_FAIL;
             Trace::InvokedRet(result);
             return result;
         }
 
-        HRESULT result;
         DWORD num_items;
         selection->GetCount(&num_items);
 

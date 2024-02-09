@@ -5,6 +5,8 @@
 #include <common/logger/logger.h>
 #include <common/logger/logger_settings.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/package.h>
+#include <common/utils/process_path.h>
 #include <optional>
 
 #include "FileLocksmithLib/Constants.h"
@@ -75,6 +77,18 @@ public:
     virtual void enable() override
     {
         Logger::info(L"File Locksmith enabled");
+
+        if (package::IsWin11OrGreater())
+        {
+            std::wstring path = get_module_folderpath(globals::instance);
+            std::wstring packageUri = path + L"\\FileLocksmithContextMenuPackage.msix";
+
+            if (!package::IsPackageRegistered(constants::nonlocalizable::ContextMenuPackageName))
+            {
+                package::RegisterSparsePackage(path, packageUri);
+            }
+        }
+
         m_enabled = true;
         save_settings();
     }

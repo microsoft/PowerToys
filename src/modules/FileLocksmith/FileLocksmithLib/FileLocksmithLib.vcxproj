@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build"
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -66,7 +65,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="AppLaunch.h" />
     <ClInclude Include="IPC.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Trace.h" />
@@ -74,7 +72,6 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AppLaunch.cpp" />
     <ClCompile Include="IPC.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Trace.cpp" />

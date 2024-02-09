@@ -30,9 +30,6 @@
     <ClInclude Include="IPC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AppLaunch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -51,9 +48,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Trace.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AppLaunch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

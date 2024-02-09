@@ -4,7 +4,7 @@
 #include "dllmain.h"
 #include "Generated Files/resource.h"
 
-#include "FileLocksmithLib/AppLaunch.h"
+#include "FileLocksmithLib/Constants.h"
 #include "FileLocksmithLib/Settings.h"
 #include "FileLocksmithLib/Trace.h"
 
@@ -175,7 +175,7 @@ IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
         return result;
     }
 
-    if (HRESULT result = LaunchUI(globals::instance); FAILED(result))
+    if (HRESULT result = LaunchUI(pici, &writer); FAILED(result))
     {
         Trace::InvokedRet(result);
         return result;
@@ -240,4 +240,49 @@ ExplorerCommand::ExplorerCommand()
 ExplorerCommand::~ExplorerCommand()
 {
     --globals::ref_count;
+}
+
+HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer)
+{
+    // Compute exe path
+    std::wstring exe_path = get_module_folderpath(globals::instance);
+    exe_path += L'\\';
+    exe_path += constants::nonlocalizable::FileNameUIExe;
+
+    STARTUPINFO startupInfo;
+    ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.dwFlags = STARTF_USESHOWWINDOW;
+
+    if (pici)
+    {
+        startupInfo.wShowWindow = pici->nShow;
+    }
+    else
+    {
+        startupInfo.wShowWindow = SW_SHOWNORMAL;
+    }
+
+    PROCESS_INFORMATION processInformation;
+    std::wstring command_line = L"\"";
+    command_line += exe_path;
+    command_line += L"\"\0";
+
+    CreateProcessW(
+        NULL,
+        command_line.data(),
+        NULL,
+        NULL,
+        TRUE,
+        0,
+        NULL,
+        NULL,
+        &startupInfo,
+        &processInformation);
+
+    // Discard handles
+    CloseHandle(processInformation.hProcess);
+    CloseHandle(processInformation.hThread);
+
+    return S_OK;
 }
