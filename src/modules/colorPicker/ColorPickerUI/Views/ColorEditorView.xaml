@@ -31,7 +31,7 @@
                 ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon FontSize="18" Symbol="Eyedropper24" />
+                        <ui:SymbolIcon FontSize="18" Symbol="Eyedropper20" />
                         <TextBlock Margin="8,0,0,0" Text="{x:Static p:Resources.New_Label}" />
                     </StackPanel>
 
