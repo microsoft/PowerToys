@@ -41,8 +41,8 @@
             <ListView
                 x:Name="HistoryColors"
                 Grid.Column="1"
+                Height="48"
                 Margin="12,4,12,0"
-                Padding="0"
                 VerticalAlignment="Top"
                 VerticalContentAlignment="Top"
                 AutomationProperties.Name="{x:Static p:Resources.Color_History}"
@@ -54,7 +54,7 @@
                 TabIndex="2">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
+                        <VirtualizingStackPanel VerticalAlignment="Top" Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
                 <ListView.ContextMenu>
@@ -220,7 +220,10 @@
                 Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}" />
 
             <!--  Main grid  -->
-            <Grid Grid.Column="1" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
+            <Grid
+                Grid.Column="1"
+                Margin="0,2,0,0"
+                Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
                 <ScrollViewer IsTabStop="False">
                     <ItemsControl
                         FocusManager.IsFocusScope="True"
@@ -239,7 +242,10 @@
                         </ItemsControl.ItemTemplate>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Margin="0,16,0,16" Orientation="Vertical" />
+                                <StackPanel
+                                    Margin="0,14,12,10"
+                                    Background="Transparent"
+                                    Orientation="Vertical" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
