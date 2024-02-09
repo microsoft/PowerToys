@@ -8,7 +8,8 @@ jobs:
   dependsOn: Build${{ parameters.platform }}${{ parameters.configuration }}
   pool:
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: SHINE-OSS-Testing-x64
+      #name: SHINE-OSS-Testing-x64
+      name: windows-2022
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: SHINE-INT-Testing-x64
   steps:
