@@ -36,12 +36,15 @@ jobs:
   - task: VisualStudioTestPlatformInstaller@1
     displayName: Ensure VSTest Platform
 
+  - task: ScreenResolutionUtility@1
+    inputs:
+      displaySettings: 'optimal'
+    
   - task: Windows Application Driver@0
     displayName: 'Start - WinAppDriver'
     inputs:
       OperationType: 'Start'
-      WADArguments: 127.0.0.1 4723
-      AgentResolution: '1080p'
+      #WADArguments: 127.0.0.1 4723
 
   - task: VSTest@2
     displayName: 'UI Tests'
