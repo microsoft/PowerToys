@@ -17,7 +17,7 @@ namespace FileActionsMenu.Ui.Actions.CopyPath
 
         public string Header => "Custom...";
 
-        public bool HasSubMenu => false;
+        public IAction.ItemType Type => IAction.ItemType.Single;
 
         public IAction[]? SubMenuItems => null;
 

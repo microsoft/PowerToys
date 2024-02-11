@@ -28,7 +28,7 @@ namespace FileActionsMenu.Ui.Actions.CopyPath
 
         public string Header => "Copy path of files seperated by...";
 
-        public bool HasSubMenu => true;
+        public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 
         public IAction[]? SubMenuItems =>
         [
@@ -41,7 +41,7 @@ namespace FileActionsMenu.Ui.Actions.CopyPath
 
         public int Category => 2;
 
-        public IconElement? Icon => null;
+        public IconElement? Icon => new FontIcon { Glyph = "\uF0E3" };
 
         public bool IsVisible => _isVisible;
 

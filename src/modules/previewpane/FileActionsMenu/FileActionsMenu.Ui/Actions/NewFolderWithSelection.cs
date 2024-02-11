@@ -20,13 +20,13 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header => "New folder with selection";
 
-        public bool HasSubMenu => false;
+        public IAction.ItemType Type => IAction.ItemType.Single;
 
         public IAction[]? SubMenuItems => null;
 
         public int Category => 1;
 
-        public IconElement? Icon => new FontIcon { Glyph = "&#xE8DE;" };
+        public IconElement? Icon => new FontIcon { Glyph = "\uE8F4" };
 
         public bool IsVisible => true;
 

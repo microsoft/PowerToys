@@ -14,7 +14,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header { get; }
 
-        public bool HasSubMenu { get; }
+        public ItemType Type { get; }
 
         public IAction[]? SubMenuItems { get; }
 
@@ -25,5 +25,12 @@ namespace FileActionsMenu.Ui.Actions
         public bool IsVisible { get; }
 
         public Task Execute(object sender, RoutedEventArgs e);
+
+        public enum ItemType
+        {
+            Single,
+            HasSubMenu,
+            HasSubMenuAndInvokable,
+        }
     }
 }

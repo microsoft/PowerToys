@@ -20,13 +20,13 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header => "Copy to";
 
-        public bool HasSubMenu => false;
+        public IAction.ItemType Type => IAction.ItemType.Single;
 
         public IAction[]? SubMenuItems => null;
 
         public int Category => 1;
 
-        public IconElement? Icon => new FontIcon { Glyph = "&#xE8C3;" };
+        public IconElement? Icon => new FontIcon { Glyph = "\uF413" };
 
         public bool IsVisible => true;
 

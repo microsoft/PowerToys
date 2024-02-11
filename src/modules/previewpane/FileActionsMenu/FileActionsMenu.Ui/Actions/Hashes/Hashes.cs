@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
@@ -21,7 +20,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 
         public string Header => "Generate Checksum";
 
-        public bool HasSubMenu => true;
+        public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 
         public IAction[]? SubMenuItems =>
         [
@@ -32,7 +31,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 
         public int Category => 0;
 
-        public IconElement? Icon => null;
+        public IconElement? Icon => new FontIcon { Glyph = "\uE73E" };
 
         public bool IsVisible => true;
 
@@ -70,6 +69,11 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
                     throw new InvalidOperationException("Unknown hash type");
             }
 
+            if (selectedItems.Length == 1)
+            {
+                GenerateSingleHashes(selectedItems, hashGeneratorFunction, fileExtension);
+            }
+
             FluentWindow window = new();
             window.Content = new ContentPresenter();
             /*window.AllowsTransparency = true;
@@ -99,29 +103,38 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
             ManualResetEvent finishedEvent = new(false);
 
             ContentDialogResult result = await contentDialog.ShowAsync();
+            window.Close();
             if (result == ContentDialogResult.Primary)
             {
-                window.Dispatcher.Invoke(window.Close);
-                foreach (string filename in selectedItems)
-                {
-                    string hash = hashGeneratorFunction(filename);
-
-                    string hashFilename = filename + fileExtension;
-
-                    File.WriteAllText(hashFilename, hash);
-                }
+                GenerateSingleHashes(selectedItems, hashGeneratorFunction, fileExtension);
             }
             else if (result == ContentDialogResult.Secondary)
             {
-                window.Dispatcher.Invoke(window.Close);
-                StringBuilder fileContent = new();
+                GenerateSingleFileWithHashes(selectedItems, hashGeneratorFunction, fileExtension);
+            }
+        }
 
-                foreach (string filename in selectedItems)
-                {
-                    fileContent.Append(filename + ":\n" + hashGeneratorFunction(filename) + "\n\n");
-                }
+        private static void GenerateSingleFileWithHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
+        {
+            StringBuilder fileContent = new();
 
-                File.WriteAllText((Path.GetDirectoryName(selectedItems[0]) ?? throw new ArgumentNullException(nameof(selectedItems))) + "\\hashes" + fileExtension, fileContent.ToString());
+            foreach (string filename in selectedItems)
+            {
+                fileContent.Append(filename + ":\n" + hashGeneratorFunction(filename) + "\n\n");
+            }
+
+            File.WriteAllText((Path.GetDirectoryName(selectedItems[0]) ?? throw new ArgumentNullException(nameof(selectedItems))) + "\\hashes" + fileExtension, fileContent.ToString());
+        }
+
+        private static void GenerateSingleHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
+        {
+            foreach (string filename in selectedItems)
+            {
+                string hash = hashGeneratorFunction(filename);
+
+                string hashFilename = filename + fileExtension;
+
+                File.WriteAllText(hashFilename, hash);
             }
         }
 

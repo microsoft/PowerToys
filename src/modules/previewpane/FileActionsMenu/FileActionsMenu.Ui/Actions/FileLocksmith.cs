@@ -21,11 +21,11 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header => "What's locking this file?";
 
-        public bool HasSubMenu => false;
+        public IAction.ItemType Type => IAction.ItemType.Single;
 
         public IAction[]? SubMenuItems => null;
 
-        public int Category => 4;
+        public int Category => 3;
 
         public IconElement? Icon => null;
 

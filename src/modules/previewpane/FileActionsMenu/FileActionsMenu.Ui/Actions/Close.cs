@@ -14,13 +14,13 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header => "Close menu";
 
-        public bool HasSubMenu => false;
+        public IAction.ItemType Type => IAction.ItemType.Single;
 
         public IAction[]? SubMenuItems => null;
 
         public int Category => 99;
 
-        public IconElement? Icon => null;
+        public IconElement? Icon => new FontIcon() { Glyph = "\uE8BB" };
 
         public bool IsVisible => true;
 

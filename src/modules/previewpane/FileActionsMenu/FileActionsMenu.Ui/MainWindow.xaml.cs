@@ -71,9 +71,18 @@ namespace FileActionsMenu.Ui
                             }
                         }
 
-                        if (action.HasSubMenu)
+                        if (action.Type == IAction.ItemType.HasSubMenu)
                         {
                             HandleItems(action.SubMenuItems!, menuItem, false);
+                        }
+                        else if (action.Type == IAction.ItemType.HasSubMenuAndInvokable)
+                        {
+                            HandleItems(action.SubMenuItems!, menuItem, false);
+                            menuItem.Click += async (object sender, RoutedEventArgs e) =>
+                            {
+                                await action.Execute(sender, e);
+                                Environment.Exit(0);
+                            };
                         }
                         else
                         {

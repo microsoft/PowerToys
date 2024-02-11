@@ -17,7 +17,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public string Header => "Sha1 hash";
 
-        public bool HasSubMenu => false;
+        public IAction.ItemType Type => IAction.ItemType.Single;
 
         public int Category => 0;
 

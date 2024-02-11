@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions
@@ -20,13 +21,13 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header => "Resize images with Image Resizer";
 
-        public bool HasSubMenu => false;
+        public IAction.ItemType Type => IAction.ItemType.Single;
 
         public IAction[]? SubMenuItems => null;
 
         public int Category => 3;
 
-        public IconElement? Icon => null;
+        public IconElement? Icon => new ImageIcon() { Source = Helpers.IconHelper.GetIconFromModuleName("ImageResizer"), Width = 10, Height = 10 };
 
         // Todo: Only visible if only Image Files are selected
         public bool IsVisible => true;
