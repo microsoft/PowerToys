@@ -11,8 +11,9 @@ using CheckedMenuItemsDictionairy = System.Collections.Generic.Dictionary<string
 
 namespace FileActionsMenu.Ui.Actions.Hashes
 {
-    internal sealed class Md5 : IActionAndRequestCheckedMenuItems
+    internal sealed class MD5(Hashes.Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
     {
+        private Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
         private CheckedMenuItemsDictionairy? _checkedMenuItemsDictionary;
 
@@ -20,7 +21,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public CheckedMenuItemsDictionairy CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary ?? throw new ArgumentNullException(nameof(CheckedMenuItemsDictionary)); set => _checkedMenuItemsDictionary = value; }
 
-        public string Header => "Md5 hash";
+        public string Header => "MD5";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -34,7 +35,14 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public async Task Execute(object sender, RoutedEventArgs e)
         {
-            await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.Md5, SelectedItems, CheckedMenuItemsDictionary);
+            if (_hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE)
+            {
+                await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.MD5, SelectedItems, CheckedMenuItemsDictionary);
+            }
+            else
+            {
+                await Hashes.Hashes.VerifyHashes(Hashes.Hashes.HashType.MD5, SelectedItems, CheckedMenuItemsDictionary);
+            }
         }
     }
 }

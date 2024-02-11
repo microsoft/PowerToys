@@ -7,13 +7,14 @@ using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions.Hashes
 {
-    internal sealed class SingleFile : ICheckableAction
+    internal sealed class SingleFile(Hashes.Hashes.HashCallingAction hashCallingAction) : ICheckableAction
     {
+        private Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
 
         public override string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
 
-        public override string Header => "Single file";
+        public override string Header => _hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE ? "Save hashes in single file" : "Compare with hashes in file called \"Hashes\"";
 
         public override IconElement? Icon => null;
 

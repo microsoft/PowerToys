@@ -20,17 +20,18 @@ namespace FileActionsMenu.Ui
         private static readonly IAction[] Actions =
         [
             new CopyPath(),
-                new Hashes(),
-                new FileLocksmith(),
-                new CopyImageToClipboard(),
-                new CopyTo(),
-                new PowerRename(),
-                new ImageResizer(),
-                new MoveTo(),
-                new NewFolderWithSelection(),
-                new Close(),
-                new CopyImageFromClipboardToFolder(),
-            ];
+            new Hashes(Hashes.HashCallingAction.GENERATE),
+            new Hashes(Hashes.HashCallingAction.VERIFY),
+            new FileLocksmith(),
+            new CopyImageToClipboard(),
+            new CopyTo(),
+            new PowerRename(),
+            new ImageResizer(),
+            new MoveTo(),
+            new NewFolderWithSelection(),
+            new Close(),
+            new CopyImageFromClipboardToFolder(),
+        ];
 
         private readonly Dictionary<string, List<(MenuItem, IAction)>> _checkableMenuItemsIndex = [];
 

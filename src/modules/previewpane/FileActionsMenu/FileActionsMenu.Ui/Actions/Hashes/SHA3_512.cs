@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
@@ -11,7 +10,7 @@ using CheckedMenuItemsDictionairy = System.Collections.Generic.Dictionary<string
 
 namespace FileActionsMenu.Ui.Actions.Hashes
 {
-    internal sealed class SHA1(Hashes.Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
+    internal sealed class SHA3_512(Hashes.Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
     {
         private Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
@@ -21,7 +20,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public CheckedMenuItemsDictionairy CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary ?? throw new ArgumentNullException(nameof(CheckedMenuItemsDictionary)); set => _checkedMenuItemsDictionary = value; }
 
-        public string Header => "SHA1";
+        public string Header => "SHA3-512";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -35,13 +34,13 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public async Task Execute(object sender, RoutedEventArgs e)
         {
-            if (_hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE)
+            if (_hashCallingAction == Hashes.Hashes.HashCallingAction.VERIFY)
             {
-                await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.SHA1, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.Hashes.VerifyHashes(Hashes.Hashes.HashType.SHA3_512, SelectedItems, CheckedMenuItemsDictionary);
             }
             else
             {
-                await Hashes.Hashes.VerifyHashes(Hashes.Hashes.HashType.SHA1, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.SHA3_512, SelectedItems, CheckedMenuItemsDictionary);
             }
         }
     }

@@ -7,13 +7,14 @@ using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions.Hashes
 {
-    internal sealed class InFilename : ICheckableAction
+    internal sealed class InFilename(Hashes.Hashes.HashCallingAction hashCallingAction) : ICheckableAction
     {
+        private Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
 
         public override string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
 
-        public override string Header => "In filename";
+        public override string Header => _hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE ? "Replace filename with hash" : "Compare content with filename";
 
         public override IconElement? Icon => null;
 

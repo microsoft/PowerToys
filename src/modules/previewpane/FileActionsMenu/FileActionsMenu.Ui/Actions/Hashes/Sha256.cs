@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
@@ -11,8 +10,9 @@ using CheckedMenuItemsDictionairy = System.Collections.Generic.Dictionary<string
 
 namespace FileActionsMenu.Ui.Actions.Hashes
 {
-    internal sealed class Sha256 : IActionAndRequestCheckedMenuItems
+    internal sealed class SHA256(Hashes.Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
     {
+        private Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
         private CheckedMenuItemsDictionairy? _checkedMenuItemsDictionary;
 
@@ -20,7 +20,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public CheckedMenuItemsDictionairy CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary ?? throw new ArgumentNullException(nameof(CheckedMenuItemsDictionary)); set => _checkedMenuItemsDictionary = value; }
 
-        public string Header => "Sha256 hash";
+        public string Header => "SHA256";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -34,7 +34,14 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public async Task Execute(object sender, RoutedEventArgs e)
         {
-            await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.Sha256, SelectedItems, CheckedMenuItemsDictionary);
+            if (_hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE)
+            {
+                await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.SHA256, SelectedItems, CheckedMenuItemsDictionary);
+            }
+            else
+            {
+                await Hashes.Hashes.VerifyHashes(Hashes.Hashes.HashType.SHA256, SelectedItems, CheckedMenuItemsDictionary);
+            }
         }
     }
 }

@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="System.IO.Hashing" />
     <PackageReference Include="WPF-UI" />
   </ItemGroup>
 

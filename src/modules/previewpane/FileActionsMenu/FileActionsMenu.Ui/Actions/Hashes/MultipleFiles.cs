@@ -3,20 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions.Hashes
 {
-    internal sealed class MultipleFiles : ICheckableAction
+    internal sealed class MultipleFiles(Hashes.Hashes.HashCallingAction hashCallingAction) : ICheckableAction
     {
         private string[]? _selectedItems;
 
         public override string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
 
-        public override string Header => "Multiple files";
+        public override string Header => hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE ? "Save in multiple files" : "Compare with content of same named files";
 
         public override IconElement? Icon => null;
 
