@@ -21,7 +21,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header => "Resize images with Image Resizer";
 
-        public IAction.ItemType Type => IAction.ItemType.Single;
+        public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
         public IAction[]? SubMenuItems => null;
 

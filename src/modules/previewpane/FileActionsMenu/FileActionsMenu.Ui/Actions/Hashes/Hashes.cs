@@ -3,20 +3,24 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using Wpf.Ui.Controls;
+using CheckedMenuItemsDictionairy = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<(Wpf.Ui.Controls.MenuItem, FileActionsMenu.Ui.Actions.IAction)>>;
+using MenuItem = Wpf.Ui.Controls.MenuItem;
 
 namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 {
     internal sealed class Hashes : IAction
     {
-        public string[] SelectedItems { get => []; set => _ = value; }
+        private string[]? _selectedItems;
+
+        public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
 
         public string Header => "Generate Checksum";
 
@@ -24,6 +28,10 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 
         public IAction[]? SubMenuItems =>
         [
+            new SingleFile(),
+            new MultipleFiles(),
+            new InFilename(),
+            new Separator(),
             new Md5(),
             new Sha1(),
             new Sha256(),
@@ -33,7 +41,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 
         public IconElement? Icon => new FontIcon { Glyph = "\uE73E" };
 
-        public bool IsVisible => true;
+        public bool IsVisible => !SelectedItems.Any(Directory.Exists);
 
         public enum HashType
         {
@@ -42,7 +50,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
             Sha256,
         }
 
-        public static async Task GenerateHashes(HashType hashType, string[] selectedItems)
+        public static Task GenerateHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionairy checkedMenuItemsDictionairy)
         {
             Func<string, string> hashGeneratorFunction;
             string fileExtension;
@@ -51,66 +59,67 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
             {
                 case HashType.Md5:
 #pragma warning disable CA5351
-                    hashGeneratorFunction = (filename) => BitConverter.ToString(MD5.Create().ComputeHash(new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read))).Replace("-", string.Empty);
+                    hashGeneratorFunction = (filename) =>
+                    {
+                        using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        return BitConverter.ToString(MD5.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                    };
 #pragma warning restore CA5351
                     fileExtension = ".md5";
                     break;
                 case HashType.Sha1:
 #pragma warning disable CA5350
-                    hashGeneratorFunction = (filename) => BitConverter.ToString(SHA1.Create().ComputeHash(new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read))).Replace("-", string.Empty);
+                    hashGeneratorFunction = (filename) =>
+                    {
+                        using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        return BitConverter.ToString(SHA1.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                    };
 #pragma warning restore CA5350
                     fileExtension = ".sha1";
                     break;
                 case HashType.Sha256:
-                    hashGeneratorFunction = (filename) => BitConverter.ToString(SHA256.Create().ComputeHash(new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read))).Replace("-", string.Empty);
+                    hashGeneratorFunction = (filename) =>
+                    {
+                        using FileStream fs = new(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        return BitConverter.ToString(SHA256.Create().ComputeHash(fs)).Replace("-", string.Empty);
+                    };
                     fileExtension = ".sha256";
                     break;
                 default:
                     throw new InvalidOperationException("Unknown hash type");
             }
 
-            if (selectedItems.Length == 1)
-            {
-                GenerateSingleHashes(selectedItems, hashGeneratorFunction, fileExtension);
-            }
+            List<(MenuItem, IAction)> checkedMenuItems = checkedMenuItemsDictionairy["2a89265d-a55a-4a48-b35f-a48f3e8bc2ea"];
 
-            FluentWindow window = new();
-            window.Content = new ContentPresenter();
-            /*window.AllowsTransparency = true;
-            window.Background = Brushes.Transparent;*/
+            IAction checkedMenuItemAction = checkedMenuItems.First(checkedMenuItems => checkedMenuItems.Item1.IsChecked).Item2;
 
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(window);
-
-            ContentDialog contentDialog = new((ContentPresenter)window.Content);
-            contentDialog.Title = "Save hashes to ... file(s)?";
-            contentDialog.PrimaryButtonText = "Multiple";
-            contentDialog.SecondaryButtonText = "Single";
-            window.Width = 0;
-            window.Height = 0;
-            window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            try
-            {
-                window.Show();
-            }
-            catch (InvalidOperationException)
-            {
-                // Ignore
-            }
-
-            window.Focus();
-            window.Activate();
-
-            ManualResetEvent finishedEvent = new(false);
-
-            ContentDialogResult result = await contentDialog.ShowAsync();
-            window.Close();
-            if (result == ContentDialogResult.Primary)
-            {
-                GenerateSingleHashes(selectedItems, hashGeneratorFunction, fileExtension);
-            }
-            else if (result == ContentDialogResult.Secondary)
+            if (checkedMenuItemAction is SingleFile)
             {
                 GenerateSingleFileWithHashes(selectedItems, hashGeneratorFunction, fileExtension);
+            }
+            else if (checkedMenuItemAction is MultipleFiles)
+            {
+                GenerateMultipleFilesWithHashes(selectedItems, hashGeneratorFunction, fileExtension);
+            }
+            else if (checkedMenuItemAction is InFilename)
+            {
+                GenerateHashesInFilenames(selectedItems, hashGeneratorFunction);
+            }
+            else
+            {
+                throw new InvalidOperationException("Unknown checked menu item");
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private static void GenerateHashesInFilenames(string[] selectedItems, Func<string, string> hashGeneratorFunction)
+        {
+            foreach (string filename in selectedItems)
+            {
+                string hash = hashGeneratorFunction(filename);
+
+                File.Move(filename, Path.Combine(Path.GetDirectoryName(filename) ?? string.Empty, hash + Path.GetExtension(filename)));
             }
         }
 
@@ -126,7 +135,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
             File.WriteAllText((Path.GetDirectoryName(selectedItems[0]) ?? throw new ArgumentNullException(nameof(selectedItems))) + "\\hashes" + fileExtension, fileContent.ToString());
         }
 
-        private static void GenerateSingleHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
+        private static void GenerateMultipleFilesWithHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
         {
             foreach (string filename in selectedItems)
             {

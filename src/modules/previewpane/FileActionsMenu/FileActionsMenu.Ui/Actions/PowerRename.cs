@@ -19,7 +19,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header => "Rename with PowerRename";
 
-        public IAction.ItemType Type => IAction.ItemType.Single;
+        public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
         public IAction[]? SubMenuItems => null;
 

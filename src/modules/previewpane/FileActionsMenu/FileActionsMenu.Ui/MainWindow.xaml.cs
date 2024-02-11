@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using FileActionsMenu.Ui.Actions;
@@ -18,17 +20,19 @@ namespace FileActionsMenu.Ui
         private static readonly IAction[] Actions =
         [
             new CopyPath(),
-            new Hashes(),
-            new FileLocksmith(),
-            new CopyImageToClipboard(),
-            new CopyTo(),
-            new PowerRename(),
-            new ImageResizer(),
-            new MoveTo(),
-            new NewFolderWithSelection(),
-            new Close(),
-            new CopyImageFromClipboardToFolder(),
-        ];
+                new Hashes(),
+                new FileLocksmith(),
+                new CopyImageToClipboard(),
+                new CopyTo(),
+                new PowerRename(),
+                new ImageResizer(),
+                new MoveTo(),
+                new NewFolderWithSelection(),
+                new Close(),
+                new CopyImageFromClipboardToFolder(),
+            ];
+
+        private readonly Dictionary<string, List<(MenuItem, IAction)>> _checkableMenuItemsIndex = [];
 
         public MainWindow(string[] selectedItems)
         {
@@ -54,7 +58,7 @@ namespace FileActionsMenu.Ui
                         if (firstLayer && action.Category != currentCategory)
                         {
                             currentCategory = action.Category;
-                            cm.Items.Add(new Separator());
+                            cm.Items.Add(new System.Windows.Controls.Separator());
                         }
 
                         MenuItem menuItem = new()
@@ -75,19 +79,77 @@ namespace FileActionsMenu.Ui
                         {
                             HandleItems(action.SubMenuItems!, menuItem, false);
                         }
-                        else if (action.Type == IAction.ItemType.HasSubMenuAndInvokable)
+                        else if (action.Type == IAction.ItemType.Separator)
                         {
-                            HandleItems(action.SubMenuItems!, menuItem, false);
-                            menuItem.Click += async (object sender, RoutedEventArgs e) =>
+                            cm.Items.Add(new System.Windows.Controls.Separator());
+                            continue;
+                        }
+                        else if (action.Type == IAction.ItemType.Checkable && action is ICheckableAction checkableAction)
+                        {
+                            if (checkableAction.CheckableGroupUUID is not null)
                             {
-                                await action.Execute(sender, e);
-                                Environment.Exit(0);
+                                if (!_checkableMenuItemsIndex.TryGetValue(checkableAction.CheckableGroupUUID, out List<(MenuItem, IAction)>? value))
+                                {
+                                    value = [];
+                                    _checkableMenuItemsIndex[checkableAction.CheckableGroupUUID] = value;
+                                }
+
+                                value.Add((menuItem, action));
+                            }
+
+                            menuItem.IsCheckable = true;
+
+                            menuItem.IsChecked = checkableAction.IsCheckedByDefault;
+
+                            menuItem.StaysOpenOnClick = true;
+
+                            RoutedEventHandler? uncheckedHandler = null;
+
+                            void CheckedHandler(object sender, RoutedEventArgs e)
+                            {
+                                menuItem.Unchecked -= uncheckedHandler;
+                                if (checkableAction.CheckableGroupUUID is not null)
+                                {
+                                    _checkableMenuItemsIndex[checkableAction.CheckableGroupUUID].ForEach((m) =>
+                                    {
+                                        if (m.Item1 != menuItem)
+                                        {
+                                            m.Item1.Unchecked -= uncheckedHandler;
+                                            m.Item1.IsChecked = false;
+                                            m.Item1.Unchecked += uncheckedHandler;
+                                        }
+                                    });
+                                }
+
+                                checkableAction.IsChecked = true;
+                                menuItem.Unchecked += uncheckedHandler;
+                            }
+
+                            uncheckedHandler = (object sender, RoutedEventArgs e) =>
+                            {
+                                menuItem.Checked -= CheckedHandler;
+                                if (checkableAction.CheckableGroupUUID is not null)
+                                {
+                                    int count = _checkableMenuItemsIndex[checkableAction.CheckableGroupUUID].Count((m) => m.Item1.IsChecked);
+                                    menuItem.IsChecked = count == 0;
+                                }
+
+                                menuItem.Checked += CheckedHandler;
                             };
+
+                            menuItem.Checked += CheckedHandler;
+
+                            menuItem.Unchecked += uncheckedHandler;
                         }
                         else
                         {
                             menuItem.Click += async (object sender, RoutedEventArgs e) =>
                             {
+                                if (action is IActionAndRequestCheckedMenuItems actionAndRequestCheckedMenuItems)
+                                {
+                                    actionAndRequestCheckedMenuItems.CheckedMenuItemsDictionary = _checkableMenuItemsIndex;
+                                }
+
                                 await action.Execute(sender, e);
                                 Environment.Exit(0);
                             };

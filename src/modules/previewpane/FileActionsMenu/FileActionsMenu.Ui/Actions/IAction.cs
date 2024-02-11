@@ -2,13 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions
 {
-    internal interface IAction
+    public interface IAction
     {
         public string[] SelectedItems { get; set; }
 
@@ -28,9 +29,11 @@ namespace FileActionsMenu.Ui.Actions
 
         public enum ItemType
         {
-            Single,
+            SingleItem,
             HasSubMenu,
-            HasSubMenuAndInvokable,
+            Separator,
+            Checkable,
+            CheckableAndChecked,
         }
     }
 }

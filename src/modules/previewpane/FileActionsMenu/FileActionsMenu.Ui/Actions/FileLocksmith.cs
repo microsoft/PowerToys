@@ -21,7 +21,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header => "What's locking this file?";
 
-        public IAction.ItemType Type => IAction.ItemType.Single;
+        public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
         public IAction[]? SubMenuItems => null;
 

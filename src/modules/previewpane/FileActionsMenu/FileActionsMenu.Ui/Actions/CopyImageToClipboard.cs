@@ -17,7 +17,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public string Header => "Copy image to clipboard";
 
-        public IAction.ItemType Type => IAction.ItemType.Single;
+        public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
         public IAction[]? SubMenuItems => null;
 
