@@ -57,7 +57,7 @@
 // robmikh.common needs to be updated to support newer versions of C++/WinRT https://github.com/robmikh/robmikh.common/issues/2
 // Applying workaround from https://github.com/robmikh/Win32CaptureSample/commit/fc758e343ca886795b05af5003d9a3bb85ff4da2
 // #include <robmikh.common/dispatcherQueue.desktop.interop.h>
-#include "dispatcherqueue.desktop.interop.h"
+#include "DispatcherQueue.desktop.interop.h"
 #include <robmikh.common/d3dHelpers.desktop.h>
 #include <robmikh.common/composition.desktop.interop.h>
 #include <robmikh.common/hwnd.interop.h>

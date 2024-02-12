@@ -1,7 +1,7 @@
 #pragma once
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.System.h>
-#include <dispatcherqueue.h>
+#include <DispatcherQueue.h>
 
 // This file is added as a workaround for: https://github.com/microsoft/cppwinrt/issues/1391
 // robmikh.common needs to be updated to support newer versions of C++/WinRT https://github.com/robmikh/robmikh.common/issues/2
