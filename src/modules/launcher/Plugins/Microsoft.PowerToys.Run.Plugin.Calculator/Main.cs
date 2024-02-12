@@ -61,6 +61,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             ArgumentNullException.ThrowIfNull(query);
 
             bool isGlobalQuery = string.IsNullOrEmpty(query.ActionKeyword);
+            bool keywordAppended = query.Search.EndsWith(query.ActionKeyword, StringComparison.OrdinalIgnoreCase);
             CultureInfo inputCulture = _inputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
             CultureInfo outputCulture = _outputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
 
@@ -72,6 +73,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             NumberTranslator translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
             var input = translator.Translate(query.Search.Normalize(NormalizationForm.FormKC));
+
+            if (!isGlobalQuery && keywordAppended)
+            {
+                input = input[..^query.ActionKeyword.Length];
+            }
 
             if (!CalculateHelper.InputValid(input))
             {
@@ -88,6 +94,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 {
                     // If errorMessage is not default then do error handling
                     return errorMessage == default ? new List<Result>() : ErrorHandler.OnError(IconPath, isGlobalQuery, query.RawQuery, errorMessage);
+                }
+                else if (!isGlobalQuery && keywordAppended && result.RoundedResult.HasValue)
+                {
+                    Context.API.ChangeQuery($"{query.ActionKeyword}{result.RoundedResult.Value.ToString(inputCulture)}");
+                    return new List<Result>();
                 }
 
                 return new List<Result>
