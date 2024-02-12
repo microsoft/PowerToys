@@ -67,6 +67,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
             CRC32Decimal,
             CRC64Hex,
             CRC64Decimal,
+            AUTHENTICODE,
         }
 
         public enum HashCallingAction
@@ -77,7 +78,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 
         public static Task VerifyHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionairy checkedMenuItemsDictionairy)
         {
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
 
         // Todo: Migrate to file action dialog
@@ -196,6 +197,8 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
                     };
                     fileExtension = ".crc64";
                     break;
+                case HashType.AUTHENTICODE:
+                    throw new NotImplementedException();
                 default:
                     throw new InvalidOperationException("Unknown hash type");
             }

@@ -9,13 +9,13 @@ using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions.CopyPath
 {
-    internal sealed class CopyPathSeperatedByNewline : IAction
+    internal sealed class CopyFullPathForwardSlash : IAction
     {
         private string[]? _selectedItems;
 
         public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
 
-        public string Header => "Newline";
+        public string Header => "Copy full path (/)";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -29,7 +29,7 @@ namespace FileActionsMenu.Ui.Actions.CopyPath
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            CopyPath.SeperateFilePathByDelimiterAndAddToClipboard("\n", SelectedItems);
+            Clipboard.SetText(SelectedItems[0].Replace("\\", "/"));
             return Task.CompletedTask;
         }
     }

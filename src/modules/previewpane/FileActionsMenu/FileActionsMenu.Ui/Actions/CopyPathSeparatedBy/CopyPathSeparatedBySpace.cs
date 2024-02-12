@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
-namespace FileActionsMenu.Ui.Actions.CopyPath
+namespace FileActionsMenu.Ui.Actions.CopyPathSeparatedBy
 {
-    internal sealed class CopyPathSeperatedByComma : IAction
+    internal sealed class CopyPathSeparatedBySpace : IAction
     {
         private string[]? _selectedItems;
 
         public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
 
-        public string Header => "\",\"";
+        public string Header => "\" \"";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -29,7 +29,7 @@ namespace FileActionsMenu.Ui.Actions.CopyPath
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            CopyPath.SeperateFilePathByDelimiterAndAddToClipboard(",", SelectedItems);
+            CopyPathSeparatedBy.SeperateFilePathByDelimiterAndAddToClipboard(" ", SelectedItems);
             return Task.CompletedTask;
         }
     }

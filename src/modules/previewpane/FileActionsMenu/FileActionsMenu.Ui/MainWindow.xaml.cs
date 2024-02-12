@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using FileActionsMenu.Ui.Actions;
 using FileActionsMenu.Ui.Actions.CopyPath;
+using FileActionsMenu.Ui.Actions.CopyPathSeparatedBy;
 using FileActionsMenu.Ui.Actions.Hashes.Hashes;
 using Wpf.Ui.Controls;
 using MenuItem = Wpf.Ui.Controls.MenuItem;
@@ -19,6 +20,7 @@ namespace FileActionsMenu.Ui
     {
         private static readonly IAction[] Actions =
         [
+            new CopyPathSeparatedBy(),
             new CopyPath(),
             new Hashes(Hashes.HashCallingAction.GENERATE),
             new Hashes(Hashes.HashCallingAction.VERIFY),
@@ -27,6 +29,7 @@ namespace FileActionsMenu.Ui
             new CopyTo(),
             new PowerRename(),
             new ImageResizer(),
+            new Uninstall(),
             new MoveTo(),
             new NewFolderWithSelection(),
             new Close(),
