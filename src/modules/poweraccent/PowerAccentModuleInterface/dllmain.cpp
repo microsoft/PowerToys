@@ -22,6 +22,7 @@
 namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_ENABLED[] = L"enabled";
     const wchar_t JSON_KEY_WIN[] = L"win";
     const wchar_t JSON_KEY_ALT[] = L"alt";
     const wchar_t JSON_KEY_CTRL[] = L"ctrl";
@@ -101,6 +102,24 @@ private:
         catch (std::exception&)
         {
             // Error while loading from the settings file. Let default values stay as they are.
+        }
+    }
+
+    void set_state_json(bool is_enabled)
+    {
+        try
+        {
+            // Parse the input JSON string.
+            json::JsonObject settings = PTSettingsHelper::load_general_settings();
+
+            settings.GetNamedObject(JSON_KEY_ENABLED).SetNamedValue(get_key(), json::value(is_enabled));
+            // If you don't need to do any custom processing of the settings, proceed
+            // to persists the values.
+            PTSettingsHelper::save_general_settings(settings);
+        }
+        catch (std::exception&)
+        {
+            // Improper JSON.
         }
     }
 
@@ -191,6 +210,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
+            parse_hotkey(values);
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values.
             values.save_to_settings_file();
@@ -213,6 +233,7 @@ public:
             enable();
             PlaySound(TEXT("Media\\Windows Notify Email.wav"), NULL, SND_FILENAME | SND_ASYNC);
         }
+        set_state_json(m_enabled);
         return true;
     }
 

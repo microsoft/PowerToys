@@ -5,9 +5,10 @@
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Windows.Threading;
 using global::PowerToys.GPOWrapper;
+using interop;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -107,6 +108,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            // set timer to check and change the tool state (enabled / disabled) in case it was changed externally.
+            DispatcherTimer stateCheckTimer = new DispatcherTimer() { Interval = new TimeSpan(1000) };
+            stateCheckTimer.Tick += (object sender, EventArgs e) =>
+            {
+                settingsRepository.ReloadSettings();
+                GeneralSettingsConfig = settingsRepository.SettingsConfig;
+                IsEnabled = GeneralSettingsConfig.Enabled.PowerAccent;
+            };
+
+            stateCheckTimer.Start();
         }
 
         private void InitializeEnabledValue()
