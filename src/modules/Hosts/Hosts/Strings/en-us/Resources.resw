@@ -300,10 +300,10 @@
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="EntryAddressIsInvalidWarning.Text" xml:space="preserve">
-    <value>Address not recognized as IPv4 or IPv6.</value>
+    <value>Address not recognized as IPv4 or IPv6</value>
   </data>
   <data name="EntryHostsIsInvalidWarning.Text" xml:space="preserve">
-    <value>The host name entry is invalid.</value>
+    <value>Invalid host name</value>
   </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>

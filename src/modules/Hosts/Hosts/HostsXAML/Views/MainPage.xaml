@@ -439,11 +439,14 @@
                         Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                         <TextBox.Description>
                             <StackPanel
-                                Margin="0,6,0,0"
+                                Margin="0,4"
                                 Orientation="Horizontal"
+                                Spacing="4"
                                 Visibility="{Binding IsAddressValid, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                 <FontIcon
-                                    Margin="0,0,6,0"
+                                    Margin="0,0,0,0"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontSize="14"
                                     Foreground="{ThemeResource SystemFillColorCautionBrush}"
                                     Glyph="&#xE7BA;" />
                                 <TextBlock x:Uid="EntryAddressIsInvalidWarning" />
@@ -461,11 +464,13 @@
                         TextWrapping="Wrap">
                         <TextBox.Description>
                             <StackPanel
-                                Margin="0,6,0,0"
+                                Margin="0,4"
                                 Orientation="Horizontal"
+                                Spacing="4"
                                 Visibility="{Binding IsHostsValid, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                 <FontIcon
-                                    Margin="0,0,6,0"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontSize="14"
                                     Foreground="{ThemeResource SystemFillColorCautionBrush}"
                                     Glyph="&#xE7BA;" />
                                 <TextBlock x:Uid="EntryHostsIsInvalidWarning" />
