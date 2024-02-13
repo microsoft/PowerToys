@@ -436,7 +436,20 @@
                     <TextBox
                         x:Uid="Address"
                         IsSpellCheckEnabled="False"
-                        Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.Description>
+                            <StackPanel
+                                Margin="0,6,0,0"
+                                Orientation="Horizontal"
+                                Visibility="{Binding IsAddressValid, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                <FontIcon
+                                    Margin="0,0,6,0"
+                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                    Glyph="&#xE7BA;" />
+                                <TextBlock x:Uid="EntryAddressIsInvalidWarning" />
+                            </StackPanel>
+                        </TextBox.Description>
+                    </TextBox>
                     <TextBox
                         x:Uid="Hosts"
                         AcceptsReturn="False"
@@ -445,7 +458,20 @@
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
                         Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        TextWrapping="Wrap" />
+                        TextWrapping="Wrap">
+                        <TextBox.Description>
+                            <StackPanel
+                                Margin="0,6,0,0"
+                                Orientation="Horizontal"
+                                Visibility="{Binding IsHostsValid, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                <FontIcon
+                                    Margin="0,0,6,0"
+                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                    Glyph="&#xE7BA;" />
+                                <TextBlock x:Uid="EntryHostsIsInvalidWarning" />
+                            </StackPanel>
+                        </TextBox.Description>
+                    </TextBox>
                     <TextBox
                         x:Uid="Comment"
                         AcceptsReturn="False"
