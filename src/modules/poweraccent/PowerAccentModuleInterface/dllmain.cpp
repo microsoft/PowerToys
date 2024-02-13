@@ -22,6 +22,7 @@
 namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_SOUND[] = L"hotkey_sound";
     const wchar_t JSON_KEY_ENABLED[] = L"enabled";
     const wchar_t JSON_KEY_WIN[] = L"win";
     const wchar_t JSON_KEY_ALT[] = L"alt";
@@ -61,6 +62,7 @@ class PowerAccent : public PowertoyModuleIface
 private:
     bool m_enabled = false;
     Hotkey m_hotkey;
+    bool m_hotkey_sound = false;
     PROCESS_INFORMATION p_info = {};
 
     bool is_process_running()
@@ -138,6 +140,12 @@ private:
                 m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
                 m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
                 m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+
+                // disabled because of some weird UI problem
+                // m_hotkey_sound = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES)
+                //                      .GetNamedObject(JSON_KEY_SOUND)
+                //                      .GetBoolean();
+                m_hotkey_sound = false;
             }
             catch (...)
             {
@@ -156,7 +164,7 @@ private:
             m_hotkey.alt = false;
             m_hotkey.shift = false;
             m_hotkey.ctrl = false;
-            m_hotkey.key = 0x2D;
+            m_hotkey.key = 0x2D; // the Insert key
         }
     }
 
@@ -226,12 +234,14 @@ public:
         if (m_enabled)
         {
             disable();
-            PlaySound(TEXT("Media\\Windows Notify Messaging.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            if (m_hotkey_sound)
+                PlaySound(TEXT("Media\\Windows Notify Messaging.wav"), NULL, SND_FILENAME | SND_ASYNC);
         }
         else
         {
             enable();
-            PlaySound(TEXT("Media\\Windows Notify Email.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            if (m_hotkey_sound)
+                PlaySound(TEXT("Media\\Windows Notify Email.wav"), NULL, SND_FILENAME | SND_ASYNC);
         }
         set_state_json(m_enabled);
         return true;
