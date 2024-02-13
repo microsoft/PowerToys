@@ -10,11 +10,13 @@ using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
 
@@ -153,6 +155,8 @@ namespace Awake.Core
                 {
                     Logger.LogInfo($"Completed expirable keep-awake.");
                     CancelExistingThread();
+
+                    ResetAwakeMode();
                 },
                 _tokenSource.Token);
             }
@@ -179,6 +183,8 @@ namespace Awake.Core
             {
                 Logger.LogInfo($"Completed timed thread.");
                 CancelExistingThread();
+
+                ResetAwakeMode();
             },
             _tokenSource.Token);
         }
@@ -284,6 +290,28 @@ namespace Awake.Core
                 { string.Format(CultureInfo.InvariantCulture, AwakeHours, 2), 7200 },
             };
             return optionsList;
+        }
+
+        private static void ResetAwakeMode()
+        {
+            try
+            {
+                SettingsUtils settingsUtils = new SettingsUtils();
+                string settingsPath = settingsUtils.GetSettingsFilePath(Core.Constants.AppName);
+                if (settingsPath != null)
+                {
+                    AwakeSettings settings = new AwakeSettings();
+                    settings.Properties.Mode = AwakeMode.PASSIVE;
+                    settingsUtils.SaveSettings(JsonSerializer.Serialize(settings), Core.Constants.AppName);
+
+                    SetNoKeepAwake();
+                }
+            }
+            catch (Exception ex)
+            {
+                string? errorString = $"Failed to reset Awake mode: {ex.Message}";
+                Logger.LogError(errorString);
+            }
         }
     }
 }
