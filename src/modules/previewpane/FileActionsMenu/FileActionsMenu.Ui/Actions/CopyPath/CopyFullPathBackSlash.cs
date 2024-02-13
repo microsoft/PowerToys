@@ -3,17 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions.CopyPath
 {
-    internal sealed class CopyFullPathBackSlash : IAction
+    internal sealed class CopyFullPathBackSlash : IActionAndRequestCheckedMenuItems
     {
         private string[]? _selectedItems;
+        private CheckedMenuItemsDictionary? _checkedMenuItemsDictionary;
 
-        public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
+        public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
         public string Header => "Copy full path (\\)";
 
@@ -27,8 +30,15 @@ namespace FileActionsMenu.Ui.Actions.CopyPath
 
         public bool IsVisible => true;
 
+        public CheckedMenuItemsDictionary CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary.GetOrArgumentNullException(); set => _checkedMenuItemsDictionary = value; }
+
         public Task Execute(object sender, RoutedEventArgs e)
         {
+            if (SelectedItems[0].EndsWith(".lnk", StringComparison.InvariantCultureIgnoreCase) && CheckedMenuItemsDictionary["f2544fd5-13f7-4d52-b7b4-00a3c70923e6"].First(checkedMenuItems => checkedMenuItems.Item1.IsChecked).Item2 is ResolveShortcut)
+            {
+                SelectedItems[0] = ShortcutHelper.GetFullPathFromShortcut(SelectedItems[0]);
+            }
+
             Clipboard.SetText(SelectedItems[0]);
             return Task.CompletedTask;
         }

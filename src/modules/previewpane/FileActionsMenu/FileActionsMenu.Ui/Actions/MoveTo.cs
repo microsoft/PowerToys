@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
+using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions
@@ -16,7 +17,7 @@ namespace FileActionsMenu.Ui.Actions
     {
         private string[]? _selectedItems;
 
-        public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
+        public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
         public string Header => "Move to";
 

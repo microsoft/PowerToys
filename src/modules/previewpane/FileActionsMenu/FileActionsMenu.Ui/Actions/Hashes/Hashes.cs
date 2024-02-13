@@ -11,19 +11,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
-using CheckedMenuItemsDictionairy = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<(Wpf.Ui.Controls.MenuItem, FileActionsMenu.Ui.Actions.IAction)>>;
 using MenuItem = Wpf.Ui.Controls.MenuItem;
 
 namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 {
     internal sealed class Hashes(Hashes.HashCallingAction hashCallingAction) : IAction
     {
-        private HashCallingAction _hashCallingAction = hashCallingAction;
+        private readonly HashCallingAction _hashCallingAction = hashCallingAction;
 
         private string[]? _selectedItems;
 
-        public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
+        public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
         public string Header => _hashCallingAction == HashCallingAction.GENERATE ? "Generate checksum" : "Verify checksum" + ((SelectedItems.Length > 1) ? "s" : string.Empty);
 
@@ -76,13 +76,13 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
             VERIFY,
         }
 
-        public static Task VerifyHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionairy checkedMenuItemsDictionairy)
+        public static Task VerifyHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionary checkedMenuItemsDictionairy)
         {
             throw new NotImplementedException();
         }
 
         // Todo: Migrate to file action dialog
-        public static Task GenerateHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionairy checkedMenuItemsDictionairy)
+        public static Task GenerateHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionary checkedMenuItemsDictionairy)
         {
             Func<string, string> hashGeneratorFunction;
             string fileExtension;
@@ -203,7 +203,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
                     throw new InvalidOperationException("Unknown hash type");
             }
 
-            List<(MenuItem, IAction)> checkedMenuItems = checkedMenuItemsDictionairy["2a89265d-a55a-4a48-b35f-a48f3e8bc2ea"];
+            List<(MenuItem, IAction)> checkedMenuItems = checkedMenuItemsDictionairy[GetUUID(HashCallingAction.GENERATE)];
 
             IAction checkedMenuItemAction = checkedMenuItems.First(checkedMenuItems => checkedMenuItems.Item1.IsChecked).Item2;
 
@@ -246,7 +246,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
                 fileContent.Append(filename + ":\n" + hashGeneratorFunction(filename) + "\n\n");
             }
 
-            File.WriteAllText((Path.GetDirectoryName(selectedItems[0]) ?? throw new ArgumentNullException(nameof(selectedItems))) + "\\hashes" + fileExtension, fileContent.ToString());
+            File.WriteAllText(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\hashes" + fileExtension, fileContent.ToString());
         }
 
         private static void GenerateMultipleFilesWithHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
@@ -259,6 +259,11 @@ namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
 
                 File.WriteAllText(hashFilename, hash);
             }
+        }
+
+        public static string GetUUID(HashCallingAction hashCallingAction)
+        {
+            return hashCallingAction == HashCallingAction.GENERATE ? "2a89265d-a55a-4a48-b35f-a48f3e8bc2ea" : "2a89265d-a55a-4a48-b35f-a48f3e8bc2eb";
         }
 
         public Task Execute(object sender, RoutedEventArgs e)

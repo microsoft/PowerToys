@@ -19,7 +19,7 @@ namespace FileActionsMenu.Ui.Actions
         private string[]? _selectedItems;
         private string? _uninstallerPath;
 
-        public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
+        public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
         public string Header => "Uninstall application";
 
@@ -42,7 +42,7 @@ namespace FileActionsMenu.Ui.Actions
                 return Task.CompletedTask;
             }
 
-            // Thank you Copilot!
+            // Thank you Microsoft Copilot!
             static string[] SplitCommandLine(string commandLine)
             {
                 return commandLine.Split('"')

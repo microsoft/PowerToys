@@ -36,7 +36,7 @@ namespace FileActionsMenu.Ui
             new CopyImageFromClipboardToFolder(),
         ];
 
-        private readonly Dictionary<string, List<(MenuItem, IAction)>> _checkableMenuItemsIndex = [];
+        private readonly CheckedMenuItemsDictionary _checkableMenuItemsIndex = [];
 
         public MainWindow(string[] selectedItems)
         {

@@ -11,7 +11,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 {
     internal sealed class CRC64(Hashes.Hashes.HashCallingAction hashCallingAction) : IAction
     {
-        private Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
+        private readonly Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
 
         public string[] SelectedItems { get => []; set => _ = value; }
 
