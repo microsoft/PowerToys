@@ -2,7 +2,7 @@
 
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
 	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <Version>$(Version).0</Version>
     <Authors>Microsoft Corporation</Authors>
@@ -13,6 +13,13 @@
 
   <ItemGroup>
     <Compile Include="..\..\Telemetry\TelemetryBase.cs" Link="TelemetryBase.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

@@ -19,7 +19,6 @@
     </Page.Resources>
     <controls:SettingsPageControl
         x:Uid="CmdNotFound"
-        IsEnabled="{x:Bind ViewModel.IsArm64Arch, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">

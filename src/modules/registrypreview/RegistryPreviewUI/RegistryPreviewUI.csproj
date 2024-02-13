@@ -2,7 +2,7 @@
 	<Import Project="..\..\..\Version.props" />
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
+		<TargetFramework>net9.0-windows10.0.20348.0</TargetFramework>
 		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<Platforms>x86;x64;arm64</Platforms>
@@ -79,6 +79,13 @@
 		<Content Update="Assets\RegistryPreview\string32.png">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
 	</ItemGroup>
 </Project>
 <!--TargetFramework>net6.0-windows10.0.19041.0</TargetFramework-->

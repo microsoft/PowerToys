@@ -2,7 +2,7 @@
   <Import Project="..\..\Version.props" />
   
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
 	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <UseWPF>true</UseWPF>
     <AssemblyName>PowerToys.Common.UI</AssemblyName>
@@ -14,6 +14,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ManagedCommon\ManagedCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 
