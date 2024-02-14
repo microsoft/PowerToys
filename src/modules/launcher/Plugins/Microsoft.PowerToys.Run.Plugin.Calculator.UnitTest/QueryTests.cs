@@ -233,5 +233,26 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), result);
             Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), resultWithKeyword);
         }
+
+        [DataTestMethod]
+        [DataRow("0x1234+0x1234", 9320)]
+        [DataRow("0x1234-0x1234", 0)]
+        [DataRow("0x12345678+0x12345678", 610839792)]
+        [DataRow("0xf4572220-0xf4572410", -496)]
+        public void RightAnswerForLargeHexadecimalNumbers(string typedString, double answer)
+        {
+            // Setup
+            Mock<Main> main = new();
+            Query expectedQuery = new(typedString);
+            Query expectedQueryWithKeyword = new("=" + typedString, "=");
+
+            // Act
+            var result = main.Object.Query(expectedQuery).FirstOrDefault()?.Title;
+            var resultWithKeyword = main.Object.Query(expectedQueryWithKeyword).FirstOrDefault()?.Title;
+
+            // Assert
+            Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), result);
+            Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), resultWithKeyword);
+        }
     }
 }

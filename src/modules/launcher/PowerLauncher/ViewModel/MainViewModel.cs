@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -1033,7 +1034,24 @@ namespace PowerLauncher.ViewModel
         {
             if (!_saved)
             {
+                if (_historyItemsStorage.CheckVersionMismatch())
+                {
+                    if (!_historyItemsStorage.TryLoadData())
+                    {
+                        _history.Update();
+                    }
+                }
+
                 _historyItemsStorage.Save();
+
+                if (_userSelectedRecordStorage.CheckVersionMismatch())
+                {
+                    if (!_userSelectedRecordStorage.TryLoadData())
+                    {
+                        _userSelectedRecord.Update();
+                    }
+                }
+
                 _userSelectedRecordStorage.Save();
 
                 _saved = true;

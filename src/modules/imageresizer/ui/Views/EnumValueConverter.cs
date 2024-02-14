@@ -16,6 +16,11 @@ namespace ImageResizer.Views
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var type = value?.GetType();
+            if (!type.IsEnum)
+            {
+                return value;
+            }
+
             var builder = new StringBuilder();
 
             builder
@@ -35,7 +40,10 @@ namespace ImageResizer.Views
                     .Append(parameter);
             }
 
-            var targetValue = Resources.ResourceManager.GetString(builder.ToString(), culture);
+            // Fixes #16792 - Looks like culture defaults to en-US, so wrong resource is being fetched.
+#pragma warning disable CA1304 // Specify CultureInfo
+            var targetValue = Resources.ResourceManager.GetString(builder.ToString());
+#pragma warning restore CA1304 // Specify CultureInfo
 
             if (toLower)
             {

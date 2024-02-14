@@ -169,7 +169,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Does mathematical calculations (e.g. 5*3-2)..
+        ///   Looks up a localized string similar to Calculates mathematical equations (e.g. 5*3-2)..
         /// </summary>
         public static string wox_plugin_calculator_plugin_description {
             get {

@@ -41,7 +41,9 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredPastePlainEnabledValue();
         static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
         static GpoRuleConfigured GetConfiguredPeekEnabledValue();
+        static GpoRuleConfigured GetDisableNewUpdateToastValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
+        static GpoRuleConfigured GetDisableShowWhatsNewAfterUpdatesValue();
         static GpoRuleConfigured GetAllowExperimentationValue();
         static GpoRuleConfigured GetRunPluginEnabledValue(winrt::hstring const& pluginID);
         static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();

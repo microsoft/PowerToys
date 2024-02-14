@@ -80,6 +80,7 @@ namespace PowerToys
             void SetNextCharEvent(event NextChar nextCharEvent);
             void SetIsLanguageLetterDelegate(IsLanguageLetter isLanguageLetterDelegate);
             void UpdateActivationKey(Int32 activationKey);
+            void UpdateDoNotActivateOnGameMode(Boolean doNotActivateOnGameMode);
             void UpdateInputTime(Int32 inputTime);
             void UpdateExcludedApps(String excludedApps);
         }

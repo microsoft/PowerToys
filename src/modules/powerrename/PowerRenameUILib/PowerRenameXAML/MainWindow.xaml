@@ -593,7 +593,7 @@
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
             Click="button_rename_Click"
-            Style="{StaticResource SplitAccentButtonStyle}">
+            Style="{StaticResource AccentSplitButtonStyle}">
             <SplitButton.KeyboardAccelerators>
                 <KeyboardAccelerator Key="Enter" />
                 <KeyboardAccelerator Key="Enter" Modifiers="Control" />
