@@ -251,6 +251,9 @@
                                 <!--  Duplicate  -->
                                 <ColumnDefinition Width="Auto" />
                                 <!--  ToggleSwitch  -->
+                                <ColumnDefinition Width="Auto" />
+                                <!--  DeleteEntry  -->
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 Grid.Column="0"
@@ -334,9 +337,20 @@
                                 Width="40"
                                 MinWidth="0"
                                 HorizontalAlignment="Right"
+                                GotFocus="Entries_GotFocus"
                                 IsOn="{x:Bind Active, Mode=TwoWay}"
                                 OffContent=""
                                 OnContent="" />
+                            <Button
+                                x:Uid="DeleteEntry"
+                                Grid.Column="5"
+                                Height="32"
+                                Click="Delete_Click"
+                                CommandParameter="{x:Bind (models:Entry)}"
+                                Content="{ui:FontIcon Glyph=&#xE74D;,
+                                                      FontSize=16}"
+                                GotFocus="Entries_GotFocus"
+                                Style="{StaticResource SubtleButtonStyle}" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
