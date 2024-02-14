@@ -198,6 +198,7 @@
   </data>
   <data name="DeleteEntryBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Delete (Delete)</value>
+    <comment>"Delete" between parentheses refers to the Delete keyboard key</comment>
   </data>
   <data name="Duplicate.Text" xml:space="preserve">
     <value>Duplicate</value>
