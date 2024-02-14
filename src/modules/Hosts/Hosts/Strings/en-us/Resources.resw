@@ -299,6 +299,12 @@
     <value>Entries contain too many hosts</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
+  <data name="EntryAddressIsInvalidWarning.Text" xml:space="preserve">
+    <value>Has to be a valid IPv4 or IPv6 address</value>
+  </data>
+  <data name="EntryHostsIsInvalidWarning.Text" xml:space="preserve">
+    <value>Has to be one or more valid host names separated by spaces</value>
+  </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>
   </data>
