@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using FileActionsMenu.Interfaces;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions

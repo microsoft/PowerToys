@@ -5,6 +5,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using FileActionsMenu.Interfaces;
 using Wpf.Ui.Controls;
 
 namespace FileActionsMenu.Ui.Actions

@@ -10,6 +10,11 @@ namespace FileActionsMenu.Ui.Helpers
     {
         public static string GetFullPathFromShortcut(string shortcutPath)
         {
+            if (!shortcutPath.EndsWith(".lnk", System.StringComparison.InvariantCulture))
+            {
+                return shortcutPath;
+            }
+
             Shell shell = new();
             Folder folder = shell.NameSpace(System.IO.Path.GetDirectoryName(shortcutPath));
             FolderItem folderItem = folder.ParseName(System.IO.Path.GetFileName(shortcutPath));

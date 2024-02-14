@@ -4,9 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Actions;
 using FileActionsMenu.Ui.Actions.CopyPath;
 using FileActionsMenu.Ui.Actions.CopyPathSeparatedBy;
@@ -18,7 +21,9 @@ namespace FileActionsMenu.Ui
 {
     public partial class MainWindow : FluentWindow
     {
-        private static readonly IAction[] Actions =
+        private readonly CheckedMenuItemsDictionary _checkableMenuItemsIndex = [];
+
+        private IAction[] _actions =
         [
             new CopyPathSeparatedBy(),
             new CopyPath(),
@@ -31,23 +36,34 @@ namespace FileActionsMenu.Ui
             new ImageResizer(),
             new Uninstall(),
             new MoveTo(),
+            new SaveAs(),
             new NewFolderWithSelection(),
             new Close(),
             new CopyImageFromClipboardToFolder(),
         ];
 
-        private readonly CheckedMenuItemsDictionary _checkableMenuItemsIndex = [];
-
         public MainWindow(string[] selectedItems)
         {
             InitializeComponent();
+
+            string[] pluginPaths = Directory.EnumerateDirectories((Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException()) + "\\FileActionsMenuPlugins").ToArray();
+            foreach (string pluginPath in pluginPaths)
+            {
+                Assembly plugin = Assembly.LoadFrom(Directory.EnumerateFiles(pluginPath).First(file => Path.GetFileName(file).StartsWith("PowerToys.FileActionsMenu.Plugins", StringComparison.InvariantCultureIgnoreCase) && Path.GetFileName(file).EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase)));
+                plugin.GetExportedTypes().Where(type => type.GetInterfaces().Any(i => i.FullName?.EndsWith("IFileActionsMenuPlugin", StringComparison.InvariantCulture) ?? false)).ToList().ForEach(type =>
+                {
+                    IFileActionsMenuPlugin pluginInstance = (IFileActionsMenuPlugin)Activator.CreateInstance(type)!;
+                    Array.ForEach(pluginInstance.TopLevelMenuActions, action => Array.Resize(ref _actions, _actions.Length + 1));
+                    pluginInstance.TopLevelMenuActions.CopyTo(_actions, _actions.Length - pluginInstance.TopLevelMenuActions.Length);
+                });
+            }
 
             // WindowStyle = WindowStyle.None;
             // AllowsTransparency = true;
 
             // Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.None);
             ContextMenu cm = (ContextMenu)FindResource("Menu");
-            Array.Sort(Actions, (a, b) => a.Category.CompareTo(b.Category));
+            Array.Sort(_actions, (a, b) => a.Category.CompareTo(b.Category));
 
             int currentCategory = -1;
 
@@ -164,7 +180,7 @@ namespace FileActionsMenu.Ui
                 }
             }
 
-            HandleItems(Actions, cm);
+            HandleItems(_actions, cm);
 
             cm.IsOpen = true;
             /*cm.Closed += (sender, args) => Close();*/

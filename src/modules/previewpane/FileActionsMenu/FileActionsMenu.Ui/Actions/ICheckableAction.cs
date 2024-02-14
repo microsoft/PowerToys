@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using FileActionsMenu.Interfaces;
 
 namespace FileActionsMenu.Ui.Actions
 {

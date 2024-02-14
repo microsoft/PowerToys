@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Peek.Common.Models;
 using Wpf.Ui.Controls;
