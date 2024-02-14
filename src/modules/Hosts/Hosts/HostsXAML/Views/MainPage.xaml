@@ -76,9 +76,23 @@
                 <Button
                     x:Uid="FilterBtn"
                     Height="32"
-                    Content="{ui:FontIcon Glyph=&#xe71c;,
-                                          FontSize=16}"
                     Style="{StaticResource SubtleButtonStyle}">
+                    <Button.Content>
+                        <Grid>
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="16"
+                                Glyph="&#xe71c;" />
+                            <InfoBadge
+                                Width="10"
+                                Height="10"
+                                Margin="0,-4,-4,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </Grid>
+                    </Button.Content>
                     <Button.Flyout>
                         <Flyout ShouldConstrainToRootBounds="False">
                             <StackPanel
