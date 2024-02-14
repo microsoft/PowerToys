@@ -342,7 +342,7 @@
                                 OffContent=""
                                 OnContent="" />
                             <Button
-                                x:Uid="DeleteEntry"
+                                x:Uid="DeleteEntryBtn"
                                 Grid.Column="5"
                                 Height="32"
                                 Click="Delete_Click"
