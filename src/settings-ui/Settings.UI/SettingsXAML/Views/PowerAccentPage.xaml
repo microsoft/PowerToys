@@ -17,16 +17,14 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="QuickAccent_Enable_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="QuickAccent_EnableQuickAccent"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_EnableQuickAccent" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="QuickAccent_Enable_Hotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
- 
+
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
