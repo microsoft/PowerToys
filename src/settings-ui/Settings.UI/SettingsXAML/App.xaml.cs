@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Common.UI;
 using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -82,7 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             if (settingsWindow == null)
             {
-                settingsWindow = new MainWindow(IsDarkTheme());
+                settingsWindow = new MainWindow();
             }
 
             settingsWindow.Activate();
@@ -92,7 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 settingsWindow.NavigateToSection(type);
 
                 WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
-             }
+            }
 
             if (ensurePageIsSelected)
             {
