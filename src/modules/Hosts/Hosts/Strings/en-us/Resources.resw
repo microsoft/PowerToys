@@ -303,7 +303,7 @@
     <value>Must be a valid IPv4 or IPv6 address</value>
   </data>
   <data name="EntryHostsIsInvalidWarning.Text" xml:space="preserve">
-    <value>Invalid host name</value>
+    <value>Must be one or more valid host names separated by spaces</value>
   </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>
