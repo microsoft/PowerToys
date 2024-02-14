@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -59,6 +60,18 @@ namespace RegistryPreview
             if (textBox.ContextFlyout != null && textBox.ContextFlyout.IsOpen)
             {
                 textBox.ContextFlyout.Hide();
+
+                // if true, the app will not close yet
+                args.Handled = true;
+
+                // HACK: To fix https://github.com/microsoft/PowerToys/issues/28820, wait a bit for the close animation of the flyout to run before closing the application.
+                // This might be called many times if the flyout still hasn't been closed, as Window_Closed will be called again by App.Current.Exit
+                DispatcherQueue.TryEnqueue(async () =>
+                {
+                    await Task.Delay(100);
+                    App.Current.Exit();
+                });
+                return;
             }
 
             // Save window placement
