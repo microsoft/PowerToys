@@ -154,6 +154,19 @@ namespace Hosts.ViewModels
         }
 
         [RelayCommand]
+        public void DeleteEntry(Entry entry)
+        {
+            if (entry is not null)
+            {
+                var address = entry.Address;
+                var hosts = entry.SplittedHosts;
+                _entries.Remove(entry);
+
+                FindDuplicates(address, hosts);
+            }
+        }
+
+        [RelayCommand]
         public void ReadHosts()
         {
             if (_readingHosts)
