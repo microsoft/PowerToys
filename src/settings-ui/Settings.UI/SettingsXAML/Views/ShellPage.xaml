@@ -239,6 +239,10 @@
                         x:Uid="Feedback_NavViewItem"
                         Icon="{ui:FontIcon Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />
+                    <NavigationViewItem
+                        x:Uid="ExitPT_NavViewItem"
+                        Icon="{ui:FontIcon Glyph=&#xEA39;}"
+                        Tapped="ExitPTItem_Tapped" />
                 </StackPanel>
             </NavigationView.PaneFooter>
             <i:Interaction.Behaviors>
