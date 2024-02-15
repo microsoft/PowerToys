@@ -3,8 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Windows.Threading;
 using global::PowerToys.GPOWrapper;
+using interop;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -92,6 +96,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _powerAccentSettings = new PowerAccentSettings();
             }
 
+            _toggleHotkey = _powerAccentSettings.Properties.Hotkey.Value;
+
             _inputTimeMs = _powerAccentSettings.Properties.InputTime.Value;
 
             _excludedApps = _powerAccentSettings.Properties.ExcludedApps.Value;
@@ -102,6 +108,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            // set timer to check and change the tool state (enabled / disabled) in case it was changed externally.
+            DispatcherTimer stateCheckTimer = new DispatcherTimer() { Interval = new TimeSpan(1000) };
+            stateCheckTimer.Tick += (object sender, EventArgs e) =>
+            {
+                settingsRepository.ReloadSettings();
+                GeneralSettingsConfig = settingsRepository.SettingsConfig;
+                IsEnabled = GeneralSettingsConfig.Enabled.PowerAccent;
+            };
+
+            stateCheckTimer.Start();
         }
 
         private void InitializeEnabledValue()
@@ -145,6 +162,41 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        private HotkeySettings _toggleHotkey;
+
+        public HotkeySettings Hotkey
+        {
+            get => _toggleHotkey;
+
+            set
+            {
+                if (_toggleHotkey != value)
+                {
+                    if (value == null || value.IsEmpty())
+                    {
+                        _toggleHotkey = PowerAccentProperties.DefaultHotkeyValue;
+                    }
+                    else
+                    {
+                        _toggleHotkey = value;
+                    }
+
+                    _powerAccentSettings.Properties.Hotkey.Value = _toggleHotkey;
+                    OnPropertyChanged(nameof(Hotkey));
+                    _settingsUtils.SaveSettings(_powerAccentSettings.ToJsonString(), PowerAccentSettings.ModuleName);
+                    RaisePropertyChanged();
+
+                    // IPC message not working
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            PowerAccentSettings.ModuleName,
+                            JsonSerializer.Serialize(_powerAccentSettings)));
+                }
+            }
         }
 
         public int ActivationKey

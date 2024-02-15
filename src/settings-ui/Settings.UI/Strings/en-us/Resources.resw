@@ -1129,7 +1129,8 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
     <comment>{Locked}</comment>
@@ -1151,13 +1152,16 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
     <value>.qoi</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
@@ -4029,5 +4033,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
     <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
+  </data>
+  <data name="QuickAccent_Enable_Hotkey.Description" xml:space="preserve">
+    <value>Customize the shortcut to enable / disable this module</value>
+  </data>
+  <data name="QuickAccent_Enable_Hotkey.Header" xml:space="preserve">
+    <value>Enable / Disable Shortcut</value>
   </data>
 </root>
