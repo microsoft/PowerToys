@@ -146,7 +146,7 @@
     <value>Gif files with animations may not be correctly resized.</value>
   </data>
   <data name="Input_Replace" xml:space="preserve">
-    <value>Over_write files</value>
+    <value>Ov_erwrite files</value>
   </data>
   <data name="Input_Resize" xml:space="preserve">
     <value>Resize</value>
