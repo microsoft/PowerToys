@@ -76,9 +76,23 @@
                 <Button
                     x:Uid="FilterBtn"
                     Height="32"
-                    Content="{ui:FontIcon Glyph=&#xe71c;,
-                                          FontSize=16}"
                     Style="{StaticResource SubtleButtonStyle}">
+                    <Button.Content>
+                        <Grid>
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="16"
+                                Glyph="&#xe71c;" />
+                            <InfoBadge
+                                Width="10"
+                                Height="10"
+                                Margin="0,-4,-4,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </Grid>
+                    </Button.Content>
                     <Button.Flyout>
                         <Flyout ShouldConstrainToRootBounds="False">
                             <StackPanel
@@ -251,6 +265,9 @@
                                 <!--  Duplicate  -->
                                 <ColumnDefinition Width="Auto" />
                                 <!--  ToggleSwitch  -->
+                                <ColumnDefinition Width="Auto" />
+                                <!--  DeleteEntry  -->
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 Grid.Column="0"
@@ -334,9 +351,20 @@
                                 Width="40"
                                 MinWidth="0"
                                 HorizontalAlignment="Right"
+                                GotFocus="Entries_GotFocus"
                                 IsOn="{x:Bind Active, Mode=TwoWay}"
                                 OffContent=""
                                 OnContent="" />
+                            <Button
+                                x:Uid="DeleteEntryBtn"
+                                Grid.Column="5"
+                                Height="32"
+                                Click="Delete_Click"
+                                CommandParameter="{x:Bind (models:Entry)}"
+                                Content="{ui:FontIcon Glyph=&#xE74D;,
+                                                      FontSize=16}"
+                                GotFocus="Entries_GotFocus"
+                                Style="{StaticResource SubtleButtonStyle}" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -436,7 +464,23 @@
                     <TextBox
                         x:Uid="Address"
                         IsSpellCheckEnabled="False"
-                        Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.Description>
+                            <StackPanel
+                                Margin="0,4"
+                                Orientation="Horizontal"
+                                Spacing="4"
+                                Visibility="{Binding IsAddressValid, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                <FontIcon
+                                    Margin="0,0,0,0"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                    Glyph="&#xE7BA;" />
+                                <TextBlock x:Uid="EntryAddressIsInvalidWarning" />
+                            </StackPanel>
+                        </TextBox.Description>
+                    </TextBox>
                     <TextBox
                         x:Uid="Hosts"
                         AcceptsReturn="False"
@@ -445,7 +489,22 @@
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
                         Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        TextWrapping="Wrap" />
+                        TextWrapping="Wrap">
+                        <TextBox.Description>
+                            <StackPanel
+                                Margin="0,4"
+                                Orientation="Horizontal"
+                                Spacing="4"
+                                Visibility="{Binding IsHostsValid, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                <FontIcon
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                    Glyph="&#xE7BA;" />
+                                <TextBlock x:Uid="EntryHostsIsInvalidWarning" />
+                            </StackPanel>
+                        </TextBox.Description>
+                    </TextBox>
                     <TextBox
                         x:Uid="Comment"
                         AcceptsReturn="False"
