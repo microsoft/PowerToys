@@ -123,8 +123,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _isDevBuild = Helper.GetProductVersion() == "v0.0.1";
 
             _startup = GeneralSettingsConfig.Startup;
-			_hideSysTrayIcon = GeneralSettingsConfig.HideSysTrayIcon;
-			_showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
+            _hideSysTrayIcon = GeneralSettingsConfig.HideSysTrayIcon;
+            _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
             _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
