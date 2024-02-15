@@ -242,6 +242,10 @@
                     <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard x:Uid="HideSystemTrayIcon">
+                        <ToggleSwitch x:Uid="HideSystemTrayIcon_ToggleSwitch" IsOn="{x:Bind ViewModel.HideSysTrayIcon, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
