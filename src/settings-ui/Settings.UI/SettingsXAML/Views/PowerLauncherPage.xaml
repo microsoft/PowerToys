@@ -450,12 +450,12 @@
                                                                 </tkcontrols:SettingsCard>
                                                                 <!--  MultilineTextBox setting  -->
                                                                 <tkcontrols:SettingsCard
-                                                                    HorizontalContentAlignment="Stretch"
-                                                                    ContentAlignment="Vertical"
                                                                     MinHeight="0"
                                                                     Margin="56,8,45,8"
+                                                                    HorizontalContentAlignment="Stretch"
                                                                     Background="Transparent"
                                                                     BorderThickness="0,0,0,0"
+                                                                    ContentAlignment="Vertical"
                                                                     CornerRadius="0"
                                                                     Description="{x:Bind Path=DisplayDescription}"
                                                                     Header="{x:Bind Path=DisplayLabel}"
