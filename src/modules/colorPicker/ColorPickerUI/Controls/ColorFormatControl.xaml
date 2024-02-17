@@ -1,66 +1,181 @@
-﻿<UserControl x:Class="ColorPicker.Controls.ColorFormatControl"
-             xmlns:local="clr-namespace:ColorPicker"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:p="clr-namespace:ColorPicker.Properties" xmlns:ui="http://schemas.modernwpf.com/2019"
-             mc:Ignorable="d">
-
-    <Border x:Name="MainBorder"
-            Margin="12,16,12,0"
-            Width="348"
-            Height="36"
-            CornerRadius="4"
-            HorizontalAlignment="Stretch"
-            Background="{DynamicResource ColorControlBackgroundBrush}">
-        <Grid>
+﻿<UserControl
+    x:Class="ColorPicker.Controls.ColorFormatControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ColorPicker"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:p="clr-namespace:ColorPicker.Properties"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style x:Key="ReadonlyTextBoxStyle" TargetType="{x:Type TextBox}">
+            <!--  Universal WPF UI focus  -->
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+            <!--  Universal WPF UI focus  -->
+            <!--  Universal WPF UI ContextMenu  -->
+            <Setter Property="ContextMenu" Value="{DynamicResource DefaultControlContextMenu}" />
+            <!--  Universal WPF UI ContextMenu  -->
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Background">
+                <Setter.Value>
+                    <SolidColorBrush Color="Transparent" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="{StaticResource TextBoxBorderThemeThickness}" />
+            <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+            <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
+            <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
+            <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
+            <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+            <Setter Property="Border.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid HorizontalAlignment="{TemplateBinding HorizontalAlignment}" VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                            <Border
+                                x:Name="ContentBorder"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                Padding="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding Border.CornerRadius}">
+                                <Grid
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                    <ScrollViewer
+                                        x:Name="PART_ContentHost"
+                                        VerticalAlignment="Center"
+                                        CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}"
+                                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                        IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                        IsTabStop="{TemplateBinding ScrollViewer.IsTabStop}"
+                                        Style="{StaticResource DefaultTextBoxScrollViewerStyle}"
+                                        TextElement.Foreground="{TemplateBinding Foreground}"
+                                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}" />
+                                </Grid>
+                            </Border>
+                            <!--  The Accent Border is a separate element so that changes to the border thickness do not affect the position of the element  -->
+                            <Border
+                                x:Name="AccentBorder"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                BorderThickness="{StaticResource TextBoxAccentBorderThemeThickness}"
+                                CornerRadius="{TemplateBinding Border.CornerRadius}">
+                                <Border.BorderBrush>
+                                    <SolidColorBrush Color="Transparent" />
+                                </Border.BorderBrush>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="AccentBorder" Property="BorderThickness" Value="0,0,0,0" />
+                                <Setter TargetName="AccentBorder" Property="BorderBrush">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="Transparent" />
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="ContentBorder" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="Transparent" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsEnabled" Value="True" />
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                    <Condition Property="IsFocused" Value="False" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="ContentBorder" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="Transparent" />
+                                    </Setter.Value>
+                                </Setter>
+                            </MultiTrigger>
+                            <Trigger Property="IsEnabled" Value="True">
+                                <Setter Property="Cursor" Value="IBeam" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ContentBorder" Property="Background" Value="Transparent" />
+                                <Setter TargetName="ContentBorder" Property="BorderBrush" Value="Transparent" />
+                                <Setter TargetName="AccentBorder" Property="BorderBrush" Value="Transparent" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <Border
+        x:Name="MainBorder"
+        Height="48"
+        Margin="0,0,0,8"
+        HorizontalAlignment="Stretch"
+        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="{DynamicResource ControlCornerRadius}">
+        <Grid Margin="12,0,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="64"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="48" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="40" />
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="FormatNameTextBlock"
-                       Opacity="0.6"
-                       Style="{DynamicResource BodyStrongTextBlockStyle}"
-                       Foreground="{DynamicResource PrimaryForegroundBrush}"
-                       Margin="8"
-                       VerticalAlignment="Center"/>
+            <TextBlock
+                x:Name="FormatNameTextBlock"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                TextTrimming="CharacterEllipsis" />
 
-            <TextBox x:Name="ColorTextRepresentationTextBlock"
-                       FontFamily="Consolas"
-                       FontSize="14"
-                       Foreground="{DynamicResource PrimaryForegroundBrush}"
-                       Grid.Column="1"
-                       IsTabStop="False"
-                       Background="Transparent"
-                       BorderThickness="0"
-                       IsReadOnly="True"
-                       VerticalAlignment="Center"
-                       Padding="8"
-                       AutomationProperties.Name="{x:Static p:Resources.Color_Code}"
-                     />
+            <TextBox
+                x:Name="ColorTextRepresentationTextBlock"
+                Grid.Column="1"
+                Margin="0,-2,0,0"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="{x:Static p:Resources.Color_Code}"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                BorderThickness="0"
+                IsReadOnly="True"
+                IsTabStop="False"
+                Style="{StaticResource ReadonlyTextBoxStyle}" />
 
-            <Button x:Name="CopyToClipboardButton"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}"
-                    Background="{DynamicResource ColorControlBackgroundBrush}"
-                    FontSize="16"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}"
-                    Opacity="0.6"
-                    Height="36"
-                    Width="36"
-                    Grid.Column="2"
-                    Style="{StaticResource DefaultButtonStyle}"
-                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
-                    AutomationProperties.HelpText="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Controls.ColorFormatControl}}, Path=SelectedColorCopyHelperText}">
+            <Button
+                x:Name="CopyToClipboardButton"
+                Grid.Column="2"
+                Width="36"
+                Height="36"
+                Margin="0,0,4,0"
+                Padding="0"
+                AutomationProperties.HelpText="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Controls.ColorFormatControl}}, Path=SelectedColorCopyHelperText}"
+                AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                Style="{StaticResource SubtleButtonStyle}"
+                ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
-                    <TextBlock Text="&#xE8C8;" AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}" />
+                    <ui:SymbolIcon FontSize="20" Symbol="Copy20" />
                 </Button.Content>
             </Button>
         </Grid>
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="6" Opacity="0.24" ShadowDepth="1" />
-        </Border.Effect>
     </Border>
 </UserControl>

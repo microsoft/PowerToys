@@ -15,21 +15,7 @@ namespace ImageResizer.Views
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value != null)
-            {
-                if (value.GetType() == typeof(CustomSize))
-                {
-                    return Visibility.Visible;
-                }
-                else
-                {
-                    return Visibility.Collapsed;
-                }
-            }
-            else
-            {
-                return Visibility.Collapsed;
-            }
+            return value != null && value.GetType() == typeof(CustomSize) ? Visibility.Visible : (object)Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -55,13 +55,14 @@ namespace Hosts.Views
 
         private async void Entries_ItemClick(object sender, ItemClickEventArgs e)
         {
-            await ShowEditDialogAsync(e.ClickedItem as Entry);
+            Entry entry = e.ClickedItem as Entry;
+            ViewModel.Selected = entry;
+            await ShowEditDialogAsync(entry);
         }
 
         public async Task ShowEditDialogAsync(Entry entry)
         {
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            ViewModel.Selected = entry;
             EntryDialog.Title = resourceLoader.GetString("UpdateEntry_Title");
             EntryDialog.PrimaryButtonText = resourceLoader.GetString("UpdateBtn");
             EntryDialog.PrimaryButtonCommand = UpdateCommand;
@@ -179,10 +180,16 @@ namespace Hosts.Views
         /// </summary>
         private void Entries_GotFocus(object sender, RoutedEventArgs e)
         {
-            var listView = sender as ListView;
-            if (listView.SelectedItem == null && listView.Items.Count > 0)
+            var element = sender as FrameworkElement;
+            var entry = element.DataContext as Entry;
+
+            if (entry != null)
             {
-                listView.SelectedIndex = 0;
+                ViewModel.Selected = entry;
+            }
+            else if (Entries.SelectedItem == null && Entries.Items.Count > 0)
+            {
+                Entries.SelectedIndex = 0;
             }
         }
 
