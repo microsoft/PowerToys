@@ -59,20 +59,16 @@
                 </ToolTipService.ToolTip>
             </Button>
 
-            <StackPanel
+            <Button
                 HorizontalAlignment="Right"
-                Orientation="Horizontal"
-                Spacing="8">
-                <Button
-                    Command="{Binding LoadProcessesCommand}"
-                    Content="{ui:FontIcon Glyph=&#xe72c;,
-                                          FontSize=16}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="Reload" />
-                    </ToolTipService.ToolTip>
-                </Button>
-            </StackPanel>
+                Command="{Binding LoadProcessesCommand}"
+                Content="{ui:FontIcon Glyph=&#xe72c;,
+                                      FontSize=16}"
+                Style="{StaticResource SubtleButtonStyle}">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="Reload" />
+                </ToolTipService.ToolTip>
+            </Button>
         </Grid>
 
         <InfoBar
