@@ -72,17 +72,6 @@
                         <TextBlock x:Uid="Reload" />
                     </ToolTipService.ToolTip>
                 </Button>
-                <Button
-                    x:Name="RestartAsAdminBtn"
-                    Command="{Binding RestartElevatedCommand}"
-                    Content="{ui:FontIcon Glyph=&#xe7ef;,
-                                          FontSize=16}"
-                    Style="{StaticResource SubtleButtonStyle}"
-                    Visibility="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolToVisibilityConverter}}">
-                    <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="RestartAsAdmin" />
-                    </ToolTipService.ToolTip>
-                </Button>
             </StackPanel>
         </Grid>
 
@@ -93,7 +82,14 @@
             IsClosable="False"
             IsOpen="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolNegationConverter}, Mode=OneWay}"
             IsTabStop="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolNegationConverter}, Mode=OneWay}"
-            Severity="Informational" />
+            Severity="Informational">
+            <InfoBar.ActionButton>
+                <Button
+                    x:Uid="RestartAsAdminBtn"
+                    Command="{Binding RestartElevatedCommand}"
+                    Visibility="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolToVisibilityConverter}}" />
+            </InfoBar.ActionButton>
+        </InfoBar>
 
         <Grid Grid.Row="2">
             <Grid Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource boolToVisibilityConverter}, Mode=OneWay}">

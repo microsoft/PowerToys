@@ -154,7 +154,7 @@
   <data name="Reload.Text" xml:space="preserve">
     <value>Reload</value>
   </data>
-  <data name="RestartAsAdmin.Text" xml:space="preserve">
+  <data name="RestartAsAdminBtn.Content" xml:space="preserve">
     <value>Restart as administrator</value>
   </data>
   <data name="User.Header" xml:space="preserve">
@@ -165,6 +165,6 @@
     <comment>Title of the window when running as administrator.</comment>
   </data>
   <data name="NotRunningAsAdminInfoBar.Message" xml:space="preserve">
-    <value>Some results might be missing because of insufficient permission. Restart as administrator to see them.</value>
+    <value>Some results might be missing because of insufficient permission.</value>
   </data>
 </root>
