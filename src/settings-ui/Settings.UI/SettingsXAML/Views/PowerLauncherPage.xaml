@@ -448,6 +448,27 @@
                                                                         MaxLength="{x:Bind TextBoxMaxLength, Mode=OneWay}"
                                                                         Text="{x:Bind TextValue, Mode=TwoWay}" />
                                                                 </tkcontrols:SettingsCard>
+                                                                <!--  MultilineTextBox setting  -->
+                                                                <tkcontrols:SettingsCard
+                                                                    HorizontalContentAlignment="Stretch"
+                                                                    ContentAlignment="Vertical"
+                                                                    MinHeight="0"
+                                                                    Margin="56,8,45,8"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0,0,0,0"
+                                                                    CornerRadius="0"
+                                                                    Description="{x:Bind Path=DisplayDescription}"
+                                                                    Header="{x:Bind Path=DisplayLabel}"
+                                                                    Visibility="{x:Bind Path=ShowMultilineTextBox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <TextBox
+                                                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                        MinHeight="160"
+                                                                        AcceptsReturn="True"
+                                                                        ScrollViewer.IsVerticalRailEnabled="True"
+                                                                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                                        ScrollViewer.VerticalScrollMode="Enabled"
+                                                                        Text="{x:Bind TextValue, Mode=TwoWay}" />
+                                                                </tkcontrols:SettingsCard>
                                                                 <!--  NumberBox setting  -->
                                                                 <tkcontrols:SettingsCard
                                                                     MinHeight="0"
