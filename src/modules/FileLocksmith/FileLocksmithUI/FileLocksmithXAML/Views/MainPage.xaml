@@ -80,10 +80,7 @@
             IsTabStop="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolNegationConverter}, Mode=OneWay}"
             Severity="Informational">
             <InfoBar.ActionButton>
-                <Button
-                    x:Uid="RestartAsAdminBtn"
-                    Command="{Binding RestartElevatedCommand}"
-                    Visibility="{x:Bind ViewModel.IsElevated, Converter={StaticResource boolToVisibilityConverter}}" />
+                <Button x:Uid="RestartAsAdminBtn" Command="{Binding RestartElevatedCommand}" />
             </InfoBar.ActionButton>
         </InfoBar>
 
