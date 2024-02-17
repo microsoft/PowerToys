@@ -69,7 +69,9 @@ namespace Microsoft.Plugin.Indexer
             {
                 PluginOptionType = PluginAdditionalOption.AdditionalOptionType.MultilineTextbox,
                 Key = ExcludedPatterns,
-                DisplayLabel = Properties.Resources.excluded_patterns,
+                DisplayLabel = Properties.Resources.excluded_patterns_label,
+                DisplayDescription = Properties.Resources.excluded_patterns_description,
+                PlaceholderText = Properties.Resources.excluded_patterns_placeholder,
                 TextValue = string.Empty,
             },
         };

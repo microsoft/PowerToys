@@ -70,11 +70,29 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Prevents files and folders showing up in search results if pattern is matched. Add one pattern per line. 的本地化字符串。
+        /// </summary>
+        public static string excluded_patterns_description {
+            get {
+                return ResourceManager.GetString("excluded_patterns_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Excluded patterns 的本地化字符串。
         /// </summary>
-        public static string excluded_patterns {
+        public static string excluded_patterns_label {
             get {
-                return ResourceManager.GetString("excluded_patterns", resourceCulture);
+                return ResourceManager.GetString("excluded_patterns_label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Example: *.exe 的本地化字符串。
+        /// </summary>
+        public static string excluded_patterns_placeholder {
+            get {
+                return ResourceManager.GetString("excluded_patterns_placeholder", resourceCulture);
             }
         }
         
