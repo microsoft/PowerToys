@@ -99,16 +99,20 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                     }
 
                     var excludedPattern = p;
-                    excludedPattern = excludedPattern.Replace("*", "%", StringComparison.Ordinal);
-                    excludedPattern = excludedPattern.Replace("?", "_", StringComparison.Ordinal);
 
-                    if (excludedPattern.Contains('%', StringComparison.Ordinal) || excludedPattern.Contains('_', StringComparison.Ordinal))
+                    excludedPattern = excludedPattern.Replace("\\", "/", StringComparison.Ordinal);
+
+                    if (excludedPattern.Contains('*', StringComparison.Ordinal) || excludedPattern.Contains('?', StringComparison.Ordinal))
                     {
-                        queryHelper.QueryWhereRestrictions += " AND System.ItemUrl NOT LIKE '" + excludedPattern + "' ";
+                        excludedPattern = excludedPattern
+                            .Replace("%", "[%]", StringComparison.Ordinal)
+                            .Replace("_", "[_]", StringComparison.Ordinal)
+                            .Replace("*", "%", StringComparison.Ordinal)
+                            .Replace("?", "_", StringComparison.Ordinal);
+                        queryHelper.QueryWhereRestrictions += " AND System.ItemUrl NOT LIKE '%" + excludedPattern + "%' ";
                     }
                     else
                     {
-                        // if there are no wildcards we can use a contains which is much faster as it uses the index
                         queryHelper.QueryWhereRestrictions += " AND NOT Contains(System.ItemUrl, '" + excludedPattern + "') ";
                     }
                 }
