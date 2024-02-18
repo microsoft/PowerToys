@@ -283,7 +283,7 @@
   </data>
   <data name="Drive_Type" xml:space="preserve">
     <value>Type: {0}</value>
-    <comment>{0} is type of drive</comment>
+    <comment>{0} is the type of the drive</comment>
   </data>
   <data name="Drive_Type_Fixed" xml:space="preserve">
     <value>Fixed</value>
@@ -293,12 +293,14 @@
   </data>
   <data name="Drive_Type_Optical" xml:space="preserve">
     <value>Optical</value>
+    <comment>"Optical" indicates CD or DVD drives</comment>
   </data>
   <data name="Drive_Type_RAM_Disk" xml:space="preserve">
     <value>RAM Disk</value>
   </data>
   <data name="Drive_Type_Removable" xml:space="preserve">
     <value>Removable</value>
+    <comment>"Removal" indicates USB or external hard drives</comment>
   </data>
   <data name="Drive_Unknown" xml:space="preserve">
     <value>Unknown</value>

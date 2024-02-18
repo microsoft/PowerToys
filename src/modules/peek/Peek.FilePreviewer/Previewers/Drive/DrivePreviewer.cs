@@ -97,7 +97,7 @@ namespace Peek.FilePreviewer.Previewers.Drive
         private string GetDriveTypeDescription(DriveType driveType) => driveType switch
         {
             DriveType.Unknown => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Unknown"),
-            DriveType.NoRootDirectory => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Unknown"), // You shouldn't be able to unmounted drives
+            DriveType.NoRootDirectory => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Unknown"), // You shouldn't be able to preview an unmounted drives
             DriveType.Removable => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Type_Removable"),
             DriveType.Fixed => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Type_Fixed"),
             DriveType.Network => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Type_Network"),
