@@ -16,9 +16,9 @@ using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
 using MenuItem = Wpf.Ui.Controls.MenuItem;
 
-namespace FileActionsMenu.Ui.Actions.Hashes.Hashes
+namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
-    internal sealed class Hashes(Hashes.HashCallingAction hashCallingAction) : IAction
+    public sealed class Hashes(Hashes.HashCallingAction hashCallingAction) : IAction
     {
         private readonly HashCallingAction _hashCallingAction = hashCallingAction;
 

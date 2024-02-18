@@ -2,18 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Threading.Tasks;
 using System.Windows;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
 
-namespace FileActionsMenu.Ui.Actions.Hashes
+namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
-    internal sealed class SHA384(Hashes.Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
+    internal sealed class CRC64Decimal(Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
     {
-        private readonly Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
+        private readonly Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
         private CheckedMenuItemsDictionary? _checkedMenuItemsDictionary;
 
@@ -21,7 +20,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public CheckedMenuItemsDictionary CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary.GetOrArgumentNullException(); set => _checkedMenuItemsDictionary = value; }
 
-        public string Header => "SHA384";
+        public string Header => "Decimal";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -35,13 +34,13 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public async Task Execute(object sender, RoutedEventArgs e)
         {
-            if (_hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE)
+            if (_hashCallingAction == Hashes.HashCallingAction.GENERATE)
             {
-                await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.SHA384, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.GenerateHashes(Hashes.HashType.CRC64Decimal, SelectedItems, CheckedMenuItemsDictionary);
             }
             else
             {
-                await Hashes.Hashes.VerifyHashes(Hashes.Hashes.HashType.SHA384, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.VerifyHashes(Hashes.HashType.CRC64Decimal, SelectedItems, CheckedMenuItemsDictionary);
             }
         }
     }

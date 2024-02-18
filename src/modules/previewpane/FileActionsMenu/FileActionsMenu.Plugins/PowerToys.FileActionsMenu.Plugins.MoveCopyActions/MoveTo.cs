@@ -8,7 +8,6 @@ using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
-using static FileActionsMenu.Helpers.FileActionProgressHelper;
 
 namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 {

@@ -6,7 +6,7 @@
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenuPlugins\MoveCopyActions</OutputPath>
+    <OutputPath>..\..\..\..\..\..\$(Platform)\$(Configuration)\FileActionsMenuPlugins\Hashes</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="System.IO.Hashing" />
     <ProjectReference Include="..\..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
     <ProjectReference Include="..\..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj"></ProjectReference>
     <PackageReference Include="WPF-UI" />

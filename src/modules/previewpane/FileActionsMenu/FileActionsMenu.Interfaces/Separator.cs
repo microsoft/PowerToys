@@ -5,32 +5,25 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
-using FileActionsMenu.Interfaces;
 using Wpf.Ui.Controls;
 
-namespace FileActionsMenu.Ui.Actions.Hashes
+namespace FileActionsMenu.Interfaces
 {
-    internal sealed class CRC32(Hashes.Hashes.HashCallingAction hashCallingAction) : IAction
+    public sealed class Separator : IAction
     {
-        private readonly Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
-
         public string[] SelectedItems { get => []; set => _ = value; }
 
-        public string Header => "CRC32";
+        public string Header => string.Empty;
 
-        public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
+        public IAction.ItemType Type => IAction.ItemType.Separator;
+
+        public IAction[]? SubMenuItems => null;
 
         public int Category => 0;
 
         public IconElement? Icon => null;
 
         public bool IsVisible => true;
-
-        public IAction[]? SubMenuItems =>
-        [
-            new CRC32Hex(_hashCallingAction),
-            new CRC32Decimal(_hashCallingAction),
-        ];
 
         public Task Execute(object sender, RoutedEventArgs e)
         {

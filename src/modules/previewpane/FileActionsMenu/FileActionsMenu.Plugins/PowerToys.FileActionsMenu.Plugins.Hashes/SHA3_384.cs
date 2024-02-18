@@ -8,11 +8,11 @@ using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
 
-namespace FileActionsMenu.Ui.Actions.Hashes
+namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
-    internal sealed class CRC64Decimal(Hashes.Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
+    internal sealed class SHA3_384(Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
     {
-        private readonly Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
+        private readonly Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
         private CheckedMenuItemsDictionary? _checkedMenuItemsDictionary;
 
@@ -20,7 +20,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public CheckedMenuItemsDictionary CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary.GetOrArgumentNullException(); set => _checkedMenuItemsDictionary = value; }
 
-        public string Header => "Decimal";
+        public string Header => "SHA3-384";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -34,13 +34,13 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public async Task Execute(object sender, RoutedEventArgs e)
         {
-            if (_hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE)
+            if (_hashCallingAction == Hashes.HashCallingAction.GENERATE)
             {
-                await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.CRC64Decimal, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.GenerateHashes(Hashes.HashType.SHA3_384, SelectedItems, CheckedMenuItemsDictionary);
             }
             else
             {
-                await Hashes.Hashes.VerifyHashes(Hashes.Hashes.HashType.CRC64Decimal, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.VerifyHashes(Hashes.HashType.SHA3_384, SelectedItems, CheckedMenuItemsDictionary);
             }
         }
     }

@@ -2,19 +2,19 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
 
-namespace FileActionsMenu.Ui.Actions.Hashes
+namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
-    internal sealed class InFilename(Hashes.Hashes.HashCallingAction hashCallingAction) : ICheckableAction
+    internal sealed class MultipleFiles(Hashes.HashCallingAction hashCallingAction) : ICheckableAction
     {
-        private readonly Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
 
         public override string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public override string Header => _hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE ? "Replace filename with hash" : "Compare content with filename";
+        public override string Header => hashCallingAction == Hashes.HashCallingAction.GENERATE ? "Save in multiple files" : "Compare with content of same named files";
 
         public override IconElement? Icon => null;
 
@@ -26,6 +26,6 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public override bool IsCheckedByDefault => false;
 
-        public override string? CheckableGroupUUID => Hashes.Hashes.GetUUID(_hashCallingAction);
+        public override string? CheckableGroupUUID => Hashes.GetUUID(hashCallingAction);
     }
 }

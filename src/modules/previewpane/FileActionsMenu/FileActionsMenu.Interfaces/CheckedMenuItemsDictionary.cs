@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using FileActionsMenu.Interfaces;
 using Wpf.Ui.Controls;
 
-namespace FileActionsMenu.Ui.Actions
+namespace FileActionsMenu.Interfaces
 {
-    internal sealed class CheckedMenuItemsDictionary : Dictionary<string, List<(MenuItem, IAction)>>
+    public sealed class CheckedMenuItemsDictionary : Dictionary<string, List<(MenuItem, IAction)>>
     {
     }
 }

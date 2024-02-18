@@ -8,11 +8,11 @@ using System.Windows;
 using FileActionsMenu.Interfaces;
 using Wpf.Ui.Controls;
 
-namespace FileActionsMenu.Ui.Actions.Hashes
+namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
-    internal sealed class CRC64(Hashes.Hashes.HashCallingAction hashCallingAction) : IAction
+    internal sealed class CRC64(Hashes.HashCallingAction hashCallingAction) : IAction
     {
-        private readonly Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
+        private readonly Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
 
         public string[] SelectedItems { get => []; set => _ = value; }
 

@@ -8,11 +8,11 @@ using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
 
-namespace FileActionsMenu.Ui.Actions.Hashes
+namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
-    internal sealed class SHA512(Hashes.Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
+    internal sealed class CRC64Hex(Hashes.HashCallingAction hashCallingAction) : IActionAndRequestCheckedMenuItems
     {
-        private readonly Hashes.Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
+        private readonly Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
         private CheckedMenuItemsDictionary? _checkedMenuItemsDictionary;
 
@@ -20,7 +20,7 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public CheckedMenuItemsDictionary CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary.GetOrArgumentNullException(); set => _checkedMenuItemsDictionary = value; }
 
-        public string Header => "SHA512";
+        public string Header => "Hex";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -34,13 +34,13 @@ namespace FileActionsMenu.Ui.Actions.Hashes
 
         public async Task Execute(object sender, RoutedEventArgs e)
         {
-            if (_hashCallingAction == Hashes.Hashes.HashCallingAction.GENERATE)
+            if (_hashCallingAction == Hashes.HashCallingAction.GENERATE)
             {
-                await Hashes.Hashes.GenerateHashes(Hashes.Hashes.HashType.SHA512, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.GenerateHashes(Hashes.HashType.CRC64Hex, SelectedItems, CheckedMenuItemsDictionary);
             }
             else
             {
-                await Hashes.Hashes.VerifyHashes(Hashes.Hashes.HashType.SHA512, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.VerifyHashes(Hashes.HashType.CRC64Hex, SelectedItems, CheckedMenuItemsDictionary);
             }
         }
     }
