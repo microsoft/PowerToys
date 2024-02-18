@@ -14,6 +14,7 @@ using FileActionsMenu.Ui.Actions;
 using FileActionsMenu.Ui.Actions.CopyPath;
 using FileActionsMenu.Ui.Actions.CopyPathSeparatedBy;
 using FileActionsMenu.Ui.Actions.Hashes.Hashes;
+using WinRT;
 using Wpf.Ui.Controls;
 using MenuItem = Wpf.Ui.Controls.MenuItem;
 
@@ -31,13 +32,9 @@ namespace FileActionsMenu.Ui
             new Hashes(Hashes.HashCallingAction.VERIFY),
             new FileLocksmith(),
             new CopyImageToClipboard(),
-            new CopyTo(),
             new PowerRename(),
             new ImageResizer(),
             new Uninstall(),
-            new MoveTo(),
-            new SaveAs(),
-            new NewFolderWithSelection(),
             new Close(),
             new CopyImageFromClipboardToFolder(),
         ];
@@ -52,8 +49,8 @@ namespace FileActionsMenu.Ui
                 Assembly plugin = Assembly.LoadFrom(Directory.EnumerateFiles(pluginPath).First(file => Path.GetFileName(file).StartsWith("PowerToys.FileActionsMenu.Plugins", StringComparison.InvariantCultureIgnoreCase) && Path.GetFileName(file).EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase)));
                 plugin.GetExportedTypes().Where(type => type.GetInterfaces().Any(i => i.FullName?.EndsWith("IFileActionsMenuPlugin", StringComparison.InvariantCulture) ?? false)).ToList().ForEach(type =>
                 {
-                    IFileActionsMenuPlugin pluginInstance = (IFileActionsMenuPlugin)Activator.CreateInstance(type)!;
-                    Array.ForEach(pluginInstance.TopLevelMenuActions, action => Array.Resize(ref _actions, _actions.Length + 1));
+                    dynamic pluginInstance = Activator.CreateInstance(type)!;
+                    Array.ForEach((IAction[])pluginInstance.TopLevelMenuActions, action => Array.Resize(ref _actions, _actions.Length + 1));
                     pluginInstance.TopLevelMenuActions.CopyTo(_actions, _actions.Length - pluginInstance.TopLevelMenuActions.Length);
                 });
             }

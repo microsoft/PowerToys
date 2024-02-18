@@ -6,7 +6,7 @@ using Shell32;
 
 namespace FileActionsMenu.Ui.Helpers
 {
-    internal sealed class ShortcutHelper
+    public sealed class ShortcutHelper
     {
         public static string GetFullPathFromShortcut(string shortcutPath)
         {

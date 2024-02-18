@@ -14,6 +14,12 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
         public string Author => "Microsoft Corporation";
 
-        public IAction[] TopLevelMenuActions => throw new NotImplementedException();
+        public IAction[] TopLevelMenuActions =>
+        [
+            new MoveTo(),
+            new CopyTo(),
+            new SaveAs(),
+            new NewFolderWithSelection(),
+        ];
     }
 }

@@ -2,17 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
 
-namespace FileActionsMenu.Ui.Actions
+namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 {
     internal sealed class NewFolderWithSelection : IAction
     {
@@ -50,22 +47,18 @@ namespace FileActionsMenu.Ui.Actions
 
             Directory.CreateDirectory(path);
 
-            CancellationTokenSource cancellationTokenSource = new() { };
-            CopyMoveUi copyMoveUi = new("Moving", SelectedItems.Length, cancellationTokenSource);
+            FileActionProgressHelper fileActionProgressHelper = new();
+            fileActionProgressHelper.SetTitle("Moving files to new folder");
+            fileActionProgressHelper.SetTotal(SelectedItems.Length);
 
             foreach (string item in SelectedItems)
             {
-                if (cancellationTokenSource.IsCancellationRequested)
-                {
-                    copyMoveUi.Close();
-                    break;
-                }
-
-                copyMoveUi.CurrentFile = Path.GetFileName(item);
+                fileActionProgressHelper.SetCurrentObjectName(Path.GetFileName(item));
 
                 File.Move(item, Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection", Path.GetFileName(item)));
-                copyMoveUi.Progress++;
             }
+
+            fileActionProgressHelper.Close();
 
             return Task.CompletedTask;
         }

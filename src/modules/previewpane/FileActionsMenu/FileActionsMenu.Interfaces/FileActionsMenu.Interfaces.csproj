@@ -11,7 +11,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <AssemblyName>PowerToys.FileActionsMenu.Ui</AssemblyName>
   </PropertyGroup>
 
 	<ItemGroup>

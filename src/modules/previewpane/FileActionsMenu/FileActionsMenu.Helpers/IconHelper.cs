@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 
 namespace FileActionsMenu.Ui.Helpers
 {
-    internal sealed class IconHelper
+    public sealed class IconHelper
     {
         public static BitmapImage GetIconFromModuleName(string moduleName)
         {

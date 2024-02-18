@@ -2,17 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Wpf.Ui.Controls;
+using static FileActionsMenu.Helpers.FileActionProgressHelper;
 
-namespace FileActionsMenu.Ui.Actions
+namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 {
     internal sealed class MoveTo : IAction
     {
@@ -32,7 +30,7 @@ namespace FileActionsMenu.Ui.Actions
 
         public bool IsVisible => true;
 
-        public Task Execute(object sender, RoutedEventArgs e)
+        public async Task Execute(object sender, RoutedEventArgs e)
         {
             FolderBrowserDialog dialog = new()
             {
@@ -46,50 +44,40 @@ namespace FileActionsMenu.Ui.Actions
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                CancellationTokenSource cancellationTokenSource = new() { };
+                TaskCompletionSource taskCompletionSource = new();
+                FileActionProgressHelper fileActionProgressHelper = new();
 
-                CopyMoveUi copyMoveUi = new("Copying", SelectedItems.Length, cancellationTokenSource);
-
-                copyMoveUi.Show();
-
-                foreach (string item in SelectedItems)
+                fileActionProgressHelper.OnReady += async (_, _) =>
                 {
-                    if (cancellationTokenSource.IsCancellationRequested)
-                    {
-                        copyMoveUi.Close();
-                        break;
-                    }
+                    fileActionProgressHelper.SetTitle("Copying files");
+                    fileActionProgressHelper.SetTotal(SelectedItems.Length);
 
-                    copyMoveUi.CurrentFile = Path.GetFileName(item);
-
-                    string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
-                    if (File.Exists(destination))
+                    foreach (string item in SelectedItems)
                     {
-                        CopyMoveConflictUi conflictUi = new(
-                            Path.GetFileName(destination),
-                            () =>
+                        fileActionProgressHelper.SetCurrentObjectName(Path.GetFileName(item));
+
+                        string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
+                        if (File.Exists(destination))
+                        {
+                            ConflictAction choosenAction = await fileActionProgressHelper.ShowConflictWindow(Path.GetFileName(destination));
+                            if (choosenAction == ConflictAction.Replace)
                             {
                                 File.Copy(item, destination, true);
-                                copyMoveUi.Progress++;
-                            },
-                            () =>
-                            {
-                                copyMoveUi.Progress++;
                             }
-                        );
-                        conflictUi.ShowDialog();
-                        continue;
+                        }
+                        else
+                        {
+                            File.Copy(item, destination);
+                        }
                     }
 
-                    File.Copy(item, destination);
-                    copyMoveUi.Progress++;
-                }
+                    fileActionProgressHelper.Close();
 
-                dialog.Dispose();
-                copyMoveUi.Close();
+                    taskCompletionSource.SetResult();
+                };
+
+                await taskCompletionSource.Task;
             }
-
-            return Task.CompletedTask;
         }
     }
 }

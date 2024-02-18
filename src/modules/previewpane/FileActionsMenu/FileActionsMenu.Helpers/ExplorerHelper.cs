@@ -11,7 +11,7 @@ using System.Text;
 using Peek.Common.Models;
 using Peek.UI.Helpers;
 
-namespace FileActionsMenu.Ui
+namespace FileActionsMenu.Ui.Helpers
 {
     public sealed partial class ExplorerHelper
     {

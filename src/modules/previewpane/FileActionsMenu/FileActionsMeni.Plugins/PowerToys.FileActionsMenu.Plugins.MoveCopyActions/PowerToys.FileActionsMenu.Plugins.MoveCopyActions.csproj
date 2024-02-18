@@ -14,11 +14,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <ProjectReference Include="..\..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
+	  <ProjectReference Include="..\..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj"></ProjectReference>
   <PackageReference Include="WPF-UI" />
   </ItemGroup>
-
-    <ItemGroup>
-		<Compile Include="..\..\FileActionsMenu.Interfaces\IAction.cs" Link="IAction.cs" />
-		<Compile Include="..\..\FileActionsMenu.Interfaces\IFileActionsMenuPlugin.cs" Link="IFileActionsMenuPlugin.cs" />
-	</ItemGroup>
 </Project>

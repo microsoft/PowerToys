@@ -1,32 +1,26 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Windows;
-using Wpf.Ui.Controls;
+using Microsoft.UI.Xaml;
+using WinUIEx;
 
-namespace FileActionsMenu.Ui.Actions
+namespace FileActionsMenu.FileActionProgress
 {
-    /// <summary>
-    /// Interaction logic for CopyMoveConflictUi.xaml
-    /// </summary>
-    public partial class CopyMoveConflictUi : FluentWindow
+    public sealed partial class FileConflictWindow : WindowEx
     {
         private readonly Action _replaceAction;
         private readonly Action _ignoreAction;
         private bool _executed;
 
-        public CopyMoveConflictUi(string name, Action replaceAction, Action ignoreAction)
+        public FileConflictWindow(string name, Action replaceAction, Action ignoreAction)
         {
             _replaceAction = replaceAction;
             _ignoreAction = ignoreAction;
 
-            ExtendsContentIntoTitleBar = true;
-            WindowBackdropType = WindowBackdropType.Mica;
-
             InitializeComponent();
-
+            ExtendsContentIntoTitleBar = true;
             DescriptionTextElement.Text = $"There is already a file named {name} in this location. Do you want to replace it?";
         }
 
@@ -44,7 +38,7 @@ namespace FileActionsMenu.Ui.Actions
             Close();
         }
 
-        private void Window_Closed(object sender, EventArgs e)
+        private void Window_Closed(object sender, WindowEventArgs e)
         {
             if (!_executed)
             {

@@ -6,7 +6,7 @@ using System;
 
 namespace FileActionsMenu.Ui.Helpers
 {
-    internal static class Extensions
+    public static class Extensions
     {
         public static T GetOrArgumentNullException<T>(this T? value)
         {
