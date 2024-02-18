@@ -47,18 +47,16 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
             Directory.CreateDirectory(path);
 
-            FileActionProgressHelper fileActionProgressHelper = new();
-            fileActionProgressHelper.SetTitle("Moving files to new folder");
-            fileActionProgressHelper.SetTotal(SelectedItems.Length);
+            FileActionProgressHelper fileActionProgressHelper = new("Moving files to new folder", SelectedItems.Length, () => { });
 
+            int count = -1;
             foreach (string item in SelectedItems)
             {
-                fileActionProgressHelper.SetCurrentObjectName(Path.GetFileName(item));
+                i++;
+                fileActionProgressHelper.UpdateProgress(count, Path.GetFileName(item));
 
                 File.Move(item, Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection", Path.GetFileName(item)));
             }
-
-            fileActionProgressHelper.Close();
 
             return Task.CompletedTask;
         }

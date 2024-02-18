@@ -35,7 +35,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
             FolderBrowserDialog dialog = new()
             {
                 AddToRecent = false,
-                Description = "Copy to",
+                Description = "Move to",
                 UseDescriptionForTitle = true,
                 AutoUpgradeEnabled = true,
                 ShowNewFolderButton = true,
@@ -44,39 +44,24 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                TaskCompletionSource taskCompletionSource = new();
-                FileActionProgressHelper fileActionProgressHelper = new();
+                FileActionProgressHelper fileActionProgressHelper = new("Moving files", SelectedItems.Length, () => { });
 
-                fileActionProgressHelper.OnReady += async (_, _) =>
+                int i = -1;
+                foreach (string item in SelectedItems)
                 {
-                    fileActionProgressHelper.SetTitle("Copying files");
-                    fileActionProgressHelper.SetTotal(SelectedItems.Length);
+                    i++;
+                    fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(item));
 
-                    foreach (string item in SelectedItems)
+                    string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
+                    if (File.Exists(destination))
                     {
-                        fileActionProgressHelper.SetCurrentObjectName(Path.GetFileName(item));
-
-                        string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
-                        if (File.Exists(destination))
-                        {
-                            ConflictAction choosenAction = await fileActionProgressHelper.ShowConflictWindow(Path.GetFileName(destination));
-                            if (choosenAction == ConflictAction.Replace)
-                            {
-                                File.Copy(item, destination, true);
-                            }
-                        }
-                        else
-                        {
-                            File.Copy(item, destination);
-                        }
+                        await fileActionProgressHelper.Conflict(item, () => File.Move(item, destination, true), () => { });
                     }
-
-                    fileActionProgressHelper.Close();
-
-                    taskCompletionSource.SetResult();
-                };
-
-                await taskCompletionSource.Task;
+                    else
+                    {
+                        File.Move(item, destination);
+                    }
+                }
             }
         }
     }

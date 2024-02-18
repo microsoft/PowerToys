@@ -3,109 +3,97 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using TaskDialog = Microsoft.WindowsAPICodePack.Dialogs.TaskDialog;
+using TaskDialogButton = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogButton;
+using TaskDialogProgressBar = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogProgressBar;
+using TaskDialogProgressBarState = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogProgressBarState;
 
 namespace FileActionsMenu.Helpers
 {
     public class FileActionProgressHelper : IDisposable
     {
-        private readonly StreamWriter _standardInput;
+        private TaskDialogProgressBar _progressBar;
+        private TaskDialog _taskDialog;
 
-        public event EventHandler? OnReady;
-
-        private Process _process;
-
-        private TaskCompletionSource<ConflictAction> _taskCompletionSource;
-
-        public FileActionProgressHelper()
+        public FileActionProgressHelper(string actionName, int count, Action onClose)
         {
-            ProcessStartInfo startInfo = new()
+            Application.EnableVisualStyles();
+            _progressBar = new()
             {
-                FileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty, "WinUi3Apps\\PowerToys.FileActionsMenu.FileActionProgress.exe"),
-                WorkingDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty, "WinUi3Apps"),
-                UseShellExecute = false,
-                WindowStyle = ProcessWindowStyle.Normal,
-                CreateNoWindow = false,
-                RedirectStandardOutput = true,
-                RedirectStandardInput = true,
-                /*RedirectStandardError = true,*/
+                State = TaskDialogProgressBarState.Normal,
+                Maximum = count,
+                Minimum = 0,
+                Value = 0,
+            };
+            _taskDialog = new()
+            {
+                ProgressBar = _progressBar,
+                Caption = actionName,
+                Text = actionName,
+                Cancelable = true,
             };
 
-            _process = new()
+            _taskDialog.Closing += (sender, e) =>
             {
-                StartInfo = startInfo,
-                EnableRaisingEvents = true,
-            };
-
-            _taskCompletionSource = new TaskCompletionSource<ConflictAction>();
-            _process.Start();
-            _process.OutputDataReceived += (sender, e) =>
-            {
-                if (e.Data != null && e.Data == "Ready")
+                if (e.TaskDialogResult == Microsoft.WindowsAPICodePack.Dialogs.TaskDialogResult.Cancel || e.TaskDialogResult == Microsoft.WindowsAPICodePack.Dialogs.TaskDialogResult.Close)
                 {
-                    OnReady?.Invoke(this, EventArgs.Empty);
-                }
-                else if (e.Data != null && e.Data.StartsWith("Ignore", StringComparison.InvariantCulture))
-                {
-                    _taskCompletionSource.SetResult(ConflictAction.Ignore);
-                }
-                else if (e.Data != null && e.Data.StartsWith("Replace", StringComparison.InvariantCulture))
-                {
-                    _taskCompletionSource.SetResult(ConflictAction.Replace);
+                    onClose();
                 }
             };
-
-            // _process.BeginOutputReadLine();
-            _standardInput = _process.StandardInput;
+            _taskDialog.StandardButtons = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardButtons.None;
+            Task.Run(() => _taskDialog.Show());
         }
 
-        private void SendCommand(string command, string argument)
+        public void UpdateProgress(int current, string fileName)
         {
-            _standardInput.WriteLine($"{command}:{argument}");
+            _progressBar.Value = current;
         }
 
-        public void SetTotal(int total)
+        [STAThread]
+        public async Task Conflict(string fileName, Action onReplace, Action onIgnore)
         {
-            SendCommand("Total", total.ToString(CultureInfo.InvariantCulture));
-        }
+            TaskCompletionSource taskCompletionSource = new();
+            TaskDialog taskDialog = new()
+            {
+                Text = $"Conflict: {fileName} already exists",
+                Caption = "Conflict",
+            };
+            TaskDialogButton replaceButton = new()
+            {
+                Text = "Replace",
+            };
+            replaceButton.Click += (sender, e) =>
+            {
+                onReplace();
+                _progressBar.State = TaskDialogProgressBarState.Normal;
+                taskCompletionSource.SetResult();
+                taskDialog.Close();
+            };
+            TaskDialogButton ignoreButton = new()
+            {
+                Text = "Ignore",
+            };
+            ignoreButton.Click += (sender, e) =>
+            {
+                onIgnore();
+                _progressBar.State = TaskDialogProgressBarState.Normal;
+                taskCompletionSource.SetResult();
+                taskDialog.Close();
+            };
+            _progressBar.State = TaskDialogProgressBarState.Paused;
+            taskDialog.Controls.Add(replaceButton);
+            taskDialog.Controls.Add(ignoreButton);
+            _ = Task.Run(taskDialog.Show);
 
-        public void SetTitle(string title)
-        {
-            SendCommand("Title", title);
-        }
-
-        public void SetCurrentObjectName(string file)
-        {
-            SendCommand("File", file);
-        }
-
-        public enum ConflictAction
-        {
-            Replace,
-            Ignore,
-        }
-
-        public async Task<ConflictAction> ShowConflictWindow(string file)
-        {
-            _taskCompletionSource = new TaskCompletionSource<ConflictAction>();
-            SendCommand("Conflict", file);
-            return await _taskCompletionSource.Task;
-        }
-
-        public void Close()
-        {
-            SendCommand("Close", string.Empty);
+            await taskCompletionSource.Task;
         }
 
         public void Dispose()
         {
-            SendCommand("Close", string.Empty);
             GC.SuppressFinalize(this);
-            _process.Dispose();
+            _taskDialog.Dispose();
         }
     }
 }
