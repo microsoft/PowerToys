@@ -265,4 +265,43 @@
     <value>{0} - Peek</value>
     <comment>Title of the Peek window. {0} is the name of the currently previewed item."Peek" is the name of the utility.</comment>
   </data>
+  <data name="Drive_FreeSpace" xml:space="preserve">
+    <value>{0} free</value>
+    <comment>{0} is the free space of the drive</comment>
+  </data>
+  <data name="Drive_UsedSpace" xml:space="preserve">
+    <value>{0} used</value>
+    <comment>{0} is the used space of the drive</comment>
+  </data>
+  <data name="Drive_Capacity" xml:space="preserve">
+    <value>Capacity: {0}</value>
+    <comment>{0} is the capacity of the drive</comment>
+  </data>
+  <data name="Drive_FileSystem" xml:space="preserve">
+    <value>File System: {0}</value>
+    <comment>{0} is the file system of the drive</comment>
+  </data>
+  <data name="Drive_Type" xml:space="preserve">
+    <value>Type: {0}</value>
+    <comment>{0} is type of drive</comment>
+  </data>
+  <data name="Drive_Type_Fixed" xml:space="preserve">
+    <value>Fixed</value>
+  </data>
+  <data name="Drive_Type_Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="Drive_Type_Optical" xml:space="preserve">
+    <value>Optical</value>
+  </data>
+  <data name="Drive_Type_RAM_Disk" xml:space="preserve">
+    <value>RAM Disk</value>
+  </data>
+  <data name="Drive_Type_Removable" xml:space="preserve">
+    <value>Removable</value>
+  </data>
+  <data name="Drive_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+    <comment>Used for unknown drive type or file system</comment>
+  </data>
 </root>
