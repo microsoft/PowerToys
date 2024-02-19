@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Linq;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Plugin;
@@ -261,13 +262,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("=", "=1+1=", true)]
-        [DataRow("=", "=1+1", false)]
+        [DataRow("#", "#1+1=", true)]
+        [DataRow("#", "#1+1", false)]
+        [DataRow("#", "#1/0=", false)]
         [DataRow("", "1+1=", false)]
-        public void HandleQueryEndsWithActionKeyword(string actionKeyword, string query, bool shouldChangeQuery)
+        public void HandleInputReplace(string actionKeyword, string query, bool shouldChangeQuery)
         {
             // Setup
             Query expectedQuery = new(query, actionKeyword);
+            _main.Object.UpdateSettings(new PowerLauncherPluginSettings()); // Default settings
 
             // Act
             _main.Object.Query(expectedQuery);
