@@ -165,6 +165,6 @@
     <value>Replace input by appending '='</value>
   </data>
   <data name="wox_plugin_calculator_replace_input_description" xml:space="preserve">
-    <value>When using direct activation, appending '=' to the expression will replace the input with the calculated result (e.g. =5*3-2=).</value>
+    <value>When using direct activation, appending '=' to the expression will replace the input with the calculated result (e.g. '=5*3-2=' will change the query to '=13').</value>
   </data>
 </root>
