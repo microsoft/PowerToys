@@ -160,6 +160,31 @@ bool WorkArea::Unsnap(HWND window)
     return true;
 }
 
+bool WorkArea::Focus(const ZoneIndexSet& zones)
+{
+    if (!m_layout || zones.empty())
+    {
+        return false;
+    }
+
+    for (ZoneIndex zone : zones)
+    {
+        if (static_cast<size_t>(zone) >= m_layout->Zones().size())
+        {
+            return false;
+        }
+    }
+
+    HWND windowToFocus = m_layoutWindows.GetCurrentWindowFromZoneIndexSet(zones);
+    if (!windowToFocus)
+    {
+        return false;
+    }
+    FancyZonesWindowUtils::SwitchToWindow(windowToFocus);
+
+    return true;
+}
+
 const GUID WorkArea::GetLayoutId() const noexcept
 {
     if (m_layout)

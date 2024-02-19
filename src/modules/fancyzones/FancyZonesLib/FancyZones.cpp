@@ -156,12 +156,14 @@ private:
     void SyncVirtualDesktops() noexcept;
 
     void UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept;
-    
+
     bool MoveToAppLastZone(HWND window, HMONITOR monitor, GUID currentVirtualDesktop) noexcept;
 
     void RefreshLayouts() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
+    bool FocusZone(HWND window, RECT windowRect, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors) noexcept;
+    bool FocusZoneByDirectionAndPosition(HWND window, RECT windowRect, DWORD vkCode, bool cycle, WorkArea* const workArea) noexcept;
     void FlashZones() noexcept;
 
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
@@ -338,7 +340,7 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor, GUID currentVi
     ZoneIndexSet indexes{};
 
     if (monitor)
-    {    
+    {
         if (workAreas.contains(monitor))
         {
             workArea = workAreas.at(monitor).get();
@@ -367,7 +369,7 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor, GUID currentVi
             }
         }
     }
-    
+
     if (!indexes.empty() && workArea)
     {
         Trace::FancyZones::SnapNewWindowIntoZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
@@ -436,7 +438,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
             }
         }
     }
-    
+
 
     // Open on active monitor if window wasn't zoned
     if (openOnActiveMonitor && !windowMovedToZone)
@@ -471,6 +473,34 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
                 // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_SNAP_HOTKEY's handled
                 PostMessageW(m_window, WM_PRIV_SNAP_HOTKEY, 0, info->vkCode);
                 return true;
+            }
+        }
+    }
+
+    if (ctrl && alt && shift)
+    {
+        if ((info->vkCode == 'L') || (info->vkCode == 'H') || (info->vkCode == 'K') || (info->vkCode == 'J'))
+        {
+            if (ShouldProcessSnapHotkey(info->vkCode))
+            {
+                if (info->vkCode == 'L')
+                {
+                    info->vkCode = VK_RIGHT;
+                }
+                else if (info->vkCode == 'H')
+                {
+                    info->vkCode = VK_LEFT;
+                }
+                else if (info->vkCode == 'K')
+                {
+                    info->vkCode = VK_UP;
+                }
+                else if (info->vkCode == 'J')
+                {
+                    info->vkCode = VK_DOWN;
+                }
+
+                PostMessageW(m_window, WM_PRIV_FOCUS_ZONE_KEY, 0, info->vkCode);
             }
         }
     }
@@ -702,6 +732,35 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             ApplyQuickLayout(static_cast<int>(lparam));
         }
+        else if (message == WM_PRIV_FOCUS_ZONE_KEY)
+        {
+            // We already checked in ShouldProcessSnapHotkey whether the foreground window is a candidate for zoning
+            auto foregroundWindow = GetForegroundWindow();
+
+            HMONITOR monitor{ nullptr };
+            if (!FancyZonesSettings::settings().spanZonesAcrossMonitors)
+            {
+                monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTONULL);
+            }
+
+            if (FancyZonesSettings::settings().moveWindowsBasedOnPosition)
+            {
+                auto monitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+                RECT windowRect{};
+                if (GetWindowRect(foregroundWindow, &windowRect))
+                {
+                    FocusZone(foregroundWindow, windowRect, monitor, static_cast<DWORD>(lparam), m_workAreaConfiguration.GetAllWorkAreas(), monitors);
+                }
+                else
+                {
+                    Logger::error("Error switching zones by keyboard shortcut: failed to get window rect");
+                }
+            }
+            else
+            {
+                // TODO: Just focus to next/prev zone index
+            }
+        }
         else if (message == WM_PRIV_SETTINGS_CHANGED)
         {
             FancyZonesSettings::instance().LoadSettings();
@@ -768,7 +827,7 @@ bool FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAr
         Logger::error(L"Failed to create work area {}", id.toString());
         return false;
     }
-    
+
     m_workAreaConfiguration.AddWorkArea(monitor, std::move(workArea));
     return true;
 }
@@ -1063,6 +1122,81 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
             AppliedLayouts::instance().SaveData();
         }
     }
+}
+
+bool FancyZones::FocusZone(HWND window, RECT windowRect, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors) noexcept
+{
+    if (!activeWorkAreas.contains(monitor))
+    {
+        return false;
+    }
+
+    const auto& currentWorkArea = activeWorkAreas.at(monitor);
+    // TODO: Support multiple monitors like WindowKeyboardSnap::Snap() does
+    monitors;///
+
+    // Single monitor environment, or combined multi-monitor environment.
+    return FocusZoneByDirectionAndPosition(window, windowRect, vkCode, true, currentWorkArea.get());
+}
+
+// TODO: Support cycle (if you press Win-alt-right and the active window is in a right-most zone in the work area then focus the leftmost zone)
+bool FancyZones::FocusZoneByDirectionAndPosition(HWND window, RECT windowRect, DWORD vkCode, bool cycle, WorkArea* const workArea) noexcept
+{
+    if (!workArea)
+    {
+        return false;
+    }
+
+    const auto& layout = workArea->GetLayout();
+    const auto& zones = layout->Zones();
+    const auto& layoutWindows = workArea->GetLayoutWindows();
+    if (!layout || zones.empty())
+    {
+        return false;
+    }
+    std::vector<bool> usedZoneIndices(zones.size(), false);
+    auto windowZones = layoutWindows.GetZoneIndexSetFromWindow(window);
+
+    for (const ZoneIndex id : windowZones)
+    {
+        usedZoneIndices[id] = true;
+    }
+
+    std::vector<RECT> zoneRects;
+    ZoneIndexSet freeZoneIndices;
+
+    for (const auto& [zoneId, zone] : zones)
+    {
+        if (!usedZoneIndices[zoneId])
+        {
+            zoneRects.emplace_back(zones.at(zoneId).GetZoneRect());
+            freeZoneIndices.emplace_back(zoneId);
+        }
+    }
+
+    // Move focus to coordinates relative to windowZone
+    const auto& workAreaRect = workArea->GetWorkAreaRect();
+    windowRect.top -= workAreaRect.top();
+    windowRect.bottom -= workAreaRect.top();
+    windowRect.left -= workAreaRect.left();
+    windowRect.right -= workAreaRect.left();
+
+    ZoneIndex result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+    if (static_cast<size_t>(result) < zoneRects.size())
+    {
+        bool success = workArea->Focus({ freeZoneIndices[result] });
+        if (success)
+        {
+            // TODO: Tracing
+        }
+        return success;
+    }
+    else if (cycle)
+    {
+        // TODO: Support cycle (wrap around)
+    }
+
+    return false;
 }
 
 void FancyZones::FlashZones() noexcept

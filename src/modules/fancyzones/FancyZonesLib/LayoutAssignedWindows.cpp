@@ -106,6 +106,40 @@ void LayoutAssignedWindows::CycleWindows(HWND window, bool reverse)
     }
 }
 
+HWND GetLowestZOrderWindow(const std::vector<HWND>& windows)
+{
+    // Find which window in windows is at the top of the z-order
+    HWND window = GetTopWindow(GetDesktopWindow());
+    while (window)
+    {
+        if (find(begin(windows), end(windows), window) != end(windows))
+        {
+            return window;
+        }
+
+        window = GetWindow(window, GW_HWNDNEXT);
+    }
+
+    // TODO: Log not found error
+    return nullptr;
+}
+
+HWND LayoutAssignedWindows::GetCurrentWindowFromZoneIndexSet(ZoneIndexSet indexSet) noexcept
+{
+    if (!m_windowsByIndexSets.contains(indexSet))
+    {
+        return nullptr;
+    }
+
+    const auto& assignedWindows = m_windowsByIndexSets[indexSet];
+    if (assignedWindows.empty())
+    {
+        return nullptr;
+    }
+
+    return GetLowestZOrderWindow(assignedWindows);
+}
+
 void LayoutAssignedWindows::InsertWindowIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet)
 {
     if (tabSortKeyWithinZone.has_value())

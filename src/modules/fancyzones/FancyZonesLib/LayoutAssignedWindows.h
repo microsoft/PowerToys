@@ -17,6 +17,8 @@ public :
     
     void CycleWindows(HWND window, bool reverse);
 
+    HWND GetCurrentWindowFromZoneIndexSet(ZoneIndexSet indexSet) noexcept;
+
 private:
     std::map<HWND, ZoneIndexSet> m_windowIndexSet{};
     std::map<ZoneIndexSet, std::vector<HWND>> m_windowsByIndexSets{};

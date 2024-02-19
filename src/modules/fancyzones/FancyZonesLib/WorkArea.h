@@ -50,6 +50,8 @@ public:
     bool Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition = true);
     bool Unsnap(HWND window);
 
+    bool Focus(const ZoneIndexSet& zones);
+
     void ShowZones(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
     void HideZones();
     void FlashZones();
