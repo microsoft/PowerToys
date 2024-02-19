@@ -8,6 +8,7 @@ using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Programs;
 using Windows.ApplicationModel;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Storage
@@ -18,11 +19,14 @@ namespace Microsoft.Plugin.Program.Storage
     /// </summary>
     internal class PackageRepository : ListRepository<UWPApplication>, IProgramRepository
     {
-        private IPackageCatalog _packageCatalog;
+        private readonly IPackageCatalog _packageCatalog;
+        private readonly PluginInitContext _context;
 
-        public PackageRepository(IPackageCatalog packageCatalog)
+        public PackageRepository(IPackageCatalog packageCatalog, PluginInitContext context)
         {
             _packageCatalog = packageCatalog ?? throw new ArgumentNullException(nameof(packageCatalog), "PackageRepository expects an interface to be able to subscribe to package events");
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+
             _packageCatalog.PackageInstalling += OnPackageInstalling;
             _packageCatalog.PackageUninstalling += OnPackageUninstalling;
         }
@@ -40,6 +44,7 @@ namespace Microsoft.Plugin.Program.Storage
                         uwp.InitializeAppInfo(packageWrapper.InstalledLocation);
                         foreach (var app in uwp.Apps)
                         {
+                            app.UpdateLogoPath(_context.API.GetCurrentTheme());
                             Add(app);
                         }
                     }

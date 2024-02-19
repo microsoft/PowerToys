@@ -42,7 +42,7 @@ namespace Microsoft.Plugin.Program
         private static PluginInitContext _context;
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed;
-        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper());
+        private PackageRepository _packageRepository;
         private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
         private static Win32ProgramRepository _win32ProgramRepository;
 
@@ -105,6 +105,7 @@ namespace Microsoft.Plugin.Program
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _context.API.ThemeChanged += OnThemeChanged;
+            _packageRepository = new PackageRepository(new PackageCatalogWrapper(), _context);
 
             var a = Task.Run(() =>
             {
@@ -131,7 +132,7 @@ namespace Microsoft.Plugin.Program
         {
             foreach (UWPApplication app in _packageRepository)
             {
-                app.UpdatePath(theme);
+                app.UpdateLogoPath(theme);
             }
         }
 

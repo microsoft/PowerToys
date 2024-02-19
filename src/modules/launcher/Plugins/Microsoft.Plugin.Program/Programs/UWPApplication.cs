@@ -403,7 +403,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        public void UpdatePath(Theme theme)
+        public void UpdateLogoPath(Theme theme)
         {
             LogoPathFromUri(logoUri, theme);
         }
