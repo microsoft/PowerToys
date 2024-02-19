@@ -103,7 +103,7 @@
                 "WinUI3Apps\\PowerToys.FileLocksmithUI.exe",
                 "WinUI3Apps\\PowerToys.FileLocksmithUI.dll",
                 "WinUI3Apps\\PowerToys.FileLocksmithContextMenu.dll",
-                "FileLocksmithContextMenuPackage.msix",
+                "PowerToys.FileLocksmithContextMenuPackage.msix",
 
                 "WinUI3Apps\\Peek.Common.dll",
                 "WinUI3Apps\\Peek.FilePreviewer.dll",
@@ -119,7 +119,7 @@
                 "PowerToys.ImageResizer.dll",
                 "PowerToys.ImageResizerExt.dll",
                 "PowerToys.ImageResizerContextMenu.dll",
-                "ImageResizerContextMenuPackage.msix",
+                "PowerToys.ImageResizerContextMenuPackage.msix",
 
                 "PowerToys.KeyboardManager.dll",
                 "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
@@ -182,7 +182,7 @@
                 "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
                 "WinUI3Apps\\PowerToys.PowerRename.exe",
                 "WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll",
-                "WinUI3Apps\\PowerRenameContextMenuPackage.msix",
+                "WinUI3Apps\\PowerToys.PowerRenameContextMenuPackage.msix",
 
                 "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreview.dll",
