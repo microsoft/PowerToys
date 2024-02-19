@@ -43,6 +43,7 @@
     <None Include="EnvironmentVariablesModuleInterface.base.rc">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files\EnvironmentVariablesModuleInterface.rc">

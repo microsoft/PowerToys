@@ -1353,7 +1353,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Data.SqlClient 4.8.6
 - System.Diagnostics.EventLog 8.0.0
 - System.Diagnostics.PerformanceCounter 8.0.0
-- System.Drawing.Common 8.0.1
+- System.Drawing.Common 8.0.2
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0
@@ -1369,4 +1369,4 @@ EXHIBIT A -Mozilla Public License.
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
-- WPF-UI 3.0.0-preview.13
+- WPF-UI 3.0.0

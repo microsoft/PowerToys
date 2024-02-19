@@ -16,6 +16,7 @@ namespace Hosts.Models
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
+        [NotifyPropertyChangedFor(nameof(IsAddressValid))]
         private string _address;
 
         partial void OnAddressChanged(string value)
@@ -36,6 +37,7 @@ namespace Hosts.Models
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
+        [NotifyPropertyChangedFor(nameof(IsHostsValid))]
         private string _hosts;
 
         partial void OnHostsChanged(string value)
@@ -60,6 +62,10 @@ namespace Hosts.Models
         private bool _duplicate;
 
         public bool Valid => Validate(true);
+
+        public bool IsAddressValid => ValidateAddressField();
+
+        public bool IsHostsValid => ValidateHostsField(true);
 
         public string Line { get; private set; }
 
@@ -152,6 +158,16 @@ namespace Hosts.Models
             };
         }
 
+        private bool ValidateAddressField()
+        {
+            return Type != AddressType.Invalid;
+        }
+
+        private bool ValidateHostsField(bool validateHostsLength)
+        {
+            return ValidationHelper.ValidHosts(Hosts, validateHostsLength);
+        }
+
         public bool Validate(bool validateHostsLength)
         {
             if (Equals("102.54.94.97", "rhino.acme.com", "source server") || Equals("38.25.63.10", "x.acme.com", "x client host"))
@@ -159,7 +175,7 @@ namespace Hosts.Models
                 return false;
             }
 
-            return Type != AddressType.Invalid && ValidationHelper.ValidHosts(Hosts, validateHostsLength);
+            return ValidateAddressField() && ValidateHostsField(validateHostsLength);
         }
 
         private bool Equals(string address, string hosts, string comment)
