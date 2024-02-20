@@ -74,7 +74,18 @@ public:
 
     IFACEMETHODIMP GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL okToBeSlow, _Out_ EXPCMDSTATE* cmdState)
     {
-        *cmdState = FileLocksmithSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
+        *cmdState = ECS_ENABLED;
+
+        if (!FileLocksmithSettingsInstance().GetEnabled())
+        {
+            *cmdState = ECS_HIDDEN;
+        }
+
+        if (FileLocksmithSettingsInstance().GetShowInExtendedContextMenu())
+        {
+            *cmdState = ECS_HIDDEN;
+        }
+
         return S_OK;
     }
 

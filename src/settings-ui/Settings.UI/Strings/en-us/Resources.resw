@@ -3441,6 +3441,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Slovak.Content" xml:space="preserve">
     <value>Slovak</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Slovenian.Content" xml:space="preserve">
+    <value>Slovenian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
     <value>Spanish</value>
   </data>

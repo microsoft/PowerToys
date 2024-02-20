@@ -164,7 +164,7 @@ The definition of the interface used by the [`runner`](/src/runner) to manage th
 
 ### [`Common`](common.md)
 
-The common lib, as the name suggests, contains code shared by multiple PowerToys components and modules, e.g. [json parsing](/src/common/json.h) and [IPC primitives](/src/common/two_way_pipe_message_ipc.h).
+The common lib, as the name suggests, contains code shared by multiple PowerToys components and modules, e.g. [json parsing](/src/common/utils/json.h) and [IPC primitives](/src/common/interop/two_way_pipe_message_ipc.h).
 
 ### [`Settings`](settingsv2/)
 
