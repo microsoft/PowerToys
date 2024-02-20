@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
@@ -273,7 +274,7 @@ namespace Wox.Infrastructure.Image
                     if (GuidToKey.TryGetValue(hash, out string key))
                     {
                         // image already exists
-                        if (ImageCache.Usage.TryGetValue(path, out _))
+                        if (ImageCache.Usage.TryGetValue(path, out _) && CompareImages((BitmapSource)ImageCache[key], (BitmapSource)img))
                         {
                             img = ImageCache[key];
                         }
@@ -300,6 +301,52 @@ namespace Wox.Infrastructure.Image
             image.UriSource = new Uri(path);
             image.EndInit();
             return image;
+        }
+
+        private static bool CompareImages(BitmapSource img1, BitmapSource img2)
+        {
+            // First, check if we are comparing the same instance.
+            if (ReferenceEquals(img1, img2))
+            {
+                return true;
+            }
+
+            if (img1 == null || img2 == null)
+            {
+                return false;
+            }
+
+            // Check if dimensions match.
+            if (img1.PixelWidth != img2.PixelWidth || img1.PixelHeight != img2.PixelHeight)
+            {
+                return false;
+            }
+
+            // Check dpi settings
+            if (img1.DpiX != img2.DpiX || img1.DpiY != img2.DpiY)
+            {
+                return false;
+            }
+
+            // Compare pixel formats
+            if (img1.Format != img2.Format)
+            {
+                return false;
+            }
+
+            byte[] img1Bytes = GetPixels(img1);
+            byte[] img2Bytes = GetPixels(img2);
+
+            // Use sequence equal to compare byte arrays
+            return img1Bytes.SequenceEqual(img2Bytes);
+        }
+
+        private static byte[] GetPixels(BitmapSource image)
+        {
+            int stride = ((image.PixelWidth * image.Format.BitsPerPixel) + 7) / 8;
+            byte[] pixels = new byte[image.PixelHeight * stride];
+            image.CopyPixels(pixels, stride, 0);
+            return pixels;
         }
     }
 }
