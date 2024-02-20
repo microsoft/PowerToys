@@ -77,8 +77,8 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerToys.ImageResizerContextMenuPackage.msix
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>del $(OutDir)\ImageResizerContextMenuPackage.msix /q
-MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Command>
+      <Command>del $(OutDir)\*ImageResizerContextMenuPackage.msix /q
+MakeAppx.exe pack /d . /p $(OutDir)PowerToys.ImageResizerContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

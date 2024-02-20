@@ -82,8 +82,8 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerToys.PowerRenameContextMenuPackage.msix 
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>del $(OutDir)\PowerRenameContextMenuPackage.msix /q
-MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Command>
+      <Command>del $(OutDir)\*PowerRenameContextMenuPackage.msix /q
+MakeAppx.exe pack /d . /p $(OutDir)PowerToys.PowerRenameContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
