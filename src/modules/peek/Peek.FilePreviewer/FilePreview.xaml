@@ -70,6 +70,11 @@
             Source="{x:Bind ArchivePreviewer.Tree, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(ArchivePreviewer, Previewer.State), Mode=OneWay}" />
 
+        <controls:DriveControl
+            x:Name="DrivePreview"
+            Source="{x:Bind DrivePreviewer.Preview, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(DrivePreviewer, Previewer.State), Mode=OneWay}" />
+
         <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"
             LoadingState="{x:Bind UnsupportedFilePreviewer.State, Mode=OneWay}"
