@@ -38,6 +38,9 @@
             <desktop5:ItemType Type="Directory">
               <desktop5:Verb Id="FileLocksmithCommand" Clsid="AAF1E27D-4976-49C2-8895-AAFA743C0A7E" />
             </desktop5:ItemType>
+            <desktop5:ItemType Type="Drive">
+              <desktop5:Verb Id="FileLocksmithCommand" Clsid="AAF1E27D-4976-49C2-8895-AAFA743C0A7E" />
+            </desktop5:ItemType>
             <desktop5:ItemType Type="*">
               <desktop5:Verb Id="FileLocksmithCommand" Clsid="AAF1E27D-4976-49C2-8895-AAFA743C0A7E" />
             </desktop5:ItemType>
