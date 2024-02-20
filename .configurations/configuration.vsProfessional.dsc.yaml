@@ -11,10 +11,10 @@ properties:
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: vsPackage
       directives:
-        description: Install Visual Studio 2022 Community (Any edition will work)
+        description: Install Visual Studio 2022 Professional (Any edition will work)
         allowPrerelease: true
       settings:
-        id: Microsoft.VisualStudio.2022.Community
+        id: Microsoft.VisualStudio.2022.Professional
         source: winget
     - resource: Microsoft.VisualStudio.DSC/VSComponents
       dependsOn:
@@ -23,7 +23,7 @@ properties:
         description: Install required VS workloads
         allowPrerelease: true
       settings:
-        productId: Microsoft.VisualStudio.Product.Community
+        productId: Microsoft.VisualStudio.Product.Professional
         channelId: VisualStudio.17.Release
         vsConfigFile: '${WinGetConfigRoot}\..\.vsconfig'
   configurationVersion: 0.2.0

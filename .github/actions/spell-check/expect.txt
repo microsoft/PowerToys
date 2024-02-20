@@ -422,8 +422,8 @@ EResize
 ERole
 ERRORIMAGE
 ERRORTITLE
+erwrite
 ESettings
-esize
 esrp
 etl
 ETW
