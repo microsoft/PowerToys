@@ -7,8 +7,9 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
   xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+  xmlns:desktop10="http://schemas.microsoft.com/appx/manifest/desktop/windows10/10"
   xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
-  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" IgnorableNamespaces="uap uap2 uap3 rescap desktop desktop4 desktop5 uap10 com">
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" IgnorableNamespaces="uap uap2 uap3 rescap desktop desktop4 desktop5 desktop10 uap10 com">
   <Identity Name="Microsoft.PowerToys.FileLocksmithContextMenu" ProcessorArchitecture="neutral" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="1.0.0.0" />
   <Properties>
     <DisplayName>PowerToys FileLocksmith Context Menu</DisplayName>
@@ -35,12 +36,15 @@
       <Extensions>
         <desktop4:Extension Category="windows.fileExplorerContextMenus">
           <desktop4:FileExplorerContextMenus>
+            <desktop4:ItemType Type="*">
+              <desktop4:Verb Id="FileLocksmithCommand" Clsid="AAF1E27D-4976-49C2-8895-AAFA743C0A7E" />
+            </desktop4:ItemType>
             <desktop5:ItemType Type="Directory">
               <desktop5:Verb Id="FileLocksmithCommand" Clsid="AAF1E27D-4976-49C2-8895-AAFA743C0A7E" />
             </desktop5:ItemType>
-            <desktop5:ItemType Type="*">
-              <desktop5:Verb Id="FileLocksmithCommand" Clsid="AAF1E27D-4976-49C2-8895-AAFA743C0A7E" />
-            </desktop5:ItemType>
+            <desktop10:ItemType Type="Drive">
+              <desktop10:Verb Id="FileLocksmithCommand" Clsid="AAF1E27D-4976-49C2-8895-AAFA743C0A7E" />
+            </desktop10:ItemType>
           </desktop4:FileExplorerContextMenus>
         </desktop4:Extension>
         <com:Extension Category="windows.comServer" uap10:RuntimeBehavior="packagedClassicApp">
