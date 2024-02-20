@@ -5,7 +5,8 @@
 #pragma comment(lib, "shlwapi")
 
 #include "ClassFactory.h"
-#include "Trace.h"
+
+#include "FileLocksmithLib/Trace.h"
 
 namespace globals
 {
