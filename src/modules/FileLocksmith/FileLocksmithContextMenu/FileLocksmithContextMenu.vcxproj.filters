@@ -37,6 +37,31 @@
     <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
+    <None Include="Assets\FileLocksmith\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\**">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\FileLocksmith\**">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FileLocksmithContextMenu.base.rc">

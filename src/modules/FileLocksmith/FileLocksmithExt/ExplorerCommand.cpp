@@ -11,6 +11,7 @@
 #include <common/themes/icon_helpers.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
+#include <common/utils/HDropIterator.h>
 
 // Implementations of inherited IUnknown methods
 
@@ -167,46 +168,11 @@ IFACEMETHODIMP ExplorerCommand::QueryContextMenu(HMENU hmenu, UINT indexMenu, UI
 IFACEMETHODIMP ExplorerCommand::InvokeCommand(CMINVOKECOMMANDINFO* pici)
 {
     Trace::Invoked();
-    ipc::Writer writer;
 
-    if (HRESULT result = writer.start(); FAILED(result))
+    if (HRESULT result = LaunchUI(pici); FAILED(result))
     {
         Trace::InvokedRet(result);
         return result;
-    }
-
-    if (HRESULT result = LaunchUI(pici, &writer); FAILED(result))
-    {
-        Trace::InvokedRet(result);
-        return result;
-    }
-
-    IShellItemArray* shell_item_array;
-    HRESULT result = SHCreateShellItemArrayFromDataObject(m_data_obj, __uuidof(IShellItemArray), reinterpret_cast<void**>(&shell_item_array));
-    if (SUCCEEDED(result))
-    {
-        DWORD num_items;
-        shell_item_array->GetCount(&num_items);
-        for (DWORD i = 0; i < num_items; i++)
-        {
-            IShellItem* item;
-            result = shell_item_array->GetItemAt(i, &item);
-            if (SUCCEEDED(result))
-            {
-                LPWSTR file_path;
-                result = item->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
-                if (SUCCEEDED(result))
-                {
-                    // TODO Aggregate items and send to UI
-                    writer.add_path(file_path);
-                    CoTaskMemFree(file_path);
-                }
-
-                item->Release();
-            }
-        }
-
-        shell_item_array->Release();
     }
 
     Trace::InvokedRet(S_OK);
@@ -242,47 +208,97 @@ ExplorerCommand::~ExplorerCommand()
     --globals::ref_count;
 }
 
-HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer)
+HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici)
 {
-    // Compute exe path
-    std::wstring exe_path = get_module_folderpath(globals::instance);
-    exe_path += L'\\';
-    exe_path += constants::nonlocalizable::FileNameUIExe;
+    HRESULT hr = E_FAIL;
 
-    STARTUPINFO startupInfo;
-    ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
-    startupInfo.cb = sizeof(STARTUPINFO);
-    startupInfo.dwFlags = STARTF_USESHOWWINDOW;
-
-    if (pici)
+    if (FileLocksmithSettings().GetEnabled() &&
+        pici && (IS_INTRESOURCE(pici->lpVerb)) &&
+        (LOWORD(pici->lpVerb) == 0))
     {
-        startupInfo.wShowWindow = pici->nShow;
+        Trace::Invoked();
+
+        // Compute exe path
+        std::wstring exe_path = get_module_folderpath(globals::instance);
+        exe_path += L'\\';
+        exe_path += constants::nonlocalizable::FileNameUIExe;
+
+        // Create an anonymous pipe to stream filenames
+        SECURITY_ATTRIBUTES sa;
+        HANDLE hReadPipe;
+        HANDLE hWritePipe;
+        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+        sa.lpSecurityDescriptor = NULL;
+        sa.bInheritHandle = TRUE;
+        if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
+        if (!SetHandleInformation(hWritePipe, HANDLE_FLAG_INHERIT, 0))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
+        CAtlFile writePipe(hWritePipe);
+
+        CString commandLine;
+        commandLine.Format(_T("\"%s\""), exe_path.data());
+
+        int nSize = commandLine.GetLength() + 1;
+        LPTSTR lpszCommandLine = new TCHAR[nSize];
+        _tcscpy_s(lpszCommandLine, nSize, commandLine);
+
+        STARTUPINFO startupInfo;
+        ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
+        startupInfo.cb = sizeof(STARTUPINFO);
+        startupInfo.hStdInput = hReadPipe;
+        startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+        startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
+
+        PROCESS_INFORMATION processInformation;
+
+        // Start the resizer
+        CreateProcess(
+            NULL,
+            lpszCommandLine,
+            NULL,
+            NULL,
+            TRUE,
+            0,
+            NULL,
+            NULL,
+            &startupInfo,
+            &processInformation);
+        delete[] lpszCommandLine;
+        if (!CloseHandle(processInformation.hProcess))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
+        if (!CloseHandle(processInformation.hThread))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
+
+        if (m_data_obj)
+        {
+            // Stream the input files
+            HDropIterator i(m_data_obj);
+            for (i.First(); !i.IsDone(); i.Next())
+            {
+                CString fileName(i.CurrentItem());
+                // File name can't contain '?'
+                fileName.Append(_T("?"));
+
+                writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+            }
+        }
+
+        writePipe.Close();
     }
-    else
-    {
-        startupInfo.wShowWindow = SW_SHOWNORMAL;
-    }
+    Trace::InvokedRet(hr);
 
-    PROCESS_INFORMATION processInformation;
-    std::wstring command_line = L"\"";
-    command_line += exe_path;
-    command_line += L"\"\0";
-
-    CreateProcessW(
-        NULL,
-        command_line.data(),
-        NULL,
-        NULL,
-        TRUE,
-        0,
-        NULL,
-        NULL,
-        &startupInfo,
-        &processInformation);
-
-    // Discard handles
-    CloseHandle(processInformation.hProcess);
-    CloseHandle(processInformation.hThread);
-
-    return S_OK;
+    return hr;
 }

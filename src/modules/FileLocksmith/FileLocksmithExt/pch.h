@@ -8,6 +8,8 @@
 #include <ShlObj_core.h>
 #include <atlbase.h>
 #include <commctrl.h>
+#include <atlfile.h>
+#include <atlstr.h>
 
 // C++ Standard library
 #include <atomic>
