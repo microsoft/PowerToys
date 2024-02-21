@@ -54,6 +54,7 @@ public:
 
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
     {
+        MessageBox(NULL, L"GetIcon", NULL, NULL);
         std::wstring iconResourcePath = get_module_folderpath(g_hInst);
         iconResourcePath += L"\\Assets\\FileLocksmith\\";
         iconResourcePath += L"FileLocksmith.ico";
@@ -68,12 +69,14 @@ public:
 
     IFACEMETHODIMP GetCanonicalName(_Out_ GUID* guidCommandName)
     {
+        MessageBox(NULL, L"GetCanonicalName", NULL, NULL);
         *guidCommandName = __uuidof(this);
         return S_OK;
     }
 
     IFACEMETHODIMP GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL okToBeSlow, _Out_ EXPCMDSTATE* cmdState)
     {
+        MessageBox(NULL, L"GetState", NULL, NULL);
         *cmdState = ECS_ENABLED;
 
         if (!FileLocksmithSettingsInstance().GetEnabled())
@@ -91,6 +94,7 @@ public:
 
     IFACEMETHODIMP Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
     {
+        MessageBox(NULL, L"Invoke", NULL, NULL);
         Trace::Invoked();
         ipc::Writer writer;
 
@@ -145,6 +149,7 @@ public:
 
     IFACEMETHODIMP GetFlags(_Out_ EXPCMDFLAGS* flags)
     {
+        MessageBox(NULL, L"GetFlags", NULL, NULL);
         *flags = Flags();
         return S_OK;
     }
