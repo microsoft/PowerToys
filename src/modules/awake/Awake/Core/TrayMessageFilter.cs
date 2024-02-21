@@ -117,20 +117,7 @@ namespace Awake.Core
 
         private static void PassiveKeepAwakeCommandHandler(string moduleName)
         {
-            AwakeSettings currentSettings;
-
-            try
-            {
-                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
-            }
-            catch (FileNotFoundException)
-            {
-                currentSettings = new AwakeSettings();
-            }
-
-            currentSettings.Properties.Mode = AwakeMode.PASSIVE;
-
-            ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            Manager.SetPassiveKeepAwakeMode(moduleName);
         }
 
         private static void IndefiniteKeepAwakeCommandHandler(string moduleName)
