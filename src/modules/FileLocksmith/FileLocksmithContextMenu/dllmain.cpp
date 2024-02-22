@@ -135,6 +135,7 @@ public:
             Trace::InvokedRet(result);
             return result;
         }
+        create_pipe_thread.join();
 
         if (hPipe != INVALID_HANDLE_VALUE)
         {
