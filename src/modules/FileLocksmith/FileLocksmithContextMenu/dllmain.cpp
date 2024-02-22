@@ -129,7 +129,7 @@ public:
 
         HRESULT result;
 
-        if (!RunNonElevatedEx(path.c_str(), L"", get_module_folderpath(g_hInst)))
+        if (!RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst)))
         {
             result = E_FAIL;
             Trace::InvokedRet(result);
