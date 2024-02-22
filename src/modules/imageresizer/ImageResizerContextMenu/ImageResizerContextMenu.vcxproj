@@ -53,7 +53,7 @@
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>del $(OutDir)\*ImageResizerContextMenuPackage.msix /q
+      <Command>del $(OutDir)*ImageResizerContextMenuPackage.msix /q
 MakeAppx.exe pack /d . /p $(OutDir)PowerToys.ImageResizerContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -77,7 +77,7 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerToys.ImageResizerContextMenuPackage.msix
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>del $(OutDir)\*ImageResizerContextMenuPackage.msix /q
+      <Command>del $(OutDir)*ImageResizerContextMenuPackage.msix /q
 MakeAppx.exe pack /d . /p $(OutDir)PowerToys.ImageResizerContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>

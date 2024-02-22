@@ -56,7 +56,7 @@
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>del $(OutDir)\*FileLocksmithContextMenuPackage.msix /q
+      <Command>del $(OutDir)*FileLocksmithContextMenuPackage.msix /q
 MakeAppx.exe pack /d . /p $(OutDir)PowerToys.FileLocksmithContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -81,7 +81,7 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerToys.FileLocksmithContextMenuPackage.msi
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
-      <Command>del $(OutDir)\*FileLocksmithContextMenuPackage.msix /q
+      <Command>del $(OutDir)*FileLocksmithContextMenuPackage.msix /q
 MakeAppx.exe pack /d . /p $(OutDir)PowerToys.FileLocksmithContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
