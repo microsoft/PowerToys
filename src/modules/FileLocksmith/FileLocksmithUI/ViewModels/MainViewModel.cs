@@ -82,11 +82,6 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             var args = Environment.GetCommandLineArgs();
             var pipeName = args.Where(s => s.Contains("\\\\.\\pipe\\")).FirstOrDefault();
 
-            foreach (var s in args)
-            {
-                MessageBox.Show(s);
-            }
-
             paths = NativeMethods.ReadPathsFromPipe(pipeName);
             Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
             LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);

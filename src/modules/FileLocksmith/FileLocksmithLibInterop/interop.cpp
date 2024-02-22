@@ -96,36 +96,40 @@ namespace FileLocksmith::Interop
 
         static array<System::String ^>^ ReadPathsFromPipe(System::String^ pipeName)
         {
-            std::wstring pipe = from_system_string(pipeName);
-            HANDLE hStdin;
+            HANDLE hStdin = INVALID_HANDLE_VALUE;
 
-            if (pipe.size() > 0)
+            if (!pipeName->Empty)
             {
-                while (1)
+                std::wstring pipe = from_system_string(pipeName);
+
+                if (pipe.size() > 0)
                 {
-                    hStdin = CreateFile(
-                        pipe.c_str(), // pipe name
-                        GENERIC_READ | GENERIC_WRITE, // read and write
-                        0, // no sharing
-                        NULL, // default security attributes
-                        OPEN_EXISTING, // opens existing pipe
-                        0, // default attributes
-                        NULL); // no template file
-
-                    // Break if the pipe handle is valid.
-                    if (hStdin != INVALID_HANDLE_VALUE)
-                        break;
-
-                    // Exit if an error other than ERROR_PIPE_BUSY occurs.
-                    auto error = GetLastError();
-                    if (error != ERROR_PIPE_BUSY)
+                    while (1)
                     {
-                        break;
-                    }
+                        hStdin = CreateFile(
+                            pipe.c_str(), // pipe name
+                            GENERIC_READ | GENERIC_WRITE, // read and write
+                            0, // no sharing
+                            NULL, // default security attributes
+                            OPEN_EXISTING, // opens existing pipe
+                            0, // default attributes
+                            NULL); // no template file
 
-                    if (!WaitNamedPipe(pipe.c_str(), 3))
-                    {
-                        printf("Could not open pipe: 20 second wait timed out.");
+                        // Break if the pipe handle is valid.
+                        if (hStdin != INVALID_HANDLE_VALUE)
+                            break;
+
+                        // Exit if an error other than ERROR_PIPE_BUSY occurs.
+                        auto error = GetLastError();
+                        if (error != ERROR_PIPE_BUSY)
+                        {
+                            break;
+                        }
+
+                        if (!WaitNamedPipe(pipe.c_str(), 3))
+                        {
+                            printf("Could not open pipe: 20 second wait timed out.");
+                        }
                     }
                 }
             }
