@@ -170,7 +170,7 @@ namespace Peek.FilePreviewer.Previewers
         private void ComputeFolderSize(CancellationToken cancellationToken)
         {
             Task.Run(
-            () =>
+            async () =>
             {
                 try
                 {
@@ -180,7 +180,7 @@ namespace Peek.FilePreviewer.Previewers
                         return;
                     }
 
-                    Dispatcher.RunOnUiThread(_folderSizeDispatcherTimer.Start);
+                    await Dispatcher.RunOnUiThread(_folderSizeDispatcherTimer.Start);
                     GetDirectorySize(new DirectoryInfo(Item.Path), cancellationToken);
                 }
                 catch (OperationCanceledException)
@@ -192,11 +192,11 @@ namespace Peek.FilePreviewer.Previewers
                 }
                 finally
                 {
-                    Dispatcher.RunOnUiThread(_folderSizeDispatcherTimer.Stop);
+                    await Dispatcher.RunOnUiThread(_folderSizeDispatcherTimer.Stop);
                 }
 
                 // If everything went well, ensure the UI is updated
-                Dispatcher.RunOnUiThread(UpdateFolderSize);
+                await Dispatcher.RunOnUiThread(UpdateFolderSize);
             },
             cancellationToken);
         }
