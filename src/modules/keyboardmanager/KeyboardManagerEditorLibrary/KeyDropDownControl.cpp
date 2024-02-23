@@ -380,8 +380,16 @@ std::vector<int32_t> KeyDropDownControl::GetSelectedCodesFromStackPanel(Variable
             for (uint32_t j = 0; j < sp.Children().Size(); ++j)
             {
                 auto border = sp.Children().GetAt(j).try_as<Border>();
-                auto textBlock = border.Child().try_as<TextBlock>();
-                selectedKeyCodes.push_back(GetSelectedValue(textBlock));
+
+                // if this is null then this is a different layout
+                // likely because this not a shortcut to another shortcut but rather
+                // run app or open uri
+
+                if (border != nullptr)
+                {
+                    auto textBlock = border.Child().try_as<TextBlock>();
+                    selectedKeyCodes.push_back(GetSelectedValue(textBlock));
+                }
             }
         }
     }
