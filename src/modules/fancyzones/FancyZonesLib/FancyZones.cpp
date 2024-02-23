@@ -144,13 +144,14 @@ public:
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
-    bool AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id) noexcept;
+    bool AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id, const FancyZonesUtils::Rect& rect) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
 private:
     void UpdateWorkAreas(bool updateWindowPositions) noexcept;
+    bool ShouldWorkAreasBeRecreated(const std::vector<FancyZonesDataTypes::MonitorId>& monitors, const GUID& virtualDesktop, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& workAreas) noexcept;
     void CycleWindows(bool reverse) noexcept;
 
     void SyncVirtualDesktops() noexcept;
@@ -741,22 +742,12 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     UpdateWorkAreas(updateWindowsPositions);
 }
 
-bool FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id) noexcept
+bool FancyZones::AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id, const FancyZonesUtils::Rect& rect) noexcept
 {
     auto virtualDesktopIdStr = FancyZonesUtils::GuidToString(id.virtualDesktopId);
     if (virtualDesktopIdStr)
     {
         Logger::debug(L"Add new work area on virtual desktop {}", virtualDesktopIdStr.value());
-    }
-
-    FancyZonesUtils::Rect rect{};
-    if (monitor)
-    {
-        rect = MonitorUtils::GetWorkAreaRect(monitor);
-    }
-    else
-    {
-        rect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
     }
 
     auto parentWorkAreaId = id;
@@ -791,27 +782,38 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
 {
     Logger::debug(L"Update work areas, update windows positions: {}", updateWindowPositions);
 
-    m_workAreaConfiguration.Clear();
     auto currentVirtualDesktop = VirtualDesktop::instance().GetCurrentVirtualDesktopIdFromRegistry();
 
     if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
     {
-        FancyZonesDataTypes::WorkAreaId workAreaId;
-        workAreaId.virtualDesktopId = currentVirtualDesktop;
-        workAreaId.monitorId = { .deviceId = { .id = ZonedWindowProperties::MultiMonitorName, .instanceId = ZonedWindowProperties::MultiMonitorInstance } };
+        std::vector<FancyZonesDataTypes::MonitorId> monitors = { FancyZonesDataTypes::MonitorId{ .monitor = nullptr, .deviceId = { .id = ZonedWindowProperties::MultiMonitorName, .instanceId = ZonedWindowProperties::MultiMonitorInstance } } };
+        if (ShouldWorkAreasBeRecreated(monitors, currentVirtualDesktop, m_workAreaConfiguration.GetAllWorkAreas()))
+        {
+            m_workAreaConfiguration.Clear();
 
-        AddWorkArea(nullptr, workAreaId);
+            FancyZonesDataTypes::WorkAreaId workAreaId;
+            workAreaId.virtualDesktopId = currentVirtualDesktop;
+            workAreaId.monitorId = { .deviceId = { .id = ZonedWindowProperties::MultiMonitorName, .instanceId = ZonedWindowProperties::MultiMonitorInstance } };
+
+            AddWorkArea(nullptr, workAreaId, FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>());
+        }
     }
     else
     {
         auto monitors = MonitorUtils::IdentifyMonitors();
-        for (const auto& monitor : monitors)
+        const auto& workAreas = m_workAreaConfiguration.GetAllWorkAreas();
+        
+        if (ShouldWorkAreasBeRecreated(monitors, currentVirtualDesktop, workAreas))
         {
-            FancyZonesDataTypes::WorkAreaId workAreaId;
-            workAreaId.virtualDesktopId = currentVirtualDesktop;
-            workAreaId.monitorId = monitor;
+            m_workAreaConfiguration.Clear();
+            for (const auto& monitor : monitors)
+            {
+                FancyZonesDataTypes::WorkAreaId workAreaId;
+                workAreaId.virtualDesktopId = currentVirtualDesktop;
+                workAreaId.monitorId = monitor;
 
-            AddWorkArea(monitor.monitor, workAreaId);
+                AddWorkArea(monitor.monitor, workAreaId, MonitorUtils::GetWorkAreaRect(monitor.monitor));
+            }
         }
     }
 
@@ -883,6 +885,52 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
             }
         }
     }
+}
+
+bool FancyZones::ShouldWorkAreasBeRecreated(const std::vector<FancyZonesDataTypes::MonitorId>& monitors, const GUID& virtualDesktop, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& workAreas) noexcept
+{
+    if (monitors.size() != workAreas.size())
+    {
+        Logger::trace(L"Monitor was added or removed");
+        return true;
+    }
+
+    for (const auto& monitor : monitors)
+    {
+        auto iter = workAreas.find(monitor.monitor);
+        if (iter == workAreas.end())
+        {
+            Logger::trace(L"WorkArea not found");
+            return true;
+        }
+
+        if (iter->second->UniqueId().monitorId.deviceId != monitor.deviceId)
+        {
+            Logger::trace(L"DeviceId changed");
+            return true;
+        }
+
+        if (iter->second->UniqueId().monitorId.serialNumber != monitor.serialNumber)
+        {
+            Logger::trace(L"Serial number changed");
+            return true;
+        }
+
+        if (iter->second->UniqueId().virtualDesktopId != virtualDesktop)
+        {
+            Logger::trace(L"Virtual desktop changed");
+            return true;
+        }
+
+        const auto rect = monitor.monitor ? MonitorUtils::GetWorkAreaRect(monitor.monitor) : FancyZonesUtils::Rect(FancyZonesUtils::GetMonitorsCombinedRect<&MONITORINFOEX::rcWork>(FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>()));
+        if (iter->second->GetWorkAreaRect() != rect)
+        {
+            Logger::trace(L"WorkArea size changed");
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void FancyZones::CycleWindows(bool reverse) noexcept
