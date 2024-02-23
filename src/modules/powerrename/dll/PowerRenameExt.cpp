@@ -151,7 +151,7 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
         sa.nLength = sizeof(SECURITY_ATTRIBUTES);
         sa.lpSecurityDescriptor = NULL;
         sa.bInheritHandle = TRUE;
-        if (!CreatePipe(&hReadPipe, &hWritePipe, NULL, 0))
+        if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
         {
             hr = HRESULT_FROM_WIN32(GetLastError());
             return hr;
