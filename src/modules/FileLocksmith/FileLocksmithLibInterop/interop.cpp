@@ -98,7 +98,7 @@ namespace FileLocksmith::Interop
         {
             HANDLE hStdin = INVALID_HANDLE_VALUE;
 
-            if (!pipeName->Empty)
+            if (pipeName->Length > 0)
             {
                 std::wstring pipe = from_system_string(pipeName);
 

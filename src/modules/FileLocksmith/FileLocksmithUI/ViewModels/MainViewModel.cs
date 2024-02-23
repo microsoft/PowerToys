@@ -80,7 +80,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         public MainViewModel()
         {
             var args = Environment.GetCommandLineArgs();
-            var pipeName = args.Where(s => s.Contains("\\\\.\\pipe\\")).FirstOrDefault();
+            string pipeName = args.Where(s => s.Contains("\\\\.\\pipe\\")).FirstOrDefault() ?? string.Empty;
 
             paths = NativeMethods.ReadPathsFromPipe(pipeName);
             Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
