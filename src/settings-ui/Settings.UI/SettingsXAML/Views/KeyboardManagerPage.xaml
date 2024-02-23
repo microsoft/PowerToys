@@ -131,9 +131,7 @@
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{Binding Path=EditShortcutCommand}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
-                        IsClickEnabled="True">
-
-                    </tkcontrols:SettingsCard>
+                        IsClickEnabled="True" />
 
                     <ListView
                         x:Name="RemapShortcutsList"
