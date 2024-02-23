@@ -47,7 +47,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ICommand _remapKeyboardCommand;
         private ICommand _editShortcutCommand;
-        private ICommand _editNewShortcutCommand;
         private KeyboardManagerProfile _profile;
 
         private Func<string, int> SendConfigMSG { get; }
@@ -218,21 +217,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
-        public ICommand EditNewShortcutCommand => _editNewShortcutCommand ?? (_editNewShortcutCommand = new RelayCommand(OnEditNewShortcut));
-
         public void OnRemapKeyboard()
         {
-            OpenEditor((int)KeyboardManagerEditorType.KeyEditor, false);
+            OpenEditor((int)KeyboardManagerEditorType.KeyEditor);
         }
 
         public void OnEditShortcut()
         {
-            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor, false);
-        }
-
-        public void OnEditNewShortcut()
-        {
-            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor, true);
+            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
         }
 
         private static void BringProcessToFront(Process process)
@@ -251,7 +243,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NativeMethods.SetForegroundWindow(handle);
         }
 
-        private void OpenEditor(int type, bool inCreateNewMode)
+        private void OpenEditor(int type)
         {
             try
             {
@@ -272,7 +264,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value
-                editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId} {(inCreateNewMode ? "inCreateNewMode" : string.Empty)}");
+                editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId}");
             }
             catch (Exception e)
             {

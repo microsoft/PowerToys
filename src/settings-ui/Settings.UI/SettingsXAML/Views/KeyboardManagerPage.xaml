@@ -133,20 +133,6 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
                         IsClickEnabled="True">
 
-                        <Button
-                            x:Uid="EditButton"
-                            Width="40"
-                            Height="36"
-                            HorizontalAlignment="Right"
-                            Command="{Binding Path=EditNewShortcutCommand}"
-                            Content="&#xE710;"
-                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            Style="{StaticResource SubtleButtonStyle}">
-                            <ToolTipService.ToolTip>
-                                <TextBlock Text="Create new shortcut" />
-                            </ToolTipService.ToolTip>
-                        </Button>
-
                     </tkcontrols:SettingsCard>
 
                     <ListView
@@ -159,7 +145,7 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
 
-                                <tkcontrols:SettingsCard HeaderIcon="{ui:FontIcon Glyph=&#xE737;}">
+                                <tkcontrols:SettingsCard>
                                     <tkcontrols:SettingsCard.Description>
                                         <StackPanel Orientation="Horizontal">
                                             <ItemsControl
@@ -232,72 +218,6 @@
 
                                         </StackPanel>
                                     </tkcontrols:SettingsCard.Description>
-
-                                    <StackPanel
-                                        Grid.Column="2"
-                                        HorizontalAlignment="Right"
-                                        Orientation="Horizontal"
-                                        Spacing="0">
-
-                                        <StackPanel Orientation="Horizontal" Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <Button
-                                                Width="40"
-                                                Height="36"
-                                                HorizontalAlignment="Right"
-                                                Command="{Binding Path=EditShortcutDeleteItem}"
-                                                Content="&#xE8FB;"
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Style="{StaticResource SubtleButtonStyle}">
-
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Confirm delete action" />
-                                                </ToolTipService.ToolTip>
-                                            </Button>
-
-                                            <Button
-                                                Width="40"
-                                                Height="36"
-                                                HorizontalAlignment="Right"
-                                                Command="{Binding Path=EditShortcutCancelDeleteItem}"
-                                                Content="&#xE7A7;"
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Style="{StaticResource SubtleButtonStyle}">
-
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Cancel delete action" />
-                                                </ToolTipService.ToolTip>
-
-                                            </Button>
-                                        </StackPanel>
-
-                                        <StackPanel Orientation="Horizontal" Visibility="{x:Bind Path=IsConfirmingDelete, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
-                                            <Button
-                                                Width="40"
-                                                Height="36"
-                                                HorizontalAlignment="Right"
-                                                Command="{Binding Path=EditShortcutDeleteItem}"
-                                                Content="&#xE74D;"
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Style="{StaticResource SubtleButtonStyle}">
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Delete shortcut" />
-                                                </ToolTipService.ToolTip>
-                                            </Button>
-
-                                            <Button
-                                                Width="40"
-                                                Height="36"
-                                                HorizontalAlignment="Right"
-                                                Command="{Binding Path=EditShortcutItem}"
-                                                Content="&#xE70F;"
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Style="{StaticResource SubtleButtonStyle}">
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Edit shortcut" />
-                                                </ToolTipService.ToolTip>
-                                            </Button>
-                                        </StackPanel>
-                                    </StackPanel>
                                 </tkcontrols:SettingsCard>
                             </DataTemplate>
                         </ListView.ItemTemplate>

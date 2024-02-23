@@ -118,7 +118,7 @@ void ShortcutControl::DeleteShortcutControl(StackPanel& parent, std::vector<std:
 }
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutTextUnion& newKeys, const std::wstring& targetAppName, bool isHidden, bool isInSingleEditMode, std::function<void()> doneFunction, const std::wstring& action)
+ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutTextUnion& newKeys, const std::wstring& targetAppName)
 {
     // Textbox for target application
     TextBox targetAppTextBox;
@@ -129,11 +129,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     StackPanel row = StackPanel();
 
     row.Name(L"row");
-
-    if (isHidden)
-    {
-        row.Visibility(Visibility::Collapsed);
-    }
 
     parent.Children().Append(row);
 
@@ -155,14 +150,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     // ShortcutControl for the original shortcut
     auto origin = keyboardRemapControlObjects.back()[0]->GetShortcutControl();
 
-    if (isInSingleEditMode)
-    {
-        origin.Width(EditorConstants::ShortcutOriginColumnWidth);
-    }
-    else
-    {
-        origin.Width(EditorConstants::ShortcutOriginColumnWidth);
-    }
+    origin.Width(EditorConstants::ShortcutOriginColumnWidth);
 
     row.Children().Append(origin);
 
@@ -179,12 +167,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     // ShortcutControl for the new shortcut
     auto target = keyboardRemapControlObjects.back()[1]->GetShortcutControl();
     target.Width(EditorConstants::ShortcutTargetColumnWidth);
-
-    if (isInSingleEditMode)
-    {
-        auto x = EditorConstants::ShortcutTargetColumnWidth - 250;
-        target.Width(EditorConstants::ShortcutTargetColumnWidth);
-    }
 
     uint32_t rowIndex = -1;
     if (!parent.Children().IndexOf(row, rowIndex))
@@ -247,7 +229,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     bool isRunProgram = false;
     bool isOpenUri = false;
     Shortcut shortCut;
-    if (!textSelected)
+    if (!textSelected && newKeys.index() == 1)
     {
         shortCut = std::get<Shortcut>(newKeys);
         isRunProgram = (shortCut.operationType == Shortcut::OperationType::RunProgram);
@@ -258,7 +240,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
 
     auto runProgramStackPanel = SetupRunProgramControls(parent, row, shortCut, textInputMargin, controlStackPanel);
 
-    runProgramStackPanel.Margin({0, -30, 0, 0});
+    runProgramStackPanel.Margin({ 0, -30, 0, 0 });
 
     auto openURIStackPanel = SetupOpenURIControls(parent, row, shortCut, textInputMargin, controlStackPanel);
 
@@ -401,7 +383,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
                 auto runProgramStartInDirInput = row.FindName(L"runProgramStartInDirInput_" + std::to_wstring(rowIndex)).as<TextBox>();
                 auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
                 auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
-                
+
                 Shortcut tempShortcut;
                 tempShortcut.operationType = Shortcut::OperationType::RunProgram;
 
@@ -439,112 +421,78 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
 
     // We need two containers in order to align it horizontally and vertically
 
-    if (isInSingleEditMode)
-    {
-        TextBlock targetAppHeader;
-        targetAppHeader.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_TARGETAPPHEADER));
-        targetAppHeader.FontWeight(Text::FontWeights::Bold());
-        targetAppHeader.Margin({ 5, 5, 5, 10 });
-        targetAppTextBox.Margin({ 5, 5, 5, 10 });
-        StackPanel targetAppContainer;
-        targetAppContainer.Orientation(Orientation::Horizontal);
-        targetAppContainer.HorizontalAlignment(HorizontalAlignment::Left);
-        targetAppContainer.VerticalAlignment(VerticalAlignment::Center);
-        targetAppContainer.Children().Append(targetAppHeader);
-        targetAppContainer.Children().Append(targetAppTextBox);
-        origin.Children().Append(targetAppContainer);
-    }
-    else
-    {
-        StackPanel targetAppHorizontal = UIHelpers::GetWrapped(targetAppTextBox, EditorConstants::TableTargetAppColWidth).as<StackPanel>();
-        targetAppHorizontal.Orientation(Orientation::Horizontal);
-        targetAppHorizontal.HorizontalAlignment(HorizontalAlignment::Left);
-        StackPanel targetAppContainer = UIHelpers::GetWrapped(targetAppHorizontal, EditorConstants::TableTargetAppColWidth).as<StackPanel>();
-        targetAppContainer.Orientation(Orientation::Vertical);
-        targetAppContainer.VerticalAlignment(VerticalAlignment::Center);
+    StackPanel targetAppHorizontal = UIHelpers::GetWrapped(targetAppTextBox, EditorConstants::TableTargetAppColWidth).as<StackPanel>();
+    targetAppHorizontal.Orientation(Orientation::Horizontal);
+    targetAppHorizontal.HorizontalAlignment(HorizontalAlignment::Left);
+    StackPanel targetAppContainer = UIHelpers::GetWrapped(targetAppHorizontal, EditorConstants::TableTargetAppColWidth).as<StackPanel>();
+    targetAppContainer.Orientation(Orientation::Vertical);
+    targetAppContainer.VerticalAlignment(VerticalAlignment::Center);
 
-        row.Children().Append(targetAppContainer);
-    }
+    row.Children().Append(targetAppContainer);
 
-    if (!isInSingleEditMode)
-    {
-        // Delete row button
-        Windows::UI::Xaml::Controls::Button deleteShortcut;
+    // Delete row button
+    Windows::UI::Xaml::Controls::Button deleteShortcut;
 
-        if (action == L"isDelete")
+    deleteShortcut.Content(SymbolIcon(Symbol::Delete));
+    deleteShortcut.Background(Media::SolidColorBrush(Colors::Transparent()));
+    deleteShortcut.HorizontalAlignment(HorizontalAlignment::Center);
+    deleteShortcut.Margin({ 0, 0, 0, 10 });
+    deleteShortcut.Click([&, parent, row, deleteShortcut](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        Button currentButton = sender.as<Button>();
+        uint32_t rowIndex;
+        // Get index of delete button
+        UIElementCollection children = parent.Children();
+        bool indexFound = children.IndexOf(row, rowIndex);
+
+        // IndexOf could fail if the row got deleted and the button handler was invoked twice. In this case it should return
+        if (!indexFound)
         {
-            deleteShortcut.Name(L"isDelete");
+            return;
         }
 
-        deleteShortcut.Content(SymbolIcon(Symbol::Delete));
-        deleteShortcut.Background(Media::SolidColorBrush(Colors::Transparent()));
-        deleteShortcut.HorizontalAlignment(HorizontalAlignment::Center);
-        deleteShortcut.Margin({ 0, 0, 0, 10 });
-        deleteShortcut.Click([&, parent, row, deleteShortcut, isInSingleEditMode, doneFunction](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-            Button currentButton = sender.as<Button>();
-            uint32_t rowIndex;
-            // Get index of delete button
-            UIElementCollection children = parent.Children();
-            bool indexFound = children.IndexOf(row, rowIndex);
-
-            // IndexOf could fail if the row got deleted and the button handler was invoked twice. In this case it should return
-            if (!indexFound)
-            {
-                return;
-            }
-
-            for (uint32_t i = rowIndex + 1; i < children.Size(); i++)
-            {
-                StackPanel row = children.GetAt(i).as<StackPanel>();
-                StackPanel sourceCol = row.Children().GetAt(0).as<StackPanel>();
-                StackPanel targetCol = row.Children().GetAt(2).as<StackPanel>();
-                TextBox targetApp = row.Children().GetAt(3).as<StackPanel>().Children().GetAt(0).as<StackPanel>().Children().GetAt(0).as<TextBox>();
-                Button delButton = row.Children().GetAt(4).as<StackPanel>().Children().GetAt(0).as<Button>();
-                UpdateAccessibleNames(sourceCol, targetCol, targetApp, delButton, i);
-            }
-
-            if (auto automationPeer{ Automation::Peers::FrameworkElementAutomationPeer::FromElement(deleteShortcut) })
-            {
-                automationPeer.RaiseNotificationEvent(
-                    Automation::Peers::AutomationNotificationKind::ActionCompleted,
-                    Automation::Peers::AutomationNotificationProcessing::ImportantMostRecent,
-                    GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_EVENT),
-                    L"ShortcutRemappingDeletedNotificationEvent" /* unique name for this notification category */);
-            }
-
-            children.RemoveAt(rowIndex);
-            shortcutRemapBuffer.erase(shortcutRemapBuffer.begin() + rowIndex);
-            // delete the SingleKeyRemapControl objects so that they get destructed
-            keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + rowIndex);
-
-            if (isInSingleEditMode)
-            {
-                doneFunction();
-            }
-        });
-
-        // To set the accessible name of the delete button
-        deleteShortcut.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
-
-        // Add tooltip for delete button which would appear on hover
-        ToolTip deleteShortcuttoolTip;
-        deleteShortcuttoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
-        ToolTipService::SetToolTip(deleteShortcut, deleteShortcuttoolTip);
-
-        StackPanel deleteShortcutContainer = StackPanel();
-        deleteShortcutContainer.Name(L"deleteShortcutContainer");
-        deleteShortcutContainer.Children().Append(deleteShortcut);
-        deleteShortcutContainer.Orientation(Orientation::Vertical);
-        deleteShortcutContainer.VerticalAlignment(VerticalAlignment::Center);
-
-        if (!isInSingleEditMode)
+        for (uint32_t i = rowIndex + 1; i < children.Size(); i++)
         {
-            row.Children().Append(deleteShortcutContainer);
+            StackPanel row = children.GetAt(i).as<StackPanel>();
+            StackPanel sourceCol = row.Children().GetAt(0).as<StackPanel>();
+            StackPanel targetCol = row.Children().GetAt(2).as<StackPanel>();
+            TextBox targetApp = row.Children().GetAt(3).as<StackPanel>().Children().GetAt(0).as<StackPanel>().Children().GetAt(0).as<TextBox>();
+            Button delButton = row.Children().GetAt(4).as<StackPanel>().Children().GetAt(0).as<Button>();
+            UpdateAccessibleNames(sourceCol, targetCol, targetApp, delButton, i);
         }
 
-        // Set accessible names
-        UpdateAccessibleNames(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->GetShortcutControl(), keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->GetShortcutControl(), targetAppTextBox, deleteShortcut, static_cast<int>(keyboardRemapControlObjects.size()));
-    }
+        if (auto automationPeer{ Automation::Peers::FrameworkElementAutomationPeer::FromElement(deleteShortcut) })
+        {
+            automationPeer.RaiseNotificationEvent(
+                Automation::Peers::AutomationNotificationKind::ActionCompleted,
+                Automation::Peers::AutomationNotificationProcessing::ImportantMostRecent,
+                GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_EVENT),
+                L"ShortcutRemappingDeletedNotificationEvent" /* unique name for this notification category */);
+        }
+
+        children.RemoveAt(rowIndex);
+        shortcutRemapBuffer.erase(shortcutRemapBuffer.begin() + rowIndex);
+        // delete the SingleKeyRemapControl objects so that they get destructed
+        keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + rowIndex);
+    });
+
+    // To set the accessible name of the delete button
+    deleteShortcut.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+
+    // Add tooltip for delete button which would appear on hover
+    ToolTip deleteShortcuttoolTip;
+    deleteShortcuttoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+    ToolTipService::SetToolTip(deleteShortcut, deleteShortcuttoolTip);
+
+    StackPanel deleteShortcutContainer = StackPanel();
+    deleteShortcutContainer.Name(L"deleteShortcutContainer");
+    deleteShortcutContainer.Children().Append(deleteShortcut);
+    deleteShortcutContainer.Orientation(Orientation::Vertical);
+    deleteShortcutContainer.VerticalAlignment(VerticalAlignment::Center);
+
+    row.Children().Append(deleteShortcutContainer);
+
+    // Set accessible names
+    UpdateAccessibleNames(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->GetShortcutControl(), keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->GetShortcutControl(), targetAppTextBox, deleteShortcut, static_cast<int>(keyboardRemapControlObjects.size()));
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
     if (EditorHelpers::IsValidShortcut(originalKeys) && !(newKeys.index() == 0 && std::get<DWORD>(newKeys) == NULL) && !(newKeys.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKeys))))
@@ -566,7 +514,9 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
 
         if (newKeys.index() == 0)
         {
-            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects[0]->SetSelectedValue(std::to_wstring(std::get<DWORD>(newKeys)));
+            auto shortcut = new Shortcut;
+            shortcut->SetKey(std::get<DWORD>(newKeys));
+            KeyDropDownControl::AddShortcutToControl(*shortcut, parent, keyboardRemapControlObjects.back()[1]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 1, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects, shortcutRemapBuffer, row, targetAppTextBox, true, false);
         }
         else if (newKeys.index() == 1)
         {
@@ -757,7 +707,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         CreateNewTempShortcut(row, tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
     });
-   
+
     runProgramStartInDirInput.TextChanged([parent, row](winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) mutable {
         uint32_t rowIndex = -1;
         if (!parent.Children().IndexOf(row, rowIndex))
@@ -913,7 +863,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramPathInput.Text(shortCut.runProgramFilePath);
     runProgramArgsForProgramInput.Text(shortCut.runProgramArgs);
     runProgramStartInDirInput.Text(shortCut.runProgramStartInDir);
-    
+
     runProgramElevationTypeCombo.SelectedIndex(shortCut.elevationLevel);
     runProgramAlreadyRunningAction.SelectedIndex(shortCut.alreadyRunningAction);
     runProgramStartWindow.SelectedIndex(shortCut.startWindowType);
@@ -932,7 +882,7 @@ void CreateNewTempShortcut(StackPanel& row, Shortcut& tempShortcut, const uint32
     auto runProgramElevationTypeCombo = row.FindName(L"runProgramElevationTypeCombo_" + std::to_wstring(rowIndex)).as<ComboBox>();
     auto runProgramAlreadyRunningAction = row.FindName(L"runProgramAlreadyRunningAction_" + std::to_wstring(rowIndex)).as<ComboBox>();
     auto runProgramStartWindow = row.FindName(L"runProgramStartWindow_" + std::to_wstring(rowIndex)).as<ComboBox>();
-    
+
     tempShortcut.runProgramFilePath = ShortcutControl::RemoveExtraQuotes(runProgramPathInput.Text().c_str());
     tempShortcut.runProgramArgs = (runProgramArgsForProgramInput.Text().c_str());
     tempShortcut.runProgramStartInDir = (runProgramStartInDirInput.Text().c_str());
@@ -995,25 +945,25 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     if (shortcutRemapBuffer.size() > 0)
     {
-    if (colIndex == 0)
-    {
-        shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]);
-    }
-    else
-    {
-        if (shortcutRemapBuffer[rowIndex].first[1].index() != 1)
+        if (colIndex == 0)
         {
-            // not a shortcut, let's fix that.
-            Shortcut newShortcut;
-            shortcutRemapBuffer[rowIndex].first[1] = newShortcut;
+            shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]);
         }
-        shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[1]);
-    }
+        else
+        {
+            if (shortcutRemapBuffer[rowIndex].first[1].index() != 1)
+            {
+                // not a shortcut, let's fix that.
+                Shortcut newShortcut;
+                shortcutRemapBuffer[rowIndex].first[1] = newShortcut;
+            }
+            shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[1]);
+        }
 
-    if (!shortcut.IsEmpty() && shortcut.HasChord())
-    {
-        keyboardManagerState.AllowChord = true;
-    }
+        if (!shortcut.IsEmpty() && shortcut.HasChord())
+        {
+            keyboardManagerState.AllowChord = true;
+        }
     }
 
     //remapBuffer[rowIndex].first.
