@@ -67,7 +67,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     }
     else
     {
-        dropDown.as<ComboBox>().Width(EditorConstants::ShortcutTableDropDownWidth / 2); // magic number...
+        dropDown.as<ComboBox>().Width(EditorConstants::ShortcutTableDropDownWidth);
     }
 
     dropDown.as<ComboBox>().MaxDropDownHeight(EditorConstants::TableDropDownHeight);
