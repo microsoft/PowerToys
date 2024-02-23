@@ -85,6 +85,24 @@ void KeyboardManager::LoadSettings()
         // retry once
         state.LoadSettings();
     }
+    try
+    {
+        // Send telemetry about configured key/shortcut to key/shortcut mappings, OS an app specific level.
+        Trace::SendKeyAndShortcutRemapLoadedConfiguration(state);
+    }
+    catch (...)
+    {
+        try
+        {
+            Logger::error("Failed to send telemetry for the configured remappings.");
+            // Try not to crash the app sending telemetry. Everything inside a try.
+            Trace::ErrorSendingKeyAndShortcutRemapLoadedConfiguration();
+        }
+        catch (...)
+        {
+
+        }
+    }
 }
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
