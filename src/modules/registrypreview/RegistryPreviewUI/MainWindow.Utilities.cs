@@ -1200,11 +1200,11 @@ namespace RegistryPreview
                 key.StartsWith("[HKLM]", StringComparison.InvariantCultureIgnoreCase) == false &&
                 key.StartsWith("[HKCC]", StringComparison.InvariantCultureIgnoreCase) == false)
 				&&
-				(key.StartsWith(@"[HKCR]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKCU]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKU]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKLM]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKCC]", StringComparison.InvariantCultureIgnoreCase) == false))
+				(key.StartsWith(@"[HKCR\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKCU\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKU\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKLM\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKCC\", StringComparison.InvariantCultureIgnoreCase) == false))
             {
                 return false;
             }
