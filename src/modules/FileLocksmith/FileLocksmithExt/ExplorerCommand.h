@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include "IPC.h"
+#include "FileLocksmithLib/IPC.h"
 
 #define EXPLORER_COMMAND_UUID_STR "84d68575-e186-46ad-b0cb-baeb45ee29c0"
 

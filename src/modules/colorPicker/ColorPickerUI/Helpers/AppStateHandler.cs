@@ -150,7 +150,7 @@ namespace ColorPicker.Helpers
             if (_colorEditorWindow == null)
             {
                 _colorEditorWindow = new ColorEditorWindow(this);
-                _colorEditorWindow.Content = _colorEditorViewModel;
+                _colorEditorWindow.contentPresenter.Content = _colorEditorViewModel;
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
                 _colorEditorViewModel.OpenSettingsRequested += ColorEditorViewModel_OpenSettingsRequested;
                 _colorEditorViewModel.OpenColorPickerRequested += (object sender, EventArgs e) =>

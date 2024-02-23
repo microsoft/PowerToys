@@ -9,7 +9,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -380,7 +379,14 @@ namespace PowerLauncher.ViewModel
         /// <param name="requery">Optional Parameter that if true, will automatically execute a query against the updated text</param>
         public void ChangeQueryText(string queryText, bool requery = false)
         {
+            var sameQueryText = SystemQueryText == queryText;
+
             SystemQueryText = queryText;
+
+            if (sameQueryText)
+            {
+                OnPropertyChanged(nameof(SystemQueryText));
+            }
 
             if (requery)
             {

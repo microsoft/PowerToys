@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+# Reference: https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/readme.md#compiling-powertoys
+properties:
+  resources:
+    - resource: Microsoft.Windows.Developer/DeveloperMode
+      directives:
+        description: Enable Developer Mode
+        allowPrerelease: true
+      settings:
+        Ensure: Present
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: vsPackage
+      directives:
+        description: Install Visual Studio 2022 Enterprise (Any edition will work)
+        allowPrerelease: true
+      settings:
+        id: Microsoft.VisualStudio.2022.Enterprise
+        source: winget
+    - resource: Microsoft.VisualStudio.DSC/VSComponents
+      dependsOn:
+        - vsPackage
+      directives:
+        description: Install required VS workloads
+        allowPrerelease: true
+      settings:
+        productId: Microsoft.VisualStudio.Product.Enterprise
+        channelId: VisualStudio.17.Release
+        vsConfigFile: '${WinGetConfigRoot}\..\.vsconfig'
+  configurationVersion: 0.2.0
+
+  # Next steps:
+  # Open a terminal
+  # Navigate to the folder you cloned PowerToys to.
+  # Run git submodule update --init --recursive

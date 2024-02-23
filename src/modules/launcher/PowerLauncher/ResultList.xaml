@@ -85,12 +85,14 @@
                                     FontWeight="SemiBold"
                                     Style="{DynamicResource CollapsableTextblock}"
                                     Text="{Binding Result.ToolTipData.Title}"
+                                    TextAlignment="Left"
                                     TextWrapping="Wrap" />
                                 <TextBlock
                                     Margin="0,4,0,0"
                                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                     Style="{DynamicResource CollapsableTextblock}"
                                     Text="{Binding Result.ToolTipData.Text}"
+                                    TextAlignment="Left"
                                     TextWrapping="Wrap" />
                             </StackPanel>
                         </ToolTip>

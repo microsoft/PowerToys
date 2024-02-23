@@ -8,6 +8,7 @@ using Peek.Common.Extensions;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Archives;
+using Peek.FilePreviewer.Previewers.Drive;
 using Peek.UI.Telemetry.Events;
 
 namespace Peek.FilePreviewer.Previewers
@@ -42,6 +43,10 @@ namespace Peek.FilePreviewer.Previewers
             else if (ShellPreviewHandlerPreviewer.IsFileTypeSupported(file.Extension))
             {
                 return new ShellPreviewHandlerPreviewer(file);
+            }
+            else if (DrivePreviewer.IsPathSupported(file.Path))
+            {
+                return new DrivePreviewer(file);
             }
 
             // Other previewer types check their supported file types here

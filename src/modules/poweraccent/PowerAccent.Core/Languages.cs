@@ -38,6 +38,7 @@ namespace PowerAccent.Core
         PT,
         RO,
         SK,
+        SL,
         SP,
         SR,
         SV,
@@ -79,6 +80,7 @@ namespace PowerAccent.Core
                 Language.PT => GetDefaultLetterKeyPT(letter), // Portuguese
                 Language.RO => GetDefaultLetterKeyRO(letter), // Romanian
                 Language.SK => GetDefaultLetterKeySK(letter), // Slovak
+                Language.SL => GetDefaultLetterKeySL(letter), // Slovenian
                 Language.SP => GetDefaultLetterKeySP(letter), // Spain
                 Language.SR => GetDefaultLetterKeySR(letter), // Serbian
                 Language.SV => GetDefaultLetterKeySV(letter), // Swedish
@@ -123,6 +125,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyPT(letter))
                 .Union(GetDefaultLetterKeyRO(letter))
                 .Union(GetDefaultLetterKeySK(letter))
+                .Union(GetDefaultLetterKeySL(letter))
                 .Union(GetDefaultLetterKeySP(letter))
                 .Union(GetDefaultLetterKeySR(letter))
                 .Union(GetDefaultLetterKeySV(letter))
@@ -731,6 +734,19 @@ namespace PowerAccent.Core
                 LetterKey.VK_I => new[] { "į" },
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_U => new[] { "ų", "ū" },
+                LetterKey.VK_Z => new[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Slovenian
+        private static string[] GetDefaultLetterKeySL(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_C => new[] { "č" },
+                LetterKey.VK_E => new[] { "€" },
+                LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_Z => new[] { "ž" },
                 _ => Array.Empty<string>(),
             };

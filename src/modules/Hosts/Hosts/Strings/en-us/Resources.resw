@@ -193,6 +193,13 @@
   <data name="DeleteDialogAreYouSure.Text" xml:space="preserve">
     <value>Are you sure you want to delete this entry?</value>
   </data>
+  <data name="DeleteEntryBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteEntryBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete (Delete)</value>
+    <comment>"Delete" between parentheses refers to the Delete keyboard key</comment>
+  </data>
   <data name="Duplicate.Text" xml:space="preserve">
     <value>Duplicate</value>
     <comment>Refers to the action of duplicate an existing entry</comment>
@@ -298,6 +305,12 @@
   <data name="TooManyHostsTeachingTip.Title" xml:space="preserve">
     <value>Entries contain too many hosts</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="EntryAddressIsInvalidWarning.Text" xml:space="preserve">
+    <value>Has to be a valid IPv4 or IPv6 address</value>
+  </data>
+  <data name="EntryHostsIsInvalidWarning.Text" xml:space="preserve">
+    <value>Has to be one or more valid host names separated by spaces</value>
   </data>
   <data name="UpdateBtn" xml:space="preserve">
     <value>Update</value>
