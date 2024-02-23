@@ -9,15 +9,16 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <!--  ComboBox  -->
             <RowDefinition Height="*" />
+            <!--  other controls  -->
         </Grid.RowDefinitions>
 
         <ComboBox
-            x:Name="SizeComboBox"
-            Grid.Row="1"
+            Name="SizeComboBox"
+            Grid.Row="0"
             Height="64"
-            Margin="16,16,16,24"
+            Margin="16"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             VerticalContentAlignment="Stretch"
@@ -25,43 +26,30 @@
             SelectedIndex="{Binding Settings.SelectedSizeIndex}">
             <ComboBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
-                    <Grid
-                        Margin="2,0,0,0"
-                        VerticalAlignment="Center"
-                        AutomationProperties.Name="{Binding Name}">
+                    <Grid VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                        <StackPanel
-                            Grid.Row="1"
-                            VerticalAlignment="Top"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                FontSize="12"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{Binding Name}" />
+                        <StackPanel Grid.Row="1" Orientation="Horizontal">
+                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
                             <TextBlock
                                 Margin="4,0,0,0"
-                                FontSize="12"
-                                FontWeight="SemiBold"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
                                 Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
                             <TextBlock
                                 Margin="4,0,0,0"
-                                FontSize="12"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="×"
                                 Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
                             <TextBlock
                                 Margin="4,0,0,0"
-                                FontSize="12"
-                                FontWeight="SemiBold"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
                                 Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
                                 Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
                             <TextBlock
                                 Margin="4,0,0,0"
-                                FontSize="12"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
                         </StackPanel>
@@ -76,7 +64,7 @@
             </ComboBox.Resources>
         </ComboBox>
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -90,15 +78,13 @@
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
 
-            <Grid
-                Height="86"
-                Margin="18,16,16,16"
-                Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">
+            <!--  "Custom" input matrix  -->
+            <Grid Margin="16" Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="24" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="24" />
-                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="24" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
@@ -107,19 +93,17 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-
-                <TextBlock
-                    HorizontalAlignment="Left"
+                <ui:SymbolIcon
                     VerticalAlignment="Center"
                     AutomationProperties.Name="{x:Static p:Resources.Width}"
-                    FontSize="12"
-                    FontWeight="SemiBold"
+                    FontSize="20"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{x:Static p:Resources.WidthChar}"
+                    Symbol="AutoFitWidth20"
                     ToolTipService.ToolTip="{x:Static p:Resources.Width}" />
                 <ui:NumberBox
                     Name="WidthNumberBox"
                     Grid.Column="1"
+                    Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
                     AutomationProperties.Name="{x:Static p:Resources.Width}"
                     KeyDown="Button_KeyDown"
@@ -133,20 +117,20 @@
                             UpdateSourceTrigger="PropertyChanged" />
                     </ui:NumberBox.Value>
                 </ui:NumberBox>
-                <TextBlock
+
+                <ui:SymbolIcon
                     Grid.Column="3"
-                    HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     AutomationProperties.Name="{x:Static p:Resources.Height}"
-                    FontSize="12"
-                    FontWeight="SemiBold"
+                    FontSize="20"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{x:Static p:Resources.HeightChar}"
+                    Symbol="AutoFitHeight20"
                     ToolTipService.ToolTip="{x:Static p:Resources.Height}"
                     Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}" />
                 <ui:NumberBox
                     Name="HeightNumberBox"
                     Grid.Column="4"
+                    Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
                     AutomationProperties.Name="{x:Static p:Resources.Height}"
                     DataContext="{Binding ElementName=SizeComboBox, Path=SelectedItem}"
@@ -154,7 +138,6 @@
                     Minimum="0"
                     SpinButtonPlacementMode="Inline"
                     Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}">
-
                     <ui:NumberBox.Value>
                         <Binding
                             ElementName="SizeComboBox"
@@ -166,26 +149,22 @@
 
                 <ui:SymbolIcon
                     Grid.Row="2"
-                    Margin="-2,0,0,0"
-                    HorizontalAlignment="Left"
                     VerticalAlignment="Center"
+                    FontSize="20"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Symbol="ArrowMaximize16"
+                    Symbol="Crop20"
                     ToolTipService.ToolTip="{x:Static p:Resources.Resize_Type}" />
-
                 <ComboBox
                     Grid.Row="2"
                     Grid.Column="1"
+                    Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
                     AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
                     ItemsSource="{Binding ResizeFitValues, Mode=OneWay}"
                     SelectedIndex="{Binding ElementName=SizeComboBox, Path=SelectedValue.Fit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type m:ResizeFit}">
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                FontSize="14"
-                                Text="{Binding {}, Converter={StaticResource EnumValueConverter}}" />
+                            <TextBlock Padding="2,0" Text="{Binding {}, Converter={StaticResource EnumValueConverter}}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
@@ -193,76 +172,75 @@
                 <ui:SymbolIcon
                     Grid.Row="2"
                     Grid.Column="3"
-                    Margin="-2,0,0,0"
-                    HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    FontSize="18"
+                    FontSize="20"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Symbol="Ruler16"
+                    Symbol="Ruler20"
                     ToolTipService.ToolTip="{x:Static p:Resources.Unit}" />
-
                 <ComboBox
                     Grid.Row="2"
                     Grid.Column="4"
+                    Margin="8,0,0,0"
                     AutomationProperties.Name="{x:Static p:Resources.Unit}"
                     ItemsSource="{Binding ResizeUnitValues, Mode=OneWay}"
                     SelectedIndex="{Binding ElementName=SizeComboBox, Path=SelectedValue.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type m:ResizeUnit}">
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                FontSize="14"
-                                Text="{Binding {}, Converter={StaticResource EnumValueConverter}}" />
+                            <TextBlock Padding="2,0" Text="{Binding {}, Converter={StaticResource EnumValueConverter}}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-
             </Grid>
 
+            <!--  CheckBoxes  -->
             <StackPanel
                 Grid.Row="1"
-                VerticalAlignment="Top"
+                Margin="16"
                 Orientation="Vertical">
+                <CheckBox IsChecked="{Binding Settings.ShrinkOnly}">
+                    <CheckBox.Content>
+                        <AccessText Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
+                    </CheckBox.Content>
+                </CheckBox>
 
-                <CheckBox
-                    Margin="16,12,16,0"
-                    Content="{x:Static p:Resources.Input_ShrinkOnly}"
-                    IsChecked="{Binding Settings.ShrinkOnly}" />
+                <CheckBox IsChecked="{Binding Settings.IgnoreOrientation}">
+                    <CheckBox.Content>
+                        <AccessText Text="{x:Static p:Resources.Input_IgnoreOrientation}" TextWrapping="Wrap" />
+                    </CheckBox.Content>
+                </CheckBox>
 
-                <CheckBox
-                    Margin="16,2,16,0"
-                    Content="{x:Static p:Resources.Input_IgnoreOrientation}"
-                    IsChecked="{Binding Settings.IgnoreOrientation}" />
-                <!--
-                    TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
-                    to overwrite any files in the directory instead (issue #88)
-                -->
-                <CheckBox
-                    Margin="16,2,16,0"
-                    Content="{x:Static p:Resources.Input_Replace}"
-                    IsChecked="{Binding Settings.Replace}" />
+                <CheckBox IsChecked="{Binding Settings.Replace}">
+                    <CheckBox.Content>
+                        <AccessText Text="{x:Static p:Resources.Input_Replace}" TextWrapping="Wrap" />
+                    </CheckBox.Content>
+                </CheckBox>
 
-                <CheckBox
-                    Margin="16,2,16,0"
-                    Content="{x:Static p:Resources.Input_RemoveMetadata}"
-                    IsChecked="{Binding Settings.RemoveMetadata}" />
+                <CheckBox IsChecked="{Binding Settings.RemoveMetadata}">
+                    <CheckBox.Content>
+                        <AccessText Text="{x:Static p:Resources.Input_RemoveMetadata}" TextWrapping="Wrap" />
+                    </CheckBox.Content>
+                </CheckBox>
             </StackPanel>
 
+
+            <!--  Separator line  -->
             <Border
                 Grid.Row="2"
                 Height="1"
-                Margin="0,12,0,8"
+                Margin="0,8"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
             <ui:InfoBar
                 Grid.Row="3"
-                Margin="16,0,16,0"
-                Padding="12,8,8,8"
+                Margin="16,0"
                 IsClosable="False"
                 IsOpen="{Binding TryingToResizeGifFiles}"
                 Message="{x:Static p:Resources.Input_GifWarning}"
                 Severity="Warning" />
+
+            <!--  Buttons  -->
             <Grid Grid.Row="4" Margin="16,8,16,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -271,30 +249,26 @@
                 </Grid.ColumnDefinitions>
 
                 <ui:Button
-                    Width="36"
-                    Height="36"
-                    Margin="-6,0,0,0"
                     Padding="0"
-                    HorizontalAlignment="Left"
                     AutomationProperties.Name="{x:Static p:Resources.Open_settings}"
                     Background="Transparent"
                     BorderBrush="Transparent"
                     Command="{Binding OpenSettingsCommand}"
                     ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}">
                     <ui:Button.Content>
-                        <ui:SymbolIcon FontSize="18" Symbol="Settings20" />
+                        <ui:SymbolIcon FontSize="20" Symbol="Settings20" />
                     </ui:Button.Content>
                 </ui:Button>
+
                 <ui:Button
                     Grid.Column="1"
                     MinWidth="76"
-                    Margin="8,0,0,0"
                     Appearance="Primary"
                     AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
                     Command="{Binding ResizeCommand}"
                     IsDefault="True">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon FontSize="18" Symbol="ResizeImage20" />
+                        <ui:SymbolIcon FontSize="16" Symbol="ResizeLarge16" />
                         <TextBlock Margin="8,0,0,0" Text="{x:Static p:Resources.Input_Resize}" />
                     </StackPanel>
                 </ui:Button>
@@ -307,8 +281,6 @@
                     Content="{x:Static p:Resources.Cancel}"
                     IsCancel="True" />
             </Grid>
-
-
         </Grid>
     </Grid>
 </UserControl>

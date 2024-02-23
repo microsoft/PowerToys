@@ -842,9 +842,6 @@ namespace PowerLauncher
         {
             if (_viewModel.Plugins.Count > 0 && _viewModel.SelectedPlugin != null)
             {
-                // Needed to update UI in case the user choose the same plugin multiple times
-                _viewModel.ChangeQueryText(string.Empty);
-
                 _viewModel.ChangeQueryText(_viewModel.SelectedPlugin.Metadata.ActionKeyword, true);
                 SearchBox.QueryTextBox.Focus();
 
