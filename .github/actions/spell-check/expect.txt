@@ -1639,6 +1639,7 @@ USEDEFAULT
 USEFILEATTRIBUTES
 USERDATA
 Userenv
+uservoice
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
@@ -1791,6 +1792,7 @@ WNDPROC
 workarounds
 wox
 wparam
+wpdev
 wpf
 wpftmp
 wpfui
