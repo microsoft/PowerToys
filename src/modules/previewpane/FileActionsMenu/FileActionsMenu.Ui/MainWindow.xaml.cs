@@ -7,43 +7,35 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Forms;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Actions;
-using FileActionsMenu.Ui.Actions.CopyPath;
-using FileActionsMenu.Ui.Actions.CopyPathSeparatedBy;
-using FileActionsMenu.Ui.Actions.Hashes.Hashes;
-using WinRT;
-using Wpf.Ui.Controls;
-using MenuItem = Wpf.Ui.Controls.MenuItem;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Windows.Foundation;
+using WinUIEx;
 
 namespace FileActionsMenu.Ui
 {
-    public partial class MainWindow : FluentWindow
+    public partial class MainWindow : Window
     {
         private readonly CheckedMenuItemsDictionary _checkableMenuItemsIndex = [];
 
+        private MenuFlyout _menu;
+
         private IAction[] _actions =
         [
-            new CopyPathSeparatedBy(),
-            new CopyPath(),
-            new Hashes(Hashes.HashCallingAction.GENERATE),
-            new Hashes(Hashes.HashCallingAction.VERIFY),
-            new FileLocksmith(),
-            new CopyImageToClipboard(),
-            new PowerRename(),
-            new ImageResizer(),
             new Uninstall(),
             new Close(),
-            new CopyImageFromClipboardToFolder(),
         ];
 
         public MainWindow(string[] selectedItems)
         {
             InitializeComponent();
 
-            string[] pluginPaths = Directory.EnumerateDirectories((Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException()) + "\\FileActionsMenuPlugins").ToArray();
+            this.SetWindowOpacity(0);
+
+            string[] pluginPaths = Directory.EnumerateDirectories((Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException()) + "\\..\\FileActionsMenuPlugins").ToArray();
             foreach (string pluginPath in pluginPaths)
             {
                 Assembly plugin = Assembly.LoadFrom(Directory.EnumerateFiles(pluginPath).First(file => Path.GetFileName(file).StartsWith("PowerToys.FileActionsMenu.Plugins", StringComparison.InvariantCultureIgnoreCase) && Path.GetFileName(file).EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase)));
@@ -55,16 +47,18 @@ namespace FileActionsMenu.Ui
                 });
             }
 
-            // WindowStyle = WindowStyle.None;
-            // AllowsTransparency = true;
-
-            // Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.None);
-            ContextMenu cm = (ContextMenu)FindResource("Menu");
+            _menu = new MenuFlyout();
+            MenuFlyout cm = _menu;
+            cm.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "PowerToys File Actions menu",
+                IsEnabled = false,
+            });
+            cm.Items.Add(new MenuFlyoutSeparator());
             Array.Sort(_actions, (a, b) => a.Category.CompareTo(b.Category));
 
             int currentCategory = -1;
-
-            void HandleItems(IAction[] actions, ItemsControl cm, bool firstLayer = true)
+            void HandleItems(IAction[] actions, object cm, bool firstLayer = true)
             {
                 foreach (IAction action in actions)
                 {
@@ -75,112 +69,144 @@ namespace FileActionsMenu.Ui
                         if (firstLayer && action.Category != currentCategory)
                         {
                             currentCategory = action.Category;
-                            cm.Items.Add(new System.Windows.Controls.Separator());
+                            (cm as MenuFlyout)!.Items.Add(new MenuFlyoutSeparator());
                         }
 
-                        MenuItem menuItem = new()
+                        MenuFlyoutItemBase menuItem;
+                        menuItem = new MenuFlyoutItem()
                         {
-                            Header = action.Header,
+                            Text = action.Header,
                         };
 
                         if (action.Icon != null)
                         {
-                            menuItem.Icon = action.Icon;
-                            if (menuItem.Icon is FontIcon fontIcon)
+                            if (action.Icon is BitmapIcon bi)
                             {
-                                fontIcon.FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets");
+                                bi.ShowAsMonochrome = false;
                             }
+
+                            ((MenuFlyoutItem)menuItem).Icon = action.Icon;
                         }
 
-                        if (action.Type == IAction.ItemType.HasSubMenu)
+                        if (action is IActionAndRequestCheckedMenuItems requestCheckedMenuItems)
                         {
-                            HandleItems(action.SubMenuItems!, menuItem, false);
+                            requestCheckedMenuItems.CheckedMenuItemsDictionary = _checkableMenuItemsIndex;
+                        }
+
+                        if (action.Type == IAction.ItemType.SingleItem)
+                        {
+                            if (cm is MenuFlyout)
+                            {
+                                ((MenuFlyoutItem)menuItem).Click += async (sender, args) =>
+                                {
+                                    await action.Execute(sender, args);
+                                    Close();
+                                };
+                                ((MenuFlyout)cm).Items.Add(menuItem);
+                            }
+                            else if (cm is MenuFlyoutSubItem)
+                            {
+                                ((MenuFlyoutItem)menuItem).Click += async (sender, args) =>
+                                {
+                                    await action.Execute(sender, args);
+                                    Close();
+                                };
+                                ((MenuFlyoutSubItem)cm).Items.Add(menuItem);
+                                ((MenuFlyoutSubItem)cm).Items.Add(menuItem);
+                            }
+                        }
+                        else if (action.Type == IAction.ItemType.HasSubMenu)
+                        {
+                            MenuFlyoutSubItem subItem = new()
+                            {
+                                Text = action.Header,
+                            };
+                            if (action.Icon != null)
+                            {
+                                subItem.Icon = action.Icon;
+                            }
+
+                            HandleItems(action.SubMenuItems!, subItem, false);
+
+                            if (cm is MenuFlyout menuFlyout)
+                            {
+                                menuFlyout.Items.Add(subItem);
+                            }
+                            else if (cm is MenuFlyoutSubItem menuFlyoutSub)
+                            {
+                                menuFlyoutSub.Items.Add(subItem);
+                            }
                         }
                         else if (action.Type == IAction.ItemType.Separator)
                         {
-                            cm.Items.Add(new System.Windows.Controls.Separator());
-                            continue;
+                            if (cm is MenuFlyout menuFlyout)
+                            {
+                                menuFlyout.Items.Add(new MenuFlyoutSeparator());
+                            }
+                            else if (cm is MenuFlyoutSubItem menuFlyoutSubItem)
+                            {
+                                menuFlyoutSubItem.Items.Add(new MenuFlyoutSeparator());
+                            }
                         }
-                        else if (action.Type == IAction.ItemType.Checkable && action is ICheckableAction checkableAction)
+                        else if (action.Type == IAction.ItemType.Checkable || action.Type == IAction.ItemType.CheckableAndChecked)
                         {
-                            if (checkableAction.CheckableGroupUUID is not null)
+                            if (action is not ICheckableAction checkableAction || checkableAction.CheckableGroupUUID == null)
                             {
-                                if (!_checkableMenuItemsIndex.TryGetValue(checkableAction.CheckableGroupUUID, out List<(MenuItem, IAction)>? value))
-                                {
-                                    value = [];
-                                    _checkableMenuItemsIndex[checkableAction.CheckableGroupUUID] = value;
-                                }
-
-                                value.Add((menuItem, action));
+                                throw new InvalidDataException("Action is checkable but does not implement ICheckableAction or IChechableAction.CheckableGroupUUID is null");
                             }
 
-                            menuItem.IsCheckable = true;
-
-                            menuItem.IsChecked = checkableAction.IsCheckedByDefault;
-
-                            menuItem.StaysOpenOnClick = true;
-
-                            RoutedEventHandler? uncheckedHandler = null;
-
-                            void CheckedHandler(object sender, RoutedEventArgs e)
+                            ToggleMenuFlyoutItem toggleMenuItem = new()
                             {
-                                menuItem.Unchecked -= uncheckedHandler;
-                                if (checkableAction.CheckableGroupUUID is not null)
-                                {
-                                    _checkableMenuItemsIndex[checkableAction.CheckableGroupUUID].ForEach((m) =>
-                                    {
-                                        if (m.Item1 != menuItem)
-                                        {
-                                            m.Item1.Unchecked -= uncheckedHandler;
-                                            m.Item1.IsChecked = false;
-                                            m.Item1.Unchecked += uncheckedHandler;
-                                        }
-                                    });
-                                }
-
-                                checkableAction.IsChecked = true;
-                                menuItem.Unchecked += uncheckedHandler;
+                                Text = checkableAction.Header,
+                                IsChecked = checkableAction.Type == IAction.ItemType.CheckableAndChecked,
+                            };
+                            if (checkableAction.Icon != null)
+                            {
+                                toggleMenuItem.Icon = checkableAction.Icon;
                             }
 
-                            uncheckedHandler = (object sender, RoutedEventArgs e) =>
+                            if (!_checkableMenuItemsIndex.TryGetValue(checkableAction.CheckableGroupUUID, out List<(MenuFlyoutItemBase, IAction)>? value))
                             {
-                                menuItem.Checked -= CheckedHandler;
-                                if (checkableAction.CheckableGroupUUID is not null)
-                                {
-                                    int count = _checkableMenuItemsIndex[checkableAction.CheckableGroupUUID].Count((m) => m.Item1.IsChecked);
-                                    menuItem.IsChecked = count == 0;
-                                }
+                                value = [];
+                                _checkableMenuItemsIndex[checkableAction.CheckableGroupUUID] = value;
+                            }
 
-                                menuItem.Checked += CheckedHandler;
+                            value.Add((toggleMenuItem, checkableAction));
+
+                            toggleMenuItem.Click += async (sender, args) =>
+                            {
+                                checkableAction.IsChecked = toggleMenuItem.IsChecked;
+                                await checkableAction.Execute(sender, args);
                             };
 
-                            menuItem.Checked += CheckedHandler;
-
-                            menuItem.Unchecked += uncheckedHandler;
+                            if (cm is MenuFlyout menuFlyout)
+                            {
+                                menuFlyout.Items.Add(toggleMenuItem);
+                            }
+                            else if (cm is MenuFlyoutSubItem menuFlyoutSubItem)
+                            {
+                                menuFlyoutSubItem.Items.Add(toggleMenuItem);
+                            }
                         }
                         else
                         {
-                            menuItem.Click += async (object sender, RoutedEventArgs e) =>
-                            {
-                                if (action is IActionAndRequestCheckedMenuItems actionAndRequestCheckedMenuItems)
-                                {
-                                    actionAndRequestCheckedMenuItems.CheckedMenuItemsDictionary = _checkableMenuItemsIndex;
-                                }
-
-                                await action.Execute(sender, e);
-                                Environment.Exit(0);
-                            };
+                            throw new InvalidDataException("Unknown value for IAction.Type");
                         }
-
-                        cm.Items.Add(menuItem);
                     }
                 }
             }
 
             HandleItems(_actions, cm);
+        }
 
-            cm.IsOpen = true;
-            /*cm.Closed += (sender, args) => Close();*/
+        public void Window_Activated(object sender, RoutedEventArgs e)
+        {
+            this.Show();
+            this.SetForegroundWindow();
+            this.SetIsAlwaysOnTop(true);
+            this.SetIsShownInSwitchers(false);
+            this.Maximize();
+            _menu.ShowAt((UIElement)sender, new Point(Cursor.Position.X, Cursor.Position.Y));
         }
     }
 }

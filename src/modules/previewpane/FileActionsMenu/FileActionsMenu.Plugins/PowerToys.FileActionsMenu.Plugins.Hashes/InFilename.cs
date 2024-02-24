@@ -4,7 +4,7 @@
 
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
-using Wpf.Ui.Controls;
+using Microsoft.UI.Xaml.Controls;
 
 namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {

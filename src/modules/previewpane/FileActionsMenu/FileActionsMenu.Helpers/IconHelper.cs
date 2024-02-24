@@ -5,16 +5,16 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Windows.Media.Imaging;
+using Microsoft.UI.Xaml.Controls;
 
 namespace FileActionsMenu.Ui.Helpers
 {
     public sealed class IconHelper
     {
-        public static BitmapImage GetIconFromModuleName(string moduleName)
+        public static BitmapIcon GetIconFromModuleName(string moduleName)
         {
             var outputDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException();
-            return new BitmapImage() { UriSource = new Uri(Path.Combine(outputDirectory, "WinUI3Apps\\Assets\\Settings\\FluentIcons\\FluentIcons" + moduleName + ".png")) };
+            return new BitmapIcon() { UriSource = new Uri(Path.Combine(outputDirectory, "Assets\\Settings\\FluentIcons\\FluentIcons" + moduleName + ".png")), ShowAsMonochrome = false };
         }
     }
 }

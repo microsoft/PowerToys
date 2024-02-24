@@ -2,23 +2,26 @@
   <Import Project="..\..\..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-	 <TargetFramework>net8.0-windows10.0.20348</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348</TargetFramework>
     <AssemblyTitle>PowerToys.FileActionsMenu.Ui</AssemblyTitle>
     <AssemblyDescription>PowerToys File Actions Menu</AssemblyDescription>
     <Description>PowerToys File Actions Menu</Description>
     <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\WinUi3Apps</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AssemblyName>PowerToys.FileActionsMenu.Ui</AssemblyName>
     <SelfContained>true</SelfContained>
-    <UseWindowsForms>True</UseWindowsForms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <ProjectPriFileName>PowerToys.FileActionsMenu.Ui.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
     <COMReference Include="SHDocVw">
@@ -44,16 +47,28 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Security.Extensions" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="System.IO.Hashing" />
-    <PackageReference Include="WPF-UI" />
+    <PackageReference Include="WinUIEx" />
+    <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
 	  <ProjectReference Include="..\..\..\..\common\interop\PowerToys.Interop.vcxproj" />
 	  <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 	  <ProjectReference Include="..\..\..\peek\Peek.Common\Peek.Common.csproj" />
-	  <ProjectReference Include="..\..\..\peek\Peek.UI\Peek.UI.csproj" />
+	  <ProjectReference Include="..\..\..\peek\Peek.Helpers\Peek.Helpers.csproj" />
 	  <ProjectReference Include="..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
 	  <ProjectReference Include="..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj" />
   </ItemGroup>

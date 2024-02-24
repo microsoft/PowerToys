@@ -5,8 +5,8 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Windows;
 using FileActionsMenu.Ui.Helpers;
+using Microsoft.UI.Xaml;
 
 namespace FileActionsMenu.Ui
 {

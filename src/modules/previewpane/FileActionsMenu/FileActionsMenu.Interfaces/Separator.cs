@@ -4,8 +4,8 @@
 
 using System;
 using System.Threading.Tasks;
-using System.Windows;
-using Wpf.Ui.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace FileActionsMenu.Interfaces
 {

@@ -9,7 +9,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Peek.Common.Models;
-using Peek.UI.Helpers;
+using Peek.Helpers;
 
 namespace FileActionsMenu.Ui.Helpers
 {
@@ -54,26 +54,6 @@ namespace FileActionsMenu.Ui.Helpers
             }
 
             return [.. selected];
-        }
-
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
-        private static extern void SHCreateShellItemArrayFromIDLists(uint cidl, IntPtr[] rgpidl, out IShellItemArray ppsia);
-
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
-        private static extern void SHParseDisplayName([MarshalAs(UnmanagedType.LPWStr)] string pszName, IntPtr pbc, out IntPtr ppidl, uint sfgaoIn, out uint psfgaoOut);
-
-        public static IShellItemArray CreateShellItemArrayFromPaths(string[] paths)
-        {
-            IntPtr[] pidls = new IntPtr[paths.Length];
-            for (int i = 0; i < paths.Length; i++)
-            {
-                uint psfgaoOut;
-                SHParseDisplayName(paths[i], IntPtr.Zero, out pidls[i], 0, out psfgaoOut);
-            }
-
-            IShellItemArray sia;
-            SHCreateShellItemArrayFromIDLists((uint)paths.Length, pidls, out sia);
-            return sia;
         }
     }
 }

@@ -4,7 +4,8 @@
 
 using System;
 using System.Threading.Tasks;
-using System.Windows;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace FileActionsMenu.Interfaces
 {
@@ -31,7 +32,7 @@ namespace FileActionsMenu.Interfaces
 
         public abstract string Header { get; }
 
-        public abstract Wpf.Ui.Controls.IconElement? Icon { get; }
+        public abstract IconElement? Icon { get; }
 
         public abstract bool IsVisible { get; }
     }

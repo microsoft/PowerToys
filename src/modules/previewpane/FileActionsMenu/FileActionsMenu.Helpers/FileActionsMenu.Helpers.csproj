@@ -28,7 +28,7 @@
 
 	<ItemGroup>
         <PackageReference Include="Microsoft.Windows.CsWinRT" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" />
         <PackageReference Include="WindowsAPICodePack" />
-        <PackageReference Include="WPF-UI" />
 	</ItemGroup>
 </Project>

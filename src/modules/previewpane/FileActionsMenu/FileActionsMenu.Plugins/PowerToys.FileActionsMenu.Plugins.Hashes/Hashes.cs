@@ -10,11 +10,10 @@ using System.IO.Hashing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
-using Wpf.Ui.Controls;
-using MenuItem = Wpf.Ui.Controls.MenuItem;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
@@ -204,9 +203,9 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     throw new InvalidOperationException("Unknown hash type");
             }
 
-            List<(MenuItem, IAction)> checkedMenuItems = checkedMenuItemsDictionairy[GetUUID(HashCallingAction.GENERATE)];
+            List<(MenuFlyoutItemBase, IAction)> checkedMenuItems = checkedMenuItemsDictionairy[GetUUID(HashCallingAction.GENERATE)];
 
-            IAction checkedMenuItemAction = checkedMenuItems.First(checkedMenuItems => checkedMenuItems.Item1.IsChecked).Item2;
+            IAction checkedMenuItemAction = checkedMenuItems.First(checkedMenuItems => ((ToggleMenuFlyoutItem)checkedMenuItems.Item1).IsChecked).Item2;
 
             if (checkedMenuItemAction is SingleFile)
             {

@@ -3,12 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using FileActionsMenu.Interfaces;
-using Wpf.Ui.Controls;
+using Microsoft.UI.Xaml.Controls;
 
 namespace FileActionsMenu.Interfaces
 {
-    public sealed class CheckedMenuItemsDictionary : Dictionary<string, List<(MenuItem, IAction)>>
+    public sealed class CheckedMenuItemsDictionary : Dictionary<string, List<(MenuFlyoutItemBase, IAction)>>
     {
     }
 }
