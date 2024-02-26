@@ -117,7 +117,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
     LayoutMap keyboardMap;
     for (auto const& keyRemap : remappings.singleKeyReMap)
     {
-        if (keyRemap.second.index() == 0)
+        if (keyRemap.second.index() == 0) // 0 - Remapping to key
         {
             DWORD keyRemappedTo = std::get<DWORD>(keyRemap.second);
             TraceLoggingWrite(
@@ -131,7 +131,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 TraceLoggingWideString(keyboardMap.GetKeyName(keyRemappedTo).c_str(), "HumanRemapTo")
             );
         }
-        else if (keyRemap.second.index() == 1)
+        else if (keyRemap.second.index() == 1) // 1 - Remapping to shortcut
         {
             Shortcut shortcutRemappedTo = std::get<Shortcut>(keyRemap.second);
             TraceLoggingWrite(
@@ -154,7 +154,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
     for (auto const& shortcutRemap : remappings.osLevelShortcutReMap)
     {
         Shortcut shortcutRemappedFrom = shortcutRemap.first;
-        if (shortcutRemap.second.targetShortcut.index() == 0)
+        if (shortcutRemap.second.targetShortcut.index() == 0) // 0 - Remapping to key
         {
             DWORD keyRemappedTo = std::get<DWORD>(shortcutRemap.second.targetShortcut);
             TraceLoggingWrite(
@@ -171,7 +171,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 TraceLoggingWideString(GetShortcutHumanReadableString(shortcutRemappedFrom, keyboardMap).c_str(), "HumanRemapFrom"),
                 TraceLoggingWideString(keyboardMap.GetKeyName(keyRemappedTo).c_str(), "HumanRemapTo"));
         }
-        else if (shortcutRemap.second.targetShortcut.index() == 1)
+        else if (shortcutRemap.second.targetShortcut.index() == 1) // 1 - Remapping to shortcut
         {
             Shortcut shortcutRemappedTo = std::get<Shortcut>(shortcutRemap.second.targetShortcut);
             TraceLoggingWrite(
@@ -201,7 +201,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
         for (auto const& shortcutRemap : appShortcutRemap.second)
         {
             Shortcut shortcutRemappedFrom = shortcutRemap.first;
-            if (shortcutRemap.second.targetShortcut.index() == 0)
+            if (shortcutRemap.second.targetShortcut.index() == 0) // 0 - Remapping to key
             {
                 DWORD keyRemappedTo = std::get<DWORD>(shortcutRemap.second.targetShortcut);
                 TraceLoggingWrite(
@@ -220,7 +220,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                     TraceLoggingWideString(appName.c_str(), "TargetApp")
                 );
             }
-            else if (shortcutRemap.second.targetShortcut.index() == 1)
+            else if (shortcutRemap.second.targetShortcut.index() == 1) // 1 - Remapping to shortcut
             {
                 Shortcut shortcutRemappedTo = std::get<Shortcut>(shortcutRemap.second.targetShortcut);
                 TraceLoggingWrite(
