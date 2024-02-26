@@ -446,6 +446,7 @@
                                                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                         MaxWidth="450"
                                                                         MaxLength="{x:Bind TextBoxMaxLength, Mode=OneWay}"
+                                                                        PlaceholderText="{x:Bind Path=PlaceholderText}"
                                                                         Text="{x:Bind TextValue, Mode=TwoWay}" />
                                                                 </tkcontrols:SettingsCard>
                                                                 <!--  MultilineTextBox setting  -->

@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public int? TextBoxMaxLength { get; set; }
 
         /// <summary>
-        /// Gets or sets a value for the placeholder of the multiline textbox.
+        /// Gets or sets a value for the placeholder of a textbox.
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string PlaceholderText { get; set; }
