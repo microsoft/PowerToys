@@ -5,7 +5,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.FancyZonesEditor.UITests
@@ -18,7 +17,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         [AssemblyInitialize]
         public static void SetupAll(TestContext context)
         {
-            string winAppDriver = Path.Combine($"{Environment.CurrentDirectory}", @".\..\..\..\..\..\deps\WinAppDriver", "WinAppDriver.exe");
+            string sourceDirPath = Path.GetFullPath($"{Environment.CurrentDirectory}" + @".\..\..\..\..\..\");
+            context.WriteLine($"source dir: {sourceDirPath}");
+
+            string winAppDriver = Path.Combine(sourceDirPath, @".\deps\WinAppDriver", "WinAppDriver.exe");
 
             context.WriteLine($"Attempting to launch WinAppDriver at: {winAppDriver}");
             context.WriteLine($"Working directory: {Environment.CurrentDirectory}");
