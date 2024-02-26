@@ -136,7 +136,7 @@ namespace KeyboardEventHandlers
                         auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
                         if (dayWeLastSentKeyToShortcutTelemetryOn != currentDay)
                         {
-                            Trace::DailyKeyToKeyRemapInvoked();
+                            Trace::DailyKeyToShortcutRemapInvoked();
                             dayWeLastSentKeyToShortcutTelemetryOn = currentDay;
                         }
                     }
