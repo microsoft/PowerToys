@@ -18,6 +18,66 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
+// Log if a key to key remap has been invoked today.
+void Trace::DailyKeyToKeyRemapInvoked() noexcept
+{
+        TraceLoggingWrite(
+            g_hProvider,
+            "KeyboardManager_DailyKeyToKeyRemapInvoked",
+            ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+// Log if a key to shortcut remap has been invoked today.
+void Trace::DailyKeyToShortcutRemapInvoked() noexcept
+{
+        TraceLoggingWrite(
+            g_hProvider,
+            "KeyboardManager_DailyKeyToShortcutRemapInvoked",
+            ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+// Log if a shortcut to key remap has been invoked today.
+void Trace::DailyShortcutToKeyRemapInvoked() noexcept
+{
+        TraceLoggingWrite(
+            g_hProvider,
+            "KeyboardManager_DailyShortcutToKeyRemapInvoked",
+            ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+// Log if a shortcut to shortcut remap has been invoked today.
+void Trace::DailyShortcutToShortcutRemapInvoked() noexcept
+{
+        TraceLoggingWrite(
+            g_hProvider,
+            "KeyboardManager_DailyShortcutToShortcutRemapInvoked",
+            ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+// Log if an app specific shortcut to key remap has been invoked today.
+void Trace::DailyAppSpecificShortcutToKeyRemapInvoked() noexcept
+{
+        TraceLoggingWrite(
+            g_hProvider,
+            "KeyboardManager_DailyAppSpecificShortcutToKeyRemapInvoked",
+            ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+// Log if an app specific shortcut to shortcut remap has been invoked today.
+void Trace::DailyAppSpecificShortcutToShortcutRemapInvoked() noexcept
+{
+        TraceLoggingWrite(
+            g_hProvider,
+            "KeyboardManager_DailyAppSpecificShortcutToShortcutRemapInvoked",
+            ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
 // Log if a key remap has been invoked (not being used currently, due to being garrulous)
 void Trace::KeyRemapInvoked(bool isKeyToKey) noexcept
 {
