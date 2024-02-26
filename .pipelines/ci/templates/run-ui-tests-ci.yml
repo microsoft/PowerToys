@@ -13,6 +13,10 @@ jobs:
       name: SHINE-INT-Testing-x64
   steps:
   - checkout: self
+    fetchDepth: 1
+    submodules: false
+    clean: true
+    fetchTags: false
 
   - task: DownloadPipelineArtifact@2
     displayName: Download artifacts
