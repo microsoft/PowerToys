@@ -1,5 +1,7 @@
 #pragma once
 
+#include "State.h"
+
 class Trace
 {
 public:
@@ -11,7 +13,13 @@ public:
 
     // Log if a shortcut remap has been invoked (not being used currently, due to being garrulous)
     static void ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) noexcept;
-    
+
+    // Log the current remappings of key and shortcuts when keyboard manager engine loads the settings.
+    static void SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexcept;
+
+    // Log an error while trying to send remappings telemetry.
+    static void ErrorSendingKeyAndShortcutRemapLoadedConfiguration() noexcept;
+
     // Log if an error occurs in KBM
     static void Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;
 };
