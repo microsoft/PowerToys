@@ -2,18 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Win32;
 
-namespace FileActionsMenu.Ui.Actions
+namespace PowerToys.FileActionsMenu.Plugins.ExecutableActions
 {
     internal sealed class Uninstall : IAction
     {
@@ -33,7 +29,8 @@ namespace FileActionsMenu.Ui.Actions
         public IconElement? Icon => null;
 
         public bool IsVisible => SelectedItems.Length == 1
-            && (SelectedItems[0].EndsWith(".exe", StringComparison.InvariantCulture) || ShortcutHelper.GetFullPathFromShortcut(SelectedItems[0]).EndsWith(".exe", StringComparison.InvariantCulture))
+            && (SelectedItems[0].EndsWith(".exe", StringComparison.InvariantCulture) || ShortcutHelper.GetFullPathFromShortcut(SelectedItems[0])
+            .EndsWith(".exe", StringComparison.InvariantCulture) || SelectedItems[0].EndsWith(".dll", StringComparison.InvariantCulture) || ShortcutHelper.GetFullPathFromShortcut(SelectedItems[0]).EndsWith(".dll", StringComparison.InvariantCulture))
             && ((_uninstallerPath = GetUninstallerPath(ShortcutHelper.GetFullPathFromShortcut(SelectedItems[0]))) is not null);
 
         public Task Execute(object sender, RoutedEventArgs e)

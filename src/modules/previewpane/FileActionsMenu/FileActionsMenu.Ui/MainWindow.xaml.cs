@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using FileActionsMenu.Interfaces;
-using FileActionsMenu.Ui.Actions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -25,8 +24,7 @@ namespace FileActionsMenu.Ui
 
         private IAction[] _actions =
         [
-            new Uninstall(),
-            new Close(),
+            new CloseAction(),
         ];
 
         private bool _actionStarted;

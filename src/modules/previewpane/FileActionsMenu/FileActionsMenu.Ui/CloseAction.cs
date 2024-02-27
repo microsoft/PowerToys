@@ -7,9 +7,9 @@ using FileActionsMenu.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace FileActionsMenu.Ui.Actions
+namespace FileActionsMenu.Ui
 {
-    internal sealed class Close : IAction
+    internal sealed class CloseAction : IAction
     {
         public string[] SelectedItems { get => []; set => _ = value; }
 
