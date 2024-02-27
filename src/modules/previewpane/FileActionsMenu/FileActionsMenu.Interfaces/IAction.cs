@@ -32,7 +32,6 @@ namespace FileActionsMenu.Interfaces
             HasSubMenu,
             Separator,
             Checkable,
-            CheckableAndChecked,
         }
     }
 }

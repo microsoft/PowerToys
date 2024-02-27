@@ -49,7 +49,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public int Category => 0;
 
-        public IconElement? Icon => new FontIcon { Glyph = "\uE73E" };
+        public IconElement? Icon => _hashCallingAction == HashCallingAction.GENERATE ? new FontIcon { Glyph = "\uE73A" } : new FontIcon { Glyph = "\uE9D5" };
 
         public bool IsVisible => !SelectedItems.Any(Directory.Exists);
 

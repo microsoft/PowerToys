@@ -29,6 +29,9 @@ namespace FileActionsMenu.Ui
             new Close(),
         ];
 
+        private bool _actionStarted;
+        private bool _cancelClose;
+
         public MainWindow(string[] selectedItems)
         {
             InitializeComponent();
@@ -48,15 +51,15 @@ namespace FileActionsMenu.Ui
             }
 
             _menu = new MenuFlyout();
-            MenuFlyout cm = _menu;
-            cm.Items.Add(new MenuFlyoutItem()
+
+            _menu.Items.Add(new MenuFlyoutItem()
             {
                 Text = "PowerToys File Actions menu",
                 IsEnabled = false,
             });
-            cm.Items.Add(new MenuFlyoutSeparator());
-            Array.Sort(_actions, (a, b) => a.Category.CompareTo(b.Category));
+            _menu.Items.Add(new MenuFlyoutSeparator());
 
+            Array.Sort(_actions, (a, b) => a.Category.CompareTo(b.Category));
             int currentCategory = -1;
             void HandleItems(IAction[] actions, object cm, bool firstLayer = true)
             {
@@ -95,24 +98,25 @@ namespace FileActionsMenu.Ui
 
                         if (action.Type == IAction.ItemType.SingleItem)
                         {
-                            if (cm is MenuFlyout)
+                            if (cm is MenuFlyout flyout)
                             {
                                 ((MenuFlyoutItem)menuItem).Click += async (sender, args) =>
                                 {
+                                    _actionStarted = true;
                                     await action.Execute(sender, args);
                                     Close();
                                 };
-                                ((MenuFlyout)cm).Items.Add(menuItem);
+                                flyout.Items.Add(menuItem);
                             }
-                            else if (cm is MenuFlyoutSubItem)
+                            else if (cm is MenuFlyoutSubItem item)
                             {
                                 ((MenuFlyoutItem)menuItem).Click += async (sender, args) =>
                                 {
+                                    _actionStarted = true;
                                     await action.Execute(sender, args);
                                     Close();
                                 };
-                                ((MenuFlyoutSubItem)cm).Items.Add(menuItem);
-                                ((MenuFlyoutSubItem)cm).Items.Add(menuItem);
+                                item.Items.Add(menuItem);
                             }
                         }
                         else if (action.Type == IAction.ItemType.HasSubMenu)
@@ -148,7 +152,7 @@ namespace FileActionsMenu.Ui
                                 menuFlyoutSubItem.Items.Add(new MenuFlyoutSeparator());
                             }
                         }
-                        else if (action.Type == IAction.ItemType.Checkable || action.Type == IAction.ItemType.CheckableAndChecked)
+                        else if (action.Type == IAction.ItemType.Checkable)
                         {
                             if (action is not ICheckableAction checkableAction || checkableAction.CheckableGroupUUID == null)
                             {
@@ -158,12 +162,8 @@ namespace FileActionsMenu.Ui
                             ToggleMenuFlyoutItem toggleMenuItem = new()
                             {
                                 Text = checkableAction.Header,
-                                IsChecked = checkableAction.Type == IAction.ItemType.CheckableAndChecked,
+                                IsChecked = checkableAction.IsCheckedByDefault,
                             };
-                            if (checkableAction.Icon != null)
-                            {
-                                toggleMenuItem.Icon = checkableAction.Icon;
-                            }
 
                             if (!_checkableMenuItemsIndex.TryGetValue(checkableAction.CheckableGroupUUID, out List<(MenuFlyoutItemBase, IAction)>? value))
                             {
@@ -173,10 +173,28 @@ namespace FileActionsMenu.Ui
 
                             value.Add((toggleMenuItem, checkableAction));
 
-                            toggleMenuItem.Click += async (sender, args) =>
+                            toggleMenuItem.Click += (sender, args) =>
                             {
+                                _cancelClose = true;
+
+                                if (checkableAction.IsChecked)
+                                {
+                                    return;
+                                }
+
                                 checkableAction.IsChecked = toggleMenuItem.IsChecked;
-                                await checkableAction.Execute(sender, args);
+
+                                foreach ((MenuFlyoutItemBase menuItem, IAction action) in _checkableMenuItemsIndex[checkableAction.CheckableGroupUUID])
+                                {
+                                    if (menuItem is ToggleMenuFlyoutItem toggle)
+                                    {
+                                        if (toggle != toggleMenuItem)
+                                        {
+                                            toggle.IsChecked = false;
+                                            toggle.IsChecked = false;
+                                        }
+                                    }
+                                }
                             };
 
                             if (cm is MenuFlyout menuFlyout)
@@ -196,7 +214,7 @@ namespace FileActionsMenu.Ui
                 }
             }
 
-            HandleItems(_actions, cm);
+            HandleItems(_actions, _menu);
         }
 
         public void Window_Activated(object sender, RoutedEventArgs e)
@@ -207,6 +225,21 @@ namespace FileActionsMenu.Ui
             this.SetIsShownInSwitchers(false);
             this.Maximize();
             _menu.ShowAt((UIElement)sender, new Point(Cursor.Position.X, Cursor.Position.Y));
+            _menu.Closing += (s, e) =>
+            {
+                // Keep open if user clicked on a checkable item
+                if (_cancelClose)
+                {
+                    e.Cancel = true;
+                    _cancelClose = false;
+                    return;
+                }
+
+                if (!_actionStarted)
+                {
+                    Close();
+                }
+            };
         }
     }
 }

@@ -586,7 +586,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.FileActionsMenu.P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.FileActionsMenu.Plugins.ImageClipboardActions", "src\modules\previewpane\FileActionsMenu\FileActionsMenu.Plugins\PowerToys.FileActionsMenu.Plugins.ImageClipboardActions\PowerToys.FileActionsMenu.Plugins.ImageClipboardActions.csproj", "{50B33187-448C-43D2-8858-5004A84D1F64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peek.Helpers", "src\modules\peek\Peek.Helpers\Peek.Helpers.csproj", "{AC5129DF-CC8C-4195-87BA-855A65B6A4D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Peek.Helpers", "src\modules\peek\Peek.Helpers\Peek.Helpers.csproj", "{AC5129DF-CC8C-4195-87BA-855A65B6A4D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerToys.FileActionsMenu.Plugins.FileContentActions", "src\modules\previewpane\FileActionsMenu\FileActionsMenu.Plugins\PowerToys.FileActionsMenu.Plugins.FileContentActions\PowerToys.FileActionsMenu.Plugins.FileContentActions.csproj", "{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2610,6 +2612,18 @@ Global
 		{AC5129DF-CC8C-4195-87BA-855A65B6A4D9}.Release|x64.Build.0 = Release|x64
 		{AC5129DF-CC8C-4195-87BA-855A65B6A4D9}.Release|x86.ActiveCfg = Release|x64
 		{AC5129DF-CC8C-4195-87BA-855A65B6A4D9}.Release|x86.Build.0 = Release|x64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Debug|ARM64.Build.0 = Debug|ARM64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Debug|x64.ActiveCfg = Debug|x64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Debug|x64.Build.0 = Debug|x64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Debug|x86.ActiveCfg = Debug|x64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Debug|x86.Build.0 = Debug|x64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Release|ARM64.ActiveCfg = Release|ARM64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Release|ARM64.Build.0 = Release|ARM64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Release|x64.ActiveCfg = Release|x64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Release|x64.Build.0 = Release|x64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Release|x86.ActiveCfg = Release|x64
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2829,6 +2843,7 @@ Global
 		{7FBD0D7C-9D72-41C4-803B-4FF0228CA267} = {95B63A44-6287-4E7E-B96A-2294C21C3230}
 		{50B33187-448C-43D2-8858-5004A84D1F64} = {95B63A44-6287-4E7E-B96A-2294C21C3230}
 		{AC5129DF-CC8C-4195-87BA-855A65B6A4D9} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
+		{9F20CFE6-3E70-4EE3-8C31-18DA588E65E5} = {95B63A44-6287-4E7E-B96A-2294C21C3230}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

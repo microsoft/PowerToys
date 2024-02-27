@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using Peek.Common.Models;
 using Peek.Helper.Extensions;
 using SHDocVw;
@@ -65,8 +66,15 @@ namespace Peek.Helpers
             ShellWindows shellWindows = shell.Windows();
             foreach (IWebBrowserApp webBrowserApp in shell.Windows())
             {
-                var shellFolderView = (Shell32.IShellFolderViewDual2)webBrowserApp.Document;
-                var folderTitle = shellFolderView.Folder.Title;
+                try
+                {
+                    var shellFolderView = (Shell32.IShellFolderViewDual2)webBrowserApp.Document;
+                    var folderTitle = shellFolderView.Folder.Title;
+                }
+                catch (COMException)
+                {
+                    continue;
+                }
 
                 if (webBrowserApp.HWND == foregroundWindowHandle)
                 {
