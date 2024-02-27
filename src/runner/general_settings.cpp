@@ -174,7 +174,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             {
                 // Apply the GPO Rule.
                 target_enabled = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
-            }            
+            }
 
             if (module_inst_enabled == target_enabled)
             {

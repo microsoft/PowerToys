@@ -192,11 +192,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
 
     auto unicodeTextKeysInput = TextBox();
 
-    /*while (true)
-    {
-        Sleep(1000);
-    }*/
-
     unicodeTextKeysInput.Name(L"unicodeTextKeysInput_" + std::to_wstring(rowIndex));
 
     auto textInputMargin = Windows::UI::Xaml::Thickness();

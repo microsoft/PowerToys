@@ -26,7 +26,7 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
     }
 
     InitUnhandledExceptionHandler();
-    
+
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {
