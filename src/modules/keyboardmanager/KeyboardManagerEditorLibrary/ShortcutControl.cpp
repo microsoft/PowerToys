@@ -285,8 +285,6 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         }
     });
 
-    target.Width(target.Width() - 120);
-
     row.Children().Append(target);
 
     if (textSelected)
