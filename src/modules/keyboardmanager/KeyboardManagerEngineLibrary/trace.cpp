@@ -168,7 +168,7 @@ std::wstring GetShortcutHumanReadableString(Shortcut const & shortcut, LayoutMap
         humanReadableShortcut += keyboardMap.GetKeyName(shortcut.actionKey);
         if (shortcut.secondKey != NULL)
         {
-            humanReadableShortcut += L" + " + keyboardMap.GetKeyName(shortcut.secondKey);
+            humanReadableShortcut += L" , " + keyboardMap.GetKeyName(shortcut.secondKey);
         }
     }
     return humanReadableShortcut;
