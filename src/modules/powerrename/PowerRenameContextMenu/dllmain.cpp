@@ -16,8 +16,11 @@
 #include <wrl/implements.h>
 #include <wrl/client.h>
 
+#include "Generated Files/resource.h"
+
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
+#include <common/utils/resources.h>
 #include <Helpers.h>
 #include <Settings.h>
 #include <trace.h>
@@ -60,7 +63,7 @@ public:
     // IExplorerCommand
     IFACEMETHODIMP GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* name)
     {
-        return SHStrDup(app_name.c_str(), name);
+        return SHStrDup(context_menu_caption.c_str(), name);
     }
 
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
@@ -261,7 +264,7 @@ private:
 
     std::thread create_pipe_thread;
     HANDLE hPipe = INVALID_HANDLE_VALUE;
-    std::wstring app_name = L"PowerRename";
+    std::wstring context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_POWERRENAME_CONTEXT_MENU_ENTRY, L"Rename with PowerRename");
 };
 
 CoCreatableClass(PowerRenameContextMenuCommand)

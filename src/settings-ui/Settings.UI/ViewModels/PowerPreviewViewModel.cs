@@ -63,6 +63,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _svgRenderEnabledStateIsGPOConfigured = true;
                 _svgRenderIsEnabled = _svgRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _svgRenderIsGpoEnabled = _svgRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _svgRenderIsGpoDisabled = _svgRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -73,24 +75,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _svgBackgroundSolidColor = Settings.Properties.SvgBackgroundSolidColor.Value;
             _svgBackgroundCheckeredShade = Settings.Properties.SvgBackgroundCheckeredShade.Value;
 
-            _svgThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgThumbnailsEnabledValue();
-            if (_svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _svgThumbnailEnabledStateIsGPOConfigured = true;
-                _svgThumbnailIsEnabled = _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
-            }
-
             _mdRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMarkdownPreviewEnabledValue();
             if (_mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.
                 _mdRenderEnabledStateIsGPOConfigured = true;
                 _mdRenderIsEnabled = _mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _mdRenderIsGpoEnabled = _mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _mdRenderIsGpoDisabled = _mdRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -103,6 +95,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _monacoRenderEnabledStateIsGPOConfigured = true;
                 _monacoRenderIsEnabled = _monacoRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _monacoRenderIsGpoEnabled = _monacoRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _monacoRenderIsGpoDisabled = _monacoRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -119,6 +113,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _pdfRenderEnabledStateIsGPOConfigured = true;
                 _pdfRenderIsEnabled = _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _pdfRenderIsGpoEnabled = _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _pdfRenderIsGpoDisabled = _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -131,6 +127,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _gcodeRenderEnabledStateIsGPOConfigured = true;
                 _gcodeRenderIsEnabled = _gcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _gcodeRenderIsGpoEnabled = _gcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _gcodeRenderIsGpoDisabled = _gcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -143,10 +141,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _qoiRenderEnabledStateIsGPOConfigured = true;
                 _qoiRenderIsEnabled = _qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _qoiRenderIsGpoEnabled = _qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _qoiRenderIsGpoDisabled = _qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
                 _qoiRenderIsEnabled = Settings.Properties.EnableQoiPreview;
+            }
+
+            _svgThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgThumbnailsEnabledValue();
+            if (_svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _svgThumbnailEnabledStateIsGPOConfigured = true;
+                _svgThumbnailIsEnabled = _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _svgThumbnailIsGpoEnabled = _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _svgThumbnailIsGpoDisabled = _svgThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+            }
+            else
+            {
+                _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
             }
 
             _pdfThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPdfThumbnailsEnabledValue();
@@ -155,6 +169,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _pdfThumbnailEnabledStateIsGPOConfigured = true;
                 _pdfThumbnailIsEnabled = _pdfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _pdfThumbnailIsGpoEnabled = _pdfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _pdfThumbnailIsGpoDisabled = _pdfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -167,6 +183,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _gcodeThumbnailEnabledStateIsGPOConfigured = true;
                 _gcodeThumbnailIsEnabled = _gcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _gcodeThumbnailIsGpoEnabled = _gcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _gcodeThumbnailIsGpoDisabled = _gcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -179,6 +197,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _stlThumbnailEnabledStateIsGPOConfigured = true;
                 _stlThumbnailIsEnabled = _stlThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _stlThumbnailIsGpoEnabled = _stlThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _stlThumbnailIsGpoDisabled = _stlThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -193,6 +213,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _qoiThumbnailEnabledStateIsGPOConfigured = true;
                 _qoiThumbnailIsEnabled = _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _qoiThumbnailIsGpoEnabled = _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _qoiThumbnailIsGpoDisabled = _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -207,6 +229,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GpoRuleConfigured _svgRenderEnabledGpoRuleConfiguration;
         private bool _svgRenderEnabledStateIsGPOConfigured;
+        private bool _svgRenderIsGpoEnabled;
+        private bool _svgRenderIsGpoDisabled;
         private bool _svgRenderIsEnabled;
         private int _svgBackgroundColorMode;
         private string _svgBackgroundSolidColor;
@@ -214,10 +238,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GpoRuleConfigured _mdRenderEnabledGpoRuleConfiguration;
         private bool _mdRenderEnabledStateIsGPOConfigured;
+        private bool _mdRenderIsGpoEnabled;
+        private bool _mdRenderIsGpoDisabled;
         private bool _mdRenderIsEnabled;
 
         private GpoRuleConfigured _monacoRenderEnabledGpoRuleConfiguration;
         private bool _monacoRenderEnabledStateIsGPOConfigured;
+        private bool _monacoRenderIsGpoEnabled;
+        private bool _monacoRenderIsGpoDisabled;
         private bool _monacoRenderIsEnabled;
         private bool _monacoWrapText;
         private bool _monacoPreviewTryFormat;
@@ -225,36 +253,72 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GpoRuleConfigured _pdfRenderEnabledGpoRuleConfiguration;
         private bool _pdfRenderEnabledStateIsGPOConfigured;
+        private bool _pdfRenderIsGpoEnabled;
+        private bool _pdfRenderIsGpoDisabled;
         private bool _pdfRenderIsEnabled;
 
         private GpoRuleConfigured _gcodeRenderEnabledGpoRuleConfiguration;
         private bool _gcodeRenderEnabledStateIsGPOConfigured;
+        private bool _gcodeRenderIsGpoEnabled;
+        private bool _gcodeRenderIsGpoDisabled;
         private bool _gcodeRenderIsEnabled;
 
         private GpoRuleConfigured _qoiRenderEnabledGpoRuleConfiguration;
         private bool _qoiRenderEnabledStateIsGPOConfigured;
+        private bool _qoiRenderIsGpoEnabled;
+        private bool _qoiRenderIsGpoDisabled;
         private bool _qoiRenderIsEnabled;
 
         private GpoRuleConfigured _svgThumbnailEnabledGpoRuleConfiguration;
         private bool _svgThumbnailEnabledStateIsGPOConfigured;
+        private bool _svgThumbnailIsGpoEnabled;
+        private bool _svgThumbnailIsGpoDisabled;
         private bool _svgThumbnailIsEnabled;
 
         private GpoRuleConfigured _pdfThumbnailEnabledGpoRuleConfiguration;
         private bool _pdfThumbnailEnabledStateIsGPOConfigured;
+        private bool _pdfThumbnailIsGpoEnabled;
+        private bool _pdfThumbnailIsGpoDisabled;
         private bool _pdfThumbnailIsEnabled;
 
         private GpoRuleConfigured _gcodeThumbnailEnabledGpoRuleConfiguration;
         private bool _gcodeThumbnailEnabledStateIsGPOConfigured;
+        private bool _gcodeThumbnailIsGpoEnabled;
+        private bool _gcodeThumbnailIsGpoDisabled;
         private bool _gcodeThumbnailIsEnabled;
 
         private GpoRuleConfigured _stlThumbnailEnabledGpoRuleConfiguration;
         private bool _stlThumbnailEnabledStateIsGPOConfigured;
+        private bool _stlThumbnailIsGpoEnabled;
+        private bool _stlThumbnailIsGpoDisabled;
         private bool _stlThumbnailIsEnabled;
         private string _stlThumbnailColor;
 
         private GpoRuleConfigured _qoiThumbnailEnabledGpoRuleConfiguration;
         private bool _qoiThumbnailEnabledStateIsGPOConfigured;
+        private bool _qoiThumbnailIsGpoEnabled;
+        private bool _qoiThumbnailIsGpoDisabled;
         private bool _qoiThumbnailIsEnabled;
+
+        public bool SomePreviewPaneEnabledGposConfigured
+        {
+            get
+            {
+                return _svgRenderEnabledStateIsGPOConfigured || _mdRenderEnabledStateIsGPOConfigured
+                    || _monacoRenderEnabledStateIsGPOConfigured || _pdfRenderEnabledStateIsGPOConfigured
+                    || _gcodeRenderEnabledStateIsGPOConfigured || _qoiRenderEnabledStateIsGPOConfigured;
+            }
+        }
+
+        public bool SomeThumbnailEnabledGposConfigured
+        {
+            get
+            {
+                return _svgThumbnailEnabledStateIsGPOConfigured || _pdfThumbnailEnabledStateIsGPOConfigured
+                    || _gcodeThumbnailEnabledStateIsGPOConfigured || _stlThumbnailEnabledStateIsGPOConfigured
+                    || _qoiThumbnailEnabledStateIsGPOConfigured;
+            }
+        }
 
         public bool FileActionsMenuIsEnabled
         {
@@ -396,9 +460,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsSVGRenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool SVGRenderIsGpoEnabled
         {
-            get => _svgRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _svgRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool SVGRenderIsGpoDisabled
+        {
+            get
+            {
+                return _svgRenderIsGpoDisabled;
+            }
         }
 
         public bool SVGThumbnailIsEnabled
@@ -425,9 +502,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsSVGThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool SVGThumbnailIsGpoEnabled
         {
-            get => _svgThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _svgThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool SVGThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _svgThumbnailIsGpoDisabled;
+            }
         }
 
         public bool MDRenderIsEnabled
@@ -454,9 +544,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsMDRenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool MDRenderIsGpoEnabled
         {
-            get => _mdRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _mdRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool MDRenderIsGpoDisabled
+        {
+            get
+            {
+                return _mdRenderIsGpoDisabled;
+            }
         }
 
         public bool MonacoRenderIsEnabled
@@ -483,9 +586,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsMonacoRenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool MonacoRenderIsGpoEnabled
         {
-            get => _monacoRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _monacoRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool MonacoRenderIsGpoDisabled
+        {
+            get
+            {
+                return _monacoRenderIsGpoDisabled;
+            }
         }
 
         public bool MonacoWrapText
@@ -566,9 +682,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsPDFRenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool PDFRenderIsGpoEnabled
         {
-            get => _pdfRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _pdfRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool PDFRenderIsGpoDisabled
+        {
+            get
+            {
+                return _pdfRenderIsGpoDisabled;
+            }
         }
 
         public bool PDFThumbnailIsEnabled
@@ -595,9 +724,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsPDFThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool PDFThumbnailIsGpoEnabled
         {
-            get => _pdfThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _pdfThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool PDFThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _pdfThumbnailIsGpoDisabled;
+            }
         }
 
         public bool GCODERenderIsEnabled
@@ -624,9 +766,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsGCODERenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool GCODERenderIsGpoEnabled
         {
-            get => _gcodeRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _gcodeRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool GCODERenderIsGpoDisabled
+        {
+            get
+            {
+                return _gcodeRenderIsGpoDisabled;
+            }
         }
 
         public bool GCODEThumbnailIsEnabled
@@ -653,9 +808,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsGCODEThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool GCODEThumbnailIsGpoEnabled
         {
-            get => _gcodeThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _gcodeThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool GCODEThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _gcodeThumbnailIsGpoDisabled;
+            }
         }
 
         public bool STLThumbnailIsEnabled
@@ -682,9 +850,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsSTLThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool STLThumbnailIsGpoEnabled
         {
-            get => _stlThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _stlThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool STLThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _stlThumbnailIsGpoDisabled;
+            }
         }
 
         public string STLThumbnailColor
@@ -729,9 +910,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsQOIRenderEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool QOIRenderIsGpoEnabled
         {
-            get => _qoiRenderEnabledStateIsGPOConfigured;
+            get
+            {
+                return _qoiRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool QOIRenderIsGpoDisabled
+        {
+            get
+            {
+                return _qoiRenderIsGpoDisabled;
+            }
         }
 
         public bool QOIThumbnailIsEnabled
@@ -758,9 +952,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsQOIThumbnailEnabledGpoConfigured
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool QOIThumbnailIsGpoEnabled
         {
-            get => _qoiThumbnailEnabledStateIsGPOConfigured;
+            get
+            {
+                return _qoiRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool QOIThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _qoiThumbnailIsGpoDisabled;
+            }
         }
 
         public string GetSettingsSubPath()

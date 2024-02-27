@@ -118,6 +118,28 @@ namespace KeyboardEventHandlers
                             ResetIfModifierKeyForLowerLevelKeyHandlers(ii, itSk, it->first);
                         }
                     }
+
+                    // Send daily telemetry event for Keyboard Manager key activation.
+                    if (remapToKey)
+                    {
+                        static int dayWeLastSentKeyToKeyTelemetryOn = -1;
+                        auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                        if (dayWeLastSentKeyToKeyTelemetryOn != currentDay)
+                        {
+                            Trace::DailyKeyToKeyRemapInvoked();
+                            dayWeLastSentKeyToKeyTelemetryOn = currentDay;
+                        }
+                    }
+                    else
+                    {
+                        static int dayWeLastSentKeyToShortcutTelemetryOn = -1;
+                        auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                        if (dayWeLastSentKeyToShortcutTelemetryOn != currentDay)
+                        {
+                            Trace::DailyKeyToShortcutRemapInvoked();
+                            dayWeLastSentKeyToShortcutTelemetryOn = currentDay;
+                        }
+                    }
                 }
 
                 return 1;
@@ -347,6 +369,54 @@ namespace KeyboardEventHandlers
 
                     UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
                     delete[] keyEventList;
+
+                    // Send daily telemetry event for Keyboard Manager key activation.
+                    if (activatedApp.has_value())
+                    {
+                        if (remapToKey)
+                        {
+                            static int dayWeLastSentAppSpecificShortcutToKeyTelemetryOn = -1;
+                            auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                            if (dayWeLastSentAppSpecificShortcutToKeyTelemetryOn != currentDay)
+                            {
+                                Trace::DailyAppSpecificShortcutToKeyRemapInvoked();
+                                dayWeLastSentAppSpecificShortcutToKeyTelemetryOn = currentDay;
+                            }
+                        }
+                        else if (remapToShortcut)
+                        {
+                            static int dayWeLastSentAppSpecificShortcutToShortcutTelemetryOn = -1;
+                            auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                            if (dayWeLastSentAppSpecificShortcutToShortcutTelemetryOn != currentDay)
+                            {
+                                Trace::DailyAppSpecificShortcutToShortcutRemapInvoked();
+                                dayWeLastSentAppSpecificShortcutToShortcutTelemetryOn = currentDay;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (remapToKey)
+                        {
+                            static int dayWeLastSentShortcutToKeyTelemetryOn = -1;
+                            auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                            if (dayWeLastSentShortcutToKeyTelemetryOn != currentDay)
+                            {
+                                Trace::DailyShortcutToKeyRemapInvoked();
+                                dayWeLastSentShortcutToKeyTelemetryOn = currentDay;
+                            }
+                        }
+                        else if (remapToShortcut)
+                        {
+                            static int dayWeLastSentShortcutToShortcutTelemetryOn = -1;
+                            auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                            if (dayWeLastSentShortcutToShortcutTelemetryOn != currentDay)
+                            {
+                                Trace::DailyShortcutToShortcutRemapInvoked();
+                                dayWeLastSentShortcutToShortcutTelemetryOn = currentDay;
+                            }
+                        }
+                    }
 
                     return 1;
                 }

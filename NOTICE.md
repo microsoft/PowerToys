@@ -1313,7 +1313,7 @@ EXHIBIT A -Mozilla Public License.
 - hyjiacan.pinyin4net 4.1.1
 - Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
 - LazyCache 2.4.0
-- Mages 2.0.1
+- Mages 2.0.2
 - Markdig.Signed 0.34.0
 - Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
 - Microsoft.Data.Sqlite 8.0.0
@@ -1327,7 +1327,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2088.41
 - Microsoft.Win32.SystemEvents 8.0.0
-- Microsoft.Windows.Compatibility 8.0.0
+- Microsoft.Windows.Compatibility 8.0.1
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.4
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
@@ -1337,8 +1337,8 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
 - Moq 4.18.4
-- MSTest.TestAdapter 3.1.1
-- MSTest.TestFramework 3.1.1
+- MSTest.TestAdapter 3.2.0
+- MSTest.TestFramework 3.2.0
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
 - ScipBe.Common.Office.OneNote 3.0.1
@@ -1350,9 +1350,10 @@ EXHIBIT A -Mozilla Public License.
 - System.ComponentModel.Composition 8.0.0
 - System.Configuration.ConfigurationManager 8.0.0
 - System.Data.OleDb 8.0.0
+- System.Data.SqlClient 4.8.6
 - System.Diagnostics.EventLog 8.0.0
 - System.Diagnostics.PerformanceCounter 8.0.0
-- System.Drawing.Common 8.0.1
+- System.Drawing.Common 8.0.2
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0
@@ -1368,4 +1369,4 @@ EXHIBIT A -Mozilla Public License.
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
 - WinUIEx 2.2.0
-- WPF-UI 3.0.0-preview.13
+- WPF-UI 3.0.0

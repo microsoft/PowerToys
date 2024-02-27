@@ -51,7 +51,7 @@
         <Grid
             x:Name="KeywordsOverviewGrid"
             Grid.Row="1"
-            MaxHeight="256"
+            MaxHeight="{Binding Results.MaxHeight}"
             Visibility="{Binding PluginsOverviewVisibility}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />

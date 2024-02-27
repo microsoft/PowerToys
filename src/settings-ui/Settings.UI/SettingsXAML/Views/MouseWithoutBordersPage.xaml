@@ -23,7 +23,7 @@
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseWithoutBorders_Toggle_Enable"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/FluentIcons/FluentIconsMouseWithoutBorders.png}"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                         IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
@@ -31,7 +31,7 @@
                             IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
-                        x:Uid="GPO_IsSettingForced"
+                        x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"

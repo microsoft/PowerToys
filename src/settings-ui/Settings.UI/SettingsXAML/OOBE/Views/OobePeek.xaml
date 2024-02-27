@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_Peek" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Peek.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_Peek" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Peek.png">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />

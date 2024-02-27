@@ -162,5 +162,22 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result);
         }
+
+        [DataTestMethod]
+        [DataRow("en-US", "0xF000", "0xF000")]
+        [DataRow("en-US", "0xf4572220", "4099351072")]
+        [DataRow("en-US", "0x12345678", "305419896")]
+        public void Translate_LargeHexadecimalNumbersToDecimal(string sourceCultureName, string input, string expectedResult)
+        {
+            // Arrange
+            var translator = NumberTranslator.Create(new CultureInfo(sourceCultureName, false), new CultureInfo("en-US", false));
+
+            // Act
+            var result = translator.Translate(input);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result);
+        }
     }
 }
