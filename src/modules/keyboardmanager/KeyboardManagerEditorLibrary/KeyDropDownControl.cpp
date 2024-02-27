@@ -470,12 +470,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
         }
 
         KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
-
-        /*while (true)
-        {
-            Sleep(1000);
-        }*/
-
+        
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
             // New drop down gets added automatically when the SelectedValue(key code) is set

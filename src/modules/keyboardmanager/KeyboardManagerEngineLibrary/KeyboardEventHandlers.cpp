@@ -291,7 +291,17 @@ namespace KeyboardEventHandlers
 
                     if (isRunProgram)
                     {
-                        CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
+                        auto threadFunction = [it]() {
+                            CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
+                        };
+
+                        std::thread myThread(threadFunction);
+                        if (myThread.joinable())
+                        {
+                            myThread.detach();
+                        }
+
+                        
 
                         Logger::trace(L"ChordKeyboardHandler:returning..");
                         return 1;
@@ -322,14 +332,24 @@ namespace KeyboardEventHandlers
                             }
                         }
 
-                        HINSTANCE result = ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                        
+                        auto threadFunction = [newUri]() {
+                            HINSTANCE result = ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
 
-                        if (result == reinterpret_cast<HINSTANCE>(HINSTANCE_ERROR))
+                            if (result == reinterpret_cast<HINSTANCE>(HINSTANCE_ERROR))
+                            {
+                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
+                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
+                                toast(L"Error", L"Could not understand the Path or URI");
+                            }
+                        };
+
+                        std::thread myThread(threadFunction);
+                        if (myThread.joinable())
                         {
-                            // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
-                            // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
-                            toast(L"Error", L"Could not understand the Path or URI");
+                            myThread.detach();
                         }
+
 
                         Logger::trace(L"ChordKeyboardHandler:returning..");
                         return 1;
@@ -1217,7 +1237,7 @@ namespace KeyboardEventHandlers
         {
             if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::CloseAndEndTask)
             {
-                /*std::thread myThread(CloseAndTerminateProcessByName, fileNamePart);*/
+                CloseAndTerminateProcessByName(fileNamePart);
                 return;
             }
             else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
@@ -1339,19 +1359,22 @@ namespace KeyboardEventHandlers
             return;
         }
 
-        if (false)
-        {
+        auto threadFunction = [fileNamePart]() {
+            auto processIds = GetProcessesIdByName(fileNamePart);
             auto retryCount = 10;
             while (processIds.size() > 0 && retryCount-- > 0)
             {
+                //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE 'ing {}processIds ", fileNamePart, processIds.size());
                 for (DWORD pid : processIds)
                 {
                     //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
                     HWND hwnd = FindMainWindow(pid, false);
                     SendMessage(hwnd, WM_CLOSE, 0, 0);
+
+                    // small sleep between when there are a lot might help
+                    Sleep(10);
                 }
 
-                Sleep(500);
                 processIds = GetProcessesIdByName(fileNamePart);
                 if (processIds.size() <= 0)
                 {
@@ -1363,48 +1386,16 @@ namespace KeyboardEventHandlers
                     Sleep(100);
                 }
             }
-        }
-        else
+        };
+
+        processIds = GetProcessesIdByName(fileNamePart);
+
+        if (processIds.size() > 0)
         {
-            auto threadFunction = [fileNamePart]() {
-                auto processIds = GetProcessesIdByName(fileNamePart);
-                auto retryCount = 10;
-                while (processIds.size() > 0 && retryCount-- > 0)
-                {
-                    //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE 'ing {}processIds ", fileNamePart, processIds.size());
-                    for (DWORD pid : processIds)
-                    {
-                        //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
-                        HWND hwnd = FindMainWindow(pid, false);
-                        SendMessage(hwnd, WM_CLOSE, 0, 0);
-
-                        // small sleep between when there are a lot might help
-                        Sleep(10);
-                    }
-
-                    processIds = GetProcessesIdByName(fileNamePart);
-                    if (processIds.size() <= 0)
-                    {
-                        Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE done", fileNamePart);
-                        break;
-                    }
-                    else
-                    {
-                        Sleep(100);
-                    }
-                }
-            };
-
-            Sleep(100);
-            processIds = GetProcessesIdByName(fileNamePart);
-
-            if (processIds.size() > 0)
+            std::thread myThread(threadFunction);
+            if (myThread.joinable())
             {
-                std::thread myThread(threadFunction);
-                if (myThread.joinable())
-                {
-                    myThread.detach();
-                }
+                myThread.detach();
             }
         }
 
