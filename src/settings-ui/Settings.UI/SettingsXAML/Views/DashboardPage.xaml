@@ -271,8 +271,7 @@
                                                 Margin="4,0,0,0"
                                                 VerticalAlignment="Center"
                                                 Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                                                Text="{x:Bind TargetApp}"
-                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                                Text="{x:Bind TargetApp}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

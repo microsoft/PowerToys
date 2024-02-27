@@ -206,8 +206,7 @@
                                                 Margin="16,0,0,0"
                                                 Padding="12,4,12,6"
                                                 VerticalAlignment="Center"
-                                                CornerRadius="12"
-                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                                CornerRadius="12">
                                                 <Border.Background>
                                                     <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
                                                 </Border.Background>
