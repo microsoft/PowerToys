@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Peek.Helper.Extensions;
+using Peek.Helpers;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;

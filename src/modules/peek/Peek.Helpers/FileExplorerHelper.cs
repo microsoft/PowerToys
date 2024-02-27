@@ -66,22 +66,29 @@ namespace Peek.Helpers
             ShellWindows shellWindows = shell.Windows();
             foreach (IWebBrowserApp webBrowserApp in shellWindows)
             {
-                if (webBrowserApp.Document is Shell32.IShellFolderViewDual2 shellFolderView)
+                try
                 {
-                    var folderTitle = shellFolderView.Folder.Title;
-
-                    if (webBrowserApp.HWND == foregroundWindowHandle)
+                    if (webBrowserApp.Document is Shell32.IShellFolderViewDual2 shellFolderView)
                     {
-                        var serviceProvider = (IServiceProvider)webBrowserApp;
-                        var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
-                        shellBrowser.GetWindow(out IntPtr shellBrowserHandle);
+                        var folderTitle = shellFolderView.Folder.Title;
 
-                        if (activeTab == shellBrowserHandle)
+                        if (webBrowserApp.HWND == foregroundWindowHandle)
                         {
-                            shellItemArray = GetShellItemArray(shellBrowser, onlySelectedFiles);
-                            return shellItemArray;
+                            var serviceProvider = (IServiceProvider)webBrowserApp;
+                            var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
+                            shellBrowser.GetWindow(out IntPtr shellBrowserHandle);
+
+                            if (activeTab == shellBrowserHandle)
+                            {
+                                shellItemArray = GetShellItemArray(shellBrowser, onlySelectedFiles);
+                                return shellItemArray;
+                            }
                         }
                     }
+                }
+                catch (COMException)
+                {
+                       // Ignore the exception and continue to the next window
                 }
             }
 

@@ -16,5 +16,7 @@ GetClassName
 _SVGIO
 MONITORINFO
 GetWindowRect
+GetWindowPlacement
+SetWindowPlacement
 SET_WINDOW_POS_FLAGS
 SetWindowPos

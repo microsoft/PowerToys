@@ -266,44 +266,19 @@ private:
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
 
-        if (m_alwaysRunNotElevated && is_process_elevated(false))
+        Logger::trace("Starting FileActionsMenu non elevated from elevated process");
+        const auto modulePath = get_module_folderpath();
+        std::wstring runExecutablePath = modulePath;
+        runExecutablePath += L"\\WinUi3Apps\\PowerToys.FileActionsMenu.Ui.exe";
+        std::optional<ProcessInfo> processStartedInfo = RunNonElevatedFailsafe(runExecutablePath, executable_args, modulePath, PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE);
+        if (processStartedInfo.has_value())
         {
-            Logger::trace("Starting FileActionsMenu non elevated from elevated process");
-            const auto modulePath = get_module_folderpath();
-            std::wstring runExecutablePath = modulePath;
-            runExecutablePath += L"\\PowerToys.FileActionsMenu.Ui.exe";
-            std::optional<ProcessInfo> processStartedInfo = RunNonElevatedFailsafe(runExecutablePath, executable_args, modulePath, PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE);
-            if (processStartedInfo.has_value())
-            {
-                m_processPid = processStartedInfo.value().processID;
-                m_hProcess = processStartedInfo.value().processHandle.release();
-            }
-            else
-            {
-                Logger::error(L"FileActionsMenuViewer failed to start not elevated.");
-            }
+            m_processPid = processStartedInfo.value().processID;
+            m_hProcess = processStartedInfo.value().processHandle.release();
         }
         else
         {
-            SHELLEXECUTEINFOW sei{ sizeof(sei) };
-
-            sei.fMask = { SEE_MASK_NOCLOSEPROCESS };
-            sei.lpVerb = L"open";
-            sei.lpFile = L"PowerToys.FileActionsMenu.Ui.exe";
-            sei.nShow = SW_SHOWNORMAL;
-            sei.lpParameters = executable_args.data();
-
-            if (ShellExecuteExW(&sei))
-            {
-                Logger::trace("Successfully started the FileActionsMenuViewer process");
-            }
-            else
-            {
-                Logger::error(L"FileActionsMenuViewer failed to start. {}", get_last_error_or_default(GetLastError()));
-            }
-
-            m_hProcess = sei.hProcess;
-            m_processPid = GetProcessId(m_hProcess);
+            Logger::error(L"FileActionsMenuViewer failed to start not elevated.");
         }
     }
 
@@ -382,7 +357,6 @@ public:
     {
         Logger::trace("FileActionsMenu::enable()");
         ResetEvent(m_hInvokeEvent);
-        launch_process();
         m_enabled = true;
         Trace::EnableFileActionsMenu(true);
     }
