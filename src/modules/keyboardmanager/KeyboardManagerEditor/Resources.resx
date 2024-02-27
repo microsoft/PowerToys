@@ -272,6 +272,9 @@
     <value>Keys selected:</value>
     <comment>Keys on a keyboard</comment>
   </data>
+  <data name="Type_HoldSpace" xml:space="preserve">
+    <value>Hold Space to toggle allow chord</value>
+  </data>
   <data name="Type_HoldEnter" xml:space="preserve">
     <value>Hold Enter to continue</value>
   </data>

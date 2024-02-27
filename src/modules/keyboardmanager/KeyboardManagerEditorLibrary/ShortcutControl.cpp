@@ -1033,6 +1033,22 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         unregisterKeys();
     };
 
+    auto onReleaseSpace = [&keyboardManagerState,
+                           unregisterKeys,
+                           isSingleKeyWindow,
+                           parentWindow,
+                           allowChordSwitch] {
+        
+        keyboardManagerState.AllowChord = !keyboardManagerState.AllowChord;
+        allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
+
+        // Reset the keyboard manager UI state
+
+
+        //keyboardManagerState.ResetUIState();        
+        //unregisterKeys();
+    };
+
     auto onAccept = [onPressEnter,
                      onReleaseEnter] {
         onPressEnter();
@@ -1089,6 +1105,22 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         }
         unregisterKeys();
     };
+
+    // NOTE: UnregisterKeys should never be called on the DelayThread, as it will re-enter the mutex. To avoid this it is run on the dispatcher thread
+    if (true)
+    {
+        keyboardManagerState.RegisterKeyDelay(
+            VK_SPACE,
+            selectDetectedShortcutAndResetKeys,
+            [onReleaseSpace, detectShortcutBox](DWORD) {
+                detectShortcutBox.Dispatcher().RunAsync(
+                    Windows::UI::Core::CoreDispatcherPriority::Normal,
+                    [onReleaseSpace] {
+                        onReleaseSpace();
+                    });
+            },
+            nullptr);
+    }
 
     // Cancel button
     detectShortcutBox.CloseButtonText(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
@@ -1181,6 +1213,12 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     holdEnterInfo.FontSize(12);
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);
+
+    TextBlock holdSpaceInfo;
+    holdSpaceInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDSPACE));
+    holdSpaceInfo.FontSize(12);
+    holdSpaceInfo.Margin({ 0, 0, 0, 0 });
+    stackPanel.Children().Append(holdSpaceInfo);
 
     try
     {
