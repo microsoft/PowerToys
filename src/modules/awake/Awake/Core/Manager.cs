@@ -298,12 +298,10 @@ namespace Awake.Core
             {
                 SettingsUtils settingsUtils = new SettingsUtils();
                 string settingsPath = settingsUtils.GetSettingsFilePath(moduleName);
-                if (settingsPath != null)
-                {
-                    AwakeSettings settings = new AwakeSettings();
-                    settings.Properties.Mode = AwakeMode.PASSIVE;
-                    settingsUtils.SaveSettings(JsonSerializer.Serialize(settings), moduleName);
-                }
+
+                AwakeSettings settings = new AwakeSettings();
+                settings.Properties.Mode = AwakeMode.PASSIVE;
+                settingsUtils.SaveSettings(JsonSerializer.Serialize(settings), moduleName);
             }
             catch (Exception ex)
             {
