@@ -959,6 +959,8 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         if (!shortcut.IsEmpty() && shortcut.HasChord())
         {
             keyboardManagerState.AllowChord = true;
+        } else {
+            keyboardManagerState.AllowChord = false;
         }
     }
 
@@ -1030,19 +1032,10 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     };
 
     auto onReleaseSpace = [&keyboardManagerState,
-                           unregisterKeys,
-                           isSingleKeyWindow,
-                           parentWindow,
                            allowChordSwitch] {
         
         keyboardManagerState.AllowChord = !keyboardManagerState.AllowChord;
         allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
-
-        // Reset the keyboard manager UI state
-
-
-        //keyboardManagerState.ResetUIState();        
-        //unregisterKeys();
     };
 
     auto onAccept = [onPressEnter,
@@ -1102,9 +1095,9 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         unregisterKeys();
     };
 
-    // NOTE: UnregisterKeys should never be called on the DelayThread, as it will re-enter the mutex. To avoid this it is run on the dispatcher thread
-    if (true)
+    if (isOrigShortcut)
     {
+        // Hold space to allow chords. Chords are only available for origin shortcuts.
         keyboardManagerState.RegisterKeyDelay(
             VK_SPACE,
             selectDetectedShortcutAndResetKeys,
@@ -1210,11 +1203,15 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);
 
-    TextBlock holdSpaceInfo;
-    holdSpaceInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDSPACE));
-    holdSpaceInfo.FontSize(12);
-    holdSpaceInfo.Margin({ 0, 0, 0, 0 });
-    stackPanel.Children().Append(holdSpaceInfo);
+    if (isOrigShortcut)
+    {
+        // Hold space to allow chords. Chords are only available for origin shortcuts.
+        TextBlock holdSpaceInfo;
+        holdSpaceInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDSPACE));
+        holdSpaceInfo.FontSize(12);
+        holdSpaceInfo.Margin({ 0, 0, 0, 0 });
+        stackPanel.Children().Append(holdSpaceInfo);
+    }
 
     try
     {
