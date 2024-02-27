@@ -459,36 +459,33 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
 
     auto secondKey = shortcut.GetSecondKey();
 
-    if (shortcutKeyCodes.size() != 0 || shortcut.IsRunProgram())
+    bool ignoreWarning = false;
+
+    // If more than one key is to be added, ignore a shortcut to key warning on partially entering the remapping
+    if (shortcutKeyCodes.size() > 1)
     {
-        bool ignoreWarning = false;
+        ignoreWarning = true;
+    }
 
-        // If more than one key is to be added, ignore a shortcut to key warning on partially entering the remapping
-        if (shortcutKeyCodes.size() > 1)
+    KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
+
+    for (int i = 0; i < shortcutKeyCodes.size(); i++)
+    {
+        // New drop down gets added automatically when the SelectedValue(key code) is set
+        if (i < (int)parent.Children().Size())
         {
-            ignoreWarning = true;
+            ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
+            currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcutKeyCodes[i])));
         }
+    }
 
+    if (shortcut.HasChord())
+    {
+        // if this has a chord, render it last
         KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
-        
-        for (int i = 0; i < shortcutKeyCodes.size(); i++)
-        {
-            // New drop down gets added automatically when the SelectedValue(key code) is set
-            if (i < (int)parent.Children().Size())
-            {
-                ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
-                currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcutKeyCodes[i])));
-            }
-        }
-
-        if (shortcut.HasChord())
-        {
-            // if this has a chord, render it last
-            KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
-            auto nextI = static_cast<int>(shortcutKeyCodes.size());
-            ComboBox currentDropDown = parent.Children().GetAt(nextI).as<ComboBox>();
-            currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcut.GetSecondKey())));
-        }
+        auto nextI = static_cast<int>(shortcutKeyCodes.size());
+        ComboBox currentDropDown = parent.Children().GetAt(nextI).as<ComboBox>();
+        currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcut.GetSecondKey())));
     }
 }
 

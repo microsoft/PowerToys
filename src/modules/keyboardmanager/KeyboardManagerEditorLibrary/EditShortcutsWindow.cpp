@@ -338,7 +338,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         // Set focus to the first Type Button in the newly added row
         UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, EditorConstants::ShortcutTableColCount);
 
-        newShortcut.OpenNewShortcutControlRow(shortcutTable, shortcutTable.Children().GetAt(shortcutTable.Children().Size() - 1).as<StackPanel>());
+        //newShortcut.OpenNewShortcutControlRow(shortcutTable, shortcutTable.Children().GetAt(shortcutTable.Children().Size() - 1).as<StackPanel>());
     });
 
     // if this is a delete action we just want to quick load the screen to delete the shortcut and close
