@@ -17,9 +17,13 @@ namespace Microsoft.FancyZonesEditor.UITests
         [AssemblyInitialize]
         public static void SetupAll(TestContext context)
         {
-            string sourceDirPath = Path.GetFullPath($"{Environment.CurrentDirectory}" + @".\..\..\..\..\..\");
-            context.WriteLine($"source dir: {sourceDirPath}");
+            string? sourceDirPath = Environment.GetEnvironmentVariable("SrcPath"); // get source dir in CI
+            if (sourceDirPath == null)
+            {
+                sourceDirPath = Path.GetFullPath($"{Environment.CurrentDirectory}" + @".\..\..\..\..\..\"); // local
+            }
 
+            context.WriteLine($"source dir: {sourceDirPath}");
             string winAppDriver = Path.Combine(sourceDirPath, @".\deps\WinAppDriver", "WinAppDriver.exe");
 
             context.WriteLine($"Attempting to launch WinAppDriver at: {winAppDriver}");

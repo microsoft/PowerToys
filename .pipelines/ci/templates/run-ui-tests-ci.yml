@@ -6,6 +6,8 @@ jobs:
 - job: UITest
   displayName: UI Test ${{ parameters.platform }} ${{ parameters.configuration }}
   dependsOn: Build${{ parameters.platform }}${{ parameters.configuration }}
+  variables:
+    SrcPath: $(Build.Repository.LocalPath)
   pool:
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: SHINE-OSS-Testing-x64
