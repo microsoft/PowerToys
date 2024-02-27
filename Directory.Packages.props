@@ -64,12 +64,10 @@
     <PackageVersion Include="StreamJsonRpc" Version="2.14.24" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="System.CodeDom" Version="8.0.0" /> <!-- Package added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="System.CodeDom" Version="8.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="8.0.0" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageVersion Include="System.Data.OleDb" Version="8.0.0" />
-    <PackageVersion Include="System.Diagnostics.EventLog" Version="8.0.0" /> <!-- Package added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.Data.SqlClient" Version="4.8.6" />
     <!-- Package System.Diagnostics.EventLog added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.Diagnostics.EventLog" Version="8.0.0" />
@@ -84,7 +82,6 @@
     <PackageVersion Include="System.Reactive" Version="6.0.0-preview.9" />
     <PackageVersion Include="System.Runtime.Caching" Version="8.0.0" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" /> <!-- Package added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
