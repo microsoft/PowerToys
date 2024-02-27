@@ -349,9 +349,7 @@ namespace Peek.FilePreviewer
             string dateModifiedFormatted = string.IsNullOrEmpty(dateModified) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_DateModified", dateModified);
             sb.Append(dateModifiedFormatted);
 
-            cancellationToken.ThrowIfCancellationRequested();
-            ulong bytes = await Task.Run(Item.GetSizeInBytes);
-            string fileSize = ReadableStringHelper.BytesToReadableString(bytes);
+            string fileSize = ReadableStringHelper.BytesToReadableString(Item.FileSizeBytes);
             string fileSizeFormatted = string.IsNullOrEmpty(fileSize) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileSize", fileSize);
             sb.Append(fileSizeFormatted);
 

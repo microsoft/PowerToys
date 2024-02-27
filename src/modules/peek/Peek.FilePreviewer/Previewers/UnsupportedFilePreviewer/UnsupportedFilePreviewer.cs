@@ -4,10 +4,13 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
@@ -20,6 +23,11 @@ namespace Peek.FilePreviewer.Previewers
 {
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
     {
+        private static readonly EnumerationOptions _fileEnumOptions = new() { MatchType = MatchType.Win32, AttributesToSkip = 0, IgnoreInaccessible = true };
+        private static readonly EnumerationOptions _directoryEnumOptions = new() { MatchType = MatchType.Win32, AttributesToSkip = FileAttributes.ReparsePoint, IgnoreInaccessible = true };
+        private readonly DispatcherTimer _folderSizeDispatcherTimer = new();
+        private ulong _folderSize;
+
         [ObservableProperty]
         private UnsupportedFilePreviewData preview = new UnsupportedFilePreviewData();
 
@@ -28,6 +36,9 @@ namespace Peek.FilePreviewer.Previewers
 
         public UnsupportedFilePreviewer(IFileSystemItem file)
         {
+            _folderSizeDispatcherTimer.Interval = TimeSpan.FromMilliseconds(500);
+            _folderSizeDispatcherTimer.Tick += FolderSizeDispatcherTimer_Tick;
+
             Item = file;
             Preview.FileName = file.Name;
             Preview.DateModified = file.DateModified?.ToString(CultureInfo.CurrentCulture);
@@ -46,6 +57,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public void Dispose()
         {
+            _folderSizeDispatcherTimer.Tick -= FolderSizeDispatcherTimer_Tick;
             GC.SuppressFinalize(this);
         }
 
@@ -117,20 +129,24 @@ namespace Peek.FilePreviewer.Previewers
 
             var isTaskSuccessful = await TaskExtension.RunSafe(async () =>
             {
-                // File Properties
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var bytes = await Task.Run(Item.GetSizeInBytes);
-
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var type = await Task.Run(Item.GetContentTypeAsync);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var readableFileSize = ReadableStringHelper.BytesToReadableString(bytes);
-
                 isDisplayValid = type != null;
+
+                var readableFileSize = string.Empty;
+
+                if (Item is FileItem)
+                {
+                    readableFileSize = ReadableStringHelper.BytesToReadableString(Item.FileSizeBytes);
+                }
+                else if (Item is FolderItem)
+                {
+                    ComputeFolderSize(cancellationToken);
+                }
 
                 await Dispatcher.RunOnUiThread(() =>
                 {
@@ -149,6 +165,72 @@ namespace Peek.FilePreviewer.Previewers
             var isLoadingDisplayInfoSuccessful = DisplayInfoTask?.Result ?? false;
 
             return !isLoadingIconPreviewSuccessful || !isLoadingDisplayInfoSuccessful;
+        }
+
+        private void ComputeFolderSize(CancellationToken cancellationToken)
+        {
+            Task.Run(
+            async () =>
+            {
+                try
+                {
+                    // Special folders like recycle bin don't have a path
+                    if (string.IsNullOrWhiteSpace(Item.Path))
+                    {
+                        return;
+                    }
+
+                    await Dispatcher.RunOnUiThread(_folderSizeDispatcherTimer.Start);
+                    GetDirectorySize(new DirectoryInfo(Item.Path), cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to calculate folder size", ex);
+                }
+                finally
+                {
+                    await Dispatcher.RunOnUiThread(_folderSizeDispatcherTimer.Stop);
+                }
+
+                // If everything went well, ensure the UI is updated
+                await Dispatcher.RunOnUiThread(UpdateFolderSize);
+            },
+            cancellationToken);
+        }
+
+        private void GetDirectorySize(DirectoryInfo directory, CancellationToken cancellationToken)
+        {
+            var files = directory.GetFiles("*", _fileEnumOptions);
+            for (var i = 0; i < files.Length; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var f = files[i];
+                if (f.Length > 0)
+                {
+                    _folderSize += Convert.ToUInt64(f.Length);
+                }
+            }
+
+            var directories = directory.GetDirectories("*", _directoryEnumOptions);
+            for (var i = 0; i < directories.Length; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                GetDirectorySize(directories[i], cancellationToken);
+            }
+        }
+
+        private void UpdateFolderSize()
+        {
+            Preview.FileSize = ReadableStringHelper.BytesToReadableString(_folderSize);
+        }
+
+        private void FolderSizeDispatcherTimer_Tick(object? sender, object e)
+        {
+            UpdateFolderSize();
         }
     }
 }
