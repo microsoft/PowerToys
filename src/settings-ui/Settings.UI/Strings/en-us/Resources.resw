@@ -1073,7 +1073,7 @@
     <comment>File type, do not translate</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
-    <value>.cpp, .py, .json, .xml, .csproj, ...</value>
+    <value>.txt, .cpp, .py, .json, .xml, .csproj, ...</value>
     <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
@@ -1129,7 +1129,8 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
     <comment>{Locked}</comment>
@@ -1151,13 +1152,16 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI.Description" xml:space="preserve">
     <value>.qoi</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Header" xml:space="preserve">
     <value>Portable Document Format</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF.Description" xml:space="preserve">
     <value>.pdf</value>
-    <comment>{Locked}</comment>  </data>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
@@ -3437,6 +3441,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Slovak.Content" xml:space="preserve">
     <value>Slovak</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Slovenian.Content" xml:space="preserve">
+    <value>Slovenian</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
     <value>Spanish</value>
   </data>
@@ -3973,7 +3980,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Preview</value>
   </data>
   <data name="Peek_SourceCode_Header.Description" xml:space="preserve">
-    <value>.cpp, .py, .json, .xml, .csproj, ...</value>
+    <value>.txt, .cpp, .py, .json, .xml, .csproj, ...</value>
   </data>
   <data name="Peek_SourceCode_Header.Header" xml:space="preserve">
     <value>Source code files (Monaco)</value>

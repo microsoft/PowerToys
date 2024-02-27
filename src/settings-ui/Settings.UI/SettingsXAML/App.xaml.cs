@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             if (settingsWindow == null)
             {
-                settingsWindow = new MainWindow(IsDarkTheme());
+                settingsWindow = new MainWindow();
             }
 
             settingsWindow.Activate();
@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 settingsWindow.NavigateToSection(type);
 
                 WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
-             }
+            }
 
             if (ensurePageIsSelected)
             {

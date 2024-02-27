@@ -7,7 +7,6 @@ using System.ComponentModel.Composition;
 using System.Threading;
 using System.Windows;
 using ColorPicker.Mouse;
-using Common.UI;
 using ManagedCommon;
 
 namespace ColorPickerUI
@@ -21,7 +20,6 @@ namespace ColorPickerUI
         private static string[] _args;
         private int _powerToysRunnerPid;
         private bool disposedValue;
-        private ThemeManager _themeManager;
 
         private CancellationTokenSource NativeThreadCTS { get; set; }
 
@@ -62,7 +60,6 @@ namespace ColorPickerUI
                 _powerToysRunnerPid = -1;
             }
 
-            _themeManager = new ThemeManager(this);
             base.OnStartup(e);
         }
 
@@ -85,8 +82,6 @@ namespace ColorPickerUI
                 {
                     _instanceMutex?.Dispose();
                 }
-
-                _themeManager?.Dispose();
 
                 disposedValue = true;
             }

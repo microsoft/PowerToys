@@ -28,6 +28,9 @@ namespace constants::nonlocalizable
 
     // Name of the file where the list of files to checked will be stored
     constexpr WCHAR LastRunPath[] = L"\\last-run.log";
+
+    // Name of the tier 1 context menu package
+    constexpr WCHAR ContextMenuPackageName[] = L"FileLocksmithContextMenu";
 }
 
 // Macros, non-localizable

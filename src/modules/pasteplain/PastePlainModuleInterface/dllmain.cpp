@@ -355,6 +355,13 @@ private:
             try_inject_modifier_key_restore(inputs, VK_LMENU);
             try_inject_modifier_key_restore(inputs, VK_RMENU);
 
+            // After restoring the modifier keys send a dummy key to prevent Start Menu from activating
+            INPUT dummyEvent = {};
+            dummyEvent.type = INPUT_KEYBOARD;
+            dummyEvent.ki.wVk = 0xFF;
+            dummyEvent.ki.dwFlags = KEYEVENTF_KEYUP;
+            inputs.push_back(dummyEvent);
+
             auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
             if (uSent != inputs.size())
             {

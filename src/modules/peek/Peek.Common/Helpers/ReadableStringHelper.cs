@@ -13,7 +13,7 @@ namespace Peek.Common.Helpers
         private const int MaxDigitsToDisplay = 3;
         private const int PowerFactor = 1024;
 
-        public static string BytesToReadableString(ulong bytes)
+        public static string BytesToReadableString(ulong bytes, bool showTotalBytes = true)
         {
             string totalBytesDisplays = (bytes == 1) ?
                 ResourceLoaderInstance.ResourceLoader.GetString("ReadableString_ByteString") :
@@ -41,7 +41,7 @@ namespace Peek.Common.Helpers
 
             string formatSpecifier = GetFormatSpecifierString(index, number, bytes, precision);
 
-            return bytes == 0
+            return bytes == 0 || !showTotalBytes
                 ? string.Format(CultureInfo.CurrentCulture, formatSpecifier, number)
                 : string.Format(CultureInfo.CurrentCulture, formatSpecifier + totalBytesDisplays, number, bytes);
         }
