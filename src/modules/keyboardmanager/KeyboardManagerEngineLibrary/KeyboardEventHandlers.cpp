@@ -510,7 +510,7 @@ namespace KeyboardEventHandlers
                                 dayWeLastSentAppSpecificShortcutToKeyTelemetryOn = currentDay;
                             }
                         }
-                        else if (remapToShortcut)
+                        else if (remapToShortcut && (!isRunProgram) && (!isOpenUri))
                         {
                             static int dayWeLastSentAppSpecificShortcutToShortcutTelemetryOn = -1;
                             auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -533,7 +533,7 @@ namespace KeyboardEventHandlers
                                 dayWeLastSentShortcutToKeyTelemetryOn = currentDay;
                             }
                         }
-                        else if (remapToShortcut)
+                        else if (remapToShortcut && (!isRunProgram) && (!isOpenUri))
                         {
                             static int dayWeLastSentShortcutToShortcutTelemetryOn = -1;
                             auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
