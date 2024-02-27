@@ -297,9 +297,8 @@ namespace Awake.Core
             try
             {
                 SettingsUtils settingsUtils = new SettingsUtils();
-                string settingsPath = settingsUtils.GetSettingsFilePath(moduleName);
-
                 AwakeSettings settings = new AwakeSettings();
+
                 settings.Properties.Mode = AwakeMode.PASSIVE;
                 settingsUtils.SaveSettings(JsonSerializer.Serialize(settings), moduleName);
             }
