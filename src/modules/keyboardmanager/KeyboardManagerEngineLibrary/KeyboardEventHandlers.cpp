@@ -1,11 +1,30 @@
 #include "pch.h"
+#include <shellapi.h>
 #include "KeyboardEventHandlers.h"
 
 #include <common/interop/shared_constants.h>
+#include <common/utils/elevation.h>
 
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
+
+#include <TlHelp32.h>
+#include <thread>
+#include <future>
+#include <chrono>
+
+#include <winrt/Windows.UI.Notifications.h>
+#include <winrt/Windows.Data.Xml.Dom.h>
+
+#include <windows.h>
+#include <string>
+#include <urlmon.h>
+#include <mmsystem.h>
+
+using namespace winrt;
+using namespace Windows::UI::Notifications;
+using namespace Windows::Data::Xml::Dom;
 
 namespace
 {
@@ -203,6 +222,8 @@ namespace KeyboardEventHandlers
     // Function to a handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp) noexcept
     {
+        auto resetChordsResults = ResetChordsIfNeeded(data, state, activatedApp);
+
         // Check if any shortcut is currently in the invoked state
         bool isShortcutInvoked = state.CheckShortcutRemapInvoked(activatedApp);
 
@@ -224,15 +245,53 @@ namespace KeyboardEventHandlers
             const bool remapToKey = it->second.targetShortcut.index() == 0;
             const bool remapToShortcut = it->second.targetShortcut.index() == 1;
             const bool remapToText = it->second.targetShortcut.index() == 2;
-
+            const bool isRunProgram = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).IsRunProgram());
+            const bool isOpenUri = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).IsOpenURI());
             const size_t src_size = it->first.Size();
             const size_t dest_size = remapToShortcut ? std::get<Shortcut>(it->second.targetShortcut).Size() : 1;
+
+            bool isMatchOnChordEnd = false;
+            bool isMatchOnChordStart = false;
 
             // If the shortcut has been pressed down
             if (!it->second.isShortcutInvoked && it->first.CheckModifiersKeyboardState(ii))
             {
-                if (data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                // if not a mod key, check for chord stuff
+                if (!resetChordsResults.CurrentKeyIsModifierKey && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
+                    if (itShortcut.HasChord())
+                    {
+                        if (!resetChordsResults.AnyChordStarted && data->lParam->vkCode == itShortcut.GetActionKey() && !itShortcut.IsChordStarted() && itShortcut.HasChord())
+                        {
+                            // start new chord
+                            // Logger::trace(L"ChordKeyboardHandler:new chord started for {}", data->lParam->vkCode);
+                            isMatchOnChordStart = true;
+                            ResetAllOtherStartedChords(state, activatedApp, data->lParam->vkCode);
+                            itShortcut.SetChordStarted(true);
+                            continue;
+                        }
+
+                        if (data->lParam->vkCode == itShortcut.GetSecondKey() && itShortcut.IsChordStarted() && itShortcut.HasChord())
+                        {
+                            Logger::trace(L"ChordKeyboardHandler:found chord match {}, {}", itShortcut.GetActionKey(), itShortcut.GetSecondKey());
+                            isMatchOnChordEnd = true;
+                        }
+
+                        if (resetChordsResults.AnyChordStarted && !isMatchOnChordEnd)
+                        {
+                            // Logger::trace(L"ChordKeyboardHandler:waiting on second key of chord, checked {} for {}", itShortcut.GetSecondKey(), data->lParam->vkCode);
+                            // this is a key and there is a mod, but it's not the second key of a chord.
+                            // we can't do anything with this key, we're waiting.
+                            continue;
+                        }
+                    }
+                }
+
+                if (isMatchOnChordEnd || (!resetChordsResults.AnyChordStarted && !itShortcut.HasChord() && (data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))))
+                {
+                    ResetAllStartedChords(state, activatedApp);
+                    resetChordsResults.AnyChordStarted = false;
+
                     // Check if any other keys have been pressed apart from the shortcut. If true, then check for the next shortcut. This is to be done only for shortcut to shortcut remaps
                     if (!it->first.IsKeyboardStateClearExceptShortcut(ii) && (remapToShortcut || (remapToKey && std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)))
                     {
@@ -252,9 +311,75 @@ namespace KeyboardEventHandlers
                         it->second.winKeyInvoked = ModifierKey::Left;
                     }
 
-                    if (remapToShortcut)
+                    if (isRunProgram)
                     {
-                        // Get the common keys between the two shortcuts
+                        auto threadFunction = [it]() {
+                            CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
+                        };
+
+                        std::thread myThread(threadFunction);
+                        if (myThread.joinable())
+                        {
+                            myThread.detach();
+                        }
+
+                        
+
+                        Logger::trace(L"ChordKeyboardHandler:returning..");
+                        return 1;
+                    }
+                    else if (isOpenUri)
+                    {
+                        auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
+
+                        auto uri = shortcut.uriToOpen;
+                        auto newUri = uri;
+
+                        if (!PathIsURL(uri.c_str()))
+                        {
+                            WCHAR url[1024];
+                            DWORD bufferSize = 1024;
+
+                            if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
+                            {
+                                newUri = url;
+                                Logger::trace(L"ChordKeyboardHandler:ConvertPathToURI from {} to {}", uri, url);
+                            }
+                            else
+                            {
+                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
+                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
+                                toast(L"Error", L"Could not understand the Path or URI");
+                                return 1;
+                            }
+                        }
+
+                        
+                        auto threadFunction = [newUri]() {
+                            HINSTANCE result = ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+                            if (result == reinterpret_cast<HINSTANCE>(HINSTANCE_ERROR))
+                            {
+                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
+                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
+                                toast(L"Error", L"Could not understand the Path or URI");
+                            }
+                        };
+
+                        std::thread myThread(threadFunction);
+                        if (myThread.joinable())
+                        {
+                            myThread.detach();
+                        }
+
+
+                        Logger::trace(L"ChordKeyboardHandler:returning..");
+                        return 1;
+                    }
+                    else if (remapToShortcut)
+                    {
+                        // Get the common keys between the two shortcuts if this is not a runProgram shortcut
+
                         int commonKeys = it->first.GetCommonModifiersCount(std::get<Shortcut>(it->second.targetShortcut));
 
                         // If the original shortcut modifiers are a subset of the new shortcut
@@ -367,6 +492,8 @@ namespace KeyboardEventHandlers
                         state.SetActivatedApp(*activatedApp);
                     }
 
+                    Logger::trace(L"ChordKeyboardHandler:key_count:{}", key_count);
+
                     UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
                     delete[] keyEventList;
 
@@ -383,7 +510,7 @@ namespace KeyboardEventHandlers
                                 dayWeLastSentAppSpecificShortcutToKeyTelemetryOn = currentDay;
                             }
                         }
-                        else if (remapToShortcut)
+                        else if (remapToShortcut && (!isRunProgram) && (!isOpenUri))
                         {
                             static int dayWeLastSentAppSpecificShortcutToShortcutTelemetryOn = -1;
                             auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -406,7 +533,7 @@ namespace KeyboardEventHandlers
                                 dayWeLastSentShortcutToKeyTelemetryOn = currentDay;
                             }
                         }
-                        else if (remapToShortcut)
+                        else if (remapToShortcut && (!isRunProgram) && (!isOpenUri))
                         {
                             static int dayWeLastSentShortcutToShortcutTelemetryOn = -1;
                             auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -433,7 +560,7 @@ namespace KeyboardEventHandlers
                 // 6. The user releases any key apart from original modifier or original action key - This can't happen since the key down would have to happen first, which is handled above
 
                 // Get the common keys between the two shortcuts
-                int commonKeys = remapToShortcut ? it->first.GetCommonModifiersCount(std::get<Shortcut>(it->second.targetShortcut)) : 0;
+                int commonKeys = (remapToShortcut && !isRunProgram) ? it->first.GetCommonModifiersCount(std::get<Shortcut>(it->second.targetShortcut)) : 0;
 
                 // Case 1: If any of the modifier keys of the original shortcut are released before the action key
                 if ((it->first.CheckWinKey(data->lParam->vkCode) || it->first.CheckCtrlKey(data->lParam->vkCode) || it->first.CheckAltKey(data->lParam->vkCode) || it->first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
@@ -441,7 +568,7 @@ namespace KeyboardEventHandlers
                     // Release new shortcut, and set original shortcut keys except the one released
                     size_t key_count = 0;
                     LPINPUT keyEventList = nullptr;
-                    if (remapToShortcut)
+                    if (remapToShortcut && !isRunProgram)
                     {
                         // if the released key is present in both shortcuts' modifiers (i.e part of the common modifiers)
                         if (std::get<Shortcut>(it->second.targetShortcut).CheckWinKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckCtrlKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckAltKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckShiftKey(data->lParam->vkCode))
@@ -472,6 +599,7 @@ namespace KeyboardEventHandlers
                             Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                             i++;
                         }
+
                         Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first, data->lParam->vkCode);
 
                         // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
@@ -890,6 +1018,667 @@ namespace KeyboardEventHandlers
         }
 
         return 0;
+    }
+
+    std::wstring URL_encode(const std::wstring& filepath)
+    {
+        std::wostringstream escaped;
+        escaped.fill('0');
+        escaped << std::hex;
+
+        for (wchar_t ch : filepath)
+        {
+            // Encode special characters except for colon after drive letter
+            if (!iswalnum(ch) && ch != L'-' && ch != L'_' && ch != L'.' && ch != L'~' && !(ch == L':' && std::isalpha(filepath[0])))
+            {
+                escaped << std::uppercase;
+                //escaped << '%' << std::setw(2) << int((unsigned char)ch);
+                escaped << '%' << std::setw(2) << static_cast<int>((static_cast<unsigned char>(ch)));
+                escaped << std::nouppercase;
+            }
+            else
+            {
+                escaped << ch;
+            }
+        }
+
+        return escaped.str();
+    }
+
+    std::wstring ConvertPathToURI(const std::wstring& filePath)
+    {
+        std::wstring fileUri = std::filesystem::absolute(filePath).wstring();
+        std::replace(fileUri.begin(), fileUri.end(), L'\\', L'/');
+        fileUri = L"file:///" + URL_encode(fileUri);
+
+        return fileUri;
+    }
+
+    void ResetAllOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, DWORD keyToKeep)
+    {
+        for (auto& itShortcut_2 : state.GetSortedShortcutRemapVector(activatedApp))
+        {
+            if (keyToKeep == NULL || itShortcut_2.actionKey != keyToKeep)
+            {
+                itShortcut_2.SetChordStarted(false);
+            }
+        }
+    }
+
+    void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp)
+    {
+        ResetAllOtherStartedChords(state, activatedApp, NULL);
+    }
+
+    ResetChordsResults ResetChordsIfNeeded(LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp)
+    {
+        ResetChordsResults result;
+        result.AnyChordStarted = false;
+        result.CurrentKeyIsModifierKey = false;
+
+        bool isNewControlKey = false;
+        bool anyChordStarted = false;
+        if (VK_LWIN == data->lParam->vkCode || VK_RWIN == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+        if (VK_LSHIFT == data->lParam->vkCode || VK_RSHIFT == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+        if (VK_LMENU == data->lParam->vkCode || VK_RMENU == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+        if (VK_LCONTROL == data->lParam->vkCode || VK_RCONTROL == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+
+        if (isNewControlKey)
+        {
+            //Logger::trace(L"ChordKeyboardHandler:reset");
+
+            for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
+            {
+                itShortcut.SetChordStarted(false);
+            }
+            result.CurrentKeyIsModifierKey = true;
+        }
+        else
+        {
+            for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
+            {
+                if (itShortcut.IsChordStarted())
+                {
+                    result.AnyChordStarted = true;
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    struct handle_data
+    {
+        unsigned long process_id;
+        HWND window_handle;
+    };
+
+    // used for reactivating a window for a program we already started.
+    HWND FindMainWindow(unsigned long process_id, const bool allowNonVisible)
+    {
+        handle_data data;
+        data.process_id = process_id;
+        data.window_handle = 0;
+
+        if (allowNonVisible)
+        {
+            EnumWindows(EnumWindowsCallbackAllowNonVisible, reinterpret_cast<LPARAM>(&data));
+        }
+        else
+        {
+            EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&data));
+        }
+
+        return data.window_handle;
+    }
+
+    // used by FindMainWindow
+    BOOL CALLBACK EnumWindowsCallbackAllowNonVisible(HWND handle, LPARAM lParam)
+    {
+        handle_data& data = *reinterpret_cast<handle_data*>(lParam);
+        unsigned long process_id = 0;
+        GetWindowThreadProcessId(handle, &process_id);
+
+        if (data.process_id == process_id)
+        {
+            data.window_handle = handle;
+            return FALSE;
+        }
+        return TRUE;
+    }
+
+    // used by FindMainWindow
+    BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam)
+    {
+        handle_data& data = *reinterpret_cast<handle_data*>(lParam);
+        unsigned long process_id = 0;
+        GetWindowThreadProcessId(handle, &process_id);
+
+        if (data.process_id != process_id || !(GetWindow(handle, GW_OWNER) == static_cast<HWND>(0) && IsWindowVisible(handle)))
+        {
+            return TRUE;
+        }
+
+        data.window_handle = handle;
+        return FALSE;
+    }
+
+    // GetProcessIdByName also used by HandleCreateProcessHotKeysAndChords
+
+    std::vector<DWORD> GetProcessesIdByName(const std::wstring& processName)
+    {
+        std::vector<DWORD> processIds;
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+        if (snapshot != INVALID_HANDLE_VALUE)
+        {
+            PROCESSENTRY32 processEntry;
+            processEntry.dwSize = sizeof(PROCESSENTRY32);
+
+            if (Process32First(snapshot, &processEntry))
+            {
+                do
+                {
+                    if (_wcsicmp(processEntry.szExeFile, processName.c_str()) == 0)
+                    {
+                        processIds.push_back(processEntry.th32ProcessID);
+                    }
+                } while (Process32Next(snapshot, &processEntry));
+            }
+
+            CloseHandle(snapshot);
+        }
+
+        return processIds;
+    }
+
+    DWORD GetProcessIdByName(const std::wstring& processName)
+    {
+        DWORD pid = 0;
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+        if (snapshot != INVALID_HANDLE_VALUE)
+        {
+            PROCESSENTRY32 processEntry;
+            processEntry.dwSize = sizeof(PROCESSENTRY32);
+
+            if (Process32First(snapshot, &processEntry))
+            {
+                do
+                {
+                    if (_wcsicmp(processEntry.szExeFile, processName.c_str()) == 0)
+                    {
+                        pid = processEntry.th32ProcessID;
+                        break;
+                    }
+                } while (Process32Next(snapshot, &processEntry));
+            }
+
+            CloseHandle(snapshot);
+        }
+
+        return pid;
+    }
+
+    // Use to find a process by its name
+    std::wstring GetFileNameFromPath(const std::wstring& fullPath)
+    {
+        size_t found = fullPath.find_last_of(L"\\");
+        if (found != std::wstring::npos)
+        {
+            return fullPath.substr(found + 1);
+        }
+        return fullPath;
+    }
+
+    void toast(param::hstring const& message1, param::hstring const& message2) noexcept
+    {
+        try
+        {
+            // Alternatively can build DOM from code:
+            XmlDocument toastXml;
+            XmlElement toastElement = toastXml.CreateElement(L"toast");
+            XmlElement visualElement = toastXml.CreateElement(L"visual");
+            XmlElement bindingElement = toastXml.CreateElement(L"binding");
+            XmlElement textElement1 = toastXml.CreateElement(L"text");
+            XmlElement textElement2 = toastXml.CreateElement(L"text");
+
+            toastXml.AppendChild(toastElement);
+            toastElement.AppendChild(visualElement);
+            visualElement.AppendChild(bindingElement);
+
+            bindingElement.AppendChild(textElement1);
+            bindingElement.AppendChild(textElement2);
+
+            bindingElement.SetAttribute(L"template", L"ToastGeneric");
+
+            textElement1.InnerText(message1);
+            textElement2.InnerText(message2);
+
+            Logger::trace(L"ChordKeyboardHandler:toastXml {}", toastXml.GetXml());
+            std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
+            const auto notifier = ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+
+            ToastNotification notification{ toastXml };
+            notifier.Show(notification);
+        }
+        catch (...)
+        {
+        }
+
+        /*std::thread{ [message] {
+    
+        } }.detach();*/
+    }
+
+    void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept
+    {
+        WCHAR fullExpandedFilePath[MAX_PATH];
+        DWORD result = ExpandEnvironmentStrings(shortcut.runProgramFilePath.c_str(), fullExpandedFilePath, MAX_PATH);
+
+        auto fileNamePart = GetFileNameFromPath(fullExpandedFilePath);
+
+        Logger::trace(L"ChordKeyboardHandler:{}, trying to run {}", fileNamePart, fullExpandedFilePath);
+        //lastKeyInChord = 0;
+
+        DWORD targetPid = GetProcessIdByName(fileNamePart);
+
+        /*if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe" && fileNamePart != L"msedge.exe")
+        {
+            targetPid = GetProcessIdByName(fileNamePart);
+        }*/
+
+        Logger::trace(L"ChordKeyboardHandler:{}, already running, pid:{}, alreadyRunningAction:{}", fileNamePart, targetPid, shortcut.alreadyRunningAction);
+
+        if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
+        {
+           if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
+            {
+                TerminateProcessesByName(fileNamePart);
+                return;
+            }
+            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
+            {
+                CloseProcessByName(fileNamePart);
+                Logger::trace(L"ChordKeyboardHandler:{}, CloseProcessByName returning 3", fileNamePart);
+                return;
+            }
+            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
+            {
+                auto processIds = GetProcessesIdByName(fileNamePart);
+
+                for (DWORD pid : processIds)
+                {
+                    ShowProgram(targetPid, fileNamePart, false, false, 0);
+                }
+
+                //if (!ShowProgram(targetPid, fileNamePart, false, false, 0))
+                //{
+                //    /*auto future = std::async(std::launch::async, [=] {
+                //    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                //    Logger::trace(L"ChordKeyboardHandler:{}, second try, pid:{}", fileNamePart, targetPid);
+                //    ShowProgram(targetPid, fileNamePart, false, false);
+                //});*/
+                //}
+                return;
+            }
+        }
+        else
+        {
+            DWORD dwAttrib = GetFileAttributesW(fullExpandedFilePath);
+
+            if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+            {
+                std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
+                std::wstring message = fmt::format(L"The program was not found.");
+                toast(title, message);
+                return;
+            }
+
+            std::wstring executable_and_args = fmt::format(L"\"{}\" {}", fullExpandedFilePath, shortcut.runProgramArgs);
+
+            WCHAR currentDir[MAX_PATH];
+            WCHAR* currentDirPtr = currentDir;
+            DWORD result = ExpandEnvironmentStrings(shortcut.runProgramStartInDir.c_str(), currentDir, MAX_PATH);
+
+            if (shortcut.runProgramStartInDir == L"")
+            {
+                currentDirPtr = nullptr;
+            }
+            else
+            {
+                DWORD dwAttrib = GetFileAttributesW(currentDir);
+
+                if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+                {
+                    std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
+                    std::wstring message = fmt::format(L"The start in path was not valid. It could not be used.", currentDir);
+                    currentDirPtr = nullptr;
+                    toast(title, message);
+                    return;
+                }
+            }
+
+            DWORD processId = 0;
+            HANDLE newProcessHandle;
+
+            if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
+            {
+                newProcessHandle = run_elevated(fullExpandedFilePath, shortcut.runProgramArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                processId = GetProcessId(newProcessHandle);
+            }
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
+            {
+                run_non_elevated(fullExpandedFilePath, shortcut.runProgramArgs, &processId, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+            }
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
+            {
+                newProcessHandle = run_as_different_user(fullExpandedFilePath, shortcut.runProgramArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                processId = GetProcessId(newProcessHandle);
+            }
+
+            if (processId == 0)
+            {
+                std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
+                std::wstring message = fmt::format(L"The application might not have started.");
+                toast(title, message);
+                return;
+            }
+
+            if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
+            {
+                HideProgram(processId, fileNamePart, 0);
+            }
+            //ShowProgram(processId, fileNamePart, true, false, (shortcut.startWindowType == Shortcut::StartWindowType::Hidden), 0);
+        }
+        return;
+    }
+
+    void CloseProcessByName(const std::wstring& fileNamePart)
+    {
+        auto processIds = GetProcessesIdByName(fileNamePart);
+
+        if (processIds.size() == 0)
+        {
+            Logger::trace(L"ChordKeyboardHandler:{}, Nothing To WM_CLOSE", fileNamePart);
+            return;
+        }
+
+        auto threadFunction = [fileNamePart]() {
+            auto processIds = GetProcessesIdByName(fileNamePart);
+            auto retryCount = 10;
+            while (processIds.size() > 0 && retryCount-- > 0)
+            {
+                //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE 'ing {}processIds ", fileNamePart, processIds.size());
+                for (DWORD pid : processIds)
+                {
+                    //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
+                    HWND hwnd = FindMainWindow(pid, false);
+                    SendMessage(hwnd, WM_CLOSE, 0, 0);
+
+                    // small sleep between when there are a lot might help
+                    Sleep(10);
+                }
+
+                processIds = GetProcessesIdByName(fileNamePart);
+                if (processIds.size() <= 0)
+                {
+                    Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE done", fileNamePart);
+                    break;
+                }
+                else
+                {
+                    Sleep(100);
+                }
+            }
+        };
+
+        processIds = GetProcessesIdByName(fileNamePart);
+
+        if (processIds.size() > 0)
+        {
+            std::thread myThread(threadFunction);
+            if (myThread.joinable())
+            {
+                myThread.detach();
+            }
+        }
+
+        Logger::trace(L"ChordKeyboardHandler:{}, CloseProcessByName returning", fileNamePart);
+    }
+
+    void TerminateProcessesByName(const std::wstring& fileNamePart)
+    {
+        auto processIds = GetProcessesIdByName(fileNamePart);
+
+        if (processIds.size() == 0)
+        {
+            Logger::trace(L"ChordKeyboardHandler:{}, Nothing To PROCESS_TERMINATE", fileNamePart);
+            return;
+        }
+
+        for (DWORD pid : processIds)
+        {
+            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+            Logger::trace(L"ChordKeyboardHandler:{}, PROCESS_TERMINATE (1) -> pid:{}", fileNamePart, pid);
+            if (hProcess != NULL)
+            {
+                if (!TerminateProcess(hProcess, 0))
+                {
+                    CloseHandle(hProcess);
+                }
+                else
+                {
+                    CloseHandle(hProcess);
+                }
+            }
+        }
+    }
+
+    bool HideProgram(DWORD pid, std::wstring programName, int retryCount)
+    {
+        Logger::trace(L"ChordKeyboardHandler:HideProgram starting with {},{}, retryCount:{}", pid, programName, retryCount);
+
+        HWND hwnd = FindMainWindow(pid, false);
+        if (hwnd == NULL)
+        {
+            if (retryCount < 20)
+            {
+                Logger::trace(L"ChordKeyboardHandler:hwnd not found will retry for pid:{}", pid);
+                auto future = std::async(std::launch::async, [=] {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    auto result = HideProgram(pid, programName, retryCount + 1);
+                    return false;
+                });
+            }
+        }
+
+        hwnd = FindWindow(nullptr, nullptr);
+
+        auto anyHideResultFailed = false;
+
+        Logger::trace(L"ChordKeyboardHandler:{}:{},{}, FindWindow, HideProgram (all)", programName, pid, retryCount);
+        while (hwnd)
+        {
+            DWORD pidForHwnd;
+            GetWindowThreadProcessId(hwnd, &pidForHwnd);
+            if (pid == pidForHwnd)
+            {
+                if (IsWindowVisible(hwnd))
+                {
+                    ShowWindow(hwnd, SW_HIDE);
+                    Logger::trace(L"ChordKeyboardHandler:{}, tryToHide {}, {}", programName, reinterpret_cast<uintptr_t>(hwnd), anyHideResultFailed);
+                }
+            }
+            hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
+        }
+
+        return true;
+    }
+
+    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool minimizeIfVisible, int retryCount)
+    {
+        Logger::trace(L"ChordKeyboardHandler:ShowProgram starting with {},{},isNewProcess:{}, tryToHide:{} retryCount:{}", pid, programName, isNewProcess, retryCount);
+
+        // a good place to look for this...
+        // https://github.com/ritchielawrence/cmdow
+
+        // try by main window.
+        auto allowNonVisible = false;
+
+        HWND hwnd = FindMainWindow(pid, allowNonVisible);
+
+        if (hwnd == NULL)
+        {
+            if (retryCount < 20)
+            {
+                Logger::trace(L"ChordKeyboardHandler:hwnd not found will retry for pid:{}, allowNonVisible:{}", pid, allowNonVisible);
+
+                auto future = std::async(std::launch::async, [=] {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    auto result = ShowProgram(pid, programName, isNewProcess, minimizeIfVisible, retryCount + 1);
+                    return false;
+                });
+            }
+        }
+        else
+        {
+            Logger::trace(L"ChordKeyboardHandler:{}, got hwnd from FindMainWindow", programName);
+
+            if (hwnd == GetForegroundWindow())
+            {
+                // only hide if this was a call from a already open program, don't make small if we just opened it.
+                if (!isNewProcess && minimizeIfVisible)
+                {
+                    Logger::trace(L"ChordKeyboardHandler:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
+                    return ShowWindow(hwnd, SW_MINIMIZE);
+                }
+                return false;
+            }
+            else
+            {
+                Logger::trace(L"ChordKeyboardHandler:{}, not ForegroundWindow, doing SW_RESTORE", programName);
+
+                // Check if the window is minimized
+                if (IsIconic(hwnd))
+                {
+                    // Show the window since SetForegroundWindow fails on minimized windows
+                    if (!ShowWindow(hwnd, SW_RESTORE))
+                    {
+                        Logger::error(L"ShowWindow failed");
+                    }
+                }
+
+                INPUT inputs[1] = { { .type = INPUT_MOUSE } };
+                SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+
+                if (!SetForegroundWindow(hwnd))
+                {
+                    auto errorCode = GetLastError();
+                    Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                    return false;
+                }
+                else
+                {
+                    Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
+                    return true;
+                }
+            }
+        }
+
+        if (isNewProcess)
+        {
+            return true;
+        }
+
+        if (false)
+        {
+            // try by console.
+            hwnd = FindWindow(nullptr, nullptr);
+            if (AttachConsole(pid))
+            {
+                Logger::trace(L"ChordKeyboardHandler:{}, success on AttachConsole", programName);
+
+                // Get the console window handle
+                hwnd = GetConsoleWindow();
+                auto showByConsoleSuccess = false;
+                if (hwnd != NULL)
+                {
+                    Logger::trace(L"ChordKeyboardHandler:{}, success on GetConsoleWindow, doing SW_RESTORE", programName);
+
+                    ShowWindow(hwnd, SW_RESTORE);
+
+                    if (!SetForegroundWindow(hwnd))
+                    {
+                        auto errorCode = GetLastError();
+                        Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                    }
+                    else
+                    {
+                        Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
+                        showByConsoleSuccess = true;
+                    }
+                }
+
+                // Detach from the console
+                FreeConsole();
+                if (showByConsoleSuccess)
+                {
+                    return true;
+                }
+            }
+        }
+
+        // try to just show them all (if they have a title)!.
+        hwnd = FindWindow(nullptr, nullptr);
+
+        auto anyHideResultFailed = false;
+        if (hwnd)
+        {
+            Logger::trace(L"ChordKeyboardHandler:{}:{},{}, FindWindow (show all mode)", programName, pid, retryCount);
+            while (hwnd)
+            {
+                DWORD pidForHwnd;
+                GetWindowThreadProcessId(hwnd, &pidForHwnd);
+                if (pid == pidForHwnd)
+                {
+                    int length = GetWindowTextLength(hwnd);
+
+                    if (length > 0)
+                    {
+                        ShowWindow(hwnd, SW_RESTORE);
+
+                        // hwnd is the window handle with targetPid
+                        if (SetForegroundWindow(hwnd))
+                        {
+                            Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
+                            return true;
+                        }
+                        else
+                        {
+                            auto errorCode = GetLastError();
+                            Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                        }
+                    }
+                }
+                hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
+            }
+        }
+
+        return false;
     }
 
     // Function to a handle an os-level shortcut remap

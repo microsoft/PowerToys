@@ -166,6 +166,10 @@ std::wstring GetShortcutHumanReadableString(Shortcut const & shortcut, LayoutMap
     if (shortcut.actionKey != NULL)
     {
         humanReadableShortcut += keyboardMap.GetKeyName(shortcut.actionKey);
+        if (shortcut.secondKey != NULL)
+        {
+            humanReadableShortcut += L" , " + keyboardMap.GetKeyName(shortcut.secondKey);
+        }
     }
     return humanReadableShortcut;
 }
@@ -227,6 +231,8 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.ctrlKey), "ModifierRemapFromCtrl"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.altKey), "ModifierRemapFromAlt"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.shiftKey), "ModifierRemapFromShift"),
+                TraceLoggingBool(shortcutRemappedFrom.HasChord(), "KeyRemapFromHasChord"),
+                TraceLoggingInt64(shortcutRemappedFrom.secondKey, "KeyRemapFromChordSecondKey"),
                 TraceLoggingInt64(keyRemappedTo, "KeyRemapTo"),
                 TraceLoggingWideString(GetShortcutHumanReadableString(shortcutRemappedFrom, keyboardMap).c_str(), "HumanRemapFrom"),
                 TraceLoggingWideString(keyboardMap.GetKeyName(keyRemappedTo).c_str(), "HumanRemapTo"));
@@ -234,6 +240,11 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
         else if (shortcutRemap.second.targetShortcut.index() == 1) // 1 - Remapping to shortcut
         {
             Shortcut shortcutRemappedTo = std::get<Shortcut>(shortcutRemap.second.targetShortcut);
+            if (shortcutRemappedTo.IsRunProgram() || shortcutRemappedTo.IsOpenURI())
+            {
+                // Don't include Start app or Open URI mappings in this telemetry.
+                continue;
+            }
             TraceLoggingWrite(
                 g_hProvider,
                 "KeyboardManager_ShortcutRemapConfigurationLoaded",
@@ -244,6 +255,8 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.ctrlKey), "ModifierRemapFromCtrl"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.altKey), "ModifierRemapFromAlt"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.shiftKey), "ModifierRemapFromShift"),
+                TraceLoggingBool(shortcutRemappedFrom.HasChord(), "KeyRemapFromHasChord"),
+                TraceLoggingInt64(shortcutRemappedFrom.secondKey, "KeyRemapFromChordSecondKey"),
                 TraceLoggingInt64(shortcutRemappedTo.actionKey, "KeyRemapTo"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedTo.winKey), "ModifierRemapToWin"),
                 TraceLoggingInt8(static_cast<INT8>(shortcutRemappedTo.ctrlKey), "ModifierRemapToCtrl"),
@@ -274,6 +287,8 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.ctrlKey), "ModifierRemapFromCtrl"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.altKey), "ModifierRemapFromAlt"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.shiftKey), "ModifierRemapFromShift"),
+                    TraceLoggingBool(shortcutRemappedFrom.HasChord(), "KeyRemapFromHasChord"),
+                    TraceLoggingInt64(shortcutRemappedFrom.secondKey, "KeyRemapFromChordSecondKey"),
                     TraceLoggingInt64(keyRemappedTo, "KeyRemapTo"),
                     TraceLoggingWideString(GetShortcutHumanReadableString(shortcutRemappedFrom, keyboardMap).c_str(), "HumanRemapFrom"),
                     TraceLoggingWideString(keyboardMap.GetKeyName(keyRemappedTo).c_str(), "HumanRemapTo"),
@@ -283,6 +298,11 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
             else if (shortcutRemap.second.targetShortcut.index() == 1) // 1 - Remapping to shortcut
             {
                 Shortcut shortcutRemappedTo = std::get<Shortcut>(shortcutRemap.second.targetShortcut);
+                if (shortcutRemappedTo.IsRunProgram() || shortcutRemappedTo.IsOpenURI())
+                {
+                    // Don't include Start app or Open URI mappings in this telemetry.
+                    continue;
+                }
                 TraceLoggingWrite(
                     g_hProvider,
                     "KeyboardManager_AppSpecificShortcutRemapConfigurationLoaded",
@@ -293,6 +313,8 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.ctrlKey), "ModifierRemapFromCtrl"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.altKey), "ModifierRemapFromAlt"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedFrom.shiftKey), "ModifierRemapFromShift"),
+                    TraceLoggingBool(shortcutRemappedFrom.HasChord(), "KeyRemapFromHasChord"),
+                    TraceLoggingInt64(shortcutRemappedFrom.secondKey, "KeyRemapFromChordSecondKey"),
                     TraceLoggingInt64(shortcutRemappedTo.actionKey, "KeyRemapTo"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedTo.winKey), "ModifierRemapToWin"),
                     TraceLoggingInt8(static_cast<INT8>(shortcutRemappedTo.ctrlKey), "ModifierRemapToCtrl"),

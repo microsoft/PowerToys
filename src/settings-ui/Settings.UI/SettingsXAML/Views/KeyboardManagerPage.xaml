@@ -14,6 +14,12 @@
 
     <Page.Resources>
         <tkconverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
         <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
             <Setter Property="IsTabStop" Value="False" />
         </Style>
@@ -105,7 +111,7 @@
                                             x:Uid="KeyboardManager_RemappedTo"
                                             IsTabStop="False"
                                             ItemTemplate="{StaticResource RemappedKeyTemplate}"
-                                            ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
+                                            ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -124,7 +130,7 @@
                         x:Uid="KeyboardManager_RemapShortcutsButton"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{Binding Path=EditShortcutCommand}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
                         IsClickEnabled="True" />
 
                     <ListView
@@ -136,47 +142,79 @@
                         Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
-                                <tkcontrols:SettingsCard ContentAlignment="Left">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ItemsControl
-                                            IsTabStop="False"
-                                            ItemTemplate="{StaticResource OriginalKeyTemplate}"
-                                            ItemsSource="{x:Bind GetMappedOriginalKeys()}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                        <controls:IsEnabledTextBlock
-                                            x:Uid="To"
-                                            Margin="8,0,8,0"
-                                            VerticalAlignment="Center"
-                                            Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
 
-                                        <ItemsControl
-                                            Name="KeyboardManager_RemappedTo"
-                                            x:Uid="KeyboardManager_RemappedTo"
-                                            IsTabStop="False"
-                                            ItemTemplate="{StaticResource RemappedKeyTemplate}"
-                                            ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                        <Border
-                                            Margin="16,0,0,0"
-                                            Padding="12,4,12,6"
-                                            VerticalAlignment="Center"
-                                            CornerRadius="12">
-                                            <Border.Background>
-                                                <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
-                                            </Border.Background>
-                                            <TextBlock Text="{x:Bind TargetApp}" />
-                                        </Border>
-                                    </StackPanel>
+                                <tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard.Description>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ItemsControl
+                                                IsTabStop="False"
+                                                ItemTemplate="{StaticResource OriginalKeyTemplate}"
+                                                ItemsSource="{x:Bind GetMappedOriginalKeysWithoutChord()}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+
+                                            <TextBlock
+                                                Padding="6,0,6,6"
+                                                VerticalAlignment="Bottom"
+                                                Text=","
+                                                Visibility="{x:Bind Path=HasChord, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                                            <ItemsControl
+                                                IsTabStop="False"
+                                                ItemTemplate="{StaticResource OriginalKeyTemplate}"
+                                                ItemsSource="{x:Bind GetMappedOriginalKeysOnlyChord()}"
+                                                Visibility="{x:Bind Path=HasChord, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+
+                                            <controls:IsEnabledTextBlock
+                                                x:Uid="To"
+                                                Margin="8,0,8,0"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+
+                                            <controls:IsEnabledTextBlock
+                                                x:Uid="Starts"
+                                                Margin="8,0,8,0"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay}" />
+
+
+                                            <ItemsControl
+                                                Name="KeyboardManager_RemappedTo"
+                                                x:Uid="KeyboardManager_RemappedTo"
+                                                IsTabStop="False"
+                                                ItemTemplate="{StaticResource RemappedKeyTemplate}"
+                                                ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <Border
+                                                Margin="16,0,0,0"
+                                                Padding="12,4,12,6"
+                                                VerticalAlignment="Center"
+                                                CornerRadius="12">
+                                                <Border.Background>
+                                                    <SolidColorBrush Opacity="0.3" Color="{ThemeResource SystemAccentColor}" />
+                                                </Border.Background>
+                                                <TextBlock Text="{x:Bind TargetApp}" />
+                                            </Border>
+
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard.Description>
                                 </tkcontrols:SettingsCard>
                             </DataTemplate>
                         </ListView.ItemTemplate>
