@@ -1235,12 +1235,7 @@ namespace KeyboardEventHandlers
 
         if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
         {
-            if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::CloseAndEndTask)
-            {
-                CloseAndTerminateProcessByName(fileNamePart);
-                return;
-            }
-            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
+           if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
             {
                 TerminateProcessesByName(fileNamePart);
                 return;
@@ -1340,13 +1335,6 @@ namespace KeyboardEventHandlers
             //ShowProgram(processId, fileNamePart, true, false, (shortcut.startWindowType == Shortcut::StartWindowType::Hidden), 0);
         }
         return;
-    }
-
-    void CloseAndTerminateProcessByName(const std::wstring& fileNamePart)
-    {
-        CloseProcessByName(fileNamePart);
-        Sleep(1000);
-        TerminateProcessesByName(fileNamePart);
     }
 
     void CloseProcessByName(const std::wstring& fileNamePart)

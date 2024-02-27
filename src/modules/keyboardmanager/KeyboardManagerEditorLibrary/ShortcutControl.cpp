@@ -663,9 +663,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_DO_NOTHING)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_CLOSE)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_TERMINATE)));
-
-    // lets think about this, I like it, some don't
-    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_CLOSE_AND_TERMINATE)));
+    
     runProgramAlreadyRunningAction.SelectedIndex(0);
 
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_ELEVATION), runProgramLabelWidth).as<StackPanel>());

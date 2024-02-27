@@ -48,8 +48,6 @@ namespace KeyboardEventHandlers
 
     void TerminateProcessesByName(const std::wstring& fileNamePart);
 
-    void CloseAndTerminateProcessByName(const std::wstring& fileNamePart);
-
     void toast(winrt::param::hstring const& message1, winrt::param::hstring const& message2) noexcept;
 
     // Function to help FindMainWindow
