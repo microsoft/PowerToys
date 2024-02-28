@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Controls\ArchiveControl.xaml" />
+    <None Remove="Controls\AudioControl.xaml" />
     <None Remove="Controls\BrowserControl.xaml" />
     <None Remove="Controls\DriveControl.xaml" />
     <None Remove="Controls\ShellPreviewHandlerControl.xaml" />
@@ -28,6 +29,7 @@
 
   <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" />
+      <PackageReference Include="CommunityToolkit.WinUI.Converters" />
       <PackageReference Include="Microsoft.WindowsAppSDK" />
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
       <PackageReference Include="SharpCompress" />
@@ -45,6 +47,12 @@
     <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\AudioControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
