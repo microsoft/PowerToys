@@ -2,12 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
@@ -28,13 +22,17 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
         public IAction[]? SubMenuItems =>
         [
             new AsPlaintext(),
+            new AsDataUrl(),
+            new AsCString(),
+            new AsXmlEncoded(),
+            new AsURIEncoded(),
         ];
 
         public int Category => 2;
 
         public IconElement? Icon => new FontIcon() { Glyph = "\ue8c8" };
 
-        public bool IsVisible => SelectedItems.Length == 1;
+        public bool IsVisible => SelectedItems.Length == 1 && !Directory.Exists(SelectedItems[0]);
 
         public Task Execute(object sender, RoutedEventArgs e)
         {

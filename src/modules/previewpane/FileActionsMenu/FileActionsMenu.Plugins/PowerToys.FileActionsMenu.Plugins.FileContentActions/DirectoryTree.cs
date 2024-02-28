@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Windows;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
@@ -10,27 +11,41 @@ using RoutedEventArgs = Microsoft.UI.Xaml.RoutedEventArgs;
 
 namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 {
-    internal sealed class AsPlaintext : IAction
+    internal sealed class DirectoryTree : IAction
     {
         private string[]? _selectedItems;
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "As plaintext";
+        public string Header => "Copy directory tree";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
         public IAction[]? SubMenuItems => null;
 
-        public int Category => 0;
+        public int Category => 2;
 
-        public IconElement? Icon => new FontIcon { Glyph = "\ue97e" };
+        public IconElement? Icon => new FontIcon() { Glyph = "\ue8b7" };
 
-        public bool IsVisible => SelectedItems.Length == 1 && !Directory.Exists(SelectedItems[0]);
+        public bool IsVisible => SelectedItems.Length == 1 && Directory.Exists(SelectedItems[0]);
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(File.ReadAllText(SelectedItems[0]));
+            Process process = new Process();
+
+            process.StartInfo.FileName = "cmd.exe";
+            process.StartInfo.Arguments = $"/c tree {SelectedItems[0]} /f";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+
+            process.Start();
+
+            string output = process.StandardOutput.ReadToEnd();
+
+            process.WaitForExit();
+
+            Clipboard.SetText(output);
+
             return Task.CompletedTask;
         }
     }

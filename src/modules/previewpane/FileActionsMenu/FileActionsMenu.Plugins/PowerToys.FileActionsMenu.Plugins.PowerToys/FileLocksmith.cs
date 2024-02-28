@@ -46,7 +46,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
                 }
             }
 
-            Process.Start("WinUI3Apps\\PowerToys.FileLocksmithUI.exe");
+            Process.Start("PowerToys.FileLocksmithUI.exe");
             return Task.CompletedTask;
         }
     }

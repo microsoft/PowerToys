@@ -17,6 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
         public IAction[] TopLevelMenuActions =>
         [
             new CopyFileContent(),
+            new DirectoryTree(),
         ];
     }
 }

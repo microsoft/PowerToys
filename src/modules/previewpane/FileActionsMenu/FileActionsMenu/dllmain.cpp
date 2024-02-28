@@ -248,23 +248,11 @@ private:
         return is_explorer_window(foregroundWindowHandle);
     }
 
-    bool is_viewer_running()
-    {
-        if (m_hProcess == 0)
-        {
-            return false;
-        }
-        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
-    }
-
     void launch_process()
     {
         Logger::trace(L"Starting FileActionsMenu.UI process");
 
-        unsigned long powertoys_pid = GetCurrentProcessId();
-
         std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
 
         Logger::trace("Starting FileActionsMenu non elevated from elevated process");
         const auto modulePath = get_module_folderpath();
@@ -374,9 +362,6 @@ public:
                 int error = GetLastError();
                 Logger::trace("Couldn't terminate the process. Last error: {}", error);
             }
-            CloseHandle(m_hProcess);
-            m_hProcess = 0;
-            m_processPid = 0;
         }
 
         m_enabled = false;
@@ -416,10 +401,7 @@ public:
             if (is_FileActionsMenu_or_explorer_or_desktop_window_focused())
             {
                 // TODO: fix VK_SPACE DestroyWindow in viewer app
-                if (!is_viewer_running())
-                {
-                    launch_process();
-                }
+                launch_process();
 
                 SetEvent(m_hInvokeEvent);
 

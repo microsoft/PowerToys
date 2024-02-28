@@ -19,4 +19,10 @@
     <ProjectReference Include="..\..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
     <ProjectReference Include="..\..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj"></ProjectReference>
   </ItemGroup>
+
+	<ItemGroup>
+		<Content Include="..\..\..\..\..\common\FilePreviewCommon\Assets\Monaco\monaco_languages.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 </Project>

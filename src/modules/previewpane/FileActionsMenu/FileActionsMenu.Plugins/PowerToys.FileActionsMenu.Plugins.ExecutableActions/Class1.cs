@@ -17,7 +17,6 @@ namespace PowerToys.FileActionsMenu.Plugins.ExecutableActions
         public IAction[] TopLevelMenuActions =>
         [
             new Uninstall(),
-            new ExtractImages(),
         ];
     }
 }
