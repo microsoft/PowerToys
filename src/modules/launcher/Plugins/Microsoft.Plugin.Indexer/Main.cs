@@ -253,7 +253,9 @@ namespace Microsoft.Plugin.Indexer
 
                 if (excludedPatternsOption != null)
                 {
-                    _excludedPatterns = excludedPatternsOption.TextValue.Split("\r\n").ToList();
+                    _excludedPatterns = excludedPatternsOption.TextValue
+                        .Split("\r", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .ToList();
                 }
             }
 
