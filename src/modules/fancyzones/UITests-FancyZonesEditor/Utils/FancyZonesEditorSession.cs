@@ -1,9 +1,8 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -34,14 +33,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 AppiumOptions opts = new AppiumOptions();
                 opts.AddAdditionalCapability("app", path);
                 Session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
-
-                testContext.WriteLine("Session: " + Session.SessionId.ToString());
-                testContext.WriteLine("WindowHandles: " + Session.WindowHandles.Count.ToString(CultureInfo.InvariantCulture));
-                testContext.WriteLine("Title: " + Session.Title);
-                foreach (var detail in Session.SessionDetails)
-                {
-                    testContext.WriteLine(detail.Key + " : " + detail.Value);
-                }
             }
             catch (Exception ex)
             {
@@ -50,14 +41,15 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
             Assert.IsNotNull(Session, "Session not initialized");
 
+            testContext.WriteLine("Session: " + Session.SessionId.ToString());
+            testContext.WriteLine("Title: " + Session.Title);
+
             // Set implicit timeout to make element search to retry every 500 ms
             Session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 
             // Find main editor window
             try
             {
-                // Wait for gui to start
-                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(120));
                 MainEditorWindow = Session.FindElementByAccessibilityId("MainWindow1");
             }
             catch
