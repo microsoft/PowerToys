@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -33,6 +34,14 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 AppiumOptions opts = new AppiumOptions();
                 opts.AddAdditionalCapability("app", path);
                 Session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
+
+                testContext.WriteLine("Session: " + Session.SessionId.ToString());
+                testContext.WriteLine("WindowHandles: " + Session.WindowHandles.Count.ToString(CultureInfo.InvariantCulture));
+                testContext.WriteLine("Title: " + Session.Title);
+                foreach (var detail in Session.SessionDetails)
+                {
+                    testContext.WriteLine(detail.Key + " : " + detail.Value);
+                }
             }
             catch (Exception ex)
             {
