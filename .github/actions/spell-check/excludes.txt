@@ -98,6 +98,8 @@
 ^\Q.github/workflows/spelling2.yml\E$
 ^\Q.pipelines/ESRPSigning_core.json\E$
 ^\Q.pipelines/sdl.gdnbaselines\E$
+^\Qdeps/WinAppDriver/EULA.rtf\E$
+^\Qdeps/WinAppDriver/Readme.txt\E$
 ^\Qinstaller/PowerToysSetup/Settings.wxs\E$
 ^\Qsrc/common/FilePreviewCommon/Assets/Monaco/monaco_languages.json\E$
 ^\Qsrc/common/ManagedCommon/ColorFormatHelper.cs\E$
