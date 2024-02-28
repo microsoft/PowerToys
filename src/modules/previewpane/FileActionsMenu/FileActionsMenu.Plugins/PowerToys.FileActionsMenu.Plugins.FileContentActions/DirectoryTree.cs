@@ -44,7 +44,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
             process.WaitForExit();
 
-            Clipboard.SetText(output);
+            System.Windows.Clipboard.SetText(output);
 
             return Task.CompletedTask;
         }

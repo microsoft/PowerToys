@@ -2,13 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Reflection;
-using System.Text.Json;
 using System.Windows;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
+using FontFamily = Microsoft.UI.Xaml.Media.FontFamily;
 using RoutedEventArgs = Microsoft.UI.Xaml.RoutedEventArgs;
 
 namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
@@ -54,7 +52,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
                 fileContent = fileContent.Replace(escapeSequence.Key, escapeSequence.Value);
             }
 
-            Clipboard.SetText(fileContent);
+            System.Windows.Clipboard.SetText(fileContent);
             return Task.CompletedTask;
         }
     }

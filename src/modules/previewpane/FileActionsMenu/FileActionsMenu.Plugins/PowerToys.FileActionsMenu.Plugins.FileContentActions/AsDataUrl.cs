@@ -35,7 +35,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
             string mimeType = GetMimeType(Path.GetExtension(SelectedItems[0]));
             byte[] fileContent = File.ReadAllBytes(SelectedItems[0]);
             string base64fileContent = Convert.ToBase64String(fileContent);
-            Clipboard.SetText($"data:{mimeType};base64,{base64fileContent}");
+            System.Windows.Clipboard.SetText($"data:{mimeType};base64,{base64fileContent}");
             return Task.CompletedTask;
         }
 

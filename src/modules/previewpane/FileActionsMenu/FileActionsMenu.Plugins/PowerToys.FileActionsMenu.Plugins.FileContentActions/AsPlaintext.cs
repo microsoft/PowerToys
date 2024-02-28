@@ -30,7 +30,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(File.ReadAllText(SelectedItems[0]));
+            System.Windows.Clipboard.SetText(File.ReadAllText(SelectedItems[0]));
             return Task.CompletedTask;
         }
     }

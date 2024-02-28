@@ -18,6 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
         [
             new CopyFileContent(),
             new DirectoryTree(),
+            new MergeContent(),
         ];
     }
 }

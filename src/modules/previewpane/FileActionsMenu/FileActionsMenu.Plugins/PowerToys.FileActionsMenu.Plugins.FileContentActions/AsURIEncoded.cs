@@ -9,6 +9,7 @@ using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using FontFamily = Microsoft.UI.Xaml.Media.FontFamily;
 using RoutedEventArgs = Microsoft.UI.Xaml.RoutedEventArgs;
 
 namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
@@ -35,7 +36,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
         {
             byte[] fileContent = File.ReadAllBytes(SelectedItems[0]);
 
-            Clipboard.SetText(HttpUtility.UrlEncode(fileContent));
+            System.Windows.Clipboard.SetText(HttpUtility.UrlEncode(fileContent));
             return Task.CompletedTask;
         }
     }
