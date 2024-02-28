@@ -143,7 +143,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 thumbnailDone.Set();
             };
 
-            var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents --disable-features=RendererAppContainer");
+            var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                webView2EnvironmentAwaiter = CoreWebView2Environment
                    .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
