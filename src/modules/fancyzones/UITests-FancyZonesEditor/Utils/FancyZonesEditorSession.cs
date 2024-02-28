@@ -47,6 +47,8 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             // Find main editor window
             try
             {
+                // Wait for gui to start
+                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(120));
                 MainEditorWindow = Session.FindElementByAccessibilityId("MainWindow1");
             }
             catch
