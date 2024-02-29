@@ -13,17 +13,21 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
     {
         private readonly IFileSystem _fileSystem = new FileSystem();
 
-        private string _fileName;
+        private string _file;
 
         private string _data = string.Empty;
 
-        public IOTestHelper(string fileName)
+        public IOTestHelper(string file)
         {
-            _fileName = fileName;
+            _file = file;
 
-            if (_fileSystem.File.Exists(_fileName))
+            if (_fileSystem.File.Exists(_file))
             {
-                _data = ReadFile(_fileName);
+                _data = ReadFile(_file);
+            }
+            else
+            {
+                _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(file));
             }
         }
 
@@ -51,7 +55,7 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
             {
                 try
                 {
-                    _fileSystem.File.WriteAllText(_fileName, data);
+                    _fileSystem.File.WriteAllText(_file, data);
                 }
                 catch (Exception)
                 {
@@ -95,7 +99,7 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
             {
                 try
                 {
-                    _fileSystem.File.Delete(_fileName);
+                    _fileSystem.File.Delete(_file);
                 }
                 catch (Exception)
                 {
