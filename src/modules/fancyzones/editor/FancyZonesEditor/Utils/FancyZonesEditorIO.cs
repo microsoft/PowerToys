@@ -298,8 +298,8 @@ namespace FancyZonesEditor.Utils
             try
             {
                 AppliedLayouts serializer = new AppliedLayouts();
-                IOUtils iOUtils = new IOUtils();
-                iOUtils.WriteFile(serializer.File, serializer.Serialize(layouts));
+                IOUtils ioUtils = new IOUtils();
+                ioUtils.WriteFile(serializer.File, serializer.Serialize(layouts));
             }
             catch (Exception ex)
             {
@@ -337,8 +337,8 @@ namespace FancyZonesEditor.Utils
             try
             {
                 LayoutHotkeys serializer = new LayoutHotkeys();
-                IOUtils iOUtils = new IOUtils();
-                iOUtils.WriteFile(serializer.File, serializer.Serialize(hotkeys));
+                IOUtils ioUtils = new IOUtils();
+                ioUtils.WriteFile(serializer.File, serializer.Serialize(hotkeys));
             }
             catch (Exception ex)
             {
@@ -373,8 +373,8 @@ namespace FancyZonesEditor.Utils
             try
             {
                 LayoutTemplates serializer = new LayoutTemplates();
-                IOUtils iOUtils = new IOUtils();
-                iOUtils.WriteFile(serializer.File, serializer.Serialize(templates));
+                IOUtils ioUtils = new IOUtils();
+                ioUtils.WriteFile(serializer.File, serializer.Serialize(templates));
             }
             catch (Exception ex)
             {
@@ -474,8 +474,8 @@ namespace FancyZonesEditor.Utils
 
             try
             {
-                IOUtils iOUtils = new IOUtils();
-                iOUtils.WriteFile(serializer.File, serializer.Serialize(layouts));
+                IOUtils ioUtils = new IOUtils();
+                ioUtils.WriteFile(serializer.File, serializer.Serialize(layouts));
             }
             catch (Exception ex)
             {
@@ -576,8 +576,8 @@ namespace FancyZonesEditor.Utils
             try
             {
                 DefaultLayouts serializer = new DefaultLayouts();
-                IOUtils iOUtils = new IOUtils();
-                iOUtils.WriteFile(serializer.File, serializer.Serialize(layouts));
+                IOUtils ioUtils = new IOUtils();
+                ioUtils.WriteFile(serializer.File, serializer.Serialize(layouts));
             }
             catch (Exception ex)
             {
