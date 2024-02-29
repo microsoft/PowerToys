@@ -13,7 +13,7 @@ namespace FileActionsMenu.Ui
     {
         public string[] SelectedItems { get => []; set => _ = value; }
 
-        public string Header => "Close menu";
+        public string Title => "Close menu";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

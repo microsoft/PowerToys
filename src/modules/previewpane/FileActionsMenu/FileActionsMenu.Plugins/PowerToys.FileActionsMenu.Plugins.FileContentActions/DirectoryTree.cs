@@ -17,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Copy directory tree";
+        public string Title => "Copy directory tree";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

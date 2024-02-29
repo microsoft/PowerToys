@@ -12,7 +12,7 @@ namespace FileActionsMenu.Interfaces
     {
         public string[] SelectedItems { get; set; }
 
-        public string Header { get; }
+        public string Title { get; }
 
         public ItemType Type { get; }
 

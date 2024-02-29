@@ -15,7 +15,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public string[] SelectedItems { get => []; set => _ = value; }
 
-        public string Header => "CRC32";
+        public string Title => "CRC32";
 
         public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 

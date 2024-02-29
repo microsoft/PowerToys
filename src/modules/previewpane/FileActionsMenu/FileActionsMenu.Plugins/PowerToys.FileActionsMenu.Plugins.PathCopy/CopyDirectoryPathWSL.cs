@@ -18,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Copy containing directory path for WSL";
+        public string Title => "Copy containing directory path for WSL";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

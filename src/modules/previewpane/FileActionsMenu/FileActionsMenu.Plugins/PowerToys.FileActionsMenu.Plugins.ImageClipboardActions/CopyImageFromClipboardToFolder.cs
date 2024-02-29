@@ -17,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Copy image from clipboard into Folder";
+        public string Title => "Copy image from clipboard into Folder";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

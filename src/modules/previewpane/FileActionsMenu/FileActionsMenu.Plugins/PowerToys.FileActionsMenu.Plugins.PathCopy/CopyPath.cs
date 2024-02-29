@@ -19,7 +19,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
             set => _selectedItems = value;
         }
 
-        public string Header => "Copy part of path";
+        public string Title => "Copy part of path";
 
         public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 

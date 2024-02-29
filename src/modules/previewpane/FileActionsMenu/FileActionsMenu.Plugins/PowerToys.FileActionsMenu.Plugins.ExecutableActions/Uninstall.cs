@@ -18,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.ExecutableActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Uninstall application";
+        public string Title => "Uninstall application";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

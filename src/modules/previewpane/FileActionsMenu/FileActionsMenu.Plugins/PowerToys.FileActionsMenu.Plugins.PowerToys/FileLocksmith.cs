@@ -18,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "What's locking this file?";
+        public string Title => "What's locking this file?";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

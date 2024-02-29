@@ -30,7 +30,7 @@ namespace FileActionsMenu.Interfaces
 
         public abstract string[] SelectedItems { get; set; }
 
-        public abstract string Header { get; }
+        public abstract string Title { get; }
 
         public abstract IconElement? Icon { get; }
 

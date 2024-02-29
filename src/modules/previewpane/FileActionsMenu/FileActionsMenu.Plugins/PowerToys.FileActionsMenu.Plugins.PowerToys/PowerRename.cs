@@ -17,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Rename with PowerRename";
+        public string Title => "Rename with PowerRename";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

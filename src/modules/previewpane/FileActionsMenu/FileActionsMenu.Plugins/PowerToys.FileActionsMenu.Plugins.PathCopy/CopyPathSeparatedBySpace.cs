@@ -14,7 +14,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
 
-        public string Header => "\" \"";
+        public string Title => "\" \"";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

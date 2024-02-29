@@ -22,7 +22,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => (_hashCallingAction == HashCallingAction.GENERATE ? "Generate checksum" : "Verify checksum") + ((SelectedItems.Length > 1) ? "s" : string.Empty);
+        public string Title => (_hashCallingAction == HashCallingAction.GENERATE ? "Generate checksum" : "Verify checksum") + ((SelectedItems.Length > 1) ? "s" : string.Empty);
 
         public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 

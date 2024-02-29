@@ -21,7 +21,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public CheckedMenuItemsDictionary CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary.GetOrArgumentNullException(); set => _checkedMenuItemsDictionary = value; }
 
-        public string Header => "MD5";
+        public string Title => "MD5";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

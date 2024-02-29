@@ -21,7 +21,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "As XML safe string";
+        public string Title => "As XML safe string";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

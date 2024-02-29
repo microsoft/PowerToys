@@ -26,7 +26,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
             }
         }
 
-        public string Header => "Copy path of files separated by...";
+        public string Title => "Copy path of files separated by...";
 
         public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 

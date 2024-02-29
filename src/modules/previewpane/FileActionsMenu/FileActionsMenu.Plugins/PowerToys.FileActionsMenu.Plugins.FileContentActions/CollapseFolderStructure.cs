@@ -16,7 +16,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Collapse folder structure";
+        public string Title => "Collapse folder structure";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

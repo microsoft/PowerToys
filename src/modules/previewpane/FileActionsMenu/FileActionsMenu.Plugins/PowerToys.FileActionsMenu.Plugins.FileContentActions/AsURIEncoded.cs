@@ -20,7 +20,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "As URI encoded string";
+        public string Title => "As URI encoded string";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

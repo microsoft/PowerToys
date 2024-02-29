@@ -18,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Copy to";
+        public string Title => "Copy to";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

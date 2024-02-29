@@ -595,7 +595,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithContextMenu", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLib", "src\modules\FileLocksmith\FileLocksmithLib\FileLocksmithLib.vcxproj", "{9D52FD25-EF90-4F9A-A015-91EFC5DAF54F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerToys.FileActionsMenu.Plugins.ExecutableActions", "src\modules\previewpane\FileActionsMenu\FileActionsMenu.Plugins\PowerToys.FileActionsMenu.Plugins.ExecutableActions\PowerToys.FileActionsMenu.Plugins.ExecutableActions.csproj", "{0EFA84EA-74D5-499C-8496-29BE1CB281B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.FileActionsMenu.Plugins.ExecutableActions", "src\modules\previewpane\FileActionsMenu\FileActionsMenu.Plugins\PowerToys.FileActionsMenu.Plugins.ExecutableActions\PowerToys.FileActionsMenu.Plugins.ExecutableActions.csproj", "{0EFA84EA-74D5-499C-8496-29BE1CB281B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerToys.FileActionsMenu.Plugins.FileProperties", "src\modules\previewpane\FileActionsMenu\FileActionsMenu.Plugins\PowerToys.FileActionsMenu.Plugins.FileProperties\PowerToys.FileActionsMenu.Plugins.FileProperties.csproj", "{60779C23-BFF6-4759-98CB-105C8B8F2C02}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2667,6 +2669,18 @@ Global
 		{0EFA84EA-74D5-499C-8496-29BE1CB281B9}.Release|x64.Build.0 = Release|x64
 		{0EFA84EA-74D5-499C-8496-29BE1CB281B9}.Release|x86.ActiveCfg = Release|x64
 		{0EFA84EA-74D5-499C-8496-29BE1CB281B9}.Release|x86.Build.0 = Release|x64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Debug|ARM64.Build.0 = Debug|ARM64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Debug|x64.ActiveCfg = Debug|x64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Debug|x64.Build.0 = Debug|x64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Debug|x86.ActiveCfg = Debug|x64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Debug|x86.Build.0 = Debug|x64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Release|ARM64.ActiveCfg = Release|ARM64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Release|ARM64.Build.0 = Release|ARM64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Release|x64.ActiveCfg = Release|x64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Release|x64.Build.0 = Release|x64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Release|x86.ActiveCfg = Release|x64
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2890,6 +2904,7 @@ Global
 		{799A50D8-DE89-4ED1-8FF8-AD5A9ED8C0CA} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
 		{9D52FD25-EF90-4F9A-A015-91EFC5DAF54F} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
 		{0EFA84EA-74D5-499C-8496-29BE1CB281B9} = {95B63A44-6287-4E7E-B96A-2294C21C3230}
+		{60779C23-BFF6-4759-98CB-105C8B8F2C02} = {95B63A44-6287-4E7E-B96A-2294C21C3230}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

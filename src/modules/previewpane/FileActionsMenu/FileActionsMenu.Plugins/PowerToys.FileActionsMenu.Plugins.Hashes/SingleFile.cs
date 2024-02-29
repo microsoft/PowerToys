@@ -15,7 +15,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public override string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public override string Header => _hashCallingAction == Hashes.HashCallingAction.GENERATE ? "Save checksums in one single file" : "Compare with checksums in file called \"Checksums\"";
+        public override string Title => _hashCallingAction == Hashes.HashCallingAction.GENERATE ? "Save checksums in one single file" : "Compare with checksums in file called \"Checksums\"";
 
         public override IconElement? Icon => new FontIcon { Glyph = "\ue8a5" };
 

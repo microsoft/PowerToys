@@ -13,7 +13,7 @@ namespace FileActionsMenu.Interfaces
     {
         public string[] SelectedItems { get => []; set => _ = value; }
 
-        public string Header => string.Empty;
+        public string Title => string.Empty;
 
         public IAction.ItemType Type => IAction.ItemType.Separator;
 

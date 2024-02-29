@@ -16,7 +16,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public override string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public override string Header => "Perform on shortcut file (.lnk)";
+        public override string Title => "Perform on shortcut file (.lnk)";
 
         public override IconElement? Icon => null;
 

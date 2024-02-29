@@ -18,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Resize images with Image Resizer";
+        public string Title => "Resize images with Image Resizer";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

@@ -15,7 +15,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Copy content of file";
+        public string Title => "Copy content of file";
 
         public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 

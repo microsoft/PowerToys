@@ -20,7 +20,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public CheckedMenuItemsDictionary CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary.GetOrArgumentNullException(); set => _checkedMenuItemsDictionary = value; }
 
-        public string Header => "SHA384";
+        public string Title => "SHA384";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

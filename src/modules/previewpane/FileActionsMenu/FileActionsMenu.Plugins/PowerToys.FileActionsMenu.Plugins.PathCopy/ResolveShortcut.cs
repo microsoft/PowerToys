@@ -16,7 +16,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public override string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public override string Header => "Resolve shortcut";
+        public override string Title => "Resolve shortcut";
 
         public override IconElement? Icon => null;
 

@@ -17,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "New folder with selection";
+        public string Title => "New folder with selection";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

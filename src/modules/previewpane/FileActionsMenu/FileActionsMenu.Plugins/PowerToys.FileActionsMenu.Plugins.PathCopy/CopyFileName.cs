@@ -18,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "Copy file name";
+        public string Title => "Copy file name";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

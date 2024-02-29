@@ -77,7 +77,7 @@ namespace FileActionsMenu.Ui
                         MenuFlyoutItemBase menuItem;
                         menuItem = new MenuFlyoutItem()
                         {
-                            Text = action.Header,
+                            Text = action.Title,
                         };
 
                         if (action.Icon != null)
@@ -118,7 +118,7 @@ namespace FileActionsMenu.Ui
                         {
                             MenuFlyoutSubItem subItem = new()
                             {
-                                Text = action.Header,
+                                Text = action.Title,
                             };
                             if (action.Icon != null)
                             {
@@ -161,7 +161,7 @@ namespace FileActionsMenu.Ui
 
                             ToggleMenuFlyoutItem toggleMenuItem = new()
                             {
-                                Text = checkableAction.Header,
+                                Text = checkableAction.Title,
                                 IsChecked = checkableAction.IsCheckedByDefault,
                             };
 

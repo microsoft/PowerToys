@@ -18,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Header => "As base64 encoded data url";
+        public string Title => "As base64 encoded data url";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
