@@ -8,24 +8,24 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
-    internal sealed class SingleFile(Hashes.HashCallingAction hashCallingAction) : ICheckableAction
+    internal sealed class InClipboard(Hashes.HashCallingAction hashCallingAction) : ICheckableAction
     {
         private readonly Hashes.HashCallingAction _hashCallingAction = hashCallingAction;
         private string[]? _selectedItems;
 
         public override string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public override string Header => _hashCallingAction == Hashes.HashCallingAction.GENERATE ? "Save checksums in one single file" : "Compare with checksums in file called \"Checksums\"";
+        public override string Header => _hashCallingAction == Hashes.HashCallingAction.GENERATE ? "Copy checksum to clipboard" : "Compare with checksum in clipboard";
 
-        public override IconElement? Icon => new FontIcon { Glyph = "\ue8a5" };
+        public override IconElement? Icon => new FontIcon { Glyph = "\uf0e3" };
 
-        public override bool IsVisible => true;
+        public override bool IsVisible => SelectedItems.Length == 1;
 
         private bool _isChecked;
 
         public override bool IsChecked { get => _isChecked; set => _isChecked = value; }
 
-        public override bool IsCheckedByDefault => true;
+        public override bool IsCheckedByDefault => false;
 
         public override string? CheckableGroupUUID => Hashes.GetUUID(_hashCallingAction);
     }

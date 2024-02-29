@@ -14,7 +14,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public override string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public override string Header => hashCallingAction == Hashes.HashCallingAction.GENERATE ? "Save in multiple files" : "Compare with content of same named files";
+        public override string Header => hashCallingAction == Hashes.HashCallingAction.GENERATE ? "Save in multiple files" : "Compare checksum with content of same named files";
 
         public override IconElement? Icon => new FontIcon { Glyph = "\ued43" };
 

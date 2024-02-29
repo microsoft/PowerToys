@@ -8,9 +8,9 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
     public class Class1 : IFileActionsMenuPlugin
     {
-        public string Name => "Hash genrator/checker";
+        public string Name => "Checksum genrator/checker";
 
-        public string Description => "Adds actions";
+        public string Description => "Adds actions for generating and verifying checksums of files.";
 
         public string Author => "Microsoft Corporation";
 
