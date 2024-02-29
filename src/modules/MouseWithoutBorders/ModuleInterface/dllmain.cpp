@@ -198,7 +198,7 @@ private:
             Logger::error("Failed to delete MWB service");
             return;
         }
-    
+
         Trace::MouseWithoutBorders::ToggleServiceRegistration(false);
     }
 
@@ -242,11 +242,11 @@ private:
         }
 
         // Pass local app data of the current user to the service
-        PWSTR cLocalAppPath;
-        winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &cLocalAppPath));
-        CoTaskMemFree(cLocalAppPath);
 
-        std::wstring localAppPath{ cLocalAppPath };
+        wil::unique_cotaskmem_string cLocalAppPath;
+        winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &cLocalAppPath));
+
+        std::wstring localAppPath{ cLocalAppPath.get() };
         std::wstring binaryWithArgsPath = L"\"";
         binaryWithArgsPath += servicePath;
         binaryWithArgsPath += L"\" ";
@@ -259,7 +259,8 @@ private:
             std::wstring_view existingServicePath{ pServiceConfig->lpBinaryPathName };
             alreadyRegistered = true;
             isServicePathCorrect = (existingServicePath == binaryWithArgsPath);
-            if (isServicePathCorrect) {
+            if (isServicePathCorrect)
+            {
                 Logger::warn(L"The service path is not correct. Current: {} Expected: {}", existingServicePath, binaryWithArgsPath);
             }
 
@@ -291,18 +292,19 @@ private:
 
         if (alreadyRegistered)
         {
-            if (!isServicePathCorrect) {
+            if (!isServicePathCorrect)
+            {
                 if (!ChangeServiceConfigW(schService,
-                    SERVICE_NO_CHANGE,
-                    SERVICE_NO_CHANGE,
-                    SERVICE_NO_CHANGE,
-                    binaryWithArgsPath.c_str(),
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr))
+                                          SERVICE_NO_CHANGE,
+                                          SERVICE_NO_CHANGE,
+                                          SERVICE_NO_CHANGE,
+                                          binaryWithArgsPath.c_str(),
+                                          nullptr,
+                                          nullptr,
+                                          nullptr,
+                                          nullptr,
+                                          nullptr,
+                                          nullptr))
                 {
                     Logger::error(L"Failed to update the service's path. ERROR: {}", GetLastError());
                 }
