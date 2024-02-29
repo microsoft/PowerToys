@@ -242,7 +242,6 @@ private:
         }
 
         // Pass local app data of the current user to the service
-
         wil::unique_cotaskmem_string cLocalAppPath;
         winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &cLocalAppPath));
 
