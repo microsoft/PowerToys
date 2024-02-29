@@ -28,8 +28,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public IconElement? Icon => IconHelper.GetIconFromModuleName("ImageResizer");
 
-        // Todo: Only visible if only Image Files are selected
-        public bool IsVisible => true;
+        public bool IsVisible => SelectedItems.All(path => path.IsImage());
 
         public Task Execute(object sender, RoutedEventArgs e)
         {

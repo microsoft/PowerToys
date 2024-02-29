@@ -103,7 +103,7 @@ namespace FileActionsMenu.Helpers
             };
             _conflictTaskDialog.Closing += (sender, e) =>
             {
-                if (!taskCompletionSource.Task.IsCanceled)
+                if (!taskCompletionSource.Task.IsCompleted)
                 {
                     taskCompletionSource.SetResult();
                 }
