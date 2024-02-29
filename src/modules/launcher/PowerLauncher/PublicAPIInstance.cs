@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,18 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-
-using Common.UI;
-
 using ManagedCommon;
-
 using Microsoft.Toolkit.Uwp.Notifications;
-
+using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
-
 using Windows.UI.Notifications;
-
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
@@ -32,7 +26,7 @@ namespace Wox
         private readonly ThemeManager _themeManager;
         private bool _disposed;
 
-        public event ThemeChangedHandler ThemeChanged;
+        public event Common.UI.ThemeChangedHandler ThemeChanged;
 
         public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
         {
@@ -55,7 +49,10 @@ namespace Wox
 
         public void ChangeQuery(string query, bool requery = false)
         {
-            _mainVM.ChangeQueryText(query, requery);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                _mainVM.ChangeQueryText(query, requery);
+            });
         }
 
         public void CheckForNewUpdate()
@@ -108,7 +105,7 @@ namespace Wox
 
         public Theme GetCurrentTheme()
         {
-            return _themeManager.GetCurrentTheme();
+            return _themeManager.CurrentTheme;
         }
 
         public void Dispose()

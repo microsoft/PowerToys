@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             if (settingsWindow == null)
             {
-                settingsWindow = new MainWindow(IsDarkTheme());
+                settingsWindow = new MainWindow();
             }
 
             settingsWindow.Activate();
@@ -90,6 +90,8 @@ namespace Microsoft.PowerToys.Settings.UI
             if (type != null)
             {
                 settingsWindow.NavigateToSection(type);
+
+                WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
             }
 
             if (ensurePageIsSelected)
@@ -208,8 +210,15 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 if (SelectedTheme() == ElementTheme.Default)
                 {
-                    themeListener = new ThemeListener();
-                    themeListener.ThemeChanged += (_) => HandleThemeChange();
+                    try
+                    {
+                        themeListener = new ThemeListener();
+                        themeListener.ThemeChanged += (_) => HandleThemeChange();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", ex);
+                    }
                 }
             }
             else
@@ -395,6 +404,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Overview": return typeof(GeneralPage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
+                case "CmdNotFound": return typeof(CmdNotFoundPage);
                 case "ColorPicker": return typeof(ColorPickerPage);
                 case "FancyZones": return typeof(FancyZonesPage);
                 case "FileLocksmith": return typeof(FileLocksmithPage);

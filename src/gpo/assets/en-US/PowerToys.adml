@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.6" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.8" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -17,6 +17,8 @@
       <string id="SUPPORTED_POWERTOYS_0_73_0">PowerToys version 0.73.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_75_0">PowerToys version 0.75.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_76_0">PowerToys version 0.76.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_77_0">PowerToys version 0.77.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_78_0">PowerToys version 0.78.0 or later</string>
 
             <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -57,11 +59,11 @@ If enabled, per-user installation is not allowed.
 
 If disabled or not configured, per-user installation is allowed.
 </string>
-      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether automatic downloads of available updates are disabled or not. (On metered connections updates are never downloaded.)
+      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether the automatic download and installation of available updates is disabled or not. (On metered connections updates are never downloaded.)
 
-If enabled, automatic downloads are disabled.
+If enabled, automatic download and installation is disabled.
 
-If disabled or not configured, the user is in control of automatic downloads setting.
+If disabled or not configured, the user can control this in the settings.
 </string>
       <string id="SuspendNewUpdateToastDescription">This policy configures whether the action center notification for new updates is suspended for 2 minor releases. (Example: if the installed version is v0.60.0, then the next notification is shown for the v0.63.* release.)
 
@@ -70,12 +72,20 @@ If enabled, the notification is suspended.
 If disabled or not configured, the notification is shown.
 
 Note: The notification about new major versions is always displayed.
+
+This policy has no effect if the update notification is disabled by the policy "Disable Action Center notification for new updates" or the user setting.
 </string>
-      <string id="DisablePeriodicUpdateCheckDescription">This policy allows you to disable automatic update checks running in the background. (The manual check in PT Settings is not affected by this policy.)
+      <string id="DisableNewUpdateToastDescription">This policy configures whether the action center notification for new updates is shown or not.
 
-If enabled, the automatic update checks are disabled.
+If enabled, the notification is disabled.
 
-If disabled or not configured, the automatic update checks are enabled.
+If disabled or not configured, the user can control if the notification is shown or not.
+</string>
+      <string id="DoNotShowWhatsNewAfterUpdatesDescription">This policy allows you to configure if the window with the release notes is shown after updates.
+
+If enabled, the window with the release notes is not shown automatically.
+
+If disabled or not configured, the user can control this in the settings of PowerToys.
 </string>
       <string id="AllowExperimentationDescription">This policy configures whether PowerToys experimentation is allowed. With experimentation allowed the user sees the new features being experimented if it gets selected as part of the test group. (Experimentation will only happen on Windows Insider builds.)
 
@@ -112,6 +122,7 @@ Note: Changes require a restart of PowerToys Run.
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityCmdNotFound">Command Not Found: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCropAndLock">Crop And Lock: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityEnvironmentVariables">Environment Variables: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>
@@ -145,8 +156,9 @@ Note: Changes require a restart of PowerToys Run.
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
       <string id="DisablePerUserInstallation">Disable per-user installation</string>
       <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
+      <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>
       <string id="SuspendNewUpdateToast">Suspend Action Center notification for new updates</string>
-      <string id="DisablePeriodicUpdateCheck">Disable automatic update checks</string>
+      <string id="DisableNewUpdateToast">Disable Action Center notification for new updates</string>
       <string id="AllowExperimentation">Allow Experimentation</string>
       <string id="PowerToysRunAllPluginsEnabledState">Configure enabled state for all plugins</string>
       <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>

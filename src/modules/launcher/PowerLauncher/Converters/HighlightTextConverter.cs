@@ -20,7 +20,7 @@ namespace PowerLauncher.Converters
             var highlightData = values[1] as List<int>;
             var selected = values[2] as bool? == true;
 
-            if (highlightData == null || !highlightData.Any())
+            if (highlightData == null || highlightData.Count == 0)
             {
                 // No highlight data, just return the text
                 return new Run(text);

@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
+using System.Buffers.Binary;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -77,30 +77,29 @@ namespace Peek.Common.Extensions
             return size;
         }
 
-        public static ulong GetSizeInBytes(this IFileSystemItem item)
+        public static Size? GetQoiSize(this IFileSystemItem item)
         {
-            ulong sizeInBytes = 0;
-
-            try
+            Size? size = null;
+            using (FileStream stream = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
             {
-                switch (item)
+                if (stream.Length >= 12)
                 {
-                    case FolderItem _:
-                        FileSystemObject fileSystemObject = new FileSystemObject();
-                        Folder folder = fileSystemObject.GetFolder(item.Path);
-                        sizeInBytes = (ulong)folder.Size;
-                        break;
-                    case FileItem _:
-                        sizeInBytes = item.FileSizeBytes;
-                        break;
+                    stream.Position = 4;
+
+                    using (var reader = new BinaryReader(stream))
+                    {
+                        uint widthValue = BinaryPrimitives.ReadUInt32BigEndian(reader.ReadBytes(4));
+                        uint heightValue = BinaryPrimitives.ReadUInt32BigEndian(reader.ReadBytes(4));
+
+                        if (widthValue > 0 && heightValue > 0)
+                        {
+                            size = new Size(widthValue, heightValue);
+                        }
+                    }
                 }
             }
-            catch
-            {
-                sizeInBytes = 0;
-            }
 
-            return sizeInBytes;
+            return size;
         }
 
         public static async Task<string> GetContentTypeAsync(this IFileSystemItem item)

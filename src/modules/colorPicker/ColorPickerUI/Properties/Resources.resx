@@ -400,4 +400,12 @@
     <value>Plum</value>
     <comment>Plum color</comment>
   </data>
+  <data name="New_Label" xml:space="preserve">
+    <value>Pick</value>
+    <comment>Button label to pick a new color</comment>
+  </data>
+  <data name="CP_Title" xml:space="preserve">
+    <value>Color Picker</value>
+    <comment>Do not translate product name</comment>
+  </data>
 </root>

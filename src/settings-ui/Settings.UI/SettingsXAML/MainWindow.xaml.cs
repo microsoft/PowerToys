@@ -7,7 +7,6 @@ using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -41,6 +40,9 @@ namespace Microsoft.PowerToys.Settings.UI
             if (createHidden)
             {
                 placement.ShowCmd = NativeMethods.SW_HIDE;
+
+                // Restore the last known placement on the first activation
+                this.Activated += Window_Activated;
             }
 
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
@@ -210,6 +212,17 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 args.Handled = true;
                 NativeMethods.ShowWindow(hWnd, NativeMethods.SW_HIDE);
+            }
+        }
+
+        private void Window_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState != WindowActivationState.Deactivated)
+            {
+                this.Activated -= Window_Activated;
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                var placement = Utils.DeserializePlacementOrDefault(hWnd);
+                NativeMethods.SetWindowPlacement(hWnd, ref placement);
             }
         }
 

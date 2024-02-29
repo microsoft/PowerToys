@@ -47,7 +47,6 @@ class ZonesOverlay
     std::vector<DrawableRect> m_sceneRects;
 
     float GetAnimationAlpha();
-    static ID2D1Factory* GetD2DFactory();
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);

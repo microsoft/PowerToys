@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "PT",
             "RO",
             "SK",
+            "SL",
             "SP",
             "SR",
             "SV",
@@ -160,6 +161,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _powerAccentSettings.Properties.ActivationKey = (PowerAccentActivationKey)value;
                     OnPropertyChanged(nameof(ActivationKey));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool DoNotActivateOnGameMode
+        {
+            get
+            {
+                return _powerAccentSettings.Properties.DoNotActivateOnGameMode;
+            }
+
+            set
+            {
+                if (value != _powerAccentSettings.Properties.DoNotActivateOnGameMode)
+                {
+                    _powerAccentSettings.Properties.DoNotActivateOnGameMode = value;
+                    OnPropertyChanged(nameof(DoNotActivateOnGameMode));
                     RaisePropertyChanged();
                 }
             }

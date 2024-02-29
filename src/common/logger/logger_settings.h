@@ -67,6 +67,8 @@ struct LogSettings
     inline const static std::string cropAndLockLoggerName = "crop-and-lock";
     inline const static std::wstring registryPreviewLogPath = L"Logs\\registryPreview-log.txt";
     inline const static std::string environmentVariablesLoggerName = "environment-variables";
+    inline const static std::wstring cmdNotFoundLogPath = L"Logs\\cmd-not-found-log.txt";
+    inline const static std::string cmdNotFoundLoggerName = "cmd-not-found";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

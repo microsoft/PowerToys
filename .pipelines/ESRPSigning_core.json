@@ -5,7 +5,9 @@
         {
             "MatchedPath": [
                 "*.resources.dll",
-
+                
+                "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
+                
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
                 "PowerToys.BackgroundActivatorDLL.dll",
@@ -28,7 +30,10 @@
 
                 "PowerToys.AlwaysOnTop.exe",
                 "PowerToys.AlwaysOnTopModuleInterface.dll",
-                
+
+                "PowerToys.CmdNotFoundModuleInterface.dll",
+                "PowerToys.CmdNotFound.dll",
+
                 "PowerToys.ColorPicker.dll",
                 "PowerToys.ColorPickerUI.dll",
                 "PowerToys.ColorPickerUI.exe",
@@ -97,6 +102,8 @@
                 "WinUI3Apps\\PowerToys.FileLocksmithExt.dll",
                 "WinUI3Apps\\PowerToys.FileLocksmithUI.exe",
                 "WinUI3Apps\\PowerToys.FileLocksmithUI.dll",
+                "WinUI3Apps\\PowerToys.FileLocksmithContextMenu.dll",
+                "FileLocksmithContextMenuPackage.msix",
 
                 "WinUI3Apps\\Peek.Common.dll",
                 "WinUI3Apps\\Peek.FilePreviewer.dll",
@@ -251,6 +258,7 @@
                 "Mages.Core.dll",
                 "JetBrains.Annotations.dll",
                 "NLog.Extensions.Logging.dll",
+                "getfilesiginforedist.dll",
                 "concrt140_app.dll",
                 "msvcp140_1_app.dll",
                 "msvcp140_2_app.dll",

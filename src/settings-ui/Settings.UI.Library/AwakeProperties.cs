@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             KeepDisplayOn = false;
             Mode = AwakeMode.PASSIVE;
             IntervalHours = 0;
-            IntervalMinutes = 0;
+            IntervalMinutes = 1;
             ExpirationDateTime = DateTimeOffset.Now;
             CustomTrayTimes = new Dictionary<string, int>();
         }

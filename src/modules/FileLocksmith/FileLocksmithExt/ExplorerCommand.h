@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include "IPC.h"
+#include "FileLocksmithLib/IPC.h"
 
 #define EXPLORER_COMMAND_UUID_STR "84d68575-e186-46ad-b0cb-baeb45ee29c0"
 
@@ -49,4 +49,5 @@ private:
 
     std::atomic<ULONG> m_ref_count = 1;
     IDataObject* m_data_obj = NULL;
+    std::wstring context_menu_caption;
 };

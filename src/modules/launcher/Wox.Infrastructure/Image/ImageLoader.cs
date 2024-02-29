@@ -29,9 +29,9 @@ namespace Wox.Infrastructure.Image
         private static readonly ImageCache ImageCache = new ImageCache();
         private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
 
-        private static IImageHashGenerator _hashGenerator;
+        private static ImageHashGenerator _hashGenerator;
 
-        public static string ErrorIconPath { get; set; }
+        public static string ErrorIconPath { get; set; } = Constant.LightThemedErrorIcon;
 
         private static readonly string[] ImageExtensions =
         {
@@ -54,7 +54,7 @@ namespace Wox.Infrastructure.Image
             return fs.Read(buffer, 0, buffer.Length) == buffer.Length && pngSignature.SequenceEqual(buffer);
         }
 
-        public static void Initialize(Theme theme)
+        public static void Initialize()
         {
             _hashGenerator = new ImageHashGenerator();
 
@@ -86,7 +86,6 @@ namespace Wox.Infrastructure.Image
                 }
             }
 
-            UpdateIconPath(theme);
             Task.Run(() =>
             {
                 Stopwatch.Normal("ImageLoader.Initialize - Preload images cost", async () =>

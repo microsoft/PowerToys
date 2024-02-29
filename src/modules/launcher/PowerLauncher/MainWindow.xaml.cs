@@ -24,6 +24,7 @@ using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Interfaces;
+using Wpf.Ui.Appearance;
 using CancellationToken = System.Threading.CancellationToken;
 using Image = Wox.Infrastructure.Image;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
@@ -54,6 +55,10 @@ namespace PowerLauncher
             _viewModel = mainVM;
             _nativeWaiterCancelToken = nativeWaiterCancelToken;
             _settings = settings;
+
+            // Fixes #30850
+            AppContext.SetSwitch("Switch.System.Windows.Controls.Grid.StarDefinitionsCanExceedAvailableSpace", true);
+
             InitializeComponent();
 
             if (OSVersionHelper.IsWindows11())
@@ -65,15 +70,7 @@ namespace PowerLauncher
                 WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.None;
             }
 
-            // workaround for #30217
-            try
-            {
-                Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
-            }
-            catch (Exception ex)
-            {
-                Log.Exception("Exception in SystemThemeWatcher.Watch, issue 30217.", ex, GetType());
-            }
+            SystemThemeWatcher.Watch(this, WindowBackdropType);
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
@@ -220,6 +217,8 @@ namespace PowerLauncher
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
             _viewModel.LoadedAtLeastOnce = true;
+            _viewModel.SetPluginsOverviewVisibility();
+            _viewModel.SetFontSize();
 
             BringProcessToForeground();
         }
@@ -362,6 +361,15 @@ namespace PowerLauncher
                     UpdatePosition();
                     BringProcessToForeground();
 
+                    _viewModel.SetPluginsOverviewVisibility();
+                    _viewModel.SetFontSize();
+
+                    if (_viewModel.Plugins.Count > 0)
+                    {
+                        _viewModel.SelectedPlugin = null;
+                        pluginsHintsList.ScrollIntoView(pluginsHintsList.Items[0]);
+                    }
+
                     // HACK: Setting focus here again fixes some focus issues, like on first run or after showing a message box.
                     SearchBox.QueryTextBox.Focus();
                     Keyboard.Focus(SearchBox.QueryTextBox);
@@ -481,66 +489,101 @@ namespace PowerLauncher
 
         private void Launcher_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
+            if (_viewModel.PluginsOverviewVisibility == Visibility.Visible)
             {
-                _viewModel.SelectPrevTabItemCommand.Execute(null);
-                UpdateTextBoxToSelectedItem();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Tab)
-            {
-                _viewModel.SelectNextTabItemCommand.Execute(null);
-                UpdateTextBoxToSelectedItem();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Down)
-            {
-                _viewModel.SelectNextItemCommand.Execute(null);
-                UpdateTextBoxToSelectedItem();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Up)
-            {
-                _viewModel.SelectPrevItemCommand.Execute(null);
-                UpdateTextBoxToSelectedItem();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Right)
-            {
-                if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                if (e.Key == Key.Up)
                 {
-                    _viewModel.SelectNextContextMenuItemCommand.Execute(null);
+                    _viewModel.SelectPrevOverviewPluginCommand.Execute(null);
+                    pluginsHintsList.ScrollIntoView(_viewModel.SelectedPlugin);
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Down)
+                {
+                    _viewModel.SelectNextOverviewPluginCommand.Execute(null);
+                    pluginsHintsList.ScrollIntoView(_viewModel.SelectedPlugin);
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
+                {
+                    _viewModel.SelectPrevOverviewPluginCommand.Execute(null);
+                    pluginsHintsList.ScrollIntoView(_viewModel.SelectedPlugin);
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Tab)
+                {
+                    _viewModel.SelectNextOverviewPluginCommand.Execute(null);
+                    pluginsHintsList.ScrollIntoView(_viewModel.SelectedPlugin);
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Enter)
+                {
+                    QueryForSelectedPlugin();
                     e.Handled = true;
                 }
             }
-            else if (e.Key == Key.Left)
+            else
             {
-                if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
                 {
-                    if (_viewModel.Results != null && _viewModel.Results.IsContextMenuItemSelected())
+                    _viewModel.SelectPrevTabItemCommand.Execute(null);
+                    UpdateTextBoxToSelectedItem();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Tab)
+                {
+                    _viewModel.SelectNextTabItemCommand.Execute(null);
+                    UpdateTextBoxToSelectedItem();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Down)
+                {
+                    _viewModel.SelectNextItemCommand.Execute(null);
+                    UpdateTextBoxToSelectedItem();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Up)
+                {
+                    _viewModel.SelectPrevItemCommand.Execute(null);
+                    UpdateTextBoxToSelectedItem();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Right)
+                {
+                    if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
                     {
-                        _viewModel.SelectPreviousContextMenuItemCommand.Execute(null);
+                        _viewModel.SelectNextContextMenuItemCommand.Execute(null);
                         e.Handled = true;
                     }
                 }
-            }
-            else if (e.Key == Key.PageDown)
-            {
-                _viewModel.SelectNextPageCommand.Execute(null);
-                e.Handled = true;
-            }
-            else if (e.Key == Key.PageUp)
-            {
-                _viewModel.SelectPrevPageCommand.Execute(null);
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Back)
-            {
-                _deletePressed = true;
-            }
-            else
-            {
-                _viewModel.HandleContextMenu(e.Key, Keyboard.Modifiers);
+                else if (e.Key == Key.Left)
+                {
+                    if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                    {
+                        if (_viewModel.Results != null && _viewModel.Results.IsContextMenuItemSelected())
+                        {
+                            _viewModel.SelectPreviousContextMenuItemCommand.Execute(null);
+                            e.Handled = true;
+                        }
+                    }
+                }
+                else if (e.Key == Key.PageDown)
+                {
+                    _viewModel.SelectNextPageCommand.Execute(null);
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.PageUp)
+                {
+                    _viewModel.SelectPrevPageCommand.Execute(null);
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Back)
+                {
+                    _deletePressed = true;
+                }
+                else
+                {
+                    _viewModel.HandleContextMenu(e.Key, Keyboard.Modifiers);
+                }
             }
         }
 
@@ -760,11 +803,7 @@ namespace PowerLauncher
             {
                 if (disposing)
                 {
-                    if (_firstDeleteTimer != null)
-                    {
-                        _firstDeleteTimer.Dispose();
-                    }
-
+                    _firstDeleteTimer?.Dispose();
                     _hwndSource?.Dispose();
                 }
 
@@ -792,6 +831,23 @@ namespace PowerLauncher
             }
 
             _hwndSource = null;
+        }
+
+        private void PluginsHintsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            QueryForSelectedPlugin();
+        }
+
+        private void QueryForSelectedPlugin()
+        {
+            if (_viewModel.Plugins.Count > 0 && _viewModel.SelectedPlugin != null)
+            {
+                _viewModel.ChangeQueryText(_viewModel.SelectedPlugin.Metadata.ActionKeyword, true);
+                SearchBox.QueryTextBox.Focus();
+
+                _viewModel.SelectedPlugin = null;
+                pluginsHintsList.ScrollIntoView(pluginsHintsList.Items[0]);
+            }
         }
     }
 }

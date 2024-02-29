@@ -7,6 +7,7 @@ imageresizer
 kbm
 keyboardmanager
 markdownpreviewhandler
+mousewithoutborders
 mwb
 oobe
 pasteplain
@@ -28,6 +29,7 @@ videoconference
 
 # USERS
 
+Advaith
 alekhyareddy
 Aleks
 angularsen
@@ -94,8 +96,10 @@ peteblois
 phoboslab
 Ponten
 Pooja
+Quriz
 randyrants
 ricardosantos
+ritchielawrence
 robmikh
 Rutkas
 ryanbodrug
@@ -115,6 +119,7 @@ talynone
 TBM
 tilovell
 Triet
+waaverecords
 ycv
 Yuniardi
 yuyoyuppe
@@ -124,6 +129,7 @@ Zykova
 
 # OTHERS
 
+cmdow
 Controlz
 cortana
 fancymouse
@@ -139,6 +145,7 @@ onenote
 Quickime
 regedit
 roslyn
+Spotify
 Vanara
 WEX
 windowwalker

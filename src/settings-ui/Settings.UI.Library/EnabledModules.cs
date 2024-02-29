@@ -427,6 +427,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool cmdNotFound = true;
+
+        [JsonPropertyName("CmdNotFound")]
+        public bool CmdNotFound
+        {
+            get => cmdNotFound;
+            set
+            {
+                if (cmdNotFound != value)
+                {
+                    LogTelemetryEvent(value);
+                    cmdNotFound = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool environmentVariables = true;
 
         [JsonPropertyName("EnvironmentVariables")]

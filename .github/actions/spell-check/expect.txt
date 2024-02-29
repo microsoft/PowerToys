@@ -1,3 +1,6 @@
+# FALSE POSITIVES
+## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
+## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
 aaaa
 abcdefghjkmnpqrstuvxyz
 abgr
@@ -8,6 +11,7 @@ accctrl
 Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
+ACCESSTOKEN
 aclapi
 AClient
 AColumn
@@ -35,6 +39,7 @@ AModifier
 AMPROPERTY
 AMPROPSETID
 ANDSCANS
+animatedvisuals
 ansicolor
 ANull
 AOC
@@ -50,7 +55,6 @@ appdata
 APPEXECLINK
 appium
 Applicationcan
-applicationframehost
 appmanifest
 APPNAME
 appref
@@ -95,6 +99,7 @@ bbwe
 bck
 BESTEFFORT
 bhid
+BIF
 bigbar
 bigobj
 binlog
@@ -121,6 +126,7 @@ BPBF
 bpmf
 bpp
 Browsable
+BROWSEINFO
 bsd
 bthprops
 bti
@@ -160,7 +166,6 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
-CHT
 cidl
 cim
 CImage
@@ -181,6 +186,7 @@ clrcall
 CLSCTX
 Clusion
 cmder
+CMDNOTFOUNDMODULEINTERFACE
 Cmds
 CMIC
 CMINVOKECOMMANDINFO
@@ -208,6 +214,7 @@ cominterop
 commandline
 COMMANDTITLE
 commctrl
+commdlg
 compmgmt
 COMPOSITIONFULL
 comsupp
@@ -218,7 +225,6 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
-constexpr
 consts
 contentdialog
 contentfiles
@@ -295,6 +301,7 @@ ddf
 DDxgi
 Deact
 debugbreak
+declatory
 decryptor
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -318,7 +325,6 @@ DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 desktopwindowxamlsource
-DEU
 devblogs
 devdocs
 devenum
@@ -364,6 +370,7 @@ DUMMYUNIONNAME
 dutil
 DVASPECT
 DVASPECTINFO
+DVD
 DVH
 DVHD
 dvr
@@ -419,8 +426,8 @@ EResize
 ERole
 ERRORIMAGE
 ERRORTITLE
+erwrite
 ESettings
-esize
 esrp
 etl
 ETW
@@ -465,9 +472,11 @@ FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
 FILELOCKSMITH
+FILELOCKSMITHCONTEXTMENU
 FILELOCKSMITHEXT
 FILELOCKSMITHLIB
 FILELOCKSMITHLIBINTEROP
+FILEMUSTEXIST
 FILEOP
 FILEOS
 FILESUBTYPE
@@ -507,6 +516,7 @@ GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
+getfilesiginforedist
 GETICON
 GETMINMAXINFO
 GETPROPERTYSTOREFLAGS
@@ -537,7 +547,6 @@ Hanzi
 Hardlines
 hardlinks
 HARDWAREINPUT
-hashcode
 Hashset
 hashtag
 HASHVAL
@@ -556,7 +565,6 @@ hcwhite
 hdc
 hdrop
 hdwwiz
-HEB
 Helpline
 helptext
 HGFE
@@ -719,13 +727,11 @@ jif
 jjw
 jobject
 jpe
-JPN
 jpnime
 Jsons
 jsonval
 junja
 jxr
-Kazakhstani
 kdc
 keybd
 KEYBDDATA
@@ -745,12 +751,10 @@ killrunner
 Knownfolders
 KSPROPERTY
 Kybd
-LAlt
-Lambson
 languagesjson
-langword
 lastcodeanalysissucceeded
 Lastdevice
+LASTEXITCODE
 LAYOUTRTL
 LCIDTo
 lcl
@@ -801,6 +805,7 @@ LPCTSTR
 lpdw
 lpfn
 LPINPUT
+LPITEMIDLIST
 lpmi
 LPMINMAXINFO
 LPMONITORINFO
@@ -808,6 +813,7 @@ LPOSVERSIONINFOEXW
 LPQUERY
 lprc
 LPSAFEARRAY
+lpstr
 lpsz
 lpt
 LPTHREAD
@@ -833,6 +839,7 @@ lwin
 LZero
 majortype
 makecab
+MAKELANGID
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -906,6 +913,8 @@ MOUSEHWHEEL
 MOUSEINPUT
 MOVESIZEEND
 MOVESIZESTART
+MOZILLAPL
+MOZPL
 mpmc
 MRM
 MRT
@@ -921,6 +930,7 @@ MSIFASTINSTALL
 MSIHANDLE
 msiquery
 MSIRESTARTMANAGERCONTROL
+msixbundle
 MSIXCA
 MSLLHOOKSTRUCT
 Mso
@@ -968,9 +978,11 @@ netsetup
 netsh
 newcolor
 newdev
+NEWDIALOGSTYLE
 newitem
 newpath
 newrow
+newsgroups
 NIF
 NLD
 NLog
@@ -983,7 +995,6 @@ NOCLOSEPROCESS
 NOCOALESCE
 NOCOPYBITS
 nodeca
-nodiscard
 nodoc
 NODRAWCAPTION
 NODRAWICON
@@ -1038,6 +1049,7 @@ ocr
 Ocrsettings
 odbccp
 officehubintl
+OFN
 ofs
 oldcolor
 olditem
@@ -1048,6 +1060,7 @@ OLECHAR
 onebranch
 OOBEPT
 opencode
+OPENFILENAME
 opensource
 openxmlformats
 OPTIMIZEFORINVOKE
@@ -1070,6 +1083,7 @@ overlaywindow
 Oversampling
 OWNDC
 OWNERDRAW
+Packagemanager
 PACL
 PAINTSTRUCT
 PALETTEWINDOW
@@ -1081,6 +1095,7 @@ parray
 PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 pathcch
+PATHMUSTEXIST
 Pathto
 PATINVERT
 PATPAINT
@@ -1092,7 +1107,6 @@ pcch
 pcelt
 pch
 PCIDLIST
-pcs
 PCWSTR
 pdisp
 pdo
@@ -1170,6 +1184,7 @@ PRINTCLIENT
 printmanagement
 prm
 proactively
+PROCESSENTRY
 PROCESSKEY
 processthreadsapi
 PRODEXT
@@ -1216,7 +1231,7 @@ qit
 QITAB
 QITABENT
 qoi
-qps
+Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
@@ -1275,6 +1290,7 @@ reparented
 reparenting
 reparse
 reportbug
+reportfileaccesses
 requery
 requerying
 rescap
@@ -1288,6 +1304,7 @@ RESTORETOMAXIMIZED
 restrictedcapabilities
 restrictederrorinfo
 resultlist
+RETURNONLYFSDIRS
 RGBQUAD
 rgbs
 rgelt
@@ -1302,7 +1319,6 @@ RKey
 RNumber
 roadmap
 rop
-roundf
 ROUNDSMALL
 rpcrt
 RRF
@@ -1318,12 +1334,11 @@ rundll
 rungameid
 RUNLEVEL
 runsettings
+runspace
 runtimeclass
 runtimeobject
 runtimepack
 runtimes
-RUS
-RValue
 rvm
 rwin
 rwl
@@ -1434,6 +1449,7 @@ sln
 SMALLICON
 smartphone
 SMTO
+SNAPPROCESS
 snwprintf
 softline
 SOURCECLIENTAREAONLY
@@ -1504,7 +1520,6 @@ subquery
 Superbar
 sut
 svchost
-SVE
 SVGIn
 SVGIO
 svgz
@@ -1551,7 +1566,6 @@ TDevice
 telem
 telephon
 templatenamespace
-Tenge
 testhost
 testprocess
 TEXCOORD
@@ -1570,15 +1584,15 @@ timediff
 timeunion
 timeutil
 Titlecase
-TKey
+tkcontrols
+tkconverters
 TLayout
 tlb
 tlbimp
 TMPVAR
 TNP
 toggleswitch
-tonos
-toolkitcontrols
+Toolhelp
 toolkitconverters
 Toolset
 toolwindow
@@ -1596,7 +1610,6 @@ trl
 Tsd
 TServer
 TStr
-TValue
 tweakme
 TWF
 tymed
@@ -1608,6 +1621,7 @@ UAL
 uap
 udit
 uefi
+uesc
 UHash
 UIA
 UIEx
@@ -1634,6 +1648,8 @@ UOI
 Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
+urld
+urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
@@ -1709,11 +1725,11 @@ wcautil
 WCE
 wcex
 WClass
+wcsicmp
 wcsnicmp
 WDA
 wdp
 wdupenv
-weakme
 webbrowsers
 webcam
 webpage
@@ -1722,7 +1738,6 @@ wekyb
 Wevtapi
 wgpocpl
 WIC
-wifi
 wil
 winapi
 winappdriver
@@ -1850,13 +1865,3 @@ zonable
 zoneset
 Zoneszonabletester
 zzz
-newsgroups
-MOZILLAPL
-MOZPL
-
-# FALSE POSITIVES
-
-## NOTICE.MD > MOZILLA PUBLIC LICENSE v1.1
-declatory
-## "PackagemanagerWrapper.cs" should be "PackageManagerWrapper.cs"
-Packagemanager

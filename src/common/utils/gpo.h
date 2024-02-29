@@ -24,6 +24,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_GLOBAL_ALL_UTILITIES = L"ConfigureGlobalUtilityEnabledState";
     const std::wstring POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP = L"ConfigureEnabledUtilityAlwaysOnTop";
     const std::wstring POLICY_CONFIGURE_ENABLED_AWAKE = L"ConfigureEnabledUtilityAwake";
+    const std::wstring POLICY_CONFIGURE_ENABLED_CMD_NOT_FOUND = L"ConfigureEnabledUtilityCmdNotFound";
     const std::wstring POLICY_CONFIGURE_ENABLED_COLOR_PICKER = L"ConfigureEnabledUtilityColorPicker";
     const std::wstring POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK = L"ConfigureEnabledUtilityCropAndLock";
     const std::wstring POLICY_CONFIGURE_ENABLED_FANCYZONES = L"ConfigureEnabledUtilityFancyZones";
@@ -63,7 +64,8 @@ namespace powertoys_gpo {
     const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
     const std::wstring POLICY_DISABLE_AUTOMATIC_UPDATE_DOWNLOAD = L"AutomaticUpdateDownloadDisabled";
     const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
-    const std::wstring POLICY_DISABLE_PERIODIC_UPDATE_CHECK = L"PeriodicUpdateCheckDisabled";
+    const std::wstring POLICY_DISABLE_NEW_UPDATE_TOAST = L"DisableNewUpdateAvailableToast";
+    const std::wstring POLICY_DISABLE_SHOW_WHATS_NEW_AFTER_UPDATES = L"DoNotShowWhatsNewAfterUpdates";
 
     // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
@@ -222,6 +224,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredAwakeEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_AWAKE);
+    }
+
+    inline gpo_rule_configured_t getConfiguredCmdNotFoundEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CMD_NOT_FOUND);
     }
 
     inline gpo_rule_configured_t getConfiguredColorPickerEnabledValue()
@@ -399,9 +406,14 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_SUSPEND_NEW_UPDATE_TOAST);
     }
 
-    inline gpo_rule_configured_t getDisablePeriodicUpdateCheckValue()
+    inline gpo_rule_configured_t getDisableNewUpdateToastValue()
     {
-        return getConfiguredValue(POLICY_DISABLE_PERIODIC_UPDATE_CHECK);
+        return getConfiguredValue(POLICY_DISABLE_NEW_UPDATE_TOAST);
+    }
+
+    inline gpo_rule_configured_t getDisableShowWhatsNewAfterUpdatesValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_SHOW_WHATS_NEW_AFTER_UPDATES);
     }
 
     inline gpo_rule_configured_t getAllowExperimentationValue()

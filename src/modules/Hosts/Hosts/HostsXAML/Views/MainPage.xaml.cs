@@ -44,12 +44,7 @@ namespace Hosts.Views
 
         private async Task OpenNewDialogAsync()
         {
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            EntryDialog.Title = resourceLoader.GetString("AddNewEntryDialog_Title");
-            EntryDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
-            EntryDialog.PrimaryButtonCommand = AddCommand;
-            EntryDialog.DataContext = new Entry(ViewModel.NextId, string.Empty, string.Empty, string.Empty, true);
-            await EntryDialog.ShowAsync();
+            await ShowAddDialogAsync();
         }
 
         private async Task OpenAdditionalLinesDialogAsync()
@@ -60,13 +55,14 @@ namespace Hosts.Views
 
         private async void Entries_ItemClick(object sender, ItemClickEventArgs e)
         {
-            await ShowEditDialogAsync(e.ClickedItem as Entry);
+            Entry entry = e.ClickedItem as Entry;
+            ViewModel.Selected = entry;
+            await ShowEditDialogAsync(entry);
         }
 
         public async Task ShowEditDialogAsync(Entry entry)
         {
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            ViewModel.Selected = entry;
             EntryDialog.Title = resourceLoader.GetString("UpdateEntry_Title");
             EntryDialog.PrimaryButtonText = resourceLoader.GetString("UpdateBtn");
             EntryDialog.PrimaryButtonCommand = UpdateCommand;
@@ -110,6 +106,14 @@ namespace Hosts.Views
             if (Entries.SelectedItem is Entry entry)
             {
                 await ShowEditDialogAsync(entry);
+            }
+        }
+
+        private async void Duplicate_Click(object sender, RoutedEventArgs e)
+        {
+            if (Entries.SelectedItem is Entry entry)
+            {
+                await ShowAddDialogAsync(entry);
             }
         }
 
@@ -176,10 +180,16 @@ namespace Hosts.Views
         /// </summary>
         private void Entries_GotFocus(object sender, RoutedEventArgs e)
         {
-            var listView = sender as ListView;
-            if (listView.SelectedItem == null && listView.Items.Count > 0)
+            var element = sender as FrameworkElement;
+            var entry = element.DataContext as Entry;
+
+            if (entry != null)
             {
-                listView.SelectedIndex = 0;
+                ViewModel.Selected = entry;
+            }
+            else if (Entries.SelectedItem == null && Entries.Items.Count > 0)
+            {
+                Entries.SelectedIndex = 0;
             }
         }
 
@@ -187,6 +197,20 @@ namespace Hosts.Views
         {
             var entry = (e.OriginalSource as FrameworkElement).DataContext as Entry;
             ViewModel.Selected = entry;
+        }
+
+        private async Task ShowAddDialogAsync(Entry template = null)
+        {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            EntryDialog.Title = resourceLoader.GetString("AddNewEntryDialog_Title");
+            EntryDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
+            EntryDialog.PrimaryButtonCommand = AddCommand;
+
+            EntryDialog.DataContext = template == null
+                ? new Entry(ViewModel.NextId, string.Empty, string.Empty, string.Empty, true)
+                : new Entry(ViewModel.NextId, template.Address, template.Hosts, template.Comment, template.Active);
+
+            await EntryDialog.ShowAsync();
         }
 
         private void ContentDialog_Loaded_ApplyMargin(object sender, RoutedEventArgs e)

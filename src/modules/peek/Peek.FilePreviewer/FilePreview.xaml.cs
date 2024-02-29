@@ -51,8 +51,8 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
         [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
+        [NotifyPropertyChangedFor(nameof(DrivePreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
-
         private IPreviewer? previewer;
 
         [ObservableProperty]
@@ -99,6 +99,8 @@ namespace Peek.FilePreviewer
         public IArchivePreviewer? ArchivePreviewer => Previewer as IArchivePreviewer;
 
         public IShellPreviewHandlerPreviewer? ShellPreviewHandlerPreviewer => Previewer as IShellPreviewHandlerPreviewer;
+
+        public IDrivePreviewer? DrivePreviewer => Previewer as IDrivePreviewer;
 
         public IUnsupportedFilePreviewer? UnsupportedFilePreviewer => Previewer as IUnsupportedFilePreviewer;
 
@@ -152,12 +154,14 @@ namespace Peek.FilePreviewer
                 VideoPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
+                DrivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
 
                 ImagePreview.FlowDirection = FlowDirection.LeftToRight;
                 VideoPreview.FlowDirection = FlowDirection.LeftToRight;
                 BrowserPreview.FlowDirection = FlowDirection.LeftToRight;
                 ArchivePreview.FlowDirection = FlowDirection.LeftToRight;
+                DrivePreview.FlowDirection = FlowDirection.LeftToRight;
                 UnsupportedFilePreview.FlowDirection = FlowDirection.LeftToRight;
 
                 return;
@@ -224,6 +228,7 @@ namespace Peek.FilePreviewer
             ImagePreview.Source = null;
             ArchivePreview.Source = null;
             BrowserPreview.Source = null;
+            DrivePreview.Source = null;
 
             ShellPreviewHandlerPreviewer?.Clear();
             ShellPreviewHandlerPreview.Source = null;
@@ -344,9 +349,7 @@ namespace Peek.FilePreviewer
             string dateModifiedFormatted = string.IsNullOrEmpty(dateModified) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_DateModified", dateModified);
             sb.Append(dateModifiedFormatted);
 
-            cancellationToken.ThrowIfCancellationRequested();
-            ulong bytes = await Task.Run(Item.GetSizeInBytes);
-            string fileSize = ReadableStringHelper.BytesToReadableString(bytes);
+            string fileSize = ReadableStringHelper.BytesToReadableString(Item.FileSizeBytes);
             string fileSizeFormatted = string.IsNullOrEmpty(fileSize) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileSize", fileSize);
             sb.Append(fileSizeFormatted);
 

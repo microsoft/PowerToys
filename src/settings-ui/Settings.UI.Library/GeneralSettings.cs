@@ -29,6 +29,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("is_admin")]
         public bool IsAdmin { get; set; }
 
+        // Gets or sets a value indicating whether is warnings of elevated apps enabled.
+        [JsonPropertyName("enable_warnings_elevated_apps")]
+        public bool EnableWarningsElevatedApps { get; set; }
+
         // Gets or sets theme Name.
         [JsonPropertyName("theme")]
         public string Theme { get; set; }
@@ -47,8 +51,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("enabled")]
         public EnabledModules Enabled { get; set; }
 
+        [JsonPropertyName("show_new_updates_toast_notification")]
+        public bool ShowNewUpdatesToastNotification { get; set; }
+
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
+
+        [JsonPropertyName("show_whats_new_after_updates")]
+        public bool ShowWhatsNewAfterUpdates { get; set; }
 
         [JsonPropertyName("enable_experimentation")]
         public bool EnableExperimentation { get; set; }
@@ -57,7 +67,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             Startup = false;
             IsAdmin = false;
+            EnableWarningsElevatedApps = true;
             IsElevated = false;
+            ShowNewUpdatesToastNotification = true;
             AutoDownloadUpdates = false;
             EnableExperimentation = true;
             Theme = "system";

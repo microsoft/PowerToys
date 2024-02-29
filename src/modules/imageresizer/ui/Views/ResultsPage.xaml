@@ -9,11 +9,7 @@
             Margin="12,12,12,0"
             FontSize="16"
             Text="{x:Static p:Resources.Results_MainInstruction}" />
-        <ScrollViewer
-            MaxWidth="363"
-            MaxHeight="350"
-            HorizontalAlignment="Stretch"
-            VerticalScrollBarVisibility="Auto">
+        <ScrollViewer HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
             <ItemsControl Margin="12,4,12,0" ItemsSource="{Binding Errors}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="ResizeError">
@@ -28,11 +24,12 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
         <Border
             Margin="0,12,0,0"
             Padding="12,12"
             Background="{DynamicResource LayerFillColorDefaultBrush}"
-            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button

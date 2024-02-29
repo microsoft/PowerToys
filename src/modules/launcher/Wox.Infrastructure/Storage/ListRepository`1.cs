@@ -44,7 +44,7 @@ namespace Wox.Infrastructure.Storage
 
         public bool Any()
         {
-            return _items.Any();
+            return !_items.IsEmpty;
         }
 
         public void Add(T insertedItem)

@@ -3328,7 +3328,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Plugin to search for Windows settings.
+        ///   Looks up a localized string similar to Searches Windows settings.
         /// </summary>
         internal static string PluginDescription {
             get {
