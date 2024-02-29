@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Drawing.Text;
 using System.Windows.Forms;
 using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
@@ -43,23 +44,79 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                FileActionProgressHelper fileActionProgressHelper = new("Copying files", SelectedItems.Length, () => { });
+                bool cancelled = false;
+                FileActionProgressHelper fileActionProgressHelper = new("Copying files", SelectedItems.Length, () => { cancelled = true; });
 
                 int i = -1;
                 foreach (string item in SelectedItems)
                 {
-                    i++;
-                    fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(item));
+                    if (cancelled)
+                    {
+                        return;
+                    }
 
-                    string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
-                    if (File.Exists(destination))
+                    i++;
+
+                    if (File.Exists(item))
                     {
-                        await fileActionProgressHelper.Conflict(item, () => File.Copy(item, destination, true), () => { });
+                        fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(item));
+
+                        string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
+                        if (File.Exists(destination))
+                        {
+                            await fileActionProgressHelper.Conflict(item, () => File.Copy(item, destination, true), () => { });
+                        }
+                        else
+                        {
+                            File.Copy(item, destination);
+                        }
                     }
-                    else
+                    else if (Directory.Exists(item))
                     {
-                        File.Copy(item, destination);
+                        fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(item));
+
+                        string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
+                        if (Directory.Exists(destination))
+                        {
+                            await fileActionProgressHelper.Conflict(item, () => DirectoryCopy(item, destination, true), () => { });
+                        }
+                        else
+                        {
+                            DirectoryCopy(item, destination, true);
+                        }
                     }
+                }
+            }
+        }
+
+        private void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        {
+            DirectoryInfo dir = new(sourceDirName);
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException("Source directory does not exist or could not be found: " + sourceDirName);
+            }
+
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string tempPath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(tempPath, false);
+            }
+
+            if (copySubDirs)
+            {
+                foreach (DirectoryInfo subdir in dirs)
+                {
+                    string tempPath = Path.Combine(destDirName, subdir.Name);
+                    DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
                 }
             }
         }

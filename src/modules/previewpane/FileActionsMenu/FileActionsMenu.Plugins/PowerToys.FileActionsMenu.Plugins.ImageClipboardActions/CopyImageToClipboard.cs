@@ -24,10 +24,9 @@ namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 
         public int Category => 4;
 
-        public IconElement? Icon => null;
+        public IconElement? Icon => new FontIcon { Glyph = "\ue8e5" };
 
-        // Todo: Only if image file is selected
-        public bool IsVisible => SelectedItems.Length == 1;
+        public bool IsVisible => SelectedItems.Length == 1 && SelectedItems[0].IsImage();
 
         public Task Execute(object sender, RoutedEventArgs e)
         {

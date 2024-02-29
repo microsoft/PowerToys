@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows.Forms;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
@@ -26,9 +27,9 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
         public IconElement? Icon => new FontIcon { Glyph = "\uE792" };
 
-        public bool IsVisible => SelectedItems.Length == 1;
+        public bool IsVisible => SelectedItems.Length == 1 && !Directory.Exists(SelectedItems[0]);
 
-        public Task Execute(object sender, RoutedEventArgs e)
+        public async Task Execute(object sender, RoutedEventArgs e)
         {
             SaveFileDialog dialog = new()
             {
@@ -42,12 +43,21 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                File.Move(SelectedItems[0], dialog.FileName);
+                FileActionProgressHelper fileActionProgressHelper = new("Saving file", 1, () => { });
+
+                fileActionProgressHelper.UpdateProgress(0, Path.GetFileName(SelectedItems[0]));
+
+                if (File.Exists(dialog.FileName))
+                {
+                    await fileActionProgressHelper.Conflict(dialog.FileName, () => File.Move(SelectedItems[0], dialog.FileName, true), () => { });
+                }
+                else
+                {
+                    File.Move(SelectedItems[0], dialog.FileName);
+                }
 
                 dialog.Dispose();
             }
-
-            return Task.CompletedTask;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            Process process = new Process();
+            Process process = new();
 
             process.StartInfo.FileName = "cmd.exe";
             process.StartInfo.Arguments = $"/c tree {SelectedItems[0]} /f";

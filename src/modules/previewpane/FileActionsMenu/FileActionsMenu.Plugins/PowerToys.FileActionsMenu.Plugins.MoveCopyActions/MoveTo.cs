@@ -43,22 +43,44 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                FileActionProgressHelper fileActionProgressHelper = new("Moving files", SelectedItems.Length, () => { });
+                bool cancelled = false;
+                FileActionProgressHelper fileActionProgressHelper = new("Moving files", SelectedItems.Length, () => { cancelled = true; });
 
                 int i = -1;
                 foreach (string item in SelectedItems)
                 {
-                    i++;
-                    fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(item));
-
-                    string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
-                    if (File.Exists(destination))
+                    if (cancelled)
                     {
-                        await fileActionProgressHelper.Conflict(item, () => File.Move(item, destination, true), () => { });
+                        return;
                     }
-                    else
+
+                    i++;
+
+                    if (File.Exists(item))
                     {
-                        File.Move(item, destination);
+                        fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(item));
+                        string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
+                        if (File.Exists(destination))
+                        {
+                            await fileActionProgressHelper.Conflict(item, () => File.Move(item, destination, true), () => { });
+                        }
+                        else
+                        {
+                            File.Move(item, destination);
+                        }
+                    }
+                    else if (Directory.Exists(item))
+                    {
+                        fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(item));
+                        string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
+                        if (Directory.Exists(destination))
+                        {
+                            await fileActionProgressHelper.Conflict(item, () => Directory.Move(item, destination), () => { });
+                        }
+                        else
+                        {
+                            Directory.Move(item, destination);
+                        }
                     }
                 }
             }

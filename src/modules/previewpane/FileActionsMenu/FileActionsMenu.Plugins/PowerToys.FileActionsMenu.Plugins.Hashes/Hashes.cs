@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO.Hashing;
 using System.Text;
 using System.Windows;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -222,7 +223,6 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
             return Task.CompletedTask;
         }
 
-        // Todo: Migrate to file action dialog
         public static Task GenerateHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionary checkedMenuItemsDictionairy)
         {
             (Func<string, string> hashGeneratorFunction, string fileExtension) = GetHashProperties(hashType);
@@ -275,6 +275,9 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         private static void GenerateSingleFileWithHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
         {
+            FileActionProgressHelper fileActionProgressHelper = new("Generating checksum", 1, () => { });
+            fileActionProgressHelper.UpdateProgress(0, "Checksums" + fileExtension);
+
             StringBuilder fileContent = new();
 
             foreach (string filename in selectedItems)
@@ -282,7 +285,14 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                 fileContent.Append(filename + ":\n" + hashGeneratorFunction(filename) + "\n\n");
             }
 
-            File.WriteAllText(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension, fileContent.ToString());
+            if (File.Exists(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension))
+            {
+                fileActionProgressHelper.Conflict(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension, () => File.WriteAllText(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension, fileContent.ToString()), () => { }).Wait();
+            }
+            else
+            {
+                File.WriteAllText(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension, fileContent.ToString());
+            }
         }
 
         private static bool VerifySingleFileWithHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
@@ -322,6 +332,11 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
                 string hashFilename = filename + fileExtension;
 
+                if (File.Exists(hashFilename))
+                {
+                    File.Delete(hashFilename);
+                }
+
                 File.WriteAllText(hashFilename, hash);
             }
         }
@@ -334,7 +349,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
                 string hashFilename = filename + fileExtension;
 
-                return File.Exists(hashFilename) ? File.ReadAllText(hashFilename) == hash : false;
+                return File.Exists(hashFilename) && File.ReadAllText(hashFilename) == hash;
             }
 
             throw new InvalidOperationException();

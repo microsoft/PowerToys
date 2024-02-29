@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using FileActionsMenu.Interfaces;
 using Microsoft.UI.Xaml;
@@ -20,7 +21,7 @@ namespace FileActionsMenu.Ui
     {
         private readonly CheckedMenuItemsDictionary _checkableMenuItemsIndex = [];
 
-        private MenuFlyout _menu;
+        private readonly MenuFlyout _menu;
 
         private IAction[] _actions =
         [
@@ -100,9 +101,7 @@ namespace FileActionsMenu.Ui
                             {
                                 ((MenuFlyoutItem)menuItem).Click += async (sender, args) =>
                                 {
-                                    _actionStarted = true;
-                                    await action.Execute(sender, args);
-                                    Close();
+                                    await ExecuteActionOfAction(action, sender, args);
                                 };
                                 flyout.Items.Add(menuItem);
                             }
@@ -110,9 +109,7 @@ namespace FileActionsMenu.Ui
                             {
                                 ((MenuFlyoutItem)menuItem).Click += async (sender, args) =>
                                 {
-                                    _actionStarted = true;
-                                    await action.Execute(sender, args);
-                                    Close();
+                                    await ExecuteActionOfAction(action, sender, args);
                                 };
                                 item.Items.Add(menuItem);
                             }
@@ -230,6 +227,22 @@ namespace FileActionsMenu.Ui
             HandleItems(_actions, _menu);
         }
 
+        private async Task ExecuteActionOfAction(IAction action, object sender, RoutedEventArgs e)
+        {
+            _actionStarted = true;
+            try
+            {
+                await action.Execute(sender, e);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("There was an error executing the action: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            Close();
+            Environment.Exit(0);
+        }
+
         public void Window_Activated(object sender, RoutedEventArgs e)
         {
             this.Show();
@@ -251,6 +264,7 @@ namespace FileActionsMenu.Ui
                 if (!_actionStarted)
                 {
                     Close();
+                    Environment.Exit(0);
                 }
             };
         }

@@ -25,7 +25,7 @@ namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 
         public int Category => 4;
 
-        public IconElement? Icon => null;
+        public IconElement? Icon => new FontIcon { Glyph = "\ue8de" };
 
         public bool IsVisible => SelectedItems.Length == 1 && Directory.Exists(SelectedItems[0]) && Clipboard.ContainsImage();
 

@@ -47,15 +47,40 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
             Directory.CreateDirectory(path);
 
-            FileActionProgressHelper fileActionProgressHelper = new("Moving files to new folder", SelectedItems.Length, () => { });
+            bool cancelled = false;
+            FileActionProgressHelper fileActionProgressHelper = new("Moving files to new folder", SelectedItems.Length, () => { cancelled = true; });
+
+            string append = string.Empty;
+            int appendCount = 0;
+            string directoryName = "New folder with selection";
+            while (Directory.Exists(Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), directoryName)))
+            {
+                appendCount++;
+                append = " (" + appendCount + ")";
+                directoryName = "New folder with selection" + append;
+            }
 
             int count = -1;
             foreach (string item in SelectedItems)
             {
-                i++;
-                fileActionProgressHelper.UpdateProgress(count, Path.GetFileName(item));
+                if (cancelled)
+                {
+                    return Task.CompletedTask;
+                }
 
-                File.Move(item, Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "New folder with selection", Path.GetFileName(item)));
+                i++;
+                if (File.Exists(item))
+                {
+                    fileActionProgressHelper.UpdateProgress(count, Path.GetFileName(item));
+
+                    File.Move(item, Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), directoryName));
+                }
+                else if (Directory.Exists(item))
+                {
+                    fileActionProgressHelper.UpdateProgress(count, Path.GetFileName(item));
+
+                    Directory.Move(item, Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), directoryName));
+                }
             }
 
             return Task.CompletedTask;

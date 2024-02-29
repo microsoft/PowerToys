@@ -12,5 +12,28 @@ namespace FileActionsMenu.Ui.Helpers
         {
             return value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        public static bool IsImage(this string fileName)
+        {
+            string extension = System.IO.Path.GetExtension(fileName).ToLowerInvariant();
+            return extension switch
+            {
+                ".bmp" => true,
+                ".dib" => true,
+                ".exif" => true,
+                ".gif" => true,
+                ".jfif" => true,
+                ".jpe" => true,
+                ".jpeg" => true,
+                ".jpg" => true,
+                ".jxr" => true,
+                ".png" => true,
+                ".rle" => true,
+                ".tif" => true,
+                ".tiff" => true,
+                ".wdp" => true,
+                _ => false,
+            };
+        }
     }
 }

@@ -78,12 +78,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
                     .EnumerateArray()
                     .First(predicate =>
                     {
-                        if (predicate.TryGetProperty("extensions", out JsonElement extensions))
-                        {
-                            return extensions.EnumerateArray().Any(predicate => predicate.GetString() == extension);
-                        }
-
-                        return false;
+                        return predicate.TryGetProperty("extensions", out JsonElement extensions) && extensions.EnumerateArray().Any(predicate => predicate.GetString() == extension);
                     })
                     .TryGetProperty("mimetypes", out JsonElement mimetypes)
                     ? mimetypes.EnumerateArray()

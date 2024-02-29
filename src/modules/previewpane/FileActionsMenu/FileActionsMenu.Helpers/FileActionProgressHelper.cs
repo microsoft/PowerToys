@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Media;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TaskDialog = Microsoft.WindowsAPICodePack.Dialogs.TaskDialog;
@@ -14,11 +15,15 @@ namespace FileActionsMenu.Helpers
 {
     public class FileActionProgressHelper : IDisposable
     {
-        private TaskDialogProgressBar _progressBar;
-        private TaskDialog _taskDialog;
+        private readonly TaskDialogProgressBar _progressBar;
+        private readonly TaskDialog _taskDialog;
+        private readonly string _actionName;
+        private TaskDialog? _conflictTaskDialog;
 
         public FileActionProgressHelper(string actionName, int count, Action onClose)
         {
+            _actionName = actionName;
+
             Application.EnableVisualStyles();
             _progressBar = new()
             {
@@ -27,20 +32,32 @@ namespace FileActionsMenu.Helpers
                 Minimum = 0,
                 Value = 0,
             };
+
+            TaskDialogButton cancelButton = new()
+            {
+                Text = "Cancel",
+            };
+
             _taskDialog = new()
             {
                 ProgressBar = _progressBar,
                 Caption = actionName,
                 Text = actionName,
                 Cancelable = true,
+                Controls = { cancelButton },
+            };
+
+            cancelButton.Click += (sender, e) =>
+            {
+                onClose();
+                _taskDialog.Close();
+                _conflictTaskDialog?.Close();
             };
 
             _taskDialog.Closing += (sender, e) =>
             {
-                if (e.TaskDialogResult == Microsoft.WindowsAPICodePack.Dialogs.TaskDialogResult.Cancel || e.TaskDialogResult == Microsoft.WindowsAPICodePack.Dialogs.TaskDialogResult.Close)
-                {
-                    onClose();
-                }
+                onClose();
+                _conflictTaskDialog?.Close();
             };
             _taskDialog.StandardButtons = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardButtons.None;
             Task.Run(() => _taskDialog.Show());
@@ -49,13 +66,15 @@ namespace FileActionsMenu.Helpers
         public void UpdateProgress(int current, string fileName)
         {
             _progressBar.Value = current;
+            _taskDialog.Text = $"{_actionName}: {fileName}";
         }
 
         [STAThread]
         public async Task Conflict(string fileName, Action onReplace, Action onIgnore)
         {
+            SystemSounds.Exclamation.Play();
             TaskCompletionSource taskCompletionSource = new();
-            TaskDialog taskDialog = new()
+            _conflictTaskDialog = new()
             {
                 Text = $"Conflict: {fileName} already exists",
                 Caption = "Conflict",
@@ -69,7 +88,7 @@ namespace FileActionsMenu.Helpers
                 onReplace();
                 _progressBar.State = TaskDialogProgressBarState.Normal;
                 taskCompletionSource.SetResult();
-                taskDialog.Close();
+                _conflictTaskDialog.Close();
             };
             TaskDialogButton ignoreButton = new()
             {
@@ -80,12 +99,19 @@ namespace FileActionsMenu.Helpers
                 onIgnore();
                 _progressBar.State = TaskDialogProgressBarState.Normal;
                 taskCompletionSource.SetResult();
-                taskDialog.Close();
+                _conflictTaskDialog.Close();
+            };
+            _conflictTaskDialog.Closing += (sender, e) =>
+            {
+                if (!taskCompletionSource.Task.IsCanceled)
+                {
+                    taskCompletionSource.SetResult();
+                }
             };
             _progressBar.State = TaskDialogProgressBarState.Paused;
-            taskDialog.Controls.Add(replaceButton);
-            taskDialog.Controls.Add(ignoreButton);
-            _ = Task.Run(taskDialog.Show);
+            _conflictTaskDialog.Controls.Add(replaceButton);
+            _conflictTaskDialog.Controls.Add(ignoreButton);
+            _ = Task.Run(_conflictTaskDialog.Show);
 
             await taskCompletionSource.Task;
         }
