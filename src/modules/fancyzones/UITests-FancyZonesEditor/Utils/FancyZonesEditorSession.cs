@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -17,6 +18,21 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
     {
         protected const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
         private const string FancyZonesEditorPath = @"\..\..\..\PowerToys.FancyZonesEditor.exe";
+
+        private static FancyZonesEditorFiles? _files;
+
+        public static FancyZonesEditorFiles Files
+        {
+            get
+            {
+                if (_files == null)
+                {
+                    _files = new FancyZonesEditorFiles();
+                }
+
+                return _files;
+            }
+        }
 
         public WindowsDriver<WindowsElement>? Session { get; }
 
@@ -76,6 +92,8 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 Session.Quit();
                 Session.Dispose();
             }
+
+            Files.Restore();
         }
 
         private WindowsElement? GetLayout(string layoutName)
