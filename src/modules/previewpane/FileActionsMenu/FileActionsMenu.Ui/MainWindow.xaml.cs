@@ -125,6 +125,11 @@ namespace FileActionsMenu.Ui
                             };
                             if (action.Icon != null)
                             {
+                                if (action.Icon is BitmapIcon bi)
+                                {
+                                    bi.ShowAsMonochrome = false;
+                                }
+
                                 subItem.Icon = action.Icon;
                             }
 
@@ -162,6 +167,16 @@ namespace FileActionsMenu.Ui
                                 Text = checkableAction.Header,
                                 IsChecked = checkableAction.IsCheckedByDefault,
                             };
+
+                            if (checkableAction.Icon != null)
+                            {
+                                if (action.Icon is BitmapIcon bi)
+                                {
+                                    bi.ShowAsMonochrome = false;
+                                }
+
+                                toggleMenuItem.Icon = checkableAction.Icon;
+                            }
 
                             if (!_checkableMenuItemsIndex.TryGetValue(checkableAction.CheckableGroupUUID, out List<(MenuFlyoutItemBase, IAction)>? value))
                             {

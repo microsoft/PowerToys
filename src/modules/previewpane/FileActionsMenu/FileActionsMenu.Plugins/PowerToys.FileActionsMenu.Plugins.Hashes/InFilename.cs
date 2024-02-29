@@ -17,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public override string Header => _hashCallingAction == Hashes.HashCallingAction.GENERATE ? "Replace filename with hash" : "Compare content with filename";
 
-        public override IconElement? Icon => null;
+        public override IconElement? Icon => new FontIcon { Glyph = "\ue8ac" };
 
         public override bool IsVisible => true;
 

@@ -17,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public override string Header => _hashCallingAction == Hashes.HashCallingAction.GENERATE ? "Save hashes in single file" : "Compare with hashes in file called \"Hashes\"";
 
-        public override IconElement? Icon => null;
+        public override IconElement? Icon => new FontIcon { Glyph = "\ue8a5" };
 
         public override bool IsVisible => true;
 

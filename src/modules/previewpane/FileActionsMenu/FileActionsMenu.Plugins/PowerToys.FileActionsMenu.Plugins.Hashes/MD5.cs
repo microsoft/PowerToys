@@ -7,6 +7,7 @@ using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace PowerToys.FileActionsMenu.Plugins.Hashes
 {
@@ -26,7 +27,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public int Category => 0;
 
-        public IconElement? Icon => null;
+        public IconElement? Icon => new FontIcon { Glyph = "MD5", FontFamily = FontFamily.XamlAutoFontFamily };
 
         public bool IsVisible => true;
 
