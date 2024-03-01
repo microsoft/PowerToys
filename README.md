@@ -108,7 +108,7 @@ In this release, we focused on stability and improvements.
  - New feature: Keyboard Manager allows shortcuts with chords. Thanks [@jefflord](https://github.com/jefflord)!
  - Modernized Color Picker with Fluent UX. Thanks [@niels9001](https://github.com/niels9001)!
  - Peek now is able to preview drives. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - File Locksmith has a Windows 11 tier 1 context menu.
+ - File Locksmith has now an entry in the Windows 11 tier 1 context menu.
 
 ### General
 
