@@ -92,8 +92,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 Session.Quit();
                 Session.Dispose();
             }
-
-            Files.Restore();
         }
 
         private WindowsElement? GetLayout(string layoutName)
