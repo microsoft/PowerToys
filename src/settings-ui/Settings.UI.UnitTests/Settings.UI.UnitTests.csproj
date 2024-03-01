@@ -48,5 +48,10 @@
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Settings.UI\PowerToys.Settings.csproj" />
   </ItemGroup>
-
+  <!-- Workaround for map.html failing -->
+  <Target Name="TempWorkaroundForWinAppSdk15" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
+    <ItemGroup>
+      <MicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.html"/>
+    </ItemGroup>
+  </Target>
 </Project>
