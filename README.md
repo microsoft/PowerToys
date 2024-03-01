@@ -134,7 +134,7 @@ In this release, we focused on stability and improvements.
 ### File Explorer add-ons
 
  - Added support to the .ksh, .zsh, .bsh and .env file types to Monaco previewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Re-enabled the RendererAppContainer feature in WebView 2, since the associated crash has been fixed in the latest WebView 2 releases.
+ - Re-enabled the RendererAppContainer feature in WebView2, since the associated crash has been fixed in the latest WebView2 releases.
 
 ### File Locksmith
 
