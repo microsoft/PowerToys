@@ -195,7 +195,7 @@
         </Grid>
 
         <ContentDialog x:Name="SelectedFilesListDialog" x:Uid="SelectedFilesListDialog">
-            <ScrollViewer Padding="0,0,16,0">
+            <ScrollViewer Padding="0,0,16,0" HorizontalScrollBarVisibility="Auto">
                 <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
             </ScrollViewer>
         </ContentDialog>
