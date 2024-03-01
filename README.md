@@ -138,7 +138,7 @@ In this release, we focused on stability and improvements.
 
 ### File Locksmith
 
- - Added a Windows 11 tier 1 context menu.
+ - Added as an entry in the Windows 11 tier 1 context menu.
 
 ### Hosts File Editor
 
