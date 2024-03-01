@@ -144,7 +144,7 @@ In this release, we focused on stability and improvements.
 
  - Tweaked filter button style to indicate if filters are applied.
  - Added an error indicator to each input field to indicate why a new entry can't be created.
- - Added a in-line delete button for each entry.
+ - Added an in-line delete button for each entry.
 
 ### Image Resizer
 
