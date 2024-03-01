@@ -54,7 +54,7 @@ public static class WPFExtensionMethods
     [DllImport("Shcore.dll")]
     private static extern IntPtr GetDpiForMonitor([In] IntPtr hmonitor, [In] DpiType dpiType, [Out] out uint dpiX, [Out] out uint dpiY);
 
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/dn280511(v=vs.85).aspx
+    // https://msdn.microsoft.com/library/windows/desktop/dn280511(v=vs.85).aspx
     public enum DpiType
     {
         Effective = 0,
