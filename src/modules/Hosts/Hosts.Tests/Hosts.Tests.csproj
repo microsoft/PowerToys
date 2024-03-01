@@ -37,7 +37,7 @@
   </ItemGroup>
 
 <!-- Workaround for map.html failing -->
-  <Target Name="TempWorkaroundForWinAppSdk1.5" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
+  <Target Name="TempWorkaroundForWinAppSdk15" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
     <ItemGroup>
       <MicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.html"/>
     </ItemGroup>
