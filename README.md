@@ -173,7 +173,7 @@ In this release, we focused on stability and improvements.
  - Fixed a title bar issue after maximizing the Peek's window. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed a crash when trying to use Peek in File Explorer alternatives.
  - Added a previewer for drives. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - File and folder previewers will now asynchronously calculate size, similar to the Properties screen in File Explorer. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - The folder previewer will now asynchronously calculate size, similar to the Properties screen in File Explorer. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### PowerRename
 
