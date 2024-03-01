@@ -112,7 +112,7 @@ In this release, we focused on stability and improvements.
 
 ### General
 
- - Refactored code so that the English language is used as a fallback when a localized resource is not found.
+ - Refactored code so that English is used as a fallback language when a localized resource cannot be found.
 
 ### Awake
 
@@ -149,7 +149,6 @@ In this release, we focused on stability and improvements.
 ### Image Resizer
 
  - Units and resize modes are now localized.
- - Fixed an issue causing the Height combo box to not hide when selecting percent as the measure unit in the Fit and Fill resize modes.
  - Tweaked and improved UI. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
 
 ### Keyboard Manager
@@ -166,7 +165,7 @@ In this release, we focused on stability and improvements.
 
 ### Paste as Plain Text
 
- - Prevent the windows menu from activating when the windows key is part of the activation shortcut and is released sooner.
+ - Prevent the start menu from activating when the Windows key is part of the activation shortcut and is released sooner.
 
 ### Peek
 
@@ -174,6 +173,7 @@ In this release, we focused on stability and improvements.
  - Fixed a crash when trying to use Peek in File Explorer alternatives.
  - Added a previewer for drives. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - The folder previewer will now asynchronously calculate size, similar to the Properties screen in File Explorer. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added support to the .ksh, .zsh, .bsh and .env file types to Monaco previewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 
 ### PowerRename
 
@@ -207,7 +207,6 @@ In this release, we focused on stability and improvements.
  - Fixed an alignment issue in the flyout icons causing some icons to be centered when they shouldn't. Thanks [@niels9001](https://github.com/niels9001)!
  - Added the mention that Monaco supports .txt files. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
  - Fixed an issue causing the Settings window to lose its previous maximized state. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed a faulty XAML binding in the Text Extractor page.
 
 ### Documentation
 
@@ -223,7 +222,8 @@ In this release, we focused on stability and improvements.
  - Updated CppWinRT to 2.0.240111.5.
  - Updated System.Drawing.Common to 8.0.2 to fix CI builds after the .NET 8.0.2 upgrade was released.
  - Updated WPFUI version to 3.0.0. Thanks [@niels9001](https://github.com/niels9001)!
- - XAML Styler is now fully enabled in the solution. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - XAML Styler is now fully tested in the solution when CI runs. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed a faulty XAML binding in the Text Extractor settings page.
  - Updated Microsoft.Web.WebView2 to 1.0.2365.46.
 
 #### What is being planned for version 0.80
