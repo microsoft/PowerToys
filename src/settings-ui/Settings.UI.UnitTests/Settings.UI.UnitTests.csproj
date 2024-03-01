@@ -49,9 +49,13 @@
     <ProjectReference Include="..\Settings.UI\PowerToys.Settings.csproj" />
   </ItemGroup>
   <!-- Workaround for map.html failing -->
-  <Target Name="TempWorkaroundForWinAppSdk15" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
+  <!--<Target Name="TempWorkaroundForWinAppSdk15" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
     <ItemGroup>
       <MicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.html"/>
     </ItemGroup>
-  </Target>
+  </Target>-->
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+		<Exec Command="copy NUL $(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\Microsoft.UI.Xaml\Assets\map.html" />
+	</Target>
+	
 </Project>
