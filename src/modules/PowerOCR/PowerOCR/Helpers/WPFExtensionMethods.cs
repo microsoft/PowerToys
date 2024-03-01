@@ -40,8 +40,8 @@ public static class WPFExtensionMethods
 
     public static DpiScale GetDpi(this System.Windows.Forms.Screen screen)
     {
-        var pnt = new System.Drawing.Point(screen.Bounds.Left + 1, screen.Bounds.Top + 1);
-        var mon = MonitorFromPoint(pnt, 2/*MONITOR_DEFAULTTONEAREST*/);
+        var point = new System.Drawing.Point(screen.Bounds.Left + 1, screen.Bounds.Top + 1);
+        var mon = MonitorFromPoint(point, 2/*MONITOR_DEFAULTTONEAREST*/);
         GetDpiForMonitor(mon, DpiType.Effective, out uint dpiX, out uint dpiY);
         return new DpiScale(dpiX / 96.0, dpiY / 96.0);
     }
