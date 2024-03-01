@@ -234,6 +234,7 @@ For [v0.80][github-next-release-work], we'll work on the items below:
  - Language selection
  - Automated UI testing through WinAppDriver
  - Develop support for Desired State Configuration
+ - New module: File Actions Menu
 
 ## PowerToys Community
 
