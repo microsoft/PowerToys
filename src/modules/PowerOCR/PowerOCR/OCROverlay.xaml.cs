@@ -42,11 +42,16 @@ public partial class OCROverlay : Window
     private bool isComboBoxReady;
     private const double ActiveOpacity = 0.4;
     private readonly UserSettings userSettings = new(new ThrottledActionInvoker());
+    private System.Drawing.Rectangle screenRectangle;
 
-    public OCROverlay(System.Drawing.Rectangle screenRectangle)
+    public OCROverlay(System.Drawing.Rectangle screenRectangleParam, DpiScale dpiScale)
     {
-        Left = screenRectangle.Left >= 0 ? screenRectangle.Left : screenRectangle.Left + (screenRectangle.Width / 2);
-        Top = screenRectangle.Top >= 0 ? screenRectangle.Top : screenRectangle.Top + (screenRectangle.Height / 2);
+        screenRectangle = screenRectangleParam;
+
+        Left = screenRectangle.Left;
+        Top = screenRectangle.Top;
+        Width = screenRectangle.Width / dpiScale.DpiScaleX;
+        Height = screenRectangle.Height / dpiScale.DpiScaleY;
 
         InitializeComponent();
 
@@ -106,12 +111,11 @@ public partial class OCROverlay : Window
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        WindowState = WindowState.Maximized;
         FullWindow.Rect = new Rect(0, 0, Width, Height);
         KeyDown += MainWindow_KeyDown;
         KeyUp += MainWindow_KeyUp;
 
-        BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
+        BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this, this.screenRectangle);
         BackgroundBrush.Opacity = ActiveOpacity;
 
         TopButtonsStackPanel.Visibility = Visibility.Visible;

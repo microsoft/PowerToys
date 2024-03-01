@@ -47,20 +47,12 @@ internal sealed class ImageMethods
         return destination;
     }
 
-    internal static ImageSource GetWindowBoundsImage(Window passedWindow)
+    internal static ImageSource GetWindowBoundsImage(Window passedWindow, System.Drawing.Rectangle screenRectangle)
     {
-        DpiScale dpi = VisualTreeHelper.GetDpi(passedWindow);
-        int windowWidth = (int)(passedWindow.ActualWidth * dpi.DpiScaleX);
-        int windowHeight = (int)(passedWindow.ActualHeight * dpi.DpiScaleY);
-
-        System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
-        int thisCorrectedLeft = (int)absPosPoint.X;
-        int thisCorrectedTop = (int)absPosPoint.Y;
-
-        using Bitmap bmp = new(windowWidth, windowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using Bitmap bmp = new(screenRectangle.Width, screenRectangle.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         using Graphics g = Graphics.FromImage(bmp);
 
-        g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+        g.CopyFromScreen(screenRectangle.Left, screenRectangle.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
         return BitmapToImageSource(bmp);
     }
 
