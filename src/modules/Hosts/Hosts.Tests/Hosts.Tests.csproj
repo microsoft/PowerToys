@@ -36,4 +36,11 @@
     <ProjectReference Include="..\Hosts\Hosts.csproj" />
   </ItemGroup>
 
+<!-- Workaround for map.html failing -->
+  <Target Name="TempWorkaroundForWinAppSdk1.5" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
+    <ItemGroup>
+      <MicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.html"/>
+    </ItemGroup>
+  </Target>
+
 </Project>
