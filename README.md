@@ -116,7 +116,7 @@ In this release, we focused on stability and improvements.
 
 ### Awake
 
- - The setting reverts to "Keep using the current power plan" after Awake deactivates itself after any of the timed modes has expired.
+ - The setting now reverts to "Keep using the current power plan" after Awake deactivates itself after any of the timed modes has expired.
 
 ### Color Picker
 
