@@ -46,6 +46,7 @@ namespace PowerToys.FileActionsMenu.Plugins.ExecutableActions
             FileActionsMenuUninstallActionInvokedEvent telemetryEvent = new()
             {
                 IsCalledFromDesktop = SelectedItems[0].Contains(Environment.GetFolderPath(Environment.SpecialFolder.Desktop)) || SelectedItems[0].Contains(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory)) || SelectedItems[0].Contains(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)),
+                IsCalledOnShortcut = SelectedItems[0].EndsWith(".lnk", StringComparison.InvariantCulture),
             };
             TelemetryHelper.LogEvent(telemetryEvent, SelectedItems);
 

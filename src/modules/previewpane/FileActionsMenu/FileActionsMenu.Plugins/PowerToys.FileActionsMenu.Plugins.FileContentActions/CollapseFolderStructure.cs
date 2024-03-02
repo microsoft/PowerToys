@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -16,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Collapse folder structure";
+        public string Title => ResourceHelper.GetResource("File_Content_Actions.CollapseFolder.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -30,9 +31,12 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public async Task Execute(object sender, RoutedEventArgs e)
         {
-            // Collapse folder structure
             bool cancelled = false;
-            FileActionProgressHelper fileActionProgressHelper = new FileActionProgressHelper("Collapse folder structure", CountFilesInDirectory(SelectedItems[0]), () => { cancelled = true; });
+            int numberOfFiles = CountFilesInDirectory(SelectedItems[0]);
+
+            TelemetryHelper.LogEvent(new FileActionsMenuCollapseFolderActionInvokedEvent() { CollapsedFilesCount = numberOfFiles }, SelectedItems);
+
+            FileActionProgressHelper fileActionProgressHelper = new(ResourceHelper.GetResource("File_Content_Actions.CollapseFolder.Title"), numberOfFiles, () => { cancelled = true; });
 
             int i = 0;
             foreach (string file in Directory.EnumerateFiles(SelectedItems[0], "*", SearchOption.AllDirectories))

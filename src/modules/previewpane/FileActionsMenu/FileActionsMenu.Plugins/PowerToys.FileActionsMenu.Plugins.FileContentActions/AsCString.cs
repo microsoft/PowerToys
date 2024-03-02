@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -16,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "As C escaped string";
+        public string Title => ResourceHelper.GetResource("File_Content_Actions.CopyContentAsCString.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -30,6 +32,8 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
+            TelemetryHelper.LogEvent(new FileActionsMenuCopyContentAsCEscapedStringActionInvokedEvent(), SelectedItems);
+
             Dictionary<string, string> escapeSequences = new()
             {
                 ["\x5C"] = "\\\\",

@@ -127,6 +127,51 @@
   <data name="Executable_Actions.Uninstall.Title" xml:space="preserve">
     <value>Uninstall application</value>
   </data>
+  <data name="File_Content_Actions.CollapseFolder.Title" xml:space="preserve">
+    <value>Collapse folder structure</value>
+  </data>
+  <data name="File_Content_Actions.CopyContent.Title" xml:space="preserve">
+    <value>Copy file content</value>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsCString.Title" xml:space="preserve">
+    <value>As C escaped string</value>
+    <comment>Subitem of "Copy file content" {Locked="C"}</comment>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsDataUrl.Title" xml:space="preserve">
+    <value>As base64 encoded data url</value>
+    <comment>Subitem of "Copy file content" {Locked="base64"}</comment>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsPlaintext.Title" xml:space="preserve">
+    <value>As plaintext</value>
+    <comment>Subitem of "Copy file content"</comment>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsUriEncoded.Title" xml:space="preserve">
+    <value>As URI encoded string</value>
+    <comment>Subitem of "Copy file content" {Locked="URI"}</comment>
+  </data>
+  <data name="File_Content_Actions.CopyContentAsXmlEncoded.Title" xml:space="preserve">
+    <value>As XML encoded string</value>
+    <comment>Subitem of "Copy file content" {Locked="XML"}</comment>
+  </data>
+  <data name="File_Content_Actions.CopyDircetoryTree.Title" xml:space="preserve">
+    <value>Copy folder tree</value>
+    <comment>Tree meaning the tree structure of a folder</comment>
+  </data>
+  <data name="File_Content_Actions.Description" xml:space="preserve">
+    <value>Enables diverse actions for working with the contents of a file</value>
+  </data>
+  <data name="File_Content_Actions.MergeFiles.Dialog.Filter" xml:space="preserve">
+    <value>All files</value>
+  </data>
+  <data name="File_Content_Actions.MergeFiles.Dialog.Title" xml:space="preserve">
+    <value>Save merged file</value>
+  </data>
+  <data name="File_Content_Actions.MergeFiles.Title" xml:space="preserve">
+    <value>Merge files</value>
+  </data>
+  <data name="File_Content_Actions.Title" xml:space="preserve">
+    <value>File content actions</value>
+  </data>
   <data name="PowerToys.Description" xml:space="preserve">
     <value>Adds entries for launching PowerToys modules.</value>
     <comment>{Locked="PowerToys"}</comment>
@@ -152,5 +197,24 @@
   <data name="PowerToys.PowerRename.Title" xml:space="preserve">
     <value>Rename with PowerRename</value>
     <comment>Renaming files. {Locked="PowerRename"}</comment>
+  </data>
+  <data name="Progress.Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>To stop an action</comment>
+  </data>
+  <data name="Progress.Conflict.Content" xml:space="preserve">
+    <value>Conflict: {0} already exists.</value>
+    <comment>{Locked="{0}"} {0} is a file path</comment>
+  </data>
+  <data name="Progress.Conflict.Ignore" xml:space="preserve">
+    <value>Ignore</value>
+    <comment>Ignore a duplicate file</comment>
+  </data>
+  <data name="Progress.Conflict.Replace" xml:space="preserve">
+    <value>Replace</value>
+    <comment>Replace a file</comment>
+  </data>
+  <data name="Progress.Conflict.Text" xml:space="preserve">
+    <value>Conflict</value>
   </data>
 </root>

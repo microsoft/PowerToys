@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Media;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using FileActionsMenu.Helpers.Telemetry;
+using Microsoft.PowerToys.Telemetry;
 using TaskDialog = Microsoft.WindowsAPICodePack.Dialogs.TaskDialog;
 using TaskDialogButton = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogButton;
 using TaskDialogProgressBar = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogProgressBar;
@@ -35,7 +38,7 @@ namespace FileActionsMenu.Helpers
 
             TaskDialogButton cancelButton = new()
             {
-                Text = "Cancel",
+                Text = ResourceHelper.GetResource("Progress.Cancel"),
             };
 
             _taskDialog = new()
@@ -74,14 +77,19 @@ namespace FileActionsMenu.Helpers
         {
             SystemSounds.Exclamation.Play();
             TaskCompletionSource taskCompletionSource = new();
+
+            _conflictTaskDialog?.Close();
+
+#pragma warning disable CA1863 // Use 'CompositeFormat'
             _conflictTaskDialog = new()
             {
-                Text = $"Conflict: {fileName} already exists",
-                Caption = "Conflict",
+                Text = string.Format(CultureInfo.InvariantCulture, ResourceHelper.GetResource("Progress.Conflict.Content"), fileName),
+                Caption = ResourceHelper.GetResource("Progress.Conflict.Title"),
             };
+#pragma warning restore CA1863 // Use 'CompositeFormat'
             TaskDialogButton replaceButton = new()
             {
-                Text = "Replace",
+                Text = ResourceHelper.GetResource("Progress.Conflict.Replace"),
             };
             replaceButton.Click += (sender, e) =>
             {
@@ -89,10 +97,11 @@ namespace FileActionsMenu.Helpers
                 _progressBar.State = TaskDialogProgressBarState.Normal;
                 taskCompletionSource.SetResult();
                 _conflictTaskDialog.Close();
+                PowerToysTelemetry.Log.WriteEvent(new FileActionsMenuProgressConflictEvent() { ReplaceChoosen = true });
             };
             TaskDialogButton ignoreButton = new()
             {
-                Text = "Ignore",
+                Text = ResourceHelper.GetResource("Progress.Conflict.Ignore"),
             };
             ignoreButton.Click += (sender, e) =>
             {
@@ -100,6 +109,7 @@ namespace FileActionsMenu.Helpers
                 _progressBar.State = TaskDialogProgressBarState.Normal;
                 taskCompletionSource.SetResult();
                 _conflictTaskDialog.Close();
+                PowerToysTelemetry.Log.WriteEvent(new FileActionsMenuProgressConflictEvent() { ReplaceChoosen = false });
             };
             _conflictTaskDialog.Closing += (sender, e) =>
             {

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
@@ -15,7 +16,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Copy content of file";
+        public string Title => ResourceHelper.GetResource("File_Content_Actions.CopyContent.Title");
 
         public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 

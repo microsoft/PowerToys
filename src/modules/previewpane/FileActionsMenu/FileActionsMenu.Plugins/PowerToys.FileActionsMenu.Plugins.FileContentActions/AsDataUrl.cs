@@ -5,6 +5,8 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Windows;
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -18,7 +20,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "As base64 encoded data url";
+        public string Title => ResourceHelper.GetResource("File_Content_Actions.CopyContentAsDataUrl.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -41,6 +43,8 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         private string GetMimeType(string extension)
         {
+            TelemetryHelper.LogEvent(new FileActionsMenuCopyContentAsDataUrlActionInvokedEvent(), SelectedItems);
+
             Dictionary<string, string> imageTypes = new()
             {
                 [".jpg"] = "image/jpeg",

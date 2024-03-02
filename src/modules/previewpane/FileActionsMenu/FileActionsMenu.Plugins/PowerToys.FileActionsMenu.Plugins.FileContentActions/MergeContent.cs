@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -15,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Merge files";
+        public string Title => ResourceHelper.GetResource("File_Content_Actions.MergeFiles.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -29,9 +31,22 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public async Task Execute(object sender, RoutedEventArgs e)
         {
+            bool hasDifferentExtensions = false;
+            string extension = Path.GetExtension(SelectedItems[0]);
+            foreach (string item in SelectedItems[1..])
+            {
+                if (extension != Path.GetExtension(item))
+                {
+                    hasDifferentExtensions = true;
+                    break;
+                }
+            }
+
+            TelemetryHelper.LogEvent(new FileActionsMenuMergeContentActionInvokedEvent() { HasDifferentExtensions = hasDifferentExtensions }, SelectedItems);
+
             SaveFileDialog saveFileDialog = new();
-            saveFileDialog.Filter = "All files|*.*";
-            saveFileDialog.Title = "Save merged file";
+            saveFileDialog.Filter = ResourceHelper.GetResource("File_Content_Actions.MergeFiles.Dialog.Filter") + "|*.*";
+            saveFileDialog.Title = ResourceHelper.GetResource("File_Content_Actions.MergeFiles.Dialog.Title");
             saveFileDialog.DefaultExt = ".*";
             saveFileDialog.InitialDirectory = Path.GetDirectoryName(SelectedItems[0]);
             DialogResult result = saveFileDialog.ShowDialog();

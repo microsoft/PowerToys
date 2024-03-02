@@ -9,8 +9,8 @@ namespace FileActionsMenu.Helpers.Telemetry
     [EventData]
     public sealed class FileActionsMenuVerifyHashActionInvokedEvent : FileActionsMenuItemInvokedEvent
     {
-        public string HashType { get; set; } = string.Empty;
+        public TelemetryHashEnums.HashType HashType { get; set; }
 
-        public string VerifyType { get; set; } = string.Empty;
+        public TelemetryHashEnums.HashGenerateOrVerifyType VerifyType { get; set; }
     }
 }

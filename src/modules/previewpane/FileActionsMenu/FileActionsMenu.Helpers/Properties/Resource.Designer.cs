@@ -88,6 +88,123 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Collapse folder structure.
+        /// </summary>
+        internal static string File_Content_Actions_CollapseFolder_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.CollapseFolder.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy file content.
+        /// </summary>
+        internal static string File_Content_Actions_CopyContent_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.CopyContent.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to As C escaped string.
+        /// </summary>
+        internal static string File_Content_Actions_CopyContentAsCString_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.CopyContentAsCString.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to As base64 encoded data url.
+        /// </summary>
+        internal static string File_Content_Actions_CopyContentAsDataUrl_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.CopyContentAsDataUrl.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to As plaintext.
+        /// </summary>
+        internal static string File_Content_Actions_CopyContentAsPlaintext_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.CopyContentAsPlaintext.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to As URI encoded string.
+        /// </summary>
+        internal static string File_Content_Actions_CopyContentAsUriEncoded_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.CopyContentAsUriEncoded.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to As XML encoded string.
+        /// </summary>
+        internal static string File_Content_Actions_CopyContentAsXmlEncoded_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.CopyContentAsXmlEncoded.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy folder tree.
+        /// </summary>
+        internal static string File_Content_Actions_CopyDircetoryTree_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.CopyDircetoryTree.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables diverse actions for working with the contents of a file.
+        /// </summary>
+        internal static string File_Content_Actions_Description {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All files.
+        /// </summary>
+        internal static string File_Content_Actions_MergeFiles_Dialog_Filter {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.MergeFiles.Dialog.Filter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save merged file.
+        /// </summary>
+        internal static string File_Content_Actions_MergeFiles_Dialog_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.MergeFiles.Dialog.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Merge files.
+        /// </summary>
+        internal static string File_Content_Actions_MergeFiles_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.MergeFiles.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File content actions.
+        /// </summary>
+        internal static string File_Content_Actions_Title {
+            get {
+                return ResourceManager.GetString("File_Content_Actions.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Adds entries for launching PowerToys modules..
         /// </summary>
         internal static string PowerToys_Description {
@@ -147,6 +264,51 @@ namespace FileActionsMenu.Helpers.Properties {
         internal static string PowerToys_PowerRename_Title {
             get {
                 return ResourceManager.GetString("PowerToys.PowerRename.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string Progress_Cancel {
+            get {
+                return ResourceManager.GetString("Progress.Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Conflict: {0} already exists..
+        /// </summary>
+        internal static string Progress_Conflict_Content {
+            get {
+                return ResourceManager.GetString("Progress.Conflict.Content", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignore.
+        /// </summary>
+        internal static string Progress_Conflict_Ignore {
+            get {
+                return ResourceManager.GetString("Progress.Conflict.Ignore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace.
+        /// </summary>
+        internal static string Progress_Conflict_Replace {
+            get {
+                return ResourceManager.GetString("Progress.Conflict.Replace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Conflict.
+        /// </summary>
+        internal static string Progress_Conflict_Text {
+            get {
+                return ResourceManager.GetString("Progress.Conflict.Text", resourceCulture);
             }
         }
     }

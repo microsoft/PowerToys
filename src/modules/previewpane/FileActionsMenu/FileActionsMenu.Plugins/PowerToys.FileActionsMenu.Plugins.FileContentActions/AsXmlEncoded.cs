@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Security;
 using System.Text.Json;
 using System.Windows;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -21,7 +22,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "As XML safe string";
+        public string Title => "As for XML encoded string";
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -35,6 +36,8 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
+            TelemetryHelper.LogEvent(new FileActionsMenuCopyContentAsXmlEncodedActionInvokedEvent(), SelectedItems);
+
             string fileContent = File.ReadAllText(SelectedItems[0]);
 
             fileContent = SecurityElement.Escape(fileContent);

@@ -7,10 +7,7 @@ using System.Diagnostics.Tracing;
 namespace FileActionsMenu.Helpers.Telemetry
 {
     [EventData]
-    public sealed class FileActionsMenuUninstallActionInvokedEvent : FileActionsMenuItemInvokedEvent
+    public class FileActionsMenuCopyContentAsXmlEncodedActionInvokedEvent : FileActionsMenuItemInvokedEvent
     {
-        public bool IsCalledFromDesktop { get; set; }
-
-        public bool IsCalledOnShortcut { get; set; }
     }
 }
