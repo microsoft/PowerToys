@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="System.IO.Hashing" />
+    <ProjectReference Include="..\..\..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
     <ProjectReference Include="..\..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj"></ProjectReference>
   </ItemGroup>

@@ -5,6 +5,8 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
@@ -18,7 +20,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Resize images with Image Resizer";
+        public string Title => SelectedItems.Length == 1 ? ResourceHelper.GetResource("PowerToys.ImageResizer.Title_S") : ResourceHelper.GetResource("PowerToys.ImageResizer.Title_P");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -32,6 +34,8 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
+            TelemetryHelper.LogEvent<FileActionsMenuImageResizerActionInvokedEvent>(SelectedItems);
+
             StringBuilder arguments = new();
 
             foreach (string item in SelectedItems)

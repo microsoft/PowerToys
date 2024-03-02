@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Win32;
@@ -18,7 +21,7 @@ namespace PowerToys.FileActionsMenu.Plugins.ExecutableActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Uninstall application";
+        public string Title => ResourceHelper.GetResource("Executable_Actions.Uninstall.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -26,7 +29,7 @@ namespace PowerToys.FileActionsMenu.Plugins.ExecutableActions
 
         public int Category => 2;
 
-        public IconElement? Icon => null;
+        public IconElement? Icon => new FontIcon { Glyph = "\ue74d" };
 
         public bool IsVisible => SelectedItems.Length == 1
             && (SelectedItems[0].EndsWith(".exe", StringComparison.InvariantCulture) || ShortcutHelper.GetFullPathFromShortcut(SelectedItems[0])
@@ -39,6 +42,8 @@ namespace PowerToys.FileActionsMenu.Plugins.ExecutableActions
             {
                 return Task.CompletedTask;
             }
+
+            TelemetryHelper.LogEvent<FileActionsMenuUninstallActionInvokedEvent>(SelectedItems);
 
             // Thank you Microsoft Copilot!
             static string[] SplitCommandLine(string commandLine)

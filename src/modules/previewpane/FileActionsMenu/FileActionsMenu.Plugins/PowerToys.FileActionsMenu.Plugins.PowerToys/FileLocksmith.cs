@@ -4,6 +4,8 @@
 
 using System.Diagnostics;
 using System.Text;
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -18,7 +20,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "What's locking this file?";
+        public string Title => SelectedItems.Length == 1 ? ResourceHelper.GetResource("PowerToys.FileLocksmith.Title_S") : ResourceHelper.GetResource("PowerToys.FileLocksmith.Title_P");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -32,6 +34,8 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
+            TelemetryHelper.LogEvent<FileActionsMenuFileLocksmithActionInvokedEvent>(SelectedItems);
+
             SettingsUtils fileLocksmithSettings = new();
 
             string paths = string.Join("\n", SelectedItems);

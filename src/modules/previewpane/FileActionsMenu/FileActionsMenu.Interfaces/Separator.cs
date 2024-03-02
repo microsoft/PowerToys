@@ -9,6 +9,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace FileActionsMenu.Interfaces
 {
+    /// <summary>
+    /// A separator in the menu.
+    /// </summary>
     public sealed class Separator : IAction
     {
         public string[] SelectedItems { get => []; set => _ = value; }

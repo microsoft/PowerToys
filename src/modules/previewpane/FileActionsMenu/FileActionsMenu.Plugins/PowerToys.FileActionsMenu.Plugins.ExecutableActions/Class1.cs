@@ -2,15 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 
 namespace PowerToys.FileActionsMenu.Plugins.ExecutableActions
 {
     public class Class1 : IFileActionsMenuPlugin
     {
-        public string Name => "Executable actions";
+        public string Name => ResourceHelper.GetResource("Executable_Actions.Name");
 
-        public string Description => "Adds actions for .exe and .dll files.";
+        public string Description => ResourceHelper.GetResource("Executable_Actions.Description");
 
         public string Author => "Microsoft Corporation";
 
