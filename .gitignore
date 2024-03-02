@@ -351,3 +351,6 @@ src/common/Telemetry/*.etl
 
 # MSBuildCache
 /MSBuildCacheLogs/
+
+# Temp telemetry files.
+*.etl

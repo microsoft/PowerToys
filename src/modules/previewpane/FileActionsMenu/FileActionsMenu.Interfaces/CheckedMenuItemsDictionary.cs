@@ -7,6 +7,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace FileActionsMenu.Interfaces
 {
+    /// <summary>
+    /// A stub type that represents a dictionary of checked menu items. The key is the uuid of the group. The list contains the corresponding menu item and the action.
+    /// </summary>
     public sealed class CheckedMenuItemsDictionary : Dictionary<string, List<(MenuFlyoutItemBase, IAction)>>
     {
     }

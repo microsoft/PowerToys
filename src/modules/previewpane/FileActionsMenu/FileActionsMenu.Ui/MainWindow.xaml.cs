@@ -9,7 +9,10 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
+using FileActionsMenu.Ui.Helpers;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -48,6 +51,11 @@ namespace FileActionsMenu.Ui
                     pluginInstance.TopLevelMenuActions.CopyTo(_actions, _actions.Length - pluginInstance.TopLevelMenuActions.Length);
                 });
             }
+
+            PowerToysTelemetry.Log.WriteEvent(new FileActionsMenuInvokedEvent()
+            {
+                LoadedPluginsCount = pluginPaths.Length,
+            });
 
             _menu = new MenuFlyout();
 

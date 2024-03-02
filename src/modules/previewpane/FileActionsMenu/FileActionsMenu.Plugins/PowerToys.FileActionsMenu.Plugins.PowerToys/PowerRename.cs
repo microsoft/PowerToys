@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
@@ -31,6 +32,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
+            TelemetryHelper.LogEvent<FileActionsMenuPowerRenameActionInvokedEvent>(SelectedItems);
             _ = RunPowerRename(CreateShellItemArrayFromPaths(SelectedItems));
             return Task.CompletedTask;
         }
