@@ -32,7 +32,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            TelemetryHelper.LogEvent<FileActionsMenuPowerRenameActionInvokedEvent>(SelectedItems);
+            TelemetryHelper.LogEvent(new FileActionsMenuPowerRenameActionInvokedEvent(), SelectedItems);
             _ = RunPowerRename(CreateShellItemArrayFromPaths(SelectedItems));
             return Task.CompletedTask;
         }
