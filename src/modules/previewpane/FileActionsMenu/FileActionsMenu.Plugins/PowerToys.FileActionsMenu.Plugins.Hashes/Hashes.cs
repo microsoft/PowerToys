@@ -7,9 +7,11 @@ using System.IO.Hashing;
 using System.Text;
 using System.Windows;
 using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
+using static FileActionsMenu.Helpers.HashEnums;
 using RoutedEventArgs = Microsoft.UI.Xaml.RoutedEventArgs;
 
 namespace PowerToys.FileActionsMenu.Plugins.Hashes
@@ -22,7 +24,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => (_hashCallingAction == HashCallingAction.GENERATE ? "Generate checksum" : "Verify checksum") + ((SelectedItems.Length > 1) ? "s" : string.Empty);
+        public string Title => _hashCallingAction == HashCallingAction.GENERATE ? (SelectedItems.Length == 1 ? ResourceHelper.GetResource("Hashes.Generate.Title_S") : ResourceHelper.GetResource("Hashes.Generate.Title_P")) : (SelectedItems.Length == 1 ? ResourceHelper.GetResource("Hashes.Verify.Title_S") : ResourceHelper.GetResource("Hashes.Verify.Title_P"));
 
         public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 
@@ -50,22 +52,6 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
         public IconElement? Icon => _hashCallingAction == HashCallingAction.GENERATE ? new FontIcon { Glyph = "\uE73A" } : new FontIcon { Glyph = "\uE9D5" };
 
         public bool IsVisible => !SelectedItems.Any(Directory.Exists);
-
-        public enum HashType
-        {
-            MD5,
-            SHA1,
-            SHA256,
-            SHA384,
-            SHA512,
-            SHA3_256,
-            SHA3_384,
-            SHA3_512,
-            CRC32Hex,
-            CRC32Decimal,
-            CRC64Hex,
-            CRC64Decimal,
-        }
 
         public enum HashCallingAction
         {
@@ -211,19 +197,30 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                 _ => throw new InvalidOperationException("Unknown checked menu item"),
             };
 
+            GenerateOrVerifyMode verifyMode = checkedMenuItemAction switch
+            {
+                SingleFile => GenerateOrVerifyMode.SingleFile,
+                MultipleFiles => GenerateOrVerifyMode.MultipleFiles,
+                InFilename => GenerateOrVerifyMode.Filename,
+                InClipboard => GenerateOrVerifyMode.Clipboard,
+                _ => throw new InvalidOperationException("Unknown checked menu item"),
+            };
+
+            TelemetryHelper.LogEvent(new FileActionsMenuVerifyHashesActionInvokedEvent() { HashType = hashType, VerifyMode = verifyMode }, selectedItems);
+
             if (valid)
             {
-                MessageBox.Show("All checksums are valid", "Checksum validation", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(ResourceHelper.GetResource("Hashes.Verify.Dialog.Success"), ResourceHelper.GetResource("Hashes.Verify.Dialog.Title"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("One or more checksums are invalid", "Checksum validation", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ResourceHelper.GetResource("Hashes.Verify.Dialog.Fail"), ResourceHelper.GetResource("Hashes.Verify.Dialog.Title"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             return Task.CompletedTask;
         }
 
-        public static Task GenerateHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionary checkedMenuItemsDictionairy)
+        public static async Task GenerateHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionary checkedMenuItemsDictionairy)
         {
             (Func<string, string> hashGeneratorFunction, string fileExtension) = GetHashProperties(hashType);
             List<(MenuFlyoutItemBase, IAction)> checkedMenuItems = checkedMenuItemsDictionairy[GetUUID(HashCallingAction.GENERATE)];
@@ -233,7 +230,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
             switch (checkedMenuItemAction)
             {
                 case SingleFile:
-                    GenerateSingleFileWithHashes(selectedItems, hashGeneratorFunction, fileExtension);
+                    await GenerateSingleFileWithHashes(selectedItems, hashGeneratorFunction, fileExtension);
                     break;
                 case MultipleFiles:
                     GenerateMultipleFilesWithHashes(selectedItems, hashGeneratorFunction, fileExtension);
@@ -248,7 +245,16 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                     throw new InvalidOperationException("Unknown checked menu item");
             }
 
-            return Task.CompletedTask;
+            GenerateOrVerifyMode generateMode = checkedMenuItemAction switch
+            {
+                SingleFile => GenerateOrVerifyMode.SingleFile,
+                MultipleFiles => GenerateOrVerifyMode.MultipleFiles,
+                InFilename => GenerateOrVerifyMode.Filename,
+                InClipboard => GenerateOrVerifyMode.Clipboard,
+                _ => throw new InvalidOperationException("Unknown checked menu item"),
+            };
+
+            TelemetryHelper.LogEvent(new FileActionsMenuGenerateHashesActionInvokedEvent() { HashType = hashType, GenerateMode = generateMode }, selectedItems);
         }
 
         private static void GenerateHashesInFilenames(string[] selectedItems, Func<string, string> hashGeneratorFunction)
@@ -273,10 +279,10 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
             throw new InvalidOperationException();
         }
 
-        private static void GenerateSingleFileWithHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
+        private static async Task GenerateSingleFileWithHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
         {
-            FileActionProgressHelper fileActionProgressHelper = new("Generating checksum", 1, () => { });
-            fileActionProgressHelper.UpdateProgress(0, "Checksums" + fileExtension);
+            FileActionProgressHelper fileActionProgressHelper = new(ResourceHelper.GetResource("Hashes.Generate.Dialog.Title"), 1, () => { });
+            fileActionProgressHelper.UpdateProgress(0, ResourceHelper.GetResource("Hashes.Generate.Filename") + fileExtension);
 
             StringBuilder fileContent = new();
 
@@ -285,19 +291,19 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
                 fileContent.Append(filename + ":\n" + hashGeneratorFunction(filename) + "\n\n");
             }
 
-            if (File.Exists(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension))
+            if (File.Exists(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\" + ResourceHelper.GetResource("Hashes.Generate.Filename") + fileExtension))
             {
-                fileActionProgressHelper.Conflict(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension, () => File.WriteAllText(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension, fileContent.ToString()), () => { }).Wait();
+                await fileActionProgressHelper.Conflict(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension, () => File.WriteAllText(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\" + ResourceHelper.GetResource("Hashes.Generate.Filename") + fileExtension, fileContent.ToString()), () => { });
             }
             else
             {
-                File.WriteAllText(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension, fileContent.ToString());
+                File.WriteAllText(Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\" + ResourceHelper.GetResource("Hashes.Generate.Filename") + fileExtension, fileContent.ToString());
             }
         }
 
         private static bool VerifySingleFileWithHashes(string[] selectedItems, Func<string, string> hashGeneratorFunction, string fileExtension)
         {
-            string checksumsFilename = Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\Checksums" + fileExtension;
+            string checksumsFilename = Path.GetDirectoryName(selectedItems[0]).GetOrArgumentNullException() + "\\" + ResourceHelper.GetResource("Hashes.Generate.Filename") + fileExtension;
 
             if (!File.Exists(checksumsFilename))
             {

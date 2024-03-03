@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
@@ -37,11 +38,11 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
         {
             if (_hashCallingAction == Hashes.HashCallingAction.GENERATE)
             {
-                await Hashes.GenerateHashes(Hashes.HashType.SHA512, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.GenerateHashes(HashEnums.HashType.SHA512, SelectedItems, CheckedMenuItemsDictionary);
             }
             else
             {
-                await Hashes.VerifyHashes(Hashes.HashType.SHA512, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.VerifyHashes(HashEnums.HashType.SHA512, SelectedItems, CheckedMenuItemsDictionary);
             }
         }
     }

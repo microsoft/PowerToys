@@ -205,6 +205,222 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enables actions related to the file properties.
+        /// </summary>
+        internal static string File_Properties_Description {
+            get {
+                return ResourceManager.GetString("File_Properties.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File properties.
+        /// </summary>
+        internal static string File_Properties_Title {
+            get {
+                return ResourceManager.GetString("File_Properties.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unblock files.
+        /// </summary>
+        internal static string File_Properties_Unblock_Title {
+            get {
+                return ResourceManager.GetString("File_Properties.Unblock.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decimal.
+        /// </summary>
+        internal static string Hashes_CRC_Decimal {
+            get {
+                return ResourceManager.GetString("Hashes.CRC.Decimal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hex.
+        /// </summary>
+        internal static string Hashes_CRC_Hex {
+            get {
+                return ResourceManager.GetString("Hashes.CRC.Hex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adds actions for generating and verifying checksums of files..
+        /// </summary>
+        internal static string Hashes_Description {
+            get {
+                return ResourceManager.GetString("Hashes.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generating checksum.
+        /// </summary>
+        internal static string Hashes_Generate_Dialog_Title {
+            get {
+                return ResourceManager.GetString("Hashes.Generate.Dialog.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checksums.
+        /// </summary>
+        internal static string Hashes_Generate_Filename {
+            get {
+                return ResourceManager.GetString("Hashes.Generate.Filename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate checksums.
+        /// </summary>
+        internal static string Hashes_Generate_Title_P {
+            get {
+                return ResourceManager.GetString("Hashes.Generate.Title_P", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate checksum.
+        /// </summary>
+        internal static string Hashes_Generate_Title_S {
+            get {
+                return ResourceManager.GetString("Hashes.Generate.Title_S", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy checksum to clipboard.
+        /// </summary>
+        internal static string Hashes_InClipboard_Generate_Title {
+            get {
+                return ResourceManager.GetString("Hashes.InClipboard.Generate.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Compare with checksum in clipboard.
+        /// </summary>
+        internal static string Hashes_InClipboard_Verify_Title {
+            get {
+                return ResourceManager.GetString("Hashes.InClipboard.Verify.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace filename with the checksum.
+        /// </summary>
+        internal static string Hashes_InFilename_Generate_Title {
+            get {
+                return ResourceManager.GetString("Hashes.InFilename.Generate.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Compare checksum with filename.
+        /// </summary>
+        internal static string Hashes_InFilename_Verify_Title {
+            get {
+                return ResourceManager.GetString("Hashes.InFilename.Verify.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save in multiple files.
+        /// </summary>
+        internal static string Hashes_MultipleFiles_Generate_Title {
+            get {
+                return ResourceManager.GetString("Hashes.MultipleFiles.Generate.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Compare checksum with content of same named files.
+        /// </summary>
+        internal static string Hashes_MultipleFiles_Verify_Title {
+            get {
+                return ResourceManager.GetString("Hashes.MultipleFiles.Verify.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save checksums in one single file.
+        /// </summary>
+        internal static string Hashes_SingleFile_Generate_Title {
+            get {
+                return ResourceManager.GetString("Hashes.SingleFile.Generate.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Compare with checksums in file called &quot;{0}&quot;.
+        /// </summary>
+        internal static string Hashes_SingleFile_Verify_Title {
+            get {
+                return ResourceManager.GetString("Hashes.SingleFile.Verify.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checksum generator/checker.
+        /// </summary>
+        internal static string Hashes_Title {
+            get {
+                return ResourceManager.GetString("Hashes.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One or more checksums are invalid.
+        /// </summary>
+        internal static string Hashes_Verify_Dialog_Fail {
+            get {
+                return ResourceManager.GetString("Hashes.Verify.Dialog.Fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All checksums are valid.
+        /// </summary>
+        internal static string Hashes_Verify_Dialog_Success {
+            get {
+                return ResourceManager.GetString("Hashes.Verify.Dialog.Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checksum validation.
+        /// </summary>
+        internal static string Hashes_Verify_Dialog_Title {
+            get {
+                return ResourceManager.GetString("Hashes.Verify.Dialog.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verify checksums.
+        /// </summary>
+        internal static string Hashes_Verify_Title_P {
+            get {
+                return ResourceManager.GetString("Hashes.Verify.Title_P", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verify checksum.
+        /// </summary>
+        internal static string Hashes_Verify_Title_S {
+            get {
+                return ResourceManager.GetString("Hashes.Verify.Title_S", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Adds entries for launching PowerToys modules..
         /// </summary>
         internal static string PowerToys_Description {

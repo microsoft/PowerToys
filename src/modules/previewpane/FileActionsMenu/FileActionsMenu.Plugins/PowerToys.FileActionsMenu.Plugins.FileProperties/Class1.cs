@@ -2,15 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 
 namespace PowerToys.FileActionsMenu.Plugins.FileProperties
 {
     public class Class1 : IFileActionsMenuPlugin
     {
-        public string Name => "File properties";
+        public string Name => ResourceHelper.GetResource("File_Properties.Title");
 
-        public string Description => "Enables actions related to the file properties";
+        public string Description => ResourceHelper.GetResource("File_Properties.Description");
 
         public string Author => "Microsoft Corporation";
 

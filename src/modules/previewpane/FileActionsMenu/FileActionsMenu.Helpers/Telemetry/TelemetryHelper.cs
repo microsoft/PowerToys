@@ -6,12 +6,14 @@ using System.IO;
 using System.Linq;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.PowerToys.Telemetry.Events;
 
 namespace FileActionsMenu.Helpers.Telemetry
 {
     public sealed class TelemetryHelper
     {
-        public static void LogEvent(FileActionsMenuItemInvokedEvent e, string[] selectedItems)
+        public static void LogEvent<T>(T e, string[] selectedItems)
+            where T : EventBase, IFileActionsMenuItemInvokedEvent
         {
             e.HasFilesSelected = selectedItems.Any(File.Exists);
             e.HasFoldersSelected = selectedItems.Any(Directory.Exists);

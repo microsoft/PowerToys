@@ -9,8 +9,10 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace FileActionsMenu.Helpers.Telemetry
 {
     [EventData]
-    public class FileActionsMenuItemInvokedEvent : EventBase, IEvent
+    public class FileActionsMenuUnblockFilesActionInvokedEvent : EventBase, IFileActionsMenuItemInvokedEvent
     {
+        public int CollapsedFilesCount { get; set; }
+
         public int ItemCount { get; set; }
 
         public bool HasImagesSelected { get; set; }

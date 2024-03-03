@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
@@ -15,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileProperties
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Unblock files";
+        public string Title => ResourceHelper.GetResource("File_Properties.Unblock.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -29,6 +31,8 @@ namespace PowerToys.FileActionsMenu.Plugins.FileProperties
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
+            TelemetryHelper.LogEvent(new FileActionsMenuUnblockFilesActionInvokedEvent(), SelectedItems);
+
             foreach (string file in SelectedItems)
             {
                 if (!File.Exists(file + ":Zone.Identifier"))

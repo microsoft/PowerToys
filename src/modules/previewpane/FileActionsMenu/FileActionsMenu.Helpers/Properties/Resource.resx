@@ -172,6 +172,82 @@
   <data name="File_Content_Actions.Title" xml:space="preserve">
     <value>File content actions</value>
   </data>
+  <data name="File_Properties.Description" xml:space="preserve">
+    <value>Enables actions related to the file properties</value>
+  </data>
+  <data name="File_Properties.Title" xml:space="preserve">
+    <value>File properties</value>
+  </data>
+  <data name="File_Properties.Unblock.Title" xml:space="preserve">
+    <value>Unblock files</value>
+    <comment>For reference see the Windows built-in File properties view for a file downloaded from the internet</comment>
+  </data>
+  <data name="Hashes.CRC.Decimal" xml:space="preserve">
+    <value>Decimal</value>
+  </data>
+  <data name="Hashes.CRC.Hex" xml:space="preserve">
+    <value>Hex</value>
+    <comment>Acronym for Hexadecimal</comment>
+  </data>
+  <data name="Hashes.Description" xml:space="preserve">
+    <value>Adds actions for generating and verifying checksums of files.</value>
+  </data>
+  <data name="Hashes.Generate.Dialog.Title" xml:space="preserve">
+    <value>Generating checksum</value>
+  </data>
+  <data name="Hashes.Generate.Filename" xml:space="preserve">
+    <value>Checksums</value>
+    <comment>This string must be filename compliant</comment>
+  </data>
+  <data name="Hashes.Generate.Title_P" xml:space="preserve">
+    <value>Generate checksums</value>
+  </data>
+  <data name="Hashes.Generate.Title_S" xml:space="preserve">
+    <value>Generate checksum</value>
+  </data>
+  <data name="Hashes.InClipboard.Generate.Title" xml:space="preserve">
+    <value>Copy checksum to clipboard</value>
+  </data>
+  <data name="Hashes.InClipboard.Verify.Title" xml:space="preserve">
+    <value>Compare with checksum in clipboard</value>
+  </data>
+  <data name="Hashes.InFilename.Generate.Title" xml:space="preserve">
+    <value>Replace filename with the checksum</value>
+  </data>
+  <data name="Hashes.InFilename.Verify.Title" xml:space="preserve">
+    <value>Compare checksum with filename</value>
+  </data>
+  <data name="Hashes.MultipleFiles.Generate.Title" xml:space="preserve">
+    <value>Save in multiple files</value>
+  </data>
+  <data name="Hashes.MultipleFiles.Verify.Title" xml:space="preserve">
+    <value>Compare checksum with content of same named files</value>
+  </data>
+  <data name="Hashes.SingleFile.Generate.Title" xml:space="preserve">
+    <value>Save checksums in one single file</value>
+  </data>
+  <data name="Hashes.SingleFile.Verify.Title" xml:space="preserve">
+    <value>Compare with checksums in file called "{0}"</value>
+    <comment>{0} is a filename</comment>
+  </data>
+  <data name="Hashes.Title" xml:space="preserve">
+    <value>Checksum generator/checker</value>
+  </data>
+  <data name="Hashes.Verify.Dialog.Fail" xml:space="preserve">
+    <value>One or more checksums are invalid</value>
+  </data>
+  <data name="Hashes.Verify.Dialog.Success" xml:space="preserve">
+    <value>All checksums are valid</value>
+  </data>
+  <data name="Hashes.Verify.Dialog.Title" xml:space="preserve">
+    <value>Checksum validation</value>
+  </data>
+  <data name="Hashes.Verify.Title_P" xml:space="preserve">
+    <value>Verify checksums</value>
+  </data>
+  <data name="Hashes.Verify.Title_S" xml:space="preserve">
+    <value>Verify checksum</value>
+  </data>
   <data name="PowerToys.Description" xml:space="preserve">
     <value>Adds entries for launching PowerToys modules.</value>
     <comment>{Locked="PowerToys"}</comment>

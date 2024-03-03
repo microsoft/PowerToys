@@ -9,7 +9,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace FileActionsMenu.Helpers.Telemetry
 {
     [EventData]
-    public sealed class FileActionsMenuUninstallActionInvokedEvent : EventBase, IFileActionsMenuItemInvokedEvent
+    public class FileActionsMenuVerifyHashesActionInvokedEvent : EventBase, IFileActionsMenuItemInvokedEvent
     {
         public int CollapsedFilesCount { get; set; }
 
@@ -25,8 +25,8 @@ namespace FileActionsMenu.Helpers.Telemetry
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
 
-        public bool IsCalledFromDesktop { get; set; }
+        public HashEnums.HashType HashType { get; set; }
 
-        public bool IsCalledOnShortcut { get; set; }
+        public HashEnums.GenerateOrVerifyMode VerifyMode { get; set; }
     }
 }

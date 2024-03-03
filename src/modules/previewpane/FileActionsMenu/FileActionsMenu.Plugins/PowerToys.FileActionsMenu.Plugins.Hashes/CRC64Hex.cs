@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
@@ -21,7 +22,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public CheckedMenuItemsDictionary CheckedMenuItemsDictionary { get => _checkedMenuItemsDictionary.GetOrArgumentNullException(); set => _checkedMenuItemsDictionary = value; }
 
-        public string Title => "Hex";
+        public string Title => ResourceHelper.GetResource("Hashes.CRC.Hex");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -37,11 +38,11 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
         {
             if (_hashCallingAction == Hashes.HashCallingAction.GENERATE)
             {
-                await Hashes.GenerateHashes(Hashes.HashType.CRC64Hex, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.GenerateHashes(HashEnums.HashType.CRC64Hex, SelectedItems, CheckedMenuItemsDictionary);
             }
             else
             {
-                await Hashes.VerifyHashes(Hashes.HashType.CRC64Hex, SelectedItems, CheckedMenuItemsDictionary);
+                await Hashes.VerifyHashes(HashEnums.HashType.CRC64Hex, SelectedItems, CheckedMenuItemsDictionary);
             }
         }
     }

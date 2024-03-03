@@ -115,6 +115,7 @@ namespace FileActionsMenu.Helpers
             {
                 if (!taskCompletionSource.Task.IsCompleted)
                 {
+                    onIgnore();
                     taskCompletionSource.SetResult();
                 }
             };

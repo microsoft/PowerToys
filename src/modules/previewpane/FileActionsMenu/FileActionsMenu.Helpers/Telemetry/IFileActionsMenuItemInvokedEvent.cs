@@ -2,17 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
 namespace FileActionsMenu.Helpers.Telemetry
 {
-    [EventData]
-    public sealed class FileActionsMenuUninstallActionInvokedEvent : EventBase, IFileActionsMenuItemInvokedEvent
+    public interface IFileActionsMenuItemInvokedEvent : IEvent
     {
-        public int CollapsedFilesCount { get; set; }
-
         public int ItemCount { get; set; }
 
         public bool HasImagesSelected { get; set; }
@@ -23,10 +19,6 @@ namespace FileActionsMenu.Helpers.Telemetry
 
         public bool HasExecutableFilesSelected { get; set; }
 
-        public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
-
-        public bool IsCalledFromDesktop { get; set; }
-
-        public bool IsCalledOnShortcut { get; set; }
+        public new PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
 }
