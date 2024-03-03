@@ -2,15 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 
 namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 {
     public class Class1 : IFileActionsMenuPlugin
     {
-        public string Name => "Image clipboard";
+        public string Name => ResourceHelper.GetResource("Image_Clipboard_Actions.Title");
 
-        public string Description => "Adds actions for copying/pasting images to/from the clipboard.";
+        public string Description => ResourceHelper.GetResource("Image_Clipboard_Actions.Description");
 
         public string Author => "Microsoft Corporation";
 

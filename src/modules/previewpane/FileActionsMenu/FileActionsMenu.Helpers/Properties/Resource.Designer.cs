@@ -421,6 +421,69 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to clipboard_image.
+        /// </summary>
+        internal static string Image_Clipboard_Actions_CopyFromClipboard_FileName {
+            get {
+                return ResourceManager.GetString("Image_Clipboard_Actions.CopyFromClipboard.FileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy image from clipboard into folder.
+        /// </summary>
+        internal static string Image_Clipboard_Actions_CopyFromClipboard_Title {
+            get {
+                return ResourceManager.GetString("Image_Clipboard_Actions.CopyFromClipboard.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy image to clipboard.
+        /// </summary>
+        internal static string Image_Clipboard_Actions_CopyToClipboard_Title {
+            get {
+                return ResourceManager.GetString("Image_Clipboard_Actions.CopyToClipboard.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adds actions for copying/pasting images to/from the clipboard..
+        /// </summary>
+        internal static string Image_Clipboard_Actions_Description {
+            get {
+                return ResourceManager.GetString("Image_Clipboard_Actions.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Image clipboard actions.
+        /// </summary>
+        internal static string Image_Clipboard_Actions_Title {
+            get {
+                return ResourceManager.GetString("Image_Clipboard_Actions.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string Move_Copy_Actions_Description {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Move &amp; Copy actions.
+        /// </summary>
+        internal static string Move_Copy_Actions_Title {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Adds entries for launching PowerToys modules..
         /// </summary>
         internal static string PowerToys_Description {

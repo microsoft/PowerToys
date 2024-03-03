@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows;
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -16,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Copy image to clipboard";
+        public string Title => ResourceHelper.GetResource("Image_Clipboard_Actions.CopyToClipboard.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -30,6 +32,8 @@ namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
+            TelemetryHelper.LogEvent(new FileActionsMenuCopyImageToClipboardActionInvokedEvent(), SelectedItems);
+
             Clipboard.SetImage(new System.Windows.Media.Imaging.BitmapImage(new Uri(SelectedItems[0])));
             return Task.CompletedTask;
         }

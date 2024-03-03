@@ -248,6 +248,28 @@
   <data name="Hashes.Verify.Title_S" xml:space="preserve">
     <value>Verify checksum</value>
   </data>
+  <data name="Image_Clipboard_Actions.CopyFromClipboard.FileName" xml:space="preserve">
+    <value>clipboard_image</value>
+    <comment>A filename</comment>
+  </data>
+  <data name="Image_Clipboard_Actions.CopyFromClipboard.Title" xml:space="preserve">
+    <value>Copy image from clipboard into folder</value>
+  </data>
+  <data name="Image_Clipboard_Actions.CopyToClipboard.Title" xml:space="preserve">
+    <value>Copy image to clipboard</value>
+  </data>
+  <data name="Image_Clipboard_Actions.Description" xml:space="preserve">
+    <value>Adds actions for copying/pasting images to/from the clipboard.</value>
+  </data>
+  <data name="Image_Clipboard_Actions.Title" xml:space="preserve">
+    <value>Image clipboard actions</value>
+  </data>
+  <data name="Move_Copy_Actions.Description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Move_Copy_Actions.Title" xml:space="preserve">
+    <value>Move &amp; Copy actions</value>
+  </data>
   <data name="PowerToys.Description" xml:space="preserve">
     <value>Adds entries for launching PowerToys modules.</value>
     <comment>{Locked="PowerToys"}</comment>

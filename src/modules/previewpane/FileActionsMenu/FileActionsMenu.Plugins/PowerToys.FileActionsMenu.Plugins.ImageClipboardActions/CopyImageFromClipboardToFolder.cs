@@ -4,6 +4,8 @@
 
 using System.Windows;
 using System.Windows.Media.Imaging;
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -17,7 +19,7 @@ namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Copy image from clipboard into Folder";
+        public string Title => ResourceHelper.GetResource("Image_Clipboard_Actions.CopyFromClipboard.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -31,16 +33,19 @@ namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
+            TelemetryHelper.LogEvent(new FileActionsMenuCopyImageFromClipboardActionInvokedEvent(), SelectedItems);
+
             if (!Directory.Exists(SelectedItems[0]) || !Clipboard.ContainsImage())
             {
                 return Task.CompletedTask;
             }
 
-            string path = Path.Combine(SelectedItems[0], "clipboard_image.png");
+            string fileName = ResourceHelper.GetResource("Image_Clipboard_Actions.CopyFromClipboard.FileName");
+            string path = Path.Combine(SelectedItems[0], $"{fileName}.png");
             int i = 1;
             while (File.Exists(path))
             {
-                path = Path.Combine(SelectedItems[0], $"clipboard_image ({i}).png");
+                path = Path.Combine(SelectedItems[0], $"{fileName} ({i}).png");
                 i++;
             }
 
