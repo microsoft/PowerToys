@@ -277,7 +277,10 @@
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="BtnSpacingTooltip" />
                 </ToolTipService.ToolTip>
-                <FontIcon Glyph="&#xE948;" />
+                <Grid>
+                    <FontIcon Glyph="↔" FontFamily="Monospace"/>
+                    <FontIcon Glyph="↕" FontFamily="Monospace"/>
+                </Grid>
                 <ToggleButton.KeyboardAccelerators>
                     <KeyboardAccelerator
                         Key="Number2"
@@ -294,7 +297,7 @@
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="BtnHorizontalSpacingTooltip" />
                 </ToolTipService.ToolTip>
-                <FontIcon Glyph="&#xE949;" />
+                <FontIcon Glyph="↔" FontFamily="Monospace"/>
                 <ToggleButton.KeyboardAccelerators>
                     <KeyboardAccelerator
                         Key="Number3"
@@ -310,10 +313,7 @@
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="BtnVerticalSpacingTooltip" />
                 </ToolTipService.ToolTip>
-                <FontIcon Glyph="&#xE949;" RenderTransformOrigin="0.5,0.5">
-                    <FontIcon.RenderTransform>
-                        <RotateTransform Angle="90" />
-                    </FontIcon.RenderTransform>
+                <FontIcon Glyph="↕" FontFamily="Monospace">
                 </FontIcon>
                 <ToggleButton.KeyboardAccelerators>
                     <KeyboardAccelerator
