@@ -16,6 +16,9 @@ using TaskDialogProgressBarState = Microsoft.WindowsAPICodePack.Dialogs.TaskDial
 
 namespace FileActionsMenu.Helpers
 {
+    /// <summary>
+    /// A helper class to show progress of file actions.
+    /// </summary>
     public class FileActionProgressHelper : IDisposable
     {
         private readonly TaskDialogProgressBar _progressBar;
@@ -23,7 +26,14 @@ namespace FileActionsMenu.Helpers
         private readonly string _actionName;
         private TaskDialog? _conflictTaskDialog;
 
-        public FileActionProgressHelper(string actionName, int count, Action onClose)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileActionProgressHelper"/> class.
+        /// Opens a new progress dialog.
+        /// </summary>
+        /// <param name="actionName">Name of the action.</param>
+        /// <param name="count">Number of items.</param>
+        /// <param name="onCancel">Action to execute when the action is cancelled.</param>
+        public FileActionProgressHelper(string actionName, int count, Action onCancel)
         {
             _actionName = actionName;
 
@@ -52,14 +62,14 @@ namespace FileActionsMenu.Helpers
 
             cancelButton.Click += (sender, e) =>
             {
-                onClose();
+                onCancel();
                 _taskDialog.Close();
                 _conflictTaskDialog?.Close();
             };
 
             _taskDialog.Closing += (sender, e) =>
             {
-                onClose();
+                onCancel();
                 _conflictTaskDialog?.Close();
             };
             _taskDialog.StandardButtons = Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardButtons.None;
@@ -72,6 +82,12 @@ namespace FileActionsMenu.Helpers
             _taskDialog.Text = $"{_actionName}: {fileName}";
         }
 
+        /// <summary>
+        /// Shows a conflict dialog.
+        /// </summary>
+        /// <param name="fileName">The conflicting file.</param>
+        /// <param name="onReplace">Action to execute when the user presses "Replace".</param>
+        /// <param name="onIgnore">Action to execute when the user presses "Ignore".</param>
         [STAThread]
         public async Task Conflict(string fileName, Action onReplace, Action onIgnore)
         {

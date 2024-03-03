@@ -9,6 +9,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace FileActionsMenu.Ui
 {
+    /// <summary>
+    /// Action that does nothing, so it just closes the menu.
+    /// </summary>
     internal sealed class CloseAction : IAction
     {
         public string[] SelectedItems { get => []; set => _ = value; }

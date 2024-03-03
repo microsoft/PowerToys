@@ -8,11 +8,23 @@ namespace FileActionsMenu.Ui.Helpers
 {
     public static class Extensions
     {
+        /// <summary>
+        /// Returns <typeparamref name="T"/> if it is not null, otherwise throws an <see cref="ArgumentNullException"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="value">The value to check and return.</param>
+        /// <returns>The specified value.</returns>
+        /// <exception cref="ArgumentNullException">When <paramref name="value"/> is null.</exception>
         public static T GetOrArgumentNullException<T>(this T? value)
         {
             return value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        /// <summary>
+        /// Checks whether the file is an image.
+        /// </summary>
+        /// <param name="fileName">A filename or a file path.</param>
+        /// <returns>Whetever the file has an image file extension.</returns>
         public static bool IsImage(this string fileName)
         {
             string extension = System.IO.Path.GetExtension(fileName).ToLowerInvariant();

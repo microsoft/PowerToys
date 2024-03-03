@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
-using FileActionsMenu.Ui.Helpers;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -68,6 +67,7 @@ namespace FileActionsMenu.Ui
 
             Array.Sort(_actions, (a, b) => a.Category.CompareTo(b.Category));
             int currentCategory = -1;
+
             void HandleItems(IAction[] actions, object cm, bool firstLayer = true)
             {
                 foreach (IAction action in actions)

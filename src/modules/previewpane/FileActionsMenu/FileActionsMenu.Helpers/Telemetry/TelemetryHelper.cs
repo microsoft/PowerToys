@@ -12,6 +12,12 @@ namespace FileActionsMenu.Helpers.Telemetry
 {
     public sealed class TelemetryHelper
     {
+        /// <summary>
+        /// Logs an event.
+        /// </summary>
+        /// <typeparam name="T">The type of the event.</typeparam>
+        /// <param name="e">The event</param>
+        /// <param name="selectedItems">A list of paths to the selected items.</param>
         public static void LogEvent<T>(T e, string[] selectedItems)
             where T : EventBase, IFileActionsMenuItemInvokedEvent
         {

@@ -8,6 +8,11 @@ namespace FileActionsMenu.Ui.Helpers
 {
     public sealed class ShortcutHelper
     {
+        /// <summary>
+        /// Gets the full path from a shortcut path.
+        /// </summary>
+        /// <param name="shortcutPath">The path of the .lnk file.</param>
+        /// <returns>The full path where the shortcut points to.</returns>
         public static string GetFullPathFromShortcut(string shortcutPath)
         {
             if (!shortcutPath.EndsWith(".lnk", System.StringComparison.InvariantCulture))

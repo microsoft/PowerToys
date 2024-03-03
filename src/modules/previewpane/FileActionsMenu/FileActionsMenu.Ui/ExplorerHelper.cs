@@ -21,9 +21,13 @@ namespace FileActionsMenu.Ui.Helpers
         [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int GetWindowTextW(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-        // Source: https://stackoverflow.com/questions/14193388/how-to-get-windows-explorers-selected-files-from-within-c
+        /// <summary>
+        /// Gets the selected items in the active Windows Explorer window.
+        /// </summary>
+        /// <returns>An array of paths of the selected items.</returns>
         public static string[] GetSelectedItems()
         {
+            // Source: https://stackoverflow.com/questions/14193388/how-to-get-windows-explorers-selected-files-from-within-c
             string filename;
             List<string> selected = [];
 

@@ -6,6 +6,9 @@ namespace FileActionsMenu.Helpers
 {
     public static class HashEnums
     {
+        /// <summary>
+        /// Hash type
+        /// </summary>
         public enum HashType
         {
             MD5,
@@ -22,11 +25,29 @@ namespace FileActionsMenu.Helpers
             CRC64Decimal,
         }
 
+        /// <summary>
+        /// Generate or verify mode
+        /// </summary>
         public enum GenerateOrVerifyMode
         {
+            /// <summary>
+            /// Hashes are saved in a file called hashes.
+            /// </summary>
             SingleFile,
+
+            /// <summary>
+            /// Hashes are saved in multiple files with the same name as the original file.
+            /// </summary>
             MultipleFiles,
+
+            /// <summary>
+            /// Hash is in the filename.
+            /// </summary>
             Filename,
+
+            /// <summary>
+            /// Hash is in the clipboard.
+            /// </summary>
             Clipboard,
         }
     }
