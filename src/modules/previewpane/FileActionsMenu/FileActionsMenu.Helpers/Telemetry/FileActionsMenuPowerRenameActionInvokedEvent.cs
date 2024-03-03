@@ -11,8 +11,6 @@ namespace FileActionsMenu.Helpers.Telemetry
     [EventData]
     public class FileActionsMenuPowerRenameActionInvokedEvent : EventBase, IFileActionsMenuItemInvokedEvent
     {
-        public int CollapsedFilesCount { get; set; }
-
         public int ItemCount { get; set; }
 
         public bool HasImagesSelected { get; set; }
