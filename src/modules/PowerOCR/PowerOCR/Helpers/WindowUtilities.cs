@@ -6,6 +6,7 @@ using System;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using Dapplo.Windows.User32;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 
@@ -22,7 +23,8 @@ public static class WindowUtilities
         }
 
         Logger.LogInfo($"Adding Overlays for each screen");
-        foreach (Screen screen in Screen.AllScreens)
+        DisplayInfo[] allScreens = DisplayInfo.AllDisplayInfos;
+        foreach (DisplayInfo screen in allScreens)
         {
             Logger.LogInfo($"screen {screen}");
             OCROverlay overlay = new(screen.Bounds);

@@ -49,6 +49,7 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <PackageReference Include="Dapplo.Windows.User32" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="System.ComponentModel.Composition" />
     <PackageReference Include="System.Drawing.Common" />
