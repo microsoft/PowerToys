@@ -117,7 +117,22 @@ namespace Microsoft.FancyZonesEditor.UITests
             CustomLayouts customLayouts = new CustomLayouts();
             CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
             {
-                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper> { },
+                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
+                {
+                    new CustomLayouts.CustomLayoutWrapper
+                    {
+                        Uuid = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
+                        Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                        Name = "Custom layout",
+                        Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
+                        {
+                            RefHeight = 952,
+                            RefWidth = 1500,
+                            SensitivityRadius = 10,
+                            Zones = new List<CustomLayouts.CanvasInfoWrapper.CanvasZoneWrapper> { },
+                        }),
+                    },
+                },
             };
             FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
 
@@ -179,6 +194,22 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
         {
             _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
+            Assert.IsNotNull(_session?.Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
+            Assert.IsNotNull(_session?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
+        }
+
+        [TestMethod]
+        public void OpenEditLayoutDialog_ByContextMenu_TemplateLayout() // verify the edit layout dialog is opened
+        {
+            _session?.Click_ContextMenuItem(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid], "Edit");
+            Assert.IsNotNull(_session?.Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
+            Assert.IsNotNull(_session?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
+        }
+
+        [TestMethod]
+        public void OpenEditLayoutDialog_ByContextMenu_CustomLayout() // verify the edit layout dialog is opened
+        {
+            _session?.Click_ContextMenuItem("Custom layout", "Edit");
             Assert.IsNotNull(_session?.Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
             Assert.IsNotNull(_session?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
         }
