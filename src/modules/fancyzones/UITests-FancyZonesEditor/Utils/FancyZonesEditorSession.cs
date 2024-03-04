@@ -154,7 +154,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
-        public WindowsElement? OpenContextMenu(string layoutName)
+        public WindowsElement OpenContextMenu(string layoutName)
         {
             RightClick_Layout(layoutName);
             var menu = Session?.FindElementByClassName("ContextMenu");
@@ -310,6 +310,12 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             var button = Session?.FindElementByName("Cancel");
             Assert.IsNotNull(button, "No Cancel button");
             button.Click();
+        }
+
+        public void Click_ContextMenuItem(string layoutName, string menuItem)
+        {
+            WindowsElement menu = OpenContextMenu(layoutName);
+            Click(menu.FindElementByName(menuItem));
         }
 
         private WindowsElement? FindByAccessibilityId(string name)
