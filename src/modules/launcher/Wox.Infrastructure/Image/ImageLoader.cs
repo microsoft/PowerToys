@@ -267,14 +267,14 @@ namespace Wox.Infrastructure.Image
             if (imageResult.ImageType != ImageType.Error && imageResult.ImageType != ImageType.Cache)
             {
                 // we need to get image hash
-                string hash = _enableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
+                string hash = _enableImageHash ? _hashGenerator.GetHashFromImage(img, path) : null;
 
                 if (hash != null)
                 {
                     if (GuidToKey.TryGetValue(hash, out string key))
                     {
                         // image already exists
-                        if (ImageCache.Usage.TryGetValue(path, out _) && Path.GetFileName(path).Equals(Path.GetFileName(key), StringComparison.Ordinal))
+                        if (ImageCache.Usage.TryGetValue(path, out _))
                         {
                             img = ImageCache[key];
                         }
