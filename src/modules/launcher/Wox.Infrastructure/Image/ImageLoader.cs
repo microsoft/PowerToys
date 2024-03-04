@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
