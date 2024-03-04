@@ -4,10 +4,8 @@
 
 using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
-using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static FancyZonesEditorCommon.Data.EditorParameters;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -15,8 +13,6 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class RunFancyZonesEditorTest
     {
         private static FancyZonesEditorSession? _session;
-        private static IOTestHelper? _editorParamsIOHelper;
-        private static IOTestHelper? _appliedLayoutsIOHelper;
         private static TestContext? _context;
 
         [ClassInitialize]
@@ -48,6 +44,22 @@ namespace Microsoft.FancyZonesEditor.UITests
                         MonitorWidth = 1920,
                         IsSelected = true,
                     },
+                    new EditorParameters.NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-2",
+                        MonitorInstanceId = "instance-id-2",
+                        MonitorSerialNumber = "serial-number-2",
+                        MonitorNumber = 2,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 96,
+                        LeftCoordinate = 1920,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = false,
+                    },
                 },
             };
             FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
@@ -59,16 +71,16 @@ namespace Microsoft.FancyZonesEditor.UITests
                 {
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Empty],
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Empty],
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Focus],
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Focus],
                         ZoneCount = 10,
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Rows],
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 10,
@@ -76,7 +88,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Columns],
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Columns],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 20,
@@ -84,7 +96,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Grid],
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Grid],
                         ZoneCount = 4,
                         ShowSpacing = false,
                         Spacing = 10,
@@ -92,7 +104,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.PriorityGrid],
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
                         ZoneCount = 3,
                         ShowSpacing = true,
                         Spacing = 1,
