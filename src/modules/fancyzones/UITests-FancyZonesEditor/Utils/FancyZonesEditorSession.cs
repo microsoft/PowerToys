@@ -312,6 +312,29 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             button.Click();
         }
 
+        public void Click_CopyLayout()
+        {
+            WindowsElement? button = null;
+            try
+            {
+                button = Session?.FindElementByAccessibilityId(AccessibilityId.CopyTemplate);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                button = Session?.FindElementByAccessibilityId(AccessibilityId.DuplicateLayoutButton);
+            }
+            catch
+            {
+            }
+
+            Assert.IsNotNull(button, "No Copy button");
+            button.Click();
+        }
+
         public void Click_ContextMenuItem(string layoutName, string menuItem)
         {
             WindowsElement menu = OpenContextMenu(layoutName);
