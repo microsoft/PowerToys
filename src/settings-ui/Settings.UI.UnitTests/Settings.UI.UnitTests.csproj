@@ -48,14 +48,10 @@
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Settings.UI\PowerToys.Settings.csproj" />
   </ItemGroup>
-  <!-- Workaround for map.html failing -->
-  <!--<Target Name="TempWorkaroundForWinAppSdk15" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
-    <ItemGroup>
-      <MicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.html"/>
-    </ItemGroup>
-  </Target>-->
-	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-		<Exec Command="type NUL > $(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\Microsoft.UI.Xaml\Assets\map.html" />
-	</Target>
-	
+  <!-- HACK: This project depends on the Hosts project, which then won't correctly copy map.html. We don't really use MapControl, so we create a file to try and workaround this issue. -->
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command='if not exist "$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\Microsoft.UI.Xaml\Assets" mkdir "$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\Microsoft.UI.Xaml\Assets"' />
+    <Exec Command="type NUL >> $(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\Microsoft.UI.Xaml\Assets\map.html" />
+  </Target>
+
 </Project>
