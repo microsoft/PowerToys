@@ -38,6 +38,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             { TemplateLayouts.PriorityGrid, "priority-grid" },
         };
 
+        public static readonly string CustomLayoutTypeString = "custom";
+
         public enum CustomLayoutType
         {
             Canvas,

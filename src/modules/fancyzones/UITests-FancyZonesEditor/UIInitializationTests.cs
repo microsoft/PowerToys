@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -275,6 +276,361 @@ namespace Microsoft.FancyZonesEditor.UITests
             var monitor = _session.GetMonitorItem(1);
             Assert.IsNotNull(monitor);
             Assert.IsTrue(monitor.Selected);
+        }
+
+        [TestMethod]
+        public void AppliedLayouts_LayoutsApplied()
+        {
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 96,
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = true,
+                    },
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-2",
+                        MonitorInstanceId = "instance-id-2",
+                        MonitorSerialNumber = "serial-number-2",
+                        MonitorNumber = 2,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 96,
+                        LeftCoordinate = 1920,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = false,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
+            CustomLayouts customLayouts = new CustomLayouts();
+            CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
+            {
+                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
+                {
+                    new CustomLayouts.CustomLayoutWrapper
+                    {
+                        Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
+                        Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                        Name = "Layout 0",
+                        Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
+                        {
+                            RefHeight = 1080,
+                            RefWidth = 1920,
+                            SensitivityRadius = 10,
+                            Zones = new List<CustomLayouts.CanvasInfoWrapper.CanvasZoneWrapper> { },
+                        }),
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+
+            AppliedLayouts appliedLayouts = new AppliedLayouts();
+            AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
+            {
+                AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper>
+                {
+                    new AppliedLayouts.AppliedLayoutWrapper
+                    {
+                        Device = new AppliedLayouts.AppliedLayoutWrapper.DeviceIdWrapper
+                        {
+                            Monitor = "monitor-1",
+                            MonitorInstance = "instance-id-1",
+                            SerialNumber = "serial-number-1",
+                            MonitorNumber = 1,
+                            VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        },
+                        AppliedLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
+                        {
+                            Uuid = "{00000000-0000-0000-0000-000000000000}",
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Columns],
+                            ShowSpacing = true,
+                            Spacing = 10,
+                            ZoneCount = 1,
+                            SensitivityRadius = 20,
+                        },
+                    },
+                    new AppliedLayouts.AppliedLayoutWrapper
+                    {
+                        Device = new AppliedLayouts.AppliedLayoutWrapper.DeviceIdWrapper
+                        {
+                            Monitor = "monitor-2",
+                            MonitorInstance = "instance-id-2",
+                            SerialNumber = "serial-number-2",
+                            MonitorNumber = 2,
+                            VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        },
+                        AppliedLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
+                        {
+                            Uuid = customLayoutListWrapper.CustomLayouts[0].Uuid,
+                            Type = Constants.CustomLayoutTypeString,
+                        },
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+
+            _session = new FancyZonesEditorSession(_context!);
+
+            // check layout on monitor 1
+            var layoutOnMonitor1 = _session?.GetLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Columns]);
+            Assert.IsNotNull(layoutOnMonitor1);
+            Assert.IsTrue(layoutOnMonitor1.Selected);
+
+            // check layout on monitor 2
+            _session?.Click_Monitor(2);
+            var layoutOnMonitor2 = _session?.GetLayout(customLayoutListWrapper.CustomLayouts[0].Name);
+            Assert.IsNotNull(layoutOnMonitor2);
+            Assert.IsTrue(layoutOnMonitor2.Selected);
+        }
+
+        [TestMethod]
+        public void AppliedLayouts_CustomLayoutsApplied_LayoutIdNotFound()
+        {
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 96,
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = true,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
+            CustomLayouts customLayouts = new CustomLayouts();
+            CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
+            {
+                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
+                {
+                    new CustomLayouts.CustomLayoutWrapper
+                    {
+                        Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
+                        Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                        Name = "Layout 0",
+                        Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
+                        {
+                            RefHeight = 1080,
+                            RefWidth = 1920,
+                            SensitivityRadius = 10,
+                            Zones = new List<CustomLayouts.CanvasInfoWrapper.CanvasZoneWrapper> { },
+                        }),
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+
+            AppliedLayouts appliedLayouts = new AppliedLayouts();
+            AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
+            {
+                AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper>
+                {
+                    new AppliedLayouts.AppliedLayoutWrapper
+                    {
+                        Device = new AppliedLayouts.AppliedLayoutWrapper.DeviceIdWrapper
+                        {
+                            Monitor = "monitor-1",
+                            MonitorInstance = "instance-id-1",
+                            SerialNumber = "serial-number-1",
+                            MonitorNumber = 1,
+                            VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        },
+                        AppliedLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
+                        {
+                            Uuid = "{00000000-0000-0000-0000-000000000000}",
+                            Type = Constants.CustomLayoutTypeString,
+                        },
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+
+            _session = new FancyZonesEditorSession(_context!);
+
+            var emptyLayout = _session?.GetLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Empty]);
+            Assert.IsNotNull(emptyLayout);
+            Assert.IsTrue(emptyLayout.Selected);
+        }
+
+        [TestMethod]
+        public void AppliedLayouts_NoLayoutsApplied_CustomDefaultLayout()
+        {
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 96,
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = true,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
+            CustomLayouts customLayouts = new CustomLayouts();
+            CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
+            {
+                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
+                {
+                    new CustomLayouts.CustomLayoutWrapper
+                    {
+                        Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
+                        Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                        Name = "Layout 0",
+                        Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
+                        {
+                            RefHeight = 1080,
+                            RefWidth = 1920,
+                            SensitivityRadius = 10,
+                            Zones = new List<CustomLayouts.CanvasInfoWrapper.CanvasZoneWrapper> { },
+                        }),
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+
+            DefaultLayouts defaultLayouts = new DefaultLayouts();
+            DefaultLayouts.DefaultLayoutsListWrapper defaultLayoutsListWrapper = new DefaultLayouts.DefaultLayoutsListWrapper
+            {
+                DefaultLayouts = new List<DefaultLayouts.DefaultLayoutWrapper>
+                {
+                    new DefaultLayouts.DefaultLayoutWrapper
+                    {
+                        MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal),
+                        Layout = new DefaultLayouts.DefaultLayoutWrapper.LayoutWrapper
+                        {
+                            Type = Constants.CustomLayoutTypeString,
+                            Uuid = customLayoutListWrapper.CustomLayouts[0].Uuid,
+                        },
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
+
+            _session = new FancyZonesEditorSession(_context!);
+
+            var defaultLayout = _session?.GetLayout(customLayoutListWrapper.CustomLayouts[0].Name);
+            Assert.IsNotNull(defaultLayout);
+            Assert.IsTrue(defaultLayout.Selected);
+        }
+
+        [TestMethod]
+        public void AppliedLayouts_NoLayoutsApplied_TemplateDefaultLayout()
+        {
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 96,
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = true,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
+            DefaultLayouts defaultLayouts = new DefaultLayouts();
+            DefaultLayouts.DefaultLayoutsListWrapper defaultLayoutsListWrapper = new DefaultLayouts.DefaultLayoutsListWrapper
+            {
+                DefaultLayouts = new List<DefaultLayouts.DefaultLayoutWrapper>
+                {
+                    new DefaultLayouts.DefaultLayoutWrapper
+                    {
+                        MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal),
+                        Layout = new DefaultLayouts.DefaultLayoutWrapper.LayoutWrapper
+                        {
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Grid],
+                            ZoneCount = 6,
+                            ShowSpacing = true,
+                            Spacing = 5,
+                            SensitivityRadius = 20,
+                        },
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
+
+            _session = new FancyZonesEditorSession(_context!);
+
+            var defaultLayout = _session?.GetLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
+            Assert.IsNotNull(defaultLayout);
+            Assert.IsTrue(defaultLayout.Selected);
+
+            // check the number of zones and spacing
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ZoneCount, int.Parse(_session?.GetZoneCountSlider()?.Text!, CultureInfo.InvariantCulture));
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.Spacing, int.Parse(_session?.GetSpaceAroundZonesSlider()?.Text!, CultureInfo.InvariantCulture));
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, _session?.GetSpaceAroundZonesSlider()?.Enabled);
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, _session?.GetSpaceAroundZonesToggle()?.Selected);
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.SensitivityRadius, int.Parse(_session?.GetSensitivitySlider()?.Text!, CultureInfo.InvariantCulture));
+            Assert.IsNotNull(_session?.GetHorizontalDefaultButton(true));
         }
     }
 }
