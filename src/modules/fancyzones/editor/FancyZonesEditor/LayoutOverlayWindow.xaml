@@ -1,4 +1,5 @@
-﻿<Window
+﻿<ui:FluentWindow
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     x:Class="FancyZonesEditor.LayoutOverlayWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,7 +10,7 @@
     Width="800"
     Height="450"
     AllowsTransparency="True"
-    Background="{DynamicResource BackdropBrush}"
+    Background="#85F0F0F0"
     Loaded="Window_Loaded"
     ResizeMode="NoResize"
     ShowInTaskbar="False"

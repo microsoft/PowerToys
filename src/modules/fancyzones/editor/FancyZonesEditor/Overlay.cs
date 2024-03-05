@@ -330,6 +330,7 @@ namespace FancyZonesEditor
             }
 
             // reset main window owner to keep it on the top
+            CurrentLayoutWindow.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Transparent);
             _mainWindow.Owner = CurrentLayoutWindow;
             _mainWindow.ShowActivated = true;
             _mainWindow.Topmost = true;

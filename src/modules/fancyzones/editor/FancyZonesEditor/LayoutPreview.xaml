@@ -10,7 +10,7 @@
     Loaded="OnLoaded"
     mc:Ignorable="d">
     <Grid>
-        <Border Background="{DynamicResource LayoutPreviewBackgroundBrush}" CornerRadius="4" />
+        <Border Background="Transparent" CornerRadius="4" />
         <Grid x:Name="Body" Background="Transparent" />
     </Grid>
 </UserControl>
