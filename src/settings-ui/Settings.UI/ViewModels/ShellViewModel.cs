@@ -108,9 +108,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var item = navigationView.MenuItems
                             .OfType<NavigationViewItem>()
-                            .First(menuItem => (string)menuItem.Content == (string)args.InvokedItem);
-            var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
-            NavigationService.Navigate(pageType);
+                            .FirstOrDefault(menuItem => (string)menuItem.Content == (string)args.InvokedItem, null);
+            if (item != null)
+            {
+                // item might be null because of the navigation bar footer items.
+                var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
+                NavigationService.Navigate(pageType);
+            }
         }
 
         private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)

@@ -225,22 +225,20 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
                     IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
             </NavigationView.MenuItems>
-            <NavigationView.PaneFooter>
-                <StackPanel Orientation="Vertical">
-                    <NavigationViewItem
-                        x:Uid="OOBE_NavViewItem"
-                        Icon="{ui:FontIcon Glyph=&#xF133;}"
-                        Tapped="OOBEItem_Tapped" />
-                    <NavigationViewItem
-                        x:Uid="WhatIsNew_NavViewItem"
-                        Icon="{ui:FontIcon Glyph=&#xE789;}"
-                        Tapped="WhatIsNewItem_Tapped" />
-                    <NavigationViewItem
-                        x:Uid="Feedback_NavViewItem"
-                        Icon="{ui:FontIcon Glyph=&#xED15;}"
-                        Tapped="FeedbackItem_Tapped" />
-                </StackPanel>
-            </NavigationView.PaneFooter>
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem
+                    x:Uid="OOBE_NavViewItem"
+                    Icon="{ui:FontIcon Glyph=&#xF133;}"
+                    Tapped="OOBEItem_Tapped" />
+                <NavigationViewItem
+                    x:Uid="WhatIsNew_NavViewItem"
+                    Icon="{ui:FontIcon Glyph=&#xE789;}"
+                    Tapped="WhatIsNewItem_Tapped" />
+                <NavigationViewItem
+                    x:Uid="Feedback_NavViewItem"
+                    Icon="{ui:FontIcon Glyph=&#xED15;}"
+                    Tapped="FeedbackItem_Tapped" />
+            </NavigationView.FooterMenuItems>
             <i:Interaction.Behaviors>
                 <ic:EventTriggerBehavior EventName="ItemInvoked">
                     <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
