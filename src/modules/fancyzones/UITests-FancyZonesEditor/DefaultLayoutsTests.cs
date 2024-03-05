@@ -295,14 +295,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             CheckCustomLayouts(string.Empty, string.Empty);
         }
 
-        /*
-
-                [TestMethod]
-                public void AssignTemplate_ChangeTemplate() // verify the template layout will be as in the default settings
-                {
-
-                }*/
-
         private void CheckTemplateLayouts(Constants.TemplateLayouts? horizontalDefault, Constants.TemplateLayouts? verticalDefault)
         {
             foreach (var (key, name) in Constants.TemplateLayoutNames)
