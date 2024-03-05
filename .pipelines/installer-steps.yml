@@ -18,7 +18,7 @@ steps:
     inputs:
       solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
-      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog /t:PowerToysSetupCustomActions /p:RunBuildEvents=true /p:PerUser=${{parameters.perUserArg}}
+      msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /bl:$(Build.SourcesDirectory)\msbuild.binlog /t:PowerToysSetupCustomActions /p:RunBuildEvents=true /p:PerUser=${{parameters.perUserArg}}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: true
@@ -40,7 +40,7 @@ steps:
     inputs:
       solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog /p:RunBuildEvents=false /p:PerUser=${{parameters.perUserArg}}
+      msbuildArgs: /target:PowerToysInstaller /bl:$(Build.SourcesDirectory)\msbuild.binlog /p:RunBuildEvents=false /p:PerUser=${{parameters.perUserArg}}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: false # don't undo our hard work above by deleting the CustomActions dll
@@ -90,7 +90,7 @@ steps:
     inputs:
       solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog /t:PowerToysBootstrapper /p:PerUser=${{parameters.perUserArg}}
+      msbuildArgs: /bl:$(Build.SourcesDirectory)\msbuild.binlog /t:PowerToysBootstrapper /p:PerUser=${{parameters.perUserArg}}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       clean: false # don't undo our hard work above by deleting the MSI

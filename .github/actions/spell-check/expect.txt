@@ -1107,6 +1107,7 @@ pcb
 pcch
 pcelt
 pch
+pchast
 PCIDLIST
 PCWSTR
 pdisp
