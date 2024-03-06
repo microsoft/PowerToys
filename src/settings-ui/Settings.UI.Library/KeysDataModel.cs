@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string OriginalKeys { get; set; }
 
         [JsonPropertyName("secondKeyOfChord")]
-        public int SecondKeyOfChord { get; set; }
+        public uint SecondKeyOfChord { get; set; }
 
         [JsonPropertyName("newRemapKeys")]
         public string NewRemapKeys { get; set; }
@@ -129,7 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             NativeMethods.SetForegroundWindow(handle);
         }
 
-        private static List<string> MapKeysOnlyChord(int secondKeyOfChord)
+        private static List<string> MapKeysOnlyChord(uint secondKeyOfChord)
         {
             var result = new List<string>();
             if (secondKeyOfChord <= 0)
@@ -137,12 +137,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 return result;
             }
 
-            result.Add(Helper.GetKeyName((uint)secondKeyOfChord));
+            result.Add(Helper.GetKeyName(secondKeyOfChord));
 
             return result;
         }
 
-        private static List<string> MapKeys(string stringOfKeys, int secondKeyOfChord, bool splitChordsWithComma = false)
+        private static List<string> MapKeys(string stringOfKeys, uint secondKeyOfChord, bool splitChordsWithComma = false)
         {
             if (stringOfKeys == null)
             {
@@ -192,7 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
             else
             {
-                return MapKeys(OriginalKeys, -1, splitChordsWithComma);
+                return MapKeys(OriginalKeys, 0, splitChordsWithComma);
             }
         }
 
