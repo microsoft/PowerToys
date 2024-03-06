@@ -371,6 +371,7 @@
   </data>
   <data name="Mapping_Type_DropDown_Text" xml:space="preserve">
     <value>Send Text</value>
+    <comment>Text as in that the shortcut will be mapped into a sequence of characters. This is not about mobile text messages.</comment>
   </data>
   <data name="Mapping_Type_DropDown_Key_Shortcut" xml:space="preserve">
     <value>Send Key/Shortcut</value>
