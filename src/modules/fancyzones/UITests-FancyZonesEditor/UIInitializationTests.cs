@@ -632,5 +632,176 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.SensitivityRadius, int.Parse(_session?.GetSensitivitySlider()?.Text!, CultureInfo.InvariantCulture));
             Assert.IsNotNull(_session?.GetHorizontalDefaultButton(true));
         }
+
+        [TestMethod]
+        public void AppliedLayouts_VerifyDisconnectedMonitorsLayoutsAreNotChanged()
+        {
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 96,
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = true,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
+            AppliedLayouts appliedLayouts = new AppliedLayouts();
+            AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
+            {
+                AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper>
+                {
+                    new AppliedLayouts.AppliedLayoutWrapper
+                    {
+                        Device = new AppliedLayouts.AppliedLayoutWrapper.DeviceIdWrapper
+                        {
+                            Monitor = "monitor-2",
+                            MonitorInstance = "instance-id-2",
+                            SerialNumber = "serial-number-2",
+                            MonitorNumber = 2,
+                            VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        },
+                        AppliedLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
+                        {
+                            Uuid = "{00000000-0000-0000-0000-000000000000}",
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Focus],
+                            ShowSpacing = true,
+                            Spacing = 10,
+                            ZoneCount = 4,
+                            SensitivityRadius = 30,
+                        },
+                    },
+                    new AppliedLayouts.AppliedLayoutWrapper
+                    {
+                        Device = new AppliedLayouts.AppliedLayoutWrapper.DeviceIdWrapper
+                        {
+                            Monitor = "monitor-3",
+                            MonitorInstance = "instance-id-3",
+                            SerialNumber = "serial-number-3",
+                            MonitorNumber = 1,
+                            VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        },
+                        AppliedLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
+                        {
+                            Uuid = "{00000000-0000-0000-0000-000000000000}",
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Columns],
+                            ShowSpacing = true,
+                            Spacing = 10,
+                            ZoneCount = 1,
+                            SensitivityRadius = 20,
+                        },
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+
+            _session = new FancyZonesEditorSession(_context!);
+            _session?.Click(_session?.GetLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows])!);
+
+            // check the file
+            var data = appliedLayouts.Read(appliedLayouts.File);
+            Assert.AreEqual(parameters.Monitors.Count + appliedLayoutsWrapper.AppliedLayouts.Count, data.AppliedLayouts.Count);
+
+            foreach (var monitor in parameters.Monitors)
+            {
+                Assert.IsNotNull(data.AppliedLayouts.Find(x => x.Device.Monitor == monitor.Monitor));
+            }
+
+            foreach (var layout in appliedLayoutsWrapper.AppliedLayouts)
+            {
+                Assert.IsNotNull(data.AppliedLayouts.Find(x => x.Device.Monitor == layout.Device.Monitor));
+            }
+        }
+
+        [TestMethod]
+        public void AppliedLayouts_VerifyOtherVirtualDesktopsAreNotChanged()
+        {
+            string virtualDesktop1 = "{11111111-1111-1111-1111-111111111111}";
+            string virtualDesktop2 = "{22222222-2222-2222-2222-222222222222}";
+
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = virtualDesktop1,
+                        Dpi = 96,
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = true,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
+            AppliedLayouts appliedLayouts = new AppliedLayouts();
+            AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
+            {
+                AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper>
+                {
+                    new AppliedLayouts.AppliedLayoutWrapper
+                    {
+                        Device = new AppliedLayouts.AppliedLayoutWrapper.DeviceIdWrapper
+                        {
+                            Monitor = "monitor-1",
+                            MonitorInstance = "instance-id-1",
+                            SerialNumber = "serial-number-1",
+                            MonitorNumber = 1,
+                            VirtualDesktop = virtualDesktop2,
+                        },
+                        AppliedLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
+                        {
+                            Uuid = "{00000000-0000-0000-0000-000000000000}",
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Focus],
+                            ShowSpacing = true,
+                            Spacing = 10,
+                            ZoneCount = 4,
+                            SensitivityRadius = 30,
+                        },
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+
+            _session = new FancyZonesEditorSession(_context!);
+            _session?.Click(_session?.GetLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows])!);
+
+            // check the file
+            var data = appliedLayouts.Read(appliedLayouts.File);
+            Assert.AreEqual(parameters.Monitors.Count + appliedLayoutsWrapper.AppliedLayouts.Count, data.AppliedLayouts.Count);
+            Assert.IsNotNull(data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop1));
+            Assert.IsNotNull(data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop2));
+            Assert.AreEqual(appliedLayoutsWrapper.AppliedLayouts[0].AppliedLayout.Type, data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop2).AppliedLayout.Type);
+            Assert.AreEqual(Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows], data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop1).AppliedLayout.Type);
+        }
     }
 }
