@@ -1,6 +1,6 @@
-name: "⭐ Feature request"
-description: Propose something new
-labels: [Needs-Triage, "Idea-New PowerToy"]
+name: "📈 Improvement request"
+description: Propose an improvement for an existing feature
+labels: [Needs-Triage, Idea-Enhancement]
 
 body:
   - type: checkboxes
@@ -18,26 +18,26 @@ body:
         - label: I have searched in [closed issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+is%3Aclosed) (there might be a good reason)
           required: true
 
-  - type: textarea
-    id: description
+  - type: input
+    id: version
     attributes:
-      label: Description of the new feature
-      description: What is the expected behavior of the proposed feature?
+      label: Microsoft PowerToys version
+      description: Hover over system tray icon or look at Settings
+      placeholder: 0.80.0
     validations:
       required: true
 
   - type: textarea
-    id: scenario
-    attributes:
-      label: Scenario when this would be used?
-      description: What is the scenario this would be used? Why is this important to your workflow as a power user?
+    id: description
+    attributes: 
+      label: Description of the improvement
     validations:
       required: true
 
   - type: textarea
     attributes:
       label: Supporting information
-      description: "Additional evidence, data, tweets, blog posts, research… Anything is helpful. This information provides context to the scenario that may otherwise be lost."
+      description: "Having additional evidence, data, tweets, blog posts, research... anything is helpful. This information provides context to the scenario that may otherwise be lost."
     validations:
       required: false
 
