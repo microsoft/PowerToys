@@ -68,6 +68,10 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             public const string EditZonesButton = "editZoneLayoutButton";
             public const string DeleteTextButton = "DeleteButton";
             public const string HotkeyComboBox = "quickKeySelectionComboBox";
+
+            // confirmation dialog
+            public const string PrimaryButton = "PrimaryButton";
+            public const string SecondaryButton = "SecondaryButton";
         }
 
         public WindowsDriver<WindowsElement>? Session { get; }
@@ -335,6 +339,31 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             button.Click();
         }
 
+        public void ClickDeleteLayout()
+        {
+            WindowsElement? button = Session?.FindElementByAccessibilityId(AccessibilityId.DeleteLayoutButton);
+            button?.Click();
+        }
+
+        public void ClickConfirmDeletion()
+        {
+            // WaitElementDisplayedById(AccessibilityId.PrimaryButton);
+            // WindowsElement? button = Session?.FindElementByAccessibilityId(AccessibilityId.PrimaryButton);
+            // button?.Click(); - doesn't work
+            Actions actions = new Actions(Session);
+            actions.SendKeys(Keys.Tab).SendKeys(Keys.Enter);
+            actions.Build().Perform();
+
+            // WaitUntilHidden(button!);
+        }
+
+        public void ClickCancelDeletion()
+        {
+            Actions actions = new Actions(Session);
+            actions.SendKeys(Keys.Tab).SendKeys(Keys.Tab).SendKeys(Keys.Enter);
+            actions.Build().Perform();
+        }
+
         public void Click_ContextMenuItem(string layoutName, string menuItem)
         {
             WindowsElement menu = OpenContextMenu(layoutName);
@@ -393,11 +422,16 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public void WaitUntilHidden(WindowsElement element)
         {
-            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(0.5));
+            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
             wait.Until(pred =>
             {
                 return !element.Displayed;
             });
+        }
+
+        public void WaitFor(int seconds)
+        {
+           System.Threading.Thread.Sleep(seconds * 1000);
         }
 
         public void ContextClick(WindowsElement element)
