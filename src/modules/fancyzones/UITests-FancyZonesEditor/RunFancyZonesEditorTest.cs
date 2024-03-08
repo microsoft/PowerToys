@@ -186,14 +186,14 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void OpenNewLayoutDialog() // verify the new layout dialog is opened
         {
-            _session?.Click_CreateNewLayout();
+            _session?.ClickCreateNewLayout();
             Assert.IsNotNull(_session?.Session?.FindElementsByName("Choose layout type")); // check the pane header
         }
 
         [TestMethod]
         public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
         {
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
             Assert.IsNotNull(_session?.Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
             Assert.IsNotNull(_session?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
         }
@@ -230,7 +230,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(_session?.GetMonitorItem(1)?.Selected);
             Assert.IsFalse(_session?.GetMonitorItem(2)?.Selected);
 
-            _session?.Click_Monitor(2);
+            _session?.ClickMonitor(2);
 
             // verify that the monitor 2 is selected after click
             Assert.IsFalse(_session?.GetMonitorItem(1)?.Selected);

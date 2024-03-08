@@ -261,14 +261,14 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Cancel()
         {
             // assign Focus as a default horizontal and vertical layout
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus]);
             var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(false);
             horizontalDefaultButton?.Click();
             var verticalDefaultButton = _session?.GetVerticalDefaultButton(false);
             verticalDefaultButton?.Click();
 
             // cancel
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(horizontalDefaultButton!);
 
             // check that default layouts weren't changed
@@ -280,14 +280,14 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Save()
         {
             // assign Focus as a default horizontal and vertical layout
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus]);
             var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(false);
             horizontalDefaultButton?.Click();
             var verticalDefaultButton = _session?.GetVerticalDefaultButton(false);
             verticalDefaultButton?.Click();
 
             // cancel
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(horizontalDefaultButton!);
 
             // check that default layout was changed
@@ -304,7 +304,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     continue;
                 }
 
-                _session?.Click_EditLayout(name);
+                _session?.ClickEditLayout(name);
 
                 bool isCheckedHorizontal = key == horizontalDefault;
                 bool isCheckedVertical = key == verticalDefault;
@@ -314,7 +314,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var verticalDefaultButton = _session?.GetVerticalDefaultButton(isCheckedVertical);
                 Assert.IsNotNull(verticalDefaultButton, "Incorrect vertical default layout set at " + name);
 
-                _session?.Click_Cancel();
+                _session?.ClickCancel();
                 _session?.WaitUntilHidden(horizontalDefaultButton!);
             }
         }
@@ -323,7 +323,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             foreach (var layout in CustomLayouts.CustomLayouts)
             {
-                _session?.Click_EditLayout(layout.Name);
+                _session?.ClickEditLayout(layout.Name);
 
                 bool isCheckedHorizontal = layout.Uuid == horizontalDefaultLayoutUuid;
                 var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(isCheckedHorizontal);
@@ -333,7 +333,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var verticalDefaultButton = _session?.GetVerticalDefaultButton(isCheckedVertical);
                 Assert.IsNotNull(verticalDefaultButton, "Incorrect vertical custom layout set at " + layout.Name);
 
-                _session?.Click_Cancel();
+                _session?.ClickCancel();
                 _session?.WaitUntilHidden(horizontalDefaultButton!);
             }
         }

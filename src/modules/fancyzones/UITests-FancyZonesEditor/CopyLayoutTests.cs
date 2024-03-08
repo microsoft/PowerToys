@@ -190,8 +190,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CopyTemplate_FromEditLayoutWindow()
         {
             string copiedLayoutName = Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus] + " (1)";
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus]);
-            _session?.Click_CopyLayout();
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus]);
+            _session?.ClickCopyLayout();
 
             // verify the layout is copied
             Assert.IsNotNull(_session?.GetLayout(copiedLayoutName)); // new name is presented
@@ -224,11 +224,11 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CopyTemplate_DefaultLayout()
         {
             string copiedLayoutName = Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid] + " (1)";
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid]);
-            _session?.Click_CopyLayout();
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid]);
+            _session?.ClickCopyLayout();
 
             // verify the layout is copied
-            _session?.Click_Save();
+            _session?.ClickSave();
             Assert.IsNotNull(_session?.GetLayout(copiedLayoutName)); // new name is presented
 
             // verify the file
@@ -237,15 +237,15 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
 
             // verify the default layout wasn't changed
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid]);
             var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(true);
             Assert.IsNotNull(horizontalDefaultButton);
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
 
-            _session?.Click_EditLayout(copiedLayoutName);
+            _session?.ClickEditLayout(copiedLayoutName);
             horizontalDefaultButton = _session?.GetHorizontalDefaultButton(false);
             Assert.IsNotNull(horizontalDefaultButton);
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
 
             // verify the default layouts file wasn't changed
             var defaultLayouts = new DefaultLayouts();
@@ -257,8 +257,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CopyCustomLayout_FromEditLayoutWindow()
         {
             string copiedLayoutName = CustomLayouts.CustomLayouts[0].Name + " (1)";
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[0].Name);
-            _session?.Click_CopyLayout();
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[0].Name);
+            _session?.ClickCopyLayout();
 
             // verify the layout is copied
             Assert.IsNotNull(_session?.GetLayout(copiedLayoutName)); // new name is presented
@@ -291,11 +291,11 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CopyCustomLayout_DefaultLayout()
         {
             string copiedLayoutName = CustomLayouts.CustomLayouts[0].Name + " (1)";
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[0].Name);
-            _session?.Click_CopyLayout();
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[0].Name);
+            _session?.ClickCopyLayout();
 
             // verify the layout is copied
-            _session?.Click_Save();
+            _session?.ClickSave();
             Assert.IsNotNull(_session?.GetLayout(copiedLayoutName)); // new name is presented
 
             // verify the file
@@ -304,15 +304,15 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
 
             // verify the default layout wasn't changed
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[0].Name);
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[0].Name);
             var horizontalDefaultButton = _session?.GetVerticalDefaultButton(true);
             Assert.IsNotNull(horizontalDefaultButton);
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
 
-            _session?.Click_EditLayout(copiedLayoutName);
+            _session?.ClickEditLayout(copiedLayoutName);
             horizontalDefaultButton = _session?.GetVerticalDefaultButton(false);
             Assert.IsNotNull(horizontalDefaultButton);
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
 
             // verify the default layouts file wasn't changed
             var defaultLayouts = new DefaultLayouts();
@@ -324,11 +324,11 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CopyCustomLayout_Hotkey()
         {
             string copiedLayoutName = CustomLayouts.CustomLayouts[0].Name + " (1)";
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[0].Name);
-            _session?.Click_CopyLayout();
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[0].Name);
+            _session?.ClickCopyLayout();
 
             // verify the layout is copied
-            _session?.Click_Save();
+            _session?.ClickSave();
             Assert.IsNotNull(_session?.GetLayout(copiedLayoutName)); // new name is presented
 
             // verify the file
@@ -337,17 +337,17 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
 
             // verify the hotkey wasn't changed
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[0].Name);
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[0].Name);
             var hotkeyComboBox = _session?.GetHotkeyComboBox();
             Assert.IsNotNull(hotkeyComboBox);
             Assert.AreEqual("0", hotkeyComboBox.Text);
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
 
-            _session?.Click_EditLayout(copiedLayoutName);
+            _session?.ClickEditLayout(copiedLayoutName);
             hotkeyComboBox = _session?.GetHotkeyComboBox();
             Assert.IsNotNull(hotkeyComboBox);
             Assert.AreEqual("None", hotkeyComboBox.Text);
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
 
             // verify the hotkey file wasn't changed
             var hotkeys = new LayoutHotkeys();

@@ -231,7 +231,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void DeleteNotAppliedLayout()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
-            _session?.Click_EditLayout(deletedLayout);
+            _session?.ClickEditLayout(deletedLayout);
             _session?.ClickDeleteLayout();
             _session?.ClickConfirmDeletion();
             _session?.WaitFor(1);
@@ -250,7 +250,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void DeleteAppliedLayout()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[0].Name;
-            _session?.Click_EditLayout(deletedLayout);
+            _session?.ClickEditLayout(deletedLayout);
             _session?.ClickDeleteLayout();
             _session?.ClickConfirmDeletion();
             _session?.WaitFor(1);
@@ -276,7 +276,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CancelDeletion()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
-            _session?.Click_EditLayout(deletedLayout);
+            _session?.ClickEditLayout(deletedLayout);
             _session?.ClickDeleteLayout();
             _session?.ClickCancelDeletion();
             _session?.WaitFor(1);
@@ -318,9 +318,9 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.WaitFor(1);
 
             // verify the default layout is reset to the "default" default
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid]);
             Assert.IsNotNull(_session?.GetHorizontalDefaultButton(true));
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
 
             // check the file
             var defaultLayouts = new DefaultLayouts();
@@ -338,7 +338,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.WaitFor(1);
 
             // verify the hotkey is available
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[0].Name);
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[0].Name);
             var hotkeyComboBox = _session?.GetHotkeyComboBox();
             hotkeyComboBox?.Click();
             try
@@ -351,11 +351,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
             catch
             {
-                _session?.Click_Cancel();
+                _session?.ClickCancel();
                 Assert.Fail("Hotkey not found");
             }
 
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
 
             // check the file
             var hotkeys = new LayoutHotkeys();

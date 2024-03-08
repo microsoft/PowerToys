@@ -212,13 +212,13 @@ namespace Microsoft.FancyZonesEditor.UITests
                     continue;
                 }
 
-                _session?.Click_EditLayout(name);
+                _session?.ClickEditLayout(name);
 
                 var slider = _session?.GetZoneCountSlider();
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).ZoneCount;
                 Assert.AreEqual($"{expected}", slider?.Text);
 
-                _session?.Click_Cancel();
+                _session?.ClickCancel();
                 _session?.WaitUntilHidden(slider!); // let the dialog window close
             }
         }
@@ -230,13 +230,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
             var value = layout.ZoneCount;
             var expected = value - 1;
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
             var slider = _session?.GetZoneCountSlider();
             slider?.SendKeys(Keys.Left);
             Assert.AreEqual($"{expected}", slider?.Text);
 
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -252,12 +252,12 @@ namespace Microsoft.FancyZonesEditor.UITests
             var type = Constants.TemplateLayouts.Rows;
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
             var expected = layout.ZoneCount;
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
             var slider = _session?.GetZoneCountSlider();
             slider?.SendKeys(Keys.Left);
 
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -277,13 +277,13 @@ namespace Microsoft.FancyZonesEditor.UITests
                     continue;
                 }
 
-                _session?.Click_EditLayout(name);
+                _session?.ClickEditLayout(name);
 
                 var slider = _session?.GetSensitivitySlider();
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).SensitivityRadius;
                 Assert.AreEqual($"{expected}", slider?.Text);
 
-                _session?.Click_Cancel();
+                _session?.ClickCancel();
                 _session?.WaitUntilHidden(slider!); // let the dialog window close
             }
         }
@@ -294,7 +294,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var type = Constants.TemplateLayouts.Focus;
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
             var value = layout.SensitivityRadius;
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
             var slider = _session?.GetSensitivitySlider();
             slider?.SendKeys(Keys.Right);
@@ -302,7 +302,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = value + 1; // one step right
             Assert.AreEqual($"{expected}", slider?.Text);
 
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -318,11 +318,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             var type = Constants.TemplateLayouts.Focus;
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
             var expected = layout.SensitivityRadius;
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
             var slider = _session?.GetSensitivitySlider();
             slider?.SendKeys(Keys.Right);
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -343,7 +343,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     continue;
                 }
 
-                _session?.Click_EditLayout(name);
+                _session?.ClickEditLayout(name);
 
                 var toggle = _session?.GetSpaceAroundZonesToggle();
                 var slider = _session?.GetSpaceAroundZonesSlider();
@@ -354,7 +354,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).Spacing;
                 Assert.AreEqual($"{expected}", slider?.Text);
 
-                _session?.Click_Cancel();
+                _session?.ClickCancel();
                 _session?.WaitUntilHidden(slider!); // let the dialog window close
             }
         }
@@ -365,13 +365,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var type = Constants.TemplateLayouts.PriorityGrid;
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
             var expected = layout.Spacing + 1;
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
             var slider = _session?.GetSpaceAroundZonesSlider();
             slider?.SendKeys(Keys.Right);
             Assert.AreEqual($"{expected}", slider?.Text);
 
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -387,13 +387,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var type = Constants.TemplateLayouts.PriorityGrid;
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
             var expected = layout.Spacing;
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
             var slider = _session?.GetSpaceAroundZonesSlider();
             slider?.SendKeys(Keys.Right);
             Assert.AreEqual($"{expected + 1}", slider?.Text);
 
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -409,14 +409,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             var type = Constants.TemplateLayouts.PriorityGrid;
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
             var expected = !layout.ShowSpacing;
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
             var toggle = _session?.GetSpaceAroundZonesToggle();
             toggle?.Click();
             Assert.AreEqual(expected, toggle?.Selected);
             Assert.AreEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
 
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(toggle!); // let the dialog window close
 
             // verify the file
@@ -432,14 +432,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             var type = Constants.TemplateLayouts.PriorityGrid;
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
             var expected = layout.ShowSpacing;
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
             var toggle = _session?.GetSpaceAroundZonesToggle();
             toggle?.Click();
             Assert.AreNotEqual(expected, toggle?.Selected);
             Assert.AreNotEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
 
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(toggle!); // let the dialog window close
 
             // verify the file
