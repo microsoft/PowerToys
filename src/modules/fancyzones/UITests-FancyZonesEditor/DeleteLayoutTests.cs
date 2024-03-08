@@ -335,7 +335,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             _session?.Click_ContextMenuItem(deletedLayout, "Delete");
             _session?.ClickConfirmDeletion();
-            _session?.WaitFor(3);
+            _session?.WaitFor(1);
 
             // verify the hotkey is available
             _session?.Click_EditLayout(CustomLayouts.CustomLayouts[0].Name);
