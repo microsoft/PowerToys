@@ -392,6 +392,8 @@ namespace FancyZonesEditor.Models
                     break;
                 }
             }
+
+            FirePropertyChanged(nameof(QuickKeysAvailable));
         }
 
         public void DefaultLayouts_PropertyChanged(object sender, PropertyChangedEventArgs e)
