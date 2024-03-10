@@ -4,7 +4,7 @@ labels: [Needs-Triage, Issue-Bug]
 
 body:
   - type: checkboxes
-    id: preperation
+    id: preparation
     attributes:
       label: Before filing a new issue, please check the following
       description: This makes it easier for us all :)
@@ -20,15 +20,17 @@ body:
 
   - type: input
     id: version
+    validations:
+      required: true
     attributes:
       label: Microsoft PowerToys version
       description: Hover over system tray icon or look at Settings
       placeholder: 0.80.0
-    validations:
-      required: true
 
   - type: dropdown
     id: installation
+    validations:
+      required: true
     attributes:
       label: Installation method
       options:
@@ -40,11 +42,11 @@ body:
         - Scoop
         - Dev build in Visual Studio
         - Other (please specify in 'Steps to reproduce')
-    validations:
-      required: true
 
   - type: dropdown
     id: area
+    validations:
+      required: true
     attributes:
       label: Area(s) with issue
       description: Multiple selections is possible
@@ -81,8 +83,6 @@ body:
         - Video Conference Mute
         - Welcome / PowerToys Tour window
         - General / Other
-    validations:
-      required: true
 
   - type: dropdown
     attributes:
@@ -93,38 +93,37 @@ body:
 
   - type: textarea
     id: reproduce
+    validations:
+      required: true
     attributes:
       label: Steps to reproduce
       description: Having detailed steps helps us to reproduce the bug.
-    validations:
-      required: true
 
   - type: textarea
     id: behavior
-    attributes:
-      label: ❌ Actual behavior
-      description: Describe what happened, as detailed as possible. Screenshots/GIFs can be very helpful.
     validations:
       required: true
-  - type: markdown
     attributes:
-      value: |
-          "Right-click on our system tray icon and select **Bug Report**.
-          Then upload the zip file from your desktop: Paste, drop or click to add files."
+      label: ❌ Actual behavior
+      description: Describe what happened, as detailed as possible. Screenshots/GIFs can be very helpful. Include the Bug Report here.
+
   - type: checkboxes
     attributes:
       label: Include the Bug Report
+      description: "Right-click on our system tray icon and select **Bug Report**. Then upload the zip file from your desktop: Paste, drop or click to add files."
       options:
         - label: I have attached the Bug Report file
           required: true
 
   - type: textarea
-    attributes:
-      label: ✔️ Expected behavior
     validations:
       required: false
+    attributes:
+      label: ✔️ Expected behavior
 
   - type: textarea
+    validations:
+      required: false
     attributes:
       label: Other software (if applicable)
       description: "If you're reporting a bug about interaction with other software: What software? What version?"
@@ -132,5 +131,3 @@ body:
           vim 8.2 (inside WSL)
           OpenSSH_for_Windows_8.1p1
           My Cool Application v0.3 (include a code snippet if it would help!)
-    validations:
-      required: false

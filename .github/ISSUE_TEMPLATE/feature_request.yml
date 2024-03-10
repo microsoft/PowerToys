@@ -4,7 +4,7 @@ labels: [Needs-Triage, "Idea-New PowerToy"]
 
 body:
   - type: checkboxes
-    id: preperation
+    id: preparation
     attributes:
       label: Before filing a new issue, please check the following
       description: This makes it easier for us all :)
@@ -20,26 +20,26 @@ body:
 
   - type: textarea
     id: description
+    validations:
+      required: true
     attributes:
       label: Description of the new feature
       description: What is the expected behavior of the proposed feature?
-    validations:
-      required: true
 
   - type: textarea
     id: scenario
+    validations:
+      required: true
     attributes:
       label: Scenario when this would be used?
       description: What is the scenario this would be used? Why is this important to your workflow as a power user?
-    validations:
-      required: true
 
   - type: textarea
+    validations:
+      required: false
     attributes:
       label: Supporting information
       description: "Additional evidence, data, tweets, blog posts, research… Anything is helpful. This information provides context to the scenario that may otherwise be lost."
-    validations:
-      required: false
 
   - type: markdown
     attributes:

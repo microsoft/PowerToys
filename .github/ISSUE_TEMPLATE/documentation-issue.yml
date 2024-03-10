@@ -4,8 +4,8 @@ labels: [Needs-Triage, Issue-Docs]
 
 body:
 - type: textarea
+  validations:
+    required: true
   attributes: 
     label: Provide a description of requested docs changes
     description: Describe which document needs to be corrected and why.
-  validations:
-    required: true

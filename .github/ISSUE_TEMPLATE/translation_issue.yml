@@ -5,7 +5,7 @@ assignees: crutkas
 
 body:
   - type: checkboxes
-    id: preperation
+    id: preparation
     attributes:
       label: Before filing a new issue, please check the following
       description: This makes it easier for us all :)
@@ -19,15 +19,17 @@ body:
 
   - type: input
     id: version
+    validations:
+      required: true
     attributes:
       label: Microsoft PowerToys version
       description: Hover over the system tray icon or look at Settings
       placeholder: 0.80.0
-    validations:
-      required: true
 
   - type: dropdown
     id: area
+    validations:
+      required: true
     attributes:
       label: Area with translation issue
       options:
@@ -62,11 +64,11 @@ body:
         - Video Conference Mute
         - Welcome / PowerToys Tour window
         - Other
-    validations:
-      required: true
 
   - type: dropdown
     id: language
+    validations:
+      required: true
     attributes:
       label: Language
       options:
@@ -91,27 +93,25 @@ body:
         - Spanish
         - Turkish
         - Ukrainian
-    validations:
-      required: true
 
   - type: textarea
     id: displayedtext
+    validations:
+      required: true
     attributes:
       label: ❌ Displayed text
       description: Please include a screenshot as that is extremely helpful.
-    validations:
-      required: true
 
   - type: textarea
     id: correcttext
-    attributes:
-      label: ✔️ Correct text
     validations:
       required: true
+    attributes:
+      label: ✔️ Correct text
 
   - type: textarea
     id: context
-    attributes:
-      label: ℹ Context, explanation
     validations:
       required: true
+    attributes:
+      label: ℹ Context, explanation
