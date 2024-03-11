@@ -122,7 +122,7 @@ public partial class OCROverlay : Window
         KeyDown += MainWindow_KeyDown;
         KeyUp += MainWindow_KeyUp;
 
-        BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this, this.screenRectangle);
+        BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
         BackgroundBrush.Opacity = ActiveOpacity;
 
         TopButtonsStackPanel.Visibility = Visibility.Visible;
@@ -492,5 +492,10 @@ public partial class OCROverlay : Window
             default:
                 break;
         }
+    }
+
+    public System.Drawing.Rectangle GetScreenRectangle()
+    {
+        return screenRectangle;
     }
 }
