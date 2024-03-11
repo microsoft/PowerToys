@@ -46,7 +46,7 @@ jobs:
     displayName: Download and install WinAppDriver
     inputs:
       targetType: filePath
-      filePath: '$(build.sourcesdirectory)\.pipelines\installWinAppDriver.ps1'
+      filePath: '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
       
   - task: ScreenResolutionUtility@1
     inputs:

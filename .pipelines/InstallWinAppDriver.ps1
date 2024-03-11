@@ -12,4 +12,4 @@ if ($Hash -ne 'a76a8f4e44b29bad331acf6b6c248fcc65324f502f28826ad2acd5f3c80857fe'
 }
 
 # Install WinAppDriver
-Start-Process -Wait -FilePath "$($ENV:Temp)\WindowsApplicationDriver_1.2.1.msi" -ArgumentList "/install /quiet"
+Start-Process msiexec.exe -Wait -ArgumentList "/I $($ENV:Temp)\WindowsApplicationDriver_1.2.1.msi /quiet"
