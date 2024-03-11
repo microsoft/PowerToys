@@ -42,6 +42,12 @@ jobs:
   - task: VisualStudioTestPlatformInstaller@1
     displayName: Ensure VSTest Platform
 
+  - task: PowerShell@2
+    displayName: Download and install WinAppDriver
+    inputs:
+      targetType: filePath
+      filePath: '$(build.sourcesdirectory)\.pipelines\installWinAppDriver.ps1'
+      
   - task: ScreenResolutionUtility@1
     inputs:
       displaySettings: 'optimal'
