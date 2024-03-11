@@ -919,6 +919,7 @@ mscorlib
 msdata
 msedge
 MSGFLT
+msiexec
 MSIFASTINSTALL
 MSIHANDLE
 msiquery
