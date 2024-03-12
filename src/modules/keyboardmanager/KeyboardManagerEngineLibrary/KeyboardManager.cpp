@@ -7,8 +7,6 @@
 #include <common/utils/winapi_error.h>
 #include <common/logger/logger_settings.h>
 
-#include <keyboardmanager/common/Shortcut.h>
-#include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
@@ -84,6 +82,24 @@ void KeyboardManager::LoadSettings()
 
         // retry once
         state.LoadSettings();
+    }
+    try
+    {
+        // Send telemetry about configured key/shortcut to key/shortcut mappings, OS an app specific level.
+        Trace::SendKeyAndShortcutRemapLoadedConfiguration(state);
+    }
+    catch (...)
+    {
+        try
+        {
+            Logger::error("Failed to send telemetry for the configured remappings.");
+            // Try not to crash the app sending telemetry. Everything inside a try.
+            Trace::ErrorSendingKeyAndShortcutRemapLoadedConfiguration();
+        }
+        catch (...)
+        {
+
+        }
     }
 }
 

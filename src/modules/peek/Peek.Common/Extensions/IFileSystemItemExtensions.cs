@@ -102,32 +102,6 @@ namespace Peek.Common.Extensions
             return size;
         }
 
-        public static ulong GetSizeInBytes(this IFileSystemItem item)
-        {
-            ulong sizeInBytes = 0;
-
-            try
-            {
-                switch (item)
-                {
-                    case FolderItem _:
-                        FileSystemObject fileSystemObject = new FileSystemObject();
-                        Folder folder = fileSystemObject.GetFolder(item.Path);
-                        sizeInBytes = (ulong)folder.Size;
-                        break;
-                    case FileItem _:
-                        sizeInBytes = item.FileSizeBytes;
-                        break;
-                }
-            }
-            catch
-            {
-                sizeInBytes = 0;
-            }
-
-            return sizeInBytes;
-        }
-
         public static async Task<string> GetContentTypeAsync(this IFileSystemItem item)
         {
             string contentType = string.Empty;

@@ -154,7 +154,9 @@
     <Manifest Include="KeyboardManagerEditor.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources.resx" />
+    <None Include="Resources.resx">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Keyboard.ico" />

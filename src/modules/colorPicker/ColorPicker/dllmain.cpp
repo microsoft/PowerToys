@@ -239,6 +239,7 @@ public:
         ResetEvent(m_hInvokeEvent);
         launch_process();
         m_enabled = true;
+        Trace::EnableColorPicker(true);
     };
 
     virtual void disable()
@@ -252,6 +253,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnableColorPicker(false);
     }
 
     virtual bool on_hotkey(size_t /*hotkeyId*/) override

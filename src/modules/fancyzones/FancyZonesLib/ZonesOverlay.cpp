@@ -41,16 +41,6 @@ float ZonesOverlay::GetAnimationAlpha()
     return std::clamp(millis / FadeInDurationMillis, 0.001f, 1.f);
 }
 
-ID2D1Factory* ZonesOverlay::GetD2DFactory()
-{
-    static auto pD2DFactory = [] {
-        ID2D1Factory* res = nullptr;
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &res);
-        return res;
-    }();
-    return pD2DFactory;
-}
-
 IDWriteFactory* ZonesOverlay::GetWriteFactory()
 {
     static auto pDWriteFactory = [] {
@@ -99,7 +89,11 @@ ZonesOverlay::ZonesOverlay(HWND window)
     auto renderTargetSize = D2D1::SizeU(m_clientRect.right - m_clientRect.left, m_clientRect.bottom - m_clientRect.top);
     auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(window, renderTargetSize);
 
-    hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &m_renderTarget);
+    ID2D1Factory* factory = nullptr;
+    D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &factory);
+    hr = factory->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &m_renderTarget);
+    factory->Release();
+    factory = nullptr;
 
     if (!SUCCEEDED(hr))
     {
@@ -357,5 +351,6 @@ ZonesOverlay::~ZonesOverlay()
     if (m_renderTarget)
     {
         m_renderTarget->Release();
+        m_renderTarget = nullptr;
     }
 }
