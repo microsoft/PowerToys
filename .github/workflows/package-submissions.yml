@@ -11,7 +11,7 @@ jobs:
     name: Publish winget package
     runs-on: windows-latest
     steps:
-      - name: Submit package to Windows Package Manager Community Repository
+      - name: WinGet submission on release
         run: |
 
           $wingetPackage = "Microsoft.PowerToys"
