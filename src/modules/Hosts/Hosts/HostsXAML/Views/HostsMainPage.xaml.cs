@@ -37,7 +37,8 @@ namespace Hosts.Views
         public HostsMainPage()
         {
             InitializeComponent();
-            ViewModel = App.GetService<MainViewModel>();
+
+            ViewModel = Host.GetService<MainViewModel>();
             DataContext = ViewModel;
         }
 
@@ -127,7 +128,7 @@ namespace Hosts.Views
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            var userSettings = App.GetService<IUserSettings>();
+            var userSettings = Host.GetService<IUserSettings>();
             if (userSettings.ShowStartupWarning)
             {
                 var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
