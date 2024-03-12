@@ -233,7 +233,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             _session?.ClickEditLayout(deletedLayout);
             _session?.ClickDeleteLayout();
-            _session?.ClickConfirmDeletion();
+            _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 
             // verify the layout is removed
@@ -252,7 +252,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var deletedLayout = CustomLayouts.CustomLayouts[0].Name;
             _session?.ClickEditLayout(deletedLayout);
             _session?.ClickDeleteLayout();
-            _session?.ClickConfirmDeletion();
+            _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 
             // verify the layout is removed
@@ -278,7 +278,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             _session?.ClickEditLayout(deletedLayout);
             _session?.ClickDeleteLayout();
-            _session?.ClickCancelDeletion();
+            _session?.ClickCancelDialog();
             _session?.WaitFor(1);
 
             // verify the layout is not removed
@@ -295,8 +295,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void DeleteFromContextMenu()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
-            _session?.Click_ContextMenuItem(deletedLayout, "Delete");
-            _session?.ClickConfirmDeletion();
+            _session?.ClickContextMenuItem(deletedLayout, "Delete");
+            _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 
             // verify the layout is removed
@@ -313,8 +313,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void DeleteDefaultLayout()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
-            _session?.Click_ContextMenuItem(deletedLayout, "Delete");
-            _session?.ClickConfirmDeletion();
+            _session?.ClickContextMenuItem(deletedLayout, "Delete");
+            _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 
             // verify the default layout is reset to the "default" default
@@ -333,8 +333,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void DeleteLayoutWithHotkey()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
-            _session?.Click_ContextMenuItem(deletedLayout, "Delete");
-            _session?.ClickConfirmDeletion();
+            _session?.ClickContextMenuItem(deletedLayout, "Delete");
+            _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 
             // verify the hotkey is available

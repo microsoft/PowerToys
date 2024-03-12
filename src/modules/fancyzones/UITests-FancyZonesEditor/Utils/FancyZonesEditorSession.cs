@@ -345,29 +345,48 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             button?.Click();
         }
 
-        public void ClickConfirmDeletion()
+        public void ClickConfirm()
         {
-            // WaitElementDisplayedById(AccessibilityId.PrimaryButton);
-            // WindowsElement? button = Session?.FindElementByAccessibilityId(AccessibilityId.PrimaryButton);
-            // button?.Click(); - doesn't work
+            WaitElementDisplayedById(AccessibilityId.PrimaryButton);
+            WindowsElement? button = Session?.FindElementByAccessibilityId(AccessibilityId.PrimaryButton);
+            button?.Click();
+            WaitUntilHidden(button!);
+        }
+
+        public void ClickConfirmDialog()
+        {
             Actions actions = new Actions(Session);
             actions.SendKeys(Keys.Tab).SendKeys(Keys.Enter);
             actions.Build().Perform();
-
-            // WaitUntilHidden(button!);
         }
 
-        public void ClickCancelDeletion()
+        public void ClickCancelDialog()
         {
             Actions actions = new Actions(Session);
             actions.SendKeys(Keys.Tab).SendKeys(Keys.Tab).SendKeys(Keys.Enter);
             actions.Build().Perform();
         }
 
-        public void Click_ContextMenuItem(string layoutName, string menuItem)
+        public void ClickContextMenuItem(string layoutName, string menuItem)
         {
             WindowsElement menu = OpenContextMenu(layoutName);
             Click(menu.FindElementByName(menuItem));
+        }
+
+        public void SelectNewLayoutType(Constants.CustomLayoutType type)
+        {
+            WindowsElement? button = null;
+            switch (type)
+            {
+                case Constants.CustomLayoutType.Canvas:
+                    button = FindByAccessibilityId(AccessibilityId.CanvasRadioButton);
+                    break;
+                case Constants.CustomLayoutType.Grid:
+                    button = FindByAccessibilityId(AccessibilityId.GridRadioButton);
+                    break;
+            }
+
+            Click(button!);
         }
 
         private WindowsElement? FindByAccessibilityId(string name)

@@ -207,7 +207,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CopyTemplate_FromContextMenu()
         {
             string copiedLayoutName = Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows] + " (1)";
-            _session?.Click_ContextMenuItem(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows], "Create custom layout");
+            _session?.ClickContextMenuItem(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows], "Create custom layout");
 
             // verify the layout is copied
             _session?.WaitElementDisplayedByName(copiedLayoutName);
@@ -274,7 +274,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CopyCustomLayout_FromContextMenu()
         {
             string copiedLayoutName = CustomLayouts.CustomLayouts[0].Name + " (1)";
-            _session?.Click_ContextMenuItem(CustomLayouts.CustomLayouts[0].Name, "Duplicate");
+            _session?.ClickContextMenuItem(CustomLayouts.CustomLayouts[0].Name, "Duplicate");
 
             // verify the layout is copied
             _session?.WaitElementDisplayedByName(copiedLayoutName);
