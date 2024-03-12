@@ -13,7 +13,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string Description => ResourceHelper.GetResource("File_Content_Actions.Description");
 
-        public string Author => "Microsoft Corporation";
+        public string Author => ResourceHelper.GetResource("PluginPublisher");
 
         public IAction[] TopLevelMenuActions =>
         [

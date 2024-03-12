@@ -2,7 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Windows;
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -17,7 +20,9 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Copy full path (\\)";
+#pragma warning disable CA1863 // Use 'CompositeFormat'
+        public string Title => string.Format(CultureInfo.InvariantCulture, ResourceHelper.GetResource("Path_Copy.FullPath.Title"), "\\");
+#pragma warning restore CA1863 // Use 'CompositeFormat'
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -33,12 +38,16 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            if (SelectedItems[0].EndsWith(".lnk", StringComparison.InvariantCultureIgnoreCase) && CheckedMenuItemsDictionary["f2544fd5-13f7-4d52-b7b4-00a3c70923e6"].First(checkedMenuItems => ((ToggleMenuFlyoutItem)checkedMenuItems.Item1).IsChecked).Item2 is ResolveShortcut)
+            bool resolveShortcut = CheckedMenuItemsDictionary["f2544fd5-13f7-4d52-b7b4-00a3c70923e6"].First(checkedMenuItems => ((ToggleMenuFlyoutItem)checkedMenuItems.Item1).IsChecked).Item2 is ResolveShortcut;
+            if (SelectedItems[0].EndsWith(".lnk", StringComparison.InvariantCultureIgnoreCase) && resolveShortcut)
             {
                 SelectedItems[0] = ShortcutHelper.GetFullPathFromShortcut(SelectedItems[0]);
             }
 
             Clipboard.SetText(SelectedItems[0]);
+
+            TelemetryHelper.LogEvent(new FileActionsMenuCopyFilePathActionInvokedEvent() { ResolveShortcut = resolveShortcut, IsWSLMode = false, Delimiter = "\\" }, SelectedItems);
+
             return Task.CompletedTask;
         }
     }

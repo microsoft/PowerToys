@@ -4,6 +4,7 @@
 
 using System.Drawing;
 using System.Windows.Forms;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using Microsoft.UI.Xaml.Controls;
 using Button = System.Windows.Forms.Button;
@@ -48,7 +49,9 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
             };
             okButton.Click += (sender, e) =>
             {
-                CopyPathSeparatedBy.SeperateFilePathByDelimiterAndAddToClipboard(costumDelimiterTextBox.Text, SelectedItems);
+                TelemetryHelper.LogEvent(new FileActionsMenuCopyFilePathsSeparatedByActionInvokedEvent() { Delimiter = costumDelimiterTextBox.Text, IsCustomSeperator = true }, SelectedItems);
+
+                CopyPathSeparatedBy.SeparateFilePathByDelimiterAndAddToClipboard(costumDelimiterTextBox.Text, SelectedItems);
                 window.Close();
             };
             cancelButton.Click += (sender, e) => { window.Close(); };

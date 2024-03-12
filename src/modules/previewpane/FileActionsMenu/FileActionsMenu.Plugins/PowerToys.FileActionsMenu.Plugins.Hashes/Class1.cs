@@ -13,7 +13,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
 
         public string Description => ResourceHelper.GetResource("Hashes.Description");
 
-        public string Author => "Microsoft Corporation";
+        public string Author => ResourceHelper.GetResource("PluginPublisher");
 
         public IAction[] TopLevelMenuActions =>
         [

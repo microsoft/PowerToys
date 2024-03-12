@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Windows;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml;
+using Application = Microsoft.UI.Xaml.Application;
 
 namespace FileActionsMenu.Ui
 {
@@ -12,6 +14,12 @@ namespace FileActionsMenu.Ui
     {
         public App()
         {
+            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredFileActionsMenuEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
+            {
+                Environment.Exit(0);
+                return;
+            }
+
             string[] items = ExplorerHelper.GetSelectedItems();
             if (items.Length == 0)
             {

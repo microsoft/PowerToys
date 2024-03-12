@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows;
+using FileActionsMenu.Helpers;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
@@ -17,7 +19,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Copy full path for WSL";
+        public string Title => ResourceHelper.GetResource("Path_Copy.FullPathWSL.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -33,12 +35,16 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            if (SelectedItems[0].EndsWith(".lnk", StringComparison.InvariantCultureIgnoreCase) && CheckedMenuItemsDictionary["f2544fd5-13f7-4d52-b7b4-00a3c70923e6"].First(checkedMenuItems => ((ToggleMenuFlyoutItem)checkedMenuItems.Item1).IsChecked).Item2 is ResolveShortcut)
+            bool resolveShortcut = CheckedMenuItemsDictionary["f2544fd5-13f7-4d52-b7b4-00a3c70923e6"].First(checkedMenuItems => ((ToggleMenuFlyoutItem)checkedMenuItems.Item1).IsChecked).Item2 is ResolveShortcut;
+            if (SelectedItems[0].EndsWith(".lnk", StringComparison.InvariantCultureIgnoreCase) && resolveShortcut)
             {
                 SelectedItems[0] = ShortcutHelper.GetFullPathFromShortcut(SelectedItems[0]);
             }
 
             Clipboard.SetText("/mnt/" + SelectedItems[0][0].ToString().ToLowerInvariant() + SelectedItems[0][1..].Replace("\\", "/").Replace(":/", "/"));
+
+            TelemetryHelper.LogEvent(new FileActionsMenuCopyFilePathActionInvokedEvent() { ResolveShortcut = resolveShortcut, IsWSLMode = true, Delimiter = "/" }, SelectedItems);
+
             return Task.CompletedTask;
         }
     }

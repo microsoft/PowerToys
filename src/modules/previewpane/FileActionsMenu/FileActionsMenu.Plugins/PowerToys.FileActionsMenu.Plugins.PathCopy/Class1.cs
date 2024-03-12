@@ -2,17 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 
 namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 {
     public class Class1 : IFileActionsMenuPlugin
     {
-        public string Name => "Copy path";
+        public string Name => ResourceHelper.GetResource("Path_Copy.Name");
 
-        public string Description => "Adds the option to copy multiple files delimited by a delimeter or to copy certain parts of a path.";
+        public string Description => ResourceHelper.GetResource("Path_Copy.Description");
 
-        public string Author => "Microsoft Corporation";
+        public string Author => ResourceHelper.GetResource("PluginPublisher");
 
         public IAction[] TopLevelMenuActions =>
         [

@@ -270,6 +270,38 @@
   <data name="Move_Copy_Actions.Title" xml:space="preserve">
     <value>Move &amp; Copy actions</value>
   </data>
+  <data name="Path_Copy.CopyPath.Title" xml:space="preserve">
+    <value>Copy part of path</value>
+  </data>
+  <data name="Path_Copy.Description" xml:space="preserve">
+    <value>Adds the option to copy multiple files delimited by a delimeter or to copy certain parts of a path.</value>
+  </data>
+  <data name="Path_Copy.DirectoryPath.Title" xml:space="preserve">
+    <value>Copy path of the containing folder</value>
+  </data>
+  <data name="Path_Copy.DirectoryPathWSL.Title" xml:space="preserve">
+    <value>Copy WSL path of the containing folder</value>
+    <comment>WSL = Windows Subsystem for Linux</comment>
+  </data>
+  <data name="Path_Copy.FileName.File.Title" xml:space="preserve">
+    <value>Copy file name</value>
+  </data>
+  <data name="Path_Copy.FileName.Folder.Title" xml:space="preserve">
+    <value>Copy folder name</value>
+  </data>
+  <data name="Path_Copy.FullPath.Title" xml:space="preserve">
+    <value>Copy full path ({0})</value>
+    <comment>{0} is a delimiter. Either "\", "/" or "\\"</comment>
+  </data>
+  <data name="Path_Copy.FullPathWSL.Title" xml:space="preserve">
+    <value>Copy full WSL path</value>
+  </data>
+  <data name="Path_Copy.Name" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
+  <data name="PluginPublisher" xml:space="preserve">
+    <value>Microsoft Corporation</value>
+  </data>
   <data name="PowerToys.Description" xml:space="preserve">
     <value>Adds entries for launching PowerToys modules.</value>
     <comment>{Locked="PowerToys"}</comment>

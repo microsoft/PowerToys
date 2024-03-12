@@ -4,7 +4,9 @@
 
 using System.Text;
 using System.Windows;
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
+using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
 using RoutedEventArgs = Microsoft.UI.Xaml.RoutedEventArgs;
 
@@ -14,11 +16,15 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
     {
         private bool _isVisible;
 
+        private string[]? _selectedItems;
+
         public string[] SelectedItems
         {
-            get => [];
+            get => _selectedItems.GetOrArgumentNullException();
             set
             {
+                _selectedItems = value;
+
                 if (value.Length > 1)
                 {
                     _isVisible = true;
@@ -50,7 +56,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
             throw new InvalidOperationException();
         }
 
-        public static void SeperateFilePathByDelimiterAndAddToClipboard(string delimiter, string[] items)
+        public static void SeparateFilePathByDelimiterAndAddToClipboard(string delimiter, string[] items)
         {
             StringBuilder text = new();
 

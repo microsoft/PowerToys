@@ -4,6 +4,12 @@
 
 namespace FileActionsMenu.Helpers
 {
+    /// <summary>
+    /// The enums for hash types and generate or verify mode.
+    /// </summary>
+    /// <remarks>
+    /// New values shall be added to the end of the enum to avoid breaking changes.
+    /// </remarks>
     public static class HashEnums
     {
         /// <summary>

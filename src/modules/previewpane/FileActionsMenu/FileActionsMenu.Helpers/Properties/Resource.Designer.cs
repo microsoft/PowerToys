@@ -484,6 +484,96 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy part of path.
+        /// </summary>
+        internal static string Path_Copy_CopyPath_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPath.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adds the option to copy multiple files delimited by a delimeter or to copy certain parts of a path..
+        /// </summary>
+        internal static string Path_Copy_Description {
+            get {
+                return ResourceManager.GetString("Path_Copy.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy path of the containing folder.
+        /// </summary>
+        internal static string Path_Copy_DirectoryPath_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.DirectoryPath.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy WSL path of the containing folder.
+        /// </summary>
+        internal static string Path_Copy_DirectoryPathWSL_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.DirectoryPathWSL.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy file name.
+        /// </summary>
+        internal static string Path_Copy_FileName_File_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.FileName.File.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy folder name.
+        /// </summary>
+        internal static string Path_Copy_FileName_Folder_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.FileName.Folder.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy full path ({0}).
+        /// </summary>
+        internal static string Path_Copy_FullPath_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.FullPath.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy full WSL path.
+        /// </summary>
+        internal static string Path_Copy_FullPathWSL_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.FullPathWSL.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy path.
+        /// </summary>
+        internal static string Path_Copy_Name {
+            get {
+                return ResourceManager.GetString("Path_Copy.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Microsoft Corporation.
+        /// </summary>
+        internal static string PluginPublisher {
+            get {
+                return ResourceManager.GetString("PluginPublisher", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Adds entries for launching PowerToys modules..
         /// </summary>
         internal static string PowerToys_Description {

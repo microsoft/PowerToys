@@ -9,9 +9,17 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace FileActionsMenu.Helpers.Telemetry
 {
     [EventData]
-    public class FileActionsMenuProgressConflictEvent : EventBase, IEvent
+    public class FileActionsMenuCopyFullPathActionInvokedEvent : EventBase, IFileActionsMenuItemInvokedEvent
     {
-        public bool ReplaceChosen { get; set; }
+        public int ItemCount { get; set; }
+
+        public bool HasImagesSelected { get; set; }
+
+        public bool HasFilesSelected { get; set; }
+
+        public bool HasFoldersSelected { get; set; }
+
+        public bool HasExecutableFilesSelected { get; set; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }

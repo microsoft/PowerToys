@@ -113,7 +113,7 @@ namespace FileActionsMenu.Helpers
                 _progressBar.State = TaskDialogProgressBarState.Normal;
                 taskCompletionSource.SetResult();
                 _conflictTaskDialog.Close();
-                PowerToysTelemetry.Log.WriteEvent(new FileActionsMenuProgressConflictEvent() { ReplaceChoosen = true });
+                PowerToysTelemetry.Log.WriteEvent(new FileActionsMenuProgressConflictEvent() { ReplaceChosen = true });
             };
             TaskDialogButton ignoreButton = new()
             {
@@ -125,7 +125,7 @@ namespace FileActionsMenu.Helpers
                 _progressBar.State = TaskDialogProgressBarState.Normal;
                 taskCompletionSource.SetResult();
                 _conflictTaskDialog.Close();
-                PowerToysTelemetry.Log.WriteEvent(new FileActionsMenuProgressConflictEvent() { ReplaceChoosen = false });
+                PowerToysTelemetry.Log.WriteEvent(new FileActionsMenuProgressConflictEvent() { ReplaceChosen = false });
             };
             _conflictTaskDialog.Closing += (sender, e) =>
             {

@@ -13,7 +13,7 @@ namespace PowerToys.FileActionsMenu.Plugins.ImageClipboardActions
 
         public string Description => ResourceHelper.GetResource("Image_Clipboard_Actions.Description");
 
-        public string Author => "Microsoft Corporation";
+        public string Author => ResourceHelper.GetResource("PluginPublisher");
 
         public IAction[] TopLevelMenuActions =>
         [

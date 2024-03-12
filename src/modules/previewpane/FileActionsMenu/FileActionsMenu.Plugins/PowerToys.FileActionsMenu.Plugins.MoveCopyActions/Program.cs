@@ -13,7 +13,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
         public string Description => ResourceHelper.GetResource("Move_Copy_Actions.Description");
 
-        public string Author => "Microsoft Corporation";
+        public string Author => ResourceHelper.GetResource("PluginPublisher");
 
         public IAction[] TopLevelMenuActions =>
         [

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -28,7 +29,9 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            CopyPathSeparatedBy.SeperateFilePathByDelimiterAndAddToClipboard(";", SelectedItems);
+            TelemetryHelper.LogEvent(new FileActionsMenuCopyFilePathsSeparatedByActionInvokedEvent() { Delimiter = ";", IsCustomSeperator = false }, SelectedItems);
+
+            CopyPathSeparatedBy.SeparateFilePathByDelimiterAndAddToClipboard(";", SelectedItems);
             return Task.CompletedTask;
         }
     }
