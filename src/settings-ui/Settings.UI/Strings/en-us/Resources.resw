@@ -4064,4 +4064,13 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="FileActionsMenu_ShortDescription" xml:space="preserve">
     <value>Press shortcut to open a menu and perform actions on selected Files/Folders</value>
   </data>
+  <data name="Oobe_FileActionsMenu.Description" xml:space="preserve">
+    <value>File Actions Menu is a menu that allows you to perform several different actions on Files and Folders selected in Windows Explorer. These actions include generating hashes, copying the file paths of the selected objects delimited by a costum delimiter or copying the file content in different formats.</value>
+  </data>
+  <data name="Oobe_FileActionsMenu.Title" xml:space="preserve">
+    <value>File Actions Menu</value>
+  </data>
+  <data name="Oobe_FileActionsMenu_HowToUse.Text" xml:space="preserve">
+    <value>to open File Actions Menu</value>
+  </data>
 </root>
