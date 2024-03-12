@@ -4003,13 +4003,13 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="ShowPluginsOverview_NonGlobal.Content" xml:space="preserve">
     <value>Not included in global results</value>
   </data>
-  <data name="FileExplorerPreview_FileActionsMenu.Description" xml:space="preserve">
+  <data name="FileActionsMenu_FileActionsMenu.Description" xml:space="preserve">
     <value>File Actions Menu adds a menu to the Windows File Explorer, that enables you to execute certain actions. The menu is accessible with a shortcut aswell as in the right-click menu of Explorer.</value>
   </data>
-  <data name="FileExplorerPreview_FileActionsMenu.Header" xml:space="preserve">
+  <data name="FileActionsMenu_FileActionsMenu.Header" xml:space="preserve">
     <value>File Actions Menu</value>
   </data>
-  <data name="FileExplorerPreview_ToggleSwitch_FileActionsMenu.Header" xml:space="preserve">
+  <data name="FileActionsMenu_ToggleSwitch_FileActionsMenu.Header" xml:space="preserve">
     <value>Enable File Actions Menu</value>
   </data>
   <data name="PowerLauncher_TitleFontSize.Description" xml:space="preserve">
@@ -4045,5 +4045,20 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
     <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
+  </data>
+  <data name="FileActionsMenu.ModuleDescription" xml:space="preserve">
+    <value />
+  </data>
+  <data name="FileActionsMenu.ModuleTitle" xml:space="preserve">
+    <value>File Actions Menu</value>
+  </data>
+  <data name="FileActionsMenu.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="LearnMore_FileActionsMenu.Text" xml:space="preserve">
+    <value>Learn more about File Actions Menu</value>
+  </data>
+  <data name="Shell_FileActionsMenu.Content" xml:space="preserve">
+    <value>File Actions Menu</value>
   </data>
 </root>

@@ -13,33 +13,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerPreviewProperties
     {
-        public HotkeySettings DefaultFileActionsMenuShortcut => new(false, true, true, false, 65);
-
         public const string DefaultStlThumbnailColor = "#FFC924";
         public const int DefaultMonacoMaxFileSize = 50;
         public const int DefaultSvgBackgroundColorMode = (int)SvgPreviewColorMode.Default;
         public const string DefaultSvgBackgroundSolidColor = "#FFFFFF";
         public const int DefaultSvgBackgroundCheckeredShade = (int)SvgPreviewCheckeredShade.Light;
-
-        private bool enableFileActionsMenu = true;
-
-        [JsonPropertyName("file-actions-menu-toggle-setting")]
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool EnableFileActionsMenu
-        {
-            get => enableFileActionsMenu;
-            set
-            {
-                if (value != enableFileActionsMenu)
-                {
-                    LogTelemetryEvent(value);
-                    enableFileActionsMenu = value;
-                }
-            }
-        }
-
-        [JsonPropertyName("file-actions-menu-shortcut-setting")]
-        public HotkeySettings FileActionsMenuShortcut { get; set; }
 
         private bool enableSvgPreview = true;
 
@@ -279,7 +257,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public PowerPreviewProperties()
         {
-            FileActionsMenuShortcut = DefaultFileActionsMenuShortcut;
             SvgBackgroundColorMode = new IntProperty(DefaultSvgBackgroundColorMode);
             SvgBackgroundSolidColor = new StringProperty(DefaultSvgBackgroundSolidColor);
             SvgBackgroundCheckeredShade = new IntProperty(DefaultSvgBackgroundCheckeredShade);

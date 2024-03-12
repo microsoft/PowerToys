@@ -141,6 +141,11 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
 
                 <NavigationViewItem
+                    x:Uid="Shell_FileActionsMenu"
+                    helpers:NavHelper.NavigateTo="views:FileActionsMenuPage"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}" />
+
+                <NavigationViewItem
                     x:Uid="Shell_PowerPreview"
                     helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}" />

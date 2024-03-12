@@ -43,20 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _fileActionsMenuEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgPreviewEnabledValue();
-            if (_fileActionsMenuEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _fileActionsMenuEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _fileActionsMenuEnabledStateIsGPOConfigured = true;
-                _fileActionsMenuIsEnabled = _fileActionsMenuEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _fileActionsMenuIsEnabled = Settings.Properties.EnableFileActionsMenu;
-            }
-
-            _fileActionsMenuShortcut = Settings.Properties.FileActionsMenuShortcut;
-
             _svgRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredSvgPreviewEnabledValue();
             if (_svgRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _svgRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -222,11 +208,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private GpoRuleConfigured _fileActionsMenuEnabledGpoRuleConfiguration;
-        private bool _fileActionsMenuEnabledStateIsGPOConfigured;
-        private bool _fileActionsMenuIsEnabled;
-        private HotkeySettings _fileActionsMenuShortcut;
-
         private GpoRuleConfigured _svgRenderEnabledGpoRuleConfiguration;
         private bool _svgRenderEnabledStateIsGPOConfigured;
         private bool _svgRenderIsGpoEnabled;
@@ -318,50 +299,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     || _gcodeThumbnailEnabledStateIsGPOConfigured || _stlThumbnailEnabledStateIsGPOConfigured
                     || _qoiThumbnailEnabledStateIsGPOConfigured;
             }
-        }
-
-        public bool FileActionsMenuIsEnabled
-        {
-            get
-            {
-                return _fileActionsMenuIsEnabled;
-            }
-
-            set
-            {
-                if (_fileActionsMenuEnabledStateIsGPOConfigured)
-                {
-                    // If it's GPO configured, shouldn't be able to change this state.
-                    return;
-                }
-
-                if (value != _fileActionsMenuIsEnabled)
-                {
-                    _fileActionsMenuIsEnabled = value;
-                    Settings.Properties.EnableFileActionsMenu = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        public HotkeySettings FileActionsMenuShortcut
-        {
-            get => _fileActionsMenuShortcut;
-            set
-            {
-                if (value != _fileActionsMenuShortcut)
-                {
-                    _fileActionsMenuShortcut = value ?? Settings.Properties.DefaultFileActionsMenuShortcut;
-                    Settings.Properties.FileActionsMenuShortcut = value;
-                    OnPropertyChanged(nameof(FileActionsMenuShortcut));
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        public bool IsFileActionsMenuEnabledGpoConfigured
-        {
-            get => _fileActionsMenuEnabledStateIsGPOConfigured;
         }
 
         public bool SVGRenderIsEnabled

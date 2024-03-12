@@ -21,6 +21,9 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="SettingsXAML\Views\FileActionsMenuPage.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />
@@ -136,6 +139,12 @@
     <None Update="Assets\Settings\Scripts\DisableModule.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="SettingsXAML\Views\FileActionsMenuPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
 
 </Project>

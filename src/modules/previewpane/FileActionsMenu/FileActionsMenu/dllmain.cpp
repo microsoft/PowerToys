@@ -72,7 +72,7 @@ private:
         {
             // Load and parse the settings file for this PowerToy.
             PowerToysSettings::PowerToyValues settings =
-                PowerToysSettings::PowerToyValues::load_from_settings_file(L"File Explorer");
+                PowerToysSettings::PowerToyValues::load_from_settings_file(L"FileActionsMenu");
 
             parse_settings(settings);
         }
