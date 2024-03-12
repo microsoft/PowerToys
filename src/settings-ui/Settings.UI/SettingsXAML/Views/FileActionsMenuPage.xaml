@@ -10,7 +10,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="FileActionsMenu" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FileExplorerPreview.png">
+    <controls:SettingsPageControl x:Uid="FileActionsMenu" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FileActionsMenu.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard

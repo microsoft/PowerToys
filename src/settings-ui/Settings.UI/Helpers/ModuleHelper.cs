@@ -50,6 +50,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: return generalSettingsConfig.Enabled.CropAndLock;
                 case ModuleType.EnvironmentVariables: return generalSettingsConfig.Enabled.EnvironmentVariables;
                 case ModuleType.FancyZones: return generalSettingsConfig.Enabled.FancyZones;
+                case ModuleType.FileActionsMenu:
+                    SettingsRepository<FileActionsMenuSettings> repository = SettingsRepository<FileActionsMenuSettings>.GetInstance(new SettingsUtils());
+                    return repository.SettingsConfig.Properties.EnableFileActionsMenu;
                 case ModuleType.FileLocksmith: return generalSettingsConfig.Enabled.FileLocksmith;
                 case ModuleType.FindMyMouse: return generalSettingsConfig.Enabled.FindMyMouse;
                 case ModuleType.Hosts: return generalSettingsConfig.Enabled.Hosts;
@@ -82,6 +85,10 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
                 case ModuleType.EnvironmentVariables: generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
                 case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
+                case ModuleType.FileActionsMenu:
+                    SettingsRepository<FileActionsMenuSettings> repository = SettingsRepository<FileActionsMenuSettings>.GetInstance(new SettingsUtils());
+                    repository.SettingsConfig.Properties.EnableFileActionsMenu = isEnabled;
+                    break;
                 case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
                 case ModuleType.FindMyMouse: generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
                 case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
@@ -145,6 +152,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.CropAndLock => typeof(CropAndLockPage),
                 ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
                 ModuleType.FancyZones => typeof(FancyZonesPage),
+                ModuleType.FileActionsMenu => typeof(FileActionsMenuPage),
                 ModuleType.FileLocksmith => typeof(FileLocksmithPage),
                 ModuleType.FindMyMouse => typeof(MouseUtilsPage),
                 ModuleType.Hosts => typeof(HostsPage),

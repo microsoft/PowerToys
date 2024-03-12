@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Properties = new FileActionsMenuProperties();
         }
 
-        public FileActionsMenuSettings(FileLocksmithLocalProperties localProperties)
+        public FileActionsMenuSettings(FileActionsMenuProperties localProperties)
         {
             ArgumentNullException.ThrowIfNull(localProperties);
 
