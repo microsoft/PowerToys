@@ -40,6 +40,7 @@ Bao
 betadele
 betsegaw
 bricelam
+CCcat
 Chinh
 chrdavis
 Chrzan
@@ -99,6 +100,7 @@ Pooja
 Quriz
 randyrants
 ricardosantos
+ritchielawrence
 robmikh
 Rutkas
 ryanbodrug
@@ -128,6 +130,7 @@ Zykova
 
 # OTHERS
 
+cmdow
 Controlz
 cortana
 fancymouse
