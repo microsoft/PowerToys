@@ -195,7 +195,10 @@
         </Grid>
 
         <ContentDialog x:Name="SelectedFilesListDialog" x:Uid="SelectedFilesListDialog">
-            <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" TextWrapping="Wrap"/>
+            <TextBlock
+                IsTextSelectionEnabled="True"
+                Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"
+                TextWrapping="Wrap" />
         </ContentDialog>
     </Grid>
 </Page>
