@@ -26,6 +26,7 @@ namespace Wox.Infrastructure.Image
             {
                 using (var outStream = new MemoryStream())
                 {
+                    // Dynamically selecting the encoder based on the file extension to preserve the original image format characteristics as much as possible.
                     BitmapEncoder encoder = GetEncoderByFileExtension(filePath);
                     var bitmapFrame = BitmapFrame.Create(bitmapSource);
                     bitmapFrame.Freeze();
