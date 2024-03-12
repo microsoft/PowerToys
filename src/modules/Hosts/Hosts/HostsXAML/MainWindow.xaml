@@ -43,6 +43,6 @@
                 Style="{StaticResource CaptionTextBlockStyle}" />
         </Grid>
 
-        <views:MainPage Grid.Row="1" />
+        <views:HostsMainPage Grid.Row="1" />
     </Grid>
 </winuiex:WindowEx>

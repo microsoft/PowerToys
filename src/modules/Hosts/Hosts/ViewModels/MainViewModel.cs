@@ -10,7 +10,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
@@ -19,7 +18,6 @@ using Hosts.Exceptions;
 using Hosts.Helpers;
 using Hosts.Models;
 using Hosts.Settings;
-using ManagedCommon;
 using Microsoft.UI.Dispatching;
 
 namespace Hosts.ViewModels
@@ -270,7 +268,8 @@ namespace Hosts.ViewModels
         [RelayCommand]
         public void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts, true);
+            // Removed Common.UI dep
+            // SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts, true);
         }
 
         [RelayCommand]
@@ -335,7 +334,7 @@ namespace Hosts.ViewModels
                 }
                 catch (OperationCanceledException)
                 {
-                    Logger.LogInfo("FindDuplicates cancelled");
+                    // Logger.LogInfo("FindDuplicates cancelled");
                     return;
                 }
             }
@@ -422,9 +421,9 @@ namespace Hosts.ViewModels
                 var resourceLoader = ResourceLoaderInstance.ResourceLoader;
                 errorMessage = resourceLoader.GetString("FileSaveError_FileInUse");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Logger.LogError("Failed to save hosts file", ex);
+                // Logger.LogError("Failed to save hosts file", ex);
                 var resourceLoader = ResourceLoaderInstance.ResourceLoader;
                 errorMessage = resourceLoader.GetString("FileSaveError_Generic");
             }

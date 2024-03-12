@@ -10,14 +10,13 @@ using Hosts.Helpers;
 using Hosts.Models;
 using Hosts.Settings;
 using Hosts.ViewModels;
-using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
 namespace Hosts.Views
 {
-    public sealed partial class MainPage : Page
+    public sealed partial class HostsMainPage : Page
     {
         public MainViewModel ViewModel { get; private set; }
 
@@ -35,7 +34,7 @@ namespace Hosts.Views
 
         public ICommand ExitCommand => new RelayCommand(() => { Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().TryEnqueue(Application.Current.Exit); });
 
-        public MainPage()
+        public HostsMainPage()
         {
             InitializeComponent();
             ViewModel = App.GetService<MainViewModel>();
@@ -221,9 +220,9 @@ namespace Hosts.Views
                 var border = VisualTreeUtils.FindVisualChildByName(sender as ContentDialog, "BackgroundElement") as Border;
                 border.Margin = new Thickness(0, 32, 0, 0); // Should be the size reserved for the title bar as in MainWindow.xaml
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Logger.LogError("Couldn't set the margin for a content dialog. It will appear on top of the title bar.", ex);
+                // Logger.LogError("Couldn't set the margin for a content dialog. It will appear on top of the title bar.", ex);
             }
         }
     }

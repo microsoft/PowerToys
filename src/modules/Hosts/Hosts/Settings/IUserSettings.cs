@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Settings.UI.Library.Enumerations;
 
 namespace Hosts.Settings
 {

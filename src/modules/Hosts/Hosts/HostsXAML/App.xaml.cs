@@ -9,10 +9,8 @@ using Hosts.Helpers;
 using Hosts.Settings;
 using Hosts.ViewModels;
 using Hosts.Views;
-using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
@@ -50,11 +48,12 @@ namespace Hosts
                     // Core Services
                     services.AddSingleton<IFileSystem, FileSystem>();
                     services.AddSingleton<IHostsService, HostsService>();
+
                     services.AddSingleton<IUserSettings, UserSettings>();
                     services.AddSingleton<IElevationHelper, ElevationHelper>();
 
                     // Views and ViewModels
-                    services.AddTransient<MainPage>();
+                    services.AddTransient<HostsMainPage>();
                     services.AddTransient<MainViewModel>();
                 }).
                 Build();
@@ -73,9 +72,9 @@ namespace Hosts
                 {
                     GetService<IHostsService>().CleanupBackup();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Logger.LogError("Failed to delete backup", ex);
+                    // Logger.LogError("Failed to delete backup", ex);
                 }
             });
 
@@ -90,6 +89,7 @@ namespace Hosts
             {
                 if (int.TryParse(cmdArgs[cmdArgs.Length - 1], out int powerToysRunnerPid))
                 {
+                    /*
                     Logger.LogInfo($"Hosts started from the PowerToys Runner. Runner pid={powerToysRunnerPid}");
 
                     var dispatcher = DispatcherQueue.GetForCurrentThread();
@@ -98,22 +98,22 @@ namespace Hosts
                         Logger.LogInfo("PowerToys Runner exited. Exiting Hosts");
                         dispatcher.TryEnqueue(App.Current.Exit);
                     });
+                    */
                 }
             }
             else
             {
-                Logger.LogInfo($"Hosts started detached from PowerToys Runner.");
+                // Logger.LogInfo($"Hosts started detached from PowerToys Runner.");
             }
 
-            PowerToysTelemetry.Log.WriteEvent(new Hosts.Telemetry.HostsFileEditorOpenedEvent());
-
+            // PowerToysTelemetry.Log.WriteEvent(new Hosts.Telemetry.HostsFileEditorOpenedEvent());
             _window = new MainWindow();
             _window.Activate();
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            Logger.LogError("Unhandled exception", e.Exception);
+            // Logger.LogError("Unhandled exception", e.Exception);
         }
     }
 }

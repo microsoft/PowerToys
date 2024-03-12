@@ -16,9 +16,7 @@ using System.Threading.Tasks;
 using Hosts.Exceptions;
 using Hosts.Models;
 using Hosts.Settings;
-using ManagedCommon;
 using Microsoft.Win32;
-using Settings.UI.Library.Enumerations;
 
 namespace Hosts.Helpers
 {
@@ -275,9 +273,9 @@ namespace Hosts.Helpers
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Logger.LogError("Failed to open default editor", ex);
+                // Logger.LogError("Failed to open default editor", ex);
                 notepadFallback = true;
             }
 
@@ -287,9 +285,9 @@ namespace Hosts.Helpers
                 {
                     Process.Start(new ProcessStartInfo("notepad.exe", HostsFilePath));
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Logger.LogError("Failed to open notepad", ex);
+                    // Logger.LogError("Failed to open notepad", ex);
                 }
             }
         }

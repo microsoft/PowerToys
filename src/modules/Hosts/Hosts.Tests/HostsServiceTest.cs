@@ -12,7 +12,6 @@ using Hosts.Settings;
 using Hosts.Tests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Settings.UI.Library.Enumerations;
 
 namespace Hosts.Tests
 {
