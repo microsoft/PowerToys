@@ -619,7 +619,7 @@ namespace PowerAccent.Core
             return letter switch
             {
                 LetterKey.VK_A => new[] { "à" },
-                LetterKey.VK_E => new[] { "è", "é", "€" },
+                LetterKey.VK_E => new[] { "è", "é", "ə", "€" },
                 LetterKey.VK_I => new[] { "ì", "í" },
                 LetterKey.VK_O => new[] { "ò", "ó" },
                 LetterKey.VK_U => new[] { "ù", "ú" },
