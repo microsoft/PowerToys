@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -68,6 +69,10 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             public const string EditZonesButton = "editZoneLayoutButton";
             public const string DeleteTextButton = "DeleteButton";
             public const string HotkeyComboBox = "quickKeySelectionComboBox";
+
+            // layout creation dialog
+            public const string GridRadioButton = "GridLayoutRadioButton";
+            public const string CanvasRadioButton = "CanvasLayoutRadioButton";
 
             // confirmation dialog
             public const string PrimaryButton = "PrimaryButton";
