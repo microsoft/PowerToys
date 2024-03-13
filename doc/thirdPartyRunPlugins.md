@@ -38,3 +38,4 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Input Typer](https://github.com/CoreyHayward/PowerToys-Run-InputTyper) | [CoreyHayward](https://github.com/CoreyHayward) | Type the input as if sent from a keyboard |
 | [Clipboard Manager](https://github.com/CoreyHayward/PowerToys-Run-ClipboardManager) | [CoreyHayward](https://github.com/CoreyHayward) | Search and paste text from your clipboard history |
 | [Currency Converter](https://github.com/Advaith3600/PowerToys-Run-Currency-Converter) | [advaith3600](https://github.com/advaith3600) | Convert real and crypto currencies |
+| [FastWeb](https://github.com/CCcat8059/FastWeb) | [CCcat](https://github.com/CCcat8059) | Open website in browser |
