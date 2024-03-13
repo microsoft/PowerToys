@@ -749,6 +749,7 @@ keyremaps
 KILLFOCUS
 killrunner
 Knownfolders
+ksh
 KSPROPERTY
 Kybd
 languagesjson

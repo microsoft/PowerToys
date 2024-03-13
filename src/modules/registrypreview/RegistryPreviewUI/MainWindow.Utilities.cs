@@ -1192,7 +1192,19 @@ namespace RegistryPreview
                 key.StartsWith(@"[HKEY_CURRENT_USER\", StringComparison.InvariantCultureIgnoreCase) == false &&
                 key.StartsWith(@"[HKEY_USERS\", StringComparison.InvariantCultureIgnoreCase) == false &&
                 key.StartsWith(@"[HKEY_LOCAL_MACHINE\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_CURRENT_CONFIG\", StringComparison.InvariantCultureIgnoreCase) == false))
+                key.StartsWith(@"[HKEY_CURRENT_CONFIG\", StringComparison.InvariantCultureIgnoreCase) == false)
+                &&
+                (key.StartsWith("[HKCR]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKCU]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKU]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKLM]", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith("[HKCC]", StringComparison.InvariantCultureIgnoreCase) == false)
+                &&
+                (key.StartsWith(@"[HKCR\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKCU\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKU\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKLM\", StringComparison.InvariantCultureIgnoreCase) == false &&
+                key.StartsWith(@"[HKCC\", StringComparison.InvariantCultureIgnoreCase) == false))
             {
                 return false;
             }

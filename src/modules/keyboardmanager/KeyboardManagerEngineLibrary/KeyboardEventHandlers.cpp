@@ -271,10 +271,18 @@ namespace KeyboardEventHandlers
                             continue;
                         }
 
-                        if (data->lParam->vkCode == itShortcut.GetSecondKey() && itShortcut.IsChordStarted() && itShortcut.HasChord())
+                        if (itShortcut.IsChordStarted() && itShortcut.HasChord())
                         {
-                            Logger::trace(L"ChordKeyboardHandler:found chord match {}, {}", itShortcut.GetActionKey(), itShortcut.GetSecondKey());
-                            isMatchOnChordEnd = true;
+                            if (data->lParam->vkCode == itShortcut.GetSecondKey())
+                            {
+                                Logger::trace(L"ChordKeyboardHandler:found chord match {}, {}", itShortcut.GetActionKey(), itShortcut.GetSecondKey());
+                                isMatchOnChordEnd = true;
+                            }
+                            // Resets chord status for the shortcut. A key was pressed and we registered if it was the end of the chord. We can reset it.
+                            if (data->lParam->vkCode != itShortcut.GetActionKey())
+                            {
+                                itShortcut.SetChordStarted(false);
+                            }
                         }
 
                         if (resetChordsResults.AnyChordStarted && !isMatchOnChordEnd)
@@ -670,7 +678,7 @@ namespace KeyboardEventHandlers
                 if (!remapToShortcut || (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).CheckModifiersKeyboardState(ii)))
                 {
                     // Case 2: If the original shortcut is still held down the keyboard will get a key down message of the action key in the original shortcut and the new shortcut's modifiers will be held down (keys held down send repeated keydown messages)
-                    if (data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                    if (((data->lParam->vkCode == it->first.GetActionKey() && !it->first.HasChord())||(data->lParam->vkCode == it->first.GetSecondKey() && it->first.HasChord())) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                     {
                         // In case of mapping to disable do not send anything
                         if (remapToKey && std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
@@ -716,14 +724,45 @@ namespace KeyboardEventHandlers
                     }
 
                     // Case 3: If the action key is released from the original shortcut, keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
-                    if (!remapToText && data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                    if (!remapToText && ((!it->first.HasChord() && data->lParam->vkCode == it->first.GetActionKey()) || (it->first.HasChord() && data->lParam->vkCode==it->first.GetSecondKey())) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
                         size_t key_count = 1;
                         LPINPUT keyEventList = nullptr;
-                        if (remapToShortcut)
+                        if (remapToShortcut && !it->first.HasChord())
                         {
+                            // Just lift the action key for no chords.
                             keyEventList = new INPUT[key_count]{};
                             Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
+                        else if (remapToShortcut && it->first.HasChord())
+                        {
+                            // If it has a chord, we'll want a full clean contemplated in the else, since you can't really repeat chords by pressing the end key again.
+
+                            // Key up for all new shortcut keys, key down for original shortcut modifiers and current key press but common keys aren't repeated
+                            key_count = (dest_size) + (src_size +1) - (2 * static_cast<size_t>(commonKeys));
+                            int i = 0;
+
+                            keyEventList = new INPUT[key_count]{};
+                            Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+
+                            // Release new shortcut state (release in reverse order of shortcut to be accurate)
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+
+                            // Set old shortcut key down state
+                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
+
+                            // Reset the remap state
+                            it->second.isShortcutInvoked = false;
+                            it->second.winKeyInvoked = ModifierKey::Disabled;
+                            it->second.isOriginalActionKeyPressed = false;
+
+                            // If app specific shortcut has finished invoking, reset the target application
+                            if (activatedApp)
+                            {
+                                state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                            }
+
                         }
                         else if (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
                         {
@@ -822,7 +861,7 @@ namespace KeyboardEventHandlers
                             Shortcut currentlyPressed = it->first;
                             currentlyPressed.actionKey = data->lParam->vkCode;
                             auto newRemappingIter = reMap.find(currentlyPressed);
-                            if (newRemappingIter != reMap.end())
+                            if (newRemappingIter != reMap.end() && !newRemappingIter->first.HasChord())
                             {
                                 auto& newRemapping = newRemappingIter->second;
                                 Shortcut from = std::get<Shortcut>(it->second.targetShortcut);
