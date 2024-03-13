@@ -124,7 +124,7 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to As plaintext.
+        ///   Looks up a localized string similar to As plain text.
         /// </summary>
         internal static string File_Content_Actions_CopyContentAsPlaintext_Title {
             get {
@@ -637,7 +637,7 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to What&apos;s locking these files?.
+        ///   Looks up a localized string similar to Unlock with File Locksmith.
         /// </summary>
         internal static string PowerToys_FileLocksmith_Title_P {
             get {
@@ -646,7 +646,7 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to What&apos;s locking this file?.
+        ///   Looks up a localized string similar to Unlock with File Locksmith.
         /// </summary>
         internal static string PowerToys_FileLocksmith_Title_S {
             get {
@@ -655,7 +655,7 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resize images with Image Resizer.
+        ///   Looks up a localized string similar to Resize with Image Resizer.
         /// </summary>
         internal static string PowerToys_ImageResizer_Title_P {
             get {
@@ -664,7 +664,7 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resize image with Image Resizer.
+        ///   Looks up a localized string similar to Resize with Image Resizer.
         /// </summary>
         internal static string PowerToys_ImageResizer_Title_S {
             get {

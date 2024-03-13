@@ -597,7 +597,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLib", "src\mod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.FileActionsMenu.Plugins.ExecutableActions", "src\modules\previewpane\FileActionsMenu\FileActionsMenu.Plugins\PowerToys.FileActionsMenu.Plugins.ExecutableActions\PowerToys.FileActionsMenu.Plugins.ExecutableActions.csproj", "{0EFA84EA-74D5-499C-8496-29BE1CB281B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerToys.FileActionsMenu.Plugins.FileProperties", "src\modules\previewpane\FileActionsMenu\FileActionsMenu.Plugins\PowerToys.FileActionsMenu.Plugins.FileProperties\PowerToys.FileActionsMenu.Plugins.FileProperties.csproj", "{60779C23-BFF6-4759-98CB-105C8B8F2C02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.FileActionsMenu.Plugins.FileProperties", "src\modules\previewpane\FileActionsMenu\FileActionsMenu.Plugins\PowerToys.FileActionsMenu.Plugins.FileProperties\PowerToys.FileActionsMenu.Plugins.FileProperties.csproj", "{60779C23-BFF6-4759-98CB-105C8B8F2C02}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2890,7 +2890,7 @@ Global
 		{0014D652-901F-4456-8D65-06FC5F997FB0} = {4C0D0746-BE5B-49EE-BD5D-A7811628AE8B}
 		{2ED5F735-787A-4A86-9B0D-4A2DD06FAAF0} = {89A38AD7-DA2F-46B9-AA9B-C213AA172350}
 		{3A2398AB-D8F5-49C5-9EA7-483BED398BEC} = {89A38AD7-DA2F-46B9-AA9B-C213AA172350}
-		{89A38AD7-DA2F-46B9-AA9B-C213AA172350} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{89A38AD7-DA2F-46B9-AA9B-C213AA172350} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{95B63A44-6287-4E7E-B96A-2294C21C3230} = {89A38AD7-DA2F-46B9-AA9B-C213AA172350}
 		{9913D6FE-BAA1-4065-9825-C25AB4BB4475} = {89A38AD7-DA2F-46B9-AA9B-C213AA172350}
 		{DA473AC1-D274-410D-B177-2E30F77953D1} = {89A38AD7-DA2F-46B9-AA9B-C213AA172350}

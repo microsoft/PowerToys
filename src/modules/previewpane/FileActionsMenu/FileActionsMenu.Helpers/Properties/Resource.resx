@@ -142,7 +142,7 @@
     <comment>Subitem of "Copy file content" {Locked="base64"}</comment>
   </data>
   <data name="File_Content_Actions.CopyContentAsPlaintext.Title" xml:space="preserve">
-    <value>As plaintext</value>
+    <value>As plain text</value>
     <comment>Subitem of "Copy file content"</comment>
   </data>
   <data name="File_Content_Actions.CopyContentAsUriEncoded.Title" xml:space="preserve">
