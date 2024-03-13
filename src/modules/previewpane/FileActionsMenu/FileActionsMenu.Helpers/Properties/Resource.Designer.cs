@@ -493,6 +493,60 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Comma (&quot;,&quot;).
+        /// </summary>
+        internal static string Path_Copy_CopyPathSeparatedBy_Comma_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPathSeparatedBy.Comma.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom delimiter.
+        /// </summary>
+        internal static string Path_Copy_CopyPathSeparatedBy_Custom_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPathSeparatedBy.Custom.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Newline.
+        /// </summary>
+        internal static string Path_Copy_CopyPathSeparatedBy_Newline_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPathSeparatedBy.Newline.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semicolon (&quot;;&quot;).
+        /// </summary>
+        internal static string Path_Copy_CopyPathSeparatedBy_Semicolon_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPathSeparatedBy.Semicolon.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Space (&quot; &quot;).
+        /// </summary>
+        internal static string Path_Copy_CopyPathSeparatedBy_Space_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPathSeparatedBy.Space.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy path of files seperated by ....
+        /// </summary>
+        internal static string Path_Copy_CopyPathSeparatedBy_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPathSeparatedBy.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Adds the option to copy multiple files delimited by a delimeter or to copy certain parts of a path..
         /// </summary>
         internal static string Path_Copy_Description {

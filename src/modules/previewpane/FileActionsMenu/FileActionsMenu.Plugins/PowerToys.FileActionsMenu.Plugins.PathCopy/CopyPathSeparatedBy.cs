@@ -4,6 +4,7 @@
 
 using System.Text;
 using System.Windows;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
@@ -32,7 +33,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
             }
         }
 
-        public string Title => "Copy path of files separated by...";
+        public string Title => ResourceHelper.GetResource("Path_Copy.CopyPathSeparatedBy.Title");
 
         public IAction.ItemType Type => IAction.ItemType.HasSubMenu;
 

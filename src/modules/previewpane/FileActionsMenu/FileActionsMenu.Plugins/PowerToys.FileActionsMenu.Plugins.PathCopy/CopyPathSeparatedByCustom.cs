@@ -4,6 +4,7 @@
 
 using System.Drawing;
 using System.Windows.Forms;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using Microsoft.UI.Xaml.Controls;
@@ -19,7 +20,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
 
-        public string Title => "Custom...";
+        public string Title => ResourceHelper.GetResource("Path_Copy.CopyPathSeparatedBy.Custom.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

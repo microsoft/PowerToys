@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using Microsoft.UI.Xaml;
@@ -15,7 +16,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public string[] SelectedItems { get => _selectedItems ?? throw new ArgumentNullException(nameof(SelectedItems)); set => _selectedItems = value; }
 
-        public string Title => "\",\"";
+        public string Title => ResourceHelper.GetResource("Path_Copy.CopyPathSeparatedBy.Comma.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

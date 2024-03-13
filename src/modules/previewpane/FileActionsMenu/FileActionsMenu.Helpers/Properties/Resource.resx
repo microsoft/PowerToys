@@ -273,6 +273,24 @@
   <data name="Path_Copy.CopyPath.Title" xml:space="preserve">
     <value>Copy part of path</value>
   </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Comma.Title" xml:space="preserve">
+    <value>Comma (",")</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Custom.Title" xml:space="preserve">
+    <value>Custom delimiter</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Newline.Title" xml:space="preserve">
+    <value>Newline</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Semicolon.Title" xml:space="preserve">
+    <value>Semicolon (";")</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Space.Title" xml:space="preserve">
+    <value>Space (" ")</value>
+  </data>
+  <data name="Path_Copy.CopyPathSeparatedBy.Title" xml:space="preserve">
+    <value>Copy path of files seperated by ...</value>
+  </data>
   <data name="Path_Copy.Description" xml:space="preserve">
     <value>Adds the option to copy multiple files delimited by a delimeter or to copy certain parts of a path.</value>
   </data>
