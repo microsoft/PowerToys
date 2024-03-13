@@ -161,4 +161,10 @@
   <data name="wox_plugin_calculator_division_by_zero" xml:space="preserve">
     <value>Expression contains division by zero</value>
   </data>
+  <data name="wox_plugin_calculator_replace_input" xml:space="preserve">
+    <value>Replace input if query ends with '='</value>
+  </data>
+  <data name="wox_plugin_calculator_replace_input_description" xml:space="preserve">
+    <value>When using direct activation, appending '=' to the expression will replace the input with the calculated result (e.g. '=5*3-2=' will change the query to '=13').</value>
+  </data>
 </root>

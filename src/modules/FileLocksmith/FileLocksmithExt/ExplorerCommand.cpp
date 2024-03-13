@@ -1,11 +1,12 @@
 #include "pch.h"
 
 #include "ExplorerCommand.h"
-#include "Constants.h"
-#include "Settings.h"
 #include "dllmain.h"
-#include "Trace.h"
 #include "Generated Files/resource.h"
+
+#include "FileLocksmithLib/Constants.h"
+#include "FileLocksmithLib/Settings.h"
+#include "FileLocksmithLib/Trace.h"
 
 #include <common/themes/icon_helpers.h>
 #include <common/utils/process_path.h>

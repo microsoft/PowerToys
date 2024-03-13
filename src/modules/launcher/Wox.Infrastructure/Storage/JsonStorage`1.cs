@@ -130,10 +130,17 @@ namespace Wox.Infrastructure.Storage
                 try
                 {
                     string serialized = JsonSerializer.Serialize(_data, _serializerOptions);
-                    File.WriteAllText(FilePath, serialized);
+                    using var stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                    using var writer = new StreamWriter(stream);
+                    writer.Write(serialized);
+
                     _storageHelper.Close();
 
                     Log.Info($"Saving cached data at <{FilePath}>", GetType());
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    Log.Exception($"Unauthorized access while saving data at <{FilePath}>. Check file permissions.", e, GetType());
                 }
                 catch (IOException e)
                 {
