@@ -325,17 +325,17 @@
     <comment>{Locked="PowerToys"}</comment>
   </data>
   <data name="PowerToys.FileLocksmith.Title_P" xml:space="preserve">
-    <value>What's locking these files?</value>
+    <value>Unlock with File Locksmith</value>
   </data>
   <data name="PowerToys.FileLocksmith.Title_S" xml:space="preserve">
-    <value>What's locking this file?</value>
+    <value>Unlock with File Locksmith</value>
   </data>
   <data name="PowerToys.ImageResizer.Title_P" xml:space="preserve">
-    <value>Resize images with Image Resizer</value>
+    <value>Resize with Image Resizer</value>
     <comment>Images meaning pictures, Resizer refers to resizing the scale of an image</comment>
   </data>
   <data name="PowerToys.ImageResizer.Title_S" xml:space="preserve">
-    <value>Resize image with Image Resizer</value>
+    <value>Resize with Image Resizer</value>
     <comment>Image meaning a picture, Resizer refers to resizing the scale of an image</comment>
   </data>
   <data name="PowerToys.Name" xml:space="preserve">
