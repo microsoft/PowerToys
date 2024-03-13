@@ -83,6 +83,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        // MultilineTextBox setting
+        public bool ShowMultilineTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.MultilineTextbox;
+
+        public string PlaceholderText => _additionalOption.PlaceholderText;
+
         // NumberBox setting
         public bool ShowNumberBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Numberbox;
 
