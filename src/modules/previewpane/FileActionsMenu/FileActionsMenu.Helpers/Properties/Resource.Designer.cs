@@ -153,9 +153,9 @@ namespace FileActionsMenu.Helpers.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Copy folder tree.
         /// </summary>
-        internal static string File_Content_Actions_CopyDircetoryTree_Title {
+        internal static string File_Content_Actions_CopyDirectoryTree_Title {
             get {
-                return ResourceManager.GetString("File_Content_Actions.CopyDircetoryTree.Title", resourceCulture);
+                return ResourceManager.GetString("File_Content_Actions.CopyDirectoryTree.Title", resourceCulture);
             }
         }
         
@@ -574,7 +574,7 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adds the option to copy multiple files delimited by a delimeter or to copy certain parts of a path..
+        ///   Looks up a localized string similar to Adds the option to copy multiple files delimited by a delimiter or to copy certain parts of a path..
         /// </summary>
         internal static string Path_Copy_Description {
             get {

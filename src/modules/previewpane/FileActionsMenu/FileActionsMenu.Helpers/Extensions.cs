@@ -24,7 +24,7 @@ namespace FileActionsMenu.Ui.Helpers
         /// Checks whether the file is an image.
         /// </summary>
         /// <param name="fileName">A filename or a file path.</param>
-        /// <returns>Whetever the file has an image file extension.</returns>
+        /// <returns>If the file has an image file extension.</returns>
         public static bool IsImage(this string fileName)
         {
             string extension = System.IO.Path.GetExtension(fileName).ToLowerInvariant();

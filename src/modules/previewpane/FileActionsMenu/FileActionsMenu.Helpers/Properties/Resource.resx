@@ -153,7 +153,7 @@
     <value>As XML encoded string</value>
     <comment>Subitem of "Copy file content" {Locked="XML"}</comment>
   </data>
-  <data name="File_Content_Actions.CopyDircetoryTree.Title" xml:space="preserve">
+  <data name="File_Content_Actions.CopyDirectoryTree.Title" xml:space="preserve">
     <value>Copy folder tree</value>
     <comment>Tree meaning the tree structure of a folder</comment>
   </data>
@@ -301,7 +301,7 @@
     <value>Copy path of files separated by ...</value>
   </data>
   <data name="Path_Copy.Description" xml:space="preserve">
-    <value>Adds the option to copy multiple files delimited by a delimeter or to copy certain parts of a path.</value>
+    <value>Adds the option to copy multiple files delimited by a delimiter or to copy certain parts of a path.</value>
   </data>
   <data name="Path_Copy.DirectoryPath.Title" xml:space="preserve">
     <value>Copy path of the containing folder</value>

@@ -164,7 +164,7 @@ namespace FileActionsMenu.Ui
                         {
                             if (action is not ICheckableAction checkableAction || checkableAction.CheckableGroupUUID == null)
                             {
-                                throw new InvalidDataException("Action is checkable but does not implement ICheckableAction or IChechableAction.CheckableGroupUUID is null");
+                                throw new InvalidDataException("Action is checkable but does not implement ICheckableAction or ICheckableAction.CheckableGroupUUID is null");
                             }
 
                             ToggleMenuFlyoutItem toggleMenuItem = new()

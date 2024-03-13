@@ -18,7 +18,7 @@ namespace PowerToys.FileActionsMenu.Plugins.FileContentActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => ResourceHelper.GetResource("File_Content_Actions.CopyDircetoryTree.Title");
+        public string Title => ResourceHelper.GetResource("File_Content_Actions.CopyDirectoryTree.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
