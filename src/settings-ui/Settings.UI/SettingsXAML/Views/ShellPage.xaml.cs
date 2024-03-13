@@ -347,11 +347,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (selectedItem != null)
             {
                 Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
-                if (pageType != null)
-                {
-                    // pageType might be null because of the navigation bar footer items.
-                    NavigationService.Navigate(pageType);
-                }
+                NavigationService.Navigate(pageType);
             }
         }
 
