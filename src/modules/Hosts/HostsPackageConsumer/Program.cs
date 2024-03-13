@@ -17,14 +17,14 @@ namespace HostsPackageConsumer
             // Logger.InitializeLogger("\\Hosts\\Logs");
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
-// Removed GPO dep
-/*
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
-            {
-                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-                return;
-            }
-*/
+            // Removed GPO dep
+            /*
+                        if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                        {
+                            Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                            return;
+                        }
+            */
 
             var instanceKey = AppInstance.FindOrRegisterForKey("PowerToys_HostsPackageConsumer_Instance");
 

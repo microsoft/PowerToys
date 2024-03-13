@@ -12,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Hosts.Helpers
 {
-    internal static class Host
+    public static class Host
     {
         public static IHost HostInstance
         {

@@ -4,6 +4,7 @@
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Windows.ApplicationModel.Resources;
 using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -23,9 +24,10 @@ namespace HostsPackageConsumer
             SetTitleBar(titleBar);
             AppWindow.SetIcon("Assets/Hosts/Hosts.ico");
 
-/*            var loader = ResourceLoaderInstance.ResourceLoader;
-            var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
-*/
+            /*            var loader = ResourceLoaderInstance.ResourceLoader;
+                        var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
+            */
+            var asd = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.HostsPackageConsumer.pri");
             Title = "STEFAN";
             AppTitleTextBlock.Text = "OPET JA";
 
