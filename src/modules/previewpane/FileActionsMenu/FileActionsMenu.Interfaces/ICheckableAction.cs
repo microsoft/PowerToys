@@ -12,7 +12,7 @@ namespace FileActionsMenu.Interfaces
     /// <summary>
     /// Abstract class that represents a checkable action.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1623:Property summary documentation should match accessors", Justification = "To onherit descriptions")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1623:Property summary documentation should match accessors", Justification = "To inherit descriptions")]
     public abstract class ICheckableAction : IAction
     {
         public IAction.ItemType Type => IAction.ItemType.Checkable;

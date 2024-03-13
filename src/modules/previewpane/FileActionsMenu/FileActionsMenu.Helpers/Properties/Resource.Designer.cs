@@ -502,6 +502,33 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string Path_Copy_CopyPathSeparatedBy_Custom_Dialog_Cancel {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPathSeparatedBy.Custom.Dialog.Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ok.
+        /// </summary>
+        internal static string Path_Copy_CopyPathSeparatedBy_Custom_Dialog_Ok {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPathSeparatedBy.Custom.Dialog.Ok", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose a custom delimiter.
+        /// </summary>
+        internal static string Path_Copy_CopyPathSeparatedBy_Custom_Dialog_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.CopyPathSeparatedBy.Custom.Dialog.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom delimiter.
         /// </summary>
         internal static string Path_Copy_CopyPathSeparatedBy_Custom_Title {
@@ -538,7 +565,7 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy path of files seperated by ....
+        ///   Looks up a localized string similar to Copy path of files separated by ....
         /// </summary>
         internal static string Path_Copy_CopyPathSeparatedBy_Title {
             get {

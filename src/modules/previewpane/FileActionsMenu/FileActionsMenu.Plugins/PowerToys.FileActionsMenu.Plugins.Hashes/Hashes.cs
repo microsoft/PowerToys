@@ -181,10 +181,10 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
             return (hashGeneratorFunction, fileExtension);
         }
 
-        public static Task VerifyHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionary checkedMenuItemsDictionairy)
+        public static Task VerifyHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionary checkedMenuItemsDictionary)
         {
             (Func<string, string> hashGeneratorFunction, string fileExtension) = GetHashProperties(hashType);
-            List<(MenuFlyoutItemBase, IAction)> checkedMenuItems = checkedMenuItemsDictionairy[GetUUID(HashCallingAction.VERIFY)];
+            List<(MenuFlyoutItemBase, IAction)> checkedMenuItems = checkedMenuItemsDictionary[GetUUID(HashCallingAction.VERIFY)];
 
             IAction checkedMenuItemAction = checkedMenuItems.First(checkedMenuItems => ((ToggleMenuFlyoutItem)checkedMenuItems.Item1).IsChecked).Item2;
 
@@ -220,10 +220,10 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
             return Task.CompletedTask;
         }
 
-        public static async Task GenerateHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionary checkedMenuItemsDictionairy)
+        public static async Task GenerateHashes(HashType hashType, string[] selectedItems, CheckedMenuItemsDictionary checkedMenuItemsDictionary)
         {
             (Func<string, string> hashGeneratorFunction, string fileExtension) = GetHashProperties(hashType);
-            List<(MenuFlyoutItemBase, IAction)> checkedMenuItems = checkedMenuItemsDictionairy[GetUUID(HashCallingAction.GENERATE)];
+            List<(MenuFlyoutItemBase, IAction)> checkedMenuItems = checkedMenuItemsDictionary[GetUUID(HashCallingAction.GENERATE)];
 
             IAction checkedMenuItemAction = checkedMenuItems.First(checkedMenuItems => ((ToggleMenuFlyoutItem)checkedMenuItems.Item1).IsChecked).Item2;
 

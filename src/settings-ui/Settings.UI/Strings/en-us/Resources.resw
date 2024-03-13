@@ -4066,7 +4066,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
   </data>
   <data name="FileActionsMenu.ModuleDescription" xml:space="preserve">
-    <value>File Actions Menu allows you to perform several actions on selected files and folders, such as generating checksums, Copying paths seperated by a delimiter or create a new folder with the selection.</value>
+    <value>File Actions Menu allows you to perform several actions on selected files and folders, such as generating checksums, copying paths separated by a delimiter or create a new folder with the selection.</value>
   </data>
   <data name="FileActionsMenu.ModuleTitle" xml:space="preserve">
     <value>File Actions Menu</value>

@@ -34,15 +34,15 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            TextBox costumDelimiterTextBox = new() { Margin = new Padding(2), Location = new Point(0, 0) };
-            Button okButton = new() { Text = "Ok", Location = new Point(0, 25), Margin = new Padding(2) };
-            Button cancelButton = new() { Text = "Cancel", Margin = new Padding(2), Location = new Point(okButton.Width, 25) };
+            TextBox customDelimiterTextBox = new() { Margin = new Padding(2), Location = new Point(0, 0) };
+            Button okButton = new() { Text = ResourceHelper.GetResource("Path_Copy.CopyPathSeparatedBy.Custom.Dialog.Ok"), Location = new Point(0, 25), Margin = new Padding(2) };
+            Button cancelButton = new() { Text = ResourceHelper.GetResource("Path_Copy.CopyPathSeparatedBy.Custom.Dialog.Cancel"), Margin = new Padding(2), Location = new Point(okButton.Width, 25) };
             Form window = new()
             {
-                Text = "Choose a costum delimeter",
+                Text = ResourceHelper.GetResource("Path_Copy.CopyPathSeparatedBy.Custom.Dialog.Title"),
                 AcceptButton = okButton,
                 CancelButton = cancelButton,
-                Height = okButton.Height + costumDelimiterTextBox.Height + 6,
+                Height = okButton.Height + customDelimiterTextBox.Height + 6,
                 Width = okButton.Width + cancelButton.Width + 18,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 MinimizeBox = false,
@@ -50,14 +50,14 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
             };
             okButton.Click += (sender, e) =>
             {
-                TelemetryHelper.LogEvent(new FileActionsMenuCopyFilePathsSeparatedByActionInvokedEvent() { Delimiter = costumDelimiterTextBox.Text, IsCustomSeperator = true }, SelectedItems);
+                TelemetryHelper.LogEvent(new FileActionsMenuCopyFilePathsSeparatedByActionInvokedEvent() { Delimiter = customDelimiterTextBox.Text, IsCustomSeparator = true }, SelectedItems);
 
-                CopyPathSeparatedBy.SeparateFilePathByDelimiterAndAddToClipboard(costumDelimiterTextBox.Text, SelectedItems);
+                CopyPathSeparatedBy.SeparateFilePathByDelimiterAndAddToClipboard(customDelimiterTextBox.Text, SelectedItems);
                 window.Close();
             };
             cancelButton.Click += (sender, e) => { window.Close(); };
 
-            window.Controls.Add(costumDelimiterTextBox);
+            window.Controls.Add(customDelimiterTextBox);
             window.Controls.Add(okButton);
             window.Controls.Add(cancelButton);
 
@@ -67,7 +67,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
             int titleHeight = screenRectangle.Top - window.Top;
             window.Height += titleHeight + 10;
 
-            costumDelimiterTextBox.Width = window.Width - 14;
+            customDelimiterTextBox.Width = window.Width - 14;
 
             window.ShowDialog();
 

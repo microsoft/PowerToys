@@ -30,7 +30,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            TelemetryHelper.LogEvent(new FileActionsMenuCopyFilePathsSeparatedByActionInvokedEvent() { Delimiter = "\n", IsCustomSeperator = false }, SelectedItems);
+            TelemetryHelper.LogEvent(new FileActionsMenuCopyFilePathsSeparatedByActionInvokedEvent() { Delimiter = "\n", IsCustomSeparator = false }, SelectedItems);
 
             CopyPathSeparatedBy.SeparateFilePathByDelimiterAndAddToClipboard("\n", SelectedItems);
             return Task.CompletedTask;

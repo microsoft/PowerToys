@@ -25,6 +25,6 @@ namespace FileActionsMenu.Helpers.Telemetry
 
         public string? Delimiter { get; set; }
 
-        public bool IsCustomSeperator { get; set; }
+        public bool IsCustomSeparator { get; set; }
     }
 }
