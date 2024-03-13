@@ -36,7 +36,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 
 ## Extending software plugins
 
-Below are community created plugins that target a website / software.  They created and maintained by third-party and not officially supported or recognized by the website or software they extend.
+Below are community created plugins that target a website or software.  They are created and maintained by a third-party and not officially supported or recognized by the website or software they extend.
 
 | Plugin | Author | Description |
 | ------ | ------ | ----------- |
