@@ -40,19 +40,19 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F52
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F51
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.78.0/PowerToysUserSetup-0.78.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.78.0/PowerToysUserSetup-0.78.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.78.0/PowerToysSetup-0.78.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.78.0/PowerToysSetup-0.78.0-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F53
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=project%3Amicrosoft%2FPowerToys%2F52
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.79.0/PowerToysUserSetup-0.79.0-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.79.0/PowerToysUserSetup-0.79.0-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.79.0/PowerToysSetup-0.79.0-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.79.0/PowerToysSetup-0.79.0-arm64.exe
  
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.78.0-x64.exe][ptUserX64] | 120B1CEFC94D76EC593A61D717BBB2E12AF195D19E04C811F519D3F9B9B3B5C0 |
-| Per user - ARM64     | [PowerToysUserSetup-0.78.0-arm64.exe][ptUserArm64] | 3C3C8A8A549ABDD1C5E5DA7DC22D254F7BBD0F9DC05DA17E51020B153662F083 |
-| Machine wide - x64   | [PowerToysSetup-0.78.0-x64.exe][ptMachineX64] | 19E025381588ABAEC209CDD0A18BB779EE58FC24646D898C2A7C38A4858EAEDB |
-| Machine wide - ARM64 | [PowerToysSetup-0.78.0-arm64.exe][ptMachineArm64] | 5C70054A8991885A958F066B00D7FAFE608C730FC7A99178D6C64A1F03A3C109 |
+| Per user - x64       | [PowerToysUserSetup-0.79.0-x64.exe][ptUserX64] | CF1C715F952A34416CDBE5D06D24FFF47790DDA1D4CA3F81BCAD9D28FF0039A1 |
+| Per user - ARM64     | [PowerToysUserSetup-0.79.0-arm64.exe][ptUserArm64] | ADE572B6F1B59DCDC60A2550D9FD00B8CC7C78BE9330F534691CE4B056ED76F1 |
+| Machine wide - x64   | [PowerToysSetup-0.79.0-x64.exe][ptMachineX64] | 3FD2A6BD9C8F8973BFBBF5DB9236C3D8AF3AE57E5AEC275DDEB5EF31581F80FE |
+| Machine wide - ARM64 | [PowerToysSetup-0.79.0-arm64.exe][ptMachineArm64] | B93017C2A5CFB0DEF708DB412570AA39828E91D85E800EFD22481B46F0DC6852 |
 
 This is our preferred method.
 
@@ -98,149 +98,143 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.78 - January 2024 Update
+### 0.79 - February 2024 Update
 
 In this release, we focused on stability and improvements.
 
 **Highlights**
 
- - New languages added: Arabic (Saudi Arabia), Hebrew, Persian and Ukrainian. We are going to assume we have some bugs. We want to identify & fix them and are open for community help.
- - Many dependencies updated, aiming for security and stability.
- - Fixed commonly reported PowerToys Run startup crashes after an upgrade.
- - New settings and GPO policies to help control behavior after an upgrade. Thanks [@htcfreek](https://github.com/htcfreek)!
-
-Here are some screenshots of the new languages:
-![Arabic SA Settings screenshot](https://github.com/microsoft/PowerToys/assets/26118718/be27096d-6c03-4b09-afc4-478ca427e3ec)
-![Hebrew Settings screenshot](https://github.com/microsoft/PowerToys/assets/26118718/e1435060-1f94-4e41-adee-1d0a609584ca)
-![Persian Settings screenshot](https://github.com/microsoft/PowerToys/assets/26118718/8592dcb7-8a04-4831-9325-a8b9b05787df)
-![Ukrainian Settings screenshot](https://github.com/microsoft/PowerToys/assets/26118718/24242dd8-eb17-4859-b2e4-1e5c63ffbffd)
+ - New feature: Keyboard Manager allows mapping shortcuts to start applications or opening URIs. Thanks [@jefflord](https://github.com/jefflord)!
+ - New feature: Keyboard Manager allows shortcuts with chords. Thanks [@jefflord](https://github.com/jefflord)!
+ - Modernized Color Picker with Fluent UX. Thanks [@niels9001](https://github.com/niels9001)!
+ - Peek now is able to preview drives. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - File Locksmith has now an entry in the Windows 11 tier 1 context menu.
 
 ### General
 
- - Added Arabic (Saudi Arabia) translation.
- - Added Hebrew translation.
- - Added Persian translation.
- - Added Ukrainian translation.
- - Improved the file watcher used across many utilities to consume less resources. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Refactored code so that English is used as a fallback language when a localized resource cannot be found.
 
-### AlwaysOnTop
+### Awake
 
- - Fixed an invisible border issue when the border color was set to the black color.
- - Added the AlwayOnTop icon to the base application executable. Thanks [@ckirby19](https://github.com/ckirby19)!
+ - The setting now reverts to "Keep using the current power plan" after Awake deactivates itself after any of the timed modes has expired.
+
+### Color Picker
+
+ - Now uses WPFUI and the UI was updated to follow Fluent UX principles. Thanks [@niels9001](https://github.com/niels9001)!
+ - Added enable and disable telemetry to align it with the other utilities.
 
 ### Command Not Found
 
- - Signed the PowerShell scripts used by the Command Not Found installation process.
+ - Added telemetry for when a module instance is created in PowerShell.
+
+### FancyZones
+
+ - Fixed a memory leak occurring on work area changes.
 
 ### File Explorer add-ons
 
- - Fixed an issue causing SVG Thumbnail generation to hang when trying to preview SVG files at the same time.
+ - Added support to the .ksh, .zsh, .bsh and .env file types to Monaco previewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Re-enabled the RendererAppContainer feature in WebView2, since the associated crash has been fixed in the latest WebView2 releases.
 
 ### File Locksmith
 
- - Improved the context menu entry caption. Thanks [@niels9001](https://github.com/niels9001)!
-
-### Find My Mouse
-
- - Added more settings to tune shake detection when activating through mouse shake.
+ - Added as an entry in the Windows 11 tier 1 context menu.
 
 ### Hosts File Editor
 
- - Added a feature to duplicate an entry. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-
-### Installer
-
- - Included the new languages localization files in the installer.
+ - Tweaked filter button style to indicate if filters are applied.
+ - Added an error indicator to each input field to indicate why a new entry can't be created.
+ - Added an in-line delete button for each entry.
 
 ### Image Resizer
 
- - Improved the context menu entry caption. Thanks [@niels9001](https://github.com/niels9001)!
+ - Units and resize modes are now localized.
+ - Tweaked and improved UI. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
+
+### Keyboard Manager
+
+ - Added a feature that allows remapping a shortcut to starting an application. Thanks [@jefflord](https://github.com/jefflord)!
+ - Added a feature that allows remapping a shortcut to open a URI. Thanks [@jefflord](https://github.com/jefflord)!
+ - Added chords to shortcuts. Thanks [@jefflord](https://github.com/jefflord)!
+ - Send telemetry about the key/shortcut to key/shortcut remappings that are set. This doesn't include remap to text, application or URI since those might contain personal information.
+ - Added telemetry to send a daily event that at least a key/shortcut to key/shortcut remapping was used.
+ - Tweaked and fixed the chords code to better follow conventions when trying to call the same chord multiple times.
+
+### Mouse Without Borders
+ - Fixed an issue causing the target path string to be corrupted when registering as a service.
+
+### Paste as Plain Text
+
+ - Prevent the start menu from activating when the Windows key is part of the activation shortcut and is released sooner.
 
 ### Peek
 
- - Added a missing tooltip for the file size. Thanks [@HydroH](https://github.com/HydroH)!
+ - Fixed a title bar issue after maximizing Peek's window. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed a crash when trying to use Peek in File Explorer alternatives.
+ - Added a previewer for drives. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - The folder previewer will now asynchronously calculate size, similar to the Properties screen in File Explorer. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added support to the .ksh, .zsh, .bsh and .env file types to Monaco previewer. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
 
 ### PowerRename
 
- - Improved and added localization to the context menu entry caption. Thanks [@niels9001](https://github.com/niels9001)!
+ - PowerRename context menu accelerator key readded.
+ - Tweaked PowerRename apply button style. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### PowerToys Run
 
- - Removed references to unused settings from the code, which were causing crashes on some machines. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Fixed an issue causing a scrollbar to be out of view. Thanks [@niels9001](https://github.com/niels9001)!
- - Added logic to try and detect running games to full screen detection. Thanks [@anaisbetts](https://github.com/anaisbetts)!
- - Added support for converting negative values in the Unit Converter plugin. Thanks [@Dub1shu](https://github.com/Dub1shu)!
- - Fixed stale results in the Visual Studio Code Workspaces plugin by checking if files still exist. Thanks [@anderspk](https://github.com/anderspk)!
- - Fixed an activation crash that occurred after 0.77 on some configurations.
- - Fixed a startup crash that occurred when saving the new version of settings after an upgrade.
- - You can now calculate bigger hexadecimal numbers in the Calculator plugin.
- - The "max results to show before scrolling" setting can now also be applied to the initial plugin hint listing.
+ - Fixed an issue causing win32 application icons to not appear correctly in the Programs plugin.
+ - Unified phrasing in the plugin descriptions.
+ - Fixed an issue causing the PowerToys Run plugin settings to be cleared with each upgrade.
+ - Fixed an issue causing VSCodeWorkspaces plugin to not find WSL workspaces.
+ - Fixed results tooltip closing fast. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Improved the Registry plugin tooltip spacing. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Allow pressing '=' to replace the query with the current result when using the calculator plugin. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Optimized the code that gathers results from the plugin to reduce CPU consumption.
+ - Optimized memory usage in the Window Walker plugin.
+ - Fixed crashes and improved error handling when saving json configuration files.
+ - The Program plugin will now correctly get the icon for a newly installed packaged application. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Quick Accent
 
- - Added the ellipses character to all languages. Thanks [@HydroH](https://github.com/HydroH)!
- - Added an option to not activate when playing a game. Thanks [@HydroH](https://github.com/HydroH)!
- - Added the E with breve and pilcrow characters to all languages. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added support for the Slovenian character set. Thanks [@aklemen](https://github.com/aklemen)!
+
+### Registry Preview
+
+ - Fixed a crash when closing the application and the editor's right click menu is opened.
 
 ### Settings
 
- - Removed the Command Not Found listing from the Settings dashboard and flyout, since it can't really be enabled or disabled from there.
- - Added a settings and GPO rule to disable opening the What's New OOBE page after an update. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added a settings and GPO rule to disable toast notifications about new updates being available. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed an issue causing the Settings window to not be brought to the foreground after activating through the system tray icon.
- - Standardized accent brush and corner radius on the dashboard page.
- - Improved UI and messages for GPO locked settings. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed an issue causing the OOBE window to maximize and hide the system taskbar.
- - Reworked the update settings in the General page. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Tweaked UI for the update settings in the General page. Thanks [@niels9001](https://github.com/niels9001)!
- - Updated the modules images in the Settings and OOBE screens. Thanks [@niels9001](https://github.com/niels9001)!
- - Updated OOBE descriptions to take into account the changes in context menu captions. Thanks [@niels9001](https://github.com/niels9001)!
+ - Fixed an alignment issue in the flyout icons causing some icons to be centered when they shouldn't. Thanks [@niels9001](https://github.com/niels9001)!
+ - Added the mention that Monaco supports .txt files. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
+ - Fixed an issue causing the Settings window to lose its previous maximized state. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Documentation
 
- - Added Spotify plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@waaverecords](https://github.com/waaverecords)! 
- - Added InputTyper and ClipboardManager plugins to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@CoreyHayward](https://github.com/CoreyHayward)! 
- - Added CurrencyConverter plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@Advaith3600](https://github.com/Advaith3600)! 
- - Updated and cleaned up the new PowerToys plugin checklist documentation. Thanks [@Parvezkhan0](https://github.com/Parvezkhan0) and [@hlaueriksson](https://github.com/hlaueriksson)!
- - Added a documentation page to describe status code colors for Mouse Without Borders. Thanks [@ckirby19](https://github.com/ckirby19)!
+ - Fixed broken links in doc/devdocs/readme.md. Thanks [@jem-experience](https://github.com/jem-experience)!
 
 ### Development
 
- - Fixed dependency issues on upgrading .NET from 8.0.0 to 8.0.1.
- - Upgraded Microsoft.Extensions.ObjectPool from .NET 5 to .NET 8.
- - Upgraded the Windows SDK Build Tools to 10.0.22621.2428.
- - Upgraded the Windows Implementation Library to 1.0.231216.1.
- - Upgraded NLog.Schema to 5.2.8 and NLog.Extensions.Logging to 5.3.8.
- - Upgraded Markdig.Signed to 0.34.0.
- - Upgraded Microsoft.NET.Test.Sdk to 17.8.
- - Upgraded CommunityToolkit.WinUI dependencies to 8.0.240109.
- - Upgraded CommunityToolkit.Mvvm to 8.2.2. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Upgraded Windows App SDK to 1.4.4. Thanks [@snickler](https://github.com/snickler)!
- - Upgraded WPFUI version to 3.0.0-preview.13. Thanks [@niels9001](https://github.com/niels9001)!
- - Upgraded StyleCop.Analyzers to 1.2.0-beta.556. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Upgraded Microsoft.Windows.Compatibility to 8.0.1.
- - Upgraded System.Data.SqlClient to 4.8.6.
- - Consolidate XAML Namespaces across the solutions. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way)!
- - Removed the toolkit labs package source reference, since the controls we were using made it to the generally available community toolkit.
- - Added Microsoft.MSBuildCache to experiment with build caching to reduce pipeline runs duration. Thanks [@dfederm](https://github.com/dfederm)!
- - Configured the release CI to follow the latest 1ES pipeline release version again.
- - Removed the copyright year from assembly information. Thanks [@Aaron-Junker](https://github.com/Aaron-Junker)!
- - Added the Command Not Found entry to the GitHub templates.
- - Removed unused code for a GPO policy to control auto updating of PowerToys. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Improved code behind for getting the localization of context menu entries.
- - Locked some terms in resource files to avoid localization.
+ - Updated Microsoft.MSBuildCache to 0.1.258-preview. Thanks [@dfederm](https://github.com/dfederm)!
+ - Fixed CI to point VCToolsVersion to VC.CRT instead of VC.Redist version. Thanks [@snickler](https://github.com/snickler)!
+ - Updated MSTest adapter and framework to 3.2.
+ - Fixed CI by pointing WiX 3.14 urls and hashes to the latest release on GitHub.
+ - Added Pro and Enterprise editions of Visual Studio to the repository's development configuration DSC scripts.
+ - Updated CppWinRT to 2.0.240111.5.
+ - Updated System.Drawing.Common to 8.0.2 to fix CI builds after the .NET 8.0.2 upgrade was released.
+ - Updated WPFUI version to 3.0.0. Thanks [@niels9001](https://github.com/niels9001)!
+ - XAML Styler is now fully tested in the solution when CI runs. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed a faulty XAML binding in the Text Extractor settings page.
+ - Updated Microsoft.Web.WebView2 to 1.0.2365.46.
 
-#### What is being planned for version 0.79
+#### What is being planned for version 0.80
 
-For [v0.79][github-next-release-work], we'll work on the items below:
+For [v0.80][github-next-release-work], we'll work on the items below:
 
  - Stability / bug fixes
  - Language selection
  - Automated UI testing through WinAppDriver
  - Develop support for Desired State Configuration
- - Modernize and refresh the UX of PowerToys based on WPF. Here's the Work in Progress preview for "Color Picker":
-
-![ColorPicker UI refresh WIP](https://github.com/microsoft/PowerToys/assets/9866362/ceebe54b-de63-4ce7-afcb-2cd4280bf4d1)
+ - New module: File Actions Menu
 
 ## PowerToys Community
 
