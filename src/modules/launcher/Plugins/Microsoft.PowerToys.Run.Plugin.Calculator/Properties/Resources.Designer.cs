@@ -185,5 +185,23 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
                 return ResourceManager.GetString("wox_plugin_calculator_plugin_name", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace input appending &apos;=&apos;.
+        /// </summary>
+        public static string wox_plugin_calculator_replace_input {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_replace_input", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When using direct activation, appending &apos;=&apos; to the expression will replace the input with the calculated result (e.g. =5*3-2=)..
+        /// </summary>
+        public static string wox_plugin_calculator_replace_input_description {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_replace_input_description", resourceCulture);
+            }
+        }
     }
 }

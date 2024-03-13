@@ -27,6 +27,17 @@ std::wstring LayoutMap::GetKeyName(DWORD key)
     return impl->GetKeyName(key);
 }
 
+DWORD LayoutMap::GetKeyFromName(const std::wstring& name)
+{
+    auto list = impl->GetKeyNameList(false);
+    for (const auto& [value, key] : list)
+    {
+        if (key == name)
+            return value;
+    }
+    return {};
+}
+
 std::vector<DWORD> LayoutMap::GetKeyCodeList(const bool isShortcut)
 {
     return impl->GetKeyCodeList(isShortcut);

@@ -17,3 +17,14 @@ void Trace::UnregisterProvider()
 {
     TraceLoggingUnregister(g_hProvider);
 }
+
+// Log if ColorPicker is enabled or disabled
+void Trace::EnableColorPicker(const bool enabled) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "ColorPicker_EnableColorPicker",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}

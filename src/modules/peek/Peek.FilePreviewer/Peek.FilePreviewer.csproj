@@ -18,6 +18,7 @@
   <ItemGroup>
     <None Remove="Controls\ArchiveControl.xaml" />
     <None Remove="Controls\BrowserControl.xaml" />
+    <None Remove="Controls\DriveControl.xaml" />
     <None Remove="Controls\ShellPreviewHandlerControl.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\InformationalPreviewControl.xaml" />
@@ -45,6 +46,12 @@
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Page Update="Controls\DriveControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
   <ItemGroup>
     <Page Update="Controls\ShellPreviewHandlerControl.xaml">
       <Generator>MSBuild:Compile</Generator>

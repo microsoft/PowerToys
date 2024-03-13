@@ -34,6 +34,16 @@ namespace FancyZonesUtils
         RECT m_rect{};
     };
 
+    inline bool operator==(const FancyZonesUtils::Rect& left, const FancyZonesUtils::Rect& right)
+    {
+        return left.left() == right.left() && left.right() == right.right() && left.top() == right.top() && left.bottom() == right.bottom();
+    }
+
+    inline bool operator!=(const FancyZonesUtils::Rect& left, const FancyZonesUtils::Rect& right)
+    {
+        return left.left() != right.left() || left.right() != right.right() || left.top() != right.top() || left.bottom() != right.bottom();
+    }
+
     inline void InitRGB(_Out_ RGBQUAD* quad, BYTE alpha, COLORREF color)
     {
         ZeroMemory(quad, sizeof(*quad));

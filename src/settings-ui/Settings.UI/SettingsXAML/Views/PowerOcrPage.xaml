@@ -56,8 +56,7 @@
                             DropDownOpened="TextExtractor_ComboBox_DropDownOpened"
                             ItemsSource="{x:Bind Path=ViewModel.AvailableLanguages, Mode=OneWay}"
                             Loaded="TextExtractor_ComboBox_Loaded"
-                            SelectedIndex="{x:Bind Path=ViewModel.LanguageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}" />
+                            SelectedIndex="{x:Bind Path=ViewModel.LanguageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>

@@ -110,13 +110,13 @@ void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const StackPanel& tex
     currentSingleKeyUI = textBlock.as<winrt::Windows::Foundation::IInspectable>();
 }
 
-void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring& key)
+TextBlock KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring& key)
 {
     // Textblock to display the detected key
     TextBlock remapKey;
     Border border;
 
-    border.Padding({ 20, 10, 20, 10 });
+    border.Padding({ 10, 5, 10, 5 });
     border.Margin({ 0, 0, 10, 0 });
 
     // Based on settings-ui\Settings.UI\SettingsXAML\Controls\KeyVisual\KeyVisual.xaml
@@ -127,12 +127,15 @@ void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring
     remapKey.Foreground(Application::Current().Resources().Lookup(box_value(L"ButtonForeground")).as<Media::Brush>());
     remapKey.FontWeight(Text::FontWeights::SemiBold());
 
-    remapKey.FontSize(20);
+    remapKey.FontSize(14);
+
     border.HorizontalAlignment(HorizontalAlignment::Left);
     border.Child(remapKey);
 
     remapKey.Text(key);
     panel.Children().Append(border);
+
+    return remapKey;
 }
 
 // Function to update the detect shortcut UI based on the entered keys
@@ -167,17 +170,39 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
             currentShortcutUI2.as<StackPanel>().Visibility(Visibility::Collapsed);
         }
 
+        auto lastStackPanel = currentShortcutUI2.as<StackPanel>();
         for (int i = 0; i < shortcut.size(); i++)
         {
             if (i < 3)
             {
                 AddKeyToLayout(currentShortcutUI1.as<StackPanel>(), shortcut[i]);
+                lastStackPanel = currentShortcutUI1.as<StackPanel>();
             }
             else
             {
                 AddKeyToLayout(currentShortcutUI2.as<StackPanel>(), shortcut[i]);
+                lastStackPanel = currentShortcutUI2.as<StackPanel>();
             }
         }
+
+        if (!AllowChord)
+        {
+            detectedShortcut.secondKey = NULL;
+        }
+
+        // add a TextBlock, to show what shortcut in text, e.g.: "CTRL+j, k" OR "CTRL+j, CTRL+k".
+        if (detectedShortcut.HasChord())
+        {
+            TextBlock txtComma;
+            txtComma.Text(L",");
+            txtComma.FontSize(20);
+            txtComma.Padding({ 0, 0, 10, 0 });
+            txtComma.VerticalAlignment(VerticalAlignment::Bottom);
+            txtComma.TextAlignment(TextAlignment::Left);
+            lastStackPanel.Children().Append(txtComma);
+            AddKeyToLayout(lastStackPanel, EditorHelpers::GetKeyVector(Shortcut(detectedShortcutCopy.secondKey), keyboardMap)[0]);
+        }
+
         try
         {
             // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
@@ -228,6 +253,12 @@ Shortcut KeyboardManagerState::GetDetectedShortcut()
     return currentShortcut;
 }
 
+void KeyboardManagerState::SetDetectedShortcut(Shortcut shortcut)
+{
+    detectedShortcut = shortcut;
+    UpdateDetectShortcutUI();
+}
+
 // Function to return the currently detected remap key which is displayed on the UI
 DWORD KeyboardManagerState::GetDetectedSingleRemapKey()
 {
@@ -246,9 +277,57 @@ void KeyboardManagerState::SelectDetectedRemapKey(DWORD key)
 void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
 {
     // Set the new key and store if a change occurred
-    std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
-    bool updateUI = detectedShortcut.SetKey(key);
-    lock.unlock();
+    bool updateUI = false;
+
+    if (AllowChord)
+    {
+        // Code to determine if we're building/updating a chord.
+        auto currentFirstKey = detectedShortcut.GetActionKey();
+        auto currentSecondKey = detectedShortcut.GetSecondKey();
+
+        Shortcut tempShortcut = Shortcut(key);
+        bool isKeyActionTypeKey = (tempShortcut.actionKey != NULL);
+
+        if (isKeyActionTypeKey)
+        {
+            // we want a chord and already have the first key set
+            std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
+
+            if (currentFirstKey == NULL)
+            {
+                Logger::trace(L"AllowChord AND no first");
+                updateUI = detectedShortcut.SetKey(key);
+            }
+            else if (currentSecondKey == NULL)
+            {
+                // we don't have the second key, set it now
+                Logger::trace(L"AllowChord AND we have first key of {}, will use {}", currentFirstKey, key);
+                updateUI = detectedShortcut.SetSecondKey(key);
+            }
+            else
+            {
+                // we already have the second key, swap it to first, and use new as second
+                Logger::trace(L"DO have secondKey, will make first {} and second {}", currentSecondKey, key);
+                detectedShortcut.actionKey = currentSecondKey;
+                detectedShortcut.secondKey = key;
+                updateUI = true;
+            }
+            updateUI = true;
+            lock.unlock();
+        }
+        else
+        {
+            std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
+            updateUI = detectedShortcut.SetKey(key);
+            lock.unlock();
+        }
+    }
+    else
+    {
+        std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
+        updateUI = detectedShortcut.SetKey(key);
+        lock.unlock();
+    }
 
     if (updateUI)
     {
@@ -261,9 +340,12 @@ void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
 void KeyboardManagerState::ResetDetectedShortcutKey(DWORD key)
 {
     std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
-    detectedShortcut.ResetKey(key);
+    // only clear if mod, not if action, since we need to keek actionKey and secondKey for chord
+    if (Shortcut::IsModifier(key))
+    {
+        detectedShortcut.ResetKey(key);
+    }
 }
-
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
 Helpers::KeyboardHookDecision KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data)
 {
@@ -370,6 +452,12 @@ void KeyboardManagerState::ClearRegisteredKeyDelays()
 {
     std::lock_guard l(keyDelays_mutex);
     keyDelays.clear();
+}
+
+void KBMEditor::KeyboardManagerState::ClearStoredShortcut()
+{
+    std::scoped_lock<std::mutex> detectedShortcut_lock(detectedShortcut_mutex);
+    detectedShortcut.Reset();
 }
 
 bool KeyboardManagerState::HandleKeyDelayEvent(LowlevelKeyboardEvent* ev)
