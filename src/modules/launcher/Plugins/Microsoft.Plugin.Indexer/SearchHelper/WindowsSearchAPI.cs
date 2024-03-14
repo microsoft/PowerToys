@@ -65,7 +65,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             return results;
         }
 
-        public static void ModifyQueryHelper(ref ISearchQueryHelper queryHelper, string pattern)
+        public static void ModifyQueryHelper(ref ISearchQueryHelper queryHelper, string pattern, List<string> excludedPatterns = null)
         {
             ArgumentNullException.ThrowIfNull(pattern);
 
@@ -86,6 +86,35 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 {
                     // if there are no wildcards we can use a contains which is much faster as it uses the index
                     queryHelper.QueryWhereRestrictions += " AND Contains(System.FileName, '" + pattern + "') ";
+                }
+            }
+
+            if (excludedPatterns != null)
+            {
+                foreach (string p in excludedPatterns)
+                {
+                    if (p == string.Empty)
+                    {
+                        continue;
+                    }
+
+                    var excludedPattern = p;
+
+                    excludedPattern = excludedPattern.Replace("\\", "/", StringComparison.Ordinal);
+
+                    if (excludedPattern.Contains('*', StringComparison.Ordinal) || excludedPattern.Contains('?', StringComparison.Ordinal))
+                    {
+                        excludedPattern = excludedPattern
+                            .Replace("%", "[%]", StringComparison.Ordinal)
+                            .Replace("_", "[_]", StringComparison.Ordinal)
+                            .Replace("*", "%", StringComparison.Ordinal)
+                            .Replace("?", "_", StringComparison.Ordinal);
+                        queryHelper.QueryWhereRestrictions += " AND System.ItemUrl NOT LIKE '%" + excludedPattern + "%' ";
+                    }
+                    else
+                    {
+                        queryHelper.QueryWhereRestrictions += " AND NOT Contains(System.ItemUrl, '" + excludedPattern + "') ";
+                    }
                 }
             }
         }
@@ -122,13 +151,14 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 
-        public IEnumerable<SearchResult> Search(string keyword, ISearchManager manager, string pattern = "*", int maxCount = 30)
+        public IEnumerable<SearchResult> Search(string keyword, ISearchManager manager, string pattern = "*", List<string> excludedPatterns = null, int maxCount = 30)
         {
             ArgumentNullException.ThrowIfNull(manager);
+            excludedPatterns ??= new List<string>();
 
             ISearchQueryHelper queryHelper;
             InitQueryHelper(out queryHelper, manager, maxCount, DisplayHiddenFiles);
-            ModifyQueryHelper(ref queryHelper, pattern);
+            ModifyQueryHelper(ref queryHelper, pattern, excludedPatterns);
             return ExecuteQuery(queryHelper, keyword);
         }
     }

@@ -45,7 +45,7 @@
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.0.4" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
     <PackageVersion Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.4.231219000" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.5.240311000" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
@@ -73,7 +73,7 @@
     <PackageVersion Include="System.Diagnostics.EventLog" Version="8.0.0" />
     <!-- Package System.Diagnostics.PerformanceCounter added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
-    <PackageVersion Include="System.Drawing.Common" Version="8.0.2" />
+    <PackageVersion Include="System.Drawing.Common" Version="8.0.3" />
     <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
     <PackageVersion Include="System.Management" Version="8.0.0" />

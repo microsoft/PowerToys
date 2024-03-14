@@ -266,7 +266,7 @@ namespace Wox.Infrastructure.Image
             if (imageResult.ImageType != ImageType.Error && imageResult.ImageType != ImageType.Cache)
             {
                 // we need to get image hash
-                string hash = _enableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
+                string hash = _enableImageHash ? _hashGenerator.GetHashFromImage(img, path) : null;
 
                 if (hash != null)
                 {
