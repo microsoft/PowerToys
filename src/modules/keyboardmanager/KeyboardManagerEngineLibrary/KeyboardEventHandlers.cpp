@@ -253,6 +253,14 @@ namespace KeyboardEventHandlers
             bool isMatchOnChordEnd = false;
             bool isMatchOnChordStart = false;
 
+            static bool isAltRightKeyInvoked = false;
+
+            // Check if the right Alt key (AltGr) is pressed.
+            if (data->lParam->vkCode == VK_RMENU)
+            {
+                isAltRightKeyInvoked = true;
+            }
+
             // If the shortcut has been pressed down
             if (!it->second.isShortcutInvoked && it->first.CheckModifiersKeyboardState(ii))
             {
@@ -567,6 +575,13 @@ namespace KeyboardEventHandlers
                 // 5. The user presses any key apart from the action key or a modifier key in the original shortcut - revert the keyboard state to just the original modifiers being held down along with the current key press
                 // 6. The user releases any key apart from original modifier or original action key - This can't happen since the key down would have to happen first, which is handled above
 
+                // Prevents the unintended release of the Ctrl part when AltGr is pressed. AltGr acts as both Ctrl and Alt being pressed.
+                // After triggering a shortcut involving AltGr, the system might attempt to release the Ctrl part. This code ensures Ctrl remains pressed, maintaining the AltGr state correctly.
+                if (isAltRightKeyInvoked && data->lParam->vkCode == VK_LCONTROL && it->first.GetActionKey() != VK_LCONTROL)
+                {
+                    break;
+                }
+
                 // Get the common keys between the two shortcuts
                 int commonKeys = (remapToShortcut && !isRunProgram) ? it->first.GetCommonModifiersCount(std::get<Shortcut>(it->second.targetShortcut)) : 0;
 
@@ -647,8 +662,16 @@ namespace KeyboardEventHandlers
                             i++;
                         }
 
-                        // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
-                        Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
+                        // Ensures that after releasing both the action key and AltGr, Ctrl does not remain falsely pressed.
+                        if (!isAltRightKeyInvoked)
+                        {
+                            // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
+                            Helpers::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
+                        }
+                        else
+                        {
+                            isAltRightKeyInvoked = false;
+                        }
 
                         // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
                         Helpers::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
