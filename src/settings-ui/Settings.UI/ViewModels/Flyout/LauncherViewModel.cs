@@ -76,12 +76,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
                 Tag = moduleType,
                 Visible = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType),
-                ToolTip = GetModuleTooltip(moduleType),
+                ToolTip = GetModuleToolTip(moduleType),
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
             });
         }
 
-        private string GetModuleTooltip(ModuleType moduleType)
+        private string GetModuleToolTip(ModuleType moduleType)
         {
             return moduleType switch
             {
@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.PowerLauncher => SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                 ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
-                ModuleType.ShortcutGuide => SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
+                ModuleType.ShortcutGuide => GetShortcutGuideToolTip(),
                 _ => string.Empty,
             };
         }
@@ -103,6 +103,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 item.Visible = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag);
             }
+        }
+
+        private string GetShortcutGuideToolTip()
+        {
+            var shortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig;
+            return shortcutGuideSettings.Properties.UseLegacyPressWinKeyBehavior.Value
+                ? "Win"
+                : shortcutGuideSettings.Properties.OpenShortcutGuide.ToString();
         }
 
         internal void StartBugReport()

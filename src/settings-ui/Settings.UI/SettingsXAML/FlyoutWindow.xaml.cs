@@ -80,13 +80,14 @@ namespace Microsoft.PowerToys.Settings.UI
 
                     this.MoveAndResize(newPosition.X, newPosition.Y, WindowWidth, WindowHeight);
                 }
+
+                FlyoutShellPage.SwitchToLaunchPage();
             }
 
             if (args.WindowActivationState == Microsoft.UI.Xaml.WindowActivationState.Deactivated)
             {
                 if (ViewModel.CanHide)
                 {
-                    FlyoutShellPage.SwitchToLaunchPage();
                     this.Hide();
                 }
             }
