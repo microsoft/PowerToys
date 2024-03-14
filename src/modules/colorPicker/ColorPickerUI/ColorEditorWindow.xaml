@@ -10,7 +10,6 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Width="440"
     Height="380"
-    Margin="24,0,0,0"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
