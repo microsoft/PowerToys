@@ -215,10 +215,10 @@
 
                 <ui:Flyout
                     x:Name="DetailsFlyout"
+                    Margin="24,0,0,0"
                     Closed="DetailsFlyout_Closed"
                     Opened="DetailsFlyout_Opened"
-                    Placement="Top"
-                    Margin="24,0,0,0">
+                    Placement="Top">
                     <Grid x:Name="detailsGrid" KeyboardNavigation.TabNavigation="Contained">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="44" />
