@@ -18,3 +18,5 @@ MONITORINFO
 GetWindowRect
 SET_WINDOW_POS_FLAGS
 SetWindowPos
+GetWindowPlacement
+SetWindowPlacement

@@ -125,6 +125,10 @@
     <value>PowerRename</value>
     <comment>do not loc, product name</comment>
   </data>
+  <data name="PowerRename_Context_Menu_Entry" xml:space="preserve">
+    <value>Rename with Po&amp;werRename</value>
+    <comment>PowerRename is a product name. do not loc it. The &amp; allows to use W as a keyboard accelerator.</comment>
+  </data>
   <data name="Settings_Description" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
   </data>

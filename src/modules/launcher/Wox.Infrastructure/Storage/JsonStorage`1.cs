@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Text.Json;
 using Wox.Plugin.Logger;
 
@@ -20,11 +22,22 @@ namespace Wox.Infrastructure.Storage
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IFile File = FileSystem.File;
 
+        private readonly object _saveLock = new object();
+
         // use property initialization instead of DefaultValueAttribute
         // easier and flexible for default value of object
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            IncludeFields = true,
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = true,
+            UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow,
+        };
+
+        private static readonly JsonSerializerOptions _deserializerOptions = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never,
             IncludeFields = true,
             PropertyNameCaseInsensitive = true,
             WriteIndented = true,
@@ -44,19 +57,9 @@ namespace Wox.Infrastructure.Storage
         private const int _jsonStorage = 1;
         private StoragePowerToysVersionInfo _storageHelper;
 
-        public T Load()
+        public virtual T Load()
         {
             _storageHelper = new StoragePowerToysVersionInfo(FilePath, _jsonStorage);
-
-            // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
-            if (_storageHelper.ClearCache)
-            {
-                if (File.Exists(FilePath))
-                {
-                    File.Delete(FilePath);
-                    Log.Info($"Deleting cached data at <{FilePath}>", GetType());
-                }
-            }
 
             if (File.Exists(FilePath))
             {
@@ -82,7 +85,7 @@ namespace Wox.Infrastructure.Storage
         {
             try
             {
-                _data = JsonSerializer.Deserialize<T>(serialized, _serializerOptions);
+                _data = JsonSerializer.Deserialize<T>(serialized, _deserializerOptions);
             }
             catch (JsonException e)
             {
@@ -122,17 +125,65 @@ namespace Wox.Infrastructure.Storage
 
         public void Save()
         {
+            lock (_saveLock)
+            {
+                try
+                {
+                    string serialized = JsonSerializer.Serialize(_data, _serializerOptions);
+                    using var stream = new FileStream(FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                    using var writer = new StreamWriter(stream);
+                    writer.Write(serialized);
+
+                    _storageHelper.Close();
+
+                    Log.Info($"Saving cached data at <{FilePath}>", GetType());
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    Log.Exception($"Unauthorized access while saving data at <{FilePath}>. Check file permissions.", e, GetType());
+                }
+                catch (IOException e)
+                {
+                    Log.Exception($"Error in saving data at <{FilePath}>", e, GetType());
+                }
+            }
+        }
+
+        public void Clear()
+        {
+            if (File.Exists(FilePath))
+            {
+                File.Delete(FilePath);
+                LoadDefault();
+                Log.Info($"Deleting cached data at <{FilePath}>", GetType());
+            }
+        }
+
+        public bool CheckVersionMismatch()
+        {
+            // Skip the fields check if the version hasn't changed.
+            // This optimization prevents unnecessary fields processing when the cache
+            // is already up to date, enhancing performance and reducing IO operations
+            if (!_storageHelper.ClearCache)
+            {
+                return false;
+            }
+
+            _storageHelper.ClearCache = false;
+            return true;
+        }
+
+        public bool TryLoadData()
+        {
             try
             {
-                string serialized = JsonSerializer.Serialize(_data, _serializerOptions);
-                File.WriteAllText(FilePath, serialized);
-                _storageHelper.Close();
-
-                Log.Info($"Saving cached data at <{FilePath}>", GetType());
+                JsonSerializer.Deserialize<T>(File.ReadAllText(FilePath), _serializerOptions);
+                return true;
             }
-            catch (IOException e)
+            catch (JsonException e)
             {
-                Log.Exception($"Error in saving data at <{FilePath}>", e, GetType());
+                Log.Exception($"Error in TryLoadData at <{FilePath}>", e, GetType());
+                return false;
             }
         }
     }

@@ -26,6 +26,11 @@
       ]
     }
   ],
+  "CustomRestoreSettings": {
+    "\\Keyboard Manager\\default.json": {
+      "overwrite": true
+    }
+  },
   "IgnoredSettings": {
     "backup-restore_settings.json": [
       "RestartAfterRestore"

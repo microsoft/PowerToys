@@ -27,6 +27,9 @@ namespace UIHelpers
 
     winrt::Windows::Foundation::IInspectable GetWrapped(const winrt::Windows::Foundation::IInspectable& element, double width);
 
+    // Function to return a StackPanel with an element and a TextBlock label. 
+    winrt::Windows::Foundation::IInspectable GetLabelWrapped(const winrt::Windows::Foundation::IInspectable& element, std::wstring label, double width, HorizontalAlignment horizontalAlignment = HorizontalAlignment::Left);
+
     // Function to return the list of key name in the order for the drop down based on the key codes
     winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::pair<DWORD, std::wstring>>& list);
 

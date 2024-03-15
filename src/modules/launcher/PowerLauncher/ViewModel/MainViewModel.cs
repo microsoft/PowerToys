@@ -379,7 +379,14 @@ namespace PowerLauncher.ViewModel
         /// <param name="requery">Optional Parameter that if true, will automatically execute a query against the updated text</param>
         public void ChangeQueryText(string queryText, bool requery = false)
         {
+            var sameQueryText = SystemQueryText == queryText;
+
             SystemQueryText = queryText;
+
+            if (sameQueryText)
+            {
+                OnPropertyChanged(nameof(SystemQueryText));
+            }
 
             if (requery)
             {
@@ -1033,7 +1040,24 @@ namespace PowerLauncher.ViewModel
         {
             if (!_saved)
             {
+                if (_historyItemsStorage.CheckVersionMismatch())
+                {
+                    if (!_historyItemsStorage.TryLoadData())
+                    {
+                        _history.Update();
+                    }
+                }
+
                 _historyItemsStorage.Save();
+
+                if (_userSelectedRecordStorage.CheckVersionMismatch())
+                {
+                    if (!_userSelectedRecordStorage.TryLoadData())
+                    {
+                        _userSelectedRecord.Update();
+                    }
+                }
+
                 _userSelectedRecordStorage.Save();
 
                 _saved = true;

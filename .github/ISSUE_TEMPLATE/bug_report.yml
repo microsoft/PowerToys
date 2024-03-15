@@ -50,6 +50,7 @@ body:
       - Always on Top
       - Awake
       - ColorPicker
+      - Command not found
       - Crop and Lock
       - Environment Variables
       - FancyZones

@@ -14,13 +14,13 @@
   <?define SettingsV2OOBEAssetsModulesFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Modules\OOBE\?>
 
   <?define SettingsV2OOBEAssetsFluentIconsFiles=?>
-  <?define SettingsV2OOBEAssetsFluentIconsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\FluentIcons\?>
+  <?define SettingsV2OOBEAssetsFluentIconsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Icons\?>
 
   <Fragment>
     <DirectoryRef Id="WinUI3AppsAssetsFolder">
       <Directory Id="SettingsV2AssetsInstallFolder" Name="Settings">
         <Directory Id="SettingsAppAssetsScriptsFolder" Name="Scripts"/>
-        <Directory Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" Name="FluentIcons" />
+        <Directory Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" Name="Icons" />
         <Directory Id="SettingsV2AssetsModulesInstallFolder" Name="Modules" >
           <Directory Id="SettingsV2OOBEAssetsModulesInstallFolder" Name="OOBE" />
         </Directory>

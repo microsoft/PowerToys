@@ -15,6 +15,26 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <DataTemplate x:Key="KeyVisualTemplate">
+            <controls:KeyVisual
+                VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
+                Content="{Binding}"
+                IsTabStop="False"
+                VisualType="TextOnly" />
+        </DataTemplate>
+        <DataTemplate x:Key="CommaTemplate">
+            <StackPanel Background="{ThemeResource SystemFillColorSolidAttentionBackground}">
+                <TextBlock
+                    Margin="4,0"
+                    VerticalAlignment="Bottom"
+                    Text="," />
+            </StackPanel>
+        </DataTemplate>
+        <converters:KeyVisualTemplateSelector
+            x:Key="KeyVisualTemplateSelector"
+            CommaTemplate="{StaticResource CommaTemplate}"
+            KeyVisualTemplate="{StaticResource KeyVisualTemplate}" />
         <converters:ModuleItemTemplateSelector
             x:Key="ModuleItemTemplateSelector"
             ButtonTemplate="{StaticResource ModuleItemButtonTemplate}"
@@ -156,7 +176,7 @@
                                                 <ItemsControl
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     IsTabStop="False"
-                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
+                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys(15)}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="12" />
@@ -190,7 +210,7 @@
                                     <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
                                         <StackPanel Orientation="Horizontal">
                                             <Border
-                                                Padding="8,4"
+                                                Padding="8,0"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1"
@@ -198,29 +218,27 @@
                                                 <ItemsControl
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     IsTabStop="False"
-                                                    ItemsSource="{x:Bind GetMappedOriginalKeys()}">
+                                                    ItemTemplateSelector="{StaticResource KeyVisualTemplateSelector}"
+                                                    ItemsSource="{x:Bind GetMappedOriginalKeysWithSplitChord()}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="12" />
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <controls:KeyVisual
-                                                                VerticalAlignment="Center"
-                                                                AutomationProperties.AccessibilityView="Raw"
-                                                                Content="{Binding}"
-                                                                IsTabStop="False"
-                                                                VisualType="TextOnly" />
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </Border>
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
-                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                            <controls:IsEnabledTextBlock
+                                                x:Uid="Starts"
+                                                Margin="8,0,8,0"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay}" />
                                             <Border
                                                 Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -230,7 +248,7 @@
                                                 <ItemsControl
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     IsTabStop="False"
-                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
+                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys(15)}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="12" />
@@ -310,6 +328,7 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
                                 Tag="{x:Bind Tag, Mode=OneWay}">
                                 <Grid
                                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -321,14 +340,6 @@
                                         <RowDefinition />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
-                                    <Border Grid.RowSpan="2" Opacity="0.05">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,3">
-                                                <GradientStop Offset="0.5" Color="{x:Bind AccentColor, Mode=OneWay}" />
-                                                <GradientStop Offset="0.9" Color="Transparent" />
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                    </Border>
                                     <Grid Margin="16,8,16,0" ColumnSpacing="12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
@@ -355,7 +366,7 @@
                                             Glyph="&#xE72E;"
                                             Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="GPO_IsSettingForcedText" TextWrapping="WrapWholeWords" />
+                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch
@@ -408,6 +419,7 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
                                 Tag="{x:Bind Tag, Mode=OneWay}">
                                 <Grid
                                     Padding="16,12"
@@ -442,7 +454,7 @@
                                             Glyph="&#xE72E;"
                                             Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="GPO_IsSettingForcedText" TextWrapping="WrapWholeWords" />
+                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch

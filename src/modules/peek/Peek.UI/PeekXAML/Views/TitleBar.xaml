@@ -67,7 +67,7 @@
             x:Name="LaunchAppButton"
             x:Uid="LaunchAppButton"
             VerticalAlignment="Center"
-            Command="{x:Bind LaunchDefaultAppButtonAsyncCommand, Mode=OneWay}"
+            Command="{x:Bind LaunchDefaultAppButtonCommand, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
             Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
             <Button.Content>

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
@@ -131,7 +132,7 @@ namespace Peek.UI.Views
         }
 
         [RelayCommand]
-        private async void LaunchDefaultAppButtonAsync()
+        private async Task LaunchDefaultAppButtonAsync()
         {
             if (Item is not FileItem fileItem)
             {
@@ -338,14 +339,23 @@ namespace Peek.UI.Views
 
         private void UpdateDefaultAppToLaunch()
         {
-            // Update the name of default app to launch
-            DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
+            if (Item is FileItem)
+            {
+                // Update the name of default app to launch
+                DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
 
-            string openWithAppTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_Text");
-            OpenWithAppText = string.Format(CultureInfo.InvariantCulture, openWithAppTextFormat, DefaultAppName);
+                string openWithAppTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_Text");
+                OpenWithAppText = string.Format(CultureInfo.InvariantCulture, openWithAppTextFormat, DefaultAppName);
 
-            string openWithAppToolTipFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_ToolTip");
-            OpenWithAppToolTip = string.Format(CultureInfo.InvariantCulture, openWithAppToolTipFormat, DefaultAppName);
+                string openWithAppToolTipFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_ToolTip");
+                OpenWithAppToolTip = string.Format(CultureInfo.InvariantCulture, openWithAppToolTipFormat, DefaultAppName);
+            }
+            else
+            {
+                DefaultAppName = string.Empty;
+                OpenWithAppText = string.Empty;
+                OpenWithAppToolTip = string.Empty;
+            }
         }
     }
 }
