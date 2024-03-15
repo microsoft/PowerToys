@@ -347,10 +347,14 @@ namespace FancyZonesEditor
         private void EditZones_Click(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
+
             var dataContext = ((FrameworkElement)sender).DataContext;
             Select((LayoutModel)dataContext);
+            App.Overlay.StartEditing(_settings.SelectedModel);
+
             EditLayoutDialog.Hide();
             Hide();
+
             App.Overlay.OpenEditor(_settings.SelectedModel);
         }
 
