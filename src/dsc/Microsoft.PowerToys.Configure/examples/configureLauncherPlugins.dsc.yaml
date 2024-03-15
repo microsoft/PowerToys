@@ -1,0 +1,17 @@
+properties:
+  resources:
+    - resource: PowerToysConfigure
+      directives:
+        description: Configure PowerToys
+      settings:
+        Debug: true
+        PowerLauncher:
+          Enabled: true
+          AdditionalProperties:
+            Plugins:
+              - Name: "Calculator"
+                Disabled: true
+              - Name: "Folder"
+                Disabled: true
+
+  configurationVersion: 0.2.0

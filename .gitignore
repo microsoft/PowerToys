@@ -33,6 +33,9 @@ bld/
 # Visual Studio 2017 auto generated files
 Generated\ Files/
 
+# Auto generated files that must be placed in a directory without spaces
+Generated/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

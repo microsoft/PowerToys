@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -72,42 +73,53 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowClipboardAndNetworkStatusMessages { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public List<string> MachineMatrixString { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public StringProperty MachinePool { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        [CmdConfigureIgnoreAttribute]
         public bool MatrixOneRow { get; set; }
 
         public IntProperty EasyMouse { get; set; }
 
         public IntProperty MachineID { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public IntProperty LastX { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public IntProperty LastY { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public IntProperty PackageID { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        [CmdConfigureIgnoreAttribute]
         public bool FirstRun { get; set; }
 
         public IntProperty HotKeySwitchMachine { get; set; }
 
         [ObsoleteAttribute("Use ToggleEasyMouseShortcut instead", false)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [CmdConfigureIgnoreAttribute]
         public IntProperty HotKeyToggleEasyMouse { get; set; }
 
         [ObsoleteAttribute("Use LockMachineShortcut instead", false)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [CmdConfigureIgnoreAttribute]
         public IntProperty HotKeyLockMachine { get; set; }
 
         [ObsoleteAttribute("Use ReconnectShortcut instead", false)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [CmdConfigureIgnoreAttribute]
         public IntProperty HotKeyReconnect { get; set; }
 
         [ObsoleteAttribute("Use Switch2AllPCShortcut instead", false)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [CmdConfigureIgnoreAttribute]
         public IntProperty HotKeySwitch2AllPC { get; set; }
 
         public HotkeySettings ToggleEasyMouseShortcut { get; set; }
@@ -128,6 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool FirstCtrlShiftS { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public StringProperty DeviceID { get; set; }
 
         public MouseWithoutBordersProperties()

@@ -20,7 +20,6 @@
 
 #include <common/version/version.h>
 
-
 using namespace System;
 using namespace System::Runtime::InteropServices;
 using System::Collections::Generic::List;
@@ -40,11 +39,17 @@ public
             delete _map;
         }
 
-        String ^ GetKeyName(DWORD key) {
+        String ^ GetKeyName(DWORD key) 
+        {
             return gcnew String(_map->GetKeyName(key).c_str());
         }
 
-            void Updatelayout()
+        DWORD GetKeyValue(String ^ name)
+        {
+            return _map->GetKeyFromName(msclr::interop::marshal_as<std::wstring>(name));
+        }
+
+        void Updatelayout()
         {
             _map->UpdateLayout();
         }
@@ -129,13 +134,13 @@ public
         }
 
         static List<String ^> ^ GetAllActiveMicrophoneDeviceNames() {
-            auto names = gcnew List<String ^>();
-            for (const auto& device : MicrophoneDevice::getAllActive())
-            {
-                names->Add(gcnew String(device->name().data()));
+                auto names = gcnew List<String ^>();
+                for (const auto& device : MicrophoneDevice::getAllActive())
+                {
+                    names->Add(gcnew String(device->name().data()));
+                }
+                return names;
             }
-            return names;
-        }
 
             static List<String ^> ^
             GetAllVideoCaptureDeviceNames() {

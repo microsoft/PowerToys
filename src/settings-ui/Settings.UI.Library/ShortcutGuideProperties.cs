@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -28,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public IntProperty OverlayOpacity { get; set; }
 
         [JsonPropertyName("use_legacy_press_win_key_behavior")]
+        [CmdConfigureIgnoreAttribute]
         public BoolProperty UseLegacyPressWinKeyBehavior { get; set; }
 
         [JsonPropertyName("press_time")]
