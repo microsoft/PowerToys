@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Combobox = 1,
             Textbox = 2,
             Numberbox = 3,
+            MultilineTextbox = 4,
             CheckboxAndCombobox = 11,
             CheckboxAndTextbox = 12,
             CheckboxAndNumberbox = 13,
@@ -70,6 +71,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? TextBoxMaxLength { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value for the placeholder of a textbox.
+        /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string PlaceholderText { get; set; }
 
         public double NumberValue { get; set; }
 
