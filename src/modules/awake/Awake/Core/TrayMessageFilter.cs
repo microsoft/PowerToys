@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using Awake.Core.Models;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Awake.Core
@@ -83,14 +84,24 @@ namespace Awake.Core
             {
                 currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
             }
-            catch (FileNotFoundException)
+            catch (Exception ex)
             {
+                string? errorString = $"Failed GetSettings: {ex.Message}";
+                Logger.LogError(errorString);
                 currentSettings = new AwakeSettings();
             }
 
             currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
 
-            ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            try
+            {
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            }
+            catch (Exception ex)
+            {
+                string? errorString = $"Failed SaveSettings: {ex.Message}";
+                Logger.LogError(errorString);
+            }
         }
 
         private static void TimedKeepAwakeCommandHandler(string moduleName, int seconds)
@@ -103,8 +114,10 @@ namespace Awake.Core
             {
                 currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
             }
-            catch (FileNotFoundException)
+            catch (Exception ex)
             {
+                string? errorString = $"Failed GetSettings: {ex.Message}";
+                Logger.LogError(errorString);
                 currentSettings = new AwakeSettings();
             }
 
@@ -112,7 +125,15 @@ namespace Awake.Core
             currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
             currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
 
-            ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            try
+            {
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            }
+            catch (Exception ex)
+            {
+                string? errorString = $"Failed SaveSettings: {ex.Message}";
+                Logger.LogError(errorString);
+            }
         }
 
         private static void PassiveKeepAwakeCommandHandler(string moduleName)
@@ -128,14 +149,24 @@ namespace Awake.Core
             {
                 currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
             }
-            catch (FileNotFoundException)
+            catch (Exception ex)
             {
+                string? errorString = $"Failed GetSettings: {ex.Message}";
+                Logger.LogError(errorString);
                 currentSettings = new AwakeSettings();
             }
 
             currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
 
-            ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            try
+            {
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            }
+            catch (Exception ex)
+            {
+                string? errorString = $"Failed SaveSettings: {ex.Message}";
+                Logger.LogError(errorString);
+            }
         }
     }
 }

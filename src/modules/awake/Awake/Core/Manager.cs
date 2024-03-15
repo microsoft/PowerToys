@@ -305,16 +305,24 @@ namespace Awake.Core
             {
                 currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
             }
-            catch (FileNotFoundException ex)
+            catch (Exception ex)
             {
-                string? errorString = $"Failed to reset Awake mode: {ex.Message}";
+                string? errorString = $"Failed to reset Awake mode GetSettings: {ex.Message}";
                 Logger.LogError(errorString);
                 currentSettings = new AwakeSettings();
             }
 
             currentSettings.Properties.Mode = AwakeMode.PASSIVE;
 
-            ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            try
+            {
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            }
+            catch (Exception ex)
+            {
+                string? errorString = $"Failed to reset Awake mode SaveSettings: {ex.Message}";
+                Logger.LogError(errorString);
+            }
         }
     }
 }
