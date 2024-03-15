@@ -598,10 +598,9 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new[] { "וֹ", "וּ", "װ", "\u05b9" },
                 LetterKey.VK_X => new[] { "\u05b6", "\u05b1" },
                 LetterKey.VK_Y => new[] { "ױ" },
-                LetterKey.VK_COMMA => new[] { "”", "’", "״", "׳" },
+                LetterKey.VK_COMMA => new[] { "”", "’", "'", "״", "׳" },
                 LetterKey.VK_PERIOD => new[] { "\u05ab", "\u05bd", "\u05bf" },
                 LetterKey.VK_MINUS => new[] { "–", "־" },
-                LetterKey.VK_QUOT_ => new[] { "”", "’", "'", },
                 _ => Array.Empty<string>(),
             };
         }
