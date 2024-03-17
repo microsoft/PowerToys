@@ -88,12 +88,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// Getter: It reads the <see cref="TextValue" /> property and converts it to a list.<br />
         /// Setter: It converts the list to a string separated by "\r" and sets the <see cref="TextValue"/> property.
         /// </remarks>
-        // This property should help to deal with the line break handling. It is an alias for the TextValue property.
+        // This property should help to deal with the line break handling. It is an alias for the TextValue property. Therefore, it should not be written to the json file.
         [JsonIgnore]
         public List<string> TextValueAsMultilineList
         {
             get { return _textValue?.Split("\r", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)?.ToList() ?? new List<string>(); }
-            set { _textValue = value != null ? string.Join("\r", value.ToArray()) : string.Empty; }
+            set { _textValue = (value != null && value.Count > 0) ? string.Join("\r", value.ToArray()) : string.Empty; }
         }
 
         /// <summary>
