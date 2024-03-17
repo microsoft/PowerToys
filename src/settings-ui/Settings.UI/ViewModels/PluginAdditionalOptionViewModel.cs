@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowCheckboxAndNumberbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndNumberbox;
 
-        public bool SHowCheckboxAndMultilineTextbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndMultilineTextbox;
+        public bool ShowCheckboxAndMultilineTextbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndMultilineTextbox;
 
         // Enabled state of ComboBox, TextBox, NumberBox (If combined with checkbox then checkbox value decides it.)
         public bool SecondSettingIsEnabled => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.Value : true;
