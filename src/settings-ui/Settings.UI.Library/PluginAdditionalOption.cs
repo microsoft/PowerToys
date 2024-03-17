@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CheckboxAndCombobox = 11,
             CheckboxAndTextbox = 12,
             CheckboxAndNumberbox = 13,
+            CheckboxAndMultilineTextbox = 14,
         }
 
         /// <summary>

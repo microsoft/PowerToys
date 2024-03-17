@@ -600,6 +600,45 @@
                                                                             Value="{x:Bind NumberValue, Mode=TwoWay}" />
                                                                     </tkcontrols:SettingsCard>
                                                                 </StackPanel>
+                                                                <!--  Checkbox And MultilineTextBox setting  -->
+                                                                <StackPanel
+                                                                    HorizontalAlignment="Stretch"
+                                                                    Orientation="Vertical"
+                                                                    Visibility="{x:Bind Path=SHowCheckboxAndMultilineTextbox, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <tkcontrols:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="1"
+                                                                        Padding="0,6,0,4"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        ContentAlignment="Left"
+                                                                        CornerRadius="0">
+                                                                        <controls:CheckBoxWithDescriptionControl
+                                                                            Margin="56,0,0,0"
+                                                                            Description="{x:Bind Path=DisplayDescription}"
+                                                                            Header="{x:Bind Path=DisplayLabel}"
+                                                                            IsChecked="{x:Bind Value, Mode=TwoWay}" />
+                                                                    </tkcontrols:SettingsCard>
+                                                                    <tkcontrols:SettingsCard
+                                                                        MinHeight="0"
+                                                                        Margin="84,0,45,8"
+                                                                        Background="Transparent"
+                                                                        BorderThickness="0,0,0,0"
+                                                                        CornerRadius="0"
+                                                                        Description="{x:Bind Path=SecondDisplayDescription}"
+                                                                        Header="{x:Bind Path=SecondDisplayLabel}"
+                                                                        IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
+                                                                        <TextBox
+                                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                            MinHeight="160"
+                                                                            AcceptsReturn="True"
+                                                                            PlaceholderText="{x:Bind Path=PlaceholderText}"
+                                                                            ScrollViewer.IsVerticalRailEnabled="True"
+                                                                            ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                                            ScrollViewer.VerticalScrollMode="Enabled"
+                                                                            Text="{x:Bind TextValue, Mode=TwoWay}" />
+                                                                    </tkcontrols:SettingsCard>
+                                                                </StackPanel>
                                                                 <!--  Separator line  -->
                                                                 <Rectangle
                                                                     Height="1"
