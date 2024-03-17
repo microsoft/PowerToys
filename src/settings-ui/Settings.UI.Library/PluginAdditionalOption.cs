@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -64,8 +66,34 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<KeyValuePair<string, string>> ComboBoxItems { get; set; }
 
+        private string _textValue;
+
+        /// <summary>
+        /// Gets or sets the text of a (multiline) text setting.
+        /// </summary>
+        /// <remarks>
+        /// For multiline text "\r" is used as line break.
+        /// </remarks>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string TextValue { get; set; }
+        public string TextValue
+        {
+            get { return _textValue; }
+            set { _textValue = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the text value for multiline texts using a list of type string.
+        /// </summary>
+        /// <remarks>
+        /// Getter: It reads the TextValue property and converts it to a list.<br />
+        /// Setter: It converts the list to a string separated by "\r" and sets the TextValue property.
+        /// </remarks>
+        [JsonIgnore]
+        public List<string> TextValueAsMultilineList
+        {
+            get { return _textValue?.Split("\r", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)?.ToList() ?? new List<string>(); }
+            set { _textValue = value != null ? string.Join("\r", value.ToArray()) : string.Empty; }
+        }
 
         /// <summary>
         /// Gets or sets the value that specifies the maximum number of characters allowed for user input in the text box. (Optional; Default is 0 which means no limit.)
