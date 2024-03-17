@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// Gets or sets the text of a (multiline) text setting.
         /// </summary>
         /// <remarks>
-        /// For multiline text "\r" is used as line break.
+        /// For multiline text "\r" is used as line break. Alternatively you can use the <see cref="TextValueAsMultilineList" /> property.
         /// </remarks>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string TextValue
@@ -85,9 +85,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// Gets or sets the text value for multiline texts using a list of type string.
         /// </summary>
         /// <remarks>
-        /// Getter: It reads the TextValue property and converts it to a list.<br />
-        /// Setter: It converts the list to a string separated by "\r" and sets the TextValue property.
+        /// Getter: It reads the <see cref="TextValue" /> property and converts it to a list.<br />
+        /// Setter: It converts the list to a string separated by "\r" and sets the <see cref="TextValue"/> property.
         /// </remarks>
+        // This property should help to deal with the line break handling. It is an alias for the TextValue property.
         [JsonIgnore]
         public List<string> TextValueAsMultilineList
         {
