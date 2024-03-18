@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Microsoft.FancyZonesEditor.UITests;
@@ -69,6 +71,8 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             public const string EditZonesButton = "editZoneLayoutButton";
             public const string DeleteTextButton = "DeleteButton";
             public const string HotkeyComboBox = "quickKeySelectionComboBox";
+            public const string NewZoneButton = "newZoneButton";
+            public const string TopRightCorner = "NEResize";
 
             // layout creation dialog
             public const string GridRadioButton = "GridLayoutRadioButton";
@@ -77,6 +81,25 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             // confirmation dialog
             public const string PrimaryButton = "PrimaryButton";
             public const string SecondaryButton = "SecondaryButton";
+        }
+
+        public static class ElementName
+        {
+            // context menu
+            public const string EditZones = "Edit zones";
+
+            // canvas layout editor
+            public const string CanvasEditorWindow = "Canvas layout editor";
+
+            // grid layout editor
+            public const string MergeZonesButton = "Merge zones";
+        }
+
+        public static class ClassName
+        {
+            // layout editor
+            public const string CanvasZone = "CanvasZone";
+            public const string GridZone = "GridZone";
         }
 
         public WindowsDriver<WindowsElement>? Session { get; }
@@ -268,6 +291,52 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
+        public WindowsElement? GetGridLayoutEditorWindow()
+        {
+            try
+            {
+                return Session?.FindElementByName("Grid layout editor");
+            }
+            catch
+            {
+                Assert.Fail($"Grid layout editor window not found");
+                return null;
+            }
+        }
+
+        public WindowsElement? GetZone(int zoneNumber, string zoneClassName)
+        {
+            ReadOnlyCollection<WindowsElement>? zones = null;
+
+            try
+            {
+                zones = Session?.FindElementsByClassName(zoneClassName);
+            }
+            catch
+            {
+            }
+
+            if (zones == null || zones.Count == 0)
+            {
+                return null;
+            }
+
+            foreach (WindowsElement zone in zones)
+            {
+                try
+                {
+                    zone.FindElementByName(zoneNumber.ToString(CultureInfo.InvariantCulture));
+                    return zone;
+                }
+                catch
+                {
+                    // required number not found in the zone
+                }
+            }
+
+            return null;
+        }
+
         public void ClickCreateNewLayout()
         {
             var button = FindByAccessibilityId(AccessibilityId.NewLayoutButton);
@@ -293,6 +362,12 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 opened = WaitElementDisplayedByName($"Edit '{layoutName}'");
                 retryAttempts--;
             }
+        }
+
+        public void ClickEditZones()
+        {
+            var button = FindByAccessibilityId(AccessibilityId.EditZonesButton);
+            button?.Click();
         }
 
         public void RightClickLayout(string layoutName)
@@ -376,6 +451,61 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             WindowsElement menu = OpenContextMenu(layoutName);
             Click(menu.FindElementByName(menuItem));
+        }
+
+        public void ClickAddNewZone()
+        {
+            var button = FindByAccessibilityId(AccessibilityId.NewZoneButton);
+            button?.Click();
+        }
+
+        public void ClickDeleteZone(int zoneNumber)
+        {
+            var zone = GetZone(zoneNumber, ClassName.CanvasZone);
+            Assert.IsNotNull(zone);
+            var button = zone?.FindElementByClassName("Button");
+            Assert.IsNotNull(button);
+            button?.Click();
+        }
+
+        public void MergeGridZones(int zoneNumber1, int zoneNumber2)
+        {
+            var zone1 = GetZone(zoneNumber1, ClassName.GridZone);
+            var zone2 = GetZone(zoneNumber2, ClassName.GridZone);
+            if (zone1 == null || zone2 == null)
+            {
+                return;
+            }
+
+            Actions actions = new Actions(Session);
+            actions.MoveToElement(zone1).ClickAndHold();
+            int dx = (zone2.Rect.X - zone1.Rect.X) / 10;
+            int dy = (zone2.Rect.Y - zone1.Rect.Y) / 10;
+            for (int i = 0; i < 10; i++)
+            {
+                actions.MoveByOffset(dx, dy);
+            }
+
+            actions.MoveToElement(zone2).Release();
+            actions.Build().Perform();
+
+            Click(Session?.FindElementByName(ElementName.MergeZonesButton)!);
+        }
+
+        public void MoveSplitter(int xOffset, int yOffset)
+        {
+            ReadOnlyCollection<WindowsElement>? thumbs = Session?.FindElementsByClassName("Thumb");
+
+            Actions actions = new Actions(Session);
+            actions.MoveToElement(thumbs?[0]).ClickAndHold();
+            int dx = xOffset / 10;
+            int dy = yOffset / 10;
+            for (int i = 0; i < 10; i++)
+            {
+                actions.MoveByOffset(dx, dy);
+            }
+
+            actions.Build().Perform();
         }
 
         public void SelectNewLayoutType(Constants.CustomLayoutType type)
@@ -473,6 +603,20 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             actions.MoveToElement(element);
             actions.MoveByOffset(10, 10);
             actions.Click();
+            actions.Build().Perform();
+        }
+
+        public void Drag(WindowsElement element, int offsetX, int offsetY)
+        {
+            Actions actions = new Actions(Session);
+            actions.MoveToElement(element).MoveByOffset(10, 10).ClickAndHold(element).MoveByOffset(offsetX, offsetY).Release();
+            actions.Build().Perform();
+        }
+
+        public void Drag(AppiumWebElement element, int offsetX, int offsetY)
+        {
+            Actions actions = new Actions(Session);
+            actions.MoveToElement(element).MoveByOffset(10, 10).ClickAndHold(element).MoveByOffset(offsetX, offsetY).Release();
             actions.Build().Perform();
         }
     }
