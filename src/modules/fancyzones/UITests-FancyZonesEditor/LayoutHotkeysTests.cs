@@ -347,6 +347,8 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 // verify the available values
                 hotkeyComboBox.Click();
+
+                _session?.WaitElementDisplayedByClassName(ClassName.Popup);
                 var popup = _session?.FindByClassName(ClassName.Popup);
                 Assert.IsNotNull(popup, "Hotkey combo box wasn't opened");
 
@@ -381,9 +383,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
-            var popup = _session?.FindByClassName(ClassName.Popup);
+
             _session?.WaitElementDisplayedByClassName(ClassName.Popup);
+            var popup = _session?.FindByClassName(ClassName.Popup);
             Assert.IsNotNull(popup);
+
             _session?.Click(popup.FindElementByName($"{key}")!); // assign a free hotkey
             Assert.AreEqual(key, hotkeyComboBox.Text);
 
@@ -399,6 +403,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
+
+            _session?.WaitElementDisplayedByClassName(ClassName.Popup);
             popup = _session?.FindByClassName(ClassName.Popup);
             Assert.IsNotNull(popup);
             try
@@ -423,8 +429,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
-            var popup = _session?.FindByClassName(ClassName.Popup);
             _session?.WaitElementDisplayedByClassName(ClassName.Popup);
+            var popup = _session?.FindByClassName(ClassName.Popup);
             Assert.IsNotNull(popup);
             _session?.Click(popup.FindElementByName($"{key}")!);
             Assert.AreEqual(key, hotkeyComboBox.Text);
@@ -441,6 +447,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
+            _session?.WaitElementDisplayedByClassName(ClassName.Popup);
             popup = _session?.FindByClassName(ClassName.Popup);
             Assert.IsNotNull(popup);
             try
@@ -464,6 +471,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
                 Assert.IsNotNull(hotkeyComboBox);
                 hotkeyComboBox.Click();
+                _session?.WaitElementDisplayedByClassName(ClassName.Popup);
                 var popup = _session?.FindByClassName(ClassName.Popup);
                 Assert.IsNotNull(popup);
                 _session?.Click(popup.FindElementByName($"{i}")!);
@@ -480,6 +488,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
                 Assert.IsNotNull(hotkeyComboBox);
                 hotkeyComboBox.Click();
+                _session?.WaitElementDisplayedByClassName(ClassName.Popup);
                 var popup = _session?.FindByClassName(ClassName.Popup);
                 Assert.IsNotNull(popup);
 
@@ -513,6 +522,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
+            _session?.WaitElementDisplayedByClassName(ClassName.Popup);
             var popup = _session?.FindByClassName(ClassName.Popup);
             Assert.IsNotNull(popup);
             _session?.Click(popup.FindElementByName(None)!);
@@ -530,6 +540,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
+            _session?.WaitElementDisplayedByClassName(ClassName.Popup);
             popup = _session?.FindByClassName(ClassName.Popup);
             Assert.IsNotNull(popup);
             try
@@ -554,6 +565,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
+            _session?.WaitElementDisplayedByClassName(ClassName.Popup);
             var popup = _session?.FindByClassName(ClassName.Popup);
             Assert.IsNotNull(popup);
             _session?.Click(popup.FindElementByName(None)!); // reset the hotkey
@@ -571,6 +583,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
+            _session?.WaitElementDisplayedByClassName(ClassName.Popup);
             popup = _session?.FindByClassName(ClassName.Popup);
             Assert.IsNotNull(popup);
             try
