@@ -268,11 +268,15 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             return null;
         }
 
-        public void ClickCreateNewLayout()
+        public void Click(WindowsElement? element)
         {
-            var button = FindByAccessibilityId(AccessibilityId.NewLayoutButton);
-            Assert.IsNotNull(button, "Create new layout button not found");
-            button.Click();
+            Assert.IsNotNull(element);
+            element.Click();
+        }
+
+        public void Click(string name)
+        {
+            Click(Session.FindElementByName(name));
         }
 
         public void ClickEditLayout(string layoutName)
@@ -295,12 +299,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
-        public void ClickEditZones()
-        {
-            var button = FindByAccessibilityId(AccessibilityId.EditZonesButton);
-            button?.Click();
-        }
-
         public void RightClickLayout(string layoutName)
         {
             var layout = GetLayout(layoutName);
@@ -313,20 +311,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             var monitor = GetMonitorItem(monitorNumber);
             Assert.IsNotNull(monitor, $"Monitor {monitorNumber} not found");
             Click(monitor);
-        }
-
-        public void ClickSave()
-        {
-            var button = Session.FindElementByName(ElementName.Save);
-            Assert.IsNotNull(button, "No Save button");
-            button.Click();
-        }
-
-        public void ClickCancel()
-        {
-            var button = Session.FindElementByName(ElementName.Cancel);
-            Assert.IsNotNull(button, "No Cancel button");
-            button.Click();
         }
 
         public void ClickCopyLayout()
@@ -349,12 +333,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
 
             Assert.IsNotNull(button, "No Copy button");
-            button.Click();
-        }
-
-        public void ClickDeleteLayout()
-        {
-            WindowsElement button = Session.FindElementByAccessibilityId(AccessibilityId.DeleteLayoutButton);
             button.Click();
         }
 
@@ -384,13 +362,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             WindowsElement menu = OpenContextMenu(layoutName);
             Click(menu.FindElementByName(menuItem));
-        }
-
-        public void ClickAddNewZone()
-        {
-            var button = FindByAccessibilityId(AccessibilityId.NewZoneButton);
-            Assert.IsNotNull(button);
-            button.Click();
         }
 
         public void ClickDeleteZone(int zoneNumber)

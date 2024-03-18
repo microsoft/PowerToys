@@ -233,7 +233,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             _session?.ClickEditLayout(deletedLayout);
-            _session?.ClickDeleteLayout();
+            _session?.Click(_session.FindByAccessibilityId(AccessibilityId.DeleteLayoutButton));
             _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 
@@ -252,7 +252,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var deletedLayout = CustomLayouts.CustomLayouts[0].Name;
             _session?.ClickEditLayout(deletedLayout);
-            _session?.ClickDeleteLayout();
+            _session?.Click(_session.FindByAccessibilityId(AccessibilityId.DeleteLayoutButton));
             _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 
@@ -278,7 +278,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             _session?.ClickEditLayout(deletedLayout);
-            _session?.ClickDeleteLayout();
+            _session?.Click(_session.FindByAccessibilityId(AccessibilityId.DeleteLayoutButton));
             _session?.ClickCancelDialog();
             _session?.WaitFor(1);
 
@@ -321,7 +321,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the default layout is reset to the "default" default
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid]);
             Assert.IsNotNull(_session?.GetHorizontalDefaultButton(true));
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var defaultLayouts = new DefaultLayouts();
@@ -356,11 +356,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
             catch
             {
-                _session?.ClickCancel();
+                _session?.Click(ElementName.Cancel);
                 Assert.Fail("Hotkey not found");
             }
 
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var hotkeys = new LayoutHotkeys();

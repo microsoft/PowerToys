@@ -246,7 +246,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             input.SendKeys(newName);
 
             // verify new name
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             Assert.IsNull(_session?.GetLayout(oldName)); // previous name isn't presented
             Assert.IsNotNull(_session?.GetLayout(newName)); // new name is presented
         }
@@ -265,7 +265,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             input.SendKeys(newName);
 
             // verify new name
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             Assert.IsNotNull(_session?.GetLayout(oldName));
             Assert.IsNull(_session?.GetLayout(newName));
         }
@@ -284,7 +284,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).SensitivityRadius;
                 Assert.AreEqual($"{expected}", slider.Text);
 
-                _session?.ClickCancel();
+                _session?.Click(ElementName.Cancel);
                 _session?.WaitUntilHidden(slider);
             }
         }
@@ -307,7 +307,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             Assert.AreEqual($"{expected}", slider.Text);
 
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -334,7 +334,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     new CustomLayouts().CanvasFromJsonElement(layout.Info.GetRawText()).SensitivityRadius :
                     new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).SensitivityRadius;
 
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -371,7 +371,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).Spacing;
                 Assert.AreEqual($"{expected}", slider.Text);
 
-                _session?.ClickCancel();
+                _session?.Click(ElementName.Cancel);
                 _session?.WaitUntilHidden(slider); // let the dialog window close
             }
         }
@@ -388,7 +388,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             slider.SendKeys(Keys.Right);
             Assert.AreEqual($"{expected}", slider.Text);
 
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -408,7 +408,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var slider = _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider);
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Right);
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -432,7 +432,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, toggle.Selected, "Toggle value not changed");
             Assert.AreEqual(expected, _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider)?.Enabled);
 
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(toggle); // let the dialog window close
 
             // verify the file
@@ -455,7 +455,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreNotEqual(expected, toggle.Selected, "Toggle value not changed");
             Assert.AreNotEqual(expected, _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider)?.Enabled);
 
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(toggle); // let the dialog window close
 
             // verify the file

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static FancyZonesEditorCommon.Data.DefaultLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -268,7 +269,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             verticalDefaultButton?.Click();
 
             // cancel
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(horizontalDefaultButton!);
 
             // check that default layouts weren't changed
@@ -287,7 +288,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             verticalDefaultButton?.Click();
 
             // cancel
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(horizontalDefaultButton!);
 
             // check that default layout was changed
@@ -314,7 +315,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var verticalDefaultButton = _session?.GetVerticalDefaultButton(isCheckedVertical);
                 Assert.IsNotNull(verticalDefaultButton, "Incorrect vertical default layout set at " + name);
 
-                _session?.ClickCancel();
+                _session?.Click(ElementName.Cancel);
                 _session?.WaitUntilHidden(horizontalDefaultButton!);
             }
         }
@@ -333,7 +334,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var verticalDefaultButton = _session?.GetVerticalDefaultButton(isCheckedVertical);
                 Assert.IsNotNull(verticalDefaultButton, "Incorrect vertical custom layout set at " + layout.Name);
 
-                _session?.ClickCancel();
+                _session?.Click(ElementName.Cancel);
                 _session?.WaitUntilHidden(horizontalDefaultButton!);
             }
         }

@@ -199,9 +199,9 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void OpenEditMode()
         {
             _session?.ClickEditLayout(Layouts.CustomLayouts[0].Name);
-            _session?.ClickEditZones();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.EditZonesButton));
             Assert.IsNotNull(_session?.FindByName(ElementName.GridLayoutEditor));
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
         }
 
         [TestMethod]
@@ -209,7 +209,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             _session?.ClickContextMenuItem(Layouts.CustomLayouts[0].Name, FancyZonesEditorSession.ElementName.EditZones);
             Assert.IsNotNull(_session?.FindByName(ElementName.GridLayoutEditor));
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
         }
 
         [TestMethod]
@@ -217,8 +217,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
-            _session?.ClickAddNewZone();
-            _session?.ClickSave();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewZoneButton));
+            _session?.Click(ElementName.Save);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -233,8 +233,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
-            _session?.ClickAddNewZone();
-            _session?.ClickCancel();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewZoneButton));
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -251,7 +251,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
             _session?.WaitElementDisplayedByName(FancyZonesEditorSession.ElementName.CanvasEditorWindow);
             _session?.ClickDeleteZone(1);
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -267,7 +267,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
             _session?.ClickDeleteZone(1);
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -287,7 +287,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.Drag(_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)!, xOffset, yOffset);
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -322,7 +322,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.Drag(_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)!, 100, 100);
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -348,7 +348,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.Drag((WindowsElement)_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)?.FindElementByAccessibilityId(FancyZonesEditorSession.AccessibilityId.TopRightCorner)!, xOffset, yOffset);
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -385,7 +385,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.Drag((WindowsElement)_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)?.FindElementByAccessibilityId(FancyZonesEditorSession.AccessibilityId.TopRightCorner)!, xOffset, yOffset);
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -410,7 +410,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.GridZone)!.Click(); // horizontal split in the middle of the zone
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -439,7 +439,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.GridZone)!.Click(); // horizontal split in the middle of the zone
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -469,7 +469,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.MergeGridZones(1, 2);
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -503,7 +503,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.MergeGridZones(1, 2);
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -539,8 +539,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.MoveSplitter(0, -100);
-            _session?.ClickSave();
-            _session?.ClickSave(); // single click doesn't work after moving a splitter
+            _session?.Click(ElementName.Save);
+            _session?.Click(ElementName.Save); // single click doesn't work after moving a splitter
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -575,8 +575,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.MoveSplitter(0, -100);
-            _session?.ClickCancel();
-            _session?.ClickCancel(); // single click doesn't work after moving a splitter
+            _session?.Click(ElementName.Cancel);
+            _session?.Click(ElementName.Cancel); // single click doesn't work after moving a splitter
 
             // check the file
             var customLayouts = new CustomLayouts();
