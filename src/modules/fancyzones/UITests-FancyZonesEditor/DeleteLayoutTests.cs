@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,6 +10,7 @@ using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static FancyZonesEditorCommon.Data.DefaultLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static FancyZonesEditorCommon.Data.LayoutHotkeys;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -295,7 +296,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void DeleteFromContextMenu()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
-            _session?.ClickContextMenuItem(deletedLayout, "Delete");
+            _session?.ClickContextMenuItem(deletedLayout, ElementName.Delete);
             _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 
@@ -313,7 +314,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void DeleteDefaultLayout()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
-            _session?.ClickContextMenuItem(deletedLayout, "Delete");
+            _session?.ClickContextMenuItem(deletedLayout, ElementName.Delete);
             _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 
@@ -333,7 +334,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void DeleteLayoutWithHotkey()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
-            _session?.ClickContextMenuItem(deletedLayout, "Delete");
+            _session?.ClickContextMenuItem(deletedLayout, ElementName.Delete);
             _session?.ClickConfirmDialog();
             _session?.WaitFor(1);
 

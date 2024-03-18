@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static FancyZonesEditorCommon.Data.EditorParameters;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -207,7 +208,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CopyTemplate_FromContextMenu()
         {
             string copiedLayoutName = Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows] + " (1)";
-            _session?.ClickContextMenuItem(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows], "Create custom layout");
+            _session?.ClickContextMenuItem(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows], ElementName.CreateCustomLayout);
 
             // verify the layout is copied
             _session?.WaitElementDisplayedByName(copiedLayoutName);
@@ -274,7 +275,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CopyCustomLayout_FromContextMenu()
         {
             string copiedLayoutName = CustomLayouts.CustomLayouts[0].Name + " (1)";
-            _session?.ClickContextMenuItem(CustomLayouts.CustomLayouts[0].Name, "Duplicate");
+            _session?.ClickContextMenuItem(CustomLayouts.CustomLayouts[0].Name, ElementName.Duplicate);
 
             // verify the layout is copied
             _session?.WaitElementDisplayedByName(copiedLayoutName);
