@@ -54,6 +54,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             public const string EditLayoutButton = "EditLayoutButton";
 
             // edit layout window: common for template and custom layouts
+            public const string DialogTitle = "EditLayoutDialogTitle";
             public const string SensitivitySlider = "SensitivityInput";
             public const string SpacingSlider = "Spacing";
             public const string SpacingToggle = "spaceAroundSetting";
@@ -87,21 +88,35 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public static class ElementName
         {
+            public const string Save = "Save";
+            public const string Cancel = "Cancel";
+
             // context menu
+            public const string Edit = "Edit";
             public const string EditZones = "Edit zones";
+            public const string Delete = "Delete";
+            public const string Duplicate = "Duplicate";
+            public const string CreateCustomLayout = "Create custom layout";
 
             // canvas layout editor
             public const string CanvasEditorWindow = "Canvas layout editor";
 
             // grid layout editor
+            public const string GridLayoutEditor = "Grid layout editor";
             public const string MergeZonesButton = "Merge zones";
         }
 
         public static class ClassName
         {
+            public const string ContextMenu = "ContextMenu";
+            public const string TextBox = "TextBox";
+            public const string Popup = "Popup";
+
             // layout editor
             public const string CanvasZone = "CanvasZone";
             public const string GridZone = "GridZone";
+            public const string Button = "Button";
+            public const string Thumb = "Thumb";
         }
 
         public FancyZonesEditorSession(TestContext testContext)
@@ -185,7 +200,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public WindowsElement OpenContextMenu(string layoutName)
         {
             RightClickLayout(layoutName);
-            return Session.FindElementByClassName("ContextMenu");
+            return Session.FindElementByClassName(ClassName.ContextMenu);
         }
 
         public WindowsElement? GetMonitorsList()
@@ -234,7 +249,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             try
             {
-                return Session.FindElementByClassName("TextBox");
+                return Session.FindElementByClassName(ClassName.TextBox);
             }
             catch
             {
@@ -252,7 +267,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             try
             {
-                return Session.FindElementByClassName("Popup");
+                return Session.FindElementByClassName(ClassName.Popup);
             }
             catch
             {
@@ -289,7 +304,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             try
             {
-                return Session.FindElementByName("Grid layout editor");
+                return Session.FindElementByName(ElementName.GridLayoutEditor);
             }
             catch
             {
@@ -366,14 +381,14 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public void ClickSave()
         {
-            var button = Session.FindElementByName("Save");
+            var button = Session.FindElementByName(ElementName.Save);
             Assert.IsNotNull(button, "No Save button");
             button.Click();
         }
 
         public void ClickCancel()
         {
-            var button = Session.FindElementByName("Cancel");
+            var button = Session.FindElementByName(ElementName.Cancel);
             Assert.IsNotNull(button, "No Cancel button");
             button.Click();
         }
@@ -477,7 +492,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public void MoveSplitter(int xOffset, int yOffset)
         {
-            ReadOnlyCollection<WindowsElement>? thumbs = Session?.FindElementsByClassName("Thumb");
+            ReadOnlyCollection<WindowsElement> thumbs = Session.FindElementsByClassName(ClassName.Thumb);
             if (thumbs.Count == 0)
             {
                 return;
@@ -530,6 +545,19 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             try
             {
                 return Session.FindElementByName(name);
+            }
+            catch (Exception)
+            {
+                context.WriteLine($"{name} not found");
+                return null;
+            }
+        }
+
+        public WindowsElement? FindByClassName(string name)
+        {
+            try
+            {
+                return Session.FindElementByClassName(name);
             }
             catch (Exception)
             {
