@@ -7,6 +7,7 @@ using System.Linq;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium.Appium.Windows;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 
 namespace Microsoft.FancyZonesEditor.UITests
@@ -345,7 +346,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
-            _session?.Drag(_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)?.FindElementByAccessibilityId(FancyZonesEditorSession.AccessibilityId.TopRightCorner)!, xOffset, yOffset);
+            _session?.Drag((WindowsElement)_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)?.FindElementByAccessibilityId(FancyZonesEditorSession.AccessibilityId.TopRightCorner)!, xOffset, yOffset);
             _session?.ClickSave();
 
             // check the file
@@ -382,7 +383,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
-            _session?.Drag(_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)?.FindElementByAccessibilityId(FancyZonesEditorSession.AccessibilityId.TopRightCorner)!, xOffset, yOffset);
+            _session?.Drag((WindowsElement)_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)?.FindElementByAccessibilityId(FancyZonesEditorSession.AccessibilityId.TopRightCorner)!, xOffset, yOffset);
             _session?.ClickCancel();
 
             // check the file

@@ -21,10 +21,12 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 {
     public class FancyZonesEditorSession
     {
-        protected const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
+        private const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
         private const string FancyZonesEditorName = "PowerToys.FancyZonesEditor";
         private const string FancyZonesEditorPath = @"\..\..\..\" + FancyZonesEditorName + ".exe";
         private TestContext context;
+
+        private WindowsDriver<WindowsElement> Session { get; }
 
         private static FancyZonesEditorFiles? _files;
 
@@ -102,8 +104,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             public const string GridZone = "GridZone";
         }
 
-        public WindowsDriver<WindowsElement>? Session { get; }
-
         public FancyZonesEditorSession(TestContext testContext)
         {
             try
@@ -132,52 +132,48 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public void Close()
         {
             // Close the session
-            if (Session != null)
+            try
             {
-                try
-                {
-                    // in case if something went wrong and an error message is shown
-                    var dialog = Session.FindElementByName("Editor data parsing error.");
-                    Session.CloseApp(); // will close the dialog
+                // in case if something went wrong and an error message is shown
+                var dialog = Session.FindElementByName("Editor data parsing error.");
+                Session.CloseApp(); // will close the dialog
 
-                    // session can't access new Editor instance created after closing the dialog
-                    // kill the process
-                    IntPtr appTopLevelWindowHandle = IntPtr.Zero;
-                    foreach (Process clsProcess in Process.GetProcesses())
+                // session can't access new Editor instance created after closing the dialog
+                // kill the process
+                IntPtr appTopLevelWindowHandle = IntPtr.Zero;
+                foreach (Process clsProcess in Process.GetProcesses())
+                {
+                    if (clsProcess.ProcessName.Equals(FancyZonesEditorName, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (clsProcess.ProcessName.Equals(FancyZonesEditorName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            clsProcess.Kill();
-                            break;
-                        }
+                        clsProcess.Kill();
+                        break;
                     }
                 }
-                catch
-                {
-                }
-
-                try
-                {
-                    // FZEditor application can be closed by explicitly closing main editor window
-                    var mainEditorWindow = Session.FindElementByAccessibilityId(AccessibilityId.MainWindow);
-                    mainEditorWindow?.SendKeys(Keys.Alt + Keys.F4);
-                }
-                catch (Exception ex)
-                {
-                    context.WriteLine("Unable to close main window. ", ex.Message);
-                }
-
-                Session.Quit();
-                Session.Dispose();
             }
+            catch
+            {
+            }
+
+            try
+            {
+                // FZEditor application can be closed by explicitly closing main editor window
+                var mainEditorWindow = Session.FindElementByAccessibilityId(AccessibilityId.MainWindow);
+                mainEditorWindow?.SendKeys(Keys.Alt + Keys.F4);
+            }
+            catch (Exception ex)
+            {
+                context.WriteLine("Unable to close main window. ", ex.Message);
+            }
+
+            Session.Quit();
+            Session.Dispose();
         }
 
         public WindowsElement? GetLayout(string layoutName)
         {
             try
             {
-                var listItem = Session?.FindElementByName(layoutName);
-                return listItem;
+                return Session.FindElementByName(layoutName);
             }
             catch (Exception)
             {
@@ -189,9 +185,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public WindowsElement OpenContextMenu(string layoutName)
         {
             RightClickLayout(layoutName);
-            var menu = Session?.FindElementByClassName("ContextMenu");
-            Assert.IsNotNull(menu, "Context menu not found");
-            return menu;
+            return Session.FindElementByClassName("ContextMenu");
         }
 
         public WindowsElement? GetMonitorsList()
@@ -240,7 +234,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             try
             {
-                return Session?.FindElementByClassName("TextBox");
+                return Session.FindElementByClassName("TextBox");
             }
             catch
             {
@@ -258,7 +252,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             try
             {
-                return Session?.FindElementByClassName("Popup");
+                return Session.FindElementByClassName("Popup");
             }
             catch
             {
@@ -295,7 +289,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             try
             {
-                return Session?.FindElementByName("Grid layout editor");
+                return Session.FindElementByName("Grid layout editor");
             }
             catch
             {
@@ -306,21 +300,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public WindowsElement? GetZone(int zoneNumber, string zoneClassName)
         {
-            ReadOnlyCollection<WindowsElement>? zones = null;
-
-            try
-            {
-                zones = Session?.FindElementsByClassName(zoneClassName);
-            }
-            catch
-            {
-            }
-
-            if (zones == null || zones.Count == 0)
-            {
-                return null;
-            }
-
+            ReadOnlyCollection<WindowsElement> zones = Session.FindElementsByClassName(zoneClassName);
             foreach (WindowsElement zone in zones)
             {
                 try
@@ -341,7 +321,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         {
             var button = FindByAccessibilityId(AccessibilityId.NewLayoutButton);
             Assert.IsNotNull(button, "Create new layout button not found");
-            button?.Click();
+            button.Click();
         }
 
         public void ClickEditLayout(string layoutName)
@@ -373,25 +353,27 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public void RightClickLayout(string layoutName)
         {
             var layout = GetLayout(layoutName);
-            ContextClick(layout!);
+            Assert.IsNotNull(layout);
+            ContextClick(layout);
         }
 
         public void ClickMonitor(int monitorNumber)
         {
             var monitor = GetMonitorItem(monitorNumber);
-            Click(monitor!);
+            Assert.IsNotNull(monitor, $"Monitor {monitorNumber} not found");
+            Click(monitor);
         }
 
         public void ClickSave()
         {
-            var button = Session?.FindElementByName("Save");
+            var button = Session.FindElementByName("Save");
             Assert.IsNotNull(button, "No Save button");
             button.Click();
         }
 
         public void ClickCancel()
         {
-            var button = Session?.FindElementByName("Cancel");
+            var button = Session.FindElementByName("Cancel");
             Assert.IsNotNull(button, "No Cancel button");
             button.Click();
         }
@@ -401,7 +383,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             WindowsElement? button = null;
             try
             {
-                button = Session?.FindElementByAccessibilityId(AccessibilityId.CopyTemplate);
+                button = Session.FindElementByAccessibilityId(AccessibilityId.CopyTemplate);
             }
             catch
             {
@@ -409,7 +391,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
             try
             {
-                button = Session?.FindElementByAccessibilityId(AccessibilityId.DuplicateLayoutButton);
+                button = Session.FindElementByAccessibilityId(AccessibilityId.DuplicateLayoutButton);
             }
             catch
             {
@@ -421,16 +403,16 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public void ClickDeleteLayout()
         {
-            WindowsElement? button = Session?.FindElementByAccessibilityId(AccessibilityId.DeleteLayoutButton);
-            button?.Click();
+            WindowsElement button = Session.FindElementByAccessibilityId(AccessibilityId.DeleteLayoutButton);
+            button.Click();
         }
 
         public void ClickConfirm()
         {
             WaitElementDisplayedById(AccessibilityId.PrimaryButton);
-            WindowsElement? button = Session?.FindElementByAccessibilityId(AccessibilityId.PrimaryButton);
-            button?.Click();
-            WaitUntilHidden(button!);
+            WindowsElement button = Session.FindElementByAccessibilityId(AccessibilityId.PrimaryButton);
+            button.Click();
+            WaitUntilHidden(button);
         }
 
         public void ClickConfirmDialog()
@@ -456,16 +438,17 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         public void ClickAddNewZone()
         {
             var button = FindByAccessibilityId(AccessibilityId.NewZoneButton);
-            button?.Click();
+            Assert.IsNotNull(button);
+            button.Click();
         }
 
         public void ClickDeleteZone(int zoneNumber)
         {
             var zone = GetZone(zoneNumber, ClassName.CanvasZone);
             Assert.IsNotNull(zone);
-            var button = zone?.FindElementByClassName("Button");
+            var button = zone.FindElementByClassName(ClassName.Button);
             Assert.IsNotNull(button);
-            button?.Click();
+            button.Click();
         }
 
         public void MergeGridZones(int zoneNumber1, int zoneNumber2)
@@ -489,15 +472,19 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             actions.MoveToElement(zone2).Release();
             actions.Build().Perform();
 
-            Click(Session?.FindElementByName(ElementName.MergeZonesButton)!);
+            Click(Session.FindElementByName(ElementName.MergeZonesButton)!);
         }
 
         public void MoveSplitter(int xOffset, int yOffset)
         {
             ReadOnlyCollection<WindowsElement>? thumbs = Session?.FindElementsByClassName("Thumb");
+            if (thumbs.Count == 0)
+            {
+                return;
+            }
 
             Actions actions = new Actions(Session);
-            actions.MoveToElement(thumbs?[0]).ClickAndHold();
+            actions.MoveToElement(thumbs[0]).ClickAndHold();
             int dx = xOffset / 10;
             int dy = yOffset / 10;
             for (int i = 0; i < 10; i++)
@@ -521,14 +508,28 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                     break;
             }
 
-            Click(button!);
+            Assert.IsNotNull(button);
+            Click(button);
         }
 
-        private WindowsElement? FindByAccessibilityId(string name)
+        public WindowsElement? FindByAccessibilityId(string name)
         {
             try
             {
-                return Session?.FindElementByAccessibilityId(name);
+                return Session.FindElementByAccessibilityId(name);
+            }
+            catch (Exception)
+            {
+                context.WriteLine($"{name} not found");
+                return null;
+            }
+        }
+
+        public WindowsElement? FindByName(string name)
+        {
+            try
+            {
+                return Session.FindElementByName(name);
             }
             catch (Exception)
             {
@@ -544,7 +545,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
                 return wait.Until(pred =>
                 {
-                    var element = Session?.FindElementByName(name);
+                    var element = Session.FindElementByName(name);
                     if (element != null)
                     {
                         return element.Displayed;
@@ -564,7 +565,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
             wait.Until(pred =>
             {
-                var element = Session?.FindElementByAccessibilityId(id);
+                var element = Session.FindElementByAccessibilityId(id);
                 if (element != null)
                 {
                     return element.Displayed;
@@ -607,13 +608,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
         }
 
         public void Drag(WindowsElement element, int offsetX, int offsetY)
-        {
-            Actions actions = new Actions(Session);
-            actions.MoveToElement(element).MoveByOffset(10, 10).ClickAndHold(element).MoveByOffset(offsetX, offsetY).Release();
-            actions.Build().Perform();
-        }
-
-        public void Drag(AppiumWebElement element, int offsetX, int offsetY)
         {
             Actions actions = new Actions(Session);
             actions.MoveToElement(element).MoveByOffset(10, 10).ClickAndHold(element).MoveByOffset(offsetX, offsetY).Release();
