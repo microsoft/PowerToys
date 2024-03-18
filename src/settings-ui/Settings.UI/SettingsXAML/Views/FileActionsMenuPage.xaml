@@ -14,15 +14,15 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
-                        x:Uid="FileActionsMenu_ToggleSwitch_FileActionsMenu"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE943;}"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFileActionsMenuEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
+                    x:Uid="FileActionsMenu_ToggleSwitch_FileActionsMenu"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE943;}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFileActionsMenuEnabledGpoConfigured, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.FileActionsMenuIsEnabled}" />
                 </tkcontrols:SettingsCard>
                 <tkcontrols:SettingsCard
-                        IsEnabled="{x:Bind ViewModel.FileActionsMenuIsEnabled, Mode=OneWay}"
-                        x:Uid="Activation_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    x:Uid="Activation_Shortcut"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                    IsEnabled="{x:Bind ViewModel.FileActionsMenuIsEnabled, Mode=OneWay}">
                     <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FileActionsMenuShortcut, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
 
