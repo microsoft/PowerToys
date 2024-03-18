@@ -151,9 +151,9 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CreateWithDefaultName()
         {
             string name = "Custom layout 1";
-            _session?.ClickCreateNewLayout();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             _session?.ClickConfirm();
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
 
             // verify new layout presented
             Assert.IsNotNull(_session?.GetLayout(name));
@@ -169,13 +169,13 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CreateWithCustomName()
         {
             string name = "Layout Name";
-            _session?.ClickCreateNewLayout();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             var input = _session?.FindByClassName(ClassName.TextBox);
             Assert.IsNotNull(input);
             input.Clear();
             input.SendKeys(name);
             _session?.ClickConfirm();
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
 
             // verify new layout presented
             Assert.IsNotNull(_session?.GetLayout(name));
@@ -191,10 +191,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CreateGrid()
         {
             Constants.CustomLayoutType type = Constants.CustomLayoutType.Grid;
-            _session?.ClickCreateNewLayout();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             _session?.SelectNewLayoutType(type);
             _session?.ClickConfirm();
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -207,10 +207,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CreateCanvas()
         {
             Constants.CustomLayoutType type = Constants.CustomLayoutType.Canvas;
-            _session?.ClickCreateNewLayout();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             _session?.SelectNewLayoutType(type);
             _session?.ClickConfirm();
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -223,10 +223,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CancelGridCreation()
         {
             Constants.CustomLayoutType type = Constants.CustomLayoutType.Grid;
-            _session?.ClickCreateNewLayout();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             _session?.SelectNewLayoutType(type);
             _session?.ClickConfirm();
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -238,10 +238,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CancelCanvasCreation()
         {
             Constants.CustomLayoutType type = Constants.CustomLayoutType.Canvas;
-            _session?.ClickCreateNewLayout();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             _session?.SelectNewLayoutType(type);
             _session?.ClickConfirm();
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
 
             // check the file
             var customLayouts = new CustomLayouts();

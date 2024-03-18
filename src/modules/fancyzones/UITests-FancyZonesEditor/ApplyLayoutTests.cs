@@ -283,7 +283,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             slider.SendKeys(Keys.Right);
             slider.SendKeys(Keys.Right);
             var expectedFirstLayoutZoneCount = int.Parse(slider.Text!, CultureInfo.InvariantCulture);
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // apply the layout on the second monitor, set different parameters
@@ -294,7 +294,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Left);
             var expectedSecondLayoutZoneCount = int.Parse(slider.Text!, CultureInfo.InvariantCulture);
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the layout on the first monitor wasn't changed
@@ -303,7 +303,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             slider = _session?.FindByAccessibilityId(AccessibilityId.TemplateZoneSlider);
             Assert.IsNotNull(slider);
             Assert.AreEqual(expectedFirstLayoutZoneCount, int.Parse(slider.Text!, CultureInfo.InvariantCulture));
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // check the file

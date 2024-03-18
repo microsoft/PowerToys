@@ -316,7 +316,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             try
             {
-                _session?.ClickCancel(); // in case if test has failed
+                _session?.Click(ElementName.Cancel); // in case if test has failed
             }
             catch
             {
@@ -367,7 +367,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     Assert.Fail("Hotkey is missed");
                 }
 
-                _session?.ClickCancel();
+                _session?.Click(ElementName.Cancel);
                 _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             }
         }
@@ -392,7 +392,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(key, hotkeyComboBox.Text);
 
             // verify the file
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
@@ -436,7 +436,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(key, hotkeyComboBox.Text);
 
             // verify the file
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
@@ -476,7 +476,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 Assert.IsNotNull(popup);
                 _session?.Click(popup.FindElementByName($"{i}")!);
 
-                _session?.ClickSave();
+                _session?.Click(ElementName.Save);
                 _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             }
 
@@ -505,7 +505,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 }
 
                 _session?.Click(popup.FindElementByName($"None")!);
-                _session?.ClickSave();
+                _session?.Click(ElementName.Save);
                 _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             }
         }
@@ -529,7 +529,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(None, hotkeyComboBox.Text);
 
             // verify the file
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
@@ -572,7 +572,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(None, hotkeyComboBox.Text);
 
             // verify the file
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);

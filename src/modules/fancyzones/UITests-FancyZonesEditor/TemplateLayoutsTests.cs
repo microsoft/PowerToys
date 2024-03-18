@@ -220,7 +220,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).ZoneCount;
                 Assert.AreEqual($"{expected}", slider.Text);
 
-                _session?.ClickCancel();
+                _session?.Click(ElementName.Cancel);
                 _session?.WaitUntilHidden(slider); // let the dialog window close
             }
         }
@@ -239,7 +239,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             slider.SendKeys(Keys.Left);
             Assert.AreEqual($"{expected}", slider.Text);
 
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -261,7 +261,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Left);
 
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -288,7 +288,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).SensitivityRadius;
                 Assert.AreEqual($"{expected}", slider.Text);
 
-                _session?.ClickCancel();
+                _session?.Click(ElementName.Cancel);
                 _session?.WaitUntilHidden(slider); // let the dialog window close
             }
         }
@@ -308,7 +308,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = value + 1; // one step right
             Assert.AreEqual($"{expected}", slider.Text);
 
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -329,7 +329,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var slider = _session?.FindByAccessibilityId(AccessibilityId.SensitivitySlider);
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Right);
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -361,7 +361,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).Spacing;
                 Assert.AreEqual($"{expected}", slider.Text);
 
-                _session?.ClickCancel();
+                _session?.Click(ElementName.Cancel);
                 _session?.WaitUntilHidden(slider); // let the dialog window close
             }
         }
@@ -379,7 +379,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             slider.SendKeys(Keys.Right);
             Assert.AreEqual($"{expected}", slider.Text);
 
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -402,7 +402,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             slider.SendKeys(Keys.Right);
             Assert.AreEqual($"{expected + 1}", slider.Text);
 
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
@@ -426,7 +426,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, toggle.Selected);
             Assert.AreEqual(expected, _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider)?.Enabled);
 
-            _session?.ClickSave();
+            _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(toggle); // let the dialog window close
 
             // verify the file
@@ -450,7 +450,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreNotEqual(expected, toggle.Selected);
             Assert.AreNotEqual(expected, _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider)?.Enabled);
 
-            _session?.ClickCancel();
+            _session?.Click(ElementName.Cancel);
             _session?.WaitUntilHidden(toggle); // let the dialog window close
 
             // verify the file

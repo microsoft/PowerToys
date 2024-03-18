@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -180,7 +181,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void OpenNewLayoutDialog() // verify the new layout dialog is opened
         {
-            _session?.ClickCreateNewLayout();
+            _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             Assert.IsNotNull(_session?.FindByName("Choose layout type")); // check the pane header
         }
 
