@@ -4,12 +4,13 @@ UI tests are implemented using [Windows Application Driver](https://github.com/m
 
 ## Before running tests
 
-  - Download and run Windows Application Driver installer from https://github.com/Microsoft/WinAppDriver/releases
+  - Install Windows Application Driver v1.2.1 from https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1. 
   - Enable Developer Mode in Windows settings
 
 ## Running tests
   
-  - Run WinAppDriver.exe from the installation directory (E.g. `C:\Program Files (x86)\Windows Application Driver`)
+  - Exit PowerToys if it's running
+  - Run WinAppDriver.exe from the installation directory. Skip this step if installed in the default directory (`C:\Program Files (x86)\Windows Application Driver`); in this case, it'll be launched automatically during tests.
   - Open `PowerToys.sln` in Visual Studio and build the solution.
   - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`). 
 
