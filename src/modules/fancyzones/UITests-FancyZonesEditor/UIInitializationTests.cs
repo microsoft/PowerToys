@@ -8,6 +8,7 @@ using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static FancyZonesEditorCommon.Data.EditorParameters;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -625,11 +626,11 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // check the number of zones and spacing
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ZoneCount, int.Parse(_session?.GetZoneCountSlider()?.Text!, CultureInfo.InvariantCulture));
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.Spacing, int.Parse(_session?.GetSpaceAroundZonesSlider()?.Text!, CultureInfo.InvariantCulture));
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, _session?.GetSpaceAroundZonesSlider()?.Enabled);
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, _session?.GetSpaceAroundZonesToggle()?.Selected);
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.SensitivityRadius, int.Parse(_session?.GetSensitivitySlider()?.Text!, CultureInfo.InvariantCulture));
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ZoneCount, int.Parse(_session?.FindByAccessibilityId(AccessibilityId.TemplateZoneSlider)?.Text!, CultureInfo.InvariantCulture));
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.Spacing, int.Parse(_session?.FindByAccessibilityId(AccessibilityId.SpacingSlider)?.Text!, CultureInfo.InvariantCulture));
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider)?.Enabled);
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, _session?.FindByAccessibilityId(AccessibilityId.SpacingToggle)?.Selected);
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.SensitivityRadius, int.Parse(_session?.FindByAccessibilityId(AccessibilityId.SensitivitySlider)?.Text!, CultureInfo.InvariantCulture));
             Assert.IsNotNull(_session?.GetHorizontalDefaultButton(true));
         }
 

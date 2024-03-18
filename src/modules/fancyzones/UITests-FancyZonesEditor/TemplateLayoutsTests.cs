@@ -11,6 +11,7 @@ using static FancyZonesEditorCommon.Data.AppliedLayouts;
 using static FancyZonesEditorCommon.Data.DefaultLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static FancyZonesEditorCommon.Data.LayoutTemplates;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -214,12 +215,13 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 _session?.ClickEditLayout(name);
 
-                var slider = _session?.GetZoneCountSlider();
+                var slider = _session?.FindByAccessibilityId(AccessibilityId.TemplateZoneSlider);
+                Assert.IsNotNull(slider);
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).ZoneCount;
-                Assert.AreEqual($"{expected}", slider?.Text);
+                Assert.AreEqual($"{expected}", slider.Text);
 
                 _session?.ClickCancel();
-                _session?.WaitUntilHidden(slider!); // let the dialog window close
+                _session?.WaitUntilHidden(slider); // let the dialog window close
             }
         }
 
@@ -232,12 +234,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = value - 1;
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
-            var slider = _session?.GetZoneCountSlider();
-            slider?.SendKeys(Keys.Left);
-            Assert.AreEqual($"{expected}", slider?.Text);
+            var slider = _session?.FindByAccessibilityId(AccessibilityId.TemplateZoneSlider);
+            Assert.IsNotNull(slider);
+            slider.SendKeys(Keys.Left);
+            Assert.AreEqual($"{expected}", slider.Text);
 
             _session?.ClickSave();
-            _session?.WaitUntilHidden(slider!); // let the dialog window close
+            _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -254,11 +257,12 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.ZoneCount;
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
-            var slider = _session?.GetZoneCountSlider();
-            slider?.SendKeys(Keys.Left);
+            var slider = _session?.FindByAccessibilityId(AccessibilityId.TemplateZoneSlider);
+            Assert.IsNotNull(slider);
+            slider.SendKeys(Keys.Left);
 
             _session?.ClickCancel();
-            _session?.WaitUntilHidden(slider!); // let the dialog window close
+            _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -279,12 +283,13 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 _session?.ClickEditLayout(name);
 
-                var slider = _session?.GetSensitivitySlider();
+                var slider = _session?.FindByAccessibilityId(AccessibilityId.SensitivitySlider);
+                Assert.IsNotNull(slider);
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).SensitivityRadius;
-                Assert.AreEqual($"{expected}", slider?.Text);
+                Assert.AreEqual($"{expected}", slider.Text);
 
                 _session?.ClickCancel();
-                _session?.WaitUntilHidden(slider!); // let the dialog window close
+                _session?.WaitUntilHidden(slider); // let the dialog window close
             }
         }
 
@@ -296,14 +301,15 @@ namespace Microsoft.FancyZonesEditor.UITests
             var value = layout.SensitivityRadius;
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
-            var slider = _session?.GetSensitivitySlider();
-            slider?.SendKeys(Keys.Right);
+            var slider = _session?.FindByAccessibilityId(AccessibilityId.SensitivitySlider);
+            Assert.IsNotNull(slider);
+            slider.SendKeys(Keys.Right);
 
             var expected = value + 1; // one step right
-            Assert.AreEqual($"{expected}", slider?.Text);
+            Assert.AreEqual($"{expected}", slider.Text);
 
             _session?.ClickSave();
-            _session?.WaitUntilHidden(slider!); // let the dialog window close
+            _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -320,10 +326,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.SensitivityRadius;
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
-            var slider = _session?.GetSensitivitySlider();
-            slider?.SendKeys(Keys.Right);
+            var slider = _session?.FindByAccessibilityId(AccessibilityId.SensitivitySlider);
+            Assert.IsNotNull(slider);
+            slider.SendKeys(Keys.Right);
             _session?.ClickCancel();
-            _session?.WaitUntilHidden(slider!); // let the dialog window close
+            _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -345,17 +352,17 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 _session?.ClickEditLayout(name);
 
-                var toggle = _session?.GetSpaceAroundZonesToggle();
-                var slider = _session?.GetSpaceAroundZonesSlider();
+                var slider = _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider);
+                Assert.IsNotNull(slider);
 
                 var spacingEnabled = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).ShowSpacing;
-                Assert.AreEqual(spacingEnabled, slider?.Enabled);
+                Assert.AreEqual(spacingEnabled, slider.Enabled);
 
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).Spacing;
-                Assert.AreEqual($"{expected}", slider?.Text);
+                Assert.AreEqual($"{expected}", slider.Text);
 
                 _session?.ClickCancel();
-                _session?.WaitUntilHidden(slider!); // let the dialog window close
+                _session?.WaitUntilHidden(slider); // let the dialog window close
             }
         }
 
@@ -367,12 +374,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.Spacing + 1;
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
-            var slider = _session?.GetSpaceAroundZonesSlider();
-            slider?.SendKeys(Keys.Right);
-            Assert.AreEqual($"{expected}", slider?.Text);
+            var slider = _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider);
+            Assert.IsNotNull(slider);
+            slider.SendKeys(Keys.Right);
+            Assert.AreEqual($"{expected}", slider.Text);
 
             _session?.ClickSave();
-            _session?.WaitUntilHidden(slider!); // let the dialog window close
+            _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -389,12 +397,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.Spacing;
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
-            var slider = _session?.GetSpaceAroundZonesSlider();
-            slider?.SendKeys(Keys.Right);
-            Assert.AreEqual($"{expected + 1}", slider?.Text);
+            var slider = _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider);
+            Assert.IsNotNull(slider);
+            slider.SendKeys(Keys.Right);
+            Assert.AreEqual($"{expected + 1}", slider.Text);
 
             _session?.ClickCancel();
-            _session?.WaitUntilHidden(slider!); // let the dialog window close
+            _session?.WaitUntilHidden(slider); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -411,13 +420,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = !layout.ShowSpacing;
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
-            var toggle = _session?.GetSpaceAroundZonesToggle();
-            toggle?.Click();
-            Assert.AreEqual(expected, toggle?.Selected);
-            Assert.AreEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
+            var toggle = _session?.FindByAccessibilityId(AccessibilityId.SpacingToggle);
+            Assert.IsNotNull(toggle);
+            toggle.Click();
+            Assert.AreEqual(expected, toggle.Selected);
+            Assert.AreEqual(expected, _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider)?.Enabled);
 
             _session?.ClickSave();
-            _session?.WaitUntilHidden(toggle!); // let the dialog window close
+            _session?.WaitUntilHidden(toggle); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();
@@ -434,13 +444,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.ShowSpacing;
             _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
 
-            var toggle = _session?.GetSpaceAroundZonesToggle();
-            toggle?.Click();
-            Assert.AreNotEqual(expected, toggle?.Selected);
-            Assert.AreNotEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
+            var toggle = _session?.FindByAccessibilityId(AccessibilityId.SpacingToggle);
+            Assert.IsNotNull(toggle);
+            toggle.Click();
+            Assert.AreNotEqual(expected, toggle.Selected);
+            Assert.AreNotEqual(expected, _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider)?.Enabled);
 
             _session?.ClickCancel();
-            _session?.WaitUntilHidden(toggle!); // let the dialog window close
+            _session?.WaitUntilHidden(toggle); // let the dialog window close
 
             // verify the file
             var templateLayouts = new LayoutTemplates();

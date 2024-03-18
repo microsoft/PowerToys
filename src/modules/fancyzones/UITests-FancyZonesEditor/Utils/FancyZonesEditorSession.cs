@@ -225,57 +225,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
-        public WindowsElement? GetZoneCountSlider()
-        {
-            return FindByAccessibilityId(AccessibilityId.TemplateZoneSlider);
-        }
-
-        public WindowsElement? GetSensitivitySlider()
-        {
-            return FindByAccessibilityId(AccessibilityId.SensitivitySlider);
-        }
-
-        public WindowsElement? GetSpaceAroundZonesSlider()
-        {
-            return FindByAccessibilityId(AccessibilityId.SpacingSlider);
-        }
-
-        public WindowsElement? GetSpaceAroundZonesToggle()
-        {
-            return FindByAccessibilityId(AccessibilityId.SpacingToggle);
-        }
-
-        public WindowsElement? GetNameInput()
-        {
-            try
-            {
-                return Session.FindElementByClassName(ClassName.TextBox);
-            }
-            catch
-            {
-                Assert.Fail($"Name TextBox not found");
-                return null;
-            }
-        }
-
-        public WindowsElement? GetHotkeyComboBox()
-        {
-            return FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
-        }
-
-        public WindowsElement? GetHotkeyPopup()
-        {
-            try
-            {
-                return Session.FindElementByClassName(ClassName.Popup);
-            }
-            catch
-            {
-                Assert.Fail($"Hotkey popup window not found");
-                return null;
-            }
-        }
-
         public WindowsElement? GetHorizontalDefaultButton(bool isChecked)
         {
             if (isChecked)
@@ -297,19 +246,6 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             else
             {
                 return FindByAccessibilityId(AccessibilityId.VerticalDefaultButtonUnchecked);
-            }
-        }
-
-        public WindowsElement? GetGridLayoutEditorWindow()
-        {
-            try
-            {
-                return Session.FindElementByName(ElementName.GridLayoutEditor);
-            }
-            catch
-            {
-                Assert.Fail($"Grid layout editor window not found");
-                return null;
             }
         }
 
@@ -600,6 +536,16 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 }
 
                 return false;
+            });
+        }
+
+        public void WaitElementDisplayedByClassName(string className)
+        {
+            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
+            wait.Until(pred =>
+            {
+                var element = Session.FindElementByClassName(className);
+                return element.Displayed;
             });
         }
 

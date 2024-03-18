@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -169,9 +170,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             string name = "Layout Name";
             _session?.ClickCreateNewLayout();
-            var input = _session?.GetNameInput();
-            input?.Clear();
-            input?.SendKeys(name);
+            var input = _session?.FindByClassName(ClassName.TextBox);
+            Assert.IsNotNull(input);
+            input.Clear();
+            input.SendKeys(name);
             _session?.ClickConfirm();
             _session?.ClickSave();
 

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -340,14 +340,16 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // verify the hotkey is available
             _session?.ClickEditLayout(CustomLayouts.CustomLayouts[0].Name);
-            var hotkeyComboBox = _session?.GetHotkeyComboBox();
-            hotkeyComboBox?.Click();
+            var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            var popup = _session?.FindByClassName(ClassName.Popup);
+            Assert.IsNotNull(popup);
             try
             {
-                var popup = _session?.GetHotkeyPopup();
                 for (int i = 0; i < 10; i++)
                 {
-                    popup?.FindElementByName($"{i}");
+                    popup.FindElementByName($"{i}");
                 }
             }
             catch
