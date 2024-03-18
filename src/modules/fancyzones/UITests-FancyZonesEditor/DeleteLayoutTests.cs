@@ -343,6 +343,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
+
+            _session?.WaitElementDisplayedByClassName(ClassName.Popup);
             var popup = _session?.FindByClassName(ClassName.Popup);
             Assert.IsNotNull(popup);
             try
