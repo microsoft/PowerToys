@@ -346,6 +346,7 @@ namespace Peek.FilePreviewer.Previewers
                 ".wdp",
                 ".ico",  // NEED TO TEST
                 ".thumb", // NEED TO TEST
+                ".webp",
 
                 // Raw types
                 ".arw",
