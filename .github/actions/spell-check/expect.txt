@@ -53,7 +53,7 @@ Apm
 APPBARDATA
 appdata
 APPEXECLINK
-appium
+Appium
 Applicationcan
 appmanifest
 APPNAME
