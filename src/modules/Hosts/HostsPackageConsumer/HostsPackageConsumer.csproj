@@ -49,10 +49,23 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="PowerToys.Hosts" />
     <PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <Message Text="Executing CopyDLLs task" Importance="High" />
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\*.pri" />
+      <XBFFile Include="$(OutDir)bin\*\*\**\*.xbf" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(XBFFile)" DestinationFolder="$(OutDir)PowerToys.Hosts\HostsXAML\Views" />
+
+    <Message Text="Copied build files" Importance="High" />
+  </Target>
   <!-- 
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
     Tools extension to be activated for this project even if the Windows App SDK Nuget
@@ -60,9 +73,6 @@
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Hosts\Hosts.csproj" />
   </ItemGroup>
   <!-- 
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 

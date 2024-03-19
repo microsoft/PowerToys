@@ -27,8 +27,9 @@ namespace HostsPackageConsumer
             /*            var loader = ResourceLoaderInstance.ResourceLoader;
                         var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
             */
-            var asd = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.HostsPackageConsumer.pri");
+/*            var asd = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.HostsPackageConsumer.pri");
             Title = "STEFAN";
+*/
             AppTitleTextBlock.Text = "OPET JA";
 
             var handle = this.GetWindowHandle();

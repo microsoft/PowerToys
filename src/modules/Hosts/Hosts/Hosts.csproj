@@ -11,8 +11,8 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <RootNamespace>Hosts</RootNamespace>
     <AssemblyName>PowerToys.Hosts</AssemblyName>
-	<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
-	<ProjectPriFileName>PowerToys.Hosts.pri</ProjectPriFileName>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.Hosts.pri</ProjectPriFileName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -31,6 +31,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutDir)\PowerToys.Hosts.pri" Pack="True" PackageCopyToOutput="True" />
+    <XBFFile Include="$(OutDir)**\*.xbf"/>
+    <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Assets\Hosts\AppList.scale-100.png" />
@@ -56,10 +62,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Telemetry\**" />
+    <EmbeddedResource Remove="Telemetry\**" />
+    <None Remove="Telemetry\**" />
+    <Page Remove="Telemetry\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Telemetry\" />
+    <PRIResource Remove="Telemetry\**" />
+    <XBFFile Include="$(OutDir)**\*.xbf" />
   </ItemGroup>
 
 </Project>
