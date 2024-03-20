@@ -47,7 +47,7 @@
     </DirectoryRef>
 
     <?if $(var.PerUser) = "true" ?>
-    <DirectoryRef Id="UserHomeDocuments">
+    <DirectoryRef Id="PersonalFolder">
       <Directory Id="WindowsPowerShellFolder" Name="PowerShell">
         <Directory Id="PowerShellModulesFolder" Name="Modules">
           <Directory Id="PowerToysDscFolder" Name="Microsoft.PowerToys.Configure">
