@@ -38,6 +38,7 @@ ALPHATYPE
 AModifier
 AMPROPERTY
 AMPROPSETID
+amr
 ANDSCANS
 animatedvisuals
 ansicolor
@@ -488,6 +489,7 @@ Filterkeyboard
 Filterx
 findfast
 FIXEDFILEINFO
+flac
 flyouts
 FOF
 FOFX
