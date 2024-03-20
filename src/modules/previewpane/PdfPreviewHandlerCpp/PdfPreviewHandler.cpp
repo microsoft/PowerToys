@@ -127,6 +127,12 @@ IFACEMETHODIMP PdfPreviewHandler::SetRect(const RECT* prc)
     HRESULT hr = E_INVALIDARG;
     if (prc != NULL)
     {
+        if (m_rcParent.left == 0 && m_rcParent.top == 0 && m_rcParent.right == 0 && m_rcParent.bottom == 0 && (prc->left != 0 || prc->top != 0 || prc->right != 0 || prc->bottom != 0))
+        {
+            // PdfPreviewHandler position first initialisation, do the first preview
+            m_rcParent = *prc;
+            DoPreview();
+        }
         if (!m_resizeEvent)
         {
             Logger::error(L"Failed to create resize event for PdfPreviewHandler");
@@ -150,6 +156,11 @@ IFACEMETHODIMP PdfPreviewHandler::DoPreview()
 {
     try
     {
+        if (m_rcParent.left == 0 && m_rcParent.top == 0 && m_rcParent.right == 0 && m_rcParent.bottom == 0)
+        {
+            // Postponing Start PdfPreviewHandler.exe, position not yet initialized. preview will be done after initialisation
+            return S_OK;
+        }
         Logger::info(L"Starting PdfPreviewHandler.exe");
 
         STARTUPINFO info = { sizeof(info) };
