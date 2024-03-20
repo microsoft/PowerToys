@@ -117,7 +117,6 @@ namespace Peek.UI.Views
             if (AppWindowTitleBar.IsCustomizationSupported())
             {
                 UpdateTitleBarCustomization(mainWindow);
-                UpdateDragRegion();
             }
             else
             {
