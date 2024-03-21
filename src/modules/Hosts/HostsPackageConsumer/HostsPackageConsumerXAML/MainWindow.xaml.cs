@@ -2,7 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Hosts.Helpers;
+using Hosts.ViewModels;
+using Hosts.Views;
+using HostsPackageConsumer.Helpers;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using WinUIEx;
@@ -16,26 +22,28 @@ namespace HostsPackageConsumer
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
+        private HostsMainPage MainPage { get; }
+
         public MainWindow()
         {
             InitializeComponent();
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
-            AppWindow.SetIcon("Assets/Hosts/Hosts.ico");
+            AppWindow.SetIcon("Assets/HostsPackageConsumer/Hosts.ico");
 
-            /*            var loader = ResourceLoaderInstance.ResourceLoader;
-                        var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
-            */
-/*            var asd = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.HostsPackageConsumer.pri");
-            Title = "STEFAN";
-*/
-            AppTitleTextBlock.Text = "OPET JA";
+            var loader = new ResourceLoader("PowerToys.Hosts.pri", "PowerToys.Hosts/Resources");
+
+            var title = Host.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
+            Title = title;
+            AppTitleTextBlock.Text = title;
 
             var handle = this.GetWindowHandle();
 
-            // WindowHelpers.BringToForeground(handle);
+            WindowHelpers.BringToForeground(handle);
             Activated += MainWindow_Activated;
+
+            MainPage = Host.GetService<HostsMainPage>();
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -48,6 +56,12 @@ namespace HostsPackageConsumer
             {
                 AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
             }
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            MainGrid.Children.Add(MainPage);
+            Grid.SetRow(MainPage, 1);
         }
     }
 }

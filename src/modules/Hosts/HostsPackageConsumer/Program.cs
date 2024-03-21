@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 
@@ -14,17 +15,14 @@ namespace HostsPackageConsumer
         [STAThread]
         public static void Main(string[] args)
         {
-            // Logger.InitializeLogger("\\Hosts\\Logs");
+            Logger.InitializeLogger("\\Hosts\\Logs");
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
-            // Removed GPO dep
-            /*
-                        if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
-                        {
-                            Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-                            return;
-                        }
-            */
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredHostsFileEditorEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                return;
+            }
 
             var instanceKey = AppInstance.FindOrRegisterForKey("PowerToys_HostsPackageConsumer_Instance");
 
@@ -39,7 +37,7 @@ namespace HostsPackageConsumer
             }
             else
             {
-                // Logger.LogWarning("Another instance of Hosts running. Exiting Hosts");
+                Logger.LogWarning("Another instance of Hosts running. Exiting Hosts");
             }
 
             return;

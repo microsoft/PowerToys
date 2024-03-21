@@ -19,6 +19,7 @@ using Hosts.Helpers;
 using Hosts.Models;
 using Hosts.Settings;
 using Microsoft.UI.Dispatching;
+using static Hosts.Settings.IUserSettings;
 
 namespace Hosts.ViewModels
 {
@@ -88,13 +89,22 @@ namespace Hosts.ViewModels
 
         public int NextId => _entries?.Count > 0 ? _entries.Max(e => e.Id) + 1 : 0;
 
-        public MainViewModel(IHostsService hostService, IUserSettings userSettings)
+        public IUserSettings UserSettings => _userSettings;
+
+        public static MainViewModel Instance { get; set; }
+
+        private OpenSettingsFunction _openSettingsFunction;
+
+        public MainViewModel(IHostsService hostService, IUserSettings userSettings, ILogger logger, OpenSettingsFunction openSettingsFunction)
         {
             _hostsService = hostService;
             _userSettings = userSettings;
 
             _hostsService.FileChanged += (s, e) => _dispatcherQueue.TryEnqueue(() => FileChanged = true);
             _userSettings.LoopbackDuplicatesChanged += (s, e) => ReadHosts();
+
+            LoggerInstance.Logger = logger;
+            _openSettingsFunction = openSettingsFunction;
         }
 
         public void Add(Entry entry)
@@ -268,8 +278,7 @@ namespace Hosts.ViewModels
         [RelayCommand]
         public void OpenSettings()
         {
-            // Removed Common.UI dep
-            // SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts, true);
+            _openSettingsFunction();
         }
 
         [RelayCommand]
@@ -334,7 +343,7 @@ namespace Hosts.ViewModels
                 }
                 catch (OperationCanceledException)
                 {
-                    // Logger.LogInfo("FindDuplicates cancelled");
+                    LoggerInstance.Logger.LogInfo("FindDuplicates cancelled");
                     return;
                 }
             }
@@ -421,9 +430,9 @@ namespace Hosts.ViewModels
                 var resourceLoader = ResourceLoaderInstance.ResourceLoader;
                 errorMessage = resourceLoader.GetString("FileSaveError_FileInUse");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Logger.LogError("Failed to save hosts file", ex);
+                LoggerInstance.Logger.LogError("Failed to save hosts file", ex);
                 var resourceLoader = ResourceLoaderInstance.ResourceLoader;
                 errorMessage = resourceLoader.GetString("FileSaveError_Generic");
             }

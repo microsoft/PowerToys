@@ -96,7 +96,8 @@
 
                 "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
                 "WinUI3Apps\\PowerToys.Hosts.dll",
-                "WinUI3Apps\\PowerToys.Hosts.exe",
+                "WinUI3Apps\\PowerToys.HostsPackageConsumer.dll",
+                "WinUI3Apps\\PowerToys.HostsPackageConsumer.exe",
 
                 "WinUI3Apps\\PowerToys.FileLocksmithLib.Interop.dll",
                 "WinUI3Apps\\PowerToys.FileLocksmithExt.dll",

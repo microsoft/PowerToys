@@ -11,7 +11,6 @@ namespace Hosts.Helpers
 
         static ResourceLoaderInstance()
         {
-            // TODO(stefan): PRI filename needs to be passed from consumer app
             ResourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.Hosts.pri", "PowerToys.Hosts/Resources");
         }
     }

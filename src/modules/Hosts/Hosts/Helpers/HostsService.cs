@@ -273,9 +273,9 @@ namespace Hosts.Helpers
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Logger.LogError("Failed to open default editor", ex);
+                LoggerInstance.Logger.LogError("Failed to open default editor", ex);
                 notepadFallback = true;
             }
 
@@ -285,9 +285,9 @@ namespace Hosts.Helpers
                 {
                     Process.Start(new ProcessStartInfo("notepad.exe", HostsFilePath));
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Logger.LogError("Failed to open notepad", ex);
+                    LoggerInstance.Logger.LogError("Failed to open notepad", ex);
                 }
             }
         }

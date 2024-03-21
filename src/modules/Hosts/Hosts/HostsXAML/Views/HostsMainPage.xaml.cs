@@ -10,13 +10,14 @@ using Hosts.Helpers;
 using Hosts.Models;
 using Hosts.Settings;
 using Hosts.ViewModels;
+using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
 namespace Hosts.Views
 {
-    public sealed partial class HostsMainPage : Page
+    public partial class HostsMainPage : Page
     {
         public MainViewModel ViewModel { get; private set; }
 
@@ -37,8 +38,13 @@ namespace Hosts.Views
         public HostsMainPage()
         {
             InitializeComponent();
+        }
 
-            ViewModel = Host.GetService<MainViewModel>();
+        public HostsMainPage(MainViewModel viewModel)
+        {
+            InitializeComponent();
+            ViewModel = viewModel;
+
             DataContext = ViewModel;
         }
 
@@ -128,7 +134,9 @@ namespace Hosts.Views
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            var userSettings = Host.GetService<IUserSettings>();
+            ViewModel.ReadHosts();
+
+            var userSettings = ViewModel.UserSettings;
             if (userSettings.ShowStartupWarning)
             {
                 var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
@@ -219,11 +227,14 @@ namespace Hosts.Views
             {
                 // Based on the template from dev/CommonStyles/ContentDialog_themeresources.xaml in https://github.com/microsoft/microsoft-ui-xaml
                 var border = VisualTreeUtils.FindVisualChildByName(sender as ContentDialog, "BackgroundElement") as Border;
-                border.Margin = new Thickness(0, 32, 0, 0); // Should be the size reserved for the title bar as in MainWindow.xaml
+                if (border is not null)
+                {
+                    border.Margin = new Thickness(0, 32, 0, 0); // Should be the size reserved for the title bar as in MainWindow.
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Logger.LogError("Couldn't set the margin for a content dialog. It will appear on top of the title bar.", ex);
+                LoggerInstance.Logger.LogError("Couldn't set the margin for a content dialog. It will appear on top of the title bar.", ex);
             }
         }
     }
