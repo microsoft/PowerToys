@@ -81,7 +81,7 @@
                 UninstallCommand="/silent /uninstall">
             </ExePackage>
             <MsiPackage
-                DisplayName="Installing PowerToys"
+                DisplayName="PowerToys MSI"
                 SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)"
                 Compressed="yes"
                 DisplayInternalUI="no">
