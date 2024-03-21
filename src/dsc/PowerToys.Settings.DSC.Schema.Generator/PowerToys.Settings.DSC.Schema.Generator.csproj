@@ -9,7 +9,6 @@
         <WindowsPackageType>None</WindowsPackageType>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-        <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
         <SelfContained>true</SelfContained>
     </PropertyGroup>
 

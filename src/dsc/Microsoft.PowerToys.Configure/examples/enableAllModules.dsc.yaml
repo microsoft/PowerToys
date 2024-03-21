@@ -4,7 +4,7 @@ properties:
       directives:
         description: Configure PowerToys
       settings:
-        Debug: true
+        Debug: false
         AlwaysOnTop:
           Enabled: true
         Awake:
@@ -18,8 +18,6 @@ properties:
         FancyZones:
           Enabled: true
         FileLocksmith:
-          Enabled: true
-        PowerPreview:
           Enabled: true
         ImageResizer:
           Enabled: true

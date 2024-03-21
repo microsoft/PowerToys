@@ -89,9 +89,7 @@ If it's imported successfully, you could also try to invoke it directly:
 Invoke-DscResource -Name PowerToysConfigure -Method Set -ModuleName Microsoft.PowerToys.Configure -Property @{ Debug = $true; Awake = @{ Enabled = $false; Mode = "TIMED"; IntervalMinutes = "10" } }
 ```
 
-Note that we've supplied `Debug` option, so a `%TEMP\TestConfigure.txt` is created with the supplied properties, a current timestamp, and other debug output.
-
-Also, please make sure that the full path to `Microsoft.PowerToys.Configure.psm1` doesn't contain any spaces, otherwise PowerShell won't be able to invoke the resource.
+Note that we've supplied `Debug` option, so a `%TEMP\PowerToys.DSC.TestConfigure.txt` is created with the supplied properties, a current timestamp, and other debug output.
 
 Finally, you can test it with winget by invoking it as such:
 

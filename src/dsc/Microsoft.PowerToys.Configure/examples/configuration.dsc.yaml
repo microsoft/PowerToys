@@ -12,11 +12,13 @@ properties:
       directives:
         description: Configure PowerToys
       settings:
-        Debug: true
+        Debug: false
         ShortcutGuide:
           Enabled: false
           OverlayOpacity: 50
         FancyZones:
-          Enabled: false
+          Enabled: true
           FancyzonesEditorHotkey: "Shift+Ctrl+Alt+F"
+        FileLocksmith:
+          Enabled: false
   configurationVersion: 0.2.0

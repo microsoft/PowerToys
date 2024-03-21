@@ -4,7 +4,7 @@ properties:
       directives:
         description: Configure PowerToys
       settings:
-        Debug: true
+        Debug: false
         PowerLauncher:
           Enabled: true
           AdditionalProperties:

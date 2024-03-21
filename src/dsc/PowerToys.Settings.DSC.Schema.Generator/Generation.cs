@@ -286,7 +286,7 @@ class {{module.Name}} {
                 $SettingsValues = Get-Content -Path $SettingsTmpFilePath -Raw
 
                 if ($this.Debug -eq $true) {
-                    $TempFilePath = Join-Path -Path $env:TEMP -ChildPath "TestConfigure.txt"
+                    $TempFilePath = Join-Path -Path $env:TEMP -ChildPath "PowerToys.DSC.TestConfigure.txt"
                     Set-Content -Path "$TempFilePath" -Value ("Requested:`r`n" + $settingsJson + "`r`n" + "Got:`r`n" + $SettingsValues + "`r`n" + (Get-Date -Format "o")) -Force
                 }
 
@@ -320,9 +320,13 @@ class {{module.Name}} {
                     $tmp_info = $ChangesToApply
                     # $tmp_info = $this | ConvertTo-Json -Depth 10
 
-                    $TempFilePath = Join-Path -Path $env:TEMP -ChildPath "TestConfigure.txt"
+                    $TempFilePath = Join-Path -Path $env:TEMP -ChildPath "PowerToys.DSC.TestConfigure.txt"
                     Set-Content -Path "$TempFilePath" -Value ($tmp_info + "`r`n" + (Get-Date -Format "o")) -Force
                 } 
+
+                # Stop any running PowerToys instances
+                Stop-Process -Name "PowerToys.Settings" -PassThru | Wait-Process
+                Stop-Process -Name "PowerToys" -PassThru | Wait-Process
 
                 foreach ($change in $ChangesToApply) {
                     Start-Process -FilePath $SettingsExePath -Wait -Args "$change"
