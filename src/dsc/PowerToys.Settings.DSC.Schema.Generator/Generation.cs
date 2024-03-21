@@ -307,7 +307,7 @@ class {{module.Name}} {
             }
 
             [bool] Test() {
-                # TODO: call Get then check the equality
+                # NB: we must always assume that the configuration isn't applied, because changing some settings produce external side-effects
                 return $false 
             }
 
