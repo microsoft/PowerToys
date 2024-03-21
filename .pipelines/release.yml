@@ -156,7 +156,7 @@ extends:
           inputs:
             solution: '**\PowerToys.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -167,7 +167,7 @@ extends:
           inputs:
             solution: '**/tools/BugReportTool/BugReportTool.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -178,7 +178,7 @@ extends:
           inputs:
             solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -189,7 +189,7 @@ extends:
           inputs:
             solution: '**/tools/StylesReportTool/StylesReportTool.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
