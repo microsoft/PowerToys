@@ -67,6 +67,7 @@ void FileLocksmithSettings::RefreshEnabledState()
     try
     {
         json::JsonObject modulesEnabledState;
+        json::get(jsonSettings, L"enabled", modulesEnabledState, json::JsonObject{});
         json::get(modulesEnabledState, L"File Locksmith", settings.enabled, true);
     }
     catch (const winrt::hresult_error&)
