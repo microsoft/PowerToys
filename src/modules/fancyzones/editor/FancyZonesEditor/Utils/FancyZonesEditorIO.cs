@@ -18,13 +18,6 @@ namespace FancyZonesEditor.Utils
     public class FancyZonesEditorIO
     {
         // Non-localizable strings: JSON tags
-        private const string BlankJsonTag = "blank";
-        private const string FocusJsonTag = "focus";
-        private const string ColumnsJsonTag = "columns";
-        private const string RowsJsonTag = "rows";
-        private const string GridJsonTag = "grid";
-        private const string PriorityGridJsonTag = "priority-grid";
-        private const string CustomJsonTag = "custom";
         private const string HorizontalJsonTag = "horizontal";
         private const string VerticalJsonTag = "vertical";
 
@@ -901,25 +894,32 @@ namespace FancyZonesEditor.Utils
 
         private LayoutType JsonTagToLayoutType(string tag)
         {
-            switch (tag)
+            if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Empty])
             {
-                case BlankJsonTag:
-                    return LayoutType.Blank;
-                case FocusJsonTag:
-                    return LayoutType.Focus;
-                case ColumnsJsonTag:
-                    return LayoutType.Columns;
-                case RowsJsonTag:
-                    return LayoutType.Rows;
-                case GridJsonTag:
-                    return LayoutType.Grid;
-                case PriorityGridJsonTag:
-                    return LayoutType.PriorityGrid;
-                case CustomJsonTag:
-                    return LayoutType.Custom;
+                return LayoutType.Blank;
+            }
+            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Focus])
+            {
+                return LayoutType.Focus;
+            }
+            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Rows])
+            {
+                return LayoutType.Rows;
+            }
+            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Columns])
+            {
+                return LayoutType.Columns;
+            }
+            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Grid])
+            {
+                return LayoutType.Grid;
+            }
+            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.PriorityGrid])
+            {
+                return LayoutType.PriorityGrid;
             }
 
-            return LayoutType.Blank;
+            return LayoutType.Custom;
         }
 
         private string LayoutTypeToJsonTag(LayoutType type)
@@ -927,19 +927,19 @@ namespace FancyZonesEditor.Utils
             switch (type)
             {
                 case LayoutType.Blank:
-                    return BlankJsonTag;
+                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Empty];
                 case LayoutType.Focus:
-                    return FocusJsonTag;
+                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Focus];
                 case LayoutType.Columns:
-                    return ColumnsJsonTag;
+                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Columns];
                 case LayoutType.Rows:
-                    return RowsJsonTag;
+                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Rows];
                 case LayoutType.Grid:
-                    return GridJsonTag;
+                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Grid];
                 case LayoutType.PriorityGrid:
-                    return PriorityGridJsonTag;
+                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.PriorityGrid];
                 case LayoutType.Custom:
-                    return CustomJsonTag;
+                    return Constants.CustomLayoutJsonTag;
                 default:
                     return string.Empty;
             }

@@ -56,16 +56,16 @@ namespace UITests_FancyZonesEditor
                 {
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Empty],
+                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Empty],
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Focus],
+                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Focus],
                         ZoneCount = 10,
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Rows],
+                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Rows],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 10,
@@ -73,7 +73,7 @@ namespace UITests_FancyZonesEditor
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Columns],
+                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Columns],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 20,
@@ -81,7 +81,7 @@ namespace UITests_FancyZonesEditor
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.Grid],
+                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Grid],
                         ZoneCount = 4,
                         ShowSpacing = false,
                         Spacing = 10,
@@ -89,7 +89,7 @@ namespace UITests_FancyZonesEditor
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.LayoutTypes[Constants.Layouts.PriorityGrid],
+                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.PriorityGrid],
                         ZoneCount = 3,
                         ShowSpacing = true,
                         Spacing = 1,
@@ -163,7 +163,7 @@ namespace UITests_FancyZonesEditor
         [TestMethod]
         public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
         {
-            _session?.Click_EditLayout(Constants.LayoutNames[Constants.Layouts.Grid]);
+            _session?.Click_EditLayout(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Grid]);
             Assert.IsNotNull(_session?.Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
             Assert.IsNotNull(_session?.Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
         }
@@ -171,7 +171,7 @@ namespace UITests_FancyZonesEditor
         [TestMethod]
         public void OpenContextMenu() // verify the context menu is opened
         {
-            Assert.IsNotNull(_session?.OpenContextMenu(Constants.LayoutNames[Constants.Layouts.Columns]));
+            Assert.IsNotNull(_session?.OpenContextMenu(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Columns]));
         }
     }
 }
