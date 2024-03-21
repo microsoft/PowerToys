@@ -40,7 +40,19 @@ properties:
         PowerLauncher:
           Enabled: false
         PowerAccent:
-          Enabled: false  
+          Enabled: false
+        PowerPreview:
+          EnableSvgPreview: false
+          EnableSvgThumbnail: false
+          EnableMdPreview: false
+          EnableMonacoPreview: false
+          EnablePdfPreview: false
+          EnablePdfThumbnail: false
+          EnableGcodePreview: false
+          EnableGcodeThumbnail: false
+          EnableStlThumbnail: false
+          EnableQoiPreview: false
+          EnableQoiThumbnail: false
         PowerOcr:
           Enabled: false
         ShortcutGuide:
