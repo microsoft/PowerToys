@@ -7,8 +7,6 @@
     xmlns:p="clr-namespace:PowerOCR.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="TextExtractor"
-    Width="200"
-    Height="200"
     ui:Design.Background="Transparent"
     AllowsTransparency="True"
     Background="Transparent"
