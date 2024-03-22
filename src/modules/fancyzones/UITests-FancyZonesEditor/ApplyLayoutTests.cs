@@ -251,13 +251,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(_session?.GetLayout(firstLayoutName)!.Selected);
 
             // apply the layout on the second monitor
-            _session?.Click_Monitor(2);
+            _session?.ClickMonitor(2);
             var secondLayout = CustomLayoutsList.CustomLayouts[0];
             _session?.Click(_session?.GetLayout(secondLayout.Name)!);
             Assert.IsTrue(_session?.GetLayout(secondLayout.Name)!.Selected);
 
             // verify the layout on the first monitor wasn't changed
-            _session?.Click_Monitor(1);
+            _session?.ClickMonitor(1);
             Assert.IsTrue(_session?.GetLayout(firstLayoutName)!.Selected);
 
             // verify the file
@@ -276,30 +276,30 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // apply the layout on the first monitor, set parameters
             _session?.Click(_session?.GetLayout(layoutName)!);
-            _session?.Click_EditLayout(layoutName);
+            _session?.ClickEditLayout(layoutName);
             var slider = _session?.GetZoneCountSlider();
             slider?.SendKeys(Keys.Right);
             slider?.SendKeys(Keys.Right);
             var expectedFirstLayoutZoneCount = int.Parse(slider?.Text!, CultureInfo.InvariantCulture);
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // apply the layout on the second monitor, set different parameters
-            _session?.Click_Monitor(2);
+            _session?.ClickMonitor(2);
             _session?.Click(_session?.GetLayout(layoutName)!);
-            _session?.Click_EditLayout(layoutName);
+            _session?.ClickEditLayout(layoutName);
             slider = _session?.GetZoneCountSlider();
             slider?.SendKeys(Keys.Left);
             var expectedSecondLayoutZoneCount = int.Parse(slider?.Text!, CultureInfo.InvariantCulture);
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the layout on the first monitor wasn't changed
-            _session?.Click_Monitor(1);
-            _session?.Click_EditLayout(layoutName);
+            _session?.ClickMonitor(1);
+            _session?.ClickEditLayout(layoutName);
             slider = _session?.GetZoneCountSlider();
             Assert.AreEqual(expectedFirstLayoutZoneCount, int.Parse(slider?.Text!, CultureInfo.InvariantCulture));
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // check the file

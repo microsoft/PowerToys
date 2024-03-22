@@ -238,13 +238,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var oldName = Layouts.CustomLayouts[0].Name;
 
             // rename the layout
-            _session?.Click_EditLayout(oldName);
+            _session?.ClickEditLayout(oldName);
             var input = _session?.GetNameInput();
             input?.Clear();
             input?.SendKeys(newName);
 
             // verify new name
-            _session?.Click_Save();
+            _session?.ClickSave();
             Assert.IsNull(_session?.GetLayout(oldName)); // previous name isn't presented
             Assert.IsNotNull(_session?.GetLayout(newName)); // new name is presented
         }
@@ -256,13 +256,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var oldName = Layouts.CustomLayouts[0].Name;
 
             // rename the layout
-            _session?.Click_EditLayout(oldName);
+            _session?.ClickEditLayout(oldName);
             var input = _session?.GetNameInput();
             input?.Clear();
             input?.SendKeys(newName);
 
             // verify new name
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             Assert.IsNotNull(_session?.GetLayout(oldName));
             Assert.IsNull(_session?.GetLayout(newName));
         }
@@ -272,7 +272,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             foreach (var layout in Layouts.CustomLayouts)
             {
-                _session?.Click_EditLayout(layout.Name);
+                _session?.ClickEditLayout(layout.Name);
 
                 var slider = _session?.GetSensitivitySlider();
                 var expected = layout.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas] ?
@@ -280,7 +280,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).SensitivityRadius;
                 Assert.AreEqual($"{expected}", slider?.Text);
 
-                _session?.Click_Cancel();
+                _session?.ClickCancel();
                 _session?.WaitUntilHidden(slider!);
             }
         }
@@ -290,7 +290,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var layout = Layouts.CustomLayouts[0];
             var type = layout.Type;
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
 
             var slider = _session?.GetSensitivitySlider();
             slider?.SendKeys(Keys.Right);
@@ -302,7 +302,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             Assert.AreEqual($"{expected}", slider?.Text);
 
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -319,7 +319,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var layout = Layouts.CustomLayouts[0];
             var type = layout.Type;
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
 
             var slider = _session?.GetSensitivitySlider();
             slider?.SendKeys(Keys.Right);
@@ -328,7 +328,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     new CustomLayouts().CanvasFromJsonElement(layout.Info.GetRawText()).SensitivityRadius :
                     new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).SensitivityRadius;
 
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -351,7 +351,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     continue;
                 }
 
-                _session?.Click_EditLayout(layout.Name);
+                _session?.ClickEditLayout(layout.Name);
 
                 var toggle = _session?.GetSpaceAroundZonesToggle();
                 var slider = _session?.GetSpaceAroundZonesSlider();
@@ -363,7 +363,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).Spacing;
                 Assert.AreEqual($"{expected}", slider?.Text);
 
-                _session?.Click_Cancel();
+                _session?.ClickCancel();
                 _session?.WaitUntilHidden(slider!); // let the dialog window close
             }
         }
@@ -373,13 +373,13 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var layout = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid] && new CustomLayouts().GridFromJsonElement(x.Info.GetRawText()).ShowSpacing);
             var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).Spacing + 1; // one step right
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
 
             var slider = _session?.GetSpaceAroundZonesSlider();
             slider?.SendKeys(Keys.Right);
             Assert.AreEqual($"{expected}", slider?.Text);
 
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -393,12 +393,12 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void SpaceAroundZones_Slider_Cancel()
         {
             var layout = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid] && new CustomLayouts().GridFromJsonElement(x.Info.GetRawText()).ShowSpacing);
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
             var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).Spacing;
 
             var slider = _session?.GetSpaceAroundZonesSlider();
             slider?.SendKeys(Keys.Right);
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(slider!); // let the dialog window close
 
             // verify the file
@@ -414,14 +414,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             var layout = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid]);
             var value = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).ShowSpacing;
             var expected = !value;
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
 
             var toggle = _session?.GetSpaceAroundZonesToggle();
             toggle?.Click();
             Assert.AreEqual(expected, toggle?.Selected, "Toggle value not changed");
             Assert.AreEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
 
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(toggle!); // let the dialog window close
 
             // verify the file
@@ -436,14 +436,14 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var layout = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid]);
             var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).ShowSpacing;
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
 
             var toggle = _session?.GetSpaceAroundZonesToggle();
             toggle?.Click();
             Assert.AreNotEqual(expected, toggle?.Selected, "Toggle value not changed");
             Assert.AreNotEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
 
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(toggle!); // let the dialog window close
 
             // verify the file

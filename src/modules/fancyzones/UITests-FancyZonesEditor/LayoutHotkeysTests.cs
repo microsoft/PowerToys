@@ -315,7 +315,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             try
             {
-                _session?.Click_Cancel(); // in case if test has failed
+                _session?.ClickCancel(); // in case if test has failed
             }
             catch
             {
@@ -330,7 +330,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             foreach (var layout in CustomLayouts.CustomLayouts)
             {
-                _session?.Click_EditLayout(layout.Name);
+                _session?.ClickEditLayout(layout.Name);
 
                 var hotkeyComboBox = _session?.GetHotkeyComboBox();
                 Assert.IsNotNull(hotkeyComboBox);
@@ -364,7 +364,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     Assert.Fail("Hotkey is missed");
                 }
 
-                _session?.Click_Cancel();
+                _session?.ClickCancel();
                 _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
             }
         }
@@ -373,7 +373,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Save()
         {
             var layout = CustomLayouts.CustomLayouts[4]; // a layout without assigned hotkey
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
 
             // assign hotkey
             const string key = "3";
@@ -384,14 +384,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(key, hotkeyComboBox?.Text);
 
             // verify the file
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
             Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = int.Parse(key, CultureInfo.InvariantCulture), LayoutId = layout.Uuid }));
 
             // verify the availability
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[5].Name);
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[5].Name);
             hotkeyComboBox = _session?.GetHotkeyComboBox();
             hotkeyComboBox?.Click();
             popup = _session?.GetHotkeyPopup();
@@ -410,7 +410,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Cancel()
         {
             var layout = CustomLayouts.CustomLayouts[4]; // a layout without assigned hotkey
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
 
             // assign a hotkey
             const string key = "3";
@@ -421,14 +421,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(key, hotkeyComboBox?.Text);
 
             // verify the file
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
             Assert.AreEqual(Hotkeys.ToString(), actualData.ToString());
 
             // verify the availability
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[5].Name);
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[5].Name);
             hotkeyComboBox = _session?.GetHotkeyComboBox();
             hotkeyComboBox?.Click();
             popup = _session?.GetHotkeyPopup();
@@ -448,14 +448,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             for (int i = 0; i < 10; i++)
             {
                 string layoutName = $"Layout {i}";
-                _session?.Click_EditLayout(layoutName);
+                _session?.ClickEditLayout(layoutName);
 
                 var hotkeyComboBox = _session?.GetHotkeyComboBox();
                 hotkeyComboBox?.Click();
                 var popup = _session?.GetHotkeyPopup();
                 _session?.Click(popup?.FindElementByName($"{i}")!);
 
-                _session?.Click_Save();
+                _session?.ClickSave();
                 _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
             }
 
@@ -463,7 +463,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             {
                 int layout = 10;
                 string layoutName = $"Layout {layout}";
-                _session?.Click_EditLayout(layoutName);
+                _session?.ClickEditLayout(layoutName);
                 var hotkeyComboBox = _session?.GetHotkeyComboBox();
                 hotkeyComboBox?.Click();
                 var popup = _session?.GetHotkeyPopup();
@@ -481,7 +481,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 }
 
                 _session?.Click(popup?.FindElementByName($"None")!);
-                _session?.Click_Save();
+                _session?.ClickSave();
                 _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
             }
         }
@@ -491,7 +491,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var layout = CustomLayouts.CustomLayouts[0]; // a layout with assigned hotkey
             int assignedKey = Hotkeys.LayoutHotkeys.Find(x => x.LayoutId == layout.Uuid).Key;
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
             const string None = "None";
 
             // reset the hotkey
@@ -502,14 +502,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(None, hotkeyComboBox?.Text);
 
             // verify the file
-            _session?.Click_Save();
+            _session?.ClickSave();
             _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
             Assert.IsFalse(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
 
             // verify the previously assigned key is available
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[6].Name);
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[6].Name);
             hotkeyComboBox = _session?.GetHotkeyComboBox();
             hotkeyComboBox?.Click();
             popup = _session?.GetHotkeyPopup();
@@ -528,7 +528,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var layout = CustomLayouts.CustomLayouts[0]; // a layout with assigned hotkey
             int assignedKey = Hotkeys.LayoutHotkeys.Find(x => x.LayoutId == layout.Uuid).Key;
-            _session?.Click_EditLayout(layout.Name);
+            _session?.ClickEditLayout(layout.Name);
             const string None = "None";
 
             // assign hotkey
@@ -539,14 +539,14 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(None, hotkeyComboBox?.Text);
 
             // verify the file
-            _session?.Click_Cancel();
+            _session?.ClickCancel();
             _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
             Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
 
             // verify the previously assigned key is not available
-            _session?.Click_EditLayout(CustomLayouts.CustomLayouts[6].Name);
+            _session?.ClickEditLayout(CustomLayouts.CustomLayouts[6].Name);
             hotkeyComboBox = _session?.GetHotkeyComboBox();
             hotkeyComboBox?.Click();
             popup = _session?.GetHotkeyPopup();

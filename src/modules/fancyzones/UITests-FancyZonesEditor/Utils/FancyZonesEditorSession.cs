@@ -160,7 +160,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public WindowsElement OpenContextMenu(string layoutName)
         {
-            RightClick_Layout(layoutName);
+            RightClickLayout(layoutName);
             var menu = Session?.FindElementByClassName("ContextMenu");
             Assert.IsNotNull(menu, "Context menu not found");
             return menu;
@@ -263,14 +263,14 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
-        public void Click_CreateNewLayout()
+        public void ClickCreateNewLayout()
         {
             var button = FindByAccessibilityId(AccessibilityId.NewLayoutButton);
             Assert.IsNotNull(button, "Create new layout button not found");
             button?.Click();
         }
 
-        public void Click_EditLayout(string layoutName)
+        public void ClickEditLayout(string layoutName)
         {
             var layout = GetLayout(layoutName);
             Assert.IsNotNull(layout, $"Layout \"{layoutName}\" not found");
@@ -290,33 +290,33 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
-        public void RightClick_Layout(string layoutName)
+        public void RightClickLayout(string layoutName)
         {
             var layout = GetLayout(layoutName);
             ContextClick(layout!);
         }
 
-        public void Click_Monitor(int monitorNumber)
+        public void ClickMonitor(int monitorNumber)
         {
             var monitor = GetMonitorItem(monitorNumber);
             Click(monitor!);
         }
 
-        public void Click_Save()
+        public void ClickSave()
         {
             var button = Session?.FindElementByName("Save");
             Assert.IsNotNull(button, "No Save button");
             button.Click();
         }
 
-        public void Click_Cancel()
+        public void ClickCancel()
         {
             var button = Session?.FindElementByName("Cancel");
             Assert.IsNotNull(button, "No Cancel button");
             button.Click();
         }
 
-        public void Click_CopyLayout()
+        public void ClickCopyLayout()
         {
             WindowsElement? button = null;
             try

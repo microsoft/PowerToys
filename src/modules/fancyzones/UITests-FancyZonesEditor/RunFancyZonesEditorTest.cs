@@ -186,7 +186,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void OpenNewLayoutDialog() // verify the new layout dialog is opened
         {
-            _session?.Click_CreateNewLayout();
+            _session?.ClickCreateNewLayout();
             Assert.IsNotNull(_session?.Session?.FindElementsByName("Choose layout type")); // check the pane header
         }
 
@@ -230,7 +230,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(_session?.GetMonitorItem(1)?.Selected);
             Assert.IsFalse(_session?.GetMonitorItem(2)?.Selected);
 
-            _session?.Click_Monitor(2);
+            _session?.ClickMonitor(2);
 
             // verify that the monitor 2 is selected after click
             Assert.IsFalse(_session?.GetMonitorItem(1)?.Selected);

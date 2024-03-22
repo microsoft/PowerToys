@@ -399,7 +399,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(layoutOnMonitor1.Selected);
 
             // check layout on monitor 2
-            _session?.Click_Monitor(2);
+            _session?.ClickMonitor(2);
             var layoutOnMonitor2 = _session?.GetLayout(customLayoutListWrapper.CustomLayouts[0].Name);
             Assert.IsNotNull(layoutOnMonitor2);
             Assert.IsTrue(layoutOnMonitor2.Selected);
@@ -624,7 +624,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(defaultLayout.Selected);
 
             // check the number of zones and spacing
-            _session?.Click_EditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
+            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
             Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ZoneCount, int.Parse(_session?.GetZoneCountSlider()?.Text!, CultureInfo.InvariantCulture));
             Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.Spacing, int.Parse(_session?.GetSpaceAroundZonesSlider()?.Text!, CultureInfo.InvariantCulture));
             Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, _session?.GetSpaceAroundZonesSlider()?.Enabled);
