@@ -2,8 +2,6 @@
     x:Class="MeasureToolUI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="using:PowerToys.MeasureToolUI.Properties"
@@ -51,7 +49,6 @@
                 <Setter Property="Background" Value="{ThemeResource ToggleButtonBackground}" />
                 <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
                 <Setter Property="Foreground" Value="{ThemeResource ToggleButtonForeground}" />
-
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
                 <Setter Property="HorizontalAlignment" Value="Center" />
@@ -67,19 +64,18 @@
                                 Padding="{TemplateBinding Padding}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
-                                contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Background="{TemplateBinding Background}"
+                                BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
-                                ContentTransitions="{TemplateBinding ContentTransitions}">
-                                <contract7Present:ContentPresenter.BackgroundTransition>
-                                    <contract7Present:BrushTransition Duration="0:0:0.083" />
-                                </contract7Present:ContentPresenter.BackgroundTransition>
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <ContentPresenter.BackgroundTransition>
+                                    <BrushTransition Duration="0:0:0.083" />
+                                </ContentPresenter.BackgroundTransition>
 
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
@@ -135,9 +131,9 @@
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushChecked}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonCheckedStateBackgroundSizing}" />
-                                                </contract7Present:ObjectAnimationUsingKeyFrames>
+                                                </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
                                         </VisualState>
                                         <VisualState x:Name="CheckedPointerOver">
@@ -151,9 +147,9 @@
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundCheckedPointerOver}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonCheckedStateBackgroundSizing}" />
-                                                </contract7Present:ObjectAnimationUsingKeyFrames>
+                                                </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
                                         </VisualState>
                                         <VisualState x:Name="CheckedPressed">
@@ -167,9 +163,9 @@
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushCheckedPressed}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BackgroundSizing">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonCheckedStateBackgroundSizing}" />
-                                                </contract7Present:ObjectAnimationUsingKeyFrames>
+                                                </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
                                         </VisualState>
                                         <VisualState x:Name="CheckedDisabled">
@@ -277,7 +273,7 @@
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="BtnSpacingTooltip" />
                 </ToolTipService.ToolTip>
-                <FontIcon Glyph="&#xE948;" />
+                <PathIcon Data="M12 16.5C12 16.2239 11.7761 16 11.5 16L9 16V9H16V11.5C16 11.7761 16.2239 12 16.5 12C16.7761 12 17 11.7761 17 11.5V8.5V5.5C17 5.22386 16.7761 5 16.5 5C16.2239 5 16 5.22386 16 5.5V8H9V1L11.5 1C11.7761 1 12 0.776142 12 0.5C12 0.223858 11.7761 0 11.5 0H8.5014H8.5H8.4986H5.5C5.22386 0 5 0.223858 5 0.5C5 0.776142 5.22386 1 5.5 1H8L8 8H1L1 5.5C1 5.22386 0.776142 5 0.5 5C0.223858 5 0 5.22386 0 5.5V8.5V11.5C0 11.7761 0.223858 12 0.500001 12C0.776143 12 1 11.7761 1 11.5L1 9H8L8 16H5.5C5.22386 16 5 16.2239 5 16.5C5 16.7761 5.22386 17 5.5 17H8.5H11.5C11.7761 17 12 16.7761 12 16.5Z" />
                 <ToggleButton.KeyboardAccelerators>
                     <KeyboardAccelerator
                         Key="Number2"
@@ -294,7 +290,11 @@
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="BtnHorizontalSpacingTooltip" />
                 </ToolTipService.ToolTip>
-                <FontIcon Glyph="&#xE949;" />
+                <PathIcon Data="M1 10.5C1 10.7761 0.776143 11 0.500001 11C0.223858 11 0 10.7761 0 10.5V7.5V4.5C0 4.22386 0.223858 4 0.5 4C0.776142 4 1 4.22386 1 4.5L1 7L15 7V4.5C15 4.22386 15.2239 4 15.5 4C15.7761 4 16 4.22386 16 4.5V7.4993C16 7.49953 16 7.49977 16 7.5C16 7.50023 16 7.50047 16 7.5007V10.5C16 10.7761 15.7761 11 15.5 11C15.2239 11 15 10.7761 15 10.5V8L1 8L1 10.5Z">
+                    <PathIcon.RenderTransform>
+                        <TranslateTransform Y="-2" />
+                    </PathIcon.RenderTransform>
+                </PathIcon>
                 <ToggleButton.KeyboardAccelerators>
                     <KeyboardAccelerator
                         Key="Number3"
@@ -310,11 +310,11 @@
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="BtnVerticalSpacingTooltip" />
                 </ToolTipService.ToolTip>
-                <FontIcon Glyph="&#xE949;" RenderTransformOrigin="0.5,0.5">
-                    <FontIcon.RenderTransform>
-                        <RotateTransform Angle="90" />
-                    </FontIcon.RenderTransform>
-                </FontIcon>
+                <PathIcon Data="M10.5 0C10.7761 0 11 0.223858 11 0.5C11 0.776142 10.7761 1 10.5 1L8 1V15H10.5C10.7761 15 11 15.2239 11 15.5C11 15.7761 10.7761 16 10.5 16H7.5H4.5C4.22386 16 4 15.7761 4 15.5C4 15.2239 4.22386 15 4.5 15H7V1L4.5 1C4.22386 1 4 0.776143 4 0.500001C4 0.223858 4.22386 0 4.5 0H7.5H10.5Z">
+                    <PathIcon.RenderTransform>
+                        <TranslateTransform X="-3" />
+                    </PathIcon.RenderTransform>
+                </PathIcon>
                 <ToggleButton.KeyboardAccelerators>
                     <KeyboardAccelerator
                         Key="Number4"

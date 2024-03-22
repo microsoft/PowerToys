@@ -38,6 +38,7 @@ ALPHATYPE
 AModifier
 AMPROPERTY
 AMPROPSETID
+amr
 ANDSCANS
 animatedvisuals
 ansicolor
@@ -99,6 +100,7 @@ bbwe
 bck
 BESTEFFORT
 bhid
+BIF
 bigbar
 bigobj
 binlog
@@ -125,6 +127,7 @@ BPBF
 bpmf
 bpp
 Browsable
+BROWSEINFO
 bsd
 bthprops
 bti
@@ -212,6 +215,7 @@ cominterop
 commandline
 COMMANDTITLE
 commctrl
+commdlg
 compmgmt
 COMPOSITIONFULL
 comsupp
@@ -473,6 +477,7 @@ FILELOCKSMITHCONTEXTMENU
 FILELOCKSMITHEXT
 FILELOCKSMITHLIB
 FILELOCKSMITHLIBINTEROP
+FILEMUSTEXIST
 FILEOP
 FILEOS
 FILESUBTYPE
@@ -484,6 +489,7 @@ Filterkeyboard
 Filterx
 findfast
 FIXEDFILEINFO
+flac
 flyouts
 FOF
 FOFX
@@ -745,6 +751,7 @@ keyremaps
 KILLFOCUS
 killrunner
 Knownfolders
+ksh
 KSPROPERTY
 Kybd
 languagesjson
@@ -801,6 +808,7 @@ LPCTSTR
 lpdw
 lpfn
 LPINPUT
+LPITEMIDLIST
 lpmi
 LPMINMAXINFO
 LPMONITORINFO
@@ -808,6 +816,7 @@ LPOSVERSIONINFOEXW
 LPQUERY
 lprc
 LPSAFEARRAY
+lpstr
 lpsz
 lpt
 LPTHREAD
@@ -833,6 +842,7 @@ lwin
 LZero
 majortype
 makecab
+MAKELANGID
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -972,6 +982,7 @@ netsetup
 netsh
 newcolor
 newdev
+NEWDIALOGSTYLE
 newitem
 newpath
 newrow
@@ -1042,6 +1053,7 @@ ocr
 Ocrsettings
 odbccp
 officehubintl
+OFN
 ofs
 oldcolor
 olditem
@@ -1052,6 +1064,7 @@ OLECHAR
 onebranch
 OOBEPT
 opencode
+OPENFILENAME
 opensource
 openxmlformats
 OPTIMIZEFORINVOKE
@@ -1086,6 +1099,7 @@ parray
 PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 pathcch
+PATHMUSTEXIST
 Pathto
 PATINVERT
 PATPAINT
@@ -1096,6 +1110,7 @@ pcb
 pcch
 pcelt
 pch
+pchast
 PCIDLIST
 PCWSTR
 pdisp
@@ -1174,6 +1189,7 @@ PRINTCLIENT
 printmanagement
 prm
 proactively
+PROCESSENTRY
 PROCESSKEY
 processthreadsapi
 PRODEXT
@@ -1293,6 +1309,7 @@ RESTORETOMAXIMIZED
 restrictedcapabilities
 restrictederrorinfo
 resultlist
+RETURNONLYFSDIRS
 RGBQUAD
 rgbs
 rgelt
@@ -1437,6 +1454,7 @@ sln
 SMALLICON
 smartphone
 SMTO
+SNAPPROCESS
 snwprintf
 softline
 SOURCECLIENTAREAONLY
@@ -1579,6 +1597,7 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
+Toolhelp
 toolkitconverters
 Toolset
 toolwindow
@@ -1635,6 +1654,7 @@ Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
 urld
+urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
@@ -1711,6 +1731,7 @@ wcautil
 WCE
 wcex
 WClass
+wcsicmp
 wcsnicmp
 WDA
 wdp

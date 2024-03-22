@@ -65,10 +65,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        // TextBox setting
+        // TextBox and MultilineTextBox setting
         public bool ShowTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Textbox;
 
+        public bool ShowMultilineTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.MultilineTextbox;
+
         public int TextBoxMaxLength => (_additionalOption.TextBoxMaxLength == null) ? 0 : _additionalOption.TextBoxMaxLength.Value; // 0 is the default and means no limit.
+
+        public string PlaceholderText => _additionalOption.PlaceholderText;
 
         public string TextValue
         {
@@ -113,6 +117,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowCheckboxAndTextbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndTextbox;
 
         public bool ShowCheckboxAndNumberbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndNumberbox;
+
+        public bool ShowCheckboxAndMultilineTextbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndMultilineTextbox;
 
         // Enabled state of ComboBox, TextBox, NumberBox (If combined with checkbox then checkbox value decides it.)
         public bool SecondSettingIsEnabled => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.Value : true;

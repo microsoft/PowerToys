@@ -106,8 +106,13 @@
   <data name="TOAST_TITLE" xml:space="preserve">
     <value>PowerToys Update</value>
   </data>
+  <data name="QUICK_ACCESS_MENU_TEXT" xml:space="preserve">
+    <value>Quick access\tLeft-click</value>
+    <comment>Don't localize "\t" as that is what separates the click portion to be right aligned in the menu.</comment>
+  </data>
   <data name="SETTINGS_MENU_TEXT" xml:space="preserve">
-    <value>Settings</value>
+    <value>Settings\tDouble-click</value>
+    <comment>Don't localize "\t" as that is what separates the click portion to be right aligned in the menu.</comment>
   </data>
   <data name="DOCUMENTATION_MENU_TEXT" xml:space="preserve">
     <value>Documentation</value>

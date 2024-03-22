@@ -38,6 +38,9 @@ namespace WinGetCommandNotFound
             _pool = provider.Create(new PooledPowerShellObjectPolicy());
             _pool.Return(_pool.Get());
             Task.Run(() => WarmUp());
+
+            // Telemetry that a shell is creating an instance of CommandNotFound.
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.CmdNotFoundInstanceCreatedEvent());
         }
 
         public Guid Id => _guid;
@@ -105,6 +108,7 @@ namespace WinGetCommandNotFound
                 catch (Exception ex)
                 {
                     Logger.LogError("GetFeedback failed to execute", ex);
+                    PowerToysTelemetry.Log.WriteEvent(new Telemetry.CmdNotFoundFeedbackProvidedFailureEvent { Message = ex.Message });
                     return new FeedbackItem($"Failed to execute PowerToys Command Not Found.{Environment.NewLine}This is a known issue if PowerShell 7 is installed from the Store or MSIX. If that isn't your case, please report an issue.", new List<string>(), FeedbackDisplayLayout.Portrait);
                 }
             }

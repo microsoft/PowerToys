@@ -24,6 +24,7 @@ namespace Microsoft.Plugin.Indexer
     internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable, IDelayedExecutionPlugin
     {
         private const string DisableDriveDetectionWarning = nameof(DisableDriveDetectionWarning);
+        private const string ExcludedPatterns = nameof(ExcludedPatterns);
         private static readonly IFileSystem _fileSystem = new FileSystem();
 
         // This variable contains metadata about the Plugin
@@ -34,6 +35,9 @@ namespace Microsoft.Plugin.Indexer
 
         // Contains information about the plugin stored in json format
         private PluginJsonStorage<IndexerSettings> _storage;
+
+        // Excluded patterns settings
+        private List<string> _excludedPatterns = new List<string>();
 
         // To access Windows Search functionalities
         private static readonly OleDBSearch _search = new OleDBSearch();
@@ -60,6 +64,15 @@ namespace Microsoft.Plugin.Indexer
                 Key = DisableDriveDetectionWarning,
                 DisplayLabel = Properties.Resources.disable_drive_detection_warning,
                 Value = false,
+            },
+            new PluginAdditionalOption()
+            {
+                PluginOptionType = PluginAdditionalOption.AdditionalOptionType.MultilineTextbox,
+                Key = ExcludedPatterns,
+                DisplayLabel = Properties.Resources.excluded_patterns_label,
+                DisplayDescription = Properties.Resources.excluded_patterns_description,
+                PlaceholderText = Properties.Resources.excluded_patterns_placeholder,
+                TextValue = string.Empty,
             },
         };
 
@@ -108,7 +121,7 @@ namespace Microsoft.Plugin.Indexer
 
                         // This uses the Microsoft.Search.Interop assembly
                         var searchManager = new CSearchManager();
-                        var searchResultsList = _api.Search(searchQuery, searchManager, maxCount: _settings.MaxSearchCount).ToList();
+                        var searchResultsList = _api.Search(searchQuery, searchManager, excludedPatterns: _excludedPatterns, maxCount: _settings.MaxSearchCount).ToList();
 
                         // If the delayed execution query is not required (since the SQL query is fast) return empty results
                         if (searchResultsList.Count == 0 && isFullQuery)
@@ -232,9 +245,13 @@ namespace Microsoft.Plugin.Indexer
 
             if (settings.AdditionalOptions != null)
             {
-                var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == DisableDriveDetectionWarning);
+                var driveDetectionOption = settings.AdditionalOptions.FirstOrDefault(x => x.Key == DisableDriveDetectionWarning);
 
-                driveDetection = option == null ? false : option.Value;
+                driveDetection = driveDetectionOption == null ? false : driveDetectionOption.Value;
+
+                var excludedPatternsOption = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ExcludedPatterns);
+
+                _excludedPatterns = excludedPatternsOption == null ? new List<string>() : excludedPatternsOption.TextValueAsMultilineList;
             }
 
             _driveDetection.IsDriveDetectionWarningCheckBoxSelected = driveDetection;

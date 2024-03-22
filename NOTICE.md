@@ -1326,14 +1326,14 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.ObjectPool 8.0.0
 - Microsoft.NET.Test.Sdk 17.8.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
-- Microsoft.Web.WebView2 1.0.2088.41
+- Microsoft.Web.WebView2 1.0.2365.46
 - Microsoft.Win32.SystemEvents 8.0.0
 - Microsoft.Windows.Compatibility 8.0.1
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.0.4
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
 - Microsoft.Windows.SDK.Contracts 10.0.19041.1
-- Microsoft.WindowsAppSDK 1.4.231219000
+- Microsoft.WindowsAppSDK 1.5.240311000
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
@@ -1354,7 +1354,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Data.SqlClient 4.8.6
 - System.Diagnostics.EventLog 8.0.0
 - System.Diagnostics.PerformanceCounter 8.0.0
-- System.Drawing.Common 8.0.2
+- System.Drawing.Common 8.0.3
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0

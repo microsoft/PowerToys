@@ -29,7 +29,18 @@ map<wstring, vector<wstring>> escapeInfo = {
     { L"FancyZones\\app-zone-history.json", { L"app-zone-history/app-path" } },
     { L"FancyZones\\settings.json", { L"properties/fancyzones_excluded_apps" } },
     { L"MouseWithoutBorders\\settings.json", { L"properties/SecurityKey" } }, // avoid leaking connection key
-    { L"Keyboard Manager\\default.json", { L"remapKeysToText", L"remapShortcutsToText" } }, // avoid leaking personal information from text mappings
+    { L"Keyboard Manager\\default.json", {
+        L"remapKeysToText",
+        L"remapShortcutsToText",
+        L"remapShortcuts/global/runProgramFilePath",
+        L"remapShortcuts/global/runProgramArgs",
+        L"remapShortcuts/global/runProgramStartInDir",
+        L"remapShortcuts/global/openUri",
+        L"remapShortcuts/appSpecific/runProgramFilePath",
+        L"remapShortcuts/appSpecific/runProgramArgs",
+        L"remapShortcuts/appSpecific/runProgramStartInDir",
+        L"remapShortcuts/appSpecific/openUri",
+        } }, // avoid leaking personal information from text, URI or application mappings
 };
 
 vector<wstring> filesToDelete = {

@@ -9,6 +9,7 @@ using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Archives;
 using Peek.FilePreviewer.Previewers.Drive;
+using Peek.FilePreviewer.Previewers.MediaPreviewer;
 using Peek.UI.Telemetry.Events;
 
 namespace Peek.FilePreviewer.Previewers
@@ -31,6 +32,10 @@ namespace Peek.FilePreviewer.Previewers
             else if (VideoPreviewer.IsFileTypeSupported(file.Extension))
             {
                 return new VideoPreviewer(file);
+            }
+            else if (AudioPreviewer.IsFileTypeSupported(file.Extension))
+            {
+                return new AudioPreviewer(file);
             }
             else if (WebBrowserPreviewer.IsFileTypeSupported(file.Extension))
             {

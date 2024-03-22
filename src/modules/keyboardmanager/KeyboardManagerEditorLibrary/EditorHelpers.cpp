@@ -52,6 +52,16 @@ namespace EditorHelpers
     // Function to return true if the shortcut is valid. A valid shortcut has atleast one modifier, as well as an action key
     bool IsValidShortcut(Shortcut shortcut)
     {
+        if (shortcut.operationType == Shortcut::OperationType::RunProgram && shortcut.runProgramFilePath.length() > 0)
+        {
+            return true;
+        }
+
+        if (shortcut.operationType == Shortcut::OperationType::OpenURI && shortcut.uriToOpen.length() > 0)
+        {
+            return true;
+        }
+
         if (shortcut.actionKey != NULL)
         {
             if (shortcut.winKey != ModifierKey::Disabled || shortcut.ctrlKey != ModifierKey::Disabled || shortcut.altKey != ModifierKey::Disabled || shortcut.shiftKey != ModifierKey::Disabled)
