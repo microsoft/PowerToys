@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static FancyZonesEditorCommon.Data.Constants;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
@@ -191,7 +190,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void CreateGrid()
         {
-            Constants.CustomLayoutType type = Constants.CustomLayoutType.Grid;
+            CustomLayout type = CustomLayout.Grid;
             _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             _session?.SelectNewLayoutType(type);
             _session?.ClickConfirm();
@@ -201,13 +200,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
             Assert.AreEqual(1, data.CustomLayouts.Count);
-            Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == Constants.CustomLayoutTypeNames[type]));
+            Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
         }
 
         [TestMethod]
         public void CreateCanvas()
         {
-            Constants.CustomLayoutType type = Constants.CustomLayoutType.Canvas;
+            CustomLayout type = CustomLayout.Canvas;
             _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             _session?.SelectNewLayoutType(type);
             _session?.ClickConfirm();
@@ -217,13 +216,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
             Assert.AreEqual(1, data.CustomLayouts.Count);
-            Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == Constants.CustomLayoutTypeNames[type]));
+            Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
         }
 
         [TestMethod]
         public void CancelGridCreation()
         {
-            Constants.CustomLayoutType type = Constants.CustomLayoutType.Grid;
+            CustomLayout type = CustomLayout.Grid;
             _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             _session?.SelectNewLayoutType(type);
             _session?.ClickConfirm();
@@ -238,7 +237,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void CancelCanvasCreation()
         {
-            Constants.CustomLayoutType type = Constants.CustomLayoutType.Canvas;
+            CustomLayout type = CustomLayout.Canvas;
             _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewLayoutButton));
             _session?.SelectNewLayoutType(type);
             _session?.ClickConfirm();

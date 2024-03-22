@@ -8,7 +8,6 @@ using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using static FancyZonesEditorCommon.Data.AppliedLayouts;
-using static FancyZonesEditorCommon.Data.Constants;
 using static FancyZonesEditorCommon.Data.DefaultLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static FancyZonesEditorCommon.Data.LayoutTemplates;

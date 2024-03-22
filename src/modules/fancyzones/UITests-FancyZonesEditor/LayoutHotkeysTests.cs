@@ -9,7 +9,6 @@ using System.Linq;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static FancyZonesEditorCommon.Data.Constants;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static FancyZonesEditorCommon.Data.LayoutHotkeys;
@@ -27,7 +26,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 0",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -40,7 +39,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 1",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -53,7 +52,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{F1A94F38-82B6-4876-A653-70D0E882DE2A}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 2",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -66,7 +65,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{F5FDBC04-0760-4776-9F05-96AAC4AE613F}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 3",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -79,7 +78,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{1CDB1CC5-51B1-4E49-9C8C-B7A371CCB489}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 4",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -92,7 +91,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{B1F600A5-9C2B-44C1-BF96-42D39E9DC004}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 5",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -105,7 +104,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{DFBE08C3-7C34-482B-811F-C7DBFE368A96}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 6",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -118,7 +117,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{4DB29206-24CE-421C-BFF4-35987D1A744B}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 7",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -131,7 +130,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{51E1BBBA-1C6F-4E3C-85A2-4BFBAE154963}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 8",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -144,7 +143,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{61F9E568-DB74-44FF-8AA8-4093E80D9BCF}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 9",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -157,7 +156,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{8D328880-9E16-4CA8-B4A3-F6AE1C762CD5}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 10",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {

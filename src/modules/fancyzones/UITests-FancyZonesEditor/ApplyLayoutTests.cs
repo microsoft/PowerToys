@@ -8,7 +8,6 @@ using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
-using static FancyZonesEditorCommon.Data.Constants;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
@@ -64,7 +63,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayouts.CustomLayoutWrapper
                 {
                     Uuid = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Custom layout",
                     Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
                     {

@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -417,15 +418,15 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             actions.Build().Perform();
         }
 
-        public void SelectNewLayoutType(Constants.CustomLayoutType type)
+        public void SelectNewLayoutType(CustomLayout type)
         {
             WindowsElement? button = null;
             switch (type)
             {
-                case Constants.CustomLayoutType.Canvas:
+                case CustomLayout.Canvas:
                     button = FindByAccessibilityId(AccessibilityId.CanvasRadioButton);
                     break;
-                case Constants.CustomLayoutType.Grid:
+                case CustomLayout.Grid:
                     button = FindByAccessibilityId(AccessibilityId.GridRadioButton);
                     break;
             }

@@ -7,7 +7,6 @@ using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
-using static FancyZonesEditorCommon.Data.Constants;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
@@ -24,7 +23,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid],
+                    Type = CustomLayout.Grid.TypeToString(),
                     Name = "Grid custom layout",
                     Info = new CustomLayouts().ToJsonElement(new GridInfoWrapper
                     {
@@ -41,7 +40,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Canvas custom layout",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -77,7 +76,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{F1A94F38-82B6-4876-A653-70D0E882DE2A}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid],
+                    Type = CustomLayout.Grid.TypeToString(),
                     Name = "Grid custom layout spacing enabled",
                     Info = new CustomLayouts().ToJsonElement(new GridInfoWrapper
                     {
@@ -280,7 +279,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 var slider = _session?.FindByAccessibilityId(AccessibilityId.SensitivitySlider);
                 Assert.IsNotNull(slider);
-                var expected = layout.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas] ?
+                var expected = layout.Type == CustomLayout.Canvas.TypeToString() ?
                     new CustomLayouts().CanvasFromJsonElement(layout.Info.GetRawText()).SensitivityRadius :
                     new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).SensitivityRadius;
                 Assert.AreEqual($"{expected}", slider.Text);
@@ -301,7 +300,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Right);
 
-            var value = type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas] ?
+            var value = type == CustomLayout.Canvas.TypeToString() ?
                     new CustomLayouts().CanvasFromJsonElement(layout.Info.GetRawText()).SensitivityRadius :
                     new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).SensitivityRadius;
             var expected = value + 1; // one step right
@@ -314,7 +313,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            var actual = type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas] ?
+            var actual = type == CustomLayout.Canvas.TypeToString() ?
                 new CustomLayouts().CanvasFromJsonElement(data.CustomLayouts.Find(x => x.Uuid == layout.Uuid).Info.GetRawText()).SensitivityRadius :
                 new CustomLayouts().GridFromJsonElement(data.CustomLayouts.Find(x => x.Uuid == layout.Uuid).Info.GetRawText()).SensitivityRadius;
             Assert.AreEqual(expected, actual);
@@ -331,7 +330,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Right);
 
-            var expected = type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas] ?
+            var expected = type == CustomLayout.Canvas.TypeToString() ?
                     new CustomLayouts().CanvasFromJsonElement(layout.Info.GetRawText()).SensitivityRadius :
                     new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).SensitivityRadius;
 
@@ -341,7 +340,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            var actual = type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas] ?
+            var actual = type == CustomLayout.Canvas.TypeToString() ?
                 new CustomLayouts().CanvasFromJsonElement(data.CustomLayouts.Find(x => x.Uuid == layout.Uuid).Info.GetRawText()).SensitivityRadius :
                 new CustomLayouts().GridFromJsonElement(data.CustomLayouts.Find(x => x.Uuid == layout.Uuid).Info.GetRawText()).SensitivityRadius;
             Assert.AreEqual(expected, actual);
@@ -352,7 +351,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             foreach (var layout in Layouts.CustomLayouts)
             {
-                if (layout.Type != Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid])
+                if (layout.Type != CustomLayout.Grid.TypeToString())
                 {
                     // only for grid layouts
                     continue;
@@ -380,7 +379,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void SpaceAroundZones_Slider_Save()
         {
-            var layout = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid] && new CustomLayouts().GridFromJsonElement(x.Info.GetRawText()).ShowSpacing);
+            var layout = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString() && new CustomLayouts().GridFromJsonElement(x.Info.GetRawText()).ShowSpacing);
             var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).Spacing + 1; // one step right
             _session?.ClickEditLayout(layout.Name);
 
@@ -402,7 +401,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void SpaceAroundZones_Slider_Cancel()
         {
-            var layout = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid] && new CustomLayouts().GridFromJsonElement(x.Info.GetRawText()).ShowSpacing);
+            var layout = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString() && new CustomLayouts().GridFromJsonElement(x.Info.GetRawText()).ShowSpacing);
             _session?.ClickEditLayout(layout.Name);
             var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).Spacing;
 
@@ -422,7 +421,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void SpaceAroundZones_Toggle_Save()
         {
-            var layout = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid]);
+            var layout = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
             var value = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).ShowSpacing;
             var expected = !value;
             _session?.ClickEditLayout(layout.Name);
@@ -446,7 +445,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void SpaceAroundZones_Toggle_Cancel()
         {
-            var layout = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid]);
+            var layout = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
             var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).ShowSpacing;
             _session?.ClickEditLayout(layout.Name);
 

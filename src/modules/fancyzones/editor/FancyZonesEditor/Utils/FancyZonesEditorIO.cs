@@ -385,7 +385,7 @@ namespace FancyZonesEditor.Utils
 
                 if (layout is CanvasLayoutModel)
                 {
-                    type = CanvasLayoutModel.ModelTypeID;
+                    type = CustomLayout.Canvas.TypeToString();
                     var canvasLayout = layout as CanvasLayoutModel;
 
                     var canvasRect = canvasLayout.CanvasRect;
@@ -417,7 +417,7 @@ namespace FancyZonesEditor.Utils
                 }
                 else if (layout is GridLayoutModel)
                 {
-                    type = GridLayoutModel.ModelTypeID;
+                    type = CustomLayout.Grid.TypeToString();
                     var gridLayout = layout as GridLayoutModel;
 
                     var cells = new int[gridLayout.Rows][];
@@ -685,11 +685,11 @@ namespace FancyZonesEditor.Utils
                 LayoutModel layout = null;
                 try
                 {
-                    if (zoneSet.Type == CanvasLayoutModel.ModelTypeID)
+                    if (zoneSet.Type == CustomLayout.Canvas.TypeToString())
                     {
                         layout = ParseCanvasInfo(zoneSet);
                     }
-                    else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
+                    else if (zoneSet.Type == CustomLayout.Grid.TypeToString())
                     {
                         layout = ParseGridInfo(zoneSet);
                     }

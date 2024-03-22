@@ -7,7 +7,6 @@ using System.Globalization;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static FancyZonesEditorCommon.Data.Constants;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
@@ -334,7 +333,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     new CustomLayouts.CustomLayoutWrapper
                     {
                         Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
-                        Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                        Type = CustomLayout.Canvas.TypeToString(),
                         Name = "Layout 0",
                         Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
                         {
@@ -445,7 +444,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     new CustomLayouts.CustomLayoutWrapper
                     {
                         Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
-                        Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                        Type = CustomLayout.Canvas.TypeToString(),
                         Name = "Layout 0",
                         Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
                         {
@@ -529,7 +528,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     new CustomLayouts.CustomLayoutWrapper
                     {
                         Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
-                        Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                        Type = CustomLayout.Canvas.TypeToString(),
                         Name = "Layout 0",
                         Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
                         {

@@ -8,7 +8,6 @@ using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium.Windows;
-using static FancyZonesEditorCommon.Data.Constants;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
@@ -24,7 +23,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid],
+                    Type = CustomLayout.Grid.TypeToString(),
                     Name = "Grid custom layout",
                     Info = new CustomLayouts().ToJsonElement(new GridInfoWrapper
                     {
@@ -41,7 +40,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{0EB9BF3E-010E-46D7-8681-1879D1E111E1}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid],
+                    Type = CustomLayout.Grid.TypeToString(),
                     Name = "Grid-9",
                     Info = new CustomLayouts().ToJsonElement(new GridInfoWrapper
                     {
@@ -58,7 +57,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Canvas custom layout",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -216,7 +215,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Canvas_AddZone_Save()
         {
-            var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
             _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewZoneButton));
             _session?.Click(ElementName.Save);
@@ -232,7 +231,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Canvas_AddZone_Cancel()
         {
-            var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
             _session?.Click(_session?.FindByAccessibilityId(AccessibilityId.NewZoneButton));
             _session?.Click(ElementName.Cancel);
@@ -248,7 +247,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Canvas_DeleteZone_Save()
         {
-            var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
             _session?.WaitElementDisplayedByName(FancyZonesEditorSession.ElementName.CanvasEditorWindow);
             _session?.ClickDeleteZone(1);
@@ -265,7 +264,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Canvas_DeleteZone_Cancel()
         {
-            var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
             _session?.ClickDeleteZone(1);
             _session?.Click(ElementName.Cancel);
@@ -284,7 +283,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             int zoneNumber = 1;
             int xOffset = 100;
             int yOffset = 100;
-            var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.Drag(_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)!, xOffset, yOffset);
@@ -319,7 +318,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Canvas_MoveZone_Cancel()
         {
             int zoneNumber = 1;
-            var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.Drag(_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)!, 100, 100);
@@ -345,7 +344,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             int zoneNumber = 1;
             int xOffset = 100;
             int yOffset = 100;
-            var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.Drag((WindowsElement)_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)?.FindElementByAccessibilityId(FancyZonesEditorSession.AccessibilityId.TopRightCorner)!, xOffset, yOffset);
@@ -382,7 +381,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             int zoneNumber = 1;
             int xOffset = 100;
             int yOffset = 100;
-            var canvas = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas]);
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             _session?.ClickContextMenuItem(canvas.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.Drag((WindowsElement)_session.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.CanvasZone)?.FindElementByAccessibilityId(FancyZonesEditorSession.AccessibilityId.TopRightCorner)!, xOffset, yOffset);
@@ -407,7 +406,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Grid_SplitZone_Save()
         {
             int zoneNumber = 1;
-            var grid = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid]);
+            var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.GridZone)!.Click(); // horizontal split in the middle of the zone
@@ -436,7 +435,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Grid_SplitZone_Cancel()
         {
             int zoneNumber = 1;
-            var grid = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid]);
+            var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.GetZone(zoneNumber, FancyZonesEditorSession.ClassName.GridZone)!.Click(); // horizontal split in the middle of the zone
@@ -466,7 +465,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Grid_MergeZones_Save()
         {
-            var grid = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid]);
+            var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.MergeGridZones(1, 2);
@@ -500,7 +499,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Grid_MergeZones_Cancel()
         {
-            var grid = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid]);
+            var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.MergeGridZones(1, 2);
@@ -536,7 +535,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Grid_MoveSplitter_Save()
         {
-            var grid = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid] && x.Name == "Grid-9");
+            var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString() && x.Name == "Grid-9");
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.MoveSplitter(0, -100);
@@ -572,7 +571,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Grid_MoveSplitter_Cancel()
         {
-            var grid = Layouts.CustomLayouts.Find(x => x.Type == Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Grid] && x.Name == "Grid-9");
+            var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString() && x.Name == "Grid-9");
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
             _session?.MoveSplitter(0, -100);

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static FancyZonesEditorCommon.Data.Constants;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static FancyZonesEditorCommon.Data.DefaultLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
@@ -27,7 +26,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 0",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -40,7 +39,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 1",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -53,7 +52,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{F1A94F38-82B6-4876-A653-70D0E882DE2A}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 2",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
@@ -66,7 +65,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 new CustomLayoutWrapper
                 {
                     Uuid = "{F5FDBC04-0760-4776-9F05-96AAC4AE613F}",
-                    Type = Constants.CustomLayoutTypeNames[Constants.CustomLayoutType.Canvas],
+                    Type = CustomLayout.Canvas.TypeToString(),
                     Name = "Layout 3",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {

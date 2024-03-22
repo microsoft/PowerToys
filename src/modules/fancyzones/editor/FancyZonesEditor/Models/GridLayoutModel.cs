@@ -12,9 +12,6 @@ namespace FancyZonesEditor.Models
     //  Grid-styled Layout Model, which specifies rows, columns, percentage sizes, and row/column spans
     public class GridLayoutModel : LayoutModel
     {
-        // Non-localizable strings
-        public const string ModelTypeID = "grid";
-
         public const int GridMultiplier = 10000;
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
