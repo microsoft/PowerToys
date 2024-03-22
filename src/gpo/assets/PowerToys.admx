@@ -17,6 +17,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_76_0" displayName="$(string.SUPPORTED_POWERTOYS_0_76_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_77_0" displayName="$(string.SUPPORTED_POWERTOYS_0_77_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_78_0" displayName="$(string.SUPPORTED_POWERTOYS_0_78_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_81_0" displayName="$(string.SUPPORTED_POWERTOYS_0_81_0)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -104,6 +105,16 @@
     <policy name="ConfigureEnabledUtilityFancyZones" class="Both" displayName="$(string.ConfigureEnabledUtilityFancyZones)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFancyZones">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityFileActionsMenu" class="Both" displayName="$(string.ConfigureEnabledUtilityFileActionsMenu)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileActionsMenu">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_81_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

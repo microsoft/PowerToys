@@ -19,6 +19,7 @@
       <string id="SUPPORTED_POWERTOYS_0_76_0">PowerToys version 0.76.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_77_0">PowerToys version 0.77.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_78_0">PowerToys version 0.78.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_81_0">PowerToys version 0.81.0 or later</string>
 
             <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -138,6 +139,7 @@ Note: Changes require a restart of PowerToys Run.
       <string id="ConfigureEnabledUtilityFileExplorerSTLThumbnails">STL file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityHostsFileEditor">Hosts file editor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityImageResizer">Image Resizer: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileActionsMenu">File Actions Menu: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityKeyboardManager">Keyboard Manager: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFindMyMouse">Find My Mouse: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseHighlighter">Mouse Highlighter: Configure enabled state</string>

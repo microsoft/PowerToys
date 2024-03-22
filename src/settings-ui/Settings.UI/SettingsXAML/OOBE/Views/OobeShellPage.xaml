@@ -94,6 +94,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}"
                     Tag="FileLocksmith" />
                 <NavigationViewItem
+                    x:Uid="Shell_FileActionsMenu"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}"
+                    Tag="FileActionsMenu" />
+                <NavigationViewItem
                     x:Uid="Shell_PowerPreview"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}"
                     Tag="FileExplorer" />
