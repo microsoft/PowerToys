@@ -435,4 +435,7 @@
   <data name="Set_Layout_As_Vertical_Default" xml:space="preserve">
     <value>Set layout as a default for vertical monitor orientation</value>
   </data>
+  <data name="Error_Parsing_Editor_Parameters_Message" xml:space="preserve">
+    <value>An error occurred while parsing editor parameters.</value>
+  </data>
 </root>

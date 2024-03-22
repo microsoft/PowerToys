@@ -54,7 +54,7 @@ Apm
 APPBARDATA
 appdata
 APPEXECLINK
-appium
+Appium
 Applicationcan
 appmanifest
 APPNAME
@@ -929,6 +929,7 @@ mscorlib
 msdata
 msedge
 MSGFLT
+msiexec
 MSIFASTINSTALL
 MSIHANDLE
 msiquery
@@ -1716,6 +1717,7 @@ VSM
 vso
 vsonline
 vstemplate
+vstest
 VSTHRD
 VSTT
 vswhere
