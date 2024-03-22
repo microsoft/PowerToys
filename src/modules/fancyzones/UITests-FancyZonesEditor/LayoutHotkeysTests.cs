@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using FancyZonesEditorCommon.Data;
-using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
@@ -188,16 +187,22 @@ namespace Microsoft.FancyZonesEditor.UITests
 
         private static TestContext? _context;
         private static FancyZonesEditorSession? _session;
-        private static IOTestHelper? _editorParamsIOHelper;
-        private static IOTestHelper? _appliedLayoutsIOHelper;
-        private static IOTestHelper? _customLayoutsIOHelper;
-        private static IOTestHelper? _layoutHotkeysIOHelper;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
             _context = testContext;
+        }
 
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            _context = null;
+        }
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -223,31 +228,77 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            _editorParamsIOHelper = new IOTestHelper(editorParameters.File);
-            _editorParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
-
-            _appliedLayoutsIOHelper = new IOTestHelper(new AppliedLayouts().File);
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             CustomLayouts customLayouts = new CustomLayouts();
-            _customLayoutsIOHelper = new IOTestHelper(customLayouts.File);
-            _customLayoutsIOHelper.WriteData(customLayouts.Serialize(CustomLayouts));
-        }
+            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(CustomLayouts));
 
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            _editorParamsIOHelper?.RestoreData();
-            _appliedLayoutsIOHelper?.RestoreData();
-            _customLayoutsIOHelper?.RestoreData();
-            _context = null;
-        }
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
             var layoutHotkeys = new LayoutHotkeys();
-            _layoutHotkeysIOHelper = new IOTestHelper(layoutHotkeys.File);
-            _layoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(Hotkeys));
+            FancyZonesEditorSession.Files.LayoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(Hotkeys));
+
+            LayoutTemplates layoutTemplates = new LayoutTemplates();
+            LayoutTemplates.TemplateLayoutsListWrapper templateLayoutsListWrapper = new LayoutTemplates.TemplateLayoutsListWrapper
+            {
+                LayoutTemplates = new List<LayoutTemplates.TemplateLayoutWrapper>
+                {
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Empty],
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Focus],
+                        ZoneCount = 10,
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
+                        ZoneCount = 2,
+                        ShowSpacing = true,
+                        Spacing = 10,
+                        SensitivityRadius = 10,
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Columns],
+                        ZoneCount = 2,
+                        ShowSpacing = true,
+                        Spacing = 20,
+                        SensitivityRadius = 20,
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Grid],
+                        ZoneCount = 4,
+                        ShowSpacing = false,
+                        Spacing = 10,
+                        SensitivityRadius = 30,
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
+                        ZoneCount = 3,
+                        ShowSpacing = true,
+                        Spacing = 1,
+                        SensitivityRadius = 40,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.LayoutTemplatesIOHelper.WriteData(layoutTemplates.Serialize(templateLayoutsListWrapper));
+
+            DefaultLayouts defaultLayouts = new DefaultLayouts();
+            DefaultLayouts.DefaultLayoutsListWrapper defaultLayoutsListWrapper = new DefaultLayouts.DefaultLayoutsListWrapper
+            {
+                DefaultLayouts = new List<DefaultLayouts.DefaultLayoutWrapper> { },
+            };
+            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
+
+            AppliedLayouts appliedLayouts = new AppliedLayouts();
+            AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
+            {
+                AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
+            };
+            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
             try
             {
@@ -271,8 +322,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
 
             _session?.Close();
-
-            _layoutHotkeysIOHelper?.RestoreData();
+            FancyZonesEditorSession.Files.Restore();
         }
 
         [TestMethod]

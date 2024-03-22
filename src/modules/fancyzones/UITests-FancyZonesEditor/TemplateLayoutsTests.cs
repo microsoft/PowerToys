@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
-using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -68,122 +67,17 @@ namespace Microsoft.FancyZonesEditor.UITests
 
         private static TestContext? _context;
         private static FancyZonesEditorSession? _session;
-        private static IOTestHelper? _editorParamsIOHelper;
-        private static IOTestHelper? _templatesIOHelper;
-        private static IOTestHelper? _defaultLayoutsIOHelper;
-        private static IOTestHelper? _appliedLayoutsIOHelper;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
             _context = testContext;
-
-            EditorParameters editorParameters = new EditorParameters();
-            ParamsWrapper parameters = new ParamsWrapper
-            {
-                ProcessId = 1,
-                SpanZonesAcrossMonitors = false,
-                Monitors = new List<NativeMonitorDataWrapper>
-                {
-                    new NativeMonitorDataWrapper
-                    {
-                        Monitor = "monitor-1",
-                        MonitorInstanceId = "instance-id-1",
-                        MonitorSerialNumber = "serial-number-1",
-                        MonitorNumber = 1,
-                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
-                        Dpi = 192,
-                        LeftCoordinate = 0,
-                        TopCoordinate = 0,
-                        WorkAreaHeight = 1040,
-                        WorkAreaWidth = 1920,
-                        MonitorHeight = 1080,
-                        MonitorWidth = 1920,
-                        IsSelected = true,
-                    },
-                },
-            };
-            _editorParamsIOHelper = new IOTestHelper(editorParameters.File);
-            _editorParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
-
-            LayoutTemplates layoutTemplates = new LayoutTemplates();
-            _templatesIOHelper = new IOTestHelper(layoutTemplates.File);
-            _templatesIOHelper.WriteData(layoutTemplates.Serialize(Layouts));
-
-            // Default layouts should match templates
-            DefaultLayouts defaultLayouts = new DefaultLayouts();
-            DefaultLayoutsListWrapper defaultLayoutsList = new DefaultLayoutsListWrapper
-            {
-                DefaultLayouts = new List<DefaultLayoutWrapper>
-                {
-                    new DefaultLayoutWrapper
-                    {
-                        MonitorConfiguration = MonitorConfigurationType.Vertical.ToString(),
-                        Layout = new DefaultLayoutWrapper.LayoutWrapper
-                        {
-                            Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Rows],
-                            ZoneCount = 2,
-                            ShowSpacing = true,
-                            Spacing = 10,
-                            SensitivityRadius = 10,
-                        },
-                    },
-                    new DefaultLayoutWrapper
-                    {
-                        MonitorConfiguration = MonitorConfigurationType.Horizontal.ToString(),
-                        Layout = new DefaultLayoutWrapper.LayoutWrapper
-                        {
-                            Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.PriorityGrid],
-                            ZoneCount = 3,
-                            ShowSpacing = true,
-                            Spacing = 1,
-                            SensitivityRadius = 40,
-                        },
-                    },
-                },
-            };
-            _defaultLayoutsIOHelper = new IOTestHelper(defaultLayouts.File);
-            _defaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsList));
-
-            // Make sure applied layouts don't replate template settings
-            AppliedLayouts appliedLayouts = new AppliedLayouts();
-            AppliedLayoutsListWrapper appliedLayoutsList = new AppliedLayoutsListWrapper
-            {
-                AppliedLayouts = new List<AppliedLayoutWrapper>
-                {
-                    new AppliedLayoutWrapper
-                    {
-                        Device = new AppliedLayoutWrapper.DeviceIdWrapper
-                        {
-                            Monitor = "monitor-1",
-                            MonitorInstance = "instance-id-1",
-                            MonitorNumber = 1,
-                            SerialNumber = "serial-number-1",
-                            VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
-                        },
-                        AppliedLayout = new AppliedLayoutWrapper.LayoutWrapper
-                        {
-                            Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.PriorityGrid],
-                            ZoneCount = 3,
-                            ShowSpacing = true,
-                            Spacing = 1,
-                            SensitivityRadius = 40,
-                        },
-                    },
-                },
-            };
-            _appliedLayoutsIOHelper = new IOTestHelper(appliedLayouts.File);
-            _appliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsList));
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            _editorParamsIOHelper?.RestoreData();
-            _templatesIOHelper?.RestoreData();
-            _defaultLayoutsIOHelper?.RestoreData();
-            _appliedLayoutsIOHelper?.RestoreData();
-
+            FancyZonesEditorSession.Files.Restore();
             _context = null;
         }
 
@@ -191,8 +85,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void TestInitialize()
         {
             LayoutTemplates layoutTemplates = new LayoutTemplates();
-            _templatesIOHelper = new IOTestHelper(layoutTemplates.File);
-            _templatesIOHelper.WriteData(layoutTemplates.Serialize(Layouts));
+            FancyZonesEditorSession.Files.LayoutTemplatesIOHelper.WriteData(layoutTemplates.Serialize(Layouts));
 
             // Default layouts should match templates
             DefaultLayouts defaultLayouts = new DefaultLayouts();
@@ -226,8 +119,78 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            _defaultLayoutsIOHelper = new IOTestHelper(defaultLayouts.File);
-            _defaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsList));
+            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsList));
+
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 192,
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = true,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
+            // Make sure applied layouts don't replate template settings
+            AppliedLayouts appliedLayouts = new AppliedLayouts();
+            AppliedLayoutsListWrapper appliedLayoutsList = new AppliedLayoutsListWrapper
+            {
+                AppliedLayouts = new List<AppliedLayoutWrapper>
+                {
+                    new AppliedLayoutWrapper
+                    {
+                        Device = new AppliedLayoutWrapper.DeviceIdWrapper
+                        {
+                            Monitor = "monitor-1",
+                            MonitorInstance = "instance-id-1",
+                            MonitorNumber = 1,
+                            SerialNumber = "serial-number-1",
+                            VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        },
+                        AppliedLayout = new AppliedLayoutWrapper.LayoutWrapper
+                        {
+                            Uuid = "{72409DFC-2B87-469B-AAC4-557273791C26}",
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
+                            ZoneCount = 3,
+                            ShowSpacing = true,
+                            Spacing = 1,
+                            SensitivityRadius = 40,
+                        },
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsList));
+
+            CustomLayouts customLayouts = new CustomLayouts();
+            CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
+            {
+                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper> { },
+            };
+            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+
+            LayoutHotkeys layoutHotkeys = new LayoutHotkeys();
+            LayoutHotkeys.LayoutHotkeysWrapper layoutHotkeysWrapper = new LayoutHotkeys.LayoutHotkeysWrapper
+            {
+                LayoutHotkeys = new List<LayoutHotkeys.LayoutHotkeyWrapper> { },
+            };
+            FancyZonesEditorSession.Files.LayoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(layoutHotkeysWrapper));
 
             _session = new FancyZonesEditorSession(_context!);
         }
@@ -236,9 +199,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void TestCleanup()
         {
             _session?.Close();
-
-            _templatesIOHelper?.RestoreData();
-            _defaultLayoutsIOHelper?.RestoreData();
+            FancyZonesEditorSession.Files.Restore();
         }
 
         [TestMethod]
