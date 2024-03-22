@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Settings.UI.Library.Attributes;
 
 namespace PowerToys.Settings.DSC.Schema;
@@ -15,8 +14,14 @@ public class Introspection
 {
     public struct ModulePropertyStructure
     {
-        public bool IsIgnored;
-        public bool IsBoolJson;
+        public bool IsIgnoredByJsonSerializer;
+        public bool IsIgnoredByCmdConfigureAttribute;
+
+        public bool IsIgnored
+        {
+            get { return IsIgnoredByJsonSerializer || IsIgnoredByCmdConfigureAttribute; }
+        }
+
         public Type Type;
     }
 
@@ -43,13 +48,12 @@ public class Introspection
         {
             var jsonIgnoreAttr = property.GetCustomAttribute<JsonIgnoreAttribute>();
             var cmdIgnoreAttr = property.GetCustomAttribute<CmdConfigureIgnoreAttribute>();
-            var jsonConverterAttr = property.GetCustomAttribute<JsonConverterAttribute>();
 
             return (property.Name, new ModulePropertyStructure
             {
                 Type = property.PropertyType,
-                IsIgnored = jsonIgnoreAttr != null || cmdIgnoreAttr != null,
-                IsBoolJson = jsonConverterAttr?.ConverterType == typeof(BoolPropertyJsonConverter),
+                IsIgnoredByJsonSerializer = jsonIgnoreAttr != null,
+                IsIgnoredByCmdConfigureAttribute = cmdIgnoreAttr != null,
             });
         }).ToDictionary();
     }

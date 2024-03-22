@@ -11,24 +11,9 @@ using static PowerToys.Settings.DSC.Schema.Introspection;
 
 namespace PowerToys.Settings.DSC.Schema;
 
-internal sealed class Generation
+internal sealed class DSCGeneration
 {
     private static readonly string DoubleNewLine = Environment.NewLine + Environment.NewLine;
-
-    private static string[] TypeParts(string name)
-    {
-        return Regex.Split(name.ToLower(CultureInfo.CurrentCulture), @"(?<!^)(?=[A-Z])|\.");
-    }
-
-    private static bool InferIsInt(Type propertyInfo)
-    {
-        return TypeParts(propertyInfo.Name).Any(word => word.Contains("Int", StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static bool InferIsBool(Type propertyInfo)
-    {
-        return TypeParts(propertyInfo.Name).Any(word => word.Equals("Bool", StringComparison.OrdinalIgnoreCase) || word.Equals("Boolean", StringComparison.OrdinalIgnoreCase));
-    }
 
     private static string EmitEnumDefinition(Type type)
     {
@@ -67,8 +52,8 @@ internal sealed class Generation
         {
             Name = name;
 
-            bool intLike = InferIsInt(property);
-            bool boolLike = InferIsBool(property);
+            bool intLike = Common.InferIsInt(property);
+            bool boolLike = Common.InferIsBool(property);
 
             var rawType = "string";
             var isNullable = true;

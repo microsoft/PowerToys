@@ -22,19 +22,35 @@ internal sealed class Program
         var dllPath = args[0];
         var outputPath = args[1];
 
+        bool documentationMode = Path.GetExtension(outputPath) == ".md";
+        bool sampleMode = Path.GetExtension(outputPath) == ".yaml";
+
         try
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+
             var assembly = Assembly.LoadFrom(dllPath);
             var moduleSettings = Introspection.ParseModuleSettings(assembly);
             var generalSettings = Introspection.ParseGeneralSettings(assembly);
 #if DEBUG
             PrintUniquePropertyTypes(moduleSettings);
 #endif
-            var debugSettingsPath = Path.Combine(Directory.GetParent(dllPath).FullName, "PowerToys.Settings.exe");
+            var outputFileContents = string.Empty;
+            if (documentationMode)
+            {
+                outputFileContents = DocumentationGeneration.EmitDocumentationFileContents(moduleSettings, generalSettings);
+            }
+            else if (sampleMode)
+            {
+                outputFileContents = SampleGeneration.EmitSampleFileContents(moduleSettings, generalSettings);
+            }
+            else
+            {
+                var debugSettingsPath = Path.Combine(Directory.GetParent(dllPath).FullName, "PowerToys.Settings.exe");
+                outputFileContents = DSCGeneration.EmitModuleFileContents(moduleSettings, generalSettings, debugSettingsPath);
+            }
 
-            var schemaFileContents = Generation.EmitModuleFileContents(moduleSettings, generalSettings, debugSettingsPath);
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
-            File.WriteAllText(outputPath, schemaFileContents);
+            File.WriteAllText(outputPath, outputFileContents);
         }
         catch (Exception ex)
         {
