@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -339,13 +339,13 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // verify the hotkey wasn't changed
             _session?.ClickEditLayout(CustomLayouts.CustomLayouts[0].Name);
-            var hotkeyComboBox = _session?.GetHotkeyComboBox();
+            var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             Assert.AreEqual("0", hotkeyComboBox.Text);
             _session?.ClickCancel();
 
             _session?.ClickEditLayout(copiedLayoutName);
-            hotkeyComboBox = _session?.GetHotkeyComboBox();
+            hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
             Assert.IsNotNull(hotkeyComboBox);
             Assert.AreEqual("None", hotkeyComboBox.Text);
             _session?.ClickCancel();

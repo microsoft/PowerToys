@@ -9,6 +9,7 @@ using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium.Windows;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -199,7 +200,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             _session?.ClickEditLayout(Layouts.CustomLayouts[0].Name);
             _session?.ClickEditZones();
-            Assert.IsNotNull(_session?.GetGridLayoutEditorWindow());
+            Assert.IsNotNull(_session?.FindByName(ElementName.GridLayoutEditor));
             _session?.ClickCancel();
         }
 
@@ -207,7 +208,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void OpenEditModeFromContextMenu()
         {
             _session?.ClickContextMenuItem(Layouts.CustomLayouts[0].Name, FancyZonesEditorSession.ElementName.EditZones);
-            Assert.IsNotNull(_session?.GetGridLayoutEditorWindow());
+            Assert.IsNotNull(_session?.FindByName(ElementName.GridLayoutEditor));
             _session?.ClickCancel();
         }
 

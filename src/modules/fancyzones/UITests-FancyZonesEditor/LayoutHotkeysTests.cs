@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static FancyZonesEditorCommon.Data.LayoutHotkeys;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -332,7 +333,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             {
                 _session?.ClickEditLayout(layout.Name);
 
-                var hotkeyComboBox = _session?.GetHotkeyComboBox();
+                var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
                 Assert.IsNotNull(hotkeyComboBox);
 
                 // verify the selected key
@@ -346,7 +347,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 // verify the available values
                 hotkeyComboBox.Click();
-                var popup = _session?.GetHotkeyPopup();
+                var popup = _session?.FindByClassName(ClassName.Popup);
                 Assert.IsNotNull(popup, "Hotkey combo box wasn't opened");
 
                 try
@@ -365,7 +366,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 }
 
                 _session?.ClickCancel();
-                _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
+                _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             }
         }
 
@@ -377,27 +378,32 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // assign hotkey
             const string key = "3";
-            var hotkeyComboBox = _session?.GetHotkeyComboBox();
-            hotkeyComboBox?.Click();
-            var popup = _session?.GetHotkeyPopup();
-            _session?.Click(popup?.FindElementByName($"{key}")!); // assign a free hotkey
-            Assert.AreEqual(key, hotkeyComboBox?.Text);
+            var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            var popup = _session?.FindByClassName(ClassName.Popup);
+            _session?.WaitElementDisplayedByClassName(ClassName.Popup);
+            Assert.IsNotNull(popup);
+            _session?.Click(popup.FindElementByName($"{key}")!); // assign a free hotkey
+            Assert.AreEqual(key, hotkeyComboBox.Text);
 
             // verify the file
             _session?.ClickSave();
-            _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
+            _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
             Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = int.Parse(key, CultureInfo.InvariantCulture), LayoutId = layout.Uuid }));
 
             // verify the availability
             _session?.ClickEditLayout(CustomLayouts.CustomLayouts[5].Name);
-            hotkeyComboBox = _session?.GetHotkeyComboBox();
-            hotkeyComboBox?.Click();
-            popup = _session?.GetHotkeyPopup();
+            hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            popup = _session?.FindByClassName(ClassName.Popup);
+            Assert.IsNotNull(popup);
             try
             {
-                popup?.FindElementByName($"{key}"); // verify the key is not available
+                popup.FindElementByName($"{key}"); // verify the key is not available
                 Assert.Fail(key, "The assigned key is still available for other layouts.");
             }
             catch
@@ -414,27 +420,32 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // assign a hotkey
             const string key = "3";
-            var hotkeyComboBox = _session?.GetHotkeyComboBox();
-            hotkeyComboBox?.Click();
-            var popup = _session?.GetHotkeyPopup();
-            _session?.Click(popup?.FindElementByName($"{key}")!);
-            Assert.AreEqual(key, hotkeyComboBox?.Text);
+            var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            var popup = _session?.FindByClassName(ClassName.Popup);
+            _session?.WaitElementDisplayedByClassName(ClassName.Popup);
+            Assert.IsNotNull(popup);
+            _session?.Click(popup.FindElementByName($"{key}")!);
+            Assert.AreEqual(key, hotkeyComboBox.Text);
 
             // verify the file
             _session?.ClickCancel();
-            _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
+            _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
             Assert.AreEqual(Hotkeys.ToString(), actualData.ToString());
 
             // verify the availability
             _session?.ClickEditLayout(CustomLayouts.CustomLayouts[5].Name);
-            hotkeyComboBox = _session?.GetHotkeyComboBox();
-            hotkeyComboBox?.Click();
-            popup = _session?.GetHotkeyPopup();
+            hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            popup = _session?.FindByClassName(ClassName.Popup);
+            Assert.IsNotNull(popup);
             try
             {
-                popup?.FindElementByName($"{key}"); // verify the key is available
+                popup.FindElementByName($"{key}"); // verify the key is available
             }
             catch
             {
@@ -450,13 +461,15 @@ namespace Microsoft.FancyZonesEditor.UITests
                 string layoutName = $"Layout {i}";
                 _session?.ClickEditLayout(layoutName);
 
-                var hotkeyComboBox = _session?.GetHotkeyComboBox();
-                hotkeyComboBox?.Click();
-                var popup = _session?.GetHotkeyPopup();
-                _session?.Click(popup?.FindElementByName($"{i}")!);
+                var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+                Assert.IsNotNull(hotkeyComboBox);
+                hotkeyComboBox.Click();
+                var popup = _session?.FindByClassName(ClassName.Popup);
+                Assert.IsNotNull(popup);
+                _session?.Click(popup.FindElementByName($"{i}")!);
 
                 _session?.ClickSave();
-                _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
+                _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             }
 
             // check there nothing except None
@@ -464,15 +477,17 @@ namespace Microsoft.FancyZonesEditor.UITests
                 int layout = 10;
                 string layoutName = $"Layout {layout}";
                 _session?.ClickEditLayout(layoutName);
-                var hotkeyComboBox = _session?.GetHotkeyComboBox();
-                hotkeyComboBox?.Click();
-                var popup = _session?.GetHotkeyPopup();
+                var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+                Assert.IsNotNull(hotkeyComboBox);
+                hotkeyComboBox.Click();
+                var popup = _session?.FindByClassName(ClassName.Popup);
+                Assert.IsNotNull(popup);
 
                 for (int i = 0; i < 10; i++)
                 {
                     try
                     {
-                        popup?.FindElementByName($"{i}");
+                        popup.FindElementByName($"{i}");
                         Assert.Fail("The assigned key is still available for other layouts.");
                     }
                     catch
@@ -480,9 +495,9 @@ namespace Microsoft.FancyZonesEditor.UITests
                     }
                 }
 
-                _session?.Click(popup?.FindElementByName($"None")!);
+                _session?.Click(popup.FindElementByName($"None")!);
                 _session?.ClickSave();
-                _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
+                _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             }
         }
 
@@ -495,27 +510,31 @@ namespace Microsoft.FancyZonesEditor.UITests
             const string None = "None";
 
             // reset the hotkey
-            var hotkeyComboBox = _session?.GetHotkeyComboBox();
-            hotkeyComboBox?.Click();
-            var popup = _session?.GetHotkeyPopup();
-            _session?.Click(popup?.FindElementByName(None)!);
-            Assert.AreEqual(None, hotkeyComboBox?.Text);
+            var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            var popup = _session?.FindByClassName(ClassName.Popup);
+            Assert.IsNotNull(popup);
+            _session?.Click(popup.FindElementByName(None)!);
+            Assert.AreEqual(None, hotkeyComboBox.Text);
 
             // verify the file
             _session?.ClickSave();
-            _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
+            _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
             Assert.IsFalse(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
 
             // verify the previously assigned key is available
             _session?.ClickEditLayout(CustomLayouts.CustomLayouts[6].Name);
-            hotkeyComboBox = _session?.GetHotkeyComboBox();
-            hotkeyComboBox?.Click();
-            popup = _session?.GetHotkeyPopup();
+            hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            popup = _session?.FindByClassName(ClassName.Popup);
+            Assert.IsNotNull(popup);
             try
             {
-                popup?.FindElementByName($"{assignedKey}"); // verify the key is available
+                popup.FindElementByName($"{assignedKey}"); // verify the key is available
             }
             catch
             {
@@ -532,27 +551,31 @@ namespace Microsoft.FancyZonesEditor.UITests
             const string None = "None";
 
             // assign hotkey
-            var hotkeyComboBox = _session?.GetHotkeyComboBox();
-            hotkeyComboBox?.Click();
-            var popup = _session?.GetHotkeyPopup();
-            _session?.Click(popup?.FindElementByName(None)!); // reset the hotkey
-            Assert.AreEqual(None, hotkeyComboBox?.Text);
+            var hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            var popup = _session?.FindByClassName(ClassName.Popup);
+            Assert.IsNotNull(popup);
+            _session?.Click(popup.FindElementByName(None)!); // reset the hotkey
+            Assert.AreEqual(None, hotkeyComboBox.Text);
 
             // verify the file
             _session?.ClickCancel();
-            _session?.WaitUntilHidden(hotkeyComboBox!); // let the dialog window close
+            _session?.WaitUntilHidden(hotkeyComboBox); // let the dialog window close
             var hotkeys = new LayoutHotkeys();
             var actualData = hotkeys.Read(hotkeys.File);
             Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
 
             // verify the previously assigned key is not available
             _session?.ClickEditLayout(CustomLayouts.CustomLayouts[6].Name);
-            hotkeyComboBox = _session?.GetHotkeyComboBox();
-            hotkeyComboBox?.Click();
-            popup = _session?.GetHotkeyPopup();
+            hotkeyComboBox = _session?.FindByAccessibilityId(AccessibilityId.HotkeyComboBox);
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            popup = _session?.FindByClassName(ClassName.Popup);
+            Assert.IsNotNull(popup);
             try
             {
-                popup?.FindElementByName($"{assignedKey}"); // verify the key is not available
+                popup.FindElementByName($"{assignedKey}"); // verify the key is not available
                 Assert.Fail("The key is still available for other layouts.");
             }
             catch
