@@ -8,8 +8,8 @@ namespace FancyZonesEditorCommon.Data
     {
         Blank,
         Focus,
-        Rows,
         Columns,
+        Rows,
         Grid,
         PriorityGrid,
         Custom,
