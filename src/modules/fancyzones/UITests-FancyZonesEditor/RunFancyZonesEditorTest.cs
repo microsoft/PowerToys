@@ -4,10 +4,8 @@
 
 using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
-using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static FancyZonesEditorCommon.Data.EditorParameters;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -15,8 +13,6 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class RunFancyZonesEditorTest
     {
         private static FancyZonesEditorSession? _session;
-        private static IOTestHelper? _editorParamsIOHelper;
-        private static IOTestHelper? _appliedLayoutsIOHelper;
         private static TestContext? _context;
 
         [ClassInitialize]
@@ -47,6 +43,22 @@ namespace Microsoft.FancyZonesEditor.UITests
                         MonitorHeight = 1080,
                         MonitorWidth = 1920,
                         IsSelected = true,
+                    },
+                    new EditorParameters.NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-2",
+                        MonitorInstanceId = "instance-id-2",
+                        MonitorSerialNumber = "serial-number-2",
+                        MonitorNumber = 2,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 96,
+                        LeftCoordinate = 1920,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = false,
                     },
                 },
             };
