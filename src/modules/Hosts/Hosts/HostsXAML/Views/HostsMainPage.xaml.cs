@@ -35,11 +35,6 @@ namespace Hosts.Views
 
         public ICommand ExitCommand => new RelayCommand(() => { Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().TryEnqueue(Application.Current.Exit); });
 
-        public HostsMainPage()
-        {
-            InitializeComponent();
-        }
-
         public HostsMainPage(MainViewModel viewModel)
         {
             InitializeComponent();

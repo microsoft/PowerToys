@@ -34,16 +34,8 @@
 
   <ItemGroup>
     <None Include="$(OutDir)\PowerToys.Hosts.pri" Pack="True" PackageCopyToOutput="True" />
-    <XBFFile Include="$(OutDir)**\*.xbf"/>
+    <XBFFile Include="$(OutDir)**\*.xbf" />
     <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Assets\Hosts\AppList.scale-100.png" />
-    <None Remove="Assets\Hosts\AppList.scale-125.png" />
-    <None Remove="Assets\Hosts\AppList.scale-150.png" />
-    <None Remove="Assets\Hosts\AppList.scale-200.png" />
-    <None Remove="Assets\Hosts\AppList.scale-400.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,18 +51,6 @@
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Telemetry\**" />
-    <EmbeddedResource Remove="Telemetry\**" />
-    <None Remove="Telemetry\**" />
-    <Page Remove="Telemetry\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PRIResource Remove="Telemetry\**" />
-    <XBFFile Include="$(OutDir)**\*.xbf" />
   </ItemGroup>
 
 </Project>
