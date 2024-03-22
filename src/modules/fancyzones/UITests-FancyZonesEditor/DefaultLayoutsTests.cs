@@ -88,7 +88,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     MonitorConfiguration = Horizontal,
                     Layout = new DefaultLayoutWrapper.LayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Grid],
+                        Type = LayoutType.Grid.TypeToString(),
                         ZoneCount = 4,
                         ShowSpacing = true,
                         Spacing = 5,
@@ -185,16 +185,16 @@ namespace Microsoft.FancyZonesEditor.UITests
                 {
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Empty],
+                        Type = LayoutType.Blank.TypeToString(),
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Focus],
+                        Type = LayoutType.Focus.TypeToString(),
                         ZoneCount = 10,
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Rows],
+                        Type = LayoutType.Rows.TypeToString(),
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 10,
@@ -202,7 +202,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Columns],
+                        Type = LayoutType.Columns.TypeToString(),
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 20,
@@ -210,7 +210,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Grid],
+                        Type = LayoutType.Grid.TypeToString(),
                         ZoneCount = 4,
                         ShowSpacing = false,
                         Spacing = 10,
@@ -218,7 +218,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.PriorityGrid],
+                        Type = LayoutType.PriorityGrid.TypeToString(),
                         ZoneCount = 3,
                         ShowSpacing = true,
                         Spacing = 1,
@@ -255,7 +255,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Initialize()
         {
-            CheckTemplateLayouts(TemplateLayout.Grid, null);
+            CheckTemplateLayouts(LayoutType.Grid, null);
             CheckCustomLayouts(string.Empty, CustomLayouts.CustomLayouts[0].Uuid);
         }
 
@@ -263,7 +263,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Cancel()
         {
             // assign Focus as a default horizontal and vertical layout
-            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[TemplateLayout.Focus]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[LayoutType.Focus]);
             var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(false);
             horizontalDefaultButton?.Click();
             var verticalDefaultButton = _session?.GetVerticalDefaultButton(false);
@@ -274,7 +274,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.WaitUntilHidden(horizontalDefaultButton!);
 
             // check that default layouts weren't changed
-            CheckTemplateLayouts(TemplateLayout.Grid, null);
+            CheckTemplateLayouts(LayoutType.Grid, null);
             CheckCustomLayouts(string.Empty, CustomLayouts.CustomLayouts[0].Uuid);
         }
 
@@ -282,7 +282,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Save()
         {
             // assign Focus as a default horizontal and vertical layout
-            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[TemplateLayout.Focus]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[LayoutType.Focus]);
             var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(false);
             horizontalDefaultButton?.Click();
             var verticalDefaultButton = _session?.GetVerticalDefaultButton(false);
@@ -293,15 +293,15 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.WaitUntilHidden(horizontalDefaultButton!);
 
             // check that default layout was changed
-            CheckTemplateLayouts(TemplateLayout.Focus, TemplateLayout.Focus);
+            CheckTemplateLayouts(LayoutType.Focus, LayoutType.Focus);
             CheckCustomLayouts(string.Empty, string.Empty);
         }
 
-        private void CheckTemplateLayouts(TemplateLayout? horizontalDefault, TemplateLayout? verticalDefault)
+        private void CheckTemplateLayouts(LayoutType? horizontalDefault, LayoutType? verticalDefault)
         {
             foreach (var (key, name) in TestConstants.TemplateLayoutNames)
             {
-                if (key == TemplateLayout.Empty)
+                if (key == LayoutType.Blank)
                 {
                     continue;
                 }

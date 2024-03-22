@@ -9,27 +9,17 @@ namespace FancyZonesEditorCommon.Data
 {
     public static class Constants
     {
-        public enum TemplateLayout
+        public enum CustomLayout
         {
-            Empty,
-            Focus,
-            Rows,
-            Columns,
+            Canvas,
             Grid,
-            PriorityGrid,
         }
 
-        public static readonly ReadOnlyDictionary<TemplateLayout, string> TemplateLayoutJsonTags = new ReadOnlyDictionary<TemplateLayout, string>(
-            new Dictionary<TemplateLayout, string>()
+        public static readonly ReadOnlyDictionary<CustomLayout, string> CustomLayoutTypeJsonTags = new ReadOnlyDictionary<CustomLayout, string>(
+            new Dictionary<CustomLayout, string>()
             {
-                { TemplateLayout.Empty, "blank" },
-                { TemplateLayout.Focus, "focus" },
-                { TemplateLayout.Rows, "rows" },
-                { TemplateLayout.Columns, "columns" },
-                { TemplateLayout.Grid, "grid" },
-                { TemplateLayout.PriorityGrid, "priority-grid" },
+                { CustomLayout.Canvas, "canvas" },
+                { CustomLayout.Grid, "grid" },
             });
-
-        public const string CustomLayoutJsonTag = "custom";
     }
 }

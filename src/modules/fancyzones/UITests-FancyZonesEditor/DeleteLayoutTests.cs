@@ -87,7 +87,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     MonitorConfiguration = MonitorConfigurationType.Horizontal.TypeToString(),
                     Layout = new DefaultLayoutWrapper.LayoutWrapper
                     {
-                        Type = CustomLayoutJsonTag,
+                        Type = LayoutType.Custom.TypeToString(),
                         Uuid = CustomLayouts.CustomLayouts[1].Uuid,
                     },
                 },
@@ -162,16 +162,16 @@ namespace Microsoft.FancyZonesEditor.UITests
                 {
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Empty],
+                        Type = LayoutType.Blank.TypeToString(),
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Focus],
+                        Type = LayoutType.Focus.TypeToString(),
                         ZoneCount = 10,
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Rows],
+                        Type = LayoutType.Rows.TypeToString(),
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 10,
@@ -179,7 +179,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Columns],
+                        Type = LayoutType.Columns.TypeToString(),
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 20,
@@ -187,7 +187,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.Grid],
+                        Type = LayoutType.Grid.TypeToString(),
                         ZoneCount = 4,
                         ShowSpacing = false,
                         Spacing = 10,
@@ -195,7 +195,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = TemplateLayoutJsonTags[TemplateLayout.PriorityGrid],
+                        Type = LayoutType.PriorityGrid.TypeToString(),
                         ZoneCount = 3,
                         ShowSpacing = true,
                         Spacing = 1,
@@ -261,7 +261,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsNull(_session?.GetLayout(deletedLayout));
 
             // verify the empty layout is selected
-            Assert.IsTrue(_session?.GetLayout(TestConstants.TemplateLayoutNames[TemplateLayout.Empty])!.Selected);
+            Assert.IsTrue(_session?.GetLayout(TestConstants.TemplateLayoutNames[LayoutType.Blank])!.Selected);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -271,7 +271,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             var appliedLayouts = new AppliedLayouts();
             var appliedLayoutsData = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(TemplateLayoutJsonTags[TemplateLayout.Empty], appliedLayoutsData.AppliedLayouts.Find(x => x.Device.Monitor == Parameters.Monitors[0].Monitor).AppliedLayout.Type);
+            Assert.AreEqual(LayoutType.Blank.TypeToString(), appliedLayoutsData.AppliedLayouts.Find(x => x.Device.Monitor == Parameters.Monitors[0].Monitor).AppliedLayout.Type);
         }
 
         [TestMethod]
@@ -320,7 +320,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.WaitFor(1);
 
             // verify the default layout is reset to the "default" default
-            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[TemplateLayout.PriorityGrid]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[LayoutType.PriorityGrid]);
             Assert.IsNotNull(_session?.GetHorizontalDefaultButton(true));
             _session?.Click(ElementName.Cancel);
 
@@ -328,7 +328,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var defaultLayouts = new DefaultLayouts();
             var data = defaultLayouts.Read(defaultLayouts.File);
             string configuration = MonitorConfigurationType.Horizontal.TypeToString();
-            Assert.AreEqual(TemplateLayoutJsonTags[TemplateLayout.PriorityGrid], data.DefaultLayouts.Find(x => x.MonitorConfiguration == configuration).Layout.Type);
+            Assert.AreEqual(LayoutType.PriorityGrid.TypeToString(), data.DefaultLayouts.Find(x => x.MonitorConfiguration == configuration).Layout.Type);
         }
 
         [TestMethod]

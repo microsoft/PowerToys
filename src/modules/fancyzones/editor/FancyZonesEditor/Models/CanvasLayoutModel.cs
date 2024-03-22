@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Windows;
+using FancyZonesEditorCommon.Data;
 
 namespace FancyZonesEditor.Models
 {
