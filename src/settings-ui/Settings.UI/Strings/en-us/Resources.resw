@@ -3804,8 +3804,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="SettingsTooltip.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="ShortcutsTxt.Text" xml:space="preserve">
-    <value>Shortcuts</value>
+  <data name="QuickAccessTxt.Text" xml:space="preserve">
+    <value>Quick access</value>
   </data>
   <data name="UpdateAvailable.Title" xml:space="preserve">
     <value>Update available</value>

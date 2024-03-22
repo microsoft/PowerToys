@@ -195,9 +195,10 @@
         </Grid>
 
         <ContentDialog x:Name="SelectedFilesListDialog" x:Uid="SelectedFilesListDialog">
-            <ScrollViewer Padding="0,0,16,0">
-                <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
-            </ScrollViewer>
+            <TextBlock
+                IsTextSelectionEnabled="True"
+                Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"
+                TextWrapping="Wrap" />
         </ContentDialog>
     </Grid>
 </Page>
