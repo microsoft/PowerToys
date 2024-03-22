@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using global::PowerToys.GPOWrapper;
@@ -76,6 +78,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private bool _isPowerShell7Detected;
 
+        private bool isPowerShellPreviewDetected;
+        private string powerShellPreviewPath;
+
         public bool IsPowerShell7Detected
         {
             get => _isPowerShell7Detected;
@@ -132,6 +137,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string RunPowerShellScript(string powershellExecutable, string powershellArguments, bool hidePowerShellWindow = false)
         {
             string outputLog = string.Empty;
+            if (isPowerShellPreviewDetected)
+            {
+                powershellExecutable = Path.Combine(powerShellPreviewPath, "pwsh-preview.cmd");
+            }
+
             try
             {
                 var startInfo = new ProcessStartInfo()
@@ -160,6 +170,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void CheckCommandNotFoundRequirements()
         {
+            isPowerShellPreviewDetected = false;
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\CheckCmdNotFoundRequirements.ps1";
             var arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
             var result = RunPowerShellScript("pwsh.exe", arguments, true);
@@ -177,6 +188,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Likely an error saying there was an error starting pwsh.exe, so we can assume Powershell 7 was not detected.
                 CommandOutputLog += "PowerShell 7.4 or greater not detected. Installation instructions can be found on https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows \r\n";
                 IsPowerShell7Detected = false;
+            }
+
+            if (!IsPowerShell7Detected)
+            {
+                // powerShell Preview might be installed, check it.
+                try
+                {
+                    var environmentPath = Environment.GetEnvironmentVariable("PATH");
+                    IEnumerable<string> pathCandidates = environmentPath.Split(';').Where(x => x.Contains("powershell", StringComparison.InvariantCultureIgnoreCase));
+                    foreach (string path in pathCandidates)
+                    {
+                        result = RunPowerShellScript(Path.Combine(path, "pwsh-preview.cmd"), arguments, true);
+                        if (result.Contains("PowerShell 7.4 or greater detected."))
+                        {
+                            isPowerShellPreviewDetected = true;
+                            IsPowerShell7Detected = true;
+                            powerShellPreviewPath = path;
+                            break;
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // nothing to do. No additional PowerShell installation found
+                }
             }
 
             if (result.Contains("WinGet Client module detected."))
