@@ -12,7 +12,6 @@ properties:
       directives:
         description: Configure PowerToys
       settings:
-        Debug: false
         ShortcutGuide:
           Enabled: false
           OverlayOpacity: 50

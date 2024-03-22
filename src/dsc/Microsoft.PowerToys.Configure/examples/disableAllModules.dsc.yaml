@@ -4,7 +4,6 @@ properties:
       directives:
         description: Configure PowerToys
       settings:
-        Debug: false
         AlwaysOnTop:
           Enabled: false
         Awake:
