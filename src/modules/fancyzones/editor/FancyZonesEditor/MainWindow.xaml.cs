@@ -16,6 +16,7 @@ using System.Windows.Interop;
 using Common.UI;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
+using FancyZonesEditorCommon.Data;
 using ManagedCommon;
 using ModernWpf.Controls;
 
