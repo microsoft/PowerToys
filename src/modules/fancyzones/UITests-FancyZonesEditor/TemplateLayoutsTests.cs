@@ -1,14 +1,13 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium.Support.UI;
+using OpenQA.Selenium;
 using static FancyZonesEditorCommon.Data.AppliedLayouts;
 using static FancyZonesEditorCommon.Data.DefaultLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
@@ -191,6 +190,45 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            LayoutTemplates layoutTemplates = new LayoutTemplates();
+            _templatesIOHelper = new IOTestHelper(layoutTemplates.File);
+            _templatesIOHelper.WriteData(layoutTemplates.Serialize(Layouts));
+
+            // Default layouts should match templates
+            DefaultLayouts defaultLayouts = new DefaultLayouts();
+            DefaultLayoutsListWrapper defaultLayoutsList = new DefaultLayoutsListWrapper
+            {
+                DefaultLayouts = new List<DefaultLayoutWrapper>
+                {
+                    new DefaultLayoutWrapper
+                    {
+                        MonitorConfiguration = MonitorConfigurationType.Vertical.ToString(),
+                        Layout = new DefaultLayoutWrapper.LayoutWrapper
+                        {
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
+                            ZoneCount = 2,
+                            ShowSpacing = true,
+                            Spacing = 10,
+                            SensitivityRadius = 10,
+                        },
+                    },
+                    new DefaultLayoutWrapper
+                    {
+                        MonitorConfiguration = MonitorConfigurationType.Horizontal.ToString(),
+                        Layout = new DefaultLayoutWrapper.LayoutWrapper
+                        {
+                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
+                            ZoneCount = 3,
+                            ShowSpacing = true,
+                            Spacing = 1,
+                            SensitivityRadius = 40,
+                        },
+                    },
+                },
+            };
+            _defaultLayoutsIOHelper = new IOTestHelper(defaultLayouts.File);
+            _defaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsList));
+
             _session = new FancyZonesEditorSession(_context!);
         }
 
@@ -198,10 +236,13 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void TestCleanup()
         {
             _session?.Close(_context!);
+
+            _templatesIOHelper?.RestoreData();
+            _defaultLayoutsIOHelper?.RestoreData();
         }
 
         [TestMethod]
-        public void ZoneNumber()
+        public void ZoneNumber_Initialize()
         {
             foreach (var (key, name) in TestConstants.TemplateLayoutNames)
             {
@@ -219,15 +260,62 @@ namespace Microsoft.FancyZonesEditor.UITests
                 _session?.Click_Cancel();
 
                 // let the dialog window close
-                WebDriverWait wait = new WebDriverWait(_session?.Session, TimeSpan.FromSeconds(1));
-                wait.Timeout = TimeSpan.FromSeconds(0.5);
+                _session?.WaitFor(0.5f);
             }
         }
 
         [TestMethod]
-        public void HighlightDistance()
+        public void ZoneNumber_Save()
         {
-            foreach (var (key, name) in TestConstants.TemplateLayoutNames)
+            var type = Constants.TemplateLayouts.Columns;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var value = layout.ZoneCount;
+            var expected = value - 1;
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+
+            var slider = _session?.GetZoneCountSlider();
+            slider?.SendKeys(Keys.Left);
+            Assert.AreEqual($"{expected}", slider?.Text);
+
+            _session?.Click_Save();
+
+            // let the dialog window close
+            _session?.WaitFor(0.5f);
+
+            // verify the file
+            var templateLayouts = new LayoutTemplates();
+            var data = templateLayouts.Read(templateLayouts.File);
+            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).ZoneCount;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void ZoneNumber_Cancel()
+        {
+            var type = Constants.TemplateLayouts.Rows;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var expected = layout.ZoneCount;
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+
+            var slider = _session?.GetZoneCountSlider();
+            slider?.SendKeys(Keys.Left);
+
+            _session?.Click_Cancel();
+
+            // let the dialog window close
+            _session?.WaitFor(0.5f);
+
+            // verify the file
+            var templateLayouts = new LayoutTemplates();
+            var data = templateLayouts.Read(templateLayouts.File);
+            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).ZoneCount;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void HighlightDistance_Initialize()
+        {
+            foreach (var (key, name) in Constants.TemplateLayoutNames)
             {
                 if (key == Constants.TemplateLayout.Empty)
                 {
@@ -248,9 +336,57 @@ namespace Microsoft.FancyZonesEditor.UITests
         }
 
         [TestMethod]
-        public void SpaceAroundZones()
+        public void HighlightDistance_Save()
         {
-            foreach (var (key, name) in TestConstants.TemplateLayoutNames)
+            var type = Constants.TemplateLayouts.Focus;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var value = layout.SensitivityRadius;
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+
+            var slider = _session?.GetSensitivitySlider();
+            slider?.SendKeys(Keys.Right);
+
+            var expected = value + 1; // one step right
+            Assert.AreEqual($"{expected}", slider?.Text);
+
+            _session?.Click_Save();
+
+            // let the dialog window close
+            _session?.WaitFor(0.5f);
+
+            // verify the file
+            var templateLayouts = new LayoutTemplates();
+            var data = templateLayouts.Read(templateLayouts.File);
+            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).SensitivityRadius;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void HighlightDistance_Cancel()
+        {
+            var type = Constants.TemplateLayouts.Focus;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var expected = layout.SensitivityRadius;
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+
+            var slider = _session?.GetSensitivitySlider();
+            slider?.SendKeys(Keys.Right);
+            _session?.Click_Cancel();
+
+            // let the dialog window close
+            _session?.WaitFor(0.5f);
+
+            // verify the file
+            var templateLayouts = new LayoutTemplates();
+            var data = templateLayouts.Read(templateLayouts.File);
+            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).SensitivityRadius;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SpaceAroundZones_Initialize()
+        {
+            foreach (var (key, name) in Constants.TemplateLayoutNames)
             {
                 if (key == Constants.TemplateLayout.Empty || key == Constants.TemplateLayout.Focus)
                 {
@@ -274,6 +410,104 @@ namespace Microsoft.FancyZonesEditor.UITests
                 // let the dialog window close
                 _session?.WaitFor(0.5f);
             }
+        }
+
+        [TestMethod]
+        public void SpaceAroundZones_Slider_Save()
+        {
+            var type = Constants.TemplateLayouts.PriorityGrid;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var expected = layout.Spacing + 1;
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+
+            var slider = _session?.GetSpaceAroundZonesSlider();
+            slider?.SendKeys(Keys.Right);
+            Assert.AreEqual($"{expected}", slider?.Text);
+
+            _session?.Click_Save();
+
+            // let the dialog window close
+            _session?.WaitFor(0.5f);
+
+            // verify the file
+            var templateLayouts = new LayoutTemplates();
+            var data = templateLayouts.Read(templateLayouts.File);
+            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).Spacing;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SpaceAroundZones_Slider_Cancel()
+        {
+            var type = Constants.TemplateLayouts.PriorityGrid;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var expected = layout.Spacing;
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+
+            var slider = _session?.GetSpaceAroundZonesSlider();
+            slider?.SendKeys(Keys.Right);
+            Assert.AreEqual($"{expected + 1}", slider?.Text);
+
+            _session?.Click_Cancel();
+
+            // let the dialog window close
+            _session?.WaitFor(0.5f);
+
+            // verify the file
+            var templateLayouts = new LayoutTemplates();
+            var data = templateLayouts.Read(templateLayouts.File);
+            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).Spacing;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SpaceAroundZones_Toggle_Save()
+        {
+            var type = Constants.TemplateLayouts.PriorityGrid;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var expected = !layout.ShowSpacing;
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+
+            var toggle = _session?.GetSpaceAroundZonesToggle();
+            toggle?.Click();
+            Assert.AreEqual(expected, toggle?.Selected);
+            Assert.AreEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
+
+            _session?.Click_Save();
+
+            // let the dialog window close
+            _session?.WaitFor(0.5f);
+
+            // verify the file
+            var templateLayouts = new LayoutTemplates();
+            var data = templateLayouts.Read(templateLayouts.File);
+            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).ShowSpacing;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SpaceAroundZones_Toggle_Cancel()
+        {
+            var type = Constants.TemplateLayouts.PriorityGrid;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var expected = layout.ShowSpacing;
+            _session?.Click_EditLayout(Constants.TemplateLayoutNames[type]);
+
+            var toggle = _session?.GetSpaceAroundZonesToggle();
+            toggle?.Click();
+            Assert.AreNotEqual(expected, toggle?.Selected);
+            Assert.AreNotEqual(expected, _session?.GetSpaceAroundZonesSlider()?.Enabled);
+
+            _session?.Click_Cancel();
+
+            // let the dialog window close
+            _session?.WaitFor(0.5f);
+
+            // verify the file
+            var templateLayouts = new LayoutTemplates();
+            var data = templateLayouts.Read(templateLayouts.File);
+            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).ShowSpacing;
+            Assert.AreEqual(expected, actual);
         }
     }
 }
