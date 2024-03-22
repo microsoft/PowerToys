@@ -5,7 +5,7 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define HostsAssetsFiles=?>
-  <?define HostsAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Hosts\?>
+  <?define HostsAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\HostsPackageConsumer\?>
 
   <Fragment>
     <DirectoryRef Id="WinUI3AppsAssetsFolder">

@@ -25,6 +25,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\HostsPackageConsumer\AppList.scale-100.png" />
+    <None Remove="Assets\HostsPackageConsumer\AppList.scale-125.png" />
+    <None Remove="Assets\HostsPackageConsumer\AppList.scale-150.png" />
+    <None Remove="Assets\HostsPackageConsumer\AppList.scale-200.png" />
+    <None Remove="Assets\HostsPackageConsumer\AppList.scale-400.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Remove="HostsPackageConsumerXAML\App.xaml" />
   </ItemGroup>
   <ItemGroup>
