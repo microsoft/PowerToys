@@ -501,7 +501,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal),
+                            MonitorConfiguration = MonitorConfigurationType.Horizontal.TypeToString(),
                             Layout = layoutWrapper,
                         };
 
@@ -512,7 +512,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Vertical),
+                            MonitorConfiguration = MonitorConfigurationType.Vertical.TypeToString(),
                             Layout = layoutWrapper,
                         };
 
@@ -542,7 +542,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal),
+                            MonitorConfiguration = MonitorConfigurationType.Horizontal.TypeToString(),
                             Layout = layoutWrapper,
                         };
 
@@ -553,7 +553,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Vertical),
+                            MonitorConfiguration = MonitorConfigurationType.Vertical.TypeToString(),
                             Layout = layoutWrapper,
                         };
 
@@ -769,7 +769,7 @@ namespace FancyZonesEditor.Utils
             foreach (var layout in layouts)
             {
                 LayoutModel defaultLayoutModel = null;
-                MonitorConfigurationType type = MonitorConfigurationTypeEnumExtensions.GetTypeFromString(layout.MonitorConfiguration);
+                MonitorConfigurationType type = MonitorConfigurationTypeEnumExtensions.TypeFromString(layout.MonitorConfiguration);
 
                 if (layout.Layout.Uuid != null && layout.Layout.Uuid != string.Empty)
                 {

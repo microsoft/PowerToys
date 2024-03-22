@@ -84,7 +84,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             {
                 new DefaultLayoutWrapper
                 {
-                    MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal),
+                    MonitorConfiguration = MonitorConfigurationType.Horizontal.TypeToString(),
                     Layout = new DefaultLayoutWrapper.LayoutWrapper
                     {
                         Type = CustomLayoutJsonTag,
@@ -327,7 +327,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var defaultLayouts = new DefaultLayouts();
             var data = defaultLayouts.Read(defaultLayouts.File);
-            string configuration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal);
+            string configuration = MonitorConfigurationType.Horizontal.TypeToString();
             Assert.AreEqual(TemplateLayoutJsonTags[TemplateLayout.PriorityGrid], data.DefaultLayouts.Find(x => x.MonitorConfiguration == configuration).Layout.Type);
         }
 

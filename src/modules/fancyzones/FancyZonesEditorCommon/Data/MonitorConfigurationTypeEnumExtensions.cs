@@ -15,7 +15,7 @@ namespace FancyZonesEditorCommon.Data
         private const string HorizontalJsonTag = "horizontal";
         private const string VerticalJsonTag = "vertical";
 
-        public static string MonitorConfigurationTypeToString(this MonitorConfigurationType value)
+        public static string TypeToString(this MonitorConfigurationType value)
         {
             switch (value)
             {
@@ -28,7 +28,7 @@ namespace FancyZonesEditorCommon.Data
             return HorizontalJsonTag;
         }
 
-        public static MonitorConfigurationType GetTypeFromString(string value)
+        public static MonitorConfigurationType TypeFromString(string value)
         {
             switch (value)
             {

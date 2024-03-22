@@ -57,7 +57,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             {
                 new DefaultLayouts.DefaultLayoutWrapper
                 {
-                    MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Vertical),
+                    MonitorConfiguration = MonitorConfigurationType.Vertical.TypeToString(),
                     Layout = new DefaultLayouts.DefaultLayoutWrapper.LayoutWrapper
                     {
                         Type = "custom",

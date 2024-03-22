@@ -17,8 +17,8 @@ namespace Microsoft.FancyZonesEditor.UITests
     [TestClass]
     public class DefaultLayoutsTests
     {
-        private static readonly string Vertical = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Vertical);
-        private static readonly string Horizontal = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal);
+        private static readonly string Vertical = MonitorConfigurationType.Vertical.TypeToString();
+        private static readonly string Horizontal = MonitorConfigurationType.Horizontal.TypeToString();
 
         private static readonly CustomLayoutListWrapper CustomLayouts = new CustomLayoutListWrapper
         {
