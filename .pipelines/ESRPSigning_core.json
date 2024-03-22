@@ -7,6 +7,9 @@
                 "*.resources.dll",
                 
                 "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
+
+                "Microsoft.PowerToys.Configure.psm1",
+                "Microsoft.PowerToys.Configure.psd1",
                 
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
