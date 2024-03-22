@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static FancyZonesEditorCommon.Data.Constants;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static FancyZonesEditorCommon.Data.DefaultLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
@@ -87,7 +88,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     MonitorConfiguration = Horizontal,
                     Layout = new DefaultLayoutWrapper.LayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Grid],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Grid],
                         ZoneCount = 4,
                         ShowSpacing = true,
                         Spacing = 5,
@@ -184,16 +185,16 @@ namespace Microsoft.FancyZonesEditor.UITests
                 {
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Empty],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Empty],
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Focus],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Focus],
                         ZoneCount = 10,
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Rows],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 10,
@@ -201,7 +202,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Columns],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Columns],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 20,
@@ -209,7 +210,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Grid],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Grid],
                         ZoneCount = 4,
                         ShowSpacing = false,
                         Spacing = 10,
@@ -217,7 +218,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.PriorityGrid],
                         ZoneCount = 3,
                         ShowSpacing = true,
                         Spacing = 1,
@@ -254,7 +255,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Initialize()
         {
-            CheckTemplateLayouts(Constants.TemplateLayouts.Grid, null);
+            CheckTemplateLayouts(TemplateLayout.Grid, null);
             CheckCustomLayouts(string.Empty, CustomLayouts.CustomLayouts[0].Uuid);
         }
 
@@ -262,7 +263,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Cancel()
         {
             // assign Focus as a default horizontal and vertical layout
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[TemplateLayout.Focus]);
             var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(false);
             horizontalDefaultButton?.Click();
             var verticalDefaultButton = _session?.GetVerticalDefaultButton(false);
@@ -273,7 +274,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.WaitUntilHidden(horizontalDefaultButton!);
 
             // check that default layouts weren't changed
-            CheckTemplateLayouts(Constants.TemplateLayouts.Grid, null);
+            CheckTemplateLayouts(TemplateLayout.Grid, null);
             CheckCustomLayouts(string.Empty, CustomLayouts.CustomLayouts[0].Uuid);
         }
 
@@ -281,7 +282,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Save()
         {
             // assign Focus as a default horizontal and vertical layout
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[TemplateLayout.Focus]);
             var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(false);
             horizontalDefaultButton?.Click();
             var verticalDefaultButton = _session?.GetVerticalDefaultButton(false);
@@ -292,15 +293,15 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.WaitUntilHidden(horizontalDefaultButton!);
 
             // check that default layout was changed
-            CheckTemplateLayouts(Constants.TemplateLayouts.Focus, Constants.TemplateLayouts.Focus);
+            CheckTemplateLayouts(TemplateLayout.Focus, TemplateLayout.Focus);
             CheckCustomLayouts(string.Empty, string.Empty);
         }
 
-        private void CheckTemplateLayouts(Constants.TemplateLayouts? horizontalDefault, Constants.TemplateLayouts? verticalDefault)
+        private void CheckTemplateLayouts(TemplateLayout? horizontalDefault, TemplateLayout? verticalDefault)
         {
-            foreach (var (key, name) in Constants.TemplateLayoutNames)
+            foreach (var (key, name) in TestConstants.TemplateLayoutNames)
             {
-                if (key == Constants.TemplateLayouts.Empty)
+                if (key == TemplateLayout.Empty)
                 {
                     continue;
                 }

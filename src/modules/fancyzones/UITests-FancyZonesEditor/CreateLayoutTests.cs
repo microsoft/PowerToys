@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static FancyZonesEditorCommon.Data.Constants;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
@@ -66,16 +67,16 @@ namespace Microsoft.FancyZonesEditor.UITests
                 {
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Empty],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Empty],
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Focus],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Focus],
                         ZoneCount = 10,
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Rows],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 10,
@@ -83,7 +84,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Columns],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Columns],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 20,
@@ -91,7 +92,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Grid],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Grid],
                         ZoneCount = 4,
                         ShowSpacing = false,
                         Spacing = 10,
@@ -99,7 +100,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.PriorityGrid],
                         ZoneCount = 3,
                         ShowSpacing = true,
                         Spacing = 1,

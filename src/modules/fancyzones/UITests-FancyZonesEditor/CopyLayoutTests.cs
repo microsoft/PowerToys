@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static FancyZonesEditorCommon.Data.Constants;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
@@ -121,16 +122,16 @@ namespace Microsoft.FancyZonesEditor.UITests
                 {
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Empty],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Empty],
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Focus],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Focus],
                         ZoneCount = 10,
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Rows],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 10,
@@ -138,7 +139,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Columns],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Columns],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 20,
@@ -146,7 +147,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Grid],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Grid],
                         ZoneCount = 4,
                         ShowSpacing = false,
                         Spacing = 10,
@@ -154,7 +155,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.PriorityGrid],
                         ZoneCount = 3,
                         ShowSpacing = true,
                         Spacing = 1,
@@ -190,8 +191,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void CopyTemplate_FromEditLayoutWindow()
         {
-            string copiedLayoutName = Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus] + " (1)";
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Focus]);
+            string copiedLayoutName = TestConstants.TemplateLayoutNames[TemplateLayout.Focus] + " (1)";
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[TemplateLayout.Focus]);
             _session?.ClickCopyLayout();
 
             // verify the layout is copied
@@ -207,8 +208,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void CopyTemplate_FromContextMenu()
         {
-            string copiedLayoutName = Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows] + " (1)";
-            _session?.ClickContextMenuItem(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Rows], ElementName.CreateCustomLayout);
+            string copiedLayoutName = TestConstants.TemplateLayoutNames[TemplateLayout.Rows] + " (1)";
+            _session?.ClickContextMenuItem(TestConstants.TemplateLayoutNames[TemplateLayout.Rows], ElementName.CreateCustomLayout);
 
             // verify the layout is copied
             _session?.WaitElementDisplayedByName(copiedLayoutName);
@@ -224,8 +225,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void CopyTemplate_DefaultLayout()
         {
-            string copiedLayoutName = Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid] + " (1)";
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid]);
+            string copiedLayoutName = TestConstants.TemplateLayoutNames[TemplateLayout.PriorityGrid] + " (1)";
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[TemplateLayout.PriorityGrid]);
             _session?.ClickCopyLayout();
 
             // verify the layout is copied
@@ -238,7 +239,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
 
             // verify the default layout wasn't changed
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.PriorityGrid]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[TemplateLayout.PriorityGrid]);
             var horizontalDefaultButton = _session?.GetHorizontalDefaultButton(true);
             Assert.IsNotNull(horizontalDefaultButton);
             _session?.Click(ElementName.Cancel);

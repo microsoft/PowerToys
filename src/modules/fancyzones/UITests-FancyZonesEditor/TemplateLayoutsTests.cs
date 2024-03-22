@@ -8,6 +8,7 @@ using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using static FancyZonesEditorCommon.Data.AppliedLayouts;
+using static FancyZonesEditorCommon.Data.Constants;
 using static FancyZonesEditorCommon.Data.DefaultLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static FancyZonesEditorCommon.Data.LayoutTemplates;
@@ -24,16 +25,16 @@ namespace Microsoft.FancyZonesEditor.UITests
             {
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Empty],
+                    Type = TemplateLayoutJsonTags[TemplateLayout.Empty],
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Focus],
+                    Type = TemplateLayoutJsonTags[TemplateLayout.Focus],
                     ZoneCount = 10,
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Rows],
+                    Type = TemplateLayoutJsonTags[TemplateLayout.Rows],
                     ZoneCount = 2,
                     ShowSpacing = true,
                     Spacing = 10,
@@ -41,7 +42,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Columns],
+                    Type = TemplateLayoutJsonTags[TemplateLayout.Columns],
                     ZoneCount = 2,
                     ShowSpacing = true,
                     Spacing = 20,
@@ -49,7 +50,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Grid],
+                    Type = TemplateLayoutJsonTags[TemplateLayout.Grid],
                     ZoneCount = 4,
                     ShowSpacing = false,
                     Spacing = 10,
@@ -57,7 +58,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                 },
                 new TemplateLayoutWrapper
                 {
-                    Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.PriorityGrid],
+                    Type = TemplateLayoutJsonTags[TemplateLayout.PriorityGrid],
                     ZoneCount = 3,
                     ShowSpacing = true,
                     Spacing = 1,
@@ -99,7 +100,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                         MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Vertical),
                         Layout = new DefaultLayoutWrapper.LayoutWrapper
                         {
-                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.Rows],
+                            Type = TemplateLayoutJsonTags[TemplateLayout.Rows],
                             ZoneCount = 2,
                             ShowSpacing = true,
                             Spacing = 10,
@@ -111,7 +112,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                         MonitorConfiguration = MonitorConfigurationTypeEnumExtensions.MonitorConfigurationTypeToString(MonitorConfigurationType.Horizontal),
                         Layout = new DefaultLayoutWrapper.LayoutWrapper
                         {
-                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
+                            Type = TemplateLayoutJsonTags[TemplateLayout.PriorityGrid],
                             ZoneCount = 3,
                             ShowSpacing = true,
                             Spacing = 1,
@@ -168,7 +169,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                         AppliedLayout = new AppliedLayoutWrapper.LayoutWrapper
                         {
                             Uuid = "{72409DFC-2B87-469B-AAC4-557273791C26}",
-                            Type = Constants.TemplateLayoutTypes[Constants.TemplateLayouts.PriorityGrid],
+                            Type = TemplateLayoutJsonTags[TemplateLayout.PriorityGrid],
                             ZoneCount = 3,
                             ShowSpacing = true,
                             Spacing = 1,
@@ -208,7 +209,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             foreach (var (key, name) in TestConstants.TemplateLayoutNames)
             {
-                if (key == Constants.TemplateLayout.Empty)
+                if (key == TemplateLayout.Empty)
                 {
                     continue;
                 }
@@ -217,7 +218,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 var slider = _session?.FindByAccessibilityId(AccessibilityId.TemplateZoneSlider);
                 Assert.IsNotNull(slider);
-                var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).ZoneCount;
+                var expected = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[key]).ZoneCount;
                 Assert.AreEqual($"{expected}", slider.Text);
 
                 _session?.Click(ElementName.Cancel);
@@ -228,11 +229,11 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void ZoneNumber_Save()
         {
-            var type = Constants.TemplateLayouts.Columns;
-            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var type = TemplateLayout.Columns;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]);
             var value = layout.ZoneCount;
             var expected = value - 1;
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[type]);
 
             var slider = _session?.FindByAccessibilityId(AccessibilityId.TemplateZoneSlider);
             Assert.IsNotNull(slider);
@@ -245,17 +246,17 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var templateLayouts = new LayoutTemplates();
             var data = templateLayouts.Read(templateLayouts.File);
-            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).ZoneCount;
+            var actual = data.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]).ZoneCount;
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void ZoneNumber_Cancel()
         {
-            var type = Constants.TemplateLayouts.Rows;
-            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var type = TemplateLayout.Rows;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]);
             var expected = layout.ZoneCount;
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[type]);
 
             var slider = _session?.FindByAccessibilityId(AccessibilityId.TemplateZoneSlider);
             Assert.IsNotNull(slider);
@@ -267,16 +268,16 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var templateLayouts = new LayoutTemplates();
             var data = templateLayouts.Read(templateLayouts.File);
-            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).ZoneCount;
+            var actual = data.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]).ZoneCount;
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void HighlightDistance_Initialize()
         {
-            foreach (var (key, name) in Constants.TemplateLayoutNames)
+            foreach (var (key, name) in TestConstants.TemplateLayoutNames)
             {
-                if (key == Constants.TemplateLayout.Empty)
+                if (key == TemplateLayout.Empty)
                 {
                     continue;
                 }
@@ -285,7 +286,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 var slider = _session?.FindByAccessibilityId(AccessibilityId.SensitivitySlider);
                 Assert.IsNotNull(slider);
-                var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).SensitivityRadius;
+                var expected = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[key]).SensitivityRadius;
                 Assert.AreEqual($"{expected}", slider.Text);
 
                 _session?.Click(ElementName.Cancel);
@@ -296,10 +297,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void HighlightDistance_Save()
         {
-            var type = Constants.TemplateLayouts.Focus;
-            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var type = TemplateLayout.Focus;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]);
             var value = layout.SensitivityRadius;
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[type]);
 
             var slider = _session?.FindByAccessibilityId(AccessibilityId.SensitivitySlider);
             Assert.IsNotNull(slider);
@@ -314,17 +315,17 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var templateLayouts = new LayoutTemplates();
             var data = templateLayouts.Read(templateLayouts.File);
-            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).SensitivityRadius;
+            var actual = data.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]).SensitivityRadius;
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void HighlightDistance_Cancel()
         {
-            var type = Constants.TemplateLayouts.Focus;
-            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var type = TemplateLayout.Focus;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]);
             var expected = layout.SensitivityRadius;
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[type]);
 
             var slider = _session?.FindByAccessibilityId(AccessibilityId.SensitivitySlider);
             Assert.IsNotNull(slider);
@@ -335,16 +336,16 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var templateLayouts = new LayoutTemplates();
             var data = templateLayouts.Read(templateLayouts.File);
-            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).SensitivityRadius;
+            var actual = data.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]).SensitivityRadius;
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void SpaceAroundZones_Initialize()
         {
-            foreach (var (key, name) in Constants.TemplateLayoutNames)
+            foreach (var (key, name) in TestConstants.TemplateLayoutNames)
             {
-                if (key == Constants.TemplateLayout.Empty || key == Constants.TemplateLayout.Focus)
+                if (key == TemplateLayout.Empty || key == TemplateLayout.Focus)
                 {
                     // only for grid layouts
                     continue;
@@ -355,10 +356,10 @@ namespace Microsoft.FancyZonesEditor.UITests
                 var slider = _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider);
                 Assert.IsNotNull(slider);
 
-                var spacingEnabled = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).ShowSpacing;
+                var spacingEnabled = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[key]).ShowSpacing;
                 Assert.AreEqual(spacingEnabled, slider.Enabled);
 
-                var expected = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[key]).Spacing;
+                var expected = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[key]).Spacing;
                 Assert.AreEqual($"{expected}", slider.Text);
 
                 _session?.Click(ElementName.Cancel);
@@ -369,10 +370,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void SpaceAroundZones_Slider_Save()
         {
-            var type = Constants.TemplateLayouts.PriorityGrid;
-            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var type = TemplateLayout.PriorityGrid;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]);
             var expected = layout.Spacing + 1;
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[type]);
 
             var slider = _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider);
             Assert.IsNotNull(slider);
@@ -385,17 +386,17 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var templateLayouts = new LayoutTemplates();
             var data = templateLayouts.Read(templateLayouts.File);
-            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).Spacing;
+            var actual = data.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]).Spacing;
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void SpaceAroundZones_Slider_Cancel()
         {
-            var type = Constants.TemplateLayouts.PriorityGrid;
-            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var type = TemplateLayout.PriorityGrid;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]);
             var expected = layout.Spacing;
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[type]);
 
             var slider = _session?.FindByAccessibilityId(AccessibilityId.SpacingSlider);
             Assert.IsNotNull(slider);
@@ -408,17 +409,17 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var templateLayouts = new LayoutTemplates();
             var data = templateLayouts.Read(templateLayouts.File);
-            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).Spacing;
+            var actual = data.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]).Spacing;
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void SpaceAroundZones_Toggle_Save()
         {
-            var type = Constants.TemplateLayouts.PriorityGrid;
-            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var type = TemplateLayout.PriorityGrid;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]);
             var expected = !layout.ShowSpacing;
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[type]);
 
             var toggle = _session?.FindByAccessibilityId(AccessibilityId.SpacingToggle);
             Assert.IsNotNull(toggle);
@@ -432,17 +433,17 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var templateLayouts = new LayoutTemplates();
             var data = templateLayouts.Read(templateLayouts.File);
-            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).ShowSpacing;
+            var actual = data.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]).ShowSpacing;
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void SpaceAroundZones_Toggle_Cancel()
         {
-            var type = Constants.TemplateLayouts.PriorityGrid;
-            var layout = Layouts.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]);
+            var type = TemplateLayout.PriorityGrid;
+            var layout = Layouts.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]);
             var expected = layout.ShowSpacing;
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[type]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[type]);
 
             var toggle = _session?.FindByAccessibilityId(AccessibilityId.SpacingToggle);
             Assert.IsNotNull(toggle);
@@ -456,7 +457,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var templateLayouts = new LayoutTemplates();
             var data = templateLayouts.Read(templateLayouts.File);
-            var actual = data.LayoutTemplates.Find(x => x.Type == Constants.TemplateLayoutTypes[type]).ShowSpacing;
+            var actual = data.LayoutTemplates.Find(x => x.Type == TemplateLayoutJsonTags[type]).ShowSpacing;
             Assert.AreEqual(expected, actual);
         }
     }

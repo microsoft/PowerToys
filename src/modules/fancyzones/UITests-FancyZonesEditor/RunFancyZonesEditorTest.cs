@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static FancyZonesEditorCommon.Data.Constants;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
@@ -72,16 +73,16 @@ namespace Microsoft.FancyZonesEditor.UITests
                 {
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Empty],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Empty],
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Focus],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Focus],
                         ZoneCount = 10,
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Rows],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Rows],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 10,
@@ -89,7 +90,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Columns],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Columns],
                         ZoneCount = 2,
                         ShowSpacing = true,
                         Spacing = 20,
@@ -97,7 +98,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Grid],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.Grid],
                         ZoneCount = 4,
                         ShowSpacing = false,
                         Spacing = 10,
@@ -105,7 +106,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                     new LayoutTemplates.TemplateLayoutWrapper
                     {
-                        Type = Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.PriorityGrid],
+                        Type = TemplateLayoutJsonTags[TemplateLayout.PriorityGrid],
                         ZoneCount = 3,
                         ShowSpacing = true,
                         Spacing = 1,
@@ -188,18 +189,18 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
         {
-            _session?.ClickEditLayout(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]);
+            _session?.ClickEditLayout(TestConstants.TemplateLayoutNames[TemplateLayout.Grid]);
             Assert.IsNotNull(_session?.FindByAccessibilityId(FancyZonesEditorSession.AccessibilityId.DialogTitle)); // check the pane header
-            Assert.IsNotNull(_session?.FindByName($"Edit '{Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]}'")); // verify it's opened for the correct layout
+            Assert.IsNotNull(_session?.FindByName($"Edit '{TestConstants.TemplateLayoutNames[TemplateLayout.Grid]}'")); // verify it's opened for the correct layout
         }
 
         [TestMethod]
         public void OpenEditLayoutDialog_ByContextMenu_TemplateLayout() // verify the edit layout dialog is opened
         {
-            _session?.ClickContextMenuItem(Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid], FancyZonesEditorSession.ElementName.Edit);
+            _session?.ClickContextMenuItem(TestConstants.TemplateLayoutNames[TemplateLayout.Grid], FancyZonesEditorSession.ElementName.Edit);
             _session?.WaitElementDisplayedById(FancyZonesEditorSession.AccessibilityId.DialogTitle);
             Assert.IsNotNull(_session?.FindByAccessibilityId(FancyZonesEditorSession.AccessibilityId.DialogTitle)); // check the pane header
-            Assert.IsNotNull(_session?.FindByName($"Edit '{Constants.TemplateLayoutNames[Constants.TemplateLayouts.Grid]}'")); // verify it's opened for the correct layout
+            Assert.IsNotNull(_session?.FindByName($"Edit '{TestConstants.TemplateLayoutNames[TemplateLayout.Grid]}'")); // verify it's opened for the correct layout
         }
 
         [TestMethod]
@@ -215,7 +216,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void OpenContextMenu() // verify the context menu is opened
         {
-            Assert.IsNotNull(_session?.OpenContextMenu(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Columns]));
+            Assert.IsNotNull(_session?.OpenContextMenu(TestConstants.TemplateLayoutNames[TemplateLayout.Columns]));
         }
 
         [TestMethod]
