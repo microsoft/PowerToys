@@ -46,6 +46,7 @@ chrdavis
 Chrzan
 clayton
 Coplen
+craigloewen
 crutkas
 damienleroy
 davidegiacometti
@@ -87,6 +88,7 @@ martinchrzan
 martinmoene
 Melman
 Mikhayelyan
+msft
 Myrvold
 Nemeth
 nielslaute
