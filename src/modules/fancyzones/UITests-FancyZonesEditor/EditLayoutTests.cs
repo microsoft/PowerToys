@@ -9,6 +9,7 @@ using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium.Windows;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
+using static FancyZonesEditorCommon.Data.EditorParameters;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
@@ -61,8 +62,8 @@ namespace Microsoft.FancyZonesEditor.UITests
                     Name = "Canvas custom layout",
                     Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
-                        RefHeight = 952,
-                        RefWidth = 1500,
+                        RefHeight = 1040,
+                        RefWidth = 1920,
                         SensitivityRadius = 10,
                         Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper>
                         {
@@ -70,22 +71,22 @@ namespace Microsoft.FancyZonesEditor.UITests
                             {
                                 X = 0,
                                 Y = 0,
-                                Width = 900,
-                                Height = 522,
+                                Width = 500,
+                                Height = 250,
                             },
                             new CanvasInfoWrapper.CanvasZoneWrapper
                             {
-                                X = 900,
+                                X = 500,
                                 Y = 0,
-                                Width = 600,
-                                Height = 750,
+                                Width = 1420,
+                                Height = 500,
                             },
                             new CanvasInfoWrapper.CanvasZoneWrapper
                             {
                                 X = 0,
-                                Y = 522,
-                                Width = 1500,
-                                Height = 430,
+                                Y = 250,
+                                Width = 1920,
+                                Height = 500,
                             },
                         },
                     }),
@@ -111,6 +112,33 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 192,
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = true,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
             LayoutTemplates layoutTemplates = new LayoutTemplates();
             LayoutTemplates.TemplateLayoutsListWrapper templateLayoutsListWrapper = new LayoutTemplates.TemplateLayoutsListWrapper
             {
@@ -538,9 +566,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString() && x.Name == "Grid-9");
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
-            _session?.MoveSplitter(0, -100);
+            _session?.MoveSplitter(2, -100, 0);
             _session?.Click(ElementName.Save);
-            _session?.Click(ElementName.Save); // single click doesn't work after moving a splitter
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -548,18 +575,18 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = customLayouts.GridFromJsonElement(grid.Info.ToString());
             var actual = customLayouts.GridFromJsonElement(data.CustomLayouts.Find(x => x.Uuid == grid.Uuid).Info.GetRawText());
 
-            // columns are not changed
-            Assert.AreEqual(expected.Columns, actual.Columns);
-            for (int i = 0; i < expected.Columns; i++)
+            // rows are not changed
+            Assert.AreEqual(expected.Rows, actual.Rows);
+            for (int i = 0; i < expected.Rows; i++)
             {
-                Assert.AreEqual(expected.ColumnsPercentage[i], actual.ColumnsPercentage[i]);
+                Assert.AreEqual(expected.RowsPercentage[i], actual.RowsPercentage[i]);
             }
 
-            // rows are changed
-            Assert.AreEqual(expected.Rows, actual.Rows);
-            Assert.IsTrue(expected.RowsPercentage[0] > actual.RowsPercentage[0]);
-            Assert.IsTrue(expected.RowsPercentage[1] < actual.RowsPercentage[1]);
-            Assert.AreEqual(expected.RowsPercentage[2], actual.RowsPercentage[2]);
+            // Columns are changed
+            Assert.AreEqual(expected.Columns, actual.Columns);
+            Assert.IsTrue(expected.ColumnsPercentage[0] > actual.ColumnsPercentage[0]);
+            Assert.IsTrue(expected.ColumnsPercentage[1] < actual.ColumnsPercentage[1]);
+            Assert.AreEqual(expected.ColumnsPercentage[2], actual.ColumnsPercentage[2]);
 
             // cells are not changed
             for (int i = 0; i < expected.CellChildMap.Length; i++)
@@ -574,9 +601,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString() && x.Name == "Grid-9");
             _session?.ClickContextMenuItem(grid.Name, FancyZonesEditorSession.ElementName.EditZones);
 
-            _session?.MoveSplitter(0, -100);
+            _session?.MoveSplitter(2, -100, 0);
             _session?.Click(ElementName.Cancel);
-            _session?.Click(ElementName.Cancel); // single click doesn't work after moving a splitter
 
             // check the file
             var customLayouts = new CustomLayouts();
