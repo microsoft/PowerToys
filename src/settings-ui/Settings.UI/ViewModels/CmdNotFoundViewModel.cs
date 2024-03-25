@@ -195,17 +195,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // powerShell Preview might be installed, check it.
                 try
                 {
-                    var environmentPath = Environment.GetEnvironmentVariable("PATH");
-                    IEnumerable<string> pathCandidates = environmentPath.Split(';').Where(x => x.Contains("powershell", StringComparison.InvariantCultureIgnoreCase));
-                    foreach (string path in pathCandidates)
+                    // we have to search for the directory where the PowerShell preview command is located. It is added to the PATH environment variable, so we have to search for it there
+                    foreach (string pathCandidate in Environment.GetEnvironmentVariable("PATH").Split(';'))
                     {
-                        result = RunPowerShellScript(Path.Combine(path, "pwsh-preview.cmd"), arguments, true);
-                        if (result.Contains("PowerShell 7.4 or greater detected."))
+                        if (File.Exists(Path.Combine(pathCandidate, "pwsh-preview.cmd")))
                         {
-                            isPowerShellPreviewDetected = true;
-                            IsPowerShell7Detected = true;
-                            powerShellPreviewPath = path;
-                            break;
+                            result = RunPowerShellScript(Path.Combine(pathCandidate, "pwsh-preview.cmd"), arguments, true);
+                            if (result.Contains("PowerShell 7.4 or greater detected."))
+                            {
+                                isPowerShellPreviewDetected = true;
+                                IsPowerShell7Detected = true;
+                                powerShellPreviewPath = pathCandidate;
+                                break;
+                            }
                         }
                     }
                 }
