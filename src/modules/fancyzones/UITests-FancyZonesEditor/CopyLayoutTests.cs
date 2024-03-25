@@ -229,7 +229,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickCopyLayout();
 
             // verify the layout is copied
-            _session?.Click(ElementName.Save);
             Assert.IsNotNull(_session?.GetLayout(copiedLayoutName)); // new name is presented
 
             // verify the file
@@ -296,7 +295,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickCopyLayout();
 
             // verify the layout is copied
-            _session?.Click(ElementName.Save);
             Assert.IsNotNull(_session?.GetLayout(copiedLayoutName)); // new name is presented
 
             // verify the file
@@ -329,7 +327,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             _session?.ClickCopyLayout();
 
             // verify the layout is copied
-            _session?.Click(ElementName.Save);
             Assert.IsNotNull(_session?.GetLayout(copiedLayoutName)); // new name is presented
 
             // verify the file
