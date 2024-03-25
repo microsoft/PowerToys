@@ -398,16 +398,16 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             Click(Session.FindElementByName(ElementName.MergeZonesButton)!);
         }
 
-        public void MoveSplitter(int xOffset, int yOffset)
+        public void MoveSplitter(int index, int xOffset, int yOffset)
         {
             ReadOnlyCollection<WindowsElement> thumbs = Session.FindElementsByClassName(ClassName.Thumb);
-            if (thumbs.Count == 0)
+            if (thumbs.Count == 0 || index >= thumbs.Count)
             {
                 return;
             }
 
             Actions actions = new Actions(Session);
-            actions.MoveToElement(thumbs[0]).ClickAndHold();
+            actions.MoveToElement(thumbs[index]).ClickAndHold();
             int dx = xOffset / 10;
             int dy = yOffset / 10;
             for (int i = 0; i < 10; i++)
@@ -415,6 +415,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 actions.MoveByOffset(dx, dy);
             }
 
+            actions.Release();
             actions.Build().Perform();
         }
 
