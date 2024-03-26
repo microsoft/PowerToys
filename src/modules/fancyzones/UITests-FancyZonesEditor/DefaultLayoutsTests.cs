@@ -168,7 +168,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                         WorkAreaWidth = 1920,
                         MonitorHeight = 1080,
                         MonitorWidth = 1920,
-                        IsSelected = true,
+                        IsSelected = false,
                     },
                 },
             };
@@ -287,7 +287,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var verticalDefaultButton = _session?.GetVerticalDefaultButton(false);
             verticalDefaultButton?.Click();
 
-            // cancel
+            // save
             _session?.Click(ElementName.Save);
             _session?.WaitUntilHidden(horizontalDefaultButton!);
 
