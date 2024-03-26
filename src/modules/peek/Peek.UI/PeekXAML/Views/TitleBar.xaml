@@ -8,7 +8,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Peek.UI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    FlowDirection="{x:Bind TitleBarFlowDirection, Mode=OneWay}"
     mc:Ignorable="d">
 
     <Grid x:Name="TitleBarRootContainer" Height="48">
