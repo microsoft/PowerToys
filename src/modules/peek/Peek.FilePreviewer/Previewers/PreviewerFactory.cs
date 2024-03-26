@@ -23,39 +23,39 @@ namespace Peek.FilePreviewer.Previewers
             _previewSettings = Application.Current.GetService<IPreviewSettings>();
         }
 
-        public IPreviewer Create(IFileSystemItem file)
+        public IPreviewer Create(IFileSystemItem item)
         {
-            if (ImagePreviewer.IsFileTypeSupported(file.Extension))
+            if (ImagePreviewer.IsItemSupported(item))
             {
-                return new ImagePreviewer(file);
+                return new ImagePreviewer(item);
             }
-            else if (VideoPreviewer.IsFileTypeSupported(file.Extension))
+            else if (VideoPreviewer.IsItemSupported(item))
             {
-                return new VideoPreviewer(file);
+                return new VideoPreviewer(item);
             }
-            else if (AudioPreviewer.IsFileTypeSupported(file.Extension))
+            else if (AudioPreviewer.IsItemSupported(item))
             {
-                return new AudioPreviewer(file);
+                return new AudioPreviewer(item);
             }
-            else if (WebBrowserPreviewer.IsFileTypeSupported(file.Extension))
+            else if (WebBrowserPreviewer.IsItemSupported(item))
             {
-                return new WebBrowserPreviewer(file, _previewSettings);
+                return new WebBrowserPreviewer(item, _previewSettings);
             }
-            else if (ArchivePreviewer.IsFileTypeSupported(file.Extension))
+            else if (ArchivePreviewer.IsItemSupported(item))
             {
-                return new ArchivePreviewer(file);
+                return new ArchivePreviewer(item);
             }
-            else if (ShellPreviewHandlerPreviewer.IsFileTypeSupported(file.Extension))
+            else if (ShellPreviewHandlerPreviewer.IsItemSupported(item))
             {
-                return new ShellPreviewHandlerPreviewer(file);
+                return new ShellPreviewHandlerPreviewer(item);
             }
-            else if (DrivePreviewer.IsPathSupported(file.Path))
+            else if (DrivePreviewer.IsItemSupported(item))
             {
-                return new DrivePreviewer(file);
+                return new DrivePreviewer(item);
             }
 
             // Other previewer types check their supported file types here
-            return CreateDefaultPreviewer(file);
+            return CreateDefaultPreviewer(item);
         }
 
         public IPreviewer CreateDefaultPreviewer(IFileSystemItem file)
