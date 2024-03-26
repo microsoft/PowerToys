@@ -48,7 +48,7 @@
                 <MediaTransportControls
                     x:Name="mediaTransport"
                     Width="auto"
-                    MaxWidth="420"
+                    MaxWidth="800"
                     IsCompact="True" />
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>

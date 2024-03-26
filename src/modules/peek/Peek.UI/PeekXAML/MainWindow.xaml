@@ -11,8 +11,8 @@
     xmlns:views="using:Peek.UI.Views"
     xmlns:winuiex="using:WinUIEx"
     Title="{x:Bind ViewModel.WindowTitle, Mode=OneWay}"
-    MinWidth="440"
-    MinHeight="240"
+    MinWidth="480"
+    MinHeight="320"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
