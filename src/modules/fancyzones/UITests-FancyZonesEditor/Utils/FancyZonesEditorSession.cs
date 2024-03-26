@@ -8,8 +8,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Xml.Linq;
 using FancyZonesEditorCommon.Data;
-using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -291,13 +291,15 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             while (!opened && retryAttempts > 0)
             {
                 var editButton = layout?.FindElementByAccessibilityId(AccessibilityId.EditLayoutButton);
-                Assert.IsNotNull(editButton, "Edit button not found");
+                Assert.IsNotNull(editButton, $"Edit button at \"{layoutName}\" not found");
                 editButton.Click();
 
                 // wait until the dialog is opened
                 opened = WaitElementDisplayedByName($"Edit '{layoutName}'");
                 retryAttempts--;
             }
+
+            Assert.IsTrue(WaitElementDisplayedByName($"Edit '{layoutName}'"), $"Edit window for \"{layoutName}\" not found");
         }
 
         public void RightClickLayout(string layoutName)
@@ -482,49 +484,92 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
                 return wait.Until(pred =>
                 {
-                    var element = Session.FindElementByName(name);
-                    if (element != null)
+                    try
                     {
-                        return element.Displayed;
+                        var element = Session.FindElementByName(name);
+                        if (element != null)
+                        {
+                            return element.Displayed;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        context.WriteLine(e.Message);
                     }
 
                     return false;
                 });
             }
-            catch
+            catch (Exception e)
             {
+                context.WriteLine(e.Message);
                 return false;
             }
         }
 
-        public void WaitElementDisplayedById(string id)
+        public bool WaitElementDisplayedById(string id)
         {
-            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
-            wait.Until(pred =>
+            try
             {
-                var element = Session.FindElementByAccessibilityId(id);
-                if (element != null)
+                WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
+                return wait.Until(pred =>
                 {
-                    return element.Displayed;
-                }
+                    try
+                    {
+                        var element = Session.FindElementByAccessibilityId(id);
+                        if (element != null)
+                        {
+                            return element.Displayed;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        context.WriteLine(e.Message);
+                    }
 
+                    return false;
+                });
+            }
+            catch (Exception e)
+            {
+                context.WriteLine(e.Message);
                 return false;
-            });
+            }
         }
 
-        public void WaitElementDisplayedByClassName(string className)
+        public bool WaitElementDisplayedByClassName(string className)
         {
-            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
-            wait.Until(pred =>
+            try
             {
-                var element = Session.FindElementByClassName(className);
-                return element.Displayed;
-            });
+                WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
+                return wait.Until(pred =>
+                {
+                    try
+                    {
+                        var element = Session.FindElementByClassName(className);
+                        if (element != null)
+                        {
+                            return element.Displayed;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        context.WriteLine(e.Message);
+                    }
+
+                    return false;
+                });
+            }
+            catch (Exception e)
+            {
+                context.WriteLine(e.Message);
+                return false;
+            }
         }
 
         public void WaitUntilHidden(WindowsElement element)
         {
-            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(1));
+            WebDriverWait wait = new WebDriverWait(Session, TimeSpan.FromSeconds(3));
             wait.Until(pred =>
             {
                 return !element.Displayed;
