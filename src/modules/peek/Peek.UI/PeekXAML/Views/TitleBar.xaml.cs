@@ -28,6 +28,13 @@ namespace Peek.UI.Views
     [INotifyPropertyChanged]
     public sealed partial class TitleBar : UserControl
     {
+        private readonly ColumnDefinition systemLeftPaddingColumn = new() { Width = new GridLength(0) };
+        private readonly ColumnDefinition draggableColumn = new() { Width = new GridLength(1, GridUnitType.Star) };
+        private readonly ColumnDefinition launchAppButtonColumn = new() { Width = GridLength.Auto };
+        private readonly ColumnDefinition appRightPaddingColumn = new() { Width = new GridLength(64) };
+        private readonly ColumnDefinition pinButtonColumn = new() { Width = GridLength.Auto };
+        private readonly ColumnDefinition systemRightPaddingColumn = new() { Width = new GridLength(0) };
+
         public static readonly DependencyProperty ItemProperty =
             DependencyProperty.Register(
                 nameof(Item),
@@ -70,13 +77,6 @@ namespace Peek.UI.Views
 
         [ObservableProperty]
         private bool pinned = false;
-
-        private ColumnDefinition systemLeftPaddingColumn = new() { Width = new GridLength(0) };
-        private ColumnDefinition draggableColumn = new() { Width = new GridLength(1, GridUnitType.Star) };
-        private ColumnDefinition launchAppButtonColumn = new() { Width = GridLength.Auto };
-        private ColumnDefinition appRightPaddingColumn = new() { Width = new GridLength(65) };
-        private ColumnDefinition pinButtonColumn = new() { Width = new GridLength(40) };
-        private ColumnDefinition systemRightPaddingColumn = new() { Width = new GridLength(0) };
 
         public TitleBar()
         {
@@ -150,7 +150,7 @@ namespace Peek.UI.Views
             PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = DefaultAppName ?? string.Empty });
 
             // StorageFile objects can't represent files that are ".lnk", ".url", or ".wsh" file types.
-            // https://learn.microsoft.com/en-us/uwp/api/windows.storage.storagefile?view=winrt-22621
+            // https://learn.microsoft.com/uwp/api/windows.storage.storagefile?view=winrt-22621
             if (storageFile == null)
             {
                 options.DisplayApplicationPicker = true;
@@ -177,7 +177,7 @@ namespace Peek.UI.Views
 
         public string PinGlyph(bool pinned)
         {
-            return pinned ? "\xE841" : "\xE77A";
+            return pinned ? "\xE77A" : "\xE718";
         }
 
         public string PinToolTip(bool pinned)
@@ -217,10 +217,10 @@ namespace Peek.UI.Views
 
                 dragRectangleLeft.X = (int)(SystemLeftPaddingColumn.ActualWidth * scale);
                 dragRectangleLeft.Y = 0;
-                dragRectangleLeft.Width = (int)((IconAndTitleColumn.ActualWidth + DraggableColumn.ActualWidth) * scale);
+                dragRectangleLeft.Width = (int)(DraggableColumn.ActualWidth * scale);
                 dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
-                dragRectangleRight.X = (int)((SystemLeftPaddingColumn.ActualWidth + IconAndTitleColumn.ActualWidth + DraggableColumn.ActualWidth + LaunchAppButtonColumn.ActualWidth) * scale);
+                dragRectangleRight.X = (int)((SystemLeftPaddingColumn.ActualWidth + DraggableColumn.ActualWidth + LaunchAppButtonColumn.ActualWidth) * scale);
                 dragRectangleRight.Y = 0;
                 dragRectangleRight.Width = (int)(AppRightPaddingColumn.ActualWidth * scale);
                 dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
@@ -240,14 +240,7 @@ namespace Peek.UI.Views
                 appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
                 appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-                if (ThemeHelpers.GetAppTheme() == AppTheme.Light)
-                {
-                    appWindow.TitleBar.ButtonForegroundColor = Colors.DarkSlateGray;
-                }
-                else
-                {
-                    appWindow.TitleBar.ButtonForegroundColor = Colors.White;
-                }
+                appWindow.TitleBar.ButtonForegroundColor = ThemeHelpers.GetAppTheme() == AppTheme.Light ? Colors.DarkSlateGray : Colors.White;
 
                 mainWindow.SetTitleBar(this);
             }
