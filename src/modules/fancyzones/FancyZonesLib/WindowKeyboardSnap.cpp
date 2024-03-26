@@ -118,7 +118,7 @@ bool WindowKeyboardSnap::SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, 
         if (activeWorkAreas.contains(current))
         {
             const auto& workArea = activeWorkAreas.at(current);
-            bool moved = MoveByDirectionAndIndex(window, vkCode, FancyZonesSettings::settings().moveWindowAcrossMonitors /* cycle through zones */, workArea.get());
+            bool moved = MoveByDirectionAndIndex(window, vkCode, true /* cycle through zones */, workArea.get());
 
             if (FancyZonesSettings::settings().restoreSize && !moved)
             {
