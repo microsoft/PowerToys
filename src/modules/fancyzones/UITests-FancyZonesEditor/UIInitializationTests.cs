@@ -804,5 +804,19 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(appliedLayoutsWrapper.AppliedLayouts[0].AppliedLayout.Type, data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop2).AppliedLayout.Type);
             Assert.AreEqual(LayoutType.Rows.TypeToString(), data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop1).AppliedLayout.Type);
         }
+
+        [TestMethod]
+        public void FirstLaunch()
+        {
+            // files not yet exist
+            FancyZonesEditorSession.Files.LayoutTemplatesIOHelper.DeleteFile();
+            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.DeleteFile();
+            FancyZonesEditorSession.Files.LayoutHotkeysIOHelper.DeleteFile();
+            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.DeleteFile();
+
+            // verify editor opens without errors
+            _session = new FancyZonesEditorSession(_context!);
+            Assert.IsNotNull(_session.FindByAccessibilityId(FancyZonesEditorSession.AccessibilityId.MainWindow));
+        }
     }
 }
