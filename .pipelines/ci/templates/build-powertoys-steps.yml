@@ -299,3 +299,18 @@ steps:
   displayName: Publish Logs
   artifact: '$(System.JobDisplayName) logs'
   condition: always()
+
+- task: CopyFiles@2
+  displayName: Copy Build Files
+  condition: and(succeeded(), ne(variables['BuildPlatform'],'arm64')) 
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
+    targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Build Artifacts
+  condition: and(succeeded(), ne(variables['BuildPlatform'],'arm64')) 
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    artifactName: build-$(BuildPlatform)-$(BuildConfiguration)

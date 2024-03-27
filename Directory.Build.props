@@ -55,6 +55,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildCacheEnabled)' == 'true'">
+    <!-- Disable when running in a pipeline as the time to upload or download the massive .pch/.pchast to the cache is greater than the savings they provide. -->
+    <UsePrecompiledHeaders Condition="'$(TF_BUILD)' != ''">false</UsePrecompiledHeaders>
+
     <!-- Change this to bust the cache -->
     <MSBuildCacheCacheUniverse Condition="'$(MSBuildCacheCacheUniverse)' == ''">202310210737</MSBuildCacheCacheUniverse>
 

@@ -306,4 +306,16 @@
     <value>Unknown</value>
     <comment>Used for unknown drive type or file system</comment>
   </data>
+  <data name="Audio_Album" xml:space="preserve">
+    <value>Album: {0}</value>
+    <comment>{0} is the title of the album read from file metadata</comment>
+  </data>
+  <data name="Audio_Artist" xml:space="preserve">
+    <value>Artist: {0}</value>
+    <comment>{0} is the artist read from file metadata</comment>
+  </data>
+  <data name="Audio_Length" xml:space="preserve">
+    <value>Length: {0}</value>
+    <comment>{0} is the duration of the audio read from file metadata</comment>
+  </data>
 </root>

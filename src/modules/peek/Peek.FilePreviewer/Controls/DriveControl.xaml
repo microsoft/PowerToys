@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     SizeChanged="SizeChanged_Handler"
     mc:Ignorable="d">
+
     <Grid
         MaxWidth="1000"
         Margin="48"

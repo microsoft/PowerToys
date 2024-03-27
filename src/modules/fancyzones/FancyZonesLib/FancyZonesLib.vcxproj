@@ -121,7 +121,7 @@
     <ClCompile Include="WorkAreaConfiguration.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="MouseButtonsHook.cpp" />
     <ClCompile Include="Settings.cpp" />

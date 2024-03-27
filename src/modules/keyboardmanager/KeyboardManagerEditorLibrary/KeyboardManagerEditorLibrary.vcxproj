@@ -69,7 +69,7 @@
     <ClCompile Include="KeyDropDownControl.cpp" />
     <ClCompile Include="LoadingAndSavingRemappingHelper.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ShortcutControl.cpp" />
     <ClCompile Include="SingleKeyRemapControl.cpp" />

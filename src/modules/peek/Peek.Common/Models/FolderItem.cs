@@ -25,6 +25,8 @@ namespace Peek.Common.Models
 
         public string Path { get; init; }
 
+        public string Extension => string.Empty;
+
         public async Task<IStorageItem?> GetStorageItemAsync()
         {
             return await GetStorageFolderAsync();
