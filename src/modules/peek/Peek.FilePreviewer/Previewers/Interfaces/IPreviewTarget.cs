@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Windows.Media.Core;
+using Peek.Common.Models;
 
 namespace Peek.FilePreviewer.Previewers.Interfaces
 {
-    public interface IVideoPreviewer : IPreviewer, IPreviewTarget
+    public interface IPreviewTarget
     {
-        public MediaSource? Preview { get; }
+        static abstract bool IsItemSupported(IFileSystemItem item);
     }
 }

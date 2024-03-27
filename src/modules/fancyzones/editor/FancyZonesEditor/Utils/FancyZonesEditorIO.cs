@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Text.Json;
 using System.Windows;
 using FancyZonesEditor.Models;
@@ -149,10 +150,13 @@ namespace FancyZonesEditor.Utils
             try
             {
                 LayoutHotkeys parser = new LayoutHotkeys();
+                if (!File.Exists(parser.File))
+                {
+                    return new ParsingResult(true);
+                }
+
                 var layoutHotkeys = parser.Read(parser.File);
-
                 bool layoutHotkeysParsingResult = SetLayoutHotkeys(layoutHotkeys);
-
                 if (!layoutHotkeysParsingResult)
                 {
                     return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Layout_Hotkeys_Message);
@@ -174,8 +178,12 @@ namespace FancyZonesEditor.Utils
             try
             {
                 LayoutTemplates parser = new LayoutTemplates();
-                var templates = parser.Read(parser.File);
+                if (!File.Exists(parser.File))
+                {
+                    return new ParsingResult(true);
+                }
 
+                var templates = parser.Read(parser.File);
                 bool parsingResult = SetTemplateLayouts(templates.LayoutTemplates);
                 if (parsingResult)
                 {
@@ -198,8 +206,12 @@ namespace FancyZonesEditor.Utils
             try
             {
                 CustomLayouts parser = new CustomLayouts();
-                var wrapper = parser.Read(parser.File);
+                if (!File.Exists(parser.File))
+                {
+                    return new ParsingResult(true);
+                }
 
+                var wrapper = parser.Read(parser.File);
                 bool parsingResult = SetCustomLayouts(wrapper.CustomLayouts);
                 if (parsingResult)
                 {
@@ -222,8 +234,12 @@ namespace FancyZonesEditor.Utils
             try
             {
                 DefaultLayouts parser = new DefaultLayouts();
-                var wrapper = parser.Read(parser.File);
+                if (!File.Exists(parser.File))
+                {
+                    return new ParsingResult(true);
+                }
 
+                var wrapper = parser.Read(parser.File);
                 bool parsingResult = SetDefaultLayouts(wrapper.DefaultLayouts);
                 if (parsingResult)
                 {

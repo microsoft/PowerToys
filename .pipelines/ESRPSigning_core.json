@@ -54,6 +54,7 @@
                 "fancyzones.dll",
                 "PowerToys.FancyZonesEditor.exe",
                 "PowerToys.FancyZonesEditor.dll",
+                "PowerToys.FancyZonesEditorCommon.dll",
                 "PowerToys.FancyZonesModuleInterface.dll",
                 "PowerToys.FancyZones.exe",
 
