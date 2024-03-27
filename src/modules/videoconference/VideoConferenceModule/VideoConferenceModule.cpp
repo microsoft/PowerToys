@@ -611,6 +611,7 @@ void VideoConferenceModule::enable()
 #endif
         hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
     }
+    Trace::EnableVideoConference(true);
 }
 
 void VideoConferenceModule::unmuteAll()
@@ -664,6 +665,7 @@ void VideoConferenceModule::disable()
 
         _enabled = false;
     }
+    Trace::EnableVideoConference(false);
 }
 
 bool VideoConferenceModule::is_enabled()

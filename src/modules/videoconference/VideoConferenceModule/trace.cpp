@@ -19,6 +19,17 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
+// Log if the user has VCM enabled or disabled
+void Trace::EnableVideoConference(const bool enabled) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "VideoConference_EnableVideoConference",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}
+
 void Trace::SettingsChanged(const struct VideoConferenceSettings& settings) noexcept
 {
     bool CustomOverlayImage = (settings.imageOverlayPath.length() > 0);
