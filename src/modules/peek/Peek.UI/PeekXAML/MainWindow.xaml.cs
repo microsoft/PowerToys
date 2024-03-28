@@ -152,7 +152,7 @@ namespace Peek.UI
             // If no size is requested, try to fit to the monitor size.
             Size requestedSize = e.PreviewSize.MonitorSize ?? monitorSize;
             var contentScale = e.PreviewSize.UseEffectivePixels ? 1 : monitorScale;
-            Size scaledRequestedSize = new Size(requestedSize.Width / contentScale, requestedSize.Height / contentScale);
+            Size scaledRequestedSize = new(requestedSize.Width / contentScale, requestedSize.Height / contentScale);
 
             // TODO: Investigate why portrait images do not perfectly fit edge-to-edge --> WindowHeightContentPadding can be 0 (or close to that) if custom? [Jay]
             Size monitorMinContentSize = GetMonitorMinContentSize(monitorScale);
