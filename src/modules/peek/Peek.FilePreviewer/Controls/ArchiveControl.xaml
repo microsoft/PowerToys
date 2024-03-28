@@ -17,7 +17,7 @@
                 AutomationProperties.Name="{x:Bind Name}"
                 IsExpanded="{x:Bind IsExpanded}"
                 ItemsSource="{x:Bind Children}">
-                <Grid ColumnSpacing="10">
+                <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="auto" />
                         <ColumnDefinition Width="auto" />
@@ -34,7 +34,7 @@
 
         <DataTemplate x:Key="FileTemplate" x:DataType="models:ArchiveItem">
             <TreeViewItem AutomationProperties.Name="{x:Bind Name}">
-                <Grid ColumnSpacing="10">
+                <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="auto" />
                         <ColumnDefinition Width="auto" />
@@ -77,7 +77,6 @@
         </ScrollViewer>
         <Border
             Grid.Row="1"
-            MinWidth="300"
             Margin="16"
             HorizontalAlignment="Center"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -100,7 +99,7 @@
                     TextWrapping="Wrap" />
                 <Border
                     Grid.Column="1"
-                    BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                     BorderThickness="0,0,1,0" />
                 <TextBlock
                     Grid.Column="2"
@@ -110,7 +109,7 @@
                     TextWrapping="Wrap" />
                 <Border
                     Grid.Column="3"
-                    BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                     BorderThickness="0,0,1,0" />
                 <TextBlock
                     Grid.Column="4"

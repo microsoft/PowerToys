@@ -37,6 +37,7 @@
             x:Name="VideoPreview"
             AreTransportControlsEnabled="True"
             AutoPlay="True"
+            FlowDirection="LeftToRight"
             Source="{x:Bind VideoPreviewer.Preview, Mode=OneWay}"
             ToolTipService.ToolTip="{x:Bind InfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
@@ -47,7 +48,7 @@
                 <MediaTransportControls
                     x:Name="mediaTransport"
                     Width="auto"
-                    MaxWidth="420"
+                    MaxWidth="800"
                     IsCompact="True" />
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
@@ -62,6 +63,7 @@
             x:Name="BrowserPreview"
             x:Load="True"
             DOMContentLoaded="BrowserPreview_DOMContentLoaded"
+            FlowDirection="LeftToRight"
             IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"
             NavigationCompleted="PreviewBrowser_NavigationCompleted"
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"

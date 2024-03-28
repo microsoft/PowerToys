@@ -1157,14 +1157,7 @@ namespace PowerLauncher.ViewModel
         {
             bool isCurrentLanguageRightToLeft = System.Windows.Input.InputLanguageManager.Current.CurrentInputLanguage.TextInfo.IsRightToLeft;
 
-            if (isCurrentLanguageRightToLeft)
-            {
-                return FlowDirection.RightToLeft;
-            }
-            else
-            {
-                return FlowDirection.LeftToRight;
-            }
+            return isCurrentLanguageRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         }
 
         protected virtual void Dispose(bool disposing)

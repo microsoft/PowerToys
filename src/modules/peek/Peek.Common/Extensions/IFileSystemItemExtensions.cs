@@ -31,7 +31,7 @@ namespace Peek.Common.Extensions
         public static Size? GetSvgSize(this IFileSystemItem item)
         {
             Size? size = null;
-            using (FileStream stream = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+            using (FileStream stream = new(item.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
             {
                 XmlReaderSettings settings = new XmlReaderSettings();
                 settings.Async = true;
@@ -39,37 +39,35 @@ namespace Peek.Common.Extensions
                 settings.IgnoreProcessingInstructions = true;
                 settings.IgnoreWhitespace = true;
 
-                using (XmlReader reader = XmlReader.Create(stream, settings))
+                using XmlReader reader = XmlReader.Create(stream, settings);
+                while (reader.Read())
                 {
-                    while (reader.Read())
+                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "svg")
                     {
-                        if (reader.NodeType == XmlNodeType.Element && reader.Name == "svg")
+                        string? width = reader.GetAttribute("width");
+                        string? height = reader.GetAttribute("height");
+                        if (width != null && height != null)
                         {
-                            string? width = reader.GetAttribute("width");
-                            string? height = reader.GetAttribute("height");
-                            if (width != null && height != null)
+                            int widthValue = int.Parse(Regex.Match(width, @"\d+").Value, NumberFormatInfo.InvariantInfo);
+                            int heightValue = int.Parse(Regex.Match(height, @"\d+").Value, NumberFormatInfo.InvariantInfo);
+                            size = new Size(widthValue, heightValue);
+                        }
+                        else
+                        {
+                            string? viewBox = reader.GetAttribute("viewBox");
+                            if (viewBox != null)
                             {
-                                int widthValue = int.Parse(Regex.Match(width, @"\d+").Value, NumberFormatInfo.InvariantInfo);
-                                int heightValue = int.Parse(Regex.Match(height, @"\d+").Value, NumberFormatInfo.InvariantInfo);
-                                size = new Size(widthValue, heightValue);
-                            }
-                            else
-                            {
-                                string? viewBox = reader.GetAttribute("viewBox");
-                                if (viewBox != null)
+                                var viewBoxValues = viewBox.Split(' ');
+                                if (viewBoxValues.Length == 4)
                                 {
-                                    var viewBoxValues = viewBox.Split(' ');
-                                    if (viewBoxValues.Length == 4)
-                                    {
-                                        int viewBoxWidth = int.Parse(viewBoxValues[2], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                                        int viewBoxHeight = int.Parse(viewBoxValues[3], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                                        size = new Size(viewBoxWidth, viewBoxHeight);
-                                    }
+                                    int viewBoxWidth = int.Parse(viewBoxValues[2], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                    int viewBoxHeight = int.Parse(viewBoxValues[3], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                    size = new Size(viewBoxWidth, viewBoxHeight);
                                 }
                             }
-
-                            reader.Close();
                         }
+
+                        reader.Close();
                     }
                 }
             }
@@ -80,21 +78,19 @@ namespace Peek.Common.Extensions
         public static Size? GetQoiSize(this IFileSystemItem item)
         {
             Size? size = null;
-            using (FileStream stream = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+            using (FileStream stream = new(item.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
             {
                 if (stream.Length >= 12)
                 {
                     stream.Position = 4;
 
-                    using (var reader = new BinaryReader(stream))
-                    {
-                        uint widthValue = BinaryPrimitives.ReadUInt32BigEndian(reader.ReadBytes(4));
-                        uint heightValue = BinaryPrimitives.ReadUInt32BigEndian(reader.ReadBytes(4));
+                    using var reader = new BinaryReader(stream);
+                    uint widthValue = BinaryPrimitives.ReadUInt32BigEndian(reader.ReadBytes(4));
+                    uint heightValue = BinaryPrimitives.ReadUInt32BigEndian(reader.ReadBytes(4));
 
-                        if (widthValue > 0 && heightValue > 0)
-                        {
-                            size = new Size(widthValue, heightValue);
-                        }
+                    if (widthValue > 0 && heightValue > 0)
+                    {
+                        size = new Size(widthValue, heightValue);
                     }
                 }
             }
@@ -104,22 +100,13 @@ namespace Peek.Common.Extensions
 
         public static async Task<string> GetContentTypeAsync(this IFileSystemItem item)
         {
-            string contentType = string.Empty;
-
             var storageItem = await item.GetStorageItemAsync();
-            switch (storageItem)
+            string contentType = storageItem switch
             {
-                case StorageFile storageFile:
-                    contentType = storageFile.DisplayType;
-                    break;
-                case StorageFolder storageFolder:
-                    contentType = storageFolder.DisplayType;
-                    break;
-                default:
-                    contentType = item.FileType;
-                    break;
-            }
-
+                StorageFile storageFile => storageFile.DisplayType,
+                StorageFolder storageFolder => storageFolder.DisplayType,
+                _ => item.FileType,
+            };
             return contentType;
         }
     }

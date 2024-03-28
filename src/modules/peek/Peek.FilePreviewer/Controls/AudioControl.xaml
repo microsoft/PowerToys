@@ -10,15 +10,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
-
     <UserControl.Resources>
         <tkconverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
     </UserControl.Resources>
 
     <Grid
-        MaxWidth="800"
-        Margin="16"
-        HorizontalAlignment="Center"
+        Margin="24"
         VerticalAlignment="Center"
         ColumnSpacing="24"
         RowSpacing="24">
@@ -34,7 +31,6 @@
         <Border
             Grid.Row="0"
             Grid.Column="0"
-            Margin="24,0,0,0"
             HorizontalAlignment="Right"
             BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
@@ -45,14 +41,12 @@
         <StackPanel
             Grid.Row="0"
             Grid.Column="1"
-            Margin="0,0,24,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Spacing="5">
+            Spacing="4">
             <TextBlock
-                FontSize="26"
-                FontWeight="SemiBold"
                 MaxLines="3"
+                Style="{StaticResource TitleTextBlockStyle}"
                 Text="{x:Bind Source.Title, Mode=OneWay}"
                 TextTrimming="CharacterEllipsis"
                 TextWrapping="Wrap">
@@ -87,7 +81,6 @@
             x:Name="PlayerElement"
             Grid.Row="1"
             Grid.ColumnSpan="2"
-            VerticalAlignment="Top"
             AreTransportControlsEnabled="True"
             AutoPlay="True"
             Source="{x:Bind Source.MediaSource, Mode=OneWay}">
@@ -96,8 +89,7 @@
             </MediaPlayerElement.KeyboardAccelerators>
             <MediaPlayerElement.TransportControls>
                 <MediaTransportControls
-                    MaxWidth="900"
-                    Margin="0"
+                    MaxWidth="800"
                     IsCompact="True"
                     IsZoomButtonVisible="False" />
             </MediaPlayerElement.TransportControls>

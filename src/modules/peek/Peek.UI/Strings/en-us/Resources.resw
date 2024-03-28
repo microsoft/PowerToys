@@ -266,7 +266,7 @@
     <comment>Title of the Peek window. {0} is the name of the currently previewed item."Peek" is the name of the utility.</comment>
   </data>
   <data name="Drive_FreeSpace" xml:space="preserve">
-    <value>{0} free</value>
+    <value>{0} available</value>
     <comment>{0} is the free space of the drive</comment>
   </data>
   <data name="Drive_UsedSpace" xml:space="preserve">

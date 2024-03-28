@@ -11,12 +11,13 @@
     xmlns:views="using:Peek.UI.Views"
     xmlns:winuiex="using:WinUIEx"
     Title="{x:Bind ViewModel.WindowTitle, Mode=OneWay}"
-    MinWidth="450"
-    MinHeight="400"
+    MinWidth="480"
+    MinHeight="320"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
+
     <Grid KeyboardAcceleratorPlacementMode="Hidden">
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="Left" Invoked="PreviousNavigationInvoked" />
@@ -31,7 +32,7 @@
         </Grid.KeyboardAccelerators>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
