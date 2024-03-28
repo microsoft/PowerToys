@@ -21,6 +21,7 @@
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
+#include <FancyZonesLib/KeyboardInput.h>
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/on_thread_executor.h>
 #include <FancyZonesLib/Settings.h>
@@ -143,6 +144,7 @@ public:
     void ToggleEditor() noexcept;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
+    void OnKeyboardInput(WPARAM flags, HRAWINPUT hInput) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
     bool AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id, const FancyZonesUtils::Rect& rect) noexcept;
 
@@ -220,7 +222,13 @@ FancyZones::Run() noexcept
     m_window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
     if (!m_window)
     {
-        Logger::error(L"Failed to create FancyZones window");
+        Logger::critical(L"Failed to create FancyZones window");
+        return;
+    }
+
+    if (!KeyboardInput::Initialize(m_window))
+    {
+        Logger::critical(L"Failed to register raw input device");
         return;
     }
 
@@ -580,6 +588,12 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     }
     break;
 
+    case WM_INPUT:
+    {
+        OnKeyboardInput(wparam, reinterpret_cast<HRAWINPUT>(lparam));
+    }
+    break;
+
     case WM_SETTINGCHANGE:
     {
         if (wparam == SPI_SETWORKAREA)
@@ -715,6 +729,26 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     break;
     }
     return 0;
+}
+
+void FancyZones::OnKeyboardInput(WPARAM /*flags*/, HRAWINPUT hInput) noexcept
+{
+    auto input = KeyboardInput::OnKeyboardInput(hInput);
+    if (!input.has_value())
+    {
+        return;
+    }
+
+    switch (input.value().vkKey)
+    {
+    case VK_SHIFT:
+        {
+            m_draggingState.SetShiftState(input.value().pressed);
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept

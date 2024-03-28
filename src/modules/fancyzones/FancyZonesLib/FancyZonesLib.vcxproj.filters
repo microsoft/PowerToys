@@ -168,6 +168,9 @@
     <ClInclude Include="FancyZonesData\LastUsedVirtualDesktop.h">
       <Filter>Header Files\FancyZonesData</Filter>
     </ClInclude>
+    <ClInclude Include="KeyboardInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -276,6 +279,9 @@
       <Filter>Source Files\FancyZonesData</Filter>
     </ClCompile>
     <ClCompile Include="FancyZonesWindowProcessing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyboardInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

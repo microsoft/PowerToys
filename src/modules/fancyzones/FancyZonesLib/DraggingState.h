@@ -16,6 +16,8 @@ public:
     bool IsDragging() const noexcept;
     bool IsSelectManyZonesState() const noexcept;
 
+    void SetShiftState(bool value) noexcept;
+
 private:
     void OnSecondaryMouseDown();
     void OnMiddleMouseDown();
@@ -23,9 +25,10 @@ private:
     std::atomic<bool> m_secondaryMouseState;
     std::atomic<bool> m_middleMouseState;
     MouseButtonsHook m_mouseHook;
-    KeyState<VK_LSHIFT> m_leftShiftKeyState;
-    KeyState<VK_RSHIFT> m_rightShiftKeyState;
     KeyState<VK_LCONTROL, VK_RCONTROL> m_ctrlKeyState;
+    
+    bool m_shift{};
+
     std::function<void()> m_keyUpdateCallback;
 
     bool m_dragging{}; // True if we should be showing zone hints while dragging
