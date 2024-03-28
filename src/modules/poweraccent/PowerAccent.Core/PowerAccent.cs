@@ -347,7 +347,7 @@ public class PowerAccent : IDisposable
         string[] result = new string[array.Length];
         for (int i = 0; i < array.Length; i++)
         {
-            result[i] = array[i].Contains('ß') ? "ẞ" : array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture);
+            result[i] = array[i].Replace('ß', 'ẞ').Replace("ǰ", "J\u030c").ToUpper(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         return result;
