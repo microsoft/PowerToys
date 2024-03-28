@@ -15,6 +15,15 @@ internal sealed class DSCGeneration
 {
     private static readonly string DoubleNewLine = Environment.NewLine + Environment.NewLine;
 
+    private struct AdditionalPropertiesInfo
+    {
+        public string Name;
+
+        public string Type;
+    }
+
+    private static readonly Dictionary<string, AdditionalPropertiesInfo> AdditionalPropertiesInfoPerModule = new Dictionary<string, AdditionalPropertiesInfo> { { "PowerLauncher", new AdditionalPropertiesInfo { Name = "Plugins", Type = "Hashtable[]" } } };
+
     private static string EmitEnumDefinition(Type type)
     {
         var values = string.Empty;
@@ -133,6 +142,8 @@ internal sealed class DSCGeneration
             applyChangesBlock += applyChanges + DoubleNewLine;
         }
 
+        bool hasAdditionalProperties = AdditionalPropertiesInfoPerModule.TryGetValue(module.Name, out var additionalPropertiesInfo);
+
         // Enabled property of each module is contained in General settings
         if (!generalSettings)
         {
@@ -140,11 +151,32 @@ internal sealed class DSCGeneration
             [DscProperty(Key)] [Nullable[bool]]
             $Enabled = $null
 
-            [DscProperty()] [Hashtable]
-            $AdditionalProperties = @{}
+        """;
+
+            if (hasAdditionalProperties)
+            {
+                propertyDefinitionsBlock += $$"""
+
+            [DscProperty()] [{{additionalPropertiesInfo.Type}}]
+            ${{additionalPropertiesInfo.Name}} = @()
+
 
         """;
+            }
+
             applyChangesBlock += EmitPropertyApplyChangeStatements("General.Enabled", new PropertyEmitInfo($"{module.Name}", typeof(bool)), "Enabled");
+        }
+
+        var additionalPropertiesCheckBlock = string.Empty;
+        if (hasAdditionalProperties)
+        {
+            additionalPropertiesCheckBlock = $$"""
+                if ($this.{{additionalPropertiesInfo.Name}}.Count -gt 0) {
+                    $AdditionalPropertiesTmpPath = [System.IO.Path]::GetTempFileName()
+                    $this.{{additionalPropertiesInfo.Name}} | ConvertTo-Json | Set-Content -Path $AdditionalPropertiesTmpPath
+                    $Changes.Value += "setAdditional {{module.Name}} `"$AdditionalPropertiesTmpPath`""
+                }
+        """;
         }
 
         return $$"""
@@ -152,11 +184,7 @@ class {{module.Name}} {
 {{propertyDefinitionsBlock}}    ApplyChanges([ref]$Changes) {
 {{applyChangesBlock}}
 
-        if ($this.AdditionalProperties.Count -gt 0) {
-            $AdditionalPropertiesTmpPath = [System.IO.Path]::GetTempFileName()
-            $this.AdditionalProperties | ConvertTo-Json | Set-Content -Path $AdditionalPropertiesTmpPath
-            $Changes.Value += "setAdditional {{module.Name}} `"$AdditionalPropertiesTmpPath`""
-        }
+{{additionalPropertiesCheckBlock}}
     }
 }
 

@@ -6,11 +6,10 @@ properties:
       settings:
         PowerLauncher:
           Enabled: true
-          AdditionalProperties:
-            Plugins:
-              - Name: "Calculator"
-                Disabled: true
-              - Name: "Folder"
-                Disabled: true
+          Plugins:
+            - Name: "Calculator"
+              Disabled: true
+            - Name: "Folder"
+              Disabled: true
 
   configurationVersion: 0.2.0
