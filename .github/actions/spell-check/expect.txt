@@ -234,6 +234,7 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 copiedcolorrepresentation
+correcttext
 cotaskmem
 COULDNOT
 countof
@@ -341,6 +342,7 @@ DISABLEASACTIONKEY
 diskmgmt
 DISPLAYCHANGE
 DISPLAYCONFIG
+displayedtext
 displayname
 divyan
 Dlg
@@ -526,6 +528,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETTEXTLENGTH
 GHND
+GIFs
 GMEM
 GNumber
 gpedit
@@ -842,10 +845,10 @@ lwin
 LZero
 majortype
 makecab
-MAKELANGID
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
+MAKELANGID
 makepri
 manifestdependency
 MAPPEDTOSAMEKEY
