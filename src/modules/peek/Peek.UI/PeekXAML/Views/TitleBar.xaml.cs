@@ -28,13 +28,6 @@ namespace Peek.UI.Views
     [INotifyPropertyChanged]
     public sealed partial class TitleBar : UserControl
     {
-        private readonly ColumnDefinition systemLeftPaddingColumn = new() { Width = new GridLength(0) };
-        private readonly ColumnDefinition draggableColumn = new() { Width = new GridLength(1, GridUnitType.Star) };
-        private readonly ColumnDefinition launchAppButtonColumn = new() { Width = GridLength.Auto };
-        private readonly ColumnDefinition appRightPaddingColumn = new() { Width = new GridLength(64) };
-        private readonly ColumnDefinition pinButtonColumn = new() { Width = GridLength.Auto };
-        private readonly ColumnDefinition systemRightPaddingColumn = new() { Width = new GridLength(0) };
-
         public static readonly DependencyProperty ItemProperty =
             DependencyProperty.Register(
                 nameof(Item),
@@ -208,8 +201,8 @@ namespace Peek.UI.Views
             {
                 var scale = MainWindow.GetMonitorScale();
 
-                SystemRightPaddingColumn.Width = new GridLength(appWindow.TitleBar.RightInset / scale);
                 SystemLeftPaddingColumn.Width = new GridLength(appWindow.TitleBar.LeftInset / scale);
+                SystemRightPaddingColumn.Width = new GridLength(appWindow.TitleBar.RightInset / scale);
 
                 var dragRectsList = new List<RectInt32>();
                 RectInt32 dragRectangleLeft;
