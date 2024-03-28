@@ -221,7 +221,7 @@ namespace FancyZonesEditor.Models
                 List<string> result = new List<string>();
                 foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
                 {
-                    if (string.IsNullOrEmpty(pair.Value) || pair.Value == Uuid)
+                    if (pair.Key == Properties.Resources.Quick_Key_None || string.IsNullOrEmpty(pair.Value) || pair.Value == Uuid)
                     {
                         result.Add(pair.Key);
                     }
@@ -344,6 +344,7 @@ namespace FancyZonesEditor.Models
         {
             layout.SensitivityRadius = SensitivityRadius;
             layout.TemplateZoneCount = TemplateZoneCount;
+            layout.Name = Name;
         }
 
         // Adds new custom Layout
@@ -391,6 +392,8 @@ namespace FancyZonesEditor.Models
                     break;
                 }
             }
+
+            FirePropertyChanged(nameof(QuickKeysAvailable));
         }
 
         public void DefaultLayouts_PropertyChanged(object sender, PropertyChangedEventArgs e)

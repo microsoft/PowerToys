@@ -18,10 +18,6 @@ namespace FancyZonesEditor.Utils
 {
     public class FancyZonesEditorIO
     {
-        // Non-localizable strings: JSON tags
-        private const string HorizontalJsonTag = "horizontal";
-        private const string VerticalJsonTag = "vertical";
-
         // Non-localizable string: default virtual desktop id
         private const string DefaultVirtualDesktopGuid = "{00000000-0000-0000-0000-000000000000}";
 
@@ -289,7 +285,7 @@ namespace FancyZonesEditor.Utils
                     AppliedLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
                     {
                         Uuid = zoneset.ZonesetUuid,
-                        Type = LayoutTypeToJsonTag(zoneset.Type),
+                        Type = zoneset.Type.TypeToString(),
                         ShowSpacing = zoneset.ShowSpacing,
                         Spacing = zoneset.Spacing,
                         ZoneCount = zoneset.ZoneCount,
@@ -365,7 +361,7 @@ namespace FancyZonesEditor.Utils
             {
                 LayoutTemplates.TemplateLayoutWrapper wrapper = new LayoutTemplates.TemplateLayoutWrapper
                 {
-                    Type = LayoutTypeToJsonTag(layout.Type),
+                    Type = layout.Type.TypeToString(),
                     SensitivityRadius = layout.SensitivityRadius,
                     ZoneCount = layout.TemplateZoneCount,
                 };
@@ -405,7 +401,7 @@ namespace FancyZonesEditor.Utils
 
                 if (layout is CanvasLayoutModel)
                 {
-                    type = CanvasLayoutModel.ModelTypeID;
+                    type = CustomLayout.Canvas.TypeToString();
                     var canvasLayout = layout as CanvasLayoutModel;
 
                     var canvasRect = canvasLayout.CanvasRect;
@@ -437,7 +433,7 @@ namespace FancyZonesEditor.Utils
                 }
                 else if (layout is GridLayoutModel)
                 {
-                    type = GridLayoutModel.ModelTypeID;
+                    type = CustomLayout.Grid.TypeToString();
                     var gridLayout = layout as GridLayoutModel;
 
                     var cells = new int[gridLayout.Rows][];
@@ -505,7 +501,7 @@ namespace FancyZonesEditor.Utils
                     DefaultLayouts.DefaultLayoutWrapper.LayoutWrapper layoutWrapper = new DefaultLayouts.DefaultLayoutWrapper.LayoutWrapper
                     {
                         Uuid = string.Empty,
-                        Type = LayoutTypeToJsonTag(layout.Type),
+                        Type = layout.Type.TypeToString(),
                         SensitivityRadius = layout.SensitivityRadius,
                         ZoneCount = layout.TemplateZoneCount,
                     };
@@ -521,7 +517,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Horizontal),
+                            MonitorConfiguration = MonitorConfigurationType.Horizontal.TypeToString(),
                             Layout = layoutWrapper,
                         };
 
@@ -532,7 +528,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Vertical),
+                            MonitorConfiguration = MonitorConfigurationType.Vertical.TypeToString(),
                             Layout = layoutWrapper,
                         };
 
@@ -548,7 +544,7 @@ namespace FancyZonesEditor.Utils
                     DefaultLayouts.DefaultLayoutWrapper.LayoutWrapper layoutWrapper = new DefaultLayouts.DefaultLayoutWrapper.LayoutWrapper
                     {
                         Uuid = layout.Uuid,
-                        Type = LayoutTypeToJsonTag(LayoutType.Custom),
+                        Type = LayoutType.Custom.TypeToString(),
                     };
 
                     if (layout is GridLayoutModel grid)
@@ -562,7 +558,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Horizontal),
+                            MonitorConfiguration = MonitorConfigurationType.Horizontal.TypeToString(),
                             Layout = layoutWrapper,
                         };
 
@@ -573,7 +569,7 @@ namespace FancyZonesEditor.Utils
                     {
                         DefaultLayouts.DefaultLayoutWrapper wrapper = new DefaultLayouts.DefaultLayoutWrapper
                         {
-                            MonitorConfiguration = MonitorConfigurationTypeToJsonTag(MonitorConfigurationType.Vertical),
+                            MonitorConfiguration = MonitorConfigurationType.Vertical.TypeToString(),
                             Layout = layoutWrapper,
                         };
 
@@ -619,7 +615,7 @@ namespace FancyZonesEditor.Utils
                     continue;
                 }
 
-                LayoutType layoutType = JsonTagToLayoutType(layout.AppliedLayout.Type);
+                LayoutType layoutType = LayoutTypeEnumExtension.TypeFromString(layout.AppliedLayout.Type);
                 LayoutSettings settings = new LayoutSettings
                 {
                     ZonesetUuid = layout.AppliedLayout.Uuid,
@@ -705,11 +701,11 @@ namespace FancyZonesEditor.Utils
                 LayoutModel layout = null;
                 try
                 {
-                    if (zoneSet.Type == CanvasLayoutModel.ModelTypeID)
+                    if (zoneSet.Type == CustomLayout.Canvas.TypeToString())
                     {
                         layout = ParseCanvasInfo(zoneSet);
                     }
-                    else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
+                    else if (zoneSet.Type == CustomLayout.Grid.TypeToString())
                     {
                         layout = ParseGridInfo(zoneSet);
                     }
@@ -746,7 +742,7 @@ namespace FancyZonesEditor.Utils
 
             foreach (var wrapper in templateLayouts)
             {
-                LayoutType type = JsonTagToLayoutType(wrapper.Type);
+                LayoutType type = LayoutTypeEnumExtension.TypeFromString(wrapper.Type);
                 LayoutModel layout = MainWindowSettingsModel.TemplateModels[(int)type];
 
                 layout.SensitivityRadius = wrapper.SensitivityRadius;
@@ -789,7 +785,7 @@ namespace FancyZonesEditor.Utils
             foreach (var layout in layouts)
             {
                 LayoutModel defaultLayoutModel = null;
-                MonitorConfigurationType type = JsonTagToMonitorConfigurationType(layout.MonitorConfiguration);
+                MonitorConfigurationType type = MonitorConfigurationTypeEnumExtensions.TypeFromString(layout.MonitorConfiguration);
 
                 if (layout.Layout.Uuid != null && layout.Layout.Uuid != string.Empty)
                 {
@@ -805,7 +801,7 @@ namespace FancyZonesEditor.Utils
                 }
                 else
                 {
-                    LayoutType layoutType = JsonTagToLayoutType(layout.Layout.Type);
+                    LayoutType layoutType = LayoutTypeEnumExtension.TypeFromString(layout.Layout.Type);
                     defaultLayoutModel = MainWindowSettingsModel.TemplateModels[(int)layoutType];
                     defaultLayoutModel.TemplateZoneCount = layout.Layout.ZoneCount;
                     defaultLayoutModel.SensitivityRadius = layout.Layout.SensitivityRadius;
@@ -906,85 +902,6 @@ namespace FancyZonesEditor.Utils
             layout.ShowSpacing = info.ShowSpacing;
             layout.Spacing = info.Spacing;
             return layout;
-        }
-
-        private LayoutType JsonTagToLayoutType(string tag)
-        {
-            if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Empty])
-            {
-                return LayoutType.Blank;
-            }
-            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Focus])
-            {
-                return LayoutType.Focus;
-            }
-            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Rows])
-            {
-                return LayoutType.Rows;
-            }
-            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Columns])
-            {
-                return LayoutType.Columns;
-            }
-            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Grid])
-            {
-                return LayoutType.Grid;
-            }
-            else if (tag == Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.PriorityGrid])
-            {
-                return LayoutType.PriorityGrid;
-            }
-
-            return LayoutType.Custom;
-        }
-
-        private string LayoutTypeToJsonTag(LayoutType type)
-        {
-            switch (type)
-            {
-                case LayoutType.Blank:
-                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Empty];
-                case LayoutType.Focus:
-                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Focus];
-                case LayoutType.Columns:
-                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Columns];
-                case LayoutType.Rows:
-                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Rows];
-                case LayoutType.Grid:
-                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.Grid];
-                case LayoutType.PriorityGrid:
-                    return Constants.TemplateLayoutJsonTags[Constants.TemplateLayout.PriorityGrid];
-                case LayoutType.Custom:
-                    return Constants.CustomLayoutJsonTag;
-                default:
-                    return string.Empty;
-            }
-        }
-
-        private MonitorConfigurationType JsonTagToMonitorConfigurationType(string tag)
-        {
-            switch (tag)
-            {
-                case HorizontalJsonTag:
-                    return MonitorConfigurationType.Horizontal;
-                case VerticalJsonTag:
-                    return MonitorConfigurationType.Vertical;
-            }
-
-            return MonitorConfigurationType.Horizontal;
-        }
-
-        private string MonitorConfigurationTypeToJsonTag(MonitorConfigurationType type)
-        {
-            switch (type)
-            {
-                case MonitorConfigurationType.Horizontal:
-                    return HorizontalJsonTag;
-                case MonitorConfigurationType.Vertical:
-                    return VerticalJsonTag;
-            }
-
-            return HorizontalJsonTag;
         }
     }
 }

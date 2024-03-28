@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using FancyZonesEditor.Models;
+using FancyZonesEditorCommon.Data;
 using ManagedCommon;
 
 namespace FancyZonesEditor

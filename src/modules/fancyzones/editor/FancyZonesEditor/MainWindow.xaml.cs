@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Automation;
@@ -16,6 +15,7 @@ using System.Windows.Interop;
 using Common.UI;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
+using FancyZonesEditorCommon.Data;
 using ManagedCommon;
 using ModernWpf.Controls;
 
@@ -347,10 +347,14 @@ namespace FancyZonesEditor
         private void EditZones_Click(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
+
             var dataContext = ((FrameworkElement)sender).DataContext;
             Select((LayoutModel)dataContext);
+            App.Overlay.StartEditing(_settings.SelectedModel);
+
             EditLayoutDialog.Hide();
             Hide();
+
             App.Overlay.OpenEditor(_settings.SelectedModel);
         }
 
@@ -484,10 +488,12 @@ namespace FancyZonesEditor
                     }
                 }
 
+                model.Delete();
+
                 App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
                 App.FancyZonesEditorIO.SerializeDefaultLayouts();
-                model.Delete();
+                App.FancyZonesEditorIO.SerializeLayoutHotkeys();
             }
         }
 
