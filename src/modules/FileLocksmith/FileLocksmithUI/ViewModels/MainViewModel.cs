@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FileLocksmith.Interop;
@@ -78,7 +79,10 @@ namespace PowerToys.FileLocksmithUI.ViewModels
 
         public MainViewModel()
         {
-            paths = NativeMethods.ReadPathsFromFile();
+            var args = Environment.GetCommandLineArgs();
+            string pipeName = args.Where(s => s.Contains("\\\\.\\pipe\\")).FirstOrDefault() ?? string.Empty;
+
+            paths = NativeMethods.ReadPathsFromPipe(pipeName);
             Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
             LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);
         }

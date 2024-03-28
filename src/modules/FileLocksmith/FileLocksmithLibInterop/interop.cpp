@@ -4,6 +4,8 @@
 
 #include "../FileLocksmithLib/Constants.h"
 
+#define BUFSIZE 4096 * 4
+
 namespace FileLocksmith::Interop
 {
     public ref struct ProcessResult
@@ -92,40 +94,83 @@ namespace FileLocksmith::Interop
             return from_wstring_view(path_cpp);
         }
 
-        static array<System::String^>^ ReadPathsFromFile()
+        static array<System::String ^>^ ReadPathsFromPipe(System::String^ pipeName)
         {
-            std::ifstream stream(paths_file());
+            HANDLE hStdin = INVALID_HANDLE_VALUE;
 
-            std::vector<std::wstring> result_cpp;
-            std::wstring line;
-
-            bool finished = false;
-
-            while (!finished)
+            if (pipeName->Length > 0)
             {
-                WCHAR ch{};
-                // We have to read data like this
-                if (!stream.read(reinterpret_cast<char*>(&ch), 2))
+                std::wstring pipe = from_system_string(pipeName);
+
+                if (pipe.size() > 0)
                 {
-                    finished = true;
-                }
-                else if (ch == L'\n')
-                {
-                    if (line.empty())
+                    while (1)
                     {
-                        finished = true;
+                        hStdin = CreateFile(
+                            pipe.c_str(), // pipe name
+                            GENERIC_READ | GENERIC_WRITE, // read and write
+                            0, // no sharing
+                            NULL, // default security attributes
+                            OPEN_EXISTING, // opens existing pipe
+                            0, // default attributes
+                            NULL); // no template file
+
+                        // Break if the pipe handle is valid.
+                        if (hStdin != INVALID_HANDLE_VALUE)
+                            break;
+
+                        // Exit if an error other than ERROR_PIPE_BUSY occurs.
+                        auto error = GetLastError();
+                        if (error != ERROR_PIPE_BUSY)
+                        {
+                            break;
+                        }
+
+                        if (!WaitNamedPipe(pipe.c_str(), 3))
+                        {
+                            printf("Could not open pipe: 20 second wait timed out.");
+                        }
                     }
-                    else
-                    {
-                        result_cpp.push_back(line);
-                        line = {};
-                    }
-                }
-                else
-                {
-                    line += ch;
                 }
             }
+            else
+            {
+                hStdin = GetStdHandle(STD_INPUT_HANDLE);
+            }
+
+            if (hStdin == INVALID_HANDLE_VALUE)
+            {
+                ExitProcess(1);
+            }
+
+            BOOL bSuccess;
+            WCHAR chBuf[BUFSIZE];
+            DWORD dwRead;
+
+            std::vector<std::wstring> result_cpp;
+
+            for (;;)
+            {
+                // Read from standard input and stop on error or no data.
+                bSuccess = ReadFile(hStdin, chBuf, BUFSIZE * sizeof(wchar_t), &dwRead, NULL);
+
+                if (!bSuccess || dwRead == 0)
+                    break;
+
+                std::wstring inputBatch{ chBuf, dwRead / sizeof(wchar_t) };
+
+                std::wstringstream ss(inputBatch);
+                std::wstring item;
+                wchar_t delimiter = '?';
+                while (std::getline(ss, item, delimiter))
+                {
+                    result_cpp.push_back(item);
+                }
+
+                if (!bSuccess)
+                    break;
+            }
+            CloseHandle(hStdin);
 
             auto result = gcnew array<System::String ^>(static_cast<int>(result_cpp.size()));
             for (int i = 0; i < result->Length; i++)

@@ -5,17 +5,20 @@
 #include <common/utils/resources.h>
 #include <common/utils/elevation.h>
 
-#include "FileLocksmithLib/IPC.h"
 #include "FileLocksmithLib/Settings.h"
 #include "FileLocksmithLib/Trace.h"
 
+#include <atlstr.h>
+#include <atlfile.h>
 #include <Shlwapi.h>
 #include <shobjidl_core.h>
 #include <string>
+#include <thread>
 #include <wrl/module.h>
 
 #include "Generated Files/resource.h"
 
+#define BUFSIZE 4096 * 4
 
 using namespace Microsoft::WRL;
 
@@ -92,51 +95,70 @@ public:
     IFACEMETHODIMP Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
     {
         Trace::Invoked();
-        ipc::Writer writer;
 
         if (selection == nullptr)
         {
             return S_OK;
         }
 
-        if (HRESULT result = writer.start(); FAILED(result))
+        std::wstring pipe_name(L"\\\\.\\pipe\\powertoys_filelocksmithinput_");
+        UUID temp_uuid;
+        wchar_t* uuid_chars = nullptr;
+        if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
         {
-            Trace::InvokedRet(result);
-            return result;
+            auto val = get_last_error_message(GetLastError());
+            Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
         }
+        else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(&uuid_chars)) != RPC_S_OK)
+        {
+            auto val = get_last_error_message(GetLastError());
+            Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
+        }
+
+        if (uuid_chars != nullptr)
+        {
+            pipe_name += std::wstring(uuid_chars);
+            RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
+            uuid_chars = nullptr;
+        }
+        create_pipe_thread = std::thread(&FileLocksmithContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);
+
 
         std::wstring path = get_module_folderpath(g_hInst);
         path = path + L"\\PowerToys.FileLocksmithUI.exe";
 
         HRESULT result;
 
-        if (!RunNonElevatedEx(path.c_str(), L"", get_module_folderpath(g_hInst)))
+        if (!RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst)))
         {
             result = E_FAIL;
             Trace::InvokedRet(result);
             return result;
         }
+        create_pipe_thread.join();
 
-        DWORD num_items;
-        selection->GetCount(&num_items);
-
-        for (DWORD i = 0; i < num_items; i++)
+        if (hPipe != INVALID_HANDLE_VALUE)
         {
-            IShellItem* item;
-            result = selection->GetItemAt(i, &item);
-            if (SUCCEEDED(result))
-            {
-                LPWSTR file_path;
-                result = item->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
-                if (SUCCEEDED(result))
-                {
-                    // TODO Aggregate items and send to UI
-                    writer.add_path(file_path);
-                    CoTaskMemFree(file_path);
-                }
+            CAtlFile writePipe(hPipe);
 
-                item->Release();
+            DWORD fileCount = 0;
+            // Gets the list of files currently selected using the IShellItemArray
+            selection->GetCount(&fileCount);
+            // Iterate over the list of files
+            for (DWORD i = 0; i < fileCount; i++)
+            {
+                IShellItem* shellItem;
+                selection->GetItemAt(i, &shellItem);
+                LPWSTR itemName;
+                // Retrieves the entire file system path of the file from its shell item
+                shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
+                CString fileName(itemName);
+                // File name can't contain '?'
+                fileName.Append(_T("?"));
+                // Write the file path into the input stream for image resizer
+                writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
             }
+            writePipe.Close();
         }
 
         Trace::InvokedRet(S_OK);
@@ -166,7 +188,47 @@ protected:
     ComPtr<IUnknown> m_site;
 
 private:
+    HRESULT StartNamedPipeServerAndSendData(std::wstring pipe_name)
+    {
+        hPipe = CreateNamedPipe(
+            pipe_name.c_str(),
+            PIPE_ACCESS_DUPLEX |
+                WRITE_DAC,
+            PIPE_TYPE_MESSAGE |
+                PIPE_READMODE_MESSAGE |
+                PIPE_WAIT,
+            PIPE_UNLIMITED_INSTANCES,
+            BUFSIZE,
+            BUFSIZE,
+            0,
+            NULL);
+
+        if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
+        {
+            return E_FAIL;
+        }
+
+        // This call blocks until a client process connects to the pipe
+        BOOL connected = ConnectNamedPipe(hPipe, NULL);
+        if (!connected)
+        {
+            if (GetLastError() == ERROR_PIPE_CONNECTED)
+            {
+                return S_OK;
+            }
+            else
+            {
+                CloseHandle(hPipe);
+            }
+            return E_FAIL;
+        }
+
+        return S_OK;
+    }
+
     std::wstring context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_FILE_LOCKSMITH_CONTEXT_MENU_ENTRY, L"Unlock with File Locksmith");
+    std::thread create_pipe_thread;
+    HANDLE hPipe = INVALID_HANDLE_VALUE;
 };
 
 CoCreatableClass(FileLocksmithContextMenuCommand)
