@@ -746,11 +746,6 @@ void FancyZones::OnKeyboardInput(WPARAM /*flags*/, HRAWINPUT hInput) noexcept
             m_draggingState.SetShiftState(input.value().pressed);
         }
         break;
-    case VK_CONTROL:
-        {
-            m_draggingState.SetCtrlState(input.value().pressed);
-        }
-        break;
     default:
         break;
     }

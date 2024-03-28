@@ -8,6 +8,7 @@ DraggingState::DraggingState(const std::function<void()>& keyUpdateCallback) :
     m_secondaryMouseState(false),
     m_middleMouseState(false),
     m_mouseHook(std::bind(&DraggingState::OnSecondaryMouseDown, this), std::bind(&DraggingState::OnMiddleMouseDown, this)),
+    m_ctrlKeyState(keyUpdateCallback),
     m_keyUpdateCallback(keyUpdateCallback)
 {
 }
@@ -18,6 +19,8 @@ void DraggingState::Enable()
     {
         m_mouseHook.enable();
     }
+
+    m_ctrlKeyState.enable();
 }
 
 void DraggingState::Disable()
@@ -26,9 +29,9 @@ void DraggingState::Disable()
     m_secondaryMouseState = false;
     m_middleMouseState = false;
     m_shift = false;
-    m_ctrl = false;
 
     m_mouseHook.disable();
+    m_ctrlKeyState.disable();
 }
 
 void DraggingState::UpdateDraggingState() noexcept
@@ -71,17 +74,11 @@ bool DraggingState::IsDragging() const noexcept
 
 bool DraggingState::IsSelectManyZonesState() const noexcept
 {
-    return m_ctrl || m_middleMouseState;
+    return m_ctrlKeyState.state() || m_middleMouseState;
 }
 
 void DraggingState::SetShiftState(bool value) noexcept
 {
     m_shift = value;
-    m_keyUpdateCallback();
-}
-
-void DraggingState::SetCtrlState(bool value) noexcept
-{
-    m_ctrl = value;
     m_keyUpdateCallback();
 }

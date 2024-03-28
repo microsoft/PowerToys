@@ -17,7 +17,6 @@ public:
     bool IsSelectManyZonesState() const noexcept;
 
     void SetShiftState(bool value) noexcept;
-    void SetCtrlState(bool value) noexcept;
 
 private:
     void OnSecondaryMouseDown();
@@ -26,9 +25,9 @@ private:
     std::atomic<bool> m_secondaryMouseState;
     std::atomic<bool> m_middleMouseState;
     MouseButtonsHook m_mouseHook;
+    KeyState<VK_LCONTROL, VK_RCONTROL> m_ctrlKeyState;
     
     bool m_shift{};
-    bool m_ctrl{};
 
     std::function<void()> m_keyUpdateCallback;
 
