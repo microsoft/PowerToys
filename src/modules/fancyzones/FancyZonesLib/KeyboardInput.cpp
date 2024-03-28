@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "KeyboardInput.h"
 
-#include <hidusage.h>
+#include <hidUsage.h>
 
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
