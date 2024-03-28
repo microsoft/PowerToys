@@ -808,6 +808,33 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void FirstLaunch()
         {
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 192, // 200% scaling
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1920,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1920,
+                        IsSelected = true,
+                    },
+                },
+            };
+            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+
             // files not yet exist
             FancyZonesEditorSession.Files.LayoutTemplatesIOHelper.DeleteFile();
             FancyZonesEditorSession.Files.CustomLayoutsIOHelper.DeleteFile();
