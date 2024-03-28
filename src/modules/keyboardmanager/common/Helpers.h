@@ -14,7 +14,7 @@ namespace Helpers
         Shift,
         Action
     };
-    
+
     // Functions to encode that a key is originated from numpad
     DWORD EncodeKeyNumpadOrigin(const DWORD key, const bool extended);
     DWORD ClearKeyNumpadOrigin(const DWORD key);
@@ -31,10 +31,13 @@ namespace Helpers
     KeyType GetKeyType(DWORD key);
 
     // Function to set the value of a key event based on the arguments
-    void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
+    void SetKeyEvent(std::vector<INPUT>& keyEventArray, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
 
     // Function to set the dummy key events used for remapping shortcuts, required to ensure releasing a modifier doesn't trigger another action (For example, Win->Start Menu or Alt->Menu bar)
-    void SetDummyKeyEvent(LPINPUT keyEventArray, int& index, ULONG_PTR extraInfo);
+    void SetDummyKeyEvent(std::vector<INPUT>& keyEventArray, ULONG_PTR extraInfo);
+
+    // Function to set key events for remapping text.
+    void SetTextKeyEvents(std::vector<INPUT>& keyEventArray, const std::wstring& remapping);
 
     // Function to return window handle for a full screen UWP app
     HWND GetFullscreenUWPWindowHandle();
@@ -43,7 +46,7 @@ namespace Helpers
     std::wstring GetCurrentApplication(bool keepPath);
 
     // Function to set key events for modifier keys: When shortcutToCompare is passed (non-empty shortcut), then the key event is sent only if both shortcut's don't have the same modifier key. When keyToBeReleased is passed (non-NULL), then the key event is sent if either the shortcuts don't have the same modifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
-    void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& winKeyInvoked, LPINPUT keyEventArray, int& index, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare = Shortcut(), const DWORD& keyToBeReleased = NULL);
+    void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& winKeyInvoked, std::vector<INPUT>& keyEventArray, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare = Shortcut(), const DWORD& keyToBeReleased = NULL);
 
     // Function to filter the key codes for artificial key codes
     int32_t FilterArtificialKeys(const int32_t& key);
