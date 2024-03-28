@@ -266,20 +266,25 @@ namespace PowerLauncher
         private static void UpdateSettings(PowerLauncherSettings settings)
         {
             var defaultPlugins = GetDefaultPluginsSettings().ToDictionary(x => x.Id);
+            var defaultPluginsByName = GetDefaultPluginsSettings().ToDictionary(x => x.Name);
+
             foreach (PowerLauncherPluginSettings plugin in settings.Plugins)
             {
-                if (defaultPlugins.TryGetValue(plugin.Id, out PowerLauncherPluginSettings value))
+                PowerLauncherPluginSettings value = null;
+                if ((plugin.Id != null && defaultPlugins.TryGetValue(plugin.Id, out value)) || (!string.IsNullOrEmpty(plugin.Name) && defaultPluginsByName.TryGetValue(plugin.Name, out value)))
                 {
-                    var additionalOptions = CombineAdditionalOptions(value.AdditionalOptions, plugin.AdditionalOptions);
-                    var enabledPolicyState = GPOWrapper.GetRunPluginEnabledValue(plugin.Id);
-                    plugin.Name = value.Name;
+                    var id = value.Id;
+                    var name = value.Name;
+                    var additionalOptions = plugin.AdditionalOptions != null ? CombineAdditionalOptions(value.AdditionalOptions, plugin.AdditionalOptions) : value.AdditionalOptions;
+                    var enabledPolicyState = GPOWrapper.GetRunPluginEnabledValue(id);
+                    plugin.Name = name;
                     plugin.Description = value.Description;
                     plugin.Author = value.Author;
                     plugin.IconPathDark = value.IconPathDark;
                     plugin.IconPathLight = value.IconPathLight;
                     plugin.EnabledPolicyUiState = (int)enabledPolicyState;
-                    defaultPlugins[plugin.Id] = plugin;
-                    defaultPlugins[plugin.Id].AdditionalOptions = additionalOptions;
+                    defaultPlugins[id] = plugin;
+                    defaultPlugins[id].AdditionalOptions = additionalOptions;
                 }
             }
 

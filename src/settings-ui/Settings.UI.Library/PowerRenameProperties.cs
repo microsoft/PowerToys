@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -16,12 +18,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowIcon = new BoolProperty();
             ExtendedContextMenuOnly = new BoolProperty();
             UseBoostLib = new BoolProperty();
-            Enabled = new BoolProperty();
         }
 
+        [ObsoleteAttribute("Now controlled from the general settings", false)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public BoolProperty Enabled { get; set; }
 
         [JsonPropertyName("bool_persist_input")]
+        [CmdConfigureIgnoreAttribute]
         public BoolProperty PersistState { get; set; }
 
         [JsonPropertyName("bool_mru_enabled")]
@@ -31,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public IntProperty MaxMRUSize { get; set; }
 
         [JsonPropertyName("bool_show_icon_on_menu")]
+        [CmdConfigureIgnoreAttribute]
         public BoolProperty ShowIcon { get; set; }
 
         [JsonPropertyName("bool_show_extended_menu")]

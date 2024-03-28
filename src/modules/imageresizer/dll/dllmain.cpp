@@ -37,7 +37,7 @@ class ImageResizerModule : public PowertoyModuleIface
 {
 private:
     // Enabled by default
-    bool m_enabled = true;
+    bool m_enabled = false;
     std::wstring app_name;
     //contains the non localized key of the powertoy
     std::wstring app_key;
@@ -101,7 +101,6 @@ public:
     virtual void enable()
     {
         m_enabled = true;
-        CSettingsInstance().SetEnabled(m_enabled);
 
         if (package::IsWin11OrGreater())
         {
@@ -121,7 +120,6 @@ public:
     virtual void disable()
     {
         m_enabled = false;
-        CSettingsInstance().SetEnabled(m_enabled);
         Trace::EnableImageResizer(m_enabled);
     }
 

@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<Import Project="..\..\Version.props" />
+    <Import Project="..\..\Version.props" />
 
     <PropertyGroup>
+        <TargetFrameworks>net8.0-windows</TargetFrameworks>
+        <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
         <TargetFramework>net8.0-windows</TargetFramework>
         <Version>$(Version).0</Version>
         <Authors>Microsoft Corporation</Authors>
@@ -20,42 +22,42 @@
         <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
     </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<DefineConstants>DEBUG;TRACE</DefineConstants>
-		<DebugType>full</DebugType>
-		<DebugSymbols>true</DebugSymbols>
-	</PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <DebugType>full</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+    </PropertyGroup>
 
     <ItemGroup>
-		<None Include="backup_restore_settings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+        <None Include="backup_restore_settings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="System.IO.Abstractions" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.IO.Abstractions" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
-		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
-		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+        <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
+        <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    </ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="Resources\Resources.Designer.cs">
-	    <DependentUpon>Resources.resx</DependentUpon>
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	  </Compile>
-	</ItemGroup>
+    <ItemGroup>
+        <Compile Update="Resources\Resources.Designer.cs">
+            <DependentUpon>Resources.resx</DependentUpon>
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+        </Compile>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <EmbeddedResource Update="Resources\Resources.resx">
-	    <SubType>Designer</SubType>
-	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-	    <Generator>PublicResXFileCodeGenerator</Generator>
-	  </EmbeddedResource>
-	</ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\Resources.resx">
+            <SubType>Designer</SubType>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+            <Generator>PublicResXFileCodeGenerator</Generator>
+        </EmbeddedResource>
+    </ItemGroup>
 
 </Project>

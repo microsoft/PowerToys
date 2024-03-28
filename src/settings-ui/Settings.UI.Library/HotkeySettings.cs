@@ -2,14 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class HotkeySettings
+    public record HotkeySettings : ICmdLineRepresentable
     {
         private const int VKTAB = 0x09;
 
@@ -37,11 +39,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Alt = alt;
             Shift = shift;
             Code = code;
-        }
-
-        public HotkeySettings Clone()
-        {
-            return new HotkeySettings(Win, Ctrl, Alt, Shift, Code);
         }
 
         [JsonPropertyName("win")]
@@ -175,6 +172,73 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
 
             return false;
+        }
+
+        public static bool TryParseFromCmd(string cmd, out object result)
+        {
+            bool win = false, ctrl = false, alt = false, shift = false;
+            int code = 0;
+
+            var parts = cmd.Split('+');
+            foreach (var part in parts)
+            {
+                switch (part.Trim().ToLower(CultureInfo.InvariantCulture))
+                {
+                    case "win":
+                        win = true;
+                        break;
+                    case "ctrl":
+                        ctrl = true;
+                        break;
+                    case "alt":
+                        alt = true;
+                        break;
+                    case "shift":
+                        shift = true;
+                        break;
+                    default:
+                        if (!TryParseKeyCode(part, out code))
+                        {
+                            result = null;
+                            return false;
+                        }
+
+                        break;
+                }
+            }
+
+            result = new HotkeySettings(win, ctrl, alt, shift, code);
+            return true;
+        }
+
+        private static bool TryParseKeyCode(string key, out int keyCode)
+        {
+            // ASCII symbol
+            if (key.Length == 1 && char.IsLetterOrDigit(key[0]))
+            {
+                keyCode = char.ToUpper(key[0], CultureInfo.InvariantCulture);
+                return true;
+            }
+
+            // VK code
+            else if (key.Length == 4 && key.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                return int.TryParse(key.AsSpan(2), NumberStyles.HexNumber, null, out keyCode);
+            }
+
+            // Alias
+            else
+            {
+                keyCode = (int)Utilities.Helper.GetKeyValue(key);
+                return keyCode != 0;
+            }
+        }
+
+        public bool TryToCmdRepresentable(out string result)
+        {
+            result = ToString();
+            result = result.Replace(" ", null);
+            return true;
         }
     }
 }

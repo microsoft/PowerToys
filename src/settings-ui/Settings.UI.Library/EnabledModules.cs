@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool fileExplorerPreview = true;
 
         [JsonPropertyName("File Explorer Preview")]
-        public bool FileExplorerPreview
+        public bool PowerPreview
         {
             get => fileExplorerPreview;
             set
@@ -314,7 +314,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool powerOCR = true;
 
         [JsonPropertyName("TextExtractor")]
-        public bool PowerOCR
+        public bool PowerOcr
         {
             get => powerOCR;
             set

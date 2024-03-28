@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class BoolProperty
+    public record BoolProperty : ICmdLineRepresentable
     {
         public BoolProperty()
         {
@@ -22,9 +22,28 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("value")]
         public bool Value { get; set; }
 
+        public static bool TryParseFromCmd(string cmd, out object result)
+        {
+            result = null;
+
+            if (!bool.TryParse(cmd, out bool value))
+            {
+                return false;
+            }
+
+            result = new BoolProperty { Value = value };
+            return true;
+        }
+
         public override string ToString()
         {
             return JsonSerializer.Serialize(this);
+        }
+
+        public bool TryToCmdRepresentable(out string result)
+        {
+            result = Value.ToString();
+            return true;
         }
     }
 }

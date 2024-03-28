@@ -123,7 +123,7 @@ public:
     }
 
 private:
-    bool m_enabled;
+    bool m_enabled = false;
     bool m_extended_only;
 
     void init_settings()
@@ -136,7 +136,7 @@ private:
     void save_settings()
     {
         auto& settings = FileLocksmithSettingsInstance();
-        settings.SetEnabled(m_enabled);
+        m_enabled = FileLocksmithSettingsInstance().GetEnabled();
         settings.SetExtendedContextMenuOnly(m_extended_only);
 
         settings.Save();

@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     // Represents the configuration property of the settings that store string type.
-    public class StringProperty
+    public record StringProperty : ICmdLineRepresentable
     {
         public StringProperty()
         {
@@ -33,6 +33,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static StringProperty ToStringProperty(string v)
         {
             return new StringProperty(v);
+        }
+
+        public static bool TryParseFromCmd(string cmd, out object result)
+        {
+            result = new StringProperty(cmd);
+            return true;
+        }
+
+        public bool TryToCmdRepresentable(out string result)
+        {
+            result = Value;
+            return true;
         }
 
         public static implicit operator StringProperty(string v)

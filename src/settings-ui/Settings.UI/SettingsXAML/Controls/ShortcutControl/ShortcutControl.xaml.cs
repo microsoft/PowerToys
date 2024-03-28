@@ -321,7 +321,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
             if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
             {
-                lastValidSettings = internalSettings.Clone();
+                lastValidSettings = internalSettings with { };
 
                 if (!ComboIsValid(lastValidSettings))
                 {
@@ -436,7 +436,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             if (ComboIsValid(lastValidSettings))
             {
-                HotkeySettings = lastValidSettings.Clone();
+                HotkeySettings = lastValidSettings with { };
             }
 
             PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();

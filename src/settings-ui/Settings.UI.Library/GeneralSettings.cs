@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -39,16 +40,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         // Gets or sets system theme name.
         [JsonPropertyName("system_theme")]
+        [CmdConfigureIgnore]
         public string SystemTheme { get; set; }
 
         // Gets or sets powertoys version number.
         [JsonPropertyName("powertoys_version")]
+        [CmdConfigureIgnore]
         public string PowertoysVersion { get; set; }
 
         [JsonPropertyName("action_name")]
+        [CmdConfigureIgnore]
         public string CustomActionName { get; set; }
 
         [JsonPropertyName("enabled")]
+        [CmdConfigureIgnore]
         public EnabledModules Enabled { get; set; }
 
         [JsonPropertyName("show_new_updates_toast_notification")]
