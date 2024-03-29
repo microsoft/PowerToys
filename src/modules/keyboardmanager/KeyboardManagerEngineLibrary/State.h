@@ -6,6 +6,8 @@ class State : public MappingConfiguration
 private:
     // Stores the activated target application in app-specific shortcut
     std::wstring activatedAppSpecificShortcutTarget;
+    // Stores the previous action key
+    DWORD previousActionKey = {};
 
 public:
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
@@ -26,4 +28,10 @@ public:
 
     // Gets the activated target application in app-specific shortcut
     std::wstring GetActivatedApp();
+
+    // Sets the previous action key to use in another shortcut
+    void SetPreviousActionKey(const DWORD prevKey); 
+    
+    // Gets the previous action key
+    DWORD GetPreviousActionKey();
 };

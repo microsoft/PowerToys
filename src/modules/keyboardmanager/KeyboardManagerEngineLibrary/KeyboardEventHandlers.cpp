@@ -235,8 +235,8 @@ namespace KeyboardEventHandlers
         {
             const auto it = reMap.find(itShortcut);
 
-            // If a shortcut is currently in the invoked state then skip till the shortcut that is currently invoked
-            if (isShortcutInvoked && !it->second.isShortcutInvoked)
+            // If a shortcut is currently in the invoked state then skip till the shortcut that is currently invoked and pressed key is not action key
+            if (data->lParam->vkCode != it->first.GetActionKey() && isShortcutInvoked && !it->second.isShortcutInvoked)
             {
                 continue;
             }
@@ -309,7 +309,7 @@ namespace KeyboardEventHandlers
                     resetChordsResults.AnyChordStarted = false;
 
                     // Check if any other keys have been pressed apart from the shortcut. If true, then check for the next shortcut. This is to be done only for shortcut to shortcut remaps
-                    if (!it->first.IsKeyboardStateClearExceptShortcut(ii) && (remapToShortcut || (remapToKey && std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)))
+                    if (!it->first.IsKeyboardStateClearExceptShortcut(ii, static_cast<int>(state.GetPreviousActionKey())) && (remapToShortcut || (remapToKey && std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)))
                     {
                         continue;
                     }
@@ -561,10 +561,16 @@ namespace KeyboardEventHandlers
                         }
                     }
 
+                    // Set the previous action key with the action key of the invoked shortcut
+                    if (state.GetPreviousActionKey() == 0)
+                    {
+                        state.SetPreviousActionKey(it->first.GetActionKey());
+                    }
+
                     return 1;
                 }
             }
-            else if (it->second.isShortcutInvoked)
+            else if (it->second.isShortcutInvoked || isShortcutInvoked)
             {
                 // The shortcut has already been pressed down at least once, i.e. the shortcut has been invoked
                 // There are 6 cases to be handled if the shortcut has been pressed down
@@ -708,8 +714,33 @@ namespace KeyboardEventHandlers
                 if (!remapToShortcut || (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).CheckModifiersKeyboardState(ii)))
                 {
                     // Case 2: If the original shortcut is still held down the keyboard will get a key down message of the action key in the original shortcut and the new shortcut's modifiers will be held down (keys held down send repeated keydown messages)
-                    if (((data->lParam->vkCode == it->first.GetActionKey() && !it->first.HasChord())||(data->lParam->vkCode == it->first.GetSecondKey() && it->first.HasChord())) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                    if (((data->lParam->vkCode == it->first.GetActionKey() && !it->first.HasChord()) || (data->lParam->vkCode == it->first.GetSecondKey() && it->first.HasChord()) || (state.GetPreviousActionKey() != 0)) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                     {
+                        // Check if the pressed key is the previous action key and if the pressed key is the action key. If not, first release current shortcut and repeat the process to continue searching in the shortcut table
+                        if (state.GetPreviousActionKey() != 0 && state.GetPreviousActionKey() != data->lParam->vkCode && data->lParam->vkCode != it->first.GetActionKey())
+                        {
+                            size_t key_count = 1;
+                            LPINPUT keyEventList = nullptr;
+
+                            if (remapToShortcut)
+                            {
+                                key_count = (dest_size) + (src_size + 1) - (2 * static_cast<size_t>(commonKeys));
+                                keyEventList = new INPUT[key_count]{};
+                                Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            }
+                            else if (remapToKey)
+                            {
+                                int i = 0;
+                                key_count = dest_size + (src_size - 1) + KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE;
+                                keyEventList = new INPUT[key_count]{};
+                                Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(state.GetPreviousActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+
+                            UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
+                            delete[] keyEventList;
+                            continue;
+                        }
                         // In case of mapping to disable do not send anything
                         if (remapToKey && std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
                         {
@@ -750,14 +781,28 @@ namespace KeyboardEventHandlers
 
                         UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
                         delete[] keyEventList;
+
+                        // Set the previous action key with the action key of the invoked shortcut
+                        if (state.GetPreviousActionKey() == 0)
+                        {
+                            state.SetPreviousActionKey(it->first.GetActionKey());
+                        }
+
                         return 1;
                     }
 
                     // Case 3: If the action key is released from the original shortcut, keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
-                    if (!remapToText && ((!it->first.HasChord() && data->lParam->vkCode == it->first.GetActionKey()) || (it->first.HasChord() && data->lParam->vkCode==it->first.GetSecondKey())) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                    if (!remapToText && ((!it->first.HasChord() && data->lParam->vkCode == it->first.GetActionKey()) || (it->first.HasChord() && data->lParam->vkCode == it->first.GetSecondKey()) || (state.GetPreviousActionKey() != 0)) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
                         size_t key_count = 1;
                         LPINPUT keyEventList = nullptr;
+
+                        // Check if the released key is the previous action key. If so, reset previous action key 
+                        if (state.GetPreviousActionKey() == data->lParam->vkCode)
+                        {
+                            state.SetPreviousActionKey(0);
+                        }
+
                         if (remapToShortcut && !it->first.HasChord())
                         {
                             // Just lift the action key for no chords.
@@ -804,7 +849,7 @@ namespace KeyboardEventHandlers
                         else
                         {
                             // Check if the keyboard state is clear apart from the target remap key (by creating a temp Shortcut object with the target key)
-                            bool isKeyboardStateClear = Shortcut(std::vector<int32_t>({ Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)) })).IsKeyboardStateClearExceptShortcut(ii);
+                            bool isKeyboardStateClear = Shortcut(std::vector<int32_t>({ Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)) })).IsKeyboardStateClearExceptShortcut(ii, static_cast<int>(state.GetPreviousActionKey()));
 
                             // If the keyboard state is clear, we release the target key but do not reset the remap state
                             if (isKeyboardStateClear)

@@ -73,3 +73,15 @@ std::wstring State::GetActivatedApp()
 {
     return activatedAppSpecificShortcutTarget;
 }
+
+// Sets the previous action key to use in another shortcut
+void State::SetPreviousActionKey(const DWORD prevKey)
+{
+    previousActionKey = prevKey;
+}
+
+// Gets the previous action key
+DWORD State::GetPreviousActionKey()
+{
+    return previousActionKey;
+}

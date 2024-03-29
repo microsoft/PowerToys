@@ -181,7 +181,7 @@ public:
     bool CheckModifiersKeyboardState(KeyboardManagerInput::InputInterface& ii) const;
 
     // Function to check if any keys are pressed down except those in the shortcut
-    bool IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInterface& ii) const;
+    bool IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInterface& ii, int prevKey) const;
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;

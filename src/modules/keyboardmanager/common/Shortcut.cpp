@@ -746,7 +746,7 @@ bool IgnoreKeyCode(DWORD key)
 }
 
 // Function to check if any keys are pressed down except those in the shortcut
-bool Shortcut::IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInterface& ii) const
+bool Shortcut::IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInterface& ii, int prevKey) const
 {
     // Iterate through all the virtual key codes - 0xFF is set to key down because of the Num Lock
     for (int keyVal = 1; keyVal < 0xFF; keyVal++)
@@ -884,8 +884,8 @@ bool Shortcut::IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInt
                     continue;
                 }
             }
-            // If any other key is pressed check if it is the action key
-            else if (keyVal != static_cast<int>(actionKey))
+            // If any other key is pressed check if it is the action key or check if it is previous action key
+            else if (keyVal != static_cast<int>(actionKey) && (prevKey != 0 && keyVal != prevKey))
             {
                 return false;
             }
