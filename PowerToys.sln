@@ -573,6 +573,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITests-FancyZonesEditor", "src\modules\fancyzones\UITests-FancyZonesEditor\UITests-FancyZonesEditor.csproj", "{3A9A791E-94A9-49F8-8401-C11CE288D5FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FancyZonesEditorCommon", "src\modules\fancyzones\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj", "{C0974915-8A1D-4BF0-977B-9587D3807AB7}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DSC", "DSC", "{557C4636-D7E1-4838-A504-7D19B725EE95}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings.DSC.Schema.Generator", "src\dsc\PowerToys.Settings.DSC.Schema.Generator\PowerToys.Settings.DSC.Schema.Generator.csproj", "{1D6893CB-BC0C-46A8-A76C-9728706CA51A}"
