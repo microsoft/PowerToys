@@ -90,14 +90,12 @@ public:
         }
 
         m_enabled = true;
-        save_settings();
     }
 
     virtual void disable() override
     {
         Logger::info(L"File Locksmith disabled");
         m_enabled = false;
-        save_settings();
     }
 
     virtual bool is_enabled() override

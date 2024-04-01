@@ -202,8 +202,6 @@ public:
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-
-        save_settings();
     }
 
     // Disable the powertoy
