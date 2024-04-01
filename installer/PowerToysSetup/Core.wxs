@@ -46,6 +46,49 @@
       </Component>
     </DirectoryRef>
 
+    <?if $(var.PerUser) = "true" ?>
+    <DirectoryRef Id="PersonalFolder">
+      <Directory Id="WindowsPowerShellFolder" Name="PowerShell">
+        <Directory Id="PowerShellModulesFolder" Name="Modules">
+          <Directory Id="PowerToysDscFolder" Name="Microsoft.PowerToys.Configure">
+            <Directory Id="PowerToysDscVerFolder" Name="$(var.Version)">
+              <Component Id="PowerToysDSC" Win64="yes" Guid="4A033E3B-6590-43FD-8FBD-27F9DF557F7F">
+                <RegistryValue Root="HKCU"
+                         Key="Software\[Manufacturer]\[ProductName]"
+                         Name="DSCInstalled"
+                         Type="integer"
+                         Value="1"
+                         KeyPath="yes"/>
+                <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
+                <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
+                <RemoveFolder Id="RemoveThisFolder" On="uninstall" />
+                <RemoveFolder Id="RemovePowerToysDscVerFolder" Directory="PowerToysDscVerFolder" On="uninstall" />
+                <RemoveFolder Id="RemovePowerToysDscFolder" Directory="PowerToysDscFolder" On="uninstall" />
+                <RemoveFolder Id="RemovePowerShellModulesFolder" Directory="PowerShellModulesFolder" On="uninstall" />
+                <RemoveFolder Id="RemoveWindowsPowerShellFolder" Directory="WindowsPowerShellFolder" On="uninstall" />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </DirectoryRef>
+  <?else?>
+    <DirectoryRef Id="ProgramFiles64Folder">
+      <Directory Id="WindowsPowerShellFolder" Name="WindowsPowerShell">
+        <Directory Id="PowerShellModulesFolder" Name="Modules">
+          <Directory Id="PowerToysDscFolder" Name="Microsoft.PowerToys.Configure">
+            <Directory Id="PowerToysDscVerFolder" Name="$(var.Version)">
+              <Component Id="PowerToysDSC" Win64="yes" Guid="C52AECA0-DA73-49B8-BB49-31EF6640FF1F">
+                <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
+                <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </DirectoryRef>
+  <?endif?>
+
     <DirectoryRef Id="ApplicationProgramsFolder">
       <Component Id="PowerToysStartMenuShortcut" >
         <Shortcut Id="ApplicationStartMenuShortcut"
@@ -101,6 +144,7 @@
         <ComponentRef Id="License_rtf" />
         <ComponentRef Id="Notice_md" />
         <ComponentRef Id="DesktopShortcut" />
+        <ComponentRef Id="PowerToysDSC" />
     </ComponentGroup>
   </Fragment>
 </Wix>

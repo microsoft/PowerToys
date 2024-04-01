@@ -350,6 +350,15 @@ extends:
             ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
         - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
+          displayName: Sign DSC Powershell files
+          inputs:
+            ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+            FolderPath: 'src/dsc/Microsoft.PowerToys.Configure'
+            signType: batchSigning
+            batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
+            ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
           displayName: Sign x86 directshow VCM
           inputs:
             ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'

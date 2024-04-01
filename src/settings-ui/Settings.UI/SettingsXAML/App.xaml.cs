@@ -3,9 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Json;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.UI;
 using interop;
@@ -42,8 +48,11 @@ namespace Microsoft.PowerToys.Settings.UI
             ContainsFlyoutPosition,
         }
 
-        // Quantity of arguments
-        private const int RequiredArgumentsQty = 12;
+        private const int RequiredArgumentsSetSettingQty = 4;
+        private const int RequiredArgumentsSetAdditionalSettingsQty = 4;
+        private const int RequiredArgumentsGetSettingQty = 3;
+
+        private const int RequiredArgumentsLaunchedFromRunnerQty = 12;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -100,6 +109,171 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
+        private void OnLaunchedToSetSetting(string[] cmdArgs)
+        {
+            var settingName = cmdArgs[2];
+            var settingValue = cmdArgs[3];
+            try
+            {
+                SetSettingCommandLineCommand.Execute(settingName, settingValue, new SettingsUtils());
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"SetSettingCommandLineCommand exception: '{settingName}' setting couldn't be set to {settingValue}", ex);
+            }
+
+            Exit();
+        }
+
+        private void OnLaunchedToSetAdditionalSetting(string[] cmdArgs)
+        {
+            var moduleName = cmdArgs[2];
+            var ipcFileName = cmdArgs[3];
+            try
+            {
+                using (var settings = JsonDocument.Parse(File.ReadAllText(ipcFileName)))
+                {
+                    SetAdditionalSettingsCommandLineCommand.Execute(moduleName, settings, new SettingsUtils());
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"SetAdditionalSettingsCommandLineCommand exception: couldn't set additional settings for '{moduleName}'", ex);
+            }
+
+            Exit();
+        }
+
+        private void OnLaunchedToGetSetting(string[] cmdArgs)
+        {
+            var ipcFileName = cmdArgs[2];
+
+            try
+            {
+                var requestedSettings = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(File.ReadAllText(ipcFileName));
+                File.WriteAllText(ipcFileName, GetSettingCommandLineCommand.Execute(requestedSettings));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"GetSettingCommandLineCommand exception", ex);
+            }
+
+            Exit();
+        }
+
+        private void OnLaunchedFromRunner(string[] cmdArgs)
+        {
+            // Skip the first argument which is prepended when launched by explorer
+            if (cmdArgs[0].EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase) && cmdArgs[1].EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase) && (cmdArgs.Length >= RequiredArgumentsLaunchedFromRunnerQty + 1))
+            {
+                cmdArgs = cmdArgs.Skip(1).ToArray();
+            }
+
+            _ = int.TryParse(cmdArgs[(int)Arguments.PTPid], out int powerToysPID);
+            PowerToysPID = powerToysPID;
+
+            IsElevated = cmdArgs[(int)Arguments.ElevatedStatus] == "true";
+            IsUserAnAdmin = cmdArgs[(int)Arguments.IsUserAdmin] == "true";
+            ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
+            ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
+            ShowFlyout = cmdArgs[(int)Arguments.ShowFlyout] == "true";
+            bool containsSettingsWindow = cmdArgs[(int)Arguments.ContainsSettingsWindow] == "true";
+            bool containsFlyoutPosition = cmdArgs[(int)Arguments.ContainsFlyoutPosition] == "true";
+
+            // To keep track of variable arguments
+            int currentArgumentIndex = RequiredArgumentsLaunchedFromRunnerQty;
+
+            if (containsSettingsWindow)
+            {
+                // Open specific window
+                StartupPage = GetPage(cmdArgs[currentArgumentIndex]);
+
+                currentArgumentIndex++;
+            }
+
+            int flyout_x = 0;
+            int flyout_y = 0;
+            if (containsFlyoutPosition)
+            {
+                // get the flyout position arguments
+                _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_x);
+                _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_y);
+            }
+
+            RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
+            {
+                Environment.Exit(0);
+            });
+
+            ipcmanager = new TwoWayPipeMessageIPCManaged(cmdArgs[(int)Arguments.SettingsPipeName], cmdArgs[(int)Arguments.PTPipeName], (string message) =>
+            {
+                if (IPCMessageReceivedCallback != null && message.Length > 0)
+                {
+                    IPCMessageReceivedCallback(message);
+                }
+            });
+            ipcmanager.Start();
+
+            if (!ShowOobe && !ShowScoobe && !ShowFlyout)
+            {
+                settingsWindow = new MainWindow();
+                settingsWindow.Activate();
+                settingsWindow.ExtendsContentIntoTitleBar = true;
+                settingsWindow.NavigateToSection(StartupPage);
+
+                // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
+                // Need to call SetForegroundWindow to actually gain focus.
+                WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
+            }
+            else
+            {
+                // Create the Settings window hidden so that it's fully initialized and
+                // it will be ready to receive the notification if the user opens
+                // the Settings from the tray icon.
+                settingsWindow = new MainWindow(true);
+
+                if (ShowOobe)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
+                    OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
+                    oobeWindow.Activate();
+                    oobeWindow.ExtendsContentIntoTitleBar = true;
+                    SetOobeWindow(oobeWindow);
+                }
+                else if (ShowScoobe)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
+                    OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
+                    scoobeWindow.Activate();
+                    scoobeWindow.ExtendsContentIntoTitleBar = true;
+                    SetOobeWindow(scoobeWindow);
+                }
+                else if (ShowFlyout)
+                {
+                    POINT? p = null;
+                    if (containsFlyoutPosition)
+                    {
+                        p = new POINT(flyout_x, flyout_y);
+                    }
+
+                    ShellPage.OpenFlyoutCallback(p);
+                }
+            }
+
+            if (SelectedTheme() == ElementTheme.Default)
+            {
+                try
+                {
+                    themeListener = new ThemeListener();
+                    themeListener.ThemeChanged += (_) => HandleThemeChange();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", ex);
+                }
+            }
+        }
+
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
         /// will be used such as when the application is launched to open a specific file.
@@ -109,117 +283,21 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             var cmdArgs = Environment.GetCommandLineArgs();
 
-            if (cmdArgs != null && cmdArgs.Length >= RequiredArgumentsQty)
+            if (cmdArgs?.Length >= RequiredArgumentsLaunchedFromRunnerQty)
             {
-                // Skip the first argument which is prepended when launched by explorer
-                if (cmdArgs[0].EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase) && cmdArgs[1].EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase) && (cmdArgs.Length >= RequiredArgumentsQty + 1))
-                {
-                    cmdArgs = cmdArgs.Skip(1).ToArray();
-                }
-
-                _ = int.TryParse(cmdArgs[(int)Arguments.PTPid], out int powerToysPID);
-                PowerToysPID = powerToysPID;
-
-                IsElevated = cmdArgs[(int)Arguments.ElevatedStatus] == "true";
-                IsUserAnAdmin = cmdArgs[(int)Arguments.IsUserAdmin] == "true";
-                ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
-                ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
-                ShowFlyout = cmdArgs[(int)Arguments.ShowFlyout] == "true";
-                bool containsSettingsWindow = cmdArgs[(int)Arguments.ContainsSettingsWindow] == "true";
-                bool containsFlyoutPosition = cmdArgs[(int)Arguments.ContainsFlyoutPosition] == "true";
-
-                // To keep track of variable arguments
-                int currentArgumentIndex = RequiredArgumentsQty;
-
-                if (containsSettingsWindow)
-                {
-                    // Open specific window
-                    StartupPage = GetPage(cmdArgs[currentArgumentIndex]);
-
-                    currentArgumentIndex++;
-                }
-
-                int flyout_x = 0;
-                int flyout_y = 0;
-                if (containsFlyoutPosition)
-                {
-                    // get the flyout position arguments
-                    _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_x);
-                    _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_y);
-                }
-
-                RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
-                {
-                    Environment.Exit(0);
-                });
-
-                ipcmanager = new TwoWayPipeMessageIPCManaged(cmdArgs[(int)Arguments.SettingsPipeName], cmdArgs[(int)Arguments.PTPipeName], (string message) =>
-                {
-                    if (IPCMessageReceivedCallback != null && message.Length > 0)
-                    {
-                        IPCMessageReceivedCallback(message);
-                    }
-                });
-                ipcmanager.Start();
-
-                if (!ShowOobe && !ShowScoobe && !ShowFlyout)
-                {
-                    settingsWindow = new MainWindow();
-                    settingsWindow.Activate();
-                    settingsWindow.ExtendsContentIntoTitleBar = true;
-                    settingsWindow.NavigateToSection(StartupPage);
-
-                    // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
-                    // Need to call SetForegroundWindow to actually gain focus.
-                    WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
-                }
-                else
-                {
-                    // Create the Settings window hidden so that it's fully initialized and
-                    // it will be ready to receive the notification if the user opens
-                    // the Settings from the tray icon.
-                    settingsWindow = new MainWindow(true);
-
-                    if (ShowOobe)
-                    {
-                        PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-                        OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
-                        oobeWindow.Activate();
-                        oobeWindow.ExtendsContentIntoTitleBar = true;
-                        SetOobeWindow(oobeWindow);
-                    }
-                    else if (ShowScoobe)
-                    {
-                        PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                        OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
-                        scoobeWindow.Activate();
-                        scoobeWindow.ExtendsContentIntoTitleBar = true;
-                        SetOobeWindow(scoobeWindow);
-                    }
-                    else if (ShowFlyout)
-                    {
-                        POINT? p = null;
-                        if (containsFlyoutPosition)
-                        {
-                            p = new POINT(flyout_x, flyout_y);
-                        }
-
-                        ShellPage.OpenFlyoutCallback(p);
-                    }
-                }
-
-                if (SelectedTheme() == ElementTheme.Default)
-                {
-                    try
-                    {
-                        themeListener = new ThemeListener();
-                        themeListener.ThemeChanged += (_) => HandleThemeChange();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"HandleThemeChange exception. Please install .NET 4.", ex);
-                    }
-                }
+                OnLaunchedFromRunner(cmdArgs);
+            }
+            else if (cmdArgs?.Length == RequiredArgumentsSetSettingQty && cmdArgs[1] == "set")
+            {
+                OnLaunchedToSetSetting(cmdArgs);
+            }
+            else if (cmdArgs?.Length == RequiredArgumentsSetAdditionalSettingsQty && cmdArgs[1] == "setAdditional")
+            {
+                OnLaunchedToSetAdditionalSetting(cmdArgs);
+            }
+            else if (cmdArgs?.Length == RequiredArgumentsGetSettingQty && cmdArgs[1] == "get")
+            {
+                OnLaunchedToGetSetting(cmdArgs);
             }
             else
             {
@@ -417,7 +495,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "QuickAccent": return typeof(PowerAccentPage);
                 case "FileExplorer": return typeof(PowerPreviewPage);
                 case "ShortcutGuide": return typeof(ShortcutGuidePage);
-                case "PowerOCR": return typeof(PowerOcrPage);
+                case "PowerOcr": return typeof(PowerOcrPage);
                 case "VideoConference": return typeof(VideoConferencePage);
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);

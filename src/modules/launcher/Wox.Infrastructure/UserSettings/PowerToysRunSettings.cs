@@ -5,7 +5,6 @@
 using System.Text.Json.Serialization;
 
 using ManagedCommon;
-
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.UserSettings
