@@ -100,7 +100,7 @@ steps:
     ${{ if eq(parameters.enableCaching, true) }}:
       msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -reportfileaccesses -p:MSBuildCacheEnabled=true -p:MSBuildCacheLogDirectory=$(Build.ArtifactStagingDirectory)\logs\MSBuildCache -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
     ${{ else }}:
-      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
+      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
     msbuildArchitecture: x64
     maximumCpuCount: true
   ${{ if eq(parameters.enableCaching, true) }}:
@@ -114,7 +114,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\BugReportTool.binlog -ds:false
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -bl:$(Build.ArtifactStagingDirectory)\logs\BugReportTool.binlog -ds:false
     msbuildArchitecture: x64
     maximumCpuCount: true
 
@@ -125,7 +125,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\WebcamReportTool.binlog -ds:false
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -bl:$(Build.ArtifactStagingDirectory)\logs\WebcamReportTool.binlog -ds:false
     msbuildArchitecture: x64
     maximumCpuCount: true
 
@@ -136,7 +136,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\StylesReportTool.binlog -ds:false
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -bl:$(Build.ArtifactStagingDirectory)\logs\StylesReportTool.binlog -ds:false
     msbuildArchitecture: x64
     maximumCpuCount: true
 
@@ -308,9 +308,7 @@ steps:
     contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
     targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
 
-- task: PublishBuildArtifacts@1
+- publish: $(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)
   displayName: Publish Build Artifacts
+  artifact: build-$(BuildPlatform)-$(BuildConfiguration)
   condition: and(succeeded(), ne(variables['BuildPlatform'],'arm64')) 
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
-    artifactName: build-$(BuildPlatform)-$(BuildConfiguration)
