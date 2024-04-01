@@ -19,7 +19,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string SearchTypePreference { get; set; }
 
         [JsonPropertyName("maximum_number_of_results")]
-        [CmdConfigureIgnoreAttribute]
         public int MaximumNumberOfResults { get; set; }
 
         [JsonPropertyName("open_powerlauncher")]
