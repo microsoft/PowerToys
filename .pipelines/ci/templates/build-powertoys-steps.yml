@@ -308,9 +308,7 @@ steps:
     contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
     targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
 
-- task: PublishBuildArtifacts@1
+- publish: $(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)
   displayName: Publish Build Artifacts
+  artifact: build-$(BuildPlatform)-$(BuildConfiguration)
   condition: and(succeeded(), ne(variables['BuildPlatform'],'arm64')) 
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
-    artifactName: build-$(BuildPlatform)-$(BuildConfiguration)
