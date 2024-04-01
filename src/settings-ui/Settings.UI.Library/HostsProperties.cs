@@ -14,7 +14,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowStartupWarning { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        [CmdConfigureIgnore]
         public bool LaunchAdministrator { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
