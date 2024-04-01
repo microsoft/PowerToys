@@ -338,10 +338,16 @@ class {{module.Name}} {
 
                 # Stop any running PowerToys instances
                 Stop-Process -Name "PowerToys.Settings" -PassThru | Wait-Process
-                Stop-Process -Name "PowerToys" -PassThru | Wait-Process
+                $PowerToysProcessStopped = Stop-Process -Name "PowerToys" -PassThru
+                $PowerToysProcessStopped | Wait-Process
 
                 foreach ($change in $ChangesToApply) {
                     Start-Process -FilePath $SettingsExePath -Wait -Args "$change"
+                }
+
+                # If the PowerToys was stopped, restart it.
+                if ($PowerToysProcessStopped -ne $null) {
+                    Start-Process -FilePath $SettingsExePath
                 }
             }
         }
