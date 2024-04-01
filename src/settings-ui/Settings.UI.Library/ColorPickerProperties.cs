@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ColorPickerProperties
     {
+        [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x43);
 
         public ColorPickerProperties()
@@ -44,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("changecursor")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        [CmdConfigureIgnoreAttribute]
         public bool ChangeCursor { get; set; }
 
         [JsonPropertyName("copiedcolorrepresentation")]

@@ -19,15 +19,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool Startup { get; set; }
 
         // Gets or sets a value indicating whether the powertoy elevated.
+        [CmdConfigureIgnoreAttribute]
         [JsonPropertyName("is_elevated")]
         public bool IsElevated { get; set; }
 
         // Gets or sets a value indicating whether powertoys should run elevated.
         [JsonPropertyName("run_elevated")]
+        [CmdConfigureIgnoreAttribute]
         public bool RunElevated { get; set; }
 
         // Gets or sets a value indicating whether is admin.
         [JsonPropertyName("is_admin")]
+        [CmdConfigureIgnoreAttribute]
         public bool IsAdmin { get; set; }
 
         // Gets or sets a value indicating whether is warnings of elevated apps enabled.

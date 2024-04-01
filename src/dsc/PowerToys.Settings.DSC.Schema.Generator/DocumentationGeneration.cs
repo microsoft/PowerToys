@@ -31,6 +31,15 @@ internal sealed class DocumentationGeneration
         bool isAvailable = !info.IsIgnored;
         var availabilitySymbol = isAvailable ? IsAvailableSymbol : IsUnavailableSymbol;
         var documentation = MissingValueIndicator;
+        if (info.Type.IsEnum)
+        {
+            documentation = "Possible values: ";
+            foreach (var enumValue in Enum.GetValues(info.Type))
+            {
+                documentation += enumValue.ToString() + ' ';
+            }
+        }
+
         var propertyType = isAvailable ? SimplifyPropertyType(info.Type.Name) : MissingValueIndicator;
         return $"| {name} | {propertyType} | {documentation} | {availabilitySymbol} |";
     }

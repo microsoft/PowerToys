@@ -24,16 +24,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
     public class MouseWithoutBordersProperties : ICloneable
     {
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeySwitch2AllPC => new HotkeySettings();
 
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeyLockMachine => new HotkeySettings(true, true, true, false, 0x4C);
 
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeyReconnect => new HotkeySettings(true, true, true, false, 0x52);
 
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeyToggleEasyMouse => new HotkeySettings(true, true, true, false, 0x45);
 
+        [CmdConfigureIgnore]
         public StringProperty SecurityKey { get; set; }
 
+        [CmdConfigureIgnore]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool UseService { get; set; }
 
@@ -85,6 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public IntProperty EasyMouse { get; set; }
 
+        [CmdConfigureIgnore]
         public IntProperty MachineID { get; set; }
 
         [CmdConfigureIgnoreAttribute]
@@ -130,6 +137,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public HotkeySettings Switch2AllPCShortcut { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public IntProperty TCPPort { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -138,6 +146,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty Name2IP { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        [CmdConfigureIgnoreAttribute]
         public bool FirstCtrlShiftS { get; set; }
 
         [CmdConfigureIgnoreAttribute]
