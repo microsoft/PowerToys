@@ -30,6 +30,8 @@ All:
 - MWB
 - Crop And Lock
 - Environment Variables
+- Command Not Found
+- DSC
 ```
 
 ```
@@ -47,6 +49,7 @@ Group 1:
 - Registry Preview
 - Peek
 - Environment Variables
+- DSC
 ```
 
 ```
@@ -64,6 +67,7 @@ Group 2:
 - MWB
 - Crop And Lock
 - Environment Variables
+- Command Not Found
 ```
 
 ```
@@ -82,6 +86,7 @@ Group 3:
 - GPO
 - Peek
 - MWB
+- Command Not Found
 ```
 
 ```
@@ -96,6 +101,7 @@ Group 4:
 - Screen Ruler
 - Paste As Plain Text
 - Crop And Lock
+- DSC
 ```
 
 ```
