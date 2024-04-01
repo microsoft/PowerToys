@@ -64,8 +64,6 @@
                 <RemoveFolder Id="RemoveThisFolder" On="uninstall" />
                 <RemoveFolder Id="RemovePowerToysDscVerFolder" Directory="PowerToysDscVerFolder" On="uninstall" />
                 <RemoveFolder Id="RemovePowerToysDscFolder" Directory="PowerToysDscFolder" On="uninstall" />
-                <RemoveFolder Id="RemovePowerShellModulesFolder" Directory="PowerShellModulesFolder" On="uninstall" />
-                <RemoveFolder Id="RemoveWindowsPowerShellFolder" Directory="WindowsPowerShellFolder" On="uninstall" />
               </Component>
             </Directory>
           </Directory>
