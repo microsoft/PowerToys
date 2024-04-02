@@ -153,7 +153,7 @@ In this release, we focused on stability and improvements.
 ### Keyboard Manager
 
  - Fixed an issue that would clear out KBM mappings when certain numpad keys were used as the second key of a chord.
- - Added a comment in localization files so that translators wouldn't translate "Text" as "SMS".
+ - Added a comment in localization files so that translators won't translate "Text" as "SMS".
 
 ### Peek
 
