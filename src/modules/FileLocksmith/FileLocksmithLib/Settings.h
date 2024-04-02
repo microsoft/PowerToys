@@ -15,6 +15,7 @@ public:
             return true;
         if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
             return false;
+        Reload();
         RefreshEnabledState();
         return settings.enabled;
     }

@@ -72,6 +72,17 @@ void CSettings::Load()
     }
 }
 
+void CSettings::Reload()
+{
+    // Load json settings from data file if it is modified in the meantime.
+    FILETIME lastModifiedTime{};
+    if (LastModifiedTime(moduleJsonFilePath, &lastModifiedTime) &&
+            CompareFileTime(&lastModifiedTime, &lastLoadedTime) == 1)
+    {
+        Load();
+    }
+}
+
 void CSettings::RefreshEnabledState()
 {
     // Load json settings from data file if it is modified in the meantime.
