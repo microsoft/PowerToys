@@ -106,7 +106,7 @@ In this release, we focused on stability and improvements.
 
  - New feature: Desired State Configuration support, allowing the use of winget configure for PowerToys.
  - The Windows App SDK dependency was updated to 1.5.1, fixing many underlying UI issues.
- - Webp/webm files support was added to Peek. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - WebP/WebM files support was added to Peek. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Audio files support was added to Peek. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Automated UI testing for FancyZones Editor was added to CI.
 
