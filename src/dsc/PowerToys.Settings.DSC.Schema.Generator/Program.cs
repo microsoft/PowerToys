@@ -13,21 +13,35 @@ internal sealed class Program
 {
     public static int Main(string[] args)
     {
-        if (args.Length != 2)
+        if (args.Length < 2)
         {
-            Console.WriteLine("Usage: Generator.exe <PowerToys.Settings.UI.Lib.dll path> <output path>");
+            Console.WriteLine("Usage: Generator.exe <PowerToys.Settings.UI.Lib.dll path> <module output path> <manifest output path>");
             return 1;
         }
 
         var dllPath = args[0];
-        var outputPath = args[1];
+        var moduleOutputPath = args[1];
+        var manifestOutputPath = string.Empty;
 
-        bool documentationMode = Path.GetExtension(outputPath) == ".md";
-        bool sampleMode = Path.GetExtension(outputPath) == ".yaml";
+        bool documentationMode = Path.GetExtension(moduleOutputPath) == ".md";
+        bool sampleMode = Path.GetExtension(moduleOutputPath) == ".yaml";
+
+        if (!documentationMode && !sampleMode)
+        {
+            if (args.Length < 3)
+            {
+                Console.WriteLine("Usage: Generator.exe <PowerToys.Settings.UI.Lib.dll path> <module output path> <manifest output path>");
+                return 1;
+            }
+            else
+            {
+                manifestOutputPath = args[2];
+            }
+        }
 
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(moduleOutputPath));
 
             var assembly = Assembly.LoadFrom(dllPath);
             var moduleSettings = Introspection.ParseModuleSettings(assembly);
@@ -46,11 +60,13 @@ internal sealed class Program
             }
             else
             {
+                var manifestFileContents = DSCGeneration.EmitManifestFileContents();
+                File.WriteAllText(manifestOutputPath, manifestFileContents);
                 var debugSettingsPath = Path.Combine(Directory.GetParent(dllPath).FullName, "PowerToys.Settings.exe");
                 outputFileContents = DSCGeneration.EmitModuleFileContents(moduleSettings, generalSettings, debugSettingsPath);
             }
 
-            File.WriteAllText(outputPath, outputFileContents);
+            File.WriteAllText(moduleOutputPath, outputFileContents);
         }
         catch (Exception ex)
         {
