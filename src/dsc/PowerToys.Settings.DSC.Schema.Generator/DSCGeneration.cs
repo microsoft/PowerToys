@@ -249,7 +249,7 @@ class {{module.Name}} {
                 if ($this.Debug -eq $true) {
                     $SettingsExePath = "{{debugSettingsPath}}"
                 } else {
-                    $installation = Get-WmiObject Win32_Product | Where-Object {$_.Name -eq "PowerToys (Preview)" -and $_.Version -eq "{{version}}"}
+                    $installation = Get-CimInstance Win32_Product | Where-Object {$_.Name -eq "PowerToys (Preview)" -and $_.Version -eq "{{version}}"}
                 
                     if ($installation) {
                         $SettingsExePath = Join-Path (Join-Path $installation.InstallLocation WinUI3Apps) PowerToys.Settings.exe
