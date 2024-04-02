@@ -71,16 +71,16 @@
                 x:Name="CapacityBar"
                 Grid.Row="0"
                 Grid.ColumnSpan="2"
-                Height="24"
-                Background="{ThemeResource AccentFillColorDisabledBrush}"
-                CornerRadius="12" />
+                Height="16"
+                Background="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                CornerRadius="8" />
 
             <Border
                 Grid.Row="0"
                 Grid.ColumnSpan="2"
-                Height="24"
+                Height="16"
                 Background="{ThemeResource AccentFillColorDefaultBrush}"
-                CornerRadius="12">
+                CornerRadius="8">
                 <Border.Clip>
                     <RectangleGeometry Rect="{x:Bind SpaceBarClip, Mode=OneWay}" />
                 </Border.Clip>

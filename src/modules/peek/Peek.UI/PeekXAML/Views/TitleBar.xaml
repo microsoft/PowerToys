@@ -21,9 +21,7 @@
         <Grid
             x:Name="AppIconAndFileTitleContainer"
             Grid.Column="1"
-            Margin="8,0"
-            HorizontalAlignment="Left"
-            ColumnSpacing="8">
+            HorizontalAlignment="Left">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="AppIconColumn" Width="Auto" />
                 <ColumnDefinition x:Name="FileTitleColumn" Width="*" />
@@ -33,17 +31,16 @@
                 x:Name="PeekLogo"
                 x:Uid="PeekLogo"
                 Grid.Column="0"
-                Width="24"
-                Height="24"
-                HorizontalAlignment="Center"
+                Width="16"
+                Height="16"
+                Margin="16,0"
                 Source="../../Assets/Peek/Icon.ico"
                 Stretch="UniformToFill" />
 
             <Grid
                 x:Name="FileCountAndNameContainer"
                 Grid.Column="1"
-                VerticalAlignment="Center"
-                ColumnSpacing="4">
+                VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="FileCountColumn" Width="Auto" />
                     <ColumnDefinition x:Name="FileNameColumn" Width="*" />
@@ -52,6 +49,7 @@
                 <TextBlock
                     x:Name="AppTitle_FileCount"
                     Grid.Column="0"
+                    Margin="0,0,8,0"
                     FontWeight="SemiBold"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind FileCountText, Mode=OneWay}"
