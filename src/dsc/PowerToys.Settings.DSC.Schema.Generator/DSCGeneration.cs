@@ -222,8 +222,9 @@ class {{module.Name}} {
 
         var enumsBlock = string.Join(DoubleNewLine, enumsToEmit.Select(EmitEnumDefinition));
         var version = interop.CommonManaged.GetProductVersion().Replace("v", string.Empty);
+        var outputResult = string.Empty;
 
-        return $$"""
+        outputResult += $$"""
         #region enums
         enum PowerToysConfigureEnsure {
             Absent
@@ -243,8 +244,13 @@ class {{module.Name}} {
             [bool] $Debug = $false
 
         {{modulesResourcePropertiesBlock}}
+
+        """;
+
+#if DEBUG
+        // Only output PowerToysSettings local build for debug builds. No need to expose release build locations.
+        outputResult += $$"""
             [string] GetPowerToysSettingsPath() {
-                # Obtain PowerToys install location 
                 if ($this.Debug -eq $true) {
                     $SettingsExePath = "{{debugSettingsPath}}"
                 } else {
@@ -252,7 +258,6 @@ class {{module.Name}} {
                 
                     if ($installation) {
                         $SettingsExePath = Join-Path (Join-Path $installation.InstallLocation WinUI3Apps) PowerToys.Settings.exe
-                        # Handle spaces in the path
                         $SettingsExePath = "`"$SettingsExePath`""
                     } else {
                         throw "PowerToys installation wasn't found."
@@ -261,6 +266,27 @@ class {{module.Name}} {
 
                 return $SettingsExePath
             }
+
+        """;
+#else
+        outputResult += $$"""
+            [string] GetPowerToysSettingsPath() {
+                $installation = Get-CimInstance Win32_Product | Where-Object {$_.Name -eq "PowerToys (Preview)" -and $_.Version -eq "{{version}}"}
+
+                if ($installation) {
+                    $SettingsExePath = Join-Path (Join-Path $installation.InstallLocation WinUI3Apps) PowerToys.Settings.exe
+                    $SettingsExePath = "`"$SettingsExePath`""
+                } else {
+                    throw "PowerToys installation wasn't found."
+                }
+
+                return $SettingsExePath
+            }
+
+        """;
+#endif
+
+        outputResult += $$"""
 
             [PowerToysConfigure] Get() {
                 $CurrentState = [PowerToysConfigure]::new()
@@ -352,6 +378,8 @@ class {{module.Name}} {
         }
         #endregion DscResources
         """;
+
+        return outputResult;
     }
 
     public static string EmitManifestFileContents()
