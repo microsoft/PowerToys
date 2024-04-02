@@ -1613,6 +1613,7 @@ TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
+trx
 Tsd
 TServer
 TStr
@@ -1714,6 +1715,7 @@ vscdb
 vsconfig
 VSCROLL
 vsetq
+VSINSTALLDIR
 VSM
 vso
 vsonline
