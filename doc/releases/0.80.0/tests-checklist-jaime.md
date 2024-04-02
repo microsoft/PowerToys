@@ -83,16 +83,16 @@
 ## OOBE
  * Quit PowerToys
  * Delete %localappdata%\Microsoft\PowerToys
- - [ ] Start PowerToys and verify OOBE opens
+ - [x] Start PowerToys and verify OOBE opens
  * Change version saved on `%localappdata%\Microsoft\PowerToys\last_version.txt`
- - [ ] Start PowerToys and verify OOBE opens in the "What's New" page
+ - [x] Start PowerToys and verify OOBE opens in the "What's New" page
  * Visit each OOBE section and for each section:
-   - [ ] open the Settings for that module
-   - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
-   - [ ] close the Settings
-   - [ ] if it's available, test the `Launch module name` button
+   - [x] open the Settings for that module
+   - [x] verify the Settings work as expected (toggle some controls on/off etc.)
+   - [x] close the Settings
+   - [x] if it's available, test the `Launch module name` button
  * Close OOBE
- - [ ] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
+ - [x] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
 
 ## Mouse Utils
 
@@ -195,26 +195,26 @@ Mouse Jump:
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [x] Verify the module is not enabled.
-   - [x] Open settings and verify the module is not enabled and you can't enable it.
-   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [ ] Verify the module is not enabled.
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [x] Verify the module is enabled.
-   - [x] Open settings and verify the module is enabled and you can't disable it.
-   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [ ] Verify the module is enabled.
+   - [ ] Open settings and verify the module is enabled and you can't disable it.
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [x] Verify the module is not enabled. (No context menu entry)
-   - [x] Open settings and verify the module is not enabled and you can't enable it.
-   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [ ] Verify the module is not enabled. (No context menu entry)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## Paste As Plain Text
