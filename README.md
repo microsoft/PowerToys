@@ -157,7 +157,7 @@ In this release, we focused on stability and improvements.
 
 ### Peek
 
- - Added support to .webp/.webm files in the image/video previewer. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added support to .WebP/.WebM files in the image/video previewer. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Added support for audio files. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed an issue causing the open file button in the title bar to be un-clickable. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed an issue when previewing a folder with a dot in the name that caused Peek to try to preview it as a file. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
