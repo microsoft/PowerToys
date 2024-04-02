@@ -126,7 +126,7 @@ In this release, we focused on stability and improvements.
 
 ### Command Not Found
 
- - Try to search and use a preview version of Powershell if a stable version is not found.
+ - Now tries to find a preview version of PowerShell if no stable version is found.
 
 ### FancyZones
 
