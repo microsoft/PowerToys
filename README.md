@@ -164,7 +164,7 @@ In this release, we focused on stability and improvements.
 
 ### PowerToys Run
 
- - Added a property to the Windows Search plugin to exclude files and patterns from the results. Thanks [@HydroH](https://github.com/HydroH)!
+ - Added a setting to the Windows Search plugin to exclude files and patterns from the results. Thanks [@HydroH](https://github.com/HydroH)!
  - Fixed an issue showing thumbnails caused by a hash collision between similar images.
  - Added the "checkbox and multiline text box" additional property type for plugins and improved multiline text handling. Thanks [@htcfreek](https://github.com/htcfreek)!
 
