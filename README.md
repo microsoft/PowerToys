@@ -121,7 +121,6 @@ In this release, we focused on stability and improvements.
 
 ### Color Picker
 
- - Fixed border transparency issues in the picker popup when picking a color.
  - Fixed a UI issue causing the color picker modal to hide part of the color bar. Thanks [@TheChilledBuffalo](https://github.com/TheChilledBuffalo)!
 
 ### Command Not Found
@@ -197,6 +196,7 @@ In this release, we focused on stability and improvements.
 
  - Added locks to some terms (like the name of some utilities) so that they aren't localized.
  - Fixed some shortcuts not being shown properly in the Flyout and Dashboard. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Updated image for Color Picker and outdated animations for utilities in OOBE. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### Documentation
 
