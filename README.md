@@ -216,6 +216,7 @@ In this release, we focused on stability and improvements.
  - Updated the WiX installer dependency to 3.14.1 to fix possible security issues.
  - Changed the pipelines to use pipeline artifacts instead of build artifacts. Thanks [@dfederm](https://github.com/dfederm)!
  - Added the -graph parameter for pipelines. Thanks [@dfederm](https://github.com/dfederm)!
+ - Tests in the pipelines now run as part of the build step to save on CI time. Thanks [@dfederm](https://github.com/dfederm)!
 
 #### What is being planned for version 0.81
 
