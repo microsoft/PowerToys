@@ -47,7 +47,7 @@ PowerToys.Settings.exe set FancyZones.FancyzonesEditorHotkey "Shift+Ctrl+Alt+F"
 
 # How DSC is implemented
 
-We use `PowerToys.Settings.DSC.Schema.Generator` to generate the bulk of `PowerToysConfigure.psm1` file. It also uses dotnet reflection capabilities to inspect `PowerToys.Settings.UI.Lib.dll` assembly and generate properties for the modules we have. The actual generation is done as a `PowerToys.Settings.DSC.Schema.Generator.csproj` post-build action.
+We use `PowerToys.Settings.DSC.Schema.Generator` to generate the bulk of `PowerToysConfigure.psm1` and `PowerToysConfigure.psd1` files. It also uses dotnet reflection capabilities to inspect `PowerToys.Settings.UI.Lib.dll` assembly and generate properties for the modules we have. The actual generation is done as a `PowerToys.Settings.DSC.Schema.Generator.csproj` post-build action.
 
 # Debugging DSC resources
 
@@ -62,7 +62,7 @@ After that, start a new `pwsh` session and `cd` to `src\dsc\Microsoft.PowerToys.
 $env:PSModulePath += ";$pwd"
 ```
 
-Now build `PowerToys.sln` and **move** `src\dsc\Microsoft.PowerToys.Configure\Microsoft.PowerToys.Configure.psd1` temporarily to `src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\0.0.1\` folder, so it's located alongside with the generated `Microsoft.PowerToys.Configure.psm1`.
+You should have the generated `Microsoft.PowerToys.Configure.psm1` and `Microsoft.PowerToys.Configure.psd1` files inside the `src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\0.0.1\` folder.
 
 This will allow DSC to discover our DSC Resource module. See [PSModulePath](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_psmodulepath?view=powershell-7.4#long-description) for more info.
 

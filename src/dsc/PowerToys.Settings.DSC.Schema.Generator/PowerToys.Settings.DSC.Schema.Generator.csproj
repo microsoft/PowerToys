@@ -50,12 +50,13 @@
 
     <PropertyGroup>
         <GeneratedDSCModule>"$(ProjectDir)..\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(Version)\Microsoft.PowerToys.Configure.psm1"</GeneratedDSCModule>
+        <GeneratedDSCManifest>"$(ProjectDir)..\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(Version)\Microsoft.PowerToys.Configure.psd1"</GeneratedDSCManifest>
     </PropertyGroup>
 
     <!-- The following sections assume that the machine we're building on is always x64. That means we won't be able to run/inspect arm64 executables, therefore we must always execute x64 generator. -->
 
     <Target Name="PostBuildAction" AfterTargets="Build" Outputs="$(GeneratedDSCModule)" Condition="'$(Platform)'!='ARM64'">
-        <Exec Command="&quot;$(OutDir)$(AssemblyName).exe&quot; &quot;$(SolutionDir)x64\$(Configuration)\WinUI3Apps\PowerToys.Settings.UI.Lib.dll&quot; $(GeneratedDSCModule)" />
+        <Exec Command="&quot;$(OutDir)$(AssemblyName).exe&quot; &quot;$(SolutionDir)x64\$(Configuration)\WinUI3Apps\PowerToys.Settings.UI.Lib.dll&quot; $(GeneratedDSCModule) $(GeneratedDSCManifest)" />
     </Target>
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(Platform)'=='ARM64'">
