@@ -104,7 +104,7 @@ In this release, we focused on stability and improvements. The next release is p
 
 **Highlights**
 
- - New feature: Desired State Configuration support, allowing the use of winget configure for PowerToys.
+ - New feature: Desired State Configuration support, allowing the use of winget configure for PowerToys. Check the [DSC documentation](https://aka.ms/powertoys-docs-dsc-configure) for more information.
  - The Windows App SDK dependency was updated to 1.5.1, fixing many underlying UI issues.
  - WebP/WebM files support was added to Peek. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Audio files support was added to Peek. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
