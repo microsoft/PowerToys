@@ -182,7 +182,7 @@ In this release, we focused on stability and improvements. The next release is p
 
 ### Shortcut Guide
 
- - Updated the Emoji shortcut that is shown to the new Windows key + dot hotkey.
+ - Updated the Emoji shortcut that is shown to the new Windows key + period (.) hotkey.
 
 ### Text Extractor
 
