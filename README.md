@@ -49,10 +49,10 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
  
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.80.0-x64.exe][ptUserX64] |  |
-| Per user - ARM64     | [PowerToysUserSetup-0.80.0-arm64.exe][ptUserArm64] |  |
-| Machine wide - x64   | [PowerToysSetup-0.80.0-x64.exe][ptMachineX64] |  |
-| Machine wide - ARM64 | [PowerToysSetup-0.80.0-arm64.exe][ptMachineArm64] |  |
+| Per user - x64       | [PowerToysUserSetup-0.80.0-x64.exe][ptUserX64] | 4D20EB01C4035BB41F57D43AED2A546547E1FAA660FE29DC1CC699F1916DE1CC |
+| Per user - ARM64     | [PowerToysUserSetup-0.80.0-arm64.exe][ptUserArm64] | 1B85E95B0EC7D8CE1EE51B987449DA9A36DAAA4C27DF8EE4796001848EA2CBD1 |
+| Machine wide - x64   | [PowerToysSetup-0.80.0-x64.exe][ptMachineX64] | 2D17C1920D970332D93449184D7C2470052686FD4B3EB8ED49EF6475D1D1D62F |
+| Machine wide - ARM64 | [PowerToysSetup-0.80.0-arm64.exe][ptMachineArm64] | 0DD40B7A31E35472688A55A8E1ECE58847EA423F3F19FD7B8C557F1271F73F24 |
 
 This is our preferred method.
 
