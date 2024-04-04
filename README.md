@@ -100,7 +100,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.80 - March 2024 Update
 
-In this release, we focused on stability and improvements. The next release is planned to be released during Microsoft Build 2024.
+In this release, we focused on stability and improvements. The next release is planned to be released during [Microsoft Build 2024](https://build.microsoft.com/) (late May).
 
 **Highlights**
 
