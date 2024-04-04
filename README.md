@@ -201,7 +201,7 @@ In this release, we focused on stability and improvements. The next release is p
 ### Documentation
 
  - Added FastWeb plugin to PowerToys Run thirdPartyRunPlugins.md docs. Thanks [@CCcat8059](https://github.com/CCcat8059)!
- - Removed the old security link to MSRC from the create new issue screen, since security.md is already linked in the screen.
+ - Removed the old security link to MSRC from the create new issue page, since security.md is already linked there.
  - Added clarity regarding unofficial plugins to the PowerToys Run thirdPartyRunPlugins.md docs.
 
 ### Development
