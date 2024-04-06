@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Version.props" />
+  <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.20348</TargetFramework>
@@ -8,7 +8,7 @@
     <Description>PowerToys File Actions Menu</Description>
     <Nullable>enable</Nullable>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\WinUi3Apps</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUi3Apps</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -64,12 +64,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
-    <ProjectReference Include="..\..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
-	  <ProjectReference Include="..\..\..\..\common\interop\PowerToys.Interop.vcxproj" />
-	  <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-	  <ProjectReference Include="..\..\..\peek\Peek.Common\Peek.Common.csproj" />
-	  <ProjectReference Include="..\..\..\peek\Peek.Helpers\Peek.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+	  <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+	  <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+	  <ProjectReference Include="..\..\peek\Peek.Common\Peek.Common.csproj" />
+	  <ProjectReference Include="..\..\peek\Peek.Helpers\Peek.Helpers.csproj" />
 	  <ProjectReference Include="..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
 	  <ProjectReference Include="..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj" />
   </ItemGroup>
