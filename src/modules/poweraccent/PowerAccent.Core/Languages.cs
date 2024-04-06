@@ -473,7 +473,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_V => new[] { "v\u0307", "ṿ", "ᵛ" },
                 LetterKey.VK_Y => new[] { "̀y" },
                 LetterKey.VK_Z => new[] { "ż", "ž", "z\u0304", "z\u0327", "ẓ", "z\u0324", "ẕ" },
-                LetterKey.VK_PERIOD => new[] { "ʾ", "ʿ", "′", "…" },
+                LetterKey.VK_PERIOD => new[] { "’", "ʾ", "ʿ", "′", "…" },
                 _ => Array.Empty<string>(),
             };
         }
