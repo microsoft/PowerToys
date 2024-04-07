@@ -36,6 +36,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
     call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
     call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
+    call move /Y ..\..\..\FileActionsMenu.wxs.bk ..\..\..\FileActionsMenu.wxs
     call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
     call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
     call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
