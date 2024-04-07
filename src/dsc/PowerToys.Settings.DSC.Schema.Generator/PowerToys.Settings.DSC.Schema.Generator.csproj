@@ -2,7 +2,7 @@
     <Import Project="..\..\Version.props" />
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net9.0-windows</TargetFramework>
         <RootNamespace>PowerToys.Settings.DSC.Schema</RootNamespace>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
