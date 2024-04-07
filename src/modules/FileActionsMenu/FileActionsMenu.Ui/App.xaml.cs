@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Windows;
 using FileActionsMenu.Ui.Helpers;
-using Microsoft.UI.Xaml;
 using Application = Microsoft.UI.Xaml.Application;
 
 namespace FileActionsMenu.Ui

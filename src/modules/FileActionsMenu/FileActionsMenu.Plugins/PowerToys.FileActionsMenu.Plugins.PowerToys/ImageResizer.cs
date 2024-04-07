@@ -30,7 +30,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public IconElement? Icon => IconHelper.GetIconFromModuleName("ImageResizer");
 
-        public bool IsVisible => SelectedItems.All(path => path.IsImage());
+        public bool IsVisible => SelectedItems.All(path => path.IsImage()) && GPOWrapperProjection.GPOWrapper.GetConfiguredImageResizerEnabledValue() != GPOWrapperProjection.GpoRuleConfigured.Disabled;
 
         public Task Execute(object sender, RoutedEventArgs e)
         {

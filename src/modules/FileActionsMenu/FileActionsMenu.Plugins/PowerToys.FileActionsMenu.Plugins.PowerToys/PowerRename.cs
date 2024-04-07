@@ -28,7 +28,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public IconElement? Icon => IconHelper.GetIconFromModuleName("PowerRename");
 
-        public bool IsVisible => true;
+        public bool IsVisible => GPOWrapperProjection.GPOWrapper.GetConfiguredPowerRenameEnabledValue() != GPOWrapperProjection.GpoRuleConfigured.Disabled;
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
