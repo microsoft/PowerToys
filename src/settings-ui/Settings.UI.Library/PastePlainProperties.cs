@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PastePlainProperties
     {
+        [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, true, true, false, 0x56); // Ctrl+Win+Alt+V
 
         public PastePlainProperties()
