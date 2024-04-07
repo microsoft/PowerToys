@@ -58,6 +58,7 @@
       <ComponentGroupRef Id="WinUI3ApplicationsComponentGroup" />
       <ComponentGroupRef Id="AwakeComponentGroup" />
       <ComponentGroupRef Id="ColorPickerComponentGroup" />
+      <ComponentGroupRef Id="FileActionsMenuPluginsComponentGroup" />
       <ComponentGroupRef Id="FileExplorerPreviewComponentGroup" />
       <ComponentGroupRef Id="FileLocksmithComponentGroup" />
       <ComponentGroupRef Id="HostsComponentGroup" />
