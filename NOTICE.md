@@ -38,6 +38,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+## Utility: File Actions menu
+
+### Windows API Code Pack
+
+**Source**: https://github.com/Wagnerp/Windows-API-CodePack-NET
+
+MIT License
+
+Copyright (c) 2009 - 2010 Microsoft Corporation, then modifications by Peter William Wagner 2017 - 2023
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 ## Utility: File Explorer Add-ins
 
 ### Monaco Editor
@@ -1297,7 +1313,7 @@ EXHIBIT A -Mozilla Public License.
 ## NuGet Packages used by PowerToys
 
 - Appium.WebDriver 4.4.5
-- CommunityToolkit.Mvvm 8.2.2
+- CommunityToolkit.Mvvm 9.2.2
 - CommunityToolkit.WinUI.Animations 8.0.240109
 - CommunityToolkit.WinUI.Collections 8.0.240109
 - CommunityToolkit.WinUI.Controls.Primitives 8.0.240109
@@ -1325,6 +1341,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Logging.Abstractions 8.0.0
 - Microsoft.Extensions.ObjectPool 8.0.0
 - Microsoft.NET.Test.Sdk 17.8.0
+- Microsoft.Security.Extensions 1.3.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2365.46
 - Microsoft.Win32.SystemEvents 8.0.0
@@ -1357,6 +1374,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Drawing.Common 8.0.3
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
+- System.IO.Hashing 8.0.0
 - System.Management 8.0.0
 - System.Management.Automation 7.4.0
 - System.Reactive 6.0.0-preview.9
@@ -1369,5 +1387,6 @@ EXHIBIT A -Mozilla Public License.
 - UTF.Unknown 2.5.1
 - Vanara.PInvoke.Shell32 3.4.11
 - Vanara.PInvoke.User32 3.4.11
-- WinUIEx 2.2.0
+- WindowsAPICodePack 7.0.4
+- WinUIEx 2.3.4
 - WPF-UI 3.0.0
