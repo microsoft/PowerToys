@@ -22,7 +22,14 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <EnableMsixTooling>true</EnableMsixTooling>
     <ProjectPriFileName>PowerToys.FileActionsMenu.Ui.pri</ProjectPriFileName>
+    <RootNamespace>FileActionsMenu.Ui</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Page Remove="FileActionsMenuXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="FileActionsMenuXAML\App.xaml" />
+  </ItemGroup>
   <ItemGroup>
     <COMReference Include="SHDocVw">
       <WrapperTool>tlbimp</WrapperTool>
@@ -66,12 +73,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
-	  <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
-	  <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-	  <ProjectReference Include="..\..\peek\Peek.Common\Peek.Common.csproj" />
-	  <ProjectReference Include="..\..\peek\Peek.Helpers\Peek.Helpers.csproj" />
-	  <ProjectReference Include="..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
-	  <ProjectReference Include="..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\peek\Peek.Common\Peek.Common.csproj" />
+    <ProjectReference Include="..\..\peek\Peek.Helpers\Peek.Helpers.csproj" />
+    <ProjectReference Include="..\FileActionsMenu.Helpers\FileActionsMenu.Helpers.csproj" />
+    <ProjectReference Include="..\FileActionsMenu.Interfaces\FileActionsMenu.Interfaces.csproj" />
   </ItemGroup>
+
 
 </Project>

@@ -32,6 +32,7 @@ namespace FileActionsMenu.Ui
 
         private bool _actionStarted;
         private bool _cancelClose;
+        private bool _cancelCheckableEvent;
 
         public MainWindow(string[] selectedItems)
         {
@@ -173,6 +174,8 @@ namespace FileActionsMenu.Ui
                                 IsChecked = checkableAction.IsCheckedByDefault,
                             };
 
+                            checkableAction.IsChecked = checkableAction.IsCheckedByDefault;
+
                             if (checkableAction.Icon != null)
                             {
                                 if (action.Icon is BitmapIcon bi)
@@ -193,10 +196,19 @@ namespace FileActionsMenu.Ui
 
                             toggleMenuItem.Click += (sender, args) =>
                             {
+                                if (_cancelCheckableEvent)
+                                {
+                                    return;
+                                }
+
                                 _cancelClose = true;
 
+                                // Prevent unchecking the checked item
                                 if (checkableAction.IsChecked)
                                 {
+                                    _cancelCheckableEvent = true;
+                                    ((ToggleMenuFlyoutItem)sender)!.IsChecked = true;
+                                    _cancelCheckableEvent = false;
                                     return;
                                 }
 
@@ -208,7 +220,6 @@ namespace FileActionsMenu.Ui
                                     {
                                         if (toggle != toggleMenuItem)
                                         {
-                                            toggle.IsChecked = false;
                                             toggle.IsChecked = false;
                                         }
                                     }
