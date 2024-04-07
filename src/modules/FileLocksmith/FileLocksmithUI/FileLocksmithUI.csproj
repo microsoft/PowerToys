@@ -20,7 +20,6 @@
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <EnableMsixTooling>true</EnableMsixTooling>
     <ApplicationIcon>Assets/FileLocksmith/Icon.ico</ApplicationIcon>
     <SelfContained>true</SelfContained>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
@@ -29,6 +28,9 @@
 
   <ItemGroup>
     <Page Remove="FileLocksmithXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="FileLocksmithXAML\App.xaml" />
   </ItemGroup>
 
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
@@ -53,7 +55,6 @@
     <None Remove="Assets\FileLocksmith\AppList.scale-150.png" />
     <None Remove="Assets\FileLocksmith\AppList.scale-200.png" />
     <None Remove="Assets\FileLocksmith\AppList.scale-400.png" />
-    <None Remove="FileLocksmithXAML\App.xaml" />
   </ItemGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
@@ -62,9 +63,6 @@
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="FileLocksmithXAML\App.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
