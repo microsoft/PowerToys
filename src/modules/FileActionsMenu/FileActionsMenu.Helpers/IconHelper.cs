@@ -19,7 +19,7 @@ namespace FileActionsMenu.Ui.Helpers
         public static BitmapIcon GetIconFromModuleName(string moduleName)
         {
             var outputDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException();
-            return new BitmapIcon() { UriSource = new Uri(Path.Combine(outputDirectory, "Assets\\Settings\\FluentIcons\\FluentIcons" + moduleName + ".png")), ShowAsMonochrome = false };
+            return new BitmapIcon() { UriSource = new Uri(Path.Combine(outputDirectory, "Assets\\Settings\\Icons\\" + moduleName + ".png")), ShowAsMonochrome = false };
         }
     }
 }
