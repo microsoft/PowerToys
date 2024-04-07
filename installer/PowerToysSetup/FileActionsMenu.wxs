@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+  <?define executableActionsComponentFiles=?>
+  <?define executableActionsComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\ExecutableActions\?>
+  <?define fileContentActionsComponentFiles=?>
+  <?define fileContentActionsComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\FileContentActions\?>
+  <?define filePropertiesComponentFiles=?>
+  <?define filePropertiesComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\FileProperties\?>
+  <?define hashesComponentFiles=?>
+  <?define hashesComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\Hashes\?>
+  <?define imageClipboardActionsComponentFiles=?>
+  <?define imageClipboardActionsComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\ImageClipboardActions\?>
+  <?define moveCopyActionsComponentFiles=?>
+  <?define moveCopyActionsComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\MoveCopyActions\?>
+  <?define pathCopyComponentFiles=?>
+  <?define pathCopyComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\PathCopy\?>
+  <?define powerToysComponentFiles=?>
+  <?define powerToysComponentFilesPath=$(var.BinDir)FileActionsMenuPlugins\PowerToys\?>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="FileActionsMenuPluginsFolder" Name="FileActionsMenuPlugins">
+        <Directory Id="ExecutableActionsFolder" Name="ExecutableActions" />
+        <Directory Id="FileContentActionsFolder" Name="FileContentActions" />
+        <Directory Id="FilePropertiesFolder" Name="FileProperties" />
+        <Directory Id="HashesFolder" Name="Hashes" />
+        <Directory Id="ImageClipboardActionsFolder" Name="ImageClipboardActions" />
+        <Directory Id="MoveCopyActionsFolder" Name="MoveCopyActions" />
+        <Directory Id="PathCopyFolder" Name="PathCopy" />
+        <Directory Id="PowerToysFolder" Name="PowerToys" />
+      </Directory>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ExecutableActionsFolder" FileSource="$(var.executableActionsComponentFilesPath)"/>
+    <DirectoryRef Id="FileContentActionsFolder" FileSource="$(var.fileContentActionsComponentFilesPath)"/>
+    <DirectoryRef Id="FilePropertiesFolder" FileSource="$(var.filePropertiesComponentFilesPath)"/>
+    <DirectoryRef Id="HashesFolder" FileSource="$(var.hashesComponentFilesPath)"/>
+    <DirectoryRef Id="ImageClipboardActionsFolder" FileSource="$(var.imageClipboardActionsComponentFilesPath)"/>
+    <DirectoryRef Id="MoveCopyActionsFolder" FileSource="$(var.moveCopyActionsComponentFilesPath)"/>
+    <DirectoryRef Id="PathCopyFolder" FileSource="$(var.pathCopyComponentFilesPath)"/>
+    <DirectoryRef Id="PowerToysFolder" FileSource="$(var.powerToysComponentFilesPath)"/>
+
+    <ComponentGroup Id="FileActionsMenuPluginsComponentGroup">
+      <Component Id="RemoveFileActionsMenuPluginsFolder" Guid="7FF19EBB-041D-4498-9826-C9AECEBE86E1" Directory="FileActionsMenuPluginsFolder" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveFileActionsMenuPluginsFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderFileActionsMenuPluginsFolder" Directory="FileActionsMenuPluginsFolder" On="uninstall"/>
+      </Component>
+        <ComponentRef Id="executableActionsComponentFiles_Component" />
+        <ComponentRef Id="fileContentActionsComponentFiles_Component" />
+        <ComponentRef Id="filePropertiesComponentFiles_Component" />
+        <ComponentRef Id="hashesComponentFiles_Component" />
+        <ComponentRef Id="imageClipboardActionsComponentFiles_Component" />
+        <ComponentRef Id="moveCopyActionsComponentFiles_Component" />
+        <ComponentRef Id="pathCopyComponentFiles_Component" />
+        <ComponentRef Id="powerToysComponentFiles_Component" />
+        <ComponentRef Id="executableActionsComponentFiles_Component" />
+        <ComponentRef Id="fileContentActionsComponentFiles_Component" />
+        <ComponentRef Id="filePropertiesComponentFiles_Component" />
+        <ComponentRef Id="hashesComponentFiles_Component" />
+        <ComponentRef Id="imageClipboardActionsComponentFiles_Component" />
+        <ComponentRef Id="moveCopyActionsComponentFiles_Component" />
+        <ComponentRef Id="pathCopyComponentFiles_Component" />
+        <ComponentRef Id="powerToysComponentFiles_Component" />
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>
