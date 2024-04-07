@@ -38,6 +38,7 @@ ALPHATYPE
 AModifier
 AMPROPERTY
 AMPROPSETID
+amr
 ANDSCANS
 animatedvisuals
 ansicolor
@@ -54,7 +55,7 @@ Apm
 APPBARDATA
 appdata
 APPEXECLINK
-appium
+Appium
 Applicationcan
 appmanifest
 APPNAME
@@ -490,6 +491,7 @@ Filterkeyboard
 Filterx
 findfast
 FIXEDFILEINFO
+flac
 flyouts
 FOF
 FOFX
@@ -930,6 +932,7 @@ mscorlib
 msdata
 msedge
 MSGFLT
+msiexec
 MSIFASTINSTALL
 MSIHANDLE
 msiquery
@@ -1029,6 +1032,7 @@ NOSIZE
 NOTIFICATIONSDLL
 NOTIFYICONDATAW
 NOTIMPL
+notlike
 NOTOPMOST
 NOTRACK
 NOTSRCCOPY
@@ -1110,6 +1114,7 @@ pcb
 pcch
 pcelt
 pch
+pchast
 PCIDLIST
 PCWSTR
 pdisp
@@ -1615,6 +1620,7 @@ TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
+trx
 Tsd
 TServer
 TStr
@@ -1718,10 +1724,12 @@ vscdb
 vsconfig
 VSCROLL
 vsetq
+VSINSTALLDIR
 VSM
 vso
 vsonline
 vstemplate
+vstest
 VSTHRD
 VSTT
 vswhere

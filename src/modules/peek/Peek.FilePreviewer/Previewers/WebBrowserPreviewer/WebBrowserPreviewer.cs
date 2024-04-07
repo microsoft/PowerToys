@@ -13,6 +13,7 @@ using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
+using Peek.FilePreviewer.Previewers.Interfaces;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -137,9 +138,9 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(fileExt) || MonacoHelper.SupportedMonacoFileTypes.Contains(fileExt);
+            return _supportedFileTypes.Contains(item.Extension) || MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension);
         }
 
         private bool HasFailedLoadingPreview()

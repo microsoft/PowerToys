@@ -44,6 +44,20 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- Add ability to run tests via "msbuild /t:Test" -->
+  <Sdk Name="Microsoft.Build.RunVSTest" Version="1.0.319" />
+  <PropertyGroup>
+    <VSTestLogger>trx</VSTestLogger>
+    <!--
+      RunVSTest by default uses %VSINSTALLDIR%\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe,
+      but some of the CI scenarios don't define %VSINSTALLDIR%, so be explicit about where to look for vstest.
+      Note: $(VsInstallRoot) is a built-in MSBuild property, so should always be defined.
+    -->
+    <VSTestToolPath>$(VsInstallRoot)\Common7\IDE\CommonExtensions\Microsoft\TestWindow</VSTestToolPath>
+    <!-- No arm64 agents to run the tests. -->
+    <RunVSTest Condition="'$(Platform)' == 'ARM64'">false</RunVSTest>
+  </PropertyGroup>
+
   <!-- MSBuildCache -->
   <PropertyGroup>
     <!-- Off by default -->
@@ -55,6 +69,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildCacheEnabled)' == 'true'">
+    <!-- Disable when running in a pipeline as the time to upload or download the massive .pch/.pchast to the cache is greater than the savings they provide. -->
+    <UsePrecompiledHeaders Condition="'$(TF_BUILD)' != ''">false</UsePrecompiledHeaders>
+
     <!-- Change this to bust the cache -->
     <MSBuildCacheCacheUniverse Condition="'$(MSBuildCacheCacheUniverse)' == ''">202310210737</MSBuildCacheCacheUniverse>
 
@@ -69,6 +86,12 @@
       $(LocalAppData)\Microsoft\Windows\INetCache\**;
       A:\;
       E:\;
+    </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+
+    <!-- Unit tests of low-priv processes, eg the preview handler tests, may log to this location. -->
+    <MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+      $(MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns);
+      $(USERPROFILE)\AppData\LocalLow\Microsoft\PowerToys\**;
     </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
 
     <!-- 

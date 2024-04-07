@@ -42,7 +42,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;MARKDOWNPREVIEWHANDLERCPP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>../../..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -61,7 +60,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;MARKDOWNPREVIEWHANDLERCPP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>../../..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -84,7 +82,7 @@
     <ClCompile Include="ClassFactory.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SvgPreviewHandler.cpp" />
   </ItemGroup>

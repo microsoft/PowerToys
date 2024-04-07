@@ -162,7 +162,7 @@ class PowerRenameModule : public PowertoyModuleIface
 {
 private:
     // Enabled by default
-    bool m_enabled = true;
+    bool m_enabled = false;
     std::wstring app_name;
     //contains the non localized key of the powertoy
     std::wstring app_key;
@@ -202,16 +202,13 @@ public:
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-
-        save_settings();
     }
 
     // Disable the powertoy
     virtual void disable()
     {
-        Logger::info(L"PowerRename disabled");
         m_enabled = false;
-        save_settings();
+        Logger::info(L"PowerRename disabled");
     }
 
     // Returns if the powertoy is enabled
@@ -316,8 +313,6 @@ public:
 
     void save_settings()
     {
-        CSettingsInstance().SetEnabled(m_enabled);
-        CSettingsInstance().Save();
         Trace::EnablePowerRename(m_enabled);
     }
 

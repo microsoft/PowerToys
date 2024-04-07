@@ -251,12 +251,7 @@ namespace Microsoft.Plugin.Indexer
 
                 var excludedPatternsOption = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ExcludedPatterns);
 
-                if (excludedPatternsOption != null)
-                {
-                    _excludedPatterns = excludedPatternsOption.TextValue
-                        .Split("\r", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .ToList();
-                }
+                _excludedPatterns = excludedPatternsOption == null ? new List<string>() : excludedPatternsOption.TextValueAsMultilineList;
             }
 
             _driveDetection.IsDriveDetectionWarningCheckBoxSelected = driveDetection;

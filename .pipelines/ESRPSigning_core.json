@@ -7,7 +7,7 @@
                 "*.resources.dll",
                 
                 "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
-                
+
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
                 "PowerToys.BackgroundActivatorDLL.dll",
@@ -54,6 +54,7 @@
                 "fancyzones.dll",
                 "PowerToys.FancyZonesEditor.exe",
                 "PowerToys.FancyZonesEditor.dll",
+                "PowerToys.FancyZonesEditorCommon.dll",
                 "PowerToys.FancyZonesModuleInterface.dll",
                 "PowerToys.FancyZones.exe",
 

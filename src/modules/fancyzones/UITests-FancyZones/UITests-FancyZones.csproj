@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Version.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <ProjectGuid>{FE38FC07-1C05-4B57-ADA3-2FE2F53C6A52}</ProjectGuid>
+    <RootNamespace>Microsoft.FancyZones.UITests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+    <Version>$(Version).0</Version>
+    <!-- This is a UI test, so don't run as part of MSBuild -->
+    <RunVSTest>false</RunVSTest>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UITests-FancyZones\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+</Project>

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -82,6 +82,8 @@ namespace Peek.UI.Views
         {
             InitializeComponent();
             TitleBarRootContainer.SizeChanged += TitleBarRootContainer_SizeChanged;
+
+            LaunchAppButton.RegisterPropertyChangedCallback(VisibilityProperty, LaunchAppButtonVisibilityChangedCallback);
         }
 
         public IFileSystemItem Item
@@ -117,6 +119,9 @@ namespace Peek.UI.Views
             if (AppWindowTitleBar.IsCustomizationSupported())
             {
                 UpdateTitleBarCustomization(mainWindow);
+
+                // Ensure the drag region of the title bar is updated on first Peek activation
+                UpdateDragRegion();
             }
             else
             {
@@ -356,6 +361,17 @@ namespace Peek.UI.Views
                 OpenWithAppText = string.Empty;
                 OpenWithAppToolTip = string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Ensure the drag region of the title bar is updated when the visibility of the launch app button changes.
+        /// </summary>
+        private async void LaunchAppButtonVisibilityChangedCallback(DependencyObject sender, DependencyProperty dp)
+        {
+            // Ensure the ActualWidth is updated
+            await Task.Delay(100);
+
+            UpdateDragRegion();
         }
     }
 }

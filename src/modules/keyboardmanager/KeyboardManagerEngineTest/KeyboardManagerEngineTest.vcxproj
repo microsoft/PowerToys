@@ -45,7 +45,7 @@
     <ClCompile Include="OSLevelShortcutRemappingTests.cpp" />
     <ClCompile Include="MockedInput.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SingleKeyRemappingTests.cpp" />
     <ClCompile Include="TestHelpers.cpp" />

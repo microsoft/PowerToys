@@ -29,11 +29,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
                     string filePath = args[0];
                     int hwnd = Convert.ToInt32(args[1], 16);
 
-                    Rectangle s = default(Rectangle);
                     int left = Convert.ToInt32(args[2], 10);
                     int right = Convert.ToInt32(args[3], 10);
                     int top = Convert.ToInt32(args[4], 10);
                     int bottom = Convert.ToInt32(args[5], 10);
+                    Rectangle s = new Rectangle(left, top, right - left, bottom - top);
 
                     _previewHandlerControl = new GcodePreviewHandlerControl();
                     _previewHandlerControl.SetWindow((IntPtr)hwnd, s);

@@ -237,10 +237,9 @@ namespace ViewModelTests
             // Assert
             Assert.IsTrue(modules.FancyZones);
             Assert.IsTrue(modules.ImageResizer);
-            Assert.IsTrue(modules.FileExplorerPreview);
+            Assert.IsTrue(modules.PowerPreview);
             Assert.IsTrue(modules.ShortcutGuide);
             Assert.IsTrue(modules.PowerRename);
-            Assert.IsTrue(modules.KeyboardManager);
             Assert.IsTrue(modules.PowerLauncher);
             Assert.IsTrue(modules.ColorPicker);
         }

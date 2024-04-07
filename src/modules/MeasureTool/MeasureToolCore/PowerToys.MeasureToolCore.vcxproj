@@ -59,12 +59,6 @@
       <AdditionalDependencies>Dbghelp.lib;Shell32.lib;Shcore.lib;dcomp.lib;DXGI.lib;Dwmapi.lib;Gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <Manifest Include="app.manifest" />
   </ItemGroup>
