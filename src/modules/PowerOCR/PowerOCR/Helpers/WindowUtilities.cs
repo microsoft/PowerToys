@@ -24,8 +24,9 @@ public static class WindowUtilities
         Logger.LogInfo($"Adding Overlays for each screen");
         foreach (Screen screen in Screen.AllScreens)
         {
-            Logger.LogInfo($"screen {screen}");
-            OCROverlay overlay = new(screen.Bounds);
+            DpiScale dpiScale = screen.GetDpi();
+            Logger.LogInfo($"screen {screen}, dpiScale {dpiScale.DpiScaleX}, {dpiScale.DpiScaleY}");
+            OCROverlay overlay = new(screen.Bounds, dpiScale);
 
             overlay.Show();
             ActivateWindow(overlay);

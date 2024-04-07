@@ -1,0 +1,23 @@
+properties:
+  resources:
+    # - resource: Microsoft.WinGet.DSC/WinGetPackage
+    #   directives:
+    #     description: Install PowerToys
+    #     allowPrerelease: true
+    #   settings:
+    #     id: PowerToys (Preview)
+    #     source: winget
+
+    - resource: PowerToysConfigure
+      directives:
+        description: Configure PowerToys
+      settings:
+        ShortcutGuide:
+          Enabled: false
+          OverlayOpacity: 50
+        FancyZones:
+          Enabled: true
+          FancyzonesEditorHotkey: "Shift+Ctrl+Alt+F"
+        FileLocksmith:
+          Enabled: false
+  configurationVersion: 0.2.0

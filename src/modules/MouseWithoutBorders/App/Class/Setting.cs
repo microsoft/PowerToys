@@ -26,6 +26,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 //     2023- Included in PowerToys.
 // </history>
 using Microsoft.Win32;
+using Settings.UI.Library.Attributes;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Properties.Setting.Values.#LoadIntSetting(System.String,System.Int32)", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Properties.Setting.Values.#SaveSetting(System.String,System.Object)", Justification = "Dotnet port with style preservation")]
@@ -766,6 +767,7 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        [CmdConfigureIgnore]
         internal bool DrawMouseEx
         {
             get

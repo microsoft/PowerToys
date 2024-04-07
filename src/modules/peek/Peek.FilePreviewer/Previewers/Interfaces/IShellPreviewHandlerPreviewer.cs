@@ -4,9 +4,9 @@
 
 using Windows.Win32.UI.Shell;
 
-namespace Peek.FilePreviewer.Previewers
+namespace Peek.FilePreviewer.Previewers.Interfaces
 {
-    public interface IShellPreviewHandlerPreviewer : IPreviewer
+    public interface IShellPreviewHandlerPreviewer : IPreviewer, IPreviewTarget
     {
         public IPreviewHandler? Preview { get; }
 

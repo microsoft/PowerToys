@@ -40,7 +40,7 @@
     <ClCompile Include="BufferValidationTests.cpp" />
     <ClCompile Include="LoadingAndSavingRemappingTests.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="EditorHelpersTests.cpp" />
   </ItemGroup>

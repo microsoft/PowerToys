@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -36,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public DateTimeOffset ExpirationDateTime { get; set; }
 
         [JsonPropertyName("customTrayTimes")]
+        [CmdConfigureIgnoreAttribute]
         public Dictionary<string, int> CustomTrayTimes { get; set; }
     }
 

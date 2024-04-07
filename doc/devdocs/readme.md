@@ -80,8 +80,8 @@ The installer can only be compiled in `Release` mode; steps 1 and 2 must be perf
 ### Prerequisites for building the MSI installer
 
 1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
-1. Install the [WiX Toolset build tools](https://github.com/wixtoolset/wix3/releases/tag/wix314rtm). (installer [direct link](https://github.com/wixtoolset/wix3/releases/download/wix314rtm/wix314.exe))
-1. Download [WiX binaries](https://github.com/wixtoolset/wix3/releases/download/wix314rtm/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
+1. Install the [WiX Toolset build tools](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm). (installer [direct link](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe))
+1. Download [WiX binaries](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
 
 ### Building prerequisite projects
 

@@ -488,6 +488,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while parsing editor parameters..
+        /// </summary>
+        public static string Error_Parsing_Editor_Parameters_Message {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Editor_Parameters_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while parsing layout hotkeys..
         /// </summary>
         public static string Error_Parsing_Layout_Hotkeys_Message {

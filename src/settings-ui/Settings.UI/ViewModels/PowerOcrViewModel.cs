@@ -109,7 +109,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
-                _isEnabled = GeneralSettingsConfig.Enabled.PowerOCR;
+                _isEnabled = GeneralSettingsConfig.Enabled.PowerOcr;
             }
         }
 
@@ -129,8 +129,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
 
-                    // Set the status of PowerOCR in the general settings
-                    GeneralSettingsConfig.Enabled.PowerOCR = value;
+                    // Set the status of PowerOcr in the general settings
+                    GeneralSettingsConfig.Enabled.PowerOcr = value;
                     var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());

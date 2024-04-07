@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.RegistryPreview: return generalSettingsConfig.Enabled.RegistryPreview;
                 case ModuleType.MeasureTool: return generalSettingsConfig.Enabled.MeasureTool;
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
-                case ModuleType.PowerOCR: return generalSettingsConfig.Enabled.PowerOCR;
+                case ModuleType.PowerOCR: return generalSettingsConfig.Enabled.PowerOcr;
                 default: return false;
             }
         }
@@ -106,7 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.RegistryPreview: generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
-                case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOCR = isEnabled; break;
+                case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
             }
         }
 

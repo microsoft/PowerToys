@@ -62,7 +62,7 @@ namespace PowerOCR.Helpers
             }
         }
 
-        public static async Task<string> GetRegionsTextAsTableAsync(Window passedWindow, Rectangle regionScaled, Language? language)
+        public static async Task<string> GetRegionsTextAsTableAsync(OCROverlay passedWindow, Rectangle regionScaled, Language? language)
         {
             if (language is null)
             {

@@ -16,6 +16,7 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
+using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Win32;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
@@ -205,9 +206,9 @@ namespace Peek.FilePreviewer.Previewers
             }
         }
 
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return !string.IsNullOrEmpty(GetPreviewHandlerGuid(fileExt));
+            return !string.IsNullOrEmpty(GetPreviewHandlerGuid(item.Extension));
         }
 
         private static string? GetPreviewHandlerGuid(string fileExt)
