@@ -12,6 +12,7 @@ namespace FileActionsMenu.Ui
     {
         public App()
         {
+            InitializeComponent();
             if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredFileActionsMenuEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
             {
                 Environment.Exit(0);
