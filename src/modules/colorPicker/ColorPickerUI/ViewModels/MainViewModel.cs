@@ -77,6 +77,8 @@ namespace ColorPicker.ViewModels
 
             _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
 
+            _appStateHandler.EnterPressed += AppStateHandler_EnterPressed;
+
             // Only start a local keyboard low level hook if running as a standalone.
             // Otherwise, the global keyboard hook from runner will be used to activate Color Picker through ShowColorPickerSharedEvent
             // and the Escape key will be registered as a shortcut by appStateHandler when ColorPicker is being used.
@@ -85,6 +87,11 @@ namespace ColorPicker.ViewModels
             {
                 keyboardMonitor?.Start();
             }
+        }
+
+        private void AppStateHandler_EnterPressed(object sender, EventArgs e)
+        {
+            MouseInfoProvider_OnMouseDown(null, default(System.Drawing.Point));
         }
 
         /// <summary>

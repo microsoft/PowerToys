@@ -24,7 +24,9 @@ namespace ColorPicker.Helpers
         private object _colorPickerVisibilityLock = new object();
 
         private HwndSource _hwndSource;
-        private const int _globalHotKeyId = 0x0001;
+        private const int _globalEscHotKeyId = 0x0001;
+        private const int _globalEnterHotKeyId = 0x0002;
+        private const int _globalSpaceHotKeyId = 0x0003;
 
         // Blocks using the escape key to close the color picker editor when the adjust color flyout is open.
         public static bool BlockEscapeKeyClosingColorPickerEditor { get; set; }
@@ -42,6 +44,8 @@ namespace ColorPicker.Helpers
         public event EventHandler AppHidden;
 
         public event EventHandler AppClosed;
+
+        public event EventHandler EnterPressed;
 
         public void StartUserSession()
         {
@@ -65,7 +69,7 @@ namespace ColorPicker.Helpers
                 // Handle the escape key to close Color Picker locally when being spawn from PowerToys, since Keyboard Hooks from the KeyboardMonitor are heavy.
                 if (!(System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
                 {
-                    SetupEscapeGlobalKeyShortcut();
+                    SetupGlobalKeyShortcuts();
                 }
             }
         }
@@ -88,7 +92,7 @@ namespace ColorPicker.Helpers
                     // Handle the escape key to close Color Picker locally when being spawn from PowerToys, since Keyboard Hooks from the KeyboardMonitor are heavy.
                     if (!(System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
                     {
-                        ClearEscapeGlobalKeyShortcut();
+                        ClearGlobalKeyShortcuts();
                     }
 
                     SessionEventHelper.End();
@@ -115,6 +119,17 @@ namespace ColorPicker.Helpers
             {
                 EndUserSession();
             }
+        }
+
+        public bool HandleEnterPressed()
+        {
+            if (!IsColorPickerVisible())
+            {
+                return false;
+            }
+
+            EnterPressed?.Invoke(this, EventArgs.Empty);
+            return true;
         }
 
         public static void SetTopMost()
@@ -218,22 +233,33 @@ namespace ColorPicker.Helpers
             switch (msg)
             {
                 case NativeMethods.WM_HOTKEY:
-                    if (!BlockEscapeKeyClosingColorPickerEditor)
+                    switch (wparam)
                     {
-                        handled = EndUserSession();
-                    }
-                    else
-                    {
-                        // If escape key is blocked it means a submenu is open.
-                        // Send the escape key to the Window to close that submenu.
-                        // Description for LPARAM in https://learn.microsoft.com/windows/win32/inputdev/wm-keyup#parameters
-                        // It's basically some modifiers + scancode for escape (1) + number of repetitions (1)
-                        handled = true;
-                        handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYDOWN, (IntPtr)NativeMethods.VK_ESCAPE, (IntPtr)0x00010001);
+                        case _globalEscHotKeyId:
+                            if (!BlockEscapeKeyClosingColorPickerEditor)
+                            {
+                                handled = EndUserSession();
+                            }
+                            else
+                            {
+                                // If escape key is blocked it means a submenu is open.
+                                // Send the escape key to the Window to close that submenu.
+                                // Description for LPARAM in https://learn.microsoft.com/windows/win32/inputdev/wm-keyup#parameters
+                                // It's basically some modifiers + scancode for escape (1) + number of repetitions (1)
+                                handled = true;
+                                handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYDOWN, (IntPtr)NativeMethods.VK_ESCAPE, (IntPtr)0x00010001);
 
-                        // Need to make the value unchecked as a workaround for changes introduced in .NET 7
-                        // https://github.com/dotnet/roslyn/blob/main/docs/compilers/CSharp/Compiler%20Breaking%20Changes%20-%20DotNet%207.md#checked-operators-on-systemintptr-and-systemuintptr
-                        handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYUP, (IntPtr)NativeMethods.VK_ESCAPE, unchecked((IntPtr)0xC0010001));
+                                // Need to make the value unchecked as a workaround for changes introduced in .NET 7
+                                // https://github.com/dotnet/roslyn/blob/main/docs/compilers/CSharp/Compiler%20Breaking%20Changes%20-%20DotNet%207.md#checked-operators-on-systemintptr-and-systemuintptr
+                                handled &= NativeMethods.PostMessage(_hwndSource.Handle, NativeMethods.WM_KEYUP, (IntPtr)NativeMethods.VK_ESCAPE, unchecked((IntPtr)0xC0010001));
+                            }
+
+                            break;
+
+                        case _globalEnterHotKeyId:
+                        case _globalSpaceHotKeyId:
+                            handled = HandleEnterPressed();
+                            break;
                     }
 
                     break;
@@ -242,7 +268,7 @@ namespace ColorPicker.Helpers
             return IntPtr.Zero;
         }
 
-        public void SetupEscapeGlobalKeyShortcut()
+        public void SetupGlobalKeyShortcuts()
         {
             if (_hwndSource == null)
             {
@@ -250,22 +276,42 @@ namespace ColorPicker.Helpers
             }
 
             _hwndSource.AddHook(ProcessWindowMessages);
-            if (!NativeMethods.RegisterHotKey(_hwndSource.Handle, _globalHotKeyId, NativeMethods.MOD_NOREPEAT, NativeMethods.VK_ESCAPE))
+            if (!NativeMethods.RegisterHotKey(_hwndSource.Handle, _globalEscHotKeyId, NativeMethods.MOD_NOREPEAT, NativeMethods.VK_ESCAPE))
             {
                 Logger.LogWarning("Couldn't register the hotkey for Esc.");
             }
+
+            if (!NativeMethods.RegisterHotKey(_hwndSource.Handle, _globalEnterHotKeyId, NativeMethods.MOD_NOREPEAT, NativeMethods.VK_RETURN))
+            {
+                Logger.LogWarning("Couldn't register the hotkey for Enter.");
+            }
+
+            if (!NativeMethods.RegisterHotKey(_hwndSource.Handle, _globalSpaceHotKeyId, NativeMethods.MOD_NOREPEAT, NativeMethods.VK_SPACE))
+            {
+                Logger.LogWarning("Couldn't register the hotkey for Space.");
+            }
         }
 
-        public void ClearEscapeGlobalKeyShortcut()
+        public void ClearGlobalKeyShortcuts()
         {
             if (_hwndSource == null)
             {
                 return;
             }
 
-            if (!NativeMethods.UnregisterHotKey(_hwndSource.Handle, _globalHotKeyId))
+            if (!NativeMethods.UnregisterHotKey(_hwndSource.Handle, _globalEscHotKeyId))
             {
                 Logger.LogWarning("Couldn't unregister the hotkey for Esc.");
+            }
+
+            if (!NativeMethods.UnregisterHotKey(_hwndSource.Handle, _globalEnterHotKeyId))
+            {
+                Logger.LogWarning("Couldn't unregister the hotkey for Enter.");
+            }
+
+            if (!NativeMethods.UnregisterHotKey(_hwndSource.Handle, _globalSpaceHotKeyId))
+            {
+                Logger.LogWarning("Couldn't unregister the hotkey for Space.");
             }
 
             _hwndSource.RemoveHook(ProcessWindowMessages);

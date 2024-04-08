@@ -30,7 +30,9 @@ namespace ColorPicker
         public const int VK_MENU = 0x12;
         public const int VK_LWIN = 0x5B;
         public const int VK_RWIN = 0x5C;
+        public const int VK_RETURN = 0x0D;
         public const int VK_ESCAPE = 0x1B;
+        public const int VK_SPACE = 0x20;
         public const int WM_HOTKEY = 0x0312;
         public const int WM_KEYDOWN = 0x0100;
         public const int WM_KEYUP = 0x0101;
