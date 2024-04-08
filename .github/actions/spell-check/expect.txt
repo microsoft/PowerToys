@@ -1735,6 +1735,7 @@ VSTT
 vswhere
 Vtbl
 WANTPALM
+Wagnerp
 wbem
 wbemuuid
 WBounds
