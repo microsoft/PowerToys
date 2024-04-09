@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using WinUIEx;
 
-namespace RegistryPreview
+namespace RegistryPreviewUILib
 {
     public sealed partial class MainWindow : WindowEx
     {

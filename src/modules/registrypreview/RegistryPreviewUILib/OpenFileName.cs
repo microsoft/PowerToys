@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace RegistryPreview
+namespace RegistryPreviewUILib
 {
     // Workaround for File Pickers that don't work while running as admin, per:
     // https://github.com/microsoft/WindowsAppSDK/issues/2504

@@ -16,7 +16,7 @@ using Microsoft.UI.Xaml.Data;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 
-namespace RegistryPreview
+namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {

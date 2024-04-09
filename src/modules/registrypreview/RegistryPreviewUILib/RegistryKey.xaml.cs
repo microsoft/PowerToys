@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace RegistryPreview
+namespace RegistryPreviewUILib
 {
     /// <summary>
     /// Class representing an each item in the tree view, each one a Registry Key;

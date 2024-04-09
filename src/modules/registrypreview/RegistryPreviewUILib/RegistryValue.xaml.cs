@@ -4,7 +4,7 @@
 
 using System;
 
-namespace RegistryPreview
+namespace RegistryPreviewUILib
 {
     /// <summary>
     /// Class representing an each item in the list view, each one a Registry Value.

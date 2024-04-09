@@ -518,7 +518,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PastePlainModuleInterface",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AllExperiments", "src\common\AllExperiments\AllExperiments.csproj", "{9CE59ED5-7087-4353-88EB-788038A73CEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RegistryPreviewUI", "src\modules\registrypreview\RegistryPreviewUI\RegistryPreviewUI.csproj", "{FD86C06A-FB54-4D5E-9831-1CDADF60D45F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RegistryPreviewUILib", "src\modules\registrypreview\RegistryPreviewUILib\RegistryPreviewUILib.csproj", "{FD86C06A-FB54-4D5E-9831-1CDADF60D45F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RegistryPreviewExt", "src\modules\registrypreview\RegistryPreviewExt\RegistryPreviewExt.vcxproj", "{697C6AF9-0A48-49A9-866C-67DA12384015}"
 EndProject

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using Microsoft.Windows.ApplicationModel.Resources;
 
-namespace RegistryPreview
+namespace RegistryPreviewUILib
 {
     internal static class ResourceLoaderInstance
     {
@@ -11,7 +11,7 @@ namespace RegistryPreview
 
         static ResourceLoaderInstance()
         {
-            ResourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.RegistryPreview.pri");
+            ResourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.RegistryPreviewUILib.pri");
         }
     }
 }

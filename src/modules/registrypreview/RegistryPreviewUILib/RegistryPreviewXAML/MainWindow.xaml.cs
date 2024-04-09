@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -12,7 +11,7 @@ using Windows.Data.Json;
 using Windows.Graphics;
 using WinUIEx;
 
-namespace RegistryPreview
+namespace RegistryPreviewUILib
 {
     public sealed partial class MainWindow : WindowEx
     {
@@ -83,7 +82,8 @@ namespace RegistryPreview
 
             MainPage = new RegistryPreviewMainPage(this, this.UpdateWindowTitle, App.AppFilename);
 
-            WindowHelpers.BringToForeground(windowHandle);
+            // TODO(stefan)
+            // WindowHelpers.BringToForeground(windowHandle);
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)

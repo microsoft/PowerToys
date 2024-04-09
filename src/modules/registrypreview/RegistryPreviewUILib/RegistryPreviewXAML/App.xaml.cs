@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
 
-namespace RegistryPreview
+namespace RegistryPreviewUILib
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
