@@ -49,10 +49,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Update="Assets\RegistryPreview\data32.png">
+		<Content Update="Assets\RegistryPreviewUILib\data32.png">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
-		<Content Update="Assets\RegistryPreview\string32.png">
+		<Content Update="Assets\RegistryPreviewUILib\string32.png">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

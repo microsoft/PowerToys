@@ -1,17 +1,17 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.Data.Json;
 using Windows.Graphics;
 using WinUIEx;
 
-namespace RegistryPreviewUILib
+namespace RegistryPreviewUI
 {
     public sealed partial class MainWindow : WindowEx
     {
@@ -24,8 +24,7 @@ namespace RegistryPreviewUILib
         private string settingsFolder = string.Empty;
         private string windowPlacementFile = "app-placement.json";
 
-        private RegistryPreviewMainPage MainPage { get; }
-
+        // private RegistryPreviewMainPage MainPage { get; }
         internal MainWindow()
         {
             this.InitializeComponent();
@@ -36,9 +35,9 @@ namespace RegistryPreviewUILib
 
             // Update the Win32 looking window with the correct icon (and grab the appWindow handle for later)
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
+            Microsoft.UI.WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\RegistryPreview\\app.ico");
+            appWindow.SetIcon("Assets\\RegistryPreviewUI\\app.ico");
 
             // TODO(stefan)
             appWindow.Closing += AppWindow_Closing;
@@ -80,10 +79,8 @@ namespace RegistryPreviewUILib
                 }
             }
 
-            MainPage = new RegistryPreviewMainPage(this, this.UpdateWindowTitle, App.AppFilename);
-
-            // TODO(stefan)
-            // WindowHelpers.BringToForeground(windowHandle);
+            // MainPage = new RegistryPreviewMainPage(this, this.UpdateWindowTitle, App.AppFilename);
+            WindowHelpers.BringToForeground(windowHandle);
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -91,19 +88,20 @@ namespace RegistryPreviewUILib
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
                 titleBarText.Foreground =
-                    (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
+                    (SolidColorBrush)Application.Current.Resources["WindowCaptionForegroundDisabled"];
             }
             else
             {
                 titleBarText.Foreground =
-                    (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+                    (SolidColorBrush)Application.Current.Resources["WindowCaptionForeground"];
             }
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
-            MainGrid.Children.Add(MainPage);
+/*            MainGrid.Children.Add(MainPage);
             Grid.SetRow(MainPage, 1);
+*/
         }
 
         public void UpdateWindowTitle(string title)

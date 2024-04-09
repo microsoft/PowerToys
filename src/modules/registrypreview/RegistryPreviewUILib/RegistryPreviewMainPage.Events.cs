@@ -53,7 +53,7 @@ namespace RegistryPreviewUILib
                 DispatcherQueue.TryEnqueue(async () =>
                 {
                     await Task.Delay(100);
-                    App.Current.Exit();
+                    Application.Current.Exit();
                 });
                 return;
             }

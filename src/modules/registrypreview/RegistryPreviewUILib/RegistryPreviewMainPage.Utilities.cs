@@ -832,7 +832,7 @@ namespace RegistryPreviewUILib
             }
 
             // if we got here, we should try to close again
-            App.Current.Exit();
+            Application.Current.Exit();
         }
 
         /// <summary>

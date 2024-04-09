@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 using Windows.Data.Json;
 using WinUIEx;
 
-namespace RegistryPreviewUILib
+namespace RegistryPreviewUI
 {
     public sealed partial class MainWindow : WindowEx
     {
