@@ -6,7 +6,9 @@ using System;
 using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using RegistryPreviewUILib;
 using Windows.Data.Json;
 using Windows.Graphics;
 using WinUIEx;
@@ -24,7 +26,8 @@ namespace RegistryPreviewUI
         private string settingsFolder = string.Empty;
         private string windowPlacementFile = "app-placement.json";
 
-        // private RegistryPreviewMainPage MainPage { get; }
+        private RegistryPreviewMainPage MainPage { get; }
+
         internal MainWindow()
         {
             this.InitializeComponent();
@@ -79,7 +82,8 @@ namespace RegistryPreviewUI
                 }
             }
 
-            // MainPage = new RegistryPreviewMainPage(this, this.UpdateWindowTitle, App.AppFilename);
+            MainPage = new RegistryPreviewMainPage(this, this.UpdateWindowTitle, App.AppFilename);
+
             WindowHelpers.BringToForeground(windowHandle);
         }
 
@@ -99,9 +103,8 @@ namespace RegistryPreviewUI
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
-/*            MainGrid.Children.Add(MainPage);
+            MainGrid.Children.Add(MainPage);
             Grid.SetRow(MainPage, 1);
-*/
         }
 
         public void UpdateWindowTitle(string title)

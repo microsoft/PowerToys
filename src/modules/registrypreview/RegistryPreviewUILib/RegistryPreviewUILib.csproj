@@ -9,7 +9,7 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<RootNamespace>RegistryPreviewUILib</RootNamespace>
-		<AssemblyName>PowerToys.Hosts</AssemblyName>
+		<AssemblyName>PowerToys.RegistryPreviewUILib</AssemblyName>
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.RegistryPreviewUILib.pri</ProjectPriFileName>
 	</PropertyGroup>

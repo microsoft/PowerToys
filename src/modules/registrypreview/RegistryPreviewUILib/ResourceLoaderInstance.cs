@@ -11,7 +11,7 @@ namespace RegistryPreviewUILib
 
         static ResourceLoaderInstance()
         {
-            ResourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.RegistryPreviewUILib.pri");
+            ResourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.RegistryPreviewUILib.pri", "PowerToys.RegistryPreviewUILib/Resources");
         }
     }
 }
