@@ -116,7 +116,7 @@ namespace Awake.Core
             {
                 if (!startedFromPowerToys)
                 {
-                    // If Awake is started from PowerToys, the correct way to exit it is disabling it from Settings.
+                    // If Awake is started from PowerToys, the correct way to close it is disabling it from Settings.
                     Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_EXIT, Resources.AWAKE_EXIT);
                     Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
                 }

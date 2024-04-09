@@ -115,14 +115,14 @@
     <comment>Don't localize "\t" as that is what separates the click portion to be right aligned in the menu.</comment>
   </data>
   <data name="DOCUMENTATION_MENU_TEXT" xml:space="preserve">
-    <value>Documentation</value>
+    <value>Online documentation</value>
   </data>
   <data name="EXIT_MENU_TEXT" xml:space="preserve">
-    <value>Exit</value>
-    <comment>Exit as a verb, as in Exit the application</comment>
+    <value>Close PowerToys</value>
+    <comment>Close as a verb, as in Close the application</comment>
   </data>
   <data name="SUBMIT_BUG_TEXT" xml:space="preserve">
-    <value>Report bug</value>
+    <value>Create bug report file</value>
   </data>
   <data name="BUGREPORT_SUCCESS" xml:space="preserve">
     <value>Bug report .zip file has been created on your Desktop.</value>
