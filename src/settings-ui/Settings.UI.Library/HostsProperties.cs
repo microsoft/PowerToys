@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowStartupWarning { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool LaunchAdministrator { get; set; }
+        public bool OpenAsAdministrator { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool LoopbackDuplicates { get; set; }
@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public HostsProperties()
         {
             ShowStartupWarning = true;
-            LaunchAdministrator = true;
+            OpenAsAdministrator = true;
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;

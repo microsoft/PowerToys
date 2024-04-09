@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                     break;
                 case ModuleType.EnvironmentVariables: // Open Environment Variables
                     {
-                        bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                        bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenAsAdministrator;
                         string eventName = !App.IsElevated && launchAdmin
                             ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
                             : Constants.ShowEnvironmentVariablesSharedEvent();
@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                 case ModuleType.Hosts: // Open Hosts
                     {
-                        bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                        bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenAsAdministrator;
                         string eventName = !App.IsElevated && launchAdmin
                             ? Constants.ShowHostsAdminSharedEvent()
                             : Constants.ShowHostsSharedEvent();

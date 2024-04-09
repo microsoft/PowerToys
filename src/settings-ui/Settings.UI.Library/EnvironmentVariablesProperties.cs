@@ -10,11 +10,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class EnvironmentVariablesProperties
     {
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool LaunchAdministrator { get; set; }
+        public bool OpenAsAdministrator { get; set; }
 
         public EnvironmentVariablesProperties()
         {
-            LaunchAdministrator = true;
+            OpenAsAdministrator = true;
         }
     }
 }

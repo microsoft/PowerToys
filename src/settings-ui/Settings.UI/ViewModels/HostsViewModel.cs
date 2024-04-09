@@ -91,14 +91,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool LaunchAdministrator
+        public bool OpenAsAdministrator
         {
-            get => Settings.Properties.LaunchAdministrator;
+            get => Settings.Properties.OpenAsAdministrator;
             set
             {
-                if (value != Settings.Properties.LaunchAdministrator)
+                if (value != Settings.Properties.OpenAsAdministrator)
                 {
-                    Settings.Properties.LaunchAdministrator = value;
+                    Settings.Properties.OpenAsAdministrator = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -157,7 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void Open()
         {
-            string eventName = !_isElevated && LaunchAdministrator
+            string eventName = !_isElevated && OpenAsAdministrator
                 ? Constants.ShowHostsAdminSharedEvent()
                 : Constants.ShowHostsSharedEvent();
 
