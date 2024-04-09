@@ -185,7 +185,7 @@
     <value>Open Registry Editor</value>
   </data>
   <data name="RegistryJumpToKeyButton.Label" xml:space="preserve">
-    <value>Open Key</value>
+    <value>Go to Key</value>
   </data>
   <data name="SaveDialogTitle" xml:space="preserve">
     <value>Save As</value>

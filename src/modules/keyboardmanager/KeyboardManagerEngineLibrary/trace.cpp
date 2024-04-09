@@ -242,7 +242,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
             Shortcut shortcutRemappedTo = std::get<Shortcut>(shortcutRemap.second.targetShortcut);
             if (shortcutRemappedTo.IsRunProgram() || shortcutRemappedTo.IsOpenURI())
             {
-                // Don't include Start app or Open URI mappings in this telemetry.
+                // Don't include Open app or Open URI mappings in this telemetry.
                 continue;
             }
             TraceLoggingWrite(
@@ -300,7 +300,7 @@ void Trace::SendKeyAndShortcutRemapLoadedConfiguration(State& remappings) noexce
                 Shortcut shortcutRemappedTo = std::get<Shortcut>(shortcutRemap.second.targetShortcut);
                 if (shortcutRemappedTo.IsRunProgram() || shortcutRemappedTo.IsOpenURI())
                 {
-                    // Don't include Start app or Open URI mappings in this telemetry.
+                    // Don't include Open app or Open URI mappings in this telemetry.
                     continue;
                 }
                 TraceLoggingWrite(

@@ -953,7 +953,7 @@ namespace KeyboardEventHandlers
                                 Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
                                 i++;
 
-                                // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after shortcut to shortcut is released to open start menu
+                                // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after shortcut to shortcut is released to go to Start menu
                             }
 
                             // Reset the remap state
@@ -1028,7 +1028,7 @@ namespace KeyboardEventHandlers
                                 Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
                                 i++;
 
-                                // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after another shortcut to key remap is released to open start menu
+                                // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after another shortcut to key remap is released to go to Start menu
 
                                 // Reset the remap state
                                 it->second.isShortcutInvoked = false;

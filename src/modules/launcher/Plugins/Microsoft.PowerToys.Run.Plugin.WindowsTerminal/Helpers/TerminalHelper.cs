@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
     public static class TerminalHelper
     {
         /// <summary>
-        /// Return the arguments for open Windows Terminal
+        /// Return the arguments to open Windows Terminal
         /// </summary>
         /// <param name="profileName">Name of the Terminal profile</param>
         /// <param name="openNewTab">Whether to open the profile in a new tab</param>

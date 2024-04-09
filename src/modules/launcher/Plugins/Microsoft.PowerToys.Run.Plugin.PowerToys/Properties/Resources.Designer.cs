@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open settings (Ctrl+Shift+S).
+        ///   Looks up a localized string similar to Go to settings (Ctrl+Shift+S).
         /// </summary>
         internal static string Action_Open_Settings {
             get {

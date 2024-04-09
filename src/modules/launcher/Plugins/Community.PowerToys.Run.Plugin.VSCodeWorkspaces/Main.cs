@@ -78,7 +78,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                             catch (Win32Exception)
                             {
                                 var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                var msg = "Can't Open this file";
+                                var msg = "Can't open this file";
                                 _context.API.ShowMsg(name, msg, string.Empty);
                                 hide = false;
                             }
@@ -126,7 +126,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                             catch (Win32Exception)
                             {
                                 var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                var msg = "Can't Open this file";
+                                var msg = "Can't open this file";
                                 _context.API.ShowMsg(name, msg, string.Empty);
                                 hide = false;
                             }

@@ -139,7 +139,7 @@
     <value>Copy value name</value>
   </data>
   <data name="OpenKeyInRegistryEditor" xml:space="preserve">
-    <value>Open key in registry editor</value>
+    <value>Go to key in registry editor</value>
     <comment>"registry editor" is the name of the OS built-in application</comment>
   </data>
   <data name="OpenInRegistryEditorAccessExceptionText" xml:space="preserve">
@@ -147,7 +147,7 @@
     <comment>"registry editor" is the name of the OS built-in application </comment>
   </data>
   <data name="OpenInRegistryEditorAccessExceptionTitle" xml:space="preserve">
-    <value>Error on open registry editor</value>
+    <value>Error on opening registry editor</value>
     <comment>"registry editor" is the name of the OS built-in application</comment>
   </data>
   <data name="SubKeys" xml:space="preserve">
