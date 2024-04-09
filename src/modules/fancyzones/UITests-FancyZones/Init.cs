@@ -16,7 +16,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public static void SetupAll(TestContext context)
         {
             string winAppDriverPath = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe";
-            context.WriteLine($"Attempting to launch WinAppDriver at: {winAppDriverPath}");
+            context.WriteLine($"Attempting to open WinAppDriver at: {winAppDriverPath}");
             appDriver = Process.Start(winAppDriverPath);
         }
 

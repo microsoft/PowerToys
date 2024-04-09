@@ -108,7 +108,7 @@ namespace Microsoft.Plugin.Program.Programs
                 ProgramArguments = queryArguments,
                 Action = e =>
                 {
-                    Launch(api, queryArguments);
+                    Open(api, queryArguments);
                     return true;
                 },
             };
@@ -201,7 +201,7 @@ namespace Microsoft.Plugin.Program.Programs
             return contextMenus;
         }
 
-        private async void Launch(IPublicAPI api, string queryArguments)
+        private async void Open(IPublicAPI api, string queryArguments)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
             const ApplicationActivationHelper.ActivateOptions noFlags = ApplicationActivationHelper.ActivateOptions.None;

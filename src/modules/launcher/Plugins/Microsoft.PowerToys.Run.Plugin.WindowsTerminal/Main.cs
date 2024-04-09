@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
                         Score = score,
                         Action = _ =>
                         {
-                            Launch(profile.Terminal.AppUserModelId, profile.Name);
+                            Open(profile.Terminal.AppUserModelId, profile.Name);
                             return true;
                         },
                         ContextData = profile,
@@ -142,7 +142,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
             return Resources.plugin_description;
         }
 
-        private void Launch(string id, string profile)
+        private void Open(string id, string profile)
         {
             var appManager = new ApplicationActivationManager();
             const ActivateOptions noFlags = ActivateOptions.None;
