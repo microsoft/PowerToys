@@ -163,7 +163,7 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// Creates a client pipe and sends a signal to server to launch first instance
+        /// Creates a client pipe and sends a signal to server to open first instance
         /// </summary>
         /// <param name="channelName">Application's IPC channel name.</param>
         /// Command line arguments for the second instance, passed to the first instance to take appropriate action.

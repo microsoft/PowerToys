@@ -156,7 +156,7 @@ namespace Peek.UI.Views
             }
             else
             {
-                // Try to launch the default app for current file format
+                // Try to open the default app for current file format
                 bool result = await Launcher.LaunchFileAsync(storageFile, options);
 
                 if (!result)
@@ -269,7 +269,7 @@ namespace Peek.UI.Views
         {
             if (Item is FileItem)
             {
-                // Update the name of default app to launch
+                // Update the name of default app to open
                 DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
 
                 string openWithAppTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_Text");
@@ -287,7 +287,7 @@ namespace Peek.UI.Views
         }
 
         /// <summary>
-        /// Ensure the drag region of the title bar is updated when the visibility of the launch app button changes.
+        /// Ensure the drag region of the title bar is updated when the visibility of the open app button changes.
         /// </summary>
         private async void LaunchAppButtonVisibilityChangedCallback(DependencyObject sender, DependencyProperty dp)
         {

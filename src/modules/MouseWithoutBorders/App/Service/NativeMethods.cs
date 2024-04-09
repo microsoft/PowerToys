@@ -333,7 +333,7 @@ namespace MouseWithoutBordersService
                     pEnv = IntPtr.Zero;
                 }
 
-                // Launch the process
+                // Open the process
                 PROCESS_INFORMATION pi = default(PROCESS_INFORMATION);
                 bool rv = CreateProcessAsUser(
                     hUserTokenDup,            // client's access token

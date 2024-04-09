@@ -76,7 +76,7 @@ namespace Peek.UI
         /// <summary>
         /// Invoked when the application is launched.
         /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
+        /// <param name="args">Details about the open request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPeekEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)

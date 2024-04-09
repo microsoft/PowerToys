@@ -813,7 +813,7 @@
     <value>Try this if there are issues with the shortcut (PowerToys Run might not get focus when triggered from an elevated window)</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
-    <value>Clear the previous query on launch</value>
+    <value>Clear the previous query on opening</value>
   </data>
   <data name="PowerLauncher_TabSelectsContextButtons.Header" xml:space="preserve">
     <value>Tab through context buttons</value>
@@ -884,7 +884,7 @@
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
-    <comment>Shortcut to launch the FancyZones layout editor application</comment>
+    <comment>Shortcut to open the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
     <value>Switch between windows in the current zone</value>
@@ -902,7 +902,7 @@
     <value>Information Symbol</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
-    <value>Launch layout editor</value>
+    <value>Open layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
@@ -944,7 +944,7 @@
     <value>Move newly created windows to the current active monitor (Experimental)</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Header" xml:space="preserve">
-    <value>Launch editor on the display</value>
+    <value>Open editor on the display</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Description" xml:space="preserve">
     <value>When using multiple displays</value>
@@ -1021,7 +1021,7 @@
     <value>Run at startup</value>
   </data>
   <data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
-    <value>PowerToys will launch automatically</value>
+    <value>PowerToys will open automatically</value>
   </data>
   <data name="GeneralPage_WarningsElevatedApps.Content" xml:space="preserve">
     <value>Show a warning for functionality issues when running alongside elevated applications</value>
@@ -1979,10 +1979,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Getting started</value>
   </data>
   <data name="Oobe_Launch.Text" xml:space="preserve">
-    <value>Launch</value>
+    <value>Open</value>
   </data>
   <data name="Launch_ColorPicker.Content" xml:space="preserve">
-    <value>Launch Color Picker</value>
+    <value>Open Color Picker</value>
   </data>
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
     <value>Learn more about</value>
@@ -2072,7 +2072,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>How to enable</value>
   </data>
   <data name="Oobe_HowToLaunch.Text" xml:space="preserve">
-    <value>How to launch</value>
+    <value>How to open</value>
   </data>
   <data name="Oobe_HowToUse.Text" xml:space="preserve">
     <value>How to use</value>
@@ -2084,7 +2084,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Want a custom size? You can add them in the PowerToys Settings!</value>
   </data>
   <data name="Oobe_KBM_HowToCreateMappings.Text" xml:space="preserve">
-    <value>Launch **PowerToys Settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
+    <value>Open **PowerToys Settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
   </data>
   <data name="Oobe_KBM_TipsAndTricks.Text" xml:space="preserve">
     <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
@@ -2490,10 +2490,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
-    <value>Launch PowerToys Run</value>
+    <value>Open PowerToys Run</value>
   </data>
   <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
-    <value>Launch Shortcut Guide</value>
+    <value>Open Shortcut Guide</value>
   </data>
   <data name="ColorPicker_ColorFormat_ToggleSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
@@ -3323,7 +3323,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Text Extractor</value>
   </data>
   <data name="Launch_TextExtractor.Content" xml:space="preserve">
-    <value>Launch Text Extractor</value>
+    <value>Open Text Extractor</value>
   </data>
   <data name="Oobe_TextExtractor.Title" xml:space="preserve">
     <value>Text Extractor</value>
@@ -3514,11 +3514,11 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Host File Editor</value>
+    <value>Open Host File Editor</value>
     <comment>"Host File Editor" is a product name</comment>
   </data>
   <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Host File Editor</value>
+    <value>Open Host File Editor</value>
     <comment>"Host File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
@@ -3534,7 +3534,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Behavior</value>
   </data>
   <data name="Launch_Hosts.Content" xml:space="preserve">
-    <value>Launch Hosts File Editor</value>
+    <value>Open Hosts File Editor</value>
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="LearnMore_Hosts.Text" xml:space="preserve">
@@ -3553,7 +3553,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Needs to be launched as administrator in order to make changes to the hosts file</value>
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
-    <value>Launch as administrator</value>
+    <value>Open as administrator</value>
   </data>
   <data name="EnvironmentVariables.ModuleDescription" xml:space="preserve">
     <value>A quick utility for managing environment variables.</value>
@@ -3574,13 +3574,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Manage your environment variables</value>
   </data>
   <data name="EnvironmentVariables_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Environment Variables</value>
+    <value>Open Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Environment Variables</value>
+    <value>Open Environment Variables</value>
   </data>
   <data name="Launch_EnvironmentVariables.Content" xml:space="preserve">
-    <value>Launch Environment Variables</value>
+    <value>Open Environment Variables</value>
   </data>
   <data name="LearnMore_EnvironmentVariables.Text" xml:space="preserve">
     <value>Learn more about Environment Variables</value>
@@ -3595,7 +3595,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Needs to be launched as administrator in order to make changes to the system environment variables</value>
   </data>
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
-    <value>Launch as administrator</value>
+    <value>Open as administrator</value>
   </data>
   <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
     <value>Press duration before showing taskbar icon shortcuts (ms)</value>
@@ -3852,7 +3852,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Registry Preview is a product name, do not loc</comment>
   </data>
   <data name="Launch_RegistryPreview.Content" xml:space="preserve">
-    <value>Launch Registry Preview</value>
+    <value>Open Registry Preview</value>
     <comment>"Registry Preview" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
@@ -3881,13 +3881,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Consider loopback addresses as duplicates</value>
   </data>
   <data name="RegistryPreview_Launch_GroupSettings.Header" xml:space="preserve">
-    <value>Launch</value>
+    <value>Open</value>
   </data>
   <data name="RegistryPreview_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Registry Preview</value>
+    <value>Open Registry Preview</value>
   </data>
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Registry Preview</value>
+    <value>Open Registry Preview</value>
   </data>
   <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">
     <value>Default app</value>
