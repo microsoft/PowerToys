@@ -3,14 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
 using Windows.Graphics;
 using WinUIEx;
@@ -20,29 +17,19 @@ namespace RegistryPreview
     public sealed partial class MainWindow : WindowEx
     {
         // Const values
-        private const string REGISTRYHEADER4 = "regedit4";
-        private const string REGISTRYHEADER5 = "windows registry editor version 5.00";
         private const string APPNAME = "RegistryPreview";
-        private const string KEYIMAGE = "ms-appx:///Assets/RegistryPreview/folder32.png";
-        private const string DELETEDKEYIMAGE = "ms-appx:///Assets/RegistryPreview/deleted-folder32.png";
-        private const string ERRORIMAGE = "ms-appx:///Assets/RegistryPreview/error32.png";
 
         // private members
         private Microsoft.UI.Windowing.AppWindow appWindow;
-        private ResourceLoader resourceLoader;
-        private bool visualTreeReady;
-        private Dictionary<string, TreeViewNode> mapRegistryKeys;
-        private List<RegistryValue> listRegistryValues;
         private JsonObject jsonWindowPlacement;
         private string settingsFolder = string.Empty;
         private string windowPlacementFile = "app-placement.json";
 
+        private RegistryPreviewMainPage MainPage { get; }
+
         internal MainWindow()
         {
             this.InitializeComponent();
-
-            // Initialize the string table
-            resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
             // Open settings file; this moved to after the window tweak because it gives the window time to start up
             settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
@@ -53,6 +40,8 @@ namespace RegistryPreview
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("Assets\\RegistryPreview\\app.ico");
+
+            // TODO(stefan)
             appWindow.Closing += AppWindow_Closing;
             Activated += MainWindow_Activated;
 
@@ -92,12 +81,7 @@ namespace RegistryPreview
                 }
             }
 
-            // Update Toolbar
-            if ((App.AppFilename == null) || (File.Exists(App.AppFilename) != true))
-            {
-                UpdateToolBarAndUI(false);
-                UpdateWindowTitle(resourceLoader.GetString("FileNotFound"));
-            }
+            MainPage = new RegistryPreviewMainPage(this, this.UpdateWindowTitle, App.AppFilename);
 
             WindowHelpers.BringToForeground(windowHandle);
         }
@@ -113,6 +97,38 @@ namespace RegistryPreview
             {
                 titleBarText.Foreground =
                     (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+            }
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            MainGrid.Children.Add(MainPage);
+            Grid.SetRow(MainPage, 1);
+        }
+
+        public void UpdateWindowTitle(string title)
+        {
+            string filename = title;
+
+            if (string.IsNullOrEmpty(filename))
+            {
+                titleBarText.Text = APPNAME;
+                appWindow.Title = APPNAME;
+            }
+            else
+            {
+                string[] file = filename.Split('\\');
+                if (file.Length > 0)
+                {
+                    titleBarText.Text = file[file.Length - 1] + " - " + APPNAME;
+                }
+                else
+                {
+                    titleBarText.Text = filename + " - " + APPNAME;
+                }
+
+                // Continue to update the window's title, after updating the custom title bar
+                appWindow.Title = titleBarText.Text;
             }
         }
     }
