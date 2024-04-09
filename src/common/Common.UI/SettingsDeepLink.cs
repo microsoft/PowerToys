@@ -65,7 +65,7 @@ namespace Common.UI
                 case SettingsWindow.MeasureTool:
                     return "MeasureTool";
                 case SettingsWindow.PowerOCR:
-                    return "PowerOCR";
+                    return "PowerOcr";
                 case SettingsWindow.RegistryPreview:
                     return "RegistryPreview";
                 case SettingsWindow.CropAndLock:
