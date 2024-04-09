@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
-        public bool LaunchAdministratorEnabled => IsEnabled && !_isElevated;
+        public bool OpenAsAdministratorEnabled => IsEnabled && !_isElevated;
 
         public bool ShowStartupWarning
         {

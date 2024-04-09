@@ -3549,10 +3549,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Hosts File Editor</value>
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
-  <data name="Hosts_Toggle_LaunchAdministrator.Description" xml:space="preserve">
+  <data name="Hosts_Toggle_OpenAsAdministrator.Description" xml:space="preserve">
     <value>Needs to be opened as administrator in order to make changes to the hosts file</value>
   </data>
-  <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
+  <data name="Hosts_Toggle_OpenAsAdministrator.Header" xml:space="preserve">
     <value>Open as administrator</value>
   </data>
   <data name="EnvironmentVariables.ModuleDescription" xml:space="preserve">
@@ -3591,10 +3591,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Oobe_EnvironmentVariables.Title" xml:space="preserve">
     <value>Environment Variables</value>
   </data>
-  <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Description" xml:space="preserve">
+  <data name="EnvironmentVariables_Toggle_OpenAsAdministrator.Description" xml:space="preserve">
     <value>Needs to be opened as administrator in order to make changes to the system environment variables</value>
   </data>
-  <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
+  <data name="EnvironmentVariables_Toggle_OpenAsAdministrator.Header" xml:space="preserve">
     <value>Open as administrator</value>
   </data>
   <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">

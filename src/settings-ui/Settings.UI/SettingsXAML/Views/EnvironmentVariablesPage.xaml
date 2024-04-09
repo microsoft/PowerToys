@@ -32,9 +32,9 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
                     <tkcontrols:SettingsCard
-                        x:Uid="EnvironmentVariables_Toggle_LaunchAdministrator"
+                        x:Uid="EnvironmentVariables_Toggle_OpenAsAdministrator"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
-                        IsEnabled="{x:Bind ViewModel.LaunchAdministratorEnabled, Mode=OneWay}">
+                        IsEnabled="{x:Bind ViewModel.OpenAsAdministratorEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.OpenAsAdministrator, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
