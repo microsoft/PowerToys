@@ -1927,7 +1927,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_PositionHeader.Description" xml:space="preserve">
-    <value>If multiple monitors are in use, PowerToys Run can be launched on the desired monitor</value>
+    <value>If multiple monitors are in use, PowerToys Run can be opened on the desired monitor</value>
     <comment>as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
@@ -3550,7 +3550,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Description" xml:space="preserve">
-    <value>Needs to be launched as administrator in order to make changes to the hosts file</value>
+    <value>Needs to be opened as administrator in order to make changes to the hosts file</value>
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Open as administrator</value>
@@ -3592,7 +3592,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Description" xml:space="preserve">
-    <value>Needs to be launched as administrator in order to make changes to the system environment variables</value>
+    <value>Needs to be opened as administrator in order to make changes to the system environment variables</value>
   </data>
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Open as administrator</value>
