@@ -397,7 +397,7 @@
     <comment>keyboard is the hardware peripheral</comment>
   </data>
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
-    <value>Advanced Settings</value>
+    <value>Advanced settings</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
@@ -2197,7 +2197,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Don't loc "GitHub", it's the name of a product</comment>
   </data>
   <data name="OOBE_Settings.Content" xml:space="preserve">
-    <value>Open Settings</value>
+    <value>Go to settings</value>
   </data>
   <data name="Oobe_NavViewItem.Content" xml:space="preserve">
     <value>Welcome to PowerToys</value>
@@ -2956,7 +2956,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>to pin or unpin the selected window so it's always on top of all other windows.</value>
   </data>
   <data name="Oobe_AlwaysOnTop_TipsAndTricks.Text" xml:space="preserve">
-    <value>You can tweak the visual outline of the pinned windows in PowerToys settings.</value>
+    <value>You can tweak the visual outline of the pinned windows in PowerToys Settings.</value>
   </data>
   <data name="AlwaysOnTop_FrameColor_Mode.Header" xml:space="preserve">
     <value>Color mode</value>
@@ -3777,16 +3777,16 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Back</value>
   </data>
   <data name="BugReportBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Bug report</value>
+    <value>Create Bug report file</value>
   </data>
   <data name="BugReportTooltip.Text" xml:space="preserve">
-    <value>Bug report</value>
+    <value>Create Bug report file</value>
   </data>
   <data name="DocsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Documentation</value>
+    <value>Go to online documentation</value>
   </data>
   <data name="DocsTooltip.Text" xml:space="preserve">
-    <value>Documentation</value>
+    <value>Go to online documentation</value>
   </data>
   <data name="FZEditorString" xml:space="preserve">
     <value>FancyZones Editor</value>
@@ -3799,10 +3799,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>More</value>
   </data>
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Settings</value>
+    <value>Open Settings</value>
   </data>
   <data name="SettingsTooltip.Text" xml:space="preserve">
-    <value>Settings</value>
+    <value>Open Settings</value>
   </data>
   <data name="QuickAccessTxt.Text" xml:space="preserve">
     <value>Quick access</value>

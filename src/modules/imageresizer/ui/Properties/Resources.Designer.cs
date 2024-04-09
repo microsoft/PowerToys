@@ -151,7 +151,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Over_write files.
+        ///   Looks up a localized string similar to Ov_erwrite files.
         /// </summary>
         public static string Input_Replace {
             get {
@@ -214,7 +214,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings.
+        ///   Looks up a localized string similar to Go to settings.
         /// </summary>
         public static string Open_settings {
             get {

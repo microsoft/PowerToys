@@ -130,7 +130,7 @@
     <value>A Windows Shell extension for bulk image resizing.</value>
   </data>
   <data name="Settings_Header" xml:space="preserve">
-    <value>Settings can be accessed from within Image Resizer.</value>
+    <value>Settings can be opened from within Image Resizer.</value>
   </data>
   <data name="Settings_Header_Description" xml:space="preserve">
     <value>Settings header for Image Resizer</value>
