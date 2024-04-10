@@ -139,8 +139,13 @@ namespace Awake.Core
             try
             {
                 var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
-                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                if (currentSettings.Properties.Mode != AwakeMode.INDEFINITE || currentSettings.Properties.KeepDisplayOn != keepDisplayOn)
+                {
+                    currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
+                    currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
+
+                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                }
             }
             catch (Exception ex)
             {
@@ -206,11 +211,14 @@ namespace Awake.Core
                 var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                 var timeSpan = TimeSpan.FromSeconds(seconds);
 
-                currentSettings.Properties.Mode = AwakeMode.TIMED;
-                currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
-                currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
+                if (currentSettings.Properties.Mode != AwakeMode.TIMED || currentSettings.Properties.IntervalHours != (uint)timeSpan.Hours || currentSettings.Properties.IntervalMinutes != (uint)timeSpan.Minutes)
+                {
+                    currentSettings.Properties.Mode = AwakeMode.TIMED;
+                    currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
+                    currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
 
-                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                }
             }
             catch (Exception ex)
             {
@@ -332,8 +340,12 @@ namespace Awake.Core
             try
             {
                 var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                currentSettings.Properties.Mode = AwakeMode.PASSIVE;
-                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                if (currentSettings.Properties.Mode != AwakeMode.PASSIVE)
+                {
+                    currentSettings.Properties.Mode = AwakeMode.PASSIVE;
+                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                }
             }
             catch (Exception ex)
             {
