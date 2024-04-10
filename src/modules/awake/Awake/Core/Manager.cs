@@ -139,11 +139,13 @@ namespace Awake.Core
             try
             {
                 var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                if (currentSettings.Properties.Mode != AwakeMode.INDEFINITE || currentSettings.Properties.KeepDisplayOn != keepDisplayOn)
+                var settingsChanged = currentSettings.Properties.Mode != AwakeMode.INDEFINITE ||
+                                      currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
+
+                if (settingsChanged)
                 {
                     currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
                     currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
-
                     ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
                 }
             }
@@ -161,26 +163,44 @@ namespace Awake.Core
 
             CancelExistingThread();
 
-            if (expireAt > DateTime.Now && expireAt != null)
+            if (expireAt > DateTimeOffset.Now)
             {
                 Logger.LogInfo($"Starting expirable log for {expireAt}");
                 _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-                Observable.Timer(expireAt).Subscribe(
+                Observable.Timer(expireAt - DateTimeOffset.Now).Subscribe(
                 _ =>
                 {
                     Logger.LogInfo($"Completed expirable keep-awake.");
                     CancelExistingThread();
-
                     SetPassiveKeepAwake();
                 },
                 _tokenSource.Token);
             }
             else
             {
-                // The target date is not in the future.
                 Logger.LogError("The specified target date and time is not in the future.");
-                Logger.LogError($"Current time: {DateTime.Now}\tTarget time: {expireAt}");
+                Logger.LogError($"Current time: {DateTimeOffset.Now}\tTarget time: {expireAt}");
+            }
+
+            try
+            {
+                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                var settingsChanged = currentSettings.Properties.Mode != AwakeMode.EXPIRABLE ||
+                                      currentSettings.Properties.ExpirationDateTime != expireAt ||
+                                      currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
+
+                if (settingsChanged)
+                {
+                    currentSettings.Properties.Mode = AwakeMode.EXPIRABLE;
+                    currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
+                    currentSettings.Properties.ExpirationDateTime = expireAt;
+                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
             }
         }
 
@@ -201,7 +221,6 @@ namespace Awake.Core
             {
                 Logger.LogInfo($"Completed timed thread.");
                 CancelExistingThread();
-
                 SetPassiveKeepAwake();
             },
             _tokenSource.Token);
@@ -210,13 +229,15 @@ namespace Awake.Core
             {
                 var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                 var timeSpan = TimeSpan.FromSeconds(seconds);
+                var settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
+                                      currentSettings.Properties.IntervalHours != (uint)timeSpan.Hours ||
+                                      currentSettings.Properties.IntervalMinutes != (uint)timeSpan.Minutes;
 
-                if (currentSettings.Properties.Mode != AwakeMode.TIMED || currentSettings.Properties.IntervalHours != (uint)timeSpan.Hours || currentSettings.Properties.IntervalMinutes != (uint)timeSpan.Minutes)
+                if (settingsChanged)
                 {
                     currentSettings.Properties.Mode = AwakeMode.TIMED;
                     currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
                     currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
-
                     ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
                 }
             }

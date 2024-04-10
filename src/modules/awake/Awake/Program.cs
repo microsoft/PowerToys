@@ -92,69 +92,42 @@ namespace Awake
 
             Logger.LogInfo("Parsing parameters...");
 
-            Option<bool> configOption = new(
-                    aliases: AliasesConfigOption,
-                    getDefaultValue: () => false,
-                    description: Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
+            var configOption = new Option<bool>(AliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
             };
 
-            Option<bool> displayOption = new(
-                    aliases: AliasesDisplayOption,
-                    getDefaultValue: () => true,
-                    description: Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
+            var displayOption = new Option<bool>(AliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
             };
 
-            Option<uint> timeOption = new(
-                    aliases: AliasesTimeOption,
-                    getDefaultValue: () => 0,
-                    description: Resources.AWAKE_CMD_HELP_TIME_OPTION)
+            var timeOption = new Option<uint>(AliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
             {
                 Arity = ArgumentArity.ExactlyOne,
                 IsRequired = false,
             };
 
-            Option<int> pidOption = new(
-                    aliases: AliasesPidOption,
-                    getDefaultValue: () => 0,
-                    description: Resources.AWAKE_CMD_HELP_PID_OPTION)
+            var pidOption = new Option<int>(AliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
             };
 
-            Option<string> expireAtOption = new(
-                    aliases: AliasesExpireAtOption,
-                    getDefaultValue: () => string.Empty,
-                    description: Resources.AWAKE_CMD_HELP_EXPIREAT_OPTION)
+            var expireAtOption = new Option<string>(AliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIREAT_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
             };
 
-            RootCommand? rootCommand =
-            [
-                configOption,
-                displayOption,
-                timeOption,
-                pidOption,
-                expireAtOption,
-            ];
+            var rootCommand = new RootCommand
+            {
+                Description = Core.Constants.AppName,
+            };
 
-            rootCommand.Description = Core.Constants.AppName;
-
-            rootCommand.SetHandler(
-                HandleCommandLineArguments,
-                configOption,
-                displayOption,
-                timeOption,
-                pidOption,
-                expireAtOption);
+            rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption);
 
             return rootCommand.InvokeAsync(args).Result;
         }
