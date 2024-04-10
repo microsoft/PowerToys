@@ -77,14 +77,11 @@ namespace ColorPicker.ViewModels
 
             _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
 
-            // Only start a local keyboard low level hook if running as a standalone.
-            // Otherwise, the global keyboard hook from runner will be used to activate Color Picker through ShowColorPickerSharedEvent
+            // Start a local keyboard low level hook
+            // The global keyboard hook from runner will be used to activate Color Picker through ShowColorPickerSharedEvent
             // and the Escape key will be registered as a shortcut by appStateHandler when ColorPicker is being used.
-            // This is much lighter than using a local low level keyboard hook.
-            if ((System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
-            {
-                keyboardMonitor?.Start();
-            }
+            // The local keyboard low level hook is needed to catch the arrow key press and release events
+            keyboardMonitor?.Start();
         }
 
         /// <summary>

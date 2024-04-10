@@ -11,6 +11,7 @@ using ColorPicker.ViewModelContracts;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+using static ColorPicker.Helpers.NativeMethodsHelper;
 
 namespace ColorPicker.Helpers
 {
@@ -269,6 +270,15 @@ namespace ColorPicker.Helpers
             }
 
             _hwndSource.RemoveHook(ProcessWindowMessages);
+        }
+
+        internal void MoveCursor(int xOffset, int yOffset)
+        {
+            POINT lpPoint;
+            GetCursorPos(out lpPoint);
+            lpPoint.X += xOffset;
+            lpPoint.Y += yOffset;
+            SetCursorPos(lpPoint.X, lpPoint.Y);
         }
     }
 }
