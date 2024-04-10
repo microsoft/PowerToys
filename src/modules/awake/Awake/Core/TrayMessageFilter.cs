@@ -3,13 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using Awake.Core.Models;
-using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Awake.Core
@@ -34,16 +31,16 @@ namespace Awake.Core
                     switch (targetCommandIndex)
                     {
                         case (long)TrayCommands.TC_EXIT:
-                            ExitCommandHandler(_exitSignal);
+                            Manager.CompleteExit(0, _exitSignal, true);
                             break;
                         case (long)TrayCommands.TC_DISPLAY_SETTING:
-                            DisplaySettingCommandHandler();
+                            Manager.SetDisplay();
                             break;
                         case (long)TrayCommands.TC_MODE_INDEFINITE:
-                            IndefiniteKeepAwakeCommandHandler();
+                            Manager.SetIndefiniteKeepAwake();
                             break;
                         case (long)TrayCommands.TC_MODE_PASSIVE:
-                            PassiveKeepAwakeCommandHandler();
+                            Manager.SetPassiveKeepAwake();
                             break;
                         case var _ when targetCommandIndex >= trayCommandsSize:
                             // Format for the timer block:
@@ -56,7 +53,7 @@ namespace Awake.Core
 
                             int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
                             var targetTime = (uint)settings.Properties.CustomTrayTimes.ElementAt(index).Value;
-                            TimedKeepAwakeCommandHandler(targetTime);
+                            Manager.SetTimedKeepAwake(targetTime);
                             break;
                     }
 
@@ -64,31 +61,6 @@ namespace Awake.Core
             }
 
             return false;
-        }
-
-        private static void ExitCommandHandler(ManualResetEvent? exitSignal)
-        {
-            Manager.CompleteExit(0, exitSignal, true);
-        }
-
-        private static void DisplaySettingCommandHandler()
-        {
-            Manager.SetDisplay();
-        }
-
-        private static void TimedKeepAwakeCommandHandler(uint seconds)
-        {
-            Manager.SetTimedKeepAwake(seconds);
-        }
-
-        private static void PassiveKeepAwakeCommandHandler()
-        {
-            Manager.SetPassiveKeepAwake();
-        }
-
-        private static void IndefiniteKeepAwakeCommandHandler()
-        {
-            Manager.SetIndefiniteKeepAwake();
         }
     }
 }

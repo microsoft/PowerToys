@@ -142,6 +142,24 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exiting from the internal termination handler..
+        /// </summary>
+        internal static string AWAKE_EXIT_MESSAGE {
+            get {
+                return ResourceManager.GetString("AWAKE_EXIT_MESSAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Received a signal to end the process. Making sure we quit....
+        /// </summary>
+        internal static string AWAKE_EXIT_SIGNAL_MESSAGE {
+            get {
+                return ResourceManager.GetString("AWAKE_EXIT_SIGNAL_MESSAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} hours.
         /// </summary>
         internal static string AWAKE_HOURS {

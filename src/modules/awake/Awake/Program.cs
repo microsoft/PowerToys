@@ -162,7 +162,7 @@ namespace Awake
         private static bool ExitHandler(ControlType ctrlType)
         {
             Logger.LogInfo($"Exited through handler with control type: {ctrlType}");
-            Exit("Exiting from the internal termination handler.", Environment.ExitCode, _exitSignal);
+            Exit(Resources.AWAKE_EXIT_MESSAGE, Environment.ExitCode, _exitSignal);
             return false;
         }
 
@@ -210,18 +210,19 @@ namespace Awake
                     {
                         if (WaitHandle.WaitAny([_exitSignal, eventHandle]) == 1)
                         {
-                            Exit("Received a signal to end the process. Making sure we quit...", 0, _exitSignal, true);
+                            Exit(Resources.AWAKE_EXIT_SIGNAL_MESSAGE, 0, _exitSignal, true);
                         }
                     }).Start();
 
                     TrayHelper.InitializeTray(Core.Constants.FullAppName, new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico")), _exitSignal);
 
                     string? settingsPath = _settingsUtils!.GetSettingsFilePath(Core.Constants.AppName);
+
                     Logger.LogInfo($"Reading configuration file: {settingsPath}");
 
                     if (!File.Exists(settingsPath))
                     {
-                        string? errorString = $"The settings file does not exist. Scaffolding default configuration...";
+                        Logger.LogError("The settings file does not exist. Scaffolding default configuration...");
 
                         AwakeSettings scaffoldSettings = new();
                         _settingsUtils.SaveSettings(JsonSerializer.Serialize(scaffoldSettings), Core.Constants.AppName);
@@ -231,8 +232,7 @@ namespace Awake
                 }
                 catch (Exception ex)
                 {
-                    string? errorString = $"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}";
-                    Logger.LogError(errorString);
+                    Logger.LogError($"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}");
                 }
             }
             else
