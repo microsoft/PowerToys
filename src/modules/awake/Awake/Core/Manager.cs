@@ -288,7 +288,7 @@ namespace Awake.Core
 
         public static Dictionary<string, int> GetDefaultTrayOptions()
         {
-            Dictionary<string, int> optionsList = new Dictionary<string, int>
+            Dictionary<string, int> optionsList = new()
             {
                 { string.Format(CultureInfo.InvariantCulture, AwakeMinutes, 30), 1800 },
                 { Resources.AWAKE_1_HOUR, 3600 },
@@ -299,29 +299,15 @@ namespace Awake.Core
 
         public static void SetPassiveKeepAwakeMode(string moduleName)
         {
-            AwakeSettings currentSettings;
-
             try
             {
-                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
-            }
-            catch (Exception ex)
-            {
-                string? errorString = $"Failed to reset Awake mode GetSettings: {ex.Message}";
-                Logger.LogError(errorString);
-                currentSettings = new AwakeSettings();
-            }
-
-            currentSettings.Properties.Mode = AwakeMode.PASSIVE;
-
-            try
-            {
+                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName) ?? new AwakeSettings();
+                currentSettings.Properties.Mode = AwakeMode.PASSIVE;
                 ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
             }
             catch (Exception ex)
             {
-                string? errorString = $"Failed to reset Awake mode SaveSettings: {ex.Message}";
-                Logger.LogError(errorString);
+                Logger.LogError($"Failed to reset Awake mode: {ex.Message}");
             }
         }
     }
