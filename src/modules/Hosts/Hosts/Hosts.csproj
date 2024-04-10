@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348</TargetFramework>
     <RootNamespace>Hosts</RootNamespace>
     <UseWinUI>true</UseWinUI>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
@@ -13,7 +13,16 @@
     <AssemblyName>PowerToys.Hosts</AssemblyName>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Hosts.pri</ProjectPriFileName>
+
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutDir)\PowerToys.Hosts.pri" Pack="True" PackageCopyToOutput="true" />
+    <None Include="$(OutDir)\PowerToys.Hosts.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+    <None Include="$(OutDir)\PowerToys.Hosts.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+  </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugSymbols>true</DebugSymbols>
@@ -32,11 +41,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="$(OutDir)\PowerToys.Hosts.pri" Pack="True" PackageCopyToOutput="True" />
-    <XBFFile Include="$(OutDir)**\*.xbf" />
-    <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />

@@ -7,6 +7,7 @@ using System.IO.Abstractions;
 using System.Threading;
 using Hosts.Helpers;
 using Hosts.Settings;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
@@ -75,7 +76,7 @@ namespace HostsPackageConsumer.Settings
                         if (!_settingsUtils.SettingsExists(HostsModuleName))
                         {
                             // Logger needs to be abstracted
-                            LoggerInstance.Logger.LogInfo("Hosts settings.json was missing, creating a new one");
+                            Logger.LogInfo("Hosts settings.json was missing, creating a new one");
                             var defaultSettings = new HostsSettings();
                             defaultSettings.Save(_settingsUtils);
                         }
@@ -98,7 +99,7 @@ namespace HostsPackageConsumer.Settings
                             retry = false;
                         }
 
-                        LoggerInstance.Logger.LogError("Failed to read changed settings", ex);
+                        Logger.LogError("Failed to read changed settings", ex);
                         Thread.Sleep(500);
                     }
                 }

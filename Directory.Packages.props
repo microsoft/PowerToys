@@ -57,6 +57,8 @@
     <PackageVersion Include="NLog" Version="5.0.4" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
+    <PackageVersion Include="PowerToys.Hosts" Version="0.0.1" />
+    <PackageVersion Include="PowerToys.RegistryPreviewUILib" Version="0.0.1" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.33.0" />
     <PackageVersion Include="StreamJsonRpc" Version="2.14.24" />

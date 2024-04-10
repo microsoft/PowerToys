@@ -19,6 +19,8 @@
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <AssemblyName>PowerToys.RegistryPreviewUI</AssemblyName>
     <ApplicationIcon>Assets\RegistryPreviewUI\app.ico</ApplicationIcon>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.RegistryPreviewUI.pri</ProjectPriFileName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,6 +49,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="PowerToys.RegistryPreviewUILib" />
     <PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -61,8 +64,20 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\RegistryPreviewUILib\RegistryPreviewUILib.csproj" />
   </ItemGroup>
+
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <Message Text="Executing CopyDLLs task" Importance="High" />
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\*.pri" />
+      <XBFFile Include="$(OutDir)bin\*\**\*.xbf" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(XBFFile)" DestinationFolder="$(OutDir)PowerToys.RegistryPreviewUILib\RegistryPreviewUILibXAML" />
+
+    <Message Text="Copied build files" Importance="High" />
+  </Target>
 
   <!-- 
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 

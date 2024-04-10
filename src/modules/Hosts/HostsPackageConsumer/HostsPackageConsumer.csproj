@@ -32,6 +32,18 @@
     <None Remove="Assets\HostsPackageConsumer\AppList.scale-400.png" />
   </ItemGroup>
 
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <Message Text="Executing CopyPRIFileToOutputDir task" Importance="High" />
+
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\PowerToys.Hosts.pri" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+
+    <Message Text="Copied CopyPRIFileToOutputDir files" Importance="High" />
+  </Target>
+
   <ItemGroup>
     <Page Remove="HostsPackageConsumerXAML\App.xaml" />
   </ItemGroup>
@@ -63,22 +75,11 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="PowerToys.Hosts" />
     <PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
-    <Message Text="Executing CopyDLLs task" Importance="High" />
-    <ItemGroup>
-      <PRIFile Include="$(OutDir)**\*.pri" />
-      <XBFFile Include="$(OutDir)bin\*\*\**\*.xbf" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="@(XBFFile)" DestinationFolder="$(OutDir)PowerToys.Hosts\HostsXAML\Views" />
-
-    <Message Text="Copied build files" Importance="High" />
-  </Target>
   <!-- 
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
     Tools extension to be activated for this project even if the Windows App SDK Nuget
@@ -92,7 +93,6 @@
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-    <ProjectReference Include="..\Hosts\Hosts.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
   </ItemGroup>
   <!-- 
