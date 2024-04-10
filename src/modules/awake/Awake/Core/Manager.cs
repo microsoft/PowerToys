@@ -339,9 +339,9 @@ namespace Awake.Core
         {
             try
             {
-                var currentSettings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                 currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
-                Manager.ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
             }
             catch (Exception ex)
             {
