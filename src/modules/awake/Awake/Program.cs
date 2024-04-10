@@ -33,6 +33,8 @@ namespace Awake
         // the pull request is issued.
         private static readonly string BuildId = "DAISY023_04102024";
 
+        private static readonly ManualResetEvent _exitSignal = new(false);
+
         private static Mutex? _mutex;
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
@@ -46,7 +48,6 @@ namespace Awake
         private static SystemPowerCapabilities _powerCapabilities;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-        private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
         internal static readonly string[] AliasesConfigOption = ["--use-pt-config", "-c"];
         internal static readonly string[] AliasesDisplayOption = ["--display-on", "-d"];
         internal static readonly string[] AliasesTimeOption = ["--time-limit", "-t"];
@@ -135,14 +136,14 @@ namespace Awake
                 IsRequired = false,
             };
 
-            RootCommand? rootCommand = new()
-            {
+            RootCommand? rootCommand =
+            [
                 configOption,
                 displayOption,
                 timeOption,
                 pidOption,
                 expireAtOption,
-            };
+            ];
 
             rootCommand.Description = Core.Constants.AppName;
 
@@ -206,7 +207,7 @@ namespace Awake
                     var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, interop.Constants.AwakeExitEvent());
                     new Thread(() =>
                     {
-                        if (WaitHandle.WaitAny(new WaitHandle[] { _exitSignal, eventHandle }) == 1)
+                        if (WaitHandle.WaitAny([_exitSignal, eventHandle]) == 1)
                         {
                             Exit("Received a signal to end the process. Making sure we quit...", 0, _exitSignal, true);
                         }
@@ -221,7 +222,7 @@ namespace Awake
                     {
                         string? errorString = $"The settings file does not exist. Scaffolding default configuration...";
 
-                        AwakeSettings scaffoldSettings = new AwakeSettings();
+                        AwakeSettings scaffoldSettings = new();
                         _settingsUtils.SaveSettings(JsonSerializer.Serialize(scaffoldSettings), Core.Constants.AppName);
                     }
 
@@ -249,7 +250,7 @@ namespace Awake
                             // because that way we're accounting for the user potentially changing their clock
                             // while Awake is running.
                             Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
-                            SetupExpirableKeepAwake(expirationDateTime, displayOn);
+                            Manager.SetExpirableKeepAwake(expirationDateTime, displayOn);
                         }
                         else
                         {
@@ -268,11 +269,11 @@ namespace Awake
 
                     if (mode == AwakeMode.INDEFINITE)
                     {
-                        SetupIndefiniteKeepAwake(displayOn);
+                        Manager.SetIndefiniteKeepAwake(displayOn);
                     }
                     else
                     {
-                        SetupTimedKeepAwake(timeLimit, displayOn);
+                        Manager.SetTimedKeepAwake(timeLimit, displayOn);
                     }
                 }
             }
@@ -328,15 +329,9 @@ namespace Awake
             }
         }
 
-        private static void SetupIndefiniteKeepAwake(bool displayOn)
-        {
-            Manager.SetIndefiniteKeepAwake(displayOn);
-        }
-
         private static void HandleAwakeConfigChange(FileSystemEventArgs fileEvent)
         {
             Logger.LogInfo("Detected a settings file change. Updating configuration...");
-            Logger.LogInfo("Resetting keep-awake to normal state due to settings change.");
             ProcessSettings();
         }
 
@@ -354,27 +349,27 @@ namespace Awake
                     {
                         case AwakeMode.PASSIVE:
                             {
-                                SetupPassiveKeepAwake();
+                                Manager.SetPassiveKeepAwake();
                                 break;
                             }
 
                         case AwakeMode.INDEFINITE:
                             {
-                                SetupIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
+                                Manager.SetIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
                                 break;
                             }
 
                         case AwakeMode.TIMED:
                             {
                                 uint computedTime = (settings.Properties.IntervalHours * 60 * 60) + (settings.Properties.IntervalMinutes * 60);
-                                SetupTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
+                                Manager.SetTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
 
                                 break;
                             }
 
                         case AwakeMode.EXPIRABLE:
                             {
-                                SetupExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);
+                                Manager.SetExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);
 
                                 break;
                             }
@@ -400,27 +395,6 @@ namespace Awake
                 string? errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
                 Logger.LogError(errorMessage);
             }
-        }
-
-        private static void SetupPassiveKeepAwake()
-        {
-            Logger.LogInfo($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
-
-            Manager.SetPassiveKeepAwake();
-        }
-
-        private static void SetupExpirableKeepAwake(DateTimeOffset expireAt, bool displayOn)
-        {
-            Logger.LogInfo($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {displayOn}.");
-
-            Manager.SetExpirableKeepAwake(expireAt, displayOn);
-        }
-
-        private static void SetupTimedKeepAwake(uint time, bool displayOn)
-        {
-            Logger.LogInfo($"Timed keep-awake. Expected runtime: {time} seconds with display on setting set to {displayOn}.");
-
-            Manager.SetTimedKeepAwake(time, displayOn);
         }
     }
 }

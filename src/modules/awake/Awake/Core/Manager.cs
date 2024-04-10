@@ -19,6 +19,8 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
+using Windows.Graphics;
 
 namespace Awake.Core
 {
@@ -150,6 +152,8 @@ namespace Awake.Core
 
         internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true)
         {
+            Logger.LogInfo($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {displayOn}.");
+
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeExpirableKeepAwakeEvent());
 
             CancelExistingThread();
@@ -179,6 +183,8 @@ namespace Awake.Core
 
         internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true)
         {
+            Logger.LogInfo($"Timed keep-awake. Expected runtime: {seconds} seconds with display on setting set to {keepDisplayOn}.");
+
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeTimedKeepAwakeEvent());
 
             CancelExistingThread();
@@ -319,6 +325,8 @@ namespace Awake.Core
 
         internal static void SetPassiveKeepAwake()
         {
+            Logger.LogInfo($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
+
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeNoKeepAwakeEvent());
 
             CancelExistingThread();
