@@ -161,7 +161,7 @@ namespace Awake.Core
                     Logger.LogInfo($"Completed expirable keep-awake.");
                     CancelExistingThread();
 
-                    SetPassiveKeepAwakeMode(Constants.AppName);
+                    SetPassiveKeepAwakeMode();
                 },
                 _tokenSource.Token);
             }
@@ -189,7 +189,7 @@ namespace Awake.Core
                 Logger.LogInfo($"Completed timed thread.");
                 CancelExistingThread();
 
-                SetPassiveKeepAwakeMode(Constants.AppName);
+                SetPassiveKeepAwakeMode();
             },
             _tokenSource.Token);
         }
@@ -297,13 +297,13 @@ namespace Awake.Core
             return optionsList;
         }
 
-        public static void SetPassiveKeepAwakeMode(string moduleName)
+        public static void SetPassiveKeepAwakeMode()
         {
             try
             {
-                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName) ?? new AwakeSettings();
+                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                 currentSettings.Properties.Mode = AwakeMode.PASSIVE;
-                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
             }
             catch (Exception ex)
             {

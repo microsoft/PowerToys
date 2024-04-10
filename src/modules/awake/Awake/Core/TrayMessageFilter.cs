@@ -42,13 +42,13 @@ namespace Awake.Core
                             ExitCommandHandler(_exitSignal);
                             break;
                         case (long)TrayCommands.TC_DISPLAY_SETTING:
-                            DisplaySettingCommandHandler(Constants.AppName);
+                            DisplaySettingCommandHandler();
                             break;
                         case (long)TrayCommands.TC_MODE_INDEFINITE:
-                            IndefiniteKeepAwakeCommandHandler(Constants.AppName);
+                            IndefiniteKeepAwakeCommandHandler();
                             break;
                         case (long)TrayCommands.TC_MODE_PASSIVE:
-                            PassiveKeepAwakeCommandHandler(Constants.AppName);
+                            PassiveKeepAwakeCommandHandler();
                             break;
                         case var _ when targetCommandIndex >= trayCommandsSize:
                             // Format for the timer block:
@@ -61,7 +61,7 @@ namespace Awake.Core
 
                             int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
                             var targetTime = settings.Properties.CustomTrayTimes.ElementAt(index).Value;
-                            TimedKeepAwakeCommandHandler(Constants.AppName, targetTime);
+                            TimedKeepAwakeCommandHandler(targetTime);
                             break;
                     }
 
@@ -76,96 +76,55 @@ namespace Awake.Core
             Manager.CompleteExit(0, exitSignal, true);
         }
 
-        private static void DisplaySettingCommandHandler(string moduleName)
+        private static void DisplaySettingCommandHandler()
         {
-            AwakeSettings currentSettings;
-
             try
             {
-                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
+                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
             }
             catch (Exception ex)
             {
-                string? errorString = $"Failed GetSettings: {ex.Message}";
-                Logger.LogError(errorString);
-                currentSettings = new AwakeSettings();
-            }
-
-            currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
-
-            try
-            {
-                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
-            }
-            catch (Exception ex)
-            {
-                string? errorString = $"Failed SaveSettings: {ex.Message}";
-                Logger.LogError(errorString);
+                Logger.LogError($"Failed to handle display setting command: {ex.Message}");
             }
         }
 
-        private static void TimedKeepAwakeCommandHandler(string moduleName, int seconds)
+        private static void TimedKeepAwakeCommandHandler(int seconds)
         {
-            TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
-
-            AwakeSettings currentSettings;
-
             try
             {
-                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
+                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                var timeSpan = TimeSpan.FromSeconds(seconds);
+
+                currentSettings.Properties.Mode = AwakeMode.TIMED;
+                currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
+                currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
+
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
             }
             catch (Exception ex)
             {
-                string? errorString = $"Failed GetSettings: {ex.Message}";
-                Logger.LogError(errorString);
-                currentSettings = new AwakeSettings();
-            }
-
-            currentSettings.Properties.Mode = AwakeMode.TIMED;
-            currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
-            currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
-
-            try
-            {
-                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
-            }
-            catch (Exception ex)
-            {
-                string? errorString = $"Failed SaveSettings: {ex.Message}";
-                Logger.LogError(errorString);
+                Logger.LogError($"Failed to handle timed keep awake command: {ex.Message}");
             }
         }
 
-        private static void PassiveKeepAwakeCommandHandler(string moduleName)
+        private static void PassiveKeepAwakeCommandHandler()
         {
-            Manager.SetPassiveKeepAwakeMode(moduleName);
+            Manager.SetPassiveKeepAwakeMode();
         }
 
-        private static void IndefiniteKeepAwakeCommandHandler(string moduleName)
+        private static void IndefiniteKeepAwakeCommandHandler()
         {
-            AwakeSettings currentSettings;
-
             try
             {
-                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
+                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
             }
             catch (Exception ex)
             {
-                string? errorString = $"Failed GetSettings: {ex.Message}";
-                Logger.LogError(errorString);
-                currentSettings = new AwakeSettings();
-            }
-
-            currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
-
-            try
-            {
-                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
-            }
-            catch (Exception ex)
-            {
-                string? errorString = $"Failed SaveSettings: {ex.Message}";
-                Logger.LogError(errorString);
+                Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
             }
         }
     }
