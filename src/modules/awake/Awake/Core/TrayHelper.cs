@@ -100,44 +100,43 @@ namespace Awake.Core
 
         public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts, bool startedFromPowerToys)
         {
-            if (TrayMenu != IntPtr.Zero)
+            // Clear the existing tray menu
+            if (TrayMenu != IntPtr.Zero && Bridge.DestroyMenu(TrayMenu))
             {
-                var destructionStatus = Bridge.DestroyMenu(TrayMenu);
-                if (destructionStatus != true)
-                {
-                    Logger.LogError("Failed to destroy menu.");
-                }
+                Logger.LogError("Failed to destroy menu.");
             }
 
+            // Create a new tray menu
             TrayMenu = Bridge.CreatePopupMenu();
 
             if (TrayMenu != IntPtr.Zero)
             {
                 if (!startedFromPowerToys)
                 {
-                    // If Awake is started from PowerToys, the correct way to exit it is disabling it from Settings.
+                    // Insert menu items for exiting Awake if not started from PowerToys
                     Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_EXIT, Resources.AWAKE_EXIT);
-                    Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
+                    Bridge.InsertMenu(TrayMenu, 1, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
                 }
 
-                Bridge.InsertMenu(TrayMenu, 0,  Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (keepDisplayOn ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED) | (mode == AwakeMode.PASSIVE ? Native.Constants.MF_DISABLED : Native.Constants.MF_ENABLED), (uint)TrayCommands.TC_DISPLAY_SETTING, Resources.AWAKE_KEEP_SCREEN_ON);
+                // Insert menu item for toggling display setting
+                Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (keepDisplayOn ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED) | (mode == AwakeMode.PASSIVE ? Native.Constants.MF_DISABLED : Native.Constants.MF_ENABLED), (uint)TrayCommands.TC_DISPLAY_SETTING, Resources.AWAKE_KEEP_SCREEN_ON);
             }
 
-            // In case there are no tray shortcuts defined for the application default to a
-            // reasonable initial set.
+            // Ensure there are default tray time shortcuts
             if (trayTimeShortcuts.Count == 0)
             {
                 trayTimeShortcuts.AddRange(Manager.GetDefaultTrayOptions());
             }
 
+            // Create a submenu for awake time options
             var awakeTimeMenu = Bridge.CreatePopupMenu();
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
                 Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
+            // Insert menu items for different awake modes
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
-
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.PASSIVE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_PASSIVE, Resources.AWAKE_OFF);
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.INDEFINITE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY);
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (mode == AwakeMode.TIMED ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);

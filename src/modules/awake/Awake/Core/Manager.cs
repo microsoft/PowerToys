@@ -30,6 +30,10 @@ namespace Awake.Core
     /// </summary>
     public class Manager
     {
+        private static bool _isUsingPowerToysConfig;
+
+        internal static bool IsUsingPowerToysConfig { get => _isUsingPowerToysConfig; set => _isUsingPowerToysConfig = value; }
+
         private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Resources.AWAKE_MINUTES);
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
 
@@ -103,14 +107,9 @@ namespace Awake.Core
 
         private static ExecutionState ComputeAwakeState(bool keepDisplayOn)
         {
-            if (keepDisplayOn)
-            {
-                return ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS;
-            }
-            else
-            {
-                return ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
-            }
+            return keepDisplayOn
+                ? ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS
+                : ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
         }
 
         internal static void CancelExistingThread()
@@ -183,24 +182,27 @@ namespace Awake.Core
                 Logger.LogError($"Current time: {DateTimeOffset.Now}\tTarget time: {expireAt}");
             }
 
-            try
+            if (IsUsingPowerToysConfig)
             {
-                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                var settingsChanged = currentSettings.Properties.Mode != AwakeMode.EXPIRABLE ||
-                                      currentSettings.Properties.ExpirationDateTime != expireAt ||
-                                      currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
-
-                if (settingsChanged)
+                try
                 {
-                    currentSettings.Properties.Mode = AwakeMode.EXPIRABLE;
-                    currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
-                    currentSettings.Properties.ExpirationDateTime = expireAt;
-                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    var settingsChanged = currentSettings.Properties.Mode != AwakeMode.EXPIRABLE ||
+                                          currentSettings.Properties.ExpirationDateTime != expireAt ||
+                                          currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
+
+                    if (settingsChanged)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.EXPIRABLE;
+                        currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
+                        currentSettings.Properties.ExpirationDateTime = expireAt;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
+                }
             }
         }
 
@@ -225,25 +227,28 @@ namespace Awake.Core
             },
             _tokenSource.Token);
 
-            try
+            if (IsUsingPowerToysConfig)
             {
-                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                var timeSpan = TimeSpan.FromSeconds(seconds);
-                var settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
-                                      currentSettings.Properties.IntervalHours != (uint)timeSpan.Hours ||
-                                      currentSettings.Properties.IntervalMinutes != (uint)timeSpan.Minutes;
-
-                if (settingsChanged)
+                try
                 {
-                    currentSettings.Properties.Mode = AwakeMode.TIMED;
-                    currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
-                    currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
-                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    var timeSpan = TimeSpan.FromSeconds(seconds);
+                    var settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
+                                          currentSettings.Properties.IntervalHours != (uint)timeSpan.Hours ||
+                                          currentSettings.Properties.IntervalMinutes != (uint)timeSpan.Minutes;
+
+                    if (settingsChanged)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.TIMED;
+                        currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
+                        currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to handle timed keep awake command: {ex.Message}");
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle timed keep awake command: {ex.Message}");
+                }
             }
         }
 
@@ -358,33 +363,39 @@ namespace Awake.Core
 
             CancelExistingThread();
 
-            try
+            if (IsUsingPowerToysConfig)
             {
-                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-
-                if (currentSettings.Properties.Mode != AwakeMode.PASSIVE)
+                try
                 {
-                    currentSettings.Properties.Mode = AwakeMode.PASSIVE;
-                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+
+                    if (currentSettings.Properties.Mode != AwakeMode.PASSIVE)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.PASSIVE;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to reset Awake mode: {ex.Message}");
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to reset Awake mode: {ex.Message}");
+                }
             }
         }
 
         internal static void SetDisplay()
         {
-            try
+            if (IsUsingPowerToysConfig)
             {
-                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
-                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to handle display setting command: {ex.Message}");
+                try
+                {
+                    var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
+                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle display setting command: {ex.Message}");
+                }
             }
         }
     }

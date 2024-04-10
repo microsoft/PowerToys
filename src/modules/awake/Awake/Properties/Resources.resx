@@ -174,6 +174,9 @@
   <data name="AWAKE_CMD_HELP_TIME_OPTION" xml:space="preserve">
     <value>Determines the interval (in seconds) during which the computer is kept awake.</value>
   </data>
+  <data name="AWAKE_EXIT_BINDINGHOOK_MESSAGE" xml:space="preserve">
+    <value>Terminating from process binding hook.</value>
+  </data>
   <data name="AWAKE_EXIT_MESSAGE" xml:space="preserve">
     <value>Exiting from the internal termination handler.</value>
   </data>

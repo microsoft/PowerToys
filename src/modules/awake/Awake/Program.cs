@@ -176,6 +176,8 @@ namespace Awake
             {
                 // Configuration file is used, therefore we disregard any other command-line parameter
                 // and instead watch for changes in the file.
+                Manager.IsUsingPowerToysConfig = true;
+
                 try
                 {
                     var eventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, interop.Constants.AwakeExitEvent());
@@ -257,7 +259,7 @@ namespace Awake
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
                     Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
-                    Exit("Terminating from process binding hook.", 0, _exitSignal, true);
+                    Exit(Resources.AWAKE_EXIT_BINDINGHOOK_MESSAGE, 0, _exitSignal, true);
                 });
             }
 
