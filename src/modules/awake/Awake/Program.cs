@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Awake.Core;
 using Awake.Core.Models;
 using Awake.Core.Native;
+using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 
@@ -94,7 +95,7 @@ namespace Awake
             Option<bool> configOption = new(
                     aliases: AliasesConfigOption,
                     getDefaultValue: () => false,
-                    description: $"Specifies whether {Core.Constants.AppName} will be using the PowerToys configuration file for managing the state.")
+                    description: Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
@@ -103,7 +104,7 @@ namespace Awake
             Option<bool> displayOption = new(
                     aliases: AliasesDisplayOption,
                     getDefaultValue: () => true,
-                    description: "Determines whether the display should be kept awake.")
+                    description: Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
@@ -112,7 +113,7 @@ namespace Awake
             Option<uint> timeOption = new(
                     aliases: AliasesTimeOption,
                     getDefaultValue: () => 0,
-                    description: "Determines the interval, in seconds, during which the computer is kept awake.")
+                    description: Resources.AWAKE_CMD_HELP_TIME_OPTION)
             {
                 Arity = ArgumentArity.ExactlyOne,
                 IsRequired = false,
@@ -121,7 +122,7 @@ namespace Awake
             Option<int> pidOption = new(
                     aliases: AliasesPidOption,
                     getDefaultValue: () => 0,
-                    description: $"Bind the execution of {Core.Constants.AppName} to another process. When the process ends, the system will resume managing the current sleep and display state.")
+                    description: Resources.AWAKE_CMD_HELP_PID_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
@@ -130,7 +131,7 @@ namespace Awake
             Option<string> expireAtOption = new(
                     aliases: AliasesExpireAtOption,
                     getDefaultValue: () => string.Empty,
-                    description: $"Determines the end date/time when {Core.Constants.AppName} will back off and let the system manage the current sleep and display state.")
+                    description: Resources.AWAKE_CMD_HELP_EXPIREAT_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,

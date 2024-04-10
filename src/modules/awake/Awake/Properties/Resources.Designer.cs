@@ -88,6 +88,51 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies whether Awake will be using the PowerToys configuration file for managing the state..
+        /// </summary>
+        internal static string AWAKE_CMD_HELP_CONFIG_OPTION {
+            get {
+                return ResourceManager.GetString("AWAKE_CMD_HELP_CONFIG_OPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Determines whether the display should be kept awake..
+        /// </summary>
+        internal static string AWAKE_CMD_HELP_DISPLAY_OPTION {
+            get {
+                return ResourceManager.GetString("AWAKE_CMD_HELP_DISPLAY_OPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Determines the end date and time when Awake will back off and let the system manage the current sleep and display state..
+        /// </summary>
+        internal static string AWAKE_CMD_HELP_EXPIREAT_OPTION {
+            get {
+                return ResourceManager.GetString("AWAKE_CMD_HELP_EXPIREAT_OPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bind the execution of Awake to another process. When the process ends, the system will resume managing the current sleep and display state..
+        /// </summary>
+        internal static string AWAKE_CMD_HELP_PID_OPTION {
+            get {
+                return ResourceManager.GetString("AWAKE_CMD_HELP_PID_OPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Determines the interval (in seconds) during which the computer is kept awake..
+        /// </summary>
+        internal static string AWAKE_CMD_HELP_TIME_OPTION {
+            get {
+                return ResourceManager.GetString("AWAKE_CMD_HELP_TIME_OPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exit.
         /// </summary>
         internal static string AWAKE_EXIT {
