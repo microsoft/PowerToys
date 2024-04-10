@@ -30,10 +30,10 @@ namespace Awake.Core
     /// </summary>
     public class Manager
     {
-        private static readonly CompositeFormat AwakeMinutes = System.Text.CompositeFormat.Parse(Properties.Resources.AWAKE_MINUTES);
-        private static readonly CompositeFormat AwakeHours = System.Text.CompositeFormat.Parse(Properties.Resources.AWAKE_HOURS);
+        private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Properties.Resources.AWAKE_MINUTES);
+        private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Properties.Resources.AWAKE_HOURS);
 
-        private static BlockingCollection<ExecutionState> _stateQueue;
+        private static readonly BlockingCollection<ExecutionState> _stateQueue;
 
         private static CancellationTokenSource _tokenSource;
 
@@ -44,7 +44,7 @@ namespace Awake.Core
         static Manager()
         {
             _tokenSource = new CancellationTokenSource();
-            _stateQueue = new BlockingCollection<ExecutionState>();
+            _stateQueue = [];
             ModuleSettings = new SettingsUtils();
         }
 

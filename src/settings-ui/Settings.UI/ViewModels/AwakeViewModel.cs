@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -66,20 +65,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsExpirationConfigurationEnabled
-        {
-            get => ModuleSettings.Properties.Mode == AwakeMode.EXPIRABLE && IsEnabled;
-        }
+        public bool IsExpirationConfigurationEnabled => ModuleSettings.Properties.Mode == AwakeMode.EXPIRABLE && IsEnabled;
 
-        public bool IsTimeConfigurationEnabled
-        {
-            get => ModuleSettings.Properties.Mode == AwakeMode.TIMED && IsEnabled;
-        }
+        public bool IsTimeConfigurationEnabled => ModuleSettings.Properties.Mode == AwakeMode.TIMED && IsEnabled;
 
-        public bool IsScreenConfigurationPossibleEnabled
-        {
-            get => ModuleSettings.Properties.Mode != AwakeMode.PASSIVE && IsEnabled;
-        }
+        public bool IsScreenConfigurationPossibleEnabled => ModuleSettings.Properties.Mode != AwakeMode.PASSIVE && IsEnabled;
 
         public AwakeMode Mode
         {
@@ -89,6 +79,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (ModuleSettings.Properties.Mode != value)
                 {
                     ModuleSettings.Properties.Mode = value;
+
+                    // Handle the special case where both hours and minutes are zero.
+                    // Otherwise, this will reset to passive very quickly in the UI.
+                    if (value == AwakeMode.TIMED && IntervalMinutes == 0 && IntervalHours == 0)
+                    {
+                        ModuleSettings.Properties.IntervalMinutes = 1;
+                        OnPropertyChanged(nameof(IntervalMinutes));
+                    }
 
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
                     OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
