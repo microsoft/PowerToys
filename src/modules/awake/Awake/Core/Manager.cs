@@ -30,8 +30,8 @@ namespace Awake.Core
     /// </summary>
     public class Manager
     {
-        private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Properties.Resources.AWAKE_MINUTES);
-        private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Properties.Resources.AWAKE_HOURS);
+        private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Resources.AWAKE_MINUTES);
+        private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
 
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
 
@@ -39,7 +39,7 @@ namespace Awake.Core
 
         private static SettingsUtils? _moduleSettings;
 
-        private static SettingsUtils? ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
+        internal static SettingsUtils? ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
 
         static Manager()
         {
@@ -48,7 +48,7 @@ namespace Awake.Core
             ModuleSettings = new SettingsUtils();
         }
 
-        public static void StartMonitor()
+        internal static void StartMonitor()
         {
             Thread monitorThread = new(() =>
             {
@@ -70,7 +70,7 @@ namespace Awake.Core
             Bridge.SetConsoleCtrlHandler(handler, addHandler);
         }
 
-        public static void AllocateConsole()
+        internal static void AllocateConsole()
         {
             Bridge.AllocConsole();
 
@@ -113,7 +113,7 @@ namespace Awake.Core
             }
         }
 
-        public static void CancelExistingThread()
+        internal static void CancelExistingThread()
         {
             Logger.LogInfo($"Attempting to ensure that the thread is properly cleaned up...");
 
@@ -128,23 +128,27 @@ namespace Awake.Core
             Logger.LogInfo("Instantiating of new token source and thread token completed.");
         }
 
-        public static void SetIndefiniteKeepAwake(bool keepDisplayOn = false)
+        internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false)
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
 
             CancelExistingThread();
 
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+
+            try
+            {
+                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
+            }
         }
 
-        public static void SetNoKeepAwake()
-        {
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeNoKeepAwakeEvent());
-
-            CancelExistingThread();
-        }
-
-        public static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true)
+        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true)
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeExpirableKeepAwakeEvent());
 
@@ -161,7 +165,7 @@ namespace Awake.Core
                     Logger.LogInfo($"Completed expirable keep-awake.");
                     CancelExistingThread();
 
-                    SetPassiveKeepAwakeMode();
+                    SetPassiveKeepAwake();
                 },
                 _tokenSource.Token);
             }
@@ -173,7 +177,7 @@ namespace Awake.Core
             }
         }
 
-        public static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true)
+        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true)
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeTimedKeepAwakeEvent());
 
@@ -189,14 +193,30 @@ namespace Awake.Core
                 Logger.LogInfo($"Completed timed thread.");
                 CancelExistingThread();
 
-                SetPassiveKeepAwakeMode();
+                SetPassiveKeepAwake();
             },
             _tokenSource.Token);
+
+            try
+            {
+                var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                var timeSpan = TimeSpan.FromSeconds(seconds);
+
+                currentSettings.Properties.Mode = AwakeMode.TIMED;
+                currentSettings.Properties.IntervalHours = (uint)timeSpan.Hours;
+                currentSettings.Properties.IntervalMinutes = (uint)timeSpan.Minutes;
+
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to handle timed keep awake command: {ex.Message}");
+            }
         }
 
         internal static void CompleteExit(int exitCode, ManualResetEvent? exitSignal, bool force = false)
         {
-            SetNoKeepAwake();
+            SetPassiveKeepAwake();
 
             IntPtr windowHandle = GetHiddenWindow();
 
@@ -221,7 +241,7 @@ namespace Awake.Core
             }
         }
 
-        public static string GetOperatingSystemBuild()
+        internal static string GetOperatingSystemBuild()
         {
             try
             {
@@ -286,7 +306,7 @@ namespace Awake.Core
             return IntPtr.Zero;
         }
 
-        public static Dictionary<string, int> GetDefaultTrayOptions()
+        internal static Dictionary<string, int> GetDefaultTrayOptions()
         {
             Dictionary<string, int> optionsList = new()
             {
@@ -297,8 +317,12 @@ namespace Awake.Core
             return optionsList;
         }
 
-        public static void SetPassiveKeepAwakeMode()
+        internal static void SetPassiveKeepAwake()
         {
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeNoKeepAwakeEvent());
+
+            CancelExistingThread();
+
             try
             {
                 var currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
@@ -308,6 +332,20 @@ namespace Awake.Core
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to reset Awake mode: {ex.Message}");
+            }
+        }
+
+        internal static void SetDisplay()
+        {
+            try
+            {
+                var currentSettings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
+                Manager.ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to handle display setting command: {ex.Message}");
             }
         }
     }

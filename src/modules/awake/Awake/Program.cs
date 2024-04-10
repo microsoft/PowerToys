@@ -31,7 +31,7 @@ namespace Awake
         // Format of the build ID is: CODENAME_MMDDYYYY, where MMDDYYYY
         // is representative of the date when the last change was made before
         // the pull request is issued.
-        private static readonly string BuildId = "ATRIOX_04132023";
+        private static readonly string BuildId = "DAISY023_04102024";
 
         private static Mutex? _mutex;
         private static FileSystemWatcher? _watcher;
@@ -47,11 +47,11 @@ namespace Awake
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
-        internal static readonly string[] AliasesConfigOption = new[] { "--use-pt-config", "-c" };
-        internal static readonly string[] AliasesDisplayOption = new[] { "--display-on", "-d" };
-        internal static readonly string[] AliasesTimeOption = new[] { "--time-limit", "-t" };
-        internal static readonly string[] AliasesPidOption = new[] { "--pid", "-p" };
-        internal static readonly string[] AliasesExpireAtOption = new[] { "--expire-at", "-e" };
+        internal static readonly string[] AliasesConfigOption = ["--use-pt-config", "-c"];
+        internal static readonly string[] AliasesDisplayOption = ["--display-on", "-d"];
+        internal static readonly string[] AliasesTimeOption = ["--time-limit", "-t"];
+        internal static readonly string[] AliasesPidOption = ["--pid", "-p"];
+        internal static readonly string[] AliasesExpireAtOption = ["--expire-at", "-e"];
 
         private static int Main(string[] args)
         {
@@ -354,7 +354,7 @@ namespace Awake
                     {
                         case AwakeMode.PASSIVE:
                             {
-                                SetupNoKeepAwake();
+                                SetupPassiveKeepAwake();
                                 break;
                             }
 
@@ -402,11 +402,11 @@ namespace Awake
             }
         }
 
-        private static void SetupNoKeepAwake()
+        private static void SetupPassiveKeepAwake()
         {
             Logger.LogInfo($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
 
-            Manager.SetNoKeepAwake();
+            Manager.SetPassiveKeepAwake();
         }
 
         private static void SetupExpirableKeepAwake(DateTimeOffset expireAt, bool displayOn)
