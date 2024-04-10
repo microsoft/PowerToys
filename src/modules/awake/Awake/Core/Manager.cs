@@ -19,8 +19,6 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
-using Windows.Graphics;
 
 namespace Awake.Core
 {
@@ -152,7 +150,7 @@ namespace Awake.Core
 
         internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true)
         {
-            Logger.LogInfo($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {displayOn}.");
+            Logger.LogInfo($"Expirable keep-awake. Expected expiration date/time: {expireAt} with display on setting set to {keepDisplayOn}.");
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeExpirableKeepAwakeEvent());
 
