@@ -3514,12 +3514,12 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Host File Editor</value>
-    <comment>"Host File Editor" is a product name</comment>
+    <value>Launch Hosts File Editor</value>
+    <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Host File Editor</value>
-    <comment>"Host File Editor" is a product name</comment>
+    <value>Launch Hosts File Editor</value>
+    <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
     <value>Position of additional content</value>
