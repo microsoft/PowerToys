@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         public void ApplyTheme()
         {
             Theme = GetTheme();
-            ThemeChanged(null, Theme);
+            ThemeChanged?.Invoke(null, Theme);
         }
 
         private ElementTheme GetTheme()
