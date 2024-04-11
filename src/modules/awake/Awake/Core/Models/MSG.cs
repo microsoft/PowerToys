@@ -6,16 +6,13 @@ using System;
 
 namespace Awake.Core.Models
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Matches Win32 API.")]
-    internal struct MSG
+    internal struct Msg
     {
-#pragma warning disable CS0649
-        public IntPtr hwnd;
-        public uint message;
-        public IntPtr wParam;
-        public IntPtr lParam;
-        public uint time;
-        public POINT pt;
-#pragma warning restore CS0649
+        public IntPtr HWnd;
+        public uint Message;
+        public IntPtr WParam;
+        public IntPtr LParam;
+        public uint Time;
+        public Point Pt;
     }
 }

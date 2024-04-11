@@ -15,7 +15,6 @@ using Awake.Core.Native;
 using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Awake.Core
 {
@@ -28,7 +27,7 @@ namespace Awake.Core
     /// </remarks>
     internal static class TrayHelper
     {
-        private static NOTIFYICONDATA _notifyIconData;
+        private static NotifyIconData _notifyIconData;
         private static ManualResetEvent? _exitSignal;
 
         private static IntPtr _trayMenu;
@@ -60,7 +59,7 @@ namespace Awake.Core
             IntPtr hMenu = TrayMenu;
 
             // Get the current cursor position
-            POINT cursorPos;
+            Models.Point cursorPos;
             Bridge.GetCursorPos(out cursorPos);
 
             // Convert screen coordinates to client coordinates
@@ -68,7 +67,7 @@ namespace Awake.Core
             Bridge.ScreenToClient(hwnd, ref cursorPos);
 
             // Display the context menu at the cursor position
-            Bridge.TrackPopupMenu(hMenu, Native.Constants.TPM_LEFTALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFTBUTTON, cursorPos.x, cursorPos.y, 0, hWnd, IntPtr.Zero);
+            Bridge.TrackPopupMenu(hMenu, Native.Constants.TPM_LEFTALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFTBUTTON, cursorPos.X, cursorPos.Y, 0, hWnd, IntPtr.Zero);
         }
 
         private static IntPtr CreateHiddenWindow(Icon icon, string text)
@@ -81,20 +80,20 @@ namespace Awake.Core
                 RunOnMainThread(() =>
                 {
                     // Register window class
-                    WNDCLASSEX wcex = new WNDCLASSEX
+                    WndClassEx wcex = new WndClassEx
                     {
-                        cbSize = (uint)Marshal.SizeOf(typeof(WNDCLASSEX)),
-                        style = 0,
-                        lpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
-                        cbClsExtra = 0,
-                        cbWndExtra = 0,
-                        hInstance = Marshal.GetHINSTANCE(typeof(Program).Module),
-                        hIcon = IntPtr.Zero,
-                        hCursor = IntPtr.Zero,
-                        hbrBackground = IntPtr.Zero,
-                        lpszMenuName = string.Empty,
-                        lpszClassName = "MyClass",
-                        hIconSm = IntPtr.Zero,
+                        CbSize = (uint)Marshal.SizeOf(typeof(WndClassEx)),
+                        Style = 0,
+                        LpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
+                        CbClsExtra = 0,
+                        CbWndExtra = 0,
+                        HInstance = Marshal.GetHINSTANCE(typeof(Program).Module),
+                        HIcon = IntPtr.Zero,
+                        HCursor = IntPtr.Zero,
+                        HbrBackground = IntPtr.Zero,
+                        LpszMenuName = string.Empty,
+                        LpszClassName = "MyClass",
+                        HIconSm = IntPtr.Zero,
                     };
 
                     Bridge.RegisterClassEx(ref wcex);
@@ -120,15 +119,15 @@ namespace Awake.Core
                         return; // Exit the method if window creation fails
                     }
 
-                    _notifyIconData = new NOTIFYICONDATA
+                    _notifyIconData = new NotifyIconData
                     {
-                        cbSize = Marshal.SizeOf(typeof(NOTIFYICONDATA)),
-                        hWnd = hWnd,
-                        uID = 1000,
-                        uFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
-                        uCallbackMessage = (int)Native.Constants.WM_USER,
-                        hIcon = icon.Handle,
-                        szTip = text,
+                        CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                        HWnd = hWnd,
+                        UId = 1000,
+                        UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
+                        UCallbackMessage = (int)Native.Constants.WM_USER,
+                        HIcon = icon.Handle,
+                        SzTip = text,
                     };
 
                     // Show and update window
@@ -151,8 +150,7 @@ namespace Awake.Core
 
         private static void RunMessageLoop()
         {
-            MSG msg;
-            while (Bridge.GetMessage(out msg, IntPtr.Zero, 0, 0))
+            while (Bridge.GetMessage(out Msg msg, IntPtr.Zero, 0, 0))
             {
                 Bridge.TranslateMessage(ref msg);
                 Bridge.DispatchMessage(ref msg);
@@ -268,8 +266,6 @@ namespace Awake.Core
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | (mode == AwakeMode.INDEFINITE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY);
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (mode == AwakeMode.TIMED ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | Native.Constants.MF_DISABLED | (mode == AwakeMode.EXPIRABLE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION);
-
-            // TrayIcon.Text = text;
         }
     }
 }

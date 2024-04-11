@@ -7,17 +7,16 @@ using System.Runtime.InteropServices;
 
 namespace Awake.Core.Models
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Matching Win32 API requirements.")]
     [StructLayout(LayoutKind.Sequential)]
-    public struct NOTIFYICONDATA
+    public struct NotifyIconData
     {
-        public int cbSize;
-        public IntPtr hWnd;
-        public int uID;
-        public int uFlags;
-        public int uCallbackMessage;
-        public IntPtr hIcon;
+        public int CbSize;
+        public IntPtr HWnd;
+        public int UId;
+        public int UFlags;
+        public int UCallbackMessage;
+        public IntPtr HIcon;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string szTip;
+        public string SzTip;
     }
 }
