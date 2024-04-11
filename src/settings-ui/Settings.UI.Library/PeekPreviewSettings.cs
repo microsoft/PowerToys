@@ -16,10 +16,13 @@ namespace Settings.UI.Library
 
         public BoolProperty SourceCodeTryFormat { get; set; }
 
+        public BoolProperty SourceCodeStickyScroll { get; set; }
+
         public PeekPreviewSettings()
         {
             SourceCodeWrapText = new BoolProperty(false);
             SourceCodeTryFormat = new BoolProperty(false);
+            SourceCodeStickyScroll = new BoolProperty(true);
         }
 
         public string ToJsonString()

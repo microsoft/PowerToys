@@ -92,6 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _monacoWrapText = Settings.Properties.EnableMonacoPreviewWordWrap;
             _monacoPreviewTryFormat = Settings.Properties.MonacoPreviewTryFormat;
             _monacoMaxFileSize = Settings.Properties.MonacoPreviewMaxFileSize.Value;
+            _monacoStickyScroll = Settings.Properties.MonacoPreviewStickyScroll;
 
             _pdfRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPdfPreviewEnabledValue();
             if (_pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
@@ -231,6 +232,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _monacoWrapText;
         private bool _monacoPreviewTryFormat;
         private int _monacoMaxFileSize;
+        private bool _monacoStickyScroll;
 
         private GpoRuleConfigured _pdfRenderEnabledGpoRuleConfiguration;
         private bool _pdfRenderEnabledStateIsGPOConfigured;
@@ -590,6 +592,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _monacoMaxFileSize = value;
                     Settings.Properties.MonacoPreviewMaxFileSize.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool MonacoPreviewStickyScroll
+        {
+            get
+            {
+                return _monacoStickyScroll;
+            }
+
+            set
+            {
+                if (_monacoStickyScroll != value)
+                {
+                    _monacoStickyScroll = value;
+                    Settings.Properties.MonacoPreviewStickyScroll = value;
                     RaisePropertyChanged();
                 }
             }

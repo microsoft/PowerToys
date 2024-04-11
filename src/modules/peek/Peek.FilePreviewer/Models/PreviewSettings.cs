@@ -25,11 +25,14 @@ namespace Peek.FilePreviewer.Models
 
         public bool SourceCodeTryFormat { get; private set; }
 
+        public bool SourceCodeStickyScroll { get; private set; }
+
         public PreviewSettings()
         {
             _settingsUtils = new SettingsUtils();
             SourceCodeWrapText = false;
             SourceCodeTryFormat = false;
+            SourceCodeStickyScroll = true;
 
             LoadSettingsFromJson();
 
@@ -61,6 +64,7 @@ namespace Peek.FilePreviewer.Models
                         {
                             SourceCodeWrapText = settings.SourceCodeWrapText.Value;
                             SourceCodeTryFormat = settings.SourceCodeTryFormat.Value;
+                            SourceCodeStickyScroll = settings.SourceCodeStickyScroll.Value;
                         }
 
                         retry = false;
