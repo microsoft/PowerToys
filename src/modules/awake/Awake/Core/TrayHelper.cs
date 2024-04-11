@@ -4,16 +4,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Awake.Core
 {
@@ -26,66 +28,191 @@ namespace Awake.Core
     /// </remarks>
     internal static class TrayHelper
     {
+        private static NOTIFYICONDATA _notifyIconData;
+        private static ManualResetEvent? _exitSignal;
+
         private static IntPtr _trayMenu;
 
         private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
 
-        private static NotifyIcon TrayIcon { get; set; }
+        private static IntPtr _hiddenWindowHandle;
+
+        private static IntPtr HiddenWindowHandle { get => _hiddenWindowHandle; set => _hiddenWindowHandle = value; }
 
         static TrayHelper()
         {
-            TrayIcon = new NotifyIcon();
+            TrayMenu = IntPtr.Zero;
         }
 
-        public static void InitializeTray(string text, Icon icon, ManualResetEvent? exitSignal, ContextMenuStrip? contextMenu = null)
+        public static void InitializeTray(string text, Icon icon, ManualResetEvent? exitSignal)
         {
-            Task.Factory.StartNew(
-                (tray) =>
-                {
-                    try
-                    {
-                        Logger.LogInfo("Setting up the tray.");
-                        if (tray != null)
-                        {
-                            ((NotifyIcon)tray).Text = text;
-                            ((NotifyIcon)tray).Icon = icon;
-                            ((NotifyIcon)tray).ContextMenuStrip = contextMenu;
-                            ((NotifyIcon)tray).Visible = true;
-                            ((NotifyIcon)tray).MouseClick += TrayClickHandler;
-                            Application.AddMessageFilter(new TrayMessageFilter(exitSignal));
-                            Application.Run();
-                            Logger.LogInfo("Tray setup complete.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"An error occurred initializing the tray. {ex.Message}");
-                        Logger.LogError($"{ex.StackTrace}");
-                    }
-                },
-                TrayIcon);
+            _exitSignal = exitSignal;
+
+            HiddenWindowHandle = CreateHiddenWindow(icon, text);
+
+            // Task trayInitializationTask = Task.Factory.StartNew(InitializeTrayInternal);
+            // trayInitializationTask.Wait();
         }
 
-        /// <summary>
-        /// Function used to construct the context menu in the tray natively.
-        /// </summary>
-        /// <remarks>
-        /// We need to use the Windows API here instead of the common control exposed
-        /// by NotifyIcon because the one that is built into the Windows Forms stack
-        /// hasn't been updated in a while and is looking like Office XP. That introduces
-        /// scalability and coloring changes on any OS past Windows XP.
-        /// </remarks>
-        /// <param name="sender">The sender that triggers the handler.</param>
-        /// <param name="e">MouseEventArgs instance containing mouse click event information.</param>
-        private static void TrayClickHandler(object? sender, MouseEventArgs e)
+        private static void ShowContextMenu(IntPtr hWnd)
         {
-            IntPtr windowHandle = Manager.GetHiddenWindow();
+            // Get the handle to the context menu associated with the tray icon
+            IntPtr hMenu = TrayMenu;
 
-            if (windowHandle != IntPtr.Zero)
+            // Get the current cursor position
+            POINT cursorPos;
+            Bridge.GetCursorPos(out cursorPos);
+
+            // Convert screen coordinates to client coordinates
+            IntPtr hwnd = Bridge.GetForegroundWindow();
+            Bridge.ScreenToClient(hwnd, ref cursorPos);
+
+            // Display the context menu at the cursor position
+            Bridge.TrackPopupMenu(hMenu, Native.Constants.TPM_LEFTALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFTBUTTON, cursorPos.x, cursorPos.y, 0, hWnd, IntPtr.Zero);
+        }
+
+        private static IntPtr CreateHiddenWindow(Icon icon, string text)
+        {
+            IntPtr hWnd = IntPtr.Zero;
+
+            // Start the message loop asynchronously
+            Task.Run(() =>
             {
-                Bridge.SetForegroundWindow(windowHandle);
-                Bridge.TrackPopupMenuEx(TrayMenu, 0, Cursor.Position.X, Cursor.Position.Y, windowHandle, IntPtr.Zero);
+                RunOnMainThread(() =>
+                {
+                    // Register window class
+                    WNDCLASSEX wcex = new WNDCLASSEX
+                    {
+                        cbSize = (uint)Marshal.SizeOf(typeof(WNDCLASSEX)),
+                        style = 0,
+                        lpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
+                        cbClsExtra = 0,
+                        cbWndExtra = 0,
+                        hInstance = Marshal.GetHINSTANCE(typeof(Program).Module),
+                        hIcon = IntPtr.Zero,
+                        hCursor = IntPtr.Zero,
+                        hbrBackground = IntPtr.Zero,
+                        lpszMenuName = string.Empty,
+                        lpszClassName = "MyClass",
+                        hIconSm = IntPtr.Zero,
+                    };
+
+                    Bridge.RegisterClassEx(ref wcex);
+
+                    // Create window
+                    hWnd = Bridge.CreateWindowEx(
+                        0,
+                        "MyClass",
+                        "MyTitle",
+                        0x00CF0000 | 0x00000001 | 0x00000008, // WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MINIMIZEBOX
+                        0,
+                        0,
+                        0,
+                        0,
+                        IntPtr.Zero,
+                        IntPtr.Zero,
+                        Marshal.GetHINSTANCE(typeof(Program).Module),
+                        IntPtr.Zero);
+
+                    if (hWnd == IntPtr.Zero)
+                    {
+                        Console.WriteLine("Failed to create window.");
+                        return; // Exit the method if window creation fails
+                    }
+
+                    _notifyIconData = new NOTIFYICONDATA
+                    {
+                        cbSize = Marshal.SizeOf(typeof(NOTIFYICONDATA)),
+                        hWnd = hWnd,
+                        uID = 1000,
+                        uFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
+                        uCallbackMessage = (int)Native.Constants.WM_USER,
+                        hIcon = icon.Handle,
+                        szTip = text,
+                    };
+
+                    // Show and update window
+                    Bridge.ShowWindow(hWnd, 0); // SW_HIDE
+                    Bridge.UpdateWindow(hWnd);
+
+                    if (!Bridge.Shell_NotifyIcon(Native.Constants.NIM_ADD, ref _notifyIconData))
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+                        throw new Win32Exception(errorCode, "Failed to add tray icon. Error code: " + errorCode);
+                    }
+
+                    // Run the message loop
+                    RunMessageLoop();
+                });
+            });
+
+            return hWnd;
+        }
+
+        private static void RunMessageLoop()
+        {
+            MSG msg;
+            while (Bridge.GetMessage(out msg, IntPtr.Zero, 0, 0))
+            {
+                Bridge.TranslateMessage(ref msg);
+                Bridge.DispatchMessage(ref msg);
             }
+        }
+
+        private static int WndProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam)
+        {
+            switch (message)
+            {
+                case Native.Constants.WM_USER:
+                    if (lParam == (IntPtr)Native.Constants.WM_LBUTTONDOWN || lParam == (IntPtr)Native.Constants.WM_RBUTTONDOWN)
+                    {
+                        // Show the context menu associated with the tray icon
+                        ShowContextMenu(hWnd);
+                    }
+
+                    break;
+                case Native.Constants.WM_DESTROY:
+                    // Clean up resources when the window is destroyed
+                    Bridge.PostQuitMessage(0);
+                    break;
+                case Native.Constants.WM_COMMAND:
+                    // Handle menu commands or notifications
+                    // ...
+                    break;
+                default:
+                    // Let the default window procedure handle other messages
+                    return Bridge.DefWindowProc(hWnd, message, wParam, lParam);
+            }
+
+            return Bridge.DefWindowProc(hWnd, message, wParam, lParam);
+        }
+
+        internal static void RunOnMainThread(Action action)
+        {
+            var syncContext = new SingleThreadSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(syncContext);
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            syncContext.Post(
+            _ =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error: " + e.Message);
+                }
+                finally
+                {
+                    syncContext.EndMessageLoop();
+                }
+            },
+            null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+            syncContext.BeginMessageLoop();
         }
 
         internal static void SetTray(string text, AwakeSettings settings, bool startedFromPowerToys)
@@ -142,30 +269,7 @@ namespace Awake.Core
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (mode == AwakeMode.TIMED ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING | Native.Constants.MF_DISABLED | (mode == AwakeMode.EXPIRABLE ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION);
 
-            TrayIcon.Text = text;
-        }
-
-        private sealed class CheckButtonToolStripMenuItemAccessibleObject : ToolStripItem.ToolStripItemAccessibleObject
-        {
-            private readonly CheckButtonToolStripMenuItem _menuItem;
-
-            public CheckButtonToolStripMenuItemAccessibleObject(CheckButtonToolStripMenuItem menuItem)
-                : base(menuItem)
-            {
-                _menuItem = menuItem;
-            }
-
-            public override AccessibleRole Role => AccessibleRole.CheckButton;
-
-            public override string Name => _menuItem.Text + ", " + Role + ", " + (_menuItem.Checked ? Resources.AWAKE_CHECKED : Resources.AWAKE_UNCHECKED);
-        }
-
-        private sealed class CheckButtonToolStripMenuItem : ToolStripMenuItem
-        {
-            protected override AccessibleObject CreateAccessibilityInstance()
-            {
-                return new CheckButtonToolStripMenuItemAccessibleObject(this);
-            }
+            // TrayIcon.Text = text;
         }
     }
 }

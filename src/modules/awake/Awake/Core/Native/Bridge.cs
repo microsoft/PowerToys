@@ -12,6 +12,9 @@ namespace Awake.Core.Native
 {
     internal sealed class Bridge
     {
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, SetLastError = true)]
+        internal delegate int WndProcDelegate(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
+
         internal delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("Powrprof.dll", SetLastError = true)]
@@ -76,5 +79,57 @@ namespace Awake.Core.Native
 
         [DllImport("user32.dll")]
         internal static extern void PostQuitMessage(int nExitCode);
+
+        [DllImport("shell32.dll")]
+        internal static extern bool Shell_NotifyIcon(int dwMessage, ref NOTIFYICONDATA pnid);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool DestroyIcon(IntPtr hIcon);
+
+        [DllImport("user32.dll")]
+        internal static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool TranslateMessage(ref MSG lpMsg);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern IntPtr DispatchMessage(ref MSG lpMsg);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern IntPtr RegisterClassEx(ref WNDCLASSEX lpwcx);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern IntPtr CreateWindowEx(uint dwExStyle, string lpClassName, string lpWindowName, uint dwStyle, int x, int y, int nWidth, int nHeight, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern int DefWindowProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        internal static extern bool TrackPopupMenu(IntPtr hMenu, uint uFlags, int x, int y, int nReserved, IntPtr hWnd, IntPtr prcRect);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetCursorPos(out POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        internal static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        internal static extern bool GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool UpdateWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool ChangeWindowMessageFilterEx(IntPtr hWnd, uint message, ChangeWindowMessageFilterExAction action, ref CHANGEFILTERSTRUCT changeInfo);
+
+        [DllImport("kernel32.dll")]
+        internal static extern IntPtr GetConsoleWindow();
     }
 }

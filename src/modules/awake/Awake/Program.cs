@@ -122,11 +122,16 @@ namespace Awake
                 IsRequired = false,
             };
 
-            var rootCommand = new RootCommand
-            {
-                Description = Core.Constants.AppName,
-            };
+            RootCommand? rootCommand =
+            [
+                configOption,
+                displayOption,
+                timeOption,
+                pidOption,
+                expireAtOption,
+            ];
 
+            rootCommand.Description = Core.Constants.AppName;
             rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption);
 
             return rootCommand.InvokeAsync(args).Result;
