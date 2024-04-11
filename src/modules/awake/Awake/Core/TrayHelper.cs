@@ -109,7 +109,7 @@ namespace Awake.Core
                         0,
                         0,
                         0,
-                        IntPtr.Zero,
+                        unchecked(-3),
                         IntPtr.Zero,
                         Marshal.GetHINSTANCE(typeof(Program).Module),
                         IntPtr.Zero);
