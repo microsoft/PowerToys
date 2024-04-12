@@ -29,6 +29,7 @@ namespace Microsoft.Plugin.Program.Storage
 
             _packageCatalog.PackageInstalling += OnPackageInstalling;
             _packageCatalog.PackageUninstalling += OnPackageUninstalling;
+            _packageCatalog.PackageUpdating += OnPackageUpdating;
         }
 
         public void OnPackageInstalling(PackageCatalog p, PackageInstallingEventArgs args)
@@ -72,6 +73,48 @@ namespace Microsoft.Plugin.Program.Storage
                 foreach (var app in apps)
                 {
                     Remove(app);
+                }
+            }
+        }
+
+        public void OnPackageUpdating(PackageCatalog p, PackageUpdatingEventArgs args)
+        {
+            if (args.Progress == 0)
+            {
+                // find apps associated with this package.
+                var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.SourcePackage);
+                var uwp = new UWP(packageWrapper);
+                var apps = Items.Where(a => a.Package.Equals(uwp)).ToArray();
+
+                foreach (var app in apps)
+                {
+                    Remove(app);
+                }
+            }
+
+            if (args.IsComplete)
+            {
+                try
+                {
+                    var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.TargetPackage);
+                    if (!string.IsNullOrEmpty(packageWrapper.InstalledLocation))
+                    {
+                        var uwp = new UWP(packageWrapper);
+                        uwp.InitializeAppInfo(packageWrapper.InstalledLocation);
+                        foreach (var app in uwp.Apps)
+                        {
+                            app.UpdateLogoPath(_context.API.GetCurrentTheme());
+                            Add(app);
+                        }
+                    }
+                }
+
+                // InitializeAppInfo will throw if there is no AppxManifest.xml for the package.
+                // Note there are sometimes multiple packages per product and this doesn't necessarily mean that we haven't found the app.
+                // eg. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
+                catch (System.IO.FileNotFoundException e)
+                {
+                    ProgramLogger.Exception(e.Message, e, GetType(), args.TargetPackage.InstalledLocation.ToString());
                 }
             }
         }
