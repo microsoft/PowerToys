@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -45,13 +46,13 @@ namespace Peek.FilePreviewer.Previewers
         /// <summary>
         /// Prepares temp html for the previewing
         /// </summary>
-        public static string PreviewTempFile(string fileText, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll)
+        public static string PreviewTempFile(string fileText, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize)
         {
             // TODO: check if file is too big, add MaxFileSize to settings
-            return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder, tryFormat, wrapText, stickyScroll);
+            return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder, tryFormat, wrapText, stickyScroll, fontSize);
         }
 
-        private static string InitializeIndexFileAndSelectedFile(string fileContent, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll)
+        private static string InitializeIndexFileAndSelectedFile(string fileContent, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize)
         {
             string vsCodeLangSet = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguage(extension);
 
@@ -81,6 +82,7 @@ namespace Peek.FilePreviewer.Previewers
             html = html.Replace("[[PT_WRAP]]", wrapText ? "1" : "0", StringComparison.InvariantCulture);
             html = html.Replace("[[PT_STICKY_SCROLL]]", stickyScroll ? "1" : "0", StringComparison.InvariantCulture);
             html = html.Replace("[[PT_THEME]]", theme, StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_FONT_SIZE]]", fontSize.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCulture);
             html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_URL]]", Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
 
