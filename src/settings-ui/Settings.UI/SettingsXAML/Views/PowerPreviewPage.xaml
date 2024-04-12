@@ -102,7 +102,8 @@
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
                                 <CheckBox
                                     x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Sticky_Scroll"
-                                    IsChecked="{x:Bind ViewModel.MonacoPreviewStickyScroll, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
+                                    IsChecked="{x:Bind ViewModel.MonacoPreviewStickyScroll, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
