@@ -69,12 +69,10 @@
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
     <Message Text="Executing CopyDLLs task" Importance="High" />
     <ItemGroup>
-      <PRIFile Include="$(OutDir)**\*.pri" />
-      <XBFFile Include="$(OutDir)bin\*\**\*.xbf" />
+      <PRIFile Include="$(OutDir)**\PowerToys.RegistryPreviewUILib.pri" />
     </ItemGroup>
 
     <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="@(XBFFile)" DestinationFolder="$(OutDir)PowerToys.RegistryPreviewUILib\RegistryPreviewUILibXAML" />
 
     <Message Text="Copied build files" Importance="High" />
   </Target>
