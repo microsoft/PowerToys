@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -29,14 +30,11 @@ namespace Awake.Core
     {
         private static NotifyIconData _notifyIconData;
         private static ManualResetEvent? _exitSignal;
+        private static IntPtr _hookID = IntPtr.Zero;
 
         private static IntPtr _trayMenu;
 
         private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
-
-        private static IntPtr _hiddenWindowHandle;
-
-        private static IntPtr HiddenWindowHandle { get => _hiddenWindowHandle; set => _hiddenWindowHandle = value; }
 
         static TrayHelper()
         {
@@ -47,30 +45,40 @@ namespace Awake.Core
         {
             _exitSignal = exitSignal;
 
-            HiddenWindowHandle = CreateHiddenWindow(icon, text);
-
-            // Task trayInitializationTask = Task.Factory.StartNew(InitializeTrayInternal);
-            // trayInitializationTask.Wait();
+            CreateHiddenWindow(icon, text);
         }
 
         private static void ShowContextMenu(IntPtr hWnd)
         {
+            Bridge.SetForegroundWindow(hWnd);
+
             // Get the handle to the context menu associated with the tray icon
             IntPtr hMenu = TrayMenu;
 
             // Get the current cursor position
-            Models.Point cursorPos;
-            Bridge.GetCursorPos(out cursorPos);
+            Bridge.GetCursorPos(out Models.Point cursorPos);
 
-            // Convert screen coordinates to client coordinates
-            IntPtr hwnd = Bridge.GetForegroundWindow();
-            Bridge.ScreenToClient(hwnd, ref cursorPos);
+            Bridge.ScreenToClient(hWnd, ref cursorPos);
+
+            MenuInfo menuInfo = new()
+            {
+                CbSize = (uint)Marshal.SizeOf(typeof(MenuInfo)),
+                FMask = Native.Constants.MIM_STYLE,
+                DwStyle = Native.Constants.MNS_AUTODISMISS | Native.Constants.MNS_NOTIFYBYPOS,
+            };
+            Bridge.SetMenuInfo(hMenu, ref menuInfo);
 
             // Display the context menu at the cursor position
-            Bridge.TrackPopupMenu(hMenu, Native.Constants.TPM_LEFTALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFTBUTTON, cursorPos.X, cursorPos.Y, 0, hWnd, IntPtr.Zero);
+            Bridge.TrackPopupMenuEx(
+                  hMenu,
+                  Native.Constants.TPM_LEFTALIGN | Native.Constants.TPM_BOTTOMALIGN | Native.Constants.TPM_LEFTBUTTON,
+                  cursorPos.X,
+                  cursorPos.Y,
+                  hWnd,
+                  IntPtr.Zero);
         }
 
-        private static IntPtr CreateHiddenWindow(Icon icon, string text)
+        private static void CreateHiddenWindow(Icon icon, string text)
         {
             IntPtr hWnd = IntPtr.Zero;
 
@@ -80,7 +88,7 @@ namespace Awake.Core
                 RunOnMainThread(() =>
                 {
                     // Register window class
-                    WndClassEx wcex = new WndClassEx
+                    WndClassEx wcex = new()
                     {
                         CbSize = (uint)Marshal.SizeOf(typeof(WndClassEx)),
                         Style = 0,
@@ -92,7 +100,7 @@ namespace Awake.Core
                         HCursor = IntPtr.Zero,
                         HbrBackground = IntPtr.Zero,
                         LpszMenuName = string.Empty,
-                        LpszClassName = "MyClass",
+                        LpszClassName = "Awake.MessageWindow",
                         HIconSm = IntPtr.Zero,
                     };
 
@@ -101,8 +109,8 @@ namespace Awake.Core
                     // Create window
                     hWnd = Bridge.CreateWindowEx(
                         0,
-                        "MyClass",
-                        "MyTitle",
+                        "Awake.MessageWindow",
+                        "PowerToys Awake",
                         0x00CF0000 | 0x00000001 | 0x00000008, // WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MINIMIZEBOX
                         0,
                         0,
@@ -115,8 +123,10 @@ namespace Awake.Core
 
                     if (hWnd == IntPtr.Zero)
                     {
-                        Console.WriteLine("Failed to create window.");
-                        return; // Exit the method if window creation fails
+                        int errorCode = Marshal.GetLastWin32Error();
+                        throw new Win32Exception(errorCode, "Failed to add tray icon. Error code: " + errorCode);
+
+                        // return; // Exit the method if window creation fails
                     }
 
                     _notifyIconData = new NotifyIconData
@@ -144,8 +154,6 @@ namespace Awake.Core
                     RunMessageLoop();
                 });
             });
-
-            return hWnd;
         }
 
         private static void RunMessageLoop()
@@ -159,6 +167,8 @@ namespace Awake.Core
 
         private static int WndProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam)
         {
+            Logger.LogInfo($"{message.ToString(CultureInfo.InvariantCulture)} W: {wParam} L: {lParam}");
+
             switch (message)
             {
                 case Native.Constants.WM_USER:
@@ -169,13 +179,49 @@ namespace Awake.Core
                     }
 
                     break;
+                case (uint)TrayCommands.TC_EXIT:
+                    Manager.CompleteExit(0, _exitSignal, true);
+                    break;
+                case (uint)TrayCommands.TC_DISPLAY_SETTING:
+                    Manager.SetDisplay();
+                    break;
+                case (uint)TrayCommands.TC_MODE_INDEFINITE:
+                    Manager.SetIndefiniteKeepAwake();
+                    break;
+                case (uint)TrayCommands.TC_MODE_PASSIVE:
+                    Manager.SetPassiveKeepAwake();
+                    break;
                 case Native.Constants.WM_DESTROY:
                     // Clean up resources when the window is destroyed
                     Bridge.PostQuitMessage(0);
                     break;
                 case Native.Constants.WM_COMMAND:
-                    // Handle menu commands or notifications
-                    // ...
+                    int trayCommandsSize = Enum.GetNames(typeof(TrayCommands)).Length;
+
+                    if (message == (int)Native.Constants.WM_COMMAND)
+                    {
+                        long targetCommandIndex = wParam.ToInt64() & 0xFFFF;
+
+                        switch (targetCommandIndex)
+                        {
+                            default:
+                                if (targetCommandIndex >= trayCommandsSize)
+                                {
+                                    AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                    if (settings.Properties.CustomTrayTimes.Count == 0)
+                                    {
+                                        settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
+                                    }
+
+                                    int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
+                                    uint targetTime = (uint)settings.Properties.CustomTrayTimes.ElementAt(index).Value;
+                                    Manager.SetTimedKeepAwake(targetTime);
+                                }
+
+                                break;
+                        }
+                    }
+
                     break;
                 default:
                     // Let the default window procedure handle other messages

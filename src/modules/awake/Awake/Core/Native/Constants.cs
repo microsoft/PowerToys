@@ -19,6 +19,9 @@ namespace Awake.Core.Native
         internal const int WM_TRAYICON = (int)(WM_USER + 1);
         internal const int WM_LBUTTONUP = 0x0202;
         internal const int WM_QUIT = 0x0012;
+        internal const int WH_MOUSE_LL = 14;
+        internal const int WM_NCLBUTTONDOWN = 0x00A1;
+        internal const int WM_CANCELMODE = 0x001F;
 
         // Popup menu constants.
         internal const uint MF_BYPOSITION = 1024;
@@ -51,5 +54,10 @@ namespace Awake.Core.Native
         internal const uint TPM_LEFTALIGN = 0x0000;
         internal const uint TPM_BOTTOMALIGN = 0x0020;
         internal const uint TPM_LEFTBUTTON = 0x0000;
+
+        internal const uint MNS_CHECKORBMP = 0x04000000;
+        internal const uint MNS_AUTODISMISS = 0x10000000;
+        internal const uint MNS_NOTIFYBYPOS = 0x08000000;
+        internal const uint MIM_STYLE = 0x00000010;
     }
 }
