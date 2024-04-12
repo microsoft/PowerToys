@@ -570,7 +570,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLib", "src\mod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostsPackageConsumer", "src\modules\Hosts\HostsPackageConsumer\HostsPackageConsumer.csproj", "{02DD46D3-F761-47D9-8894-2D6DA0124650}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegistryPreviewUI", "src\modules\registrypreview\RegistryPreviewUI\RegistryPreviewUI.csproj", "{8E23E173-7127-4A5F-9F93-3049F2B68047}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RegistryPreview", "src\modules\registrypreview\RegistryPreview\RegistryPreview.csproj", "{8E23E173-7127-4A5F-9F93-3049F2B68047}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

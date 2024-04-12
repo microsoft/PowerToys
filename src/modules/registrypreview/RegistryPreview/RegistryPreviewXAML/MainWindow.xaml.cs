@@ -13,7 +13,7 @@ using Windows.Data.Json;
 using Windows.Graphics;
 using WinUIEx;
 
-namespace RegistryPreviewUI
+namespace RegistryPreview
 {
     public sealed partial class MainWindow : WindowEx
     {
@@ -40,7 +40,7 @@ namespace RegistryPreviewUI
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
             Microsoft.UI.WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\RegistryPreviewUI\\app.ico");
+            appWindow.SetIcon("Assets\\RegistryPreview\\app.ico");
 
             // TODO(stefan)
             appWindow.Closing += AppWindow_Closing;

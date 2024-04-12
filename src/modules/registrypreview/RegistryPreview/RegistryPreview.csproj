@@ -4,7 +4,7 @@
     <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-    <RootNamespace>RegistryPreviewUI</RootNamespace>
+    <RootNamespace>RegistryPreview</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
@@ -17,20 +17,20 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SelfContained>true</SelfContained>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
-    <AssemblyName>PowerToys.RegistryPreviewUI</AssemblyName>
-    <ApplicationIcon>Assets\RegistryPreviewUI\app.ico</ApplicationIcon>
+    <AssemblyName>PowerToys.RegistryPreview</AssemblyName>
+    <ApplicationIcon>Assets\RegistryPreview\app.ico</ApplicationIcon>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
-    <ProjectPriFileName>PowerToys.RegistryPreviewUI.pri</ProjectPriFileName>
+    <ProjectPriFileName>PowerToys.RegistryPreview.pri</ProjectPriFileName>
   </PropertyGroup>
 
   <ItemGroup>
-    <Page Remove="RegistryPreviewUIXAML\App.xaml" />
+    <Page Remove="RegistryPreviewXAML\App.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="RegistryPreviewUIXAML\App.xaml" />
+    <ApplicationDefinition Include="RegistryPreviewXAML\App.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="RegistryPreviewUIXAML\" />
+    <Folder Include="RegistryPreviewXAML\" />
   </ItemGroup>
 
 
