@@ -28,7 +28,7 @@
 
                 <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        x:Uid="FancyZones_LaunchEditorButtonControl"
+                        x:Uid="FancyZones_OpenEditorButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEditorEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
@@ -40,8 +40,8 @@
 
                     <tkcontrols:SettingsCard x:Uid="FancyZones_UseCursorPosEditorStartupScreen" HeaderIcon="{ui:FontIcon Glyph=&#xe7b5;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.UseCursorPosEditorStartupScreen, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
-                            <ComboBoxItem x:Uid="FancyZones_LaunchPositionScreen" />
-                            <ComboBoxItem x:Uid="FancyZones_LaunchPositionMouse" />
+                            <ComboBoxItem x:Uid="FancyZones_OpeningPositionScreen" />
+                            <ComboBoxItem x:Uid="FancyZones_OpeningPositionMouse" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>

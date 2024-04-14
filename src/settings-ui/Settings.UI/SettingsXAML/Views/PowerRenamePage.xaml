@@ -63,7 +63,7 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch" HeaderIcon="{ui:FontIcon Glyph=&#xe81c;}">
+                    <tkcontrols:SettingsCard x:Uid="PowerRename_Toggle_RestoreFlagsOnOpening" HeaderIcon="{ui:FontIcon Glyph=&#xe81c;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RestoreFlagsOnLaunch, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>

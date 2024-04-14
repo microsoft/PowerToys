@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("EnvironmentVariables_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("EnvironmentVariables_LaunchButtonControl/Description"), ButtonGlyph = "\uEA37", ButtonClickHandler = EnvironmentVariablesLaunchClicked },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("EnvironmentVariables_OpenButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("EnvironmentVariables_OpenButtonControl/Description"), ButtonGlyph = "\uEA37", ButtonClickHandler = EnvironmentVariablesLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -242,7 +242,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new DashboardModuleTextItem() { Label = activationMode },
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("FancyZones_OpenEditor"), Shortcut = settings.Properties.FancyzonesEditorHotkey.Value.GetKeysList() },
-                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Description"), ButtonGlyph = "\uEB3C", ButtonClickHandler = FancyZoneLaunchClicked },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("FancyZones_OpenEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_OpenEditorButtonControl/Description"), ButtonGlyph = "\uEB3C", ButtonClickHandler = FancyZoneLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -288,7 +288,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Hosts_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("Hosts_LaunchButtonControl/Description"), ButtonGlyph = "\uEA37", ButtonClickHandler = HostLaunchClicked },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Hosts_OpenButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("Hosts_OpenButtonControl/Description"), ButtonGlyph = "\uEA37", ButtonClickHandler = HostLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -424,7 +424,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("RegistryPreview_LaunchButtonControl/Header"), ButtonGlyph = "\uEA37",  ButtonClickHandler = RegistryPreviewLaunchClicked },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("RegistryPreview_OpenButtonControl/Header"), ButtonGlyph = "\uEA37",  ButtonClickHandler = RegistryPreviewLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

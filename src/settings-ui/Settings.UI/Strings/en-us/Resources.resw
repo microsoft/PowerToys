@@ -901,11 +901,11 @@
   <data name="SettingsPage_SetShortcut_Glyph.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
   </data>
-  <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
+  <data name="FancyZones_OpenEditorButtonControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
     <comment>opens the FancyZones layout editor application</comment>
   </data>
-  <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
+  <data name="FancyZones_OpenEditorButtonControl.Description" xml:space="preserve">
     <value>Set and manage your layouts</value>
     <comment>opens the FancyZones layout editor application</comment>
   </data>
@@ -949,10 +949,10 @@
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Description" xml:space="preserve">
     <value>When using multiple displays</value>
   </data>
-  <data name="FancyZones_LaunchPositionMouse.Content" xml:space="preserve">
+  <data name="FancyZones_OpeningPositionMouse.Content" xml:space="preserve">
     <value>Where the mouse pointer is</value>
   </data>
-  <data name="FancyZones_LaunchPositionScreen.Content" xml:space="preserve">
+  <data name="FancyZones_OpeningPositionScreen.Content" xml:space="preserve">
     <value>With active focus</value>
   </data>
   <data name="FancyZones_ZoneBehavior_GroupSettings.Header" xml:space="preserve">
@@ -1058,7 +1058,7 @@
   <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
     <value>Maximum number of items</value>
   </data>
-  <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
+  <data name="PowerRename_Toggle_RestoreFlagsOnOpening.Header" xml:space="preserve">
     <value>Show recently used strings</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
@@ -1981,7 +1981,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_Launch.Text" xml:space="preserve">
     <value>Open</value>
   </data>
-  <data name="Launch_ColorPicker.Content" xml:space="preserve">
+  <data name="Open_ColorPicker.Content" xml:space="preserve">
     <value>Open Color Picker</value>
   </data>
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
@@ -2071,13 +2071,13 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_HowToEnable.Text" xml:space="preserve">
     <value>How to enable</value>
   </data>
-  <data name="Oobe_HowToLaunch.Text" xml:space="preserve">
+  <data name="Oobe_HowToOpen.Text" xml:space="preserve">
     <value>How to open</value>
   </data>
   <data name="Oobe_HowToUse.Text" xml:space="preserve">
     <value>How to use</value>
   </data>
-  <data name="Oobe_ImageResizer_HowToLaunch.Text" xml:space="preserve">
+  <data name="Oobe_ImageResizer_HowToOpen.Text" xml:space="preserve">
     <value>In File Explorer, right-click one or more image files and select **Resize with Image Resizer** from the context menu.</value>
   </data>
   <data name="Oobe_ImageResizer_TipsAndTricks.Text" xml:space="preserve">
@@ -2101,13 +2101,13 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
   </data>
-  <data name="Oobe_Run_HowToLaunch.Text" xml:space="preserve">
+  <data name="Oobe_Run_HowToOpen.Text" xml:space="preserve">
     <value>to open Run and just start typing.</value>
   </data>
   <data name="Oobe_Run_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing `&lt;` searches for running processes only, `?` will search only for file, or `.` for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
   </data>
-  <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
+  <data name="Oobe_ShortcutGuide_HowToOpen.Text" xml:space="preserve">
     <value>to open Shortcut Guide, press it again to close or press **Esc**.</value>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
@@ -2128,7 +2128,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MeasureTool_Activation.Text" xml:space="preserve">
     <value>to bring up the Screen Ruler command bar.</value>
   </data>
-  <data name="Oobe_MeasureTool_HowToLaunch.Text" xml:space="preserve">
+  <data name="Oobe_MeasureTool_HowToOpen.Text" xml:space="preserve">
     <value>The Bounds mode lets you select a specific area to measure. You can also shift-drag an area to persist in on screen. The various Spacing modes allows tracing similar pixels along horizontal and vertical axes with a customizable pixel tolerance threshold (use settings or mouse wheel to adjust it).</value>
   </data>
   <data name="Oobe_MeasureTool.Title" xml:space="preserve">
@@ -2489,10 +2489,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Jump the mouse pointer quickly to anywhere on your desktop.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-  <data name="Launch_Run.Content" xml:space="preserve">
+  <data name="Open_Run.Content" xml:space="preserve">
     <value>Open PowerToys Run</value>
   </data>
-  <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
+  <data name="Open_ShortcutGuide.Content" xml:space="preserve">
     <value>Open Shortcut Guide</value>
   </data>
   <data name="ColorPicker_ColorFormat_ToggleSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -3322,7 +3322,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_TextExtractor.Content" xml:space="preserve">
     <value>Text Extractor</value>
   </data>
-  <data name="Launch_TextExtractor.Content" xml:space="preserve">
+  <data name="Open_TextExtractor.Content" xml:space="preserve">
     <value>Open Text Extractor</value>
   </data>
   <data name="Oobe_TextExtractor.Title" xml:space="preserve">
@@ -3509,15 +3509,15 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
-  <data name="Hosts_LaunchButtonControl.Description" xml:space="preserve">
+  <data name="Hosts_OpenButtonControl.Description" xml:space="preserve">
     <value>Manage your hosts file</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
-  <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
+  <data name="Hosts_OpenButtonControl.Header" xml:space="preserve">
     <value>Open Host File Editor</value>
     <comment>"Host File Editor" is a product name</comment>
   </data>
-  <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="Hosts_OpenButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Host File Editor</value>
     <comment>"Host File Editor" is a product name</comment>
   </data>
@@ -3533,7 +3533,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Behavior_GroupSettings.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
-  <data name="Launch_Hosts.Content" xml:space="preserve">
+  <data name="Open_Hosts.Content" xml:space="preserve">
     <value>Open Hosts File Editor</value>
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
@@ -3570,13 +3570,13 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="EnvironmentVariables_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
-  <data name="EnvironmentVariables_LaunchButtonControl.Description" xml:space="preserve">
+  <data name="EnvironmentVariables_OpenButtonControl.Description" xml:space="preserve">
     <value>Manage your environment variables</value>
   </data>
-  <data name="EnvironmentVariables_LaunchButtonControl.Header" xml:space="preserve">
+  <data name="EnvironmentVariables_OpenButtonControl.Header" xml:space="preserve">
     <value>Open Environment Variables</value>
   </data>
-  <data name="EnvironmentVariables_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="EnvironmentVariables_OpenButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Environment Variables</value>
   </data>
   <data name="Launch_EnvironmentVariables.Content" xml:space="preserve">
@@ -3883,10 +3883,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="RegistryPreview_Launch_GroupSettings.Header" xml:space="preserve">
     <value>Open</value>
   </data>
-  <data name="RegistryPreview_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="RegistryPreview_OpenButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Registry Preview</value>
   </data>
-  <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
+  <data name="RegistryPreview_OpenButtonControl.Header" xml:space="preserve">
     <value>Open Registry Preview</value>
   </data>
   <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">

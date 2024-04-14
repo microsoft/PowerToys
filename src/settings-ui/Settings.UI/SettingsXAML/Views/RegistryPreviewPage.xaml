@@ -29,7 +29,7 @@
 
                 <controls:SettingsGroup x:Uid="RegistryPreview_Launch_GroupSettings" IsEnabled="{x:Bind ViewModel.IsRegistryPreviewEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        x:Uid="RegistryPreview_LaunchButtonControl"
+                        x:Uid="RegistryPreview_OpenButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"

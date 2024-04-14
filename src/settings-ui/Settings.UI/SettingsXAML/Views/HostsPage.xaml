@@ -26,7 +26,7 @@
                     Severity="Informational" />
                 <controls:SettingsGroup x:Uid="Hosts_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        x:Uid="Hosts_LaunchButtonControl"
+                        x:Uid="Hosts_OpenButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
