@@ -254,7 +254,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return false;
             }
 
-            // If the current key press is tab, based on the other keys ignore the key press so as to shift focus out of the hotkey control.
+            // If the current key press is tab, based on the other keys ignore the key press so as to Shift focus out of the hotkey control.
             if ((VirtualKey)key == VirtualKey.Tab)
             {
                 // Shift was not pressed while entering and Shift is not pressed while leaving the hotkey control, treat it as a normal tab key press.
@@ -263,10 +263,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     return false;
                 }
 
-                // Shift was not pressed while entering but it was pressed while leaving the hotkey, therefore simulate a shift key press as the system does not know about shift being pressed in the hotkey.
+                // Shift was not pressed while entering but it was pressed while leaving the hotkey, therefore simulate a Shift key press as the system does not know about Shift being pressed in the hotkey.
                 else if (internalSettings.Shift && !_modifierKeysOnEntering.Contains(VirtualKey.Shift) && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
-                    // This is to reset the shift key press within the control as it was not used within the control but rather was used to leave the hotkey.
+                    // This is to reset the Shift key press within the control as it was not used within the control but rather was used to leave the hotkey.
                     internalSettings.Shift = false;
 
                     SendSingleKeyboardInput((short)VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyDown);
@@ -275,7 +275,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 }
 
                 // Shift was pressed on entering and remained pressed, therefore only ignore the tab key so that it can be passed to the system.
-                // As the shift key is already assumed to be pressed by the system while it entered the hotkey control, shift would still remain pressed, hence ignoring the tab input would simulate a Shift+Tab key press.
+                // As the Shift key is already assumed to be pressed by the system while it entered the hotkey control, Shift would still remain pressed, hence ignoring the tab input would simulate a Shift+Tab key press.
                 else if (!internalSettings.Shift && _modifierKeysOnEntering.Contains(VirtualKey.Shift) && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     return false;
