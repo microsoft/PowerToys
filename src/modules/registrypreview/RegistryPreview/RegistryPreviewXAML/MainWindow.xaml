@@ -39,7 +39,7 @@
                 Width="16"
                 Height="16"
                 VerticalAlignment="Center"
-                Source="../Assets/RegistryPreview/app.ico" />
+                Source="../Assets/RegistryPreview/RegistryPreview.ico" />
             <TextBlock
                 x:Name="titleBarText"
                 Grid.Column="1"

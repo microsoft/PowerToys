@@ -18,7 +18,7 @@
     <SelfContained>true</SelfContained>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <AssemblyName>PowerToys.RegistryPreview</AssemblyName>
-    <ApplicationIcon>Assets\RegistryPreview\app.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\RegistryPreview\RegistryPreview.ico</ApplicationIcon>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.RegistryPreview.pri</ProjectPriFileName>
   </PropertyGroup>

@@ -40,7 +40,7 @@ namespace RegistryPreview
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
             Microsoft.UI.WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\RegistryPreview\\app.ico");
+            appWindow.SetIcon("Assets\\RegistryPreview\\RegistryPreview.ico");
 
             // TODO(stefan)
             appWindow.Closing += AppWindow_Closing;
