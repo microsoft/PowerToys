@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class FindMyMouseProperties
     {
+        [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x46);
 
         [JsonPropertyName("activation_method")]

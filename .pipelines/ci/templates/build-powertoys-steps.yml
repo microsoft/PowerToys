@@ -91,21 +91,21 @@ steps:
     displayName: 'nuget restore packages.config'
 
 - task: VSBuild@1
-  displayName: 'Build PowerToys.sln'
+  displayName: 'Build and Test PowerToys.sln'
   inputs:
     solution: '**\PowerToys.sln'
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     ${{ if eq(parameters.enableCaching, true) }}:
-      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -reportfileaccesses -p:MSBuildCacheEnabled=true -p:MSBuildCacheLogDirectory=$(Build.ArtifactStagingDirectory)\logs\MSBuildCache -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
+      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -t:Build;Test -graph -reportfileaccesses -p:MSBuildCacheEnabled=true -p:MSBuildCacheLogDirectory=$(Build.ArtifactStagingDirectory)\logs\MSBuildCache -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
     ${{ else }}:
-      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
+      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -t:Build;Test -graph -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
     msbuildArchitecture: x64
     maximumCpuCount: true
   ${{ if eq(parameters.enableCaching, true) }}:
     env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)        
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
 - task: VSBuild@1
   displayName: 'Build BugReportTool.sln'
@@ -114,7 +114,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\BugReportTool.binlog -ds:false
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -bl:$(Build.ArtifactStagingDirectory)\logs\BugReportTool.binlog -ds:false
     msbuildArchitecture: x64
     maximumCpuCount: true
 
@@ -125,7 +125,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\WebcamReportTool.binlog -ds:false
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -bl:$(Build.ArtifactStagingDirectory)\logs\WebcamReportTool.binlog -ds:false
     msbuildArchitecture: x64
     maximumCpuCount: true
 
@@ -136,7 +136,7 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -bl:$(Build.ArtifactStagingDirectory)\logs\StylesReportTool.binlog -ds:false
+    msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -graph -bl:$(Build.ArtifactStagingDirectory)\logs\StylesReportTool.binlog -ds:false
     msbuildArchitecture: x64
     maximumCpuCount: true
 
@@ -222,47 +222,13 @@ steps:
     arguments: -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
     pwsh: true
 
-# directly not doing WinAppDriver testing
-- task: VSTest@2
-  displayName: 'MS Tests'
-  condition: ne(variables['BuildPlatform'], 'arm64') # No arm64 agents to run the tests.
+# Publish test results which ran in MSBuild
+- task: PublishTestResults@2
+  displayName: 'Publish Test Results'
   inputs:
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: |
-      **\UnitTests-GcodeThumbnailProvider.dll
-      **\UnitTests-StlThumbnailProvider.dll
-      **\UnitTests-PdfThumbnailProvider.dll
-      **\UnitTests-QoiThumbnailProvider.dll
-      **\Settings.UI.UnitTests.dll
-      **\UnitTests-GcodePreviewHandler.dll
-      **\UnitTests-QoiPreviewHandler.dll
-      **\UnitTests-FancyZonesEditor.dll
-      **\UnitTests-PdfPreviewHandler.dll
-      **\UnitTests-PreviewHandlerCommon.dll
-      **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
-      **\UnitTest-ColorPickerUI.dll
-      **\Microsoft.Interop.Tests.dll
-      **\ImageResizer.Test.dll
-      **\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.dll
-      **\Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests.dll
-      **\Microsoft.Plugin.Folder.UnitTests.dll
-      **\Microsoft.Plugin.Program.UnitTests.dll
-      **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll
-      **\Microsoft.Plugin.Uri.UnitTests.dll
-      **\Wox.Test.dll
-      **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
-      **\Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.dll
-      **\Microsoft.Plugin.WindowsTerminal.UnitTests.dll
-      **\Microsoft.Plugin.WindowWalker.UnitTests.dll
-      **\PreviewPaneUnitTests.dll
-      **\UnitTests-SvgThumbnailProvider.dll
-      **\UnitTests-SvgPreviewHandler.dll
-      **\PowerToys.Hosts.Tests.dll
-      **\MouseJumpUI.UnitTests.dll
-      !**\obj\**
-      !**\ref\**
+    testResultsFormat: VSTest
+    testResultsFiles: '**/*.trx'
+  condition: always()
 
 # Native dlls
 - task: VSTest@2
@@ -277,7 +243,6 @@ steps:
       **\KeyboardManagerEditorTest.dll
       **\UnitTests-CommonLib.dll
       **\PowerRenameUnitTests.dll
-      **\powerpreviewTest.dll
       **\UnitTests-FancyZones.dll
       !**\obj\**
 
@@ -299,3 +264,16 @@ steps:
   displayName: Publish Logs
   artifact: '$(System.JobDisplayName) logs'
   condition: always()
+
+- task: CopyFiles@2
+  displayName: Copy Build Files
+  condition: and(succeeded(), ne(variables['BuildPlatform'],'arm64')) 
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
+    targetFolder: '$(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+
+- publish: $(Build.ArtifactStagingDirectory)\$(BuildPlatform)\$(BuildConfiguration)
+  displayName: Publish Build Artifacts
+  artifact: build-$(BuildPlatform)-$(BuildConfiguration)
+  condition: and(succeeded(), ne(variables['BuildPlatform'],'arm64')) 
