@@ -16,13 +16,8 @@ public:
         if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
             return false;
         Reload();
+        RefreshEnabledState();
         return settings.enabled;
-    }
-
-    inline void SetEnabled(bool enabled)
-    {
-        settings.enabled = enabled;
-        Save();
     }
 
     inline bool GetShowIconOnMenu() const
@@ -113,6 +108,7 @@ private:
     };
 
     void Reload();
+    void RefreshEnabledState();
     void MigrateFromRegistry();
     void ParseJson();
 
@@ -120,9 +116,11 @@ private:
     void WriteFlags();
 
     Settings settings;
-    std::wstring jsonFilePath;
+    std::wstring generalJsonFilePath;
+    std::wstring moduleJsonFilePath;
     std::wstring UIFlagsFilePath;
-    FILETIME lastLoadedTime;
+    FILETIME lastLoadedTime{};
+    FILETIME lastLoadedGeneralSettingsTime{};
 };
 
 CSettings& CSettingsInstance();

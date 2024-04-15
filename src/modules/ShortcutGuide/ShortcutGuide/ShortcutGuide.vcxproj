@@ -84,7 +84,7 @@
     <ClCompile Include="native_event_waiter.cpp" />
     <ClCompile Include="overlay_window.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="shortcut_guide.cpp" />
     <ClCompile Include="start_visible.cpp" />

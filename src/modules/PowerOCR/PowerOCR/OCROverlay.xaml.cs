@@ -5,10 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using Common.UI;
 using ManagedCommon;
@@ -42,11 +44,21 @@ public partial class OCROverlay : Window
     private bool isComboBoxReady;
     private const double ActiveOpacity = 0.4;
     private readonly UserSettings userSettings = new(new ThrottledActionInvoker());
+    private System.Drawing.Rectangle screenRectangle;
+    private DpiScale dpiScale;
 
-    public OCROverlay(System.Drawing.Rectangle screenRectangle)
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool MoveWindow(IntPtr hWnd, int x, int y, int nWidth, int nHeight, bool bRepaint);
+
+    public OCROverlay(System.Drawing.Rectangle screenRectangleParam, DpiScale dpiScaleParam)
     {
-        Left = screenRectangle.Left >= 0 ? screenRectangle.Left : screenRectangle.Left + (screenRectangle.Width / 2);
-        Top = screenRectangle.Top >= 0 ? screenRectangle.Top : screenRectangle.Top + (screenRectangle.Height / 2);
+        screenRectangle = screenRectangleParam;
+        dpiScale = dpiScaleParam;
+
+        Left = screenRectangle.Left;
+        Top = screenRectangle.Top;
+        Width = screenRectangle.Width / dpiScale.DpiScaleX;
+        Height = screenRectangle.Height / dpiScale.DpiScaleY;
 
         InitializeComponent();
 
@@ -106,7 +118,6 @@ public partial class OCROverlay : Window
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        WindowState = WindowState.Maximized;
         FullWindow.Rect = new Rect(0, 0, Width, Height);
         KeyDown += MainWindow_KeyDown;
         KeyUp += MainWindow_KeyUp;
@@ -119,6 +130,12 @@ public partial class OCROverlay : Window
 #if DEBUG
         Topmost = false;
 #endif
+        IntPtr hwnd = new WindowInteropHelper(this).Handle;
+
+        // The first move puts it on the correct monitor, which triggers WM_DPICHANGED
+        // The +1/-1 coerces WPF to update Window.Top/Left/Width/Height in the second move
+        MoveWindow(hwnd, (int)(screenRectangle.Left + 1), (int)screenRectangle.Top, (int)(screenRectangle.Width - 1), (int)screenRectangle.Height, false);
+        MoveWindow(hwnd, (int)screenRectangle.Left, (int)screenRectangle.Top, (int)screenRectangle.Width, (int)screenRectangle.Height, true);
     }
 
     private void Window_Unloaded(object sender, RoutedEventArgs e)
@@ -475,5 +492,10 @@ public partial class OCROverlay : Window
             default:
                 break;
         }
+    }
+
+    public System.Drawing.Rectangle GetScreenRectangle()
+    {
+        return screenRectangle;
     }
 }

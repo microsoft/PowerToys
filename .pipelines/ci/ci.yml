@@ -34,3 +34,6 @@ jobs:
   - template: ./templates/build-powertoys-ci.yml
     parameters:
       platform: arm64
+  - template: ./templates/run-ui-tests-ci.yml
+    parameters:
+      platform: x64 

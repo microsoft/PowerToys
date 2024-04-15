@@ -6,7 +6,7 @@ using Peek.FilePreviewer.Previewers.MediaPreviewer.Models;
 
 namespace Peek.FilePreviewer.Previewers.Interfaces
 {
-    public interface IAudioPreviewer : IPreviewer
+    public interface IAudioPreviewer : IPreviewer, IPreviewTarget
     {
         public AudioPreviewData? Preview { get; }
     }
