@@ -22,6 +22,7 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             VerticalContentAlignment="Stretch"
+            AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
             ItemsSource="{Binding Settings.AllSizes}"
             SelectedIndex="{Binding Settings.SelectedSizeIndex}">
             <ComboBox.Resources>
@@ -197,25 +198,25 @@
                 Grid.Row="1"
                 Margin="16"
                 Orientation="Vertical">
-                <CheckBox IsChecked="{Binding Settings.ShrinkOnly}">
+                <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.ShrinkOnly}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
-                <CheckBox IsChecked="{Binding Settings.IgnoreOrientation}">
+                <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.IgnoreOrientation}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_IgnoreOrientation}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
-                <CheckBox IsChecked="{Binding Settings.Replace}">
+                <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.Replace}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_Replace}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
-                <CheckBox IsChecked="{Binding Settings.RemoveMetadata}">
+                <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.RemoveMetadata}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_RemoveMetadata}" TextWrapping="Wrap" />
                     </CheckBox.Content>
