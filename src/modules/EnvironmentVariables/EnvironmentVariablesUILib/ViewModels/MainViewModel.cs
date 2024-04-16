@@ -10,9 +10,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
+using EnvironmentVariablesUILib.Telemetry;
 using Microsoft.UI.Dispatching;
 
 namespace EnvironmentVariablesUILib.ViewModels
@@ -46,12 +46,13 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         public ProfileVariablesSet AppliedProfile { get; set; }
 
-        public MainViewModel(IElevationHelper elevationHelper, IEnvironmentVariablesService environmentVariablesService, ILogger logger)
+        public MainViewModel(IElevationHelper elevationHelper, IEnvironmentVariablesService environmentVariablesService, ILogger logger, ITelemetry telemetry)
         {
             _environmentVariablesService = environmentVariablesService;
 
             ElevationHelper.ElevationHelperInstance = elevationHelper;
             LoggerInstance.Logger = logger;
+            TelemetryInstance.Telemetry = telemetry;
 
             var isElevated = ElevationHelper.ElevationHelperInstance.IsElevated;
             IsElevated = isElevated;
@@ -229,8 +230,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                     });
                 });
 
-                // TODO(stefan)
-                // PowerToysTelemetry.Log.WriteEvent(new Telemetry.EnvironmentVariablesVariableChangedEvent(original.ParentType));
+                TelemetryInstance.Telemetry.LogEnvironmentVariablesVariableChangedEvent(original.ParentType);
                 _ = Task.Run(SaveAsync);
             }
         }
@@ -294,30 +294,13 @@ namespace EnvironmentVariablesUILib.ViewModels
                         UnsetAppliedProfile();
                         SetAppliedProfile(profile);
 
-                        // TODO(stefan)
-                        /*
-                        var telemetryEnabled = new Telemetry.EnvironmentVariablesProfileEnabledEvent()
-                        {
-                            Enabled = true,
-                        };
-
-                        PowerToysTelemetry.Log.WriteEvent(telemetryEnabled);
-                        */
+                        TelemetryInstance.Telemetry.LogEnvironmentVariablesProfileEnabledEvent(true);
                     }
                     else
                     {
                         UnsetAppliedProfile();
 
-                        // TODO(stefan)
-                        /*
-
-                        var telemetryEnabled = new Telemetry.EnvironmentVariablesProfileEnabledEvent()
-                        {
-                            Enabled = false,
-                        };
-
-                        PowerToysTelemetry.Log.WriteEvent(telemetryEnabled);
-                        */
+                        TelemetryInstance.Telemetry.LogEnvironmentVariablesProfileEnabledEvent(false);
                     }
                 }
             }
