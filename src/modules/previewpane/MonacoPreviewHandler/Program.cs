@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 {
     internal static class Program
     {
-        private static CancellationTokenSource _tokenSource = new();
+        private static readonly CancellationTokenSource _tokenSource = new();
 
         private static MonacoPreviewHandlerControl _previewHandlerControl;
 

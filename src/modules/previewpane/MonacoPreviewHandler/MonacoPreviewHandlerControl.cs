@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
 
         private static readonly string _appDataPath = Environment.GetEnvironmentVariable("USERPROFILE") + "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MonacoPreview-Temp";
 
-        private static bool _doesGpoDisableMonaco = global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMonacoPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
+        private static readonly bool _doesGpoDisableMonaco = global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMonacoPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
 
         private Task _gatherFileInformationTask;
 
@@ -213,7 +213,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             if (!_hasNavigated)
             {
                 await _gatherFileInformationTask.ConfigureAwait(true);
-                await _webView.CoreWebView2.ExecuteScriptAsync("editor.setValue(\"" + _fileContent.Replace("\"", "\\\"").Replace("\n", "\\n") + "\");").ConfigureAwait(true);
+                await _webView.CoreWebView2.ExecuteScriptAsync("editor.setValue(\"" + _fileContent.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r") + "\");").ConfigureAwait(true);
                 await _webView.CoreWebView2.ExecuteScriptAsync("monaco.editor.setModelLanguage(editor.getModel(), \"" + _vsCodeLangSet + "\");").ConfigureAwait(true);
                 await _webView.CoreWebView2.ExecuteScriptAsync("editor.updateOptions({\"wordWrap\": \"" + (Settings.Wrap ? "on" : "off") + "\"});").ConfigureAwait(true);
                 await _webView.CoreWebView2.ExecuteScriptAsync("editor.updateOptions({\"theme\": \"" + (Settings.GetTheme() == "dark" ? "vs-dark" : "vs") + "\"});").ConfigureAwait(true);

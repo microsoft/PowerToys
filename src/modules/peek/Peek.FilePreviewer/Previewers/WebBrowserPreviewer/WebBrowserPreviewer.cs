@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Peek.Common.Constants;
@@ -80,6 +81,21 @@ namespace Peek.FilePreviewer.Previewers
 
         private Task<bool>? DisplayInfoTask { get; set; }
 
+        private Queue<string> _javascriptCommandQueue = [];
+
+        Queue<string> IBrowserPreviewer.JavascriptCommandQueue
+        {
+            get
+            {
+                return _javascriptCommandQueue;
+            }
+
+            set
+            {
+                _javascriptCommandQueue = value;
+            }
+        }
+
         public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(new PreviewSize { MonitorSize = null });
@@ -111,8 +127,12 @@ namespace Peek.FilePreviewer.Previewers
 
                     if (IsDevFilePreview && !isHtml && !isMarkdown)
                     {
-                        var raw = await ReadHelper.Read(File.Path.ToString());
-                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, File.Extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText));
+                        string raw = await Task.Run(() => ReadHelper.Read(File.Path.ToString()));
+                        (Preview, string vsCodeLangSet, string fileContent) = MonacoHelper.PreviewTempFile(raw, File.Extension, _previewSettings.SourceCodeTryFormat);
+                        _javascriptCommandQueue.Enqueue("editor.setValue(\"" + fileContent.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r") + "\");");
+                        _javascriptCommandQueue.Enqueue("monaco.editor.setModelLanguage(editor.getModel(), \"" + vsCodeLangSet + "\");");
+                        _javascriptCommandQueue.Enqueue("editor.updateOptions({\"wordWrap\": \"" + (_previewSettings.SourceCodeWrapText ? "on" : "off") + "\"});");
+                        _javascriptCommandQueue.Enqueue("editor.updateOptions({\"theme\": \"" + (ThemeManager.GetWindowsBaseColor().Equals("dark", StringComparison.OrdinalIgnoreCase) ? "vs-dark" : "vs") + "\"});");
                     }
                     else if (isMarkdown)
                     {
