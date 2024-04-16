@@ -82,6 +82,18 @@ namespace ColorPicker.Keyboard
                 }
             }
 
+            if ((virtualCode == KeyInterop.VirtualKeyFromKey(Key.Space) || virtualCode == KeyInterop.VirtualKeyFromKey(Key.Enter)) && (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown))
+            {
+                e.Handled = _appStateHandler.HandleEnterPressed();
+                return;
+            }
+
+            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Back) && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown)
+            {
+                e.Handled = _appStateHandler.HandleEscPressed();
+                return;
+            }
+
             if (CheckMoveNeeded(virtualCode, Key.Up, e, 0, -1))
             {
                 e.Handled = true;
