@@ -17,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Save file as";
+        public string Title => ResourceHelper.GetResource("Move_Copy_Actions.SaveAs.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

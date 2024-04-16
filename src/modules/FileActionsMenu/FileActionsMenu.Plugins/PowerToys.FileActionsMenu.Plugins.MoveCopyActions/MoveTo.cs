@@ -17,7 +17,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Move to";
+        public string Title => ResourceHelper.GetResource("Move_Copy_Actions.MoveTo.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 
@@ -60,6 +60,12 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
                     {
                         fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(item));
                         string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
+
+                        if (item == destination)
+                        {
+                            continue;
+                        }
+
                         if (File.Exists(destination))
                         {
                             await fileActionProgressHelper.Conflict(item, () => File.Move(item, destination, true), () => { });
@@ -73,6 +79,12 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
                     {
                         fileActionProgressHelper.UpdateProgress(i, Path.GetFileName(item));
                         string destination = Path.Combine(dialog.SelectedPath, Path.GetFileName(item));
+
+                        if (item == destination)
+                        {
+                            continue;
+                        }
+
                         if (Directory.Exists(destination))
                         {
                             await fileActionProgressHelper.Conflict(item, () => Directory.Move(item, destination), () => { });

@@ -466,11 +466,47 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy to.
+        /// </summary>
+        internal static string Move_Copy_Actions_CopyTo_Title {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.CopyTo.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
         internal static string Move_Copy_Actions_Description {
             get {
                 return ResourceManager.GetString("Move_Copy_Actions.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Move to.
+        /// </summary>
+        internal static string Move_Copy_Actions_MoveTo_Title {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.MoveTo.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New folder with selection.
+        /// </summary>
+        internal static string Move_Copy_Actions_NewFolder_Title {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.NewFolder.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save file as.
+        /// </summary>
+        internal static string Move_Copy_Actions_SaveAs_Title {
+            get {
+                return ResourceManager.GetString("Move_Copy_Actions.SaveAs.Title", resourceCulture);
             }
         }
         
@@ -637,11 +673,29 @@ namespace FileActionsMenu.Helpers.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Perform on shortcut file (.lnk).
+        /// </summary>
+        internal static string Path_Copy_HandleShortcut_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.HandleShortcut.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy path.
         /// </summary>
         internal static string Path_Copy_Name {
             get {
                 return ResourceManager.GetString("Path_Copy.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolve shortcut to destination file.
+        /// </summary>
+        internal static string Path_Copy_ResolveShortcut_Title {
+            get {
+                return ResourceManager.GetString("Path_Copy.ResolveShortcut.Title", resourceCulture);
             }
         }
         
@@ -756,9 +810,9 @@ namespace FileActionsMenu.Helpers.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Conflict.
         /// </summary>
-        internal static string Progress_Conflict_Text {
+        internal static string Progress_Conflict_Title {
             get {
-                return ResourceManager.GetString("Progress.Conflict.Text", resourceCulture);
+                return ResourceManager.GetString("Progress.Conflict.Title", resourceCulture);
             }
         }
     }

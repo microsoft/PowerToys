@@ -35,7 +35,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public Task Execute(object sender, RoutedEventArgs e)
         {
-            bool resolveShortcut = CheckedMenuItemsDictionary["f2544fd5-13f7-4d52-b7b4-00a3c70923e6"].First(checkedMenuItems => ((ToggleMenuFlyoutItem)checkedMenuItems.Item1).IsChecked).Item2 is ResolveShortcut;
+            bool resolveShortcut = CheckedMenuItemsDictionary.ContainsKey("f2544fd5-13f7-4d52-b7b4-00a3c70923e6") && CheckedMenuItemsDictionary["f2544fd5-13f7-4d52-b7b4-00a3c70923e6"].First(checkedMenuItems => ((ToggleMenuFlyoutItem)checkedMenuItems.Item1).IsChecked).Item2 is ResolveShortcut;
             if (SelectedItems[0].EndsWith(".lnk", StringComparison.InvariantCultureIgnoreCase) && resolveShortcut)
             {
                 SelectedItems[0] = ShortcutHelper.GetFullPathFromShortcut(SelectedItems[0]);

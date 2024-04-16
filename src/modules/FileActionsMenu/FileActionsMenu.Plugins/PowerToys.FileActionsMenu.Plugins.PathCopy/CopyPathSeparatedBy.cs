@@ -5,7 +5,6 @@
 using System.Text;
 using System.Windows;
 using FileActionsMenu.Helpers;
-using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;

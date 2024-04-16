@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Helpers.Telemetry;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
@@ -18,7 +19,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PowerToys
 
         public string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public string Title => "Rename with PowerRename";
+        public string Title => ResourceHelper.GetResource("PowerToys.PowerRename.Title");
 
         public IAction.ItemType Type => IAction.ItemType.SingleItem;
 

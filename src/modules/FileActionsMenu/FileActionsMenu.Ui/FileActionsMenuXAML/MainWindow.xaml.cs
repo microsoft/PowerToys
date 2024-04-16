@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FileActionsMenu.Helpers.Telemetry;
@@ -14,7 +15,9 @@ using FileActionsMenu.Interfaces;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Foundation;
+using Windows.Graphics.Display;
+using Windows.UI.ViewManagement;
+using WinRT.Interop;
 using WinUIEx;
 
 namespace FileActionsMenu.Ui
@@ -262,6 +265,19 @@ namespace FileActionsMenu.Ui
             Environment.Exit(0);
         }
 
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        private static extern int GetDpiForWindow(IntPtr hwnd);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
         public void Window_Activated(object sender, RoutedEventArgs e)
         {
             this.Show();
@@ -269,7 +285,20 @@ namespace FileActionsMenu.Ui
             this.SetIsAlwaysOnTop(true);
             this.SetIsShownInSwitchers(false);
             this.Maximize();
-            _menu.ShowAt((UIElement)sender, new Point(Cursor.Position.X, Cursor.Position.Y));
+
+            if (GetCursorPos(out POINT p))
+            {
+                var dpi = GetDpiForWindow(WindowNative.GetWindowHandle(this));
+                var scaleFactor = dpi / 96.0;
+                p.X = (int)(p.X / scaleFactor);
+                p.Y = (int)(p.Y / scaleFactor);
+                _menu.ShowAt((UIElement)sender, new Windows.Foundation.Point(p.X, p.Y));
+            }
+            else
+            {
+                _menu.ShowAt((UIElement)sender, new Windows.Foundation.Point(0, 0));
+            }
+
             _menu.Closing += (s, e) =>
             {
                 // Keep open if user clicked on a checkable item

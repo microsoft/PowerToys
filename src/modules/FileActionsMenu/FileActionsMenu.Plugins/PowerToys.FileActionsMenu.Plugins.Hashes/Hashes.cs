@@ -263,7 +263,7 @@ namespace PowerToys.FileActionsMenu.Plugins.Hashes
             {
                 string hash = hashGeneratorFunction(filename);
 
-                File.Move(filename, Path.Combine(Path.GetDirectoryName(filename) ?? string.Empty, hash + Path.GetExtension(filename)));
+                File.Move(filename, Path.Combine(Path.GetDirectoryName(filename) ?? string.Empty, hash + Path.GetExtension(filename)), true);
             }
         }
 

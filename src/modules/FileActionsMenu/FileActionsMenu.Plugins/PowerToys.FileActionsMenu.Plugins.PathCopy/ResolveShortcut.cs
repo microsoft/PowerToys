@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using FileActionsMenu.Helpers;
 using FileActionsMenu.Interfaces;
 using FileActionsMenu.Ui.Helpers;
 using Microsoft.UI.Xaml.Controls;
-using RoutedEventArgs = Microsoft.UI.Xaml.RoutedEventArgs;
 
 namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 {
@@ -16,7 +16,7 @@ namespace PowerToys.FileActionsMenu.Plugins.PathCopy
 
         public override string[] SelectedItems { get => _selectedItems.GetOrArgumentNullException(); set => _selectedItems = value; }
 
-        public override string Title => "Resolve shortcut";
+        public override string Title => ResourceHelper.GetResource("Path_Copy.ResolveShortcut.Title");
 
         public override IconElement? Icon => null;
 
