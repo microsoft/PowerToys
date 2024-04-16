@@ -16,12 +16,6 @@ namespace Common
     public abstract class FormHandlerControl : Form, IPreviewHandlerControl
     {
         /// <summary>
-        /// Needed to make the form a child window.
-        /// </summary>
-        private static int gwlStyle = -16;
-        private static int wsChild = 0x40000000;
-
-        /// <summary>
         /// Holds the parent window handle.
         /// </summary>
         private IntPtr parentHwnd;
@@ -120,13 +114,6 @@ namespace Common
         /// </summary>
         public void UpdateWindowBounds(IntPtr hwnd, Rectangle newBounds)
         {
-            // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
-            int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
-            if ((windowStyle & wsChild) == 0)
-            {
-                _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
-            }
-
             NativeMethods.SetParent(Handle, hwnd);
 
             if (newBounds.IsEmpty)
