@@ -15,12 +15,15 @@
 
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <IsPackable>true</IsPackable>
+    <Version>2.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="true" />
-    <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+    <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
+    <XBFFile Include="$(OutDir)**\*.xbf" />
+    <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
     <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+    <None Include="RegistryPreviewUI.Assets\*" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)\RegistryPreviewUI.Assets" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -49,15 +52,6 @@
 		<PackageReference Include="Microsoft.WindowsAppSDK" />
 		<PackageReference Include="WinUIEx" />
 		<Manifest Include="$(ApplicationManifest)" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Update="Assets\RegistryPreviewUILib\data32.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="Assets\RegistryPreviewUILib\string32.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
 	</ItemGroup>
 </Project>
 <!--TargetFramework>net6.0-windows10.0.19041.0</TargetFramework-->
