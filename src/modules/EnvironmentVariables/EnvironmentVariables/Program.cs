@@ -19,13 +19,12 @@ namespace EnvironmentVariables
 
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
-            // TODO (stefan)
-/*            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                 return;
             }
-*/
+
             var instanceKey = AppInstance.FindOrRegisterForKey("PowerToys_EnvironmentVariables_Instance");
 
             if (instanceKey.IsCurrent)
