@@ -8,22 +8,21 @@
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-		<RootNamespace>RegistryPreviewUILib</RootNamespace>
 		<AssemblyName>PowerToys.RegistryPreviewUILib</AssemblyName>
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.RegistryPreviewUILib.pri</ProjectPriFileName>
 
-    <GenerateLibraryLayout>true</GenerateLibraryLayout>
-    <IsPackable>true</IsPackable>
-  </PropertyGroup>
+		<GenerateLibraryLayout>true</GenerateLibraryLayout>
+		<IsPackable>true</IsPackable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="true" />
-    <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
-    <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="true" />
+		<None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+		<None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+	</ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DebugSymbols>true</DebugSymbols>
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
 		<DebugType>full</DebugType>
@@ -60,4 +59,3 @@
 		</Content>
 	</ItemGroup>
 </Project>
-<!--TargetFramework>net6.0-windows10.0.19041.0</TargetFramework-->
