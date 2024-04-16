@@ -51,16 +51,8 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
             FileActionProgressHelper fileActionProgressHelper = new("Moving files to new folder", SelectedItems.Length, () => { cancelled = true; });
 
             string append = string.Empty;
-            int appendCount = 0;
-            string directoryName = "New folder with selection";
-            while (Directory.Exists(Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), directoryName)))
-            {
-                appendCount++;
-                append = " (" + appendCount + ")";
-                directoryName = "New folder with selection" + append;
-            }
 
-            int count = -1;
+            int count = 0;
             foreach (string item in SelectedItems)
             {
                 if (cancelled)
@@ -68,18 +60,18 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
                     return Task.CompletedTask;
                 }
 
-                i++;
+                count++;
                 if (File.Exists(item))
                 {
                     fileActionProgressHelper.UpdateProgress(count, Path.GetFileName(item));
 
-                    File.Move(item, Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), directoryName));
+                    File.Move(item, Path.Combine(path, Path.GetFileName(item)));
                 }
                 else if (Directory.Exists(item))
                 {
                     fileActionProgressHelper.UpdateProgress(count, Path.GetFileName(item));
 
-                    Directory.Move(item, Path.Combine(Path.GetDirectoryName(SelectedItems[0]) ?? Environment.GetFolderPath(Environment.SpecialFolder.Desktop), directoryName));
+                    Directory.Move(item, Path.Combine(path, Path.GetFileName(item)));
                 }
             }
 
