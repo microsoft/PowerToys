@@ -11,7 +11,6 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EnvironmentVariablesUILib.Helpers;
-using ManagedCommon;
 
 namespace EnvironmentVariablesUILib.Models
 {
@@ -38,7 +37,7 @@ namespace EnvironmentVariablesUILib.Models
         {
             get
             {
-                return (ParentType != VariablesSetType.System || EnvironmentVariables.App.GetService<IElevationHelper>().IsElevated) && !IsAppliedFromProfile;
+                return (ParentType != VariablesSetType.System || ElevationHelper.ElevationHelperInstance.IsElevated) && !IsAppliedFromProfile;
             }
         }
 
@@ -122,7 +121,7 @@ namespace EnvironmentVariablesUILib.Models
                     {
                         if (!EnvironmentVariablesHelper.UnsetVariable(clone))
                         {
-                            Logger.LogError("Failed to unset original variable.");
+                            LoggerInstance.Logger.LogError("Failed to unset original variable.");
                         }
 
                         if (parentProfile != null)
@@ -137,12 +136,12 @@ namespace EnvironmentVariablesUILib.Models
 
                                 if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(backupVariable))
                                 {
-                                    Logger.LogError("Failed to unset backup variable.");
+                                    LoggerInstance.Logger.LogError("Failed to unset backup variable.");
                                 }
 
                                 if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
                                 {
-                                    Logger.LogError("Failed to restore backup variable.");
+                                    LoggerInstance.Logger.LogError("Failed to restore backup variable.");
                                 }
                             }
                         }
@@ -163,14 +162,14 @@ namespace EnvironmentVariablesUILib.Models
                             // Backup the variable
                             if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
                             {
-                                Logger.LogError("Failed to set backup variable.");
+                                LoggerInstance.Logger.LogError("Failed to set backup variable.");
                             }
                         }
                     }
 
                     if (!EnvironmentVariablesHelper.SetVariable(this))
                     {
-                        Logger.LogError("Failed to set new variable.");
+                        LoggerInstance.Logger.LogError("Failed to set new variable.");
                     }
                 }
             });
@@ -197,7 +196,7 @@ namespace EnvironmentVariablesUILib.Models
             const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
             if (ParentType != VariablesSetType.System && Name.Length >= MaxUserEnvVariableLength)
             {
-                Logger.LogError("Variable name too long.");
+                LoggerInstance.Logger.LogError("Variable name too long.");
                 return false;
             }
 

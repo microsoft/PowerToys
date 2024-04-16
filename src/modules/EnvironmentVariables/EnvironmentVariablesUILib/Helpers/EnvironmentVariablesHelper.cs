@@ -7,7 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using EnvironmentVariablesUILib.Helpers.Win32;
 using EnvironmentVariablesUILib.Models;
-using ManagedCommon;
 using Microsoft.Win32;
 
 namespace EnvironmentVariablesUILib.Helpers
@@ -73,7 +72,7 @@ namespace EnvironmentVariablesUILib.Helpers
             const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
             if (!fromMachine && variable.Length >= MaxUserEnvVariableLength)
             {
-                Logger.LogError("Can't apply variable - name too long.");
+                LoggerInstance.Logger.LogError("Can't apply variable - name too long.");
                 return;
             }
 

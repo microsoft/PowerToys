@@ -13,8 +13,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
-using ManagedCommon;
-using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 
 namespace EnvironmentVariablesUILib.ViewModels
@@ -48,10 +46,14 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         public ProfileVariablesSet AppliedProfile { get; set; }
 
-        public MainViewModel(IEnvironmentVariablesService environmentVariablesService)
+        public MainViewModel(IElevationHelper elevationHelper, IEnvironmentVariablesService environmentVariablesService, ILogger logger)
         {
             _environmentVariablesService = environmentVariablesService;
-            var isElevated = EnvironmentVariables.App.GetService<IElevationHelper>().IsElevated;
+
+            ElevationHelper.ElevationHelperInstance = elevationHelper;
+            LoggerInstance.Logger = logger;
+
+            var isElevated = ElevationHelper.ElevationHelperInstance.IsElevated;
             IsElevated = isElevated;
         }
 
@@ -85,7 +87,6 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
         }
 
-        [RelayCommand]
         public void LoadEnvironmentVariables()
         {
             LoadDefaultVariables();
@@ -129,7 +130,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             catch (Exception ex)
             {
                 // Show some error
-                Logger.LogError("Failed to load profiles.json file", ex);
+                LoggerInstance.Logger.LogError("Failed to load profiles.json file", ex);
 
                 Profiles = new ObservableCollection<ProfileVariablesSet>();
             }
@@ -228,8 +229,8 @@ namespace EnvironmentVariablesUILib.ViewModels
                     });
                 });
 
-                PowerToysTelemetry.Log.WriteEvent(new Telemetry.EnvironmentVariablesVariableChangedEvent(original.ParentType));
-
+                // TODO(stefan)
+                // PowerToysTelemetry.Log.WriteEvent(new Telemetry.EnvironmentVariablesVariableChangedEvent(original.ParentType));
                 _ = Task.Run(SaveAsync);
             }
         }
@@ -276,7 +277,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             catch (Exception ex)
             {
                 // Show some error
-                Logger.LogError("Failed to save to profiles.json file", ex);
+                LoggerInstance.Logger.LogError("Failed to save to profiles.json file", ex);
             }
         }
 
@@ -293,16 +294,22 @@ namespace EnvironmentVariablesUILib.ViewModels
                         UnsetAppliedProfile();
                         SetAppliedProfile(profile);
 
+                        // TODO(stefan)
+                        /*
                         var telemetryEnabled = new Telemetry.EnvironmentVariablesProfileEnabledEvent()
                         {
                             Enabled = true,
                         };
 
                         PowerToysTelemetry.Log.WriteEvent(telemetryEnabled);
+                        */
                     }
                     else
                     {
                         UnsetAppliedProfile();
+
+                        // TODO(stefan)
+                        /*
 
                         var telemetryEnabled = new Telemetry.EnvironmentVariablesProfileEnabledEvent()
                         {
@@ -310,6 +317,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                         };
 
                         PowerToysTelemetry.Log.WriteEvent(telemetryEnabled);
+                        */
                     }
                 }
             }

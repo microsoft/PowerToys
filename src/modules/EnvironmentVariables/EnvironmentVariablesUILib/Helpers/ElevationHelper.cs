@@ -16,5 +16,7 @@ namespace EnvironmentVariablesUILib.Helpers
         {
             _isElevated = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
         }
+
+        public static IElevationHelper ElevationHelperInstance { get; set; }
     }
 }

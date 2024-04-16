@@ -12,7 +12,7 @@ using EnvironmentVariablesUILib.Models;
 
 namespace EnvironmentVariablesUILib.Helpers
 {
-    internal sealed class EnvironmentVariablesService : IEnvironmentVariablesService
+    public sealed class EnvironmentVariablesService : IEnvironmentVariablesService
     {
         private const string ProfilesJsonFileSubPath = "Microsoft\\PowerToys\\EnvironmentVariables\\";
 

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -11,11 +10,10 @@ using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariablesUILib.Models;
 using EnvironmentVariablesUILib.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Foundation.Collections;
 
-namespace EnvironmentVariablesUILib.Views
+namespace EnvironmentVariablesUILib
 {
-    public sealed partial class MainPage : Page
+    public sealed partial class EnvironmentVariablesMainPage : Page
     {
         private sealed class RelayCommandParameter
         {
@@ -46,11 +44,13 @@ namespace EnvironmentVariablesUILib.Views
 
         public ICommand AddDefaultVariableCommand => new RelayCommand<DefaultVariablesSet>(AddDefaultVariable);
 
-        public MainPage()
+        public EnvironmentVariablesMainPage(MainViewModel viewModel)
         {
             this.InitializeComponent();
-            ViewModel = EnvironmentVariables.App.GetService<MainViewModel>();
+            ViewModel = viewModel;
             DataContext = ViewModel;
+
+            ViewModel.LoadEnvironmentVariables();
         }
 
         private async Task ShowEditDialogAsync(Variable variable, VariablesSet parentSet)

@@ -4,11 +4,14 @@
 
 using System;
 using System.Runtime.InteropServices;
+using EnvironmentVariables.Win32;
+using EnvironmentVariablesUILib;
 using EnvironmentVariablesUILib.Helpers;
-using EnvironmentVariablesUILib.Helpers.Win32;
 using EnvironmentVariablesUILib.ViewModels;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
 
 namespace EnvironmentVariables
@@ -18,6 +21,8 @@ namespace EnvironmentVariables
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
+        private EnvironmentVariablesMainPage MainPage { get; }
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -35,6 +40,14 @@ namespace EnvironmentVariables
             RegisterWindow(handle);
 
             WindowHelpers.BringToForeground(handle);
+
+            MainPage = App.GetService<EnvironmentVariablesMainPage>();
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            MainGrid.Children.Add(MainPage);
+            Grid.SetRow(MainPage, 1);
         }
 
         private static readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();

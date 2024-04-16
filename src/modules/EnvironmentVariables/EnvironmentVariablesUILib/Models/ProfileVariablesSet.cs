@@ -7,7 +7,6 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EnvironmentVariablesUILib.Helpers;
-using ManagedCommon;
 
 namespace EnvironmentVariablesUILib.Models
 {
@@ -48,13 +47,13 @@ namespace EnvironmentVariablesUILib.Models
                         // Backup the variable
                         if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
                         {
-                            Logger.LogError("Failed to set backup variable.");
+                            LoggerInstance.Logger.LogError("Failed to set backup variable.");
                         }
                     }
 
                     if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variable))
                     {
-                        Logger.LogError("Failed to set profile variable.");
+                        LoggerInstance.Logger.LogError("Failed to set profile variable.");
                     }
                 }
 
@@ -80,7 +79,7 @@ namespace EnvironmentVariablesUILib.Models
             // Unset the variable
             if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(variable))
             {
-                Logger.LogError("Failed to unset variable.");
+                LoggerInstance.Logger.LogError("Failed to unset variable.");
             }
 
             var originalName = variable.Name;
@@ -95,12 +94,12 @@ namespace EnvironmentVariablesUILib.Models
 
                 if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(backupVariable))
                 {
-                    Logger.LogError("Failed to unset backup variable.");
+                    LoggerInstance.Logger.LogError("Failed to unset backup variable.");
                 }
 
                 if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
                 {
-                    Logger.LogError("Failed to restore backup variable.");
+                    LoggerInstance.Logger.LogError("Failed to restore backup variable.");
                 }
             }
         }

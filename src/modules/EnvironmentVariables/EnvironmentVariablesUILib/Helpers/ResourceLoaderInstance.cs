@@ -5,13 +5,13 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace EnvironmentVariablesUILib.Helpers
 {
-    internal static class ResourceLoaderInstance
+    public static class ResourceLoaderInstance
     {
-        internal static ResourceLoader ResourceLoader { get; private set; }
+        public static ResourceLoader ResourceLoader { get; private set; }
 
         static ResourceLoaderInstance()
         {
-            ResourceLoader = new ResourceLoader("PowerToys.EnvironmentVariables.pri");
+            ResourceLoader = new ResourceLoader("PowerToys.EnvironmentVariablesUILib.pri", "PowerToys.EnvironmentVariablesUILib/Resources");
         }
     }
 }
