@@ -93,9 +93,7 @@
                     x:Uid="Shell_FileLocksmith"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}"
                     Tag="FileLocksmith" />
-                <NavigationViewItem
-                    x:Uid="Shell_FileActionsMenu"
-                    Tag="FileActionsMenu">
+                <NavigationViewItem x:Uid="Shell_FileActionsMenu" Tag="FileActionsMenu">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xe8b7;" />
                     </NavigationViewItem.Icon>
