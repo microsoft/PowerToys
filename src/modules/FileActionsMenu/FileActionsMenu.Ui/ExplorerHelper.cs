@@ -8,8 +8,11 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Navigation;
 using Peek.Common.Models;
+using Peek.Helper.Extensions;
 using Peek.Helpers;
+using Windows.Win32.Foundation;
 
 namespace FileActionsMenu.Ui.Helpers
 {
@@ -27,34 +30,42 @@ namespace FileActionsMenu.Ui.Helpers
         /// <returns>An array of paths of the selected items.</returns>
         public static string[] GetSelectedItems()
         {
-            // Source: https://stackoverflow.com/questions/14193388/how-to-get-windows-explorers-selected-files-from-within-c
-            string filename;
             List<string> selected = [];
-
-            foreach (SHDocVw.InternetExplorer window in new SHDocVw.ShellWindows())
+            IShellItemArray? itemArray = default;
+            if (((HWND)GetForegroundWindow()).IsDesktopWindow())
             {
-                filename = Path.GetFileNameWithoutExtension(window.FullName).ToLower(CultureInfo.InvariantCulture);
-                if (filename.Equals("explorer", StringComparison.OrdinalIgnoreCase) && window.HWND == GetForegroundWindow())
+                itemArray = FileExplorerHelper.GetItemsFromDesktop((HWND)GetForegroundWindow(), true);
+            }
+            else
+            {
+                // Source: https://stackoverflow.com/questions/14193388/how-to-get-windows-explorers-selected-files-from-within-c
+                string filename;
+
+                foreach (SHDocVw.InternetExplorer window in new SHDocVw.ShellWindows())
                 {
-                    IShellItemArray? itemArray;
-                    checked
+                    filename = Path.GetFileNameWithoutExtension(window.FullName).ToLower(CultureInfo.InvariantCulture);
+                    if (filename.Equals("explorer", StringComparison.OrdinalIgnoreCase) && window.HWND == GetForegroundWindow())
                     {
-                        itemArray = FileExplorerHelper.GetSelectedItems(new Windows.Win32.Foundation.HWND((IntPtr)window.HWND));
+                        checked
+                        {
+                            itemArray = FileExplorerHelper.GetSelectedItems(new HWND((IntPtr)window.HWND));
+                        }
                     }
-
-                    if (itemArray is null || itemArray.GetCount() == 0)
-                    {
-                        break;
-                    }
-
-                    for (int i = 0; i < itemArray.GetCount(); i++)
-                    {
-                        IShellItem item = itemArray.GetItemAt(i);
-                        selected.Add(item.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH));
-                    }
-
-                    break;
                 }
+            }
+
+            checked
+            {
+                if (itemArray is null || itemArray.GetCount() == 0)
+                {
+                    return [];
+                }
+            }
+
+            for (int i = 0; i < itemArray.GetCount(); i++)
+            {
+                IShellItem item = itemArray.GetItemAt(i);
+                selected.Add(item.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_FILESYSPATH));
             }
 
             return [.. selected];

@@ -142,8 +142,11 @@
 
                 <NavigationViewItem
                     x:Uid="Shell_FileActionsMenu"
-                    helpers:NavHelper.NavigateTo="views:FileActionsMenuPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}" />
+                    helpers:NavHelper.NavigateTo="views:FileActionsMenuPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xe8b7;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
                 <NavigationViewItem
                     x:Uid="Shell_PowerPreview"
