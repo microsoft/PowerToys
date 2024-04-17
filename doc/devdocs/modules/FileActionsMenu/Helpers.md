@@ -10,7 +10,7 @@ Returns the value if it's not null, otherwise throws an `ArgumentNullException`.
 
 ### `bool IsImage(this string fileName)`
 
-Returns `true` if the file name has an image extension, otherwise `false`.
+Returns `true` if the file name has an image extension, otherwise `false`. This is the same list ImageResizer uses.
 
 ## File action progress
 

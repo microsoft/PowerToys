@@ -9,9 +9,9 @@ Following telemetry is sent by File Actions menu:
 |||
 | `IFileActionsMenuItemInvokedEvent` | Never, but is the base type for all the following events. | **ItemCount**: How many items are selected.<br/> **HasExecutableFilesSelected**: If any files ending in `.exe` or `.dll` are selected.<br/>**HasFilesSelected**: If the selection contains any files.<br/>**HasFolderSelected**: If the selection contains any folders.<br/>**HasImageSelected**: If the selection contains any image files.|
 | `FileActionsMenuUninstallActionInvoked` | When the uninstall action is called. | **IsCalledFromDesktop**: If the selected item was on the desktop.<br/> **IsCalledOnShortcut**: If the selected item is a shortcut (`.ink` file). |
-| `FileActionsMenuPowerRenameAction` | When PowerRename is launched via File Actions Menu | |
-| `FileActionsMenuImageResizerAction` | When Image Resizer is launched via File Actions Menu | |
-| `FileActionsMenuFileLocksmithAction` | When File Locksmith is launched via File Actions Menu | |
+| `FileActionsMenuPowerRenameAction` | When PowerRename is launched via File Actions menu | |
+| `FileActionsMenuImageResizerAction` | When Image Resizer is launched via File Actions menu | |
+| `FileActionsMenuFileLocksmithAction` | When File Locksmith is launched via File Actions menu | |
 | `FileActionsMenuCopyContentAsCEscapedStringActionInvokedEvent` | When the "Copy file content → As C escaped string" action is invoked | |
 | `FileActionsMenuCopyContentAsDataUrlActionInvokedEvent` | When the "Copy file content → As data url" action is invoked | |
 | `FileActionsMenuCopyContentAsPlaintextActionInvokedEvent` | When the "Copy file content → As plaintext" action is invoked | |
