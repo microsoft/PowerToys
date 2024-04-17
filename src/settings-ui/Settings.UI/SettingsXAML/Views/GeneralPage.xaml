@@ -62,7 +62,7 @@
                                 CornerRadius="0"
                                 IsClosable="False"
                                 IsOpen="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
-                                IsTabStop="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
+                                IsTabStop="False"
                                 Severity="Informational" />
                         </tkcontrols:SettingsExpander.ItemsHeader>
                         <tkcontrols:SettingsExpander.Items>
@@ -86,7 +86,7 @@
                             x:Uid="General_UpToDate"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
-                            IsTabStop="{x:Bind ViewModel.IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
+                            IsTabStop="False"
                             Severity="Success" />
 
                         <!--  Network error while checking for new version  -->
@@ -94,7 +94,7 @@
                             x:Uid="General_CantCheck"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.IsNoNetwork, Mode=OneWay}"
-                            IsTabStop="{x:Bind ViewModel.IsNoNetwork, Mode=OneWay}"
+                            IsTabStop="False"
                             Severity="Error" />
 
                         <!--  New version available  -->
@@ -102,7 +102,7 @@
                             x:Uid="General_NewVersionAvailable"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
-                            IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
+                            IsTabStop="False"
                             Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
                             Severity="Informational">
 
@@ -143,7 +143,7 @@
                             x:Uid="General_NewVersionReadyToInstall"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
-                            IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
+                            IsTabStop="False"
                             Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
                             Severity="Success">
                             <InfoBar.Content>
@@ -167,7 +167,7 @@
                             x:Uid="General_FailedToDownloadTheNewVersion"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
-                            IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
+                            IsTabStop="False"
                             Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
                             Severity="Error">
                             <InfoBar.Content>
@@ -344,7 +344,7 @@
                     Title="{x:Bind ViewModel.SettingsBackupMessage, Mode=OneWay}"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.SettingsBackupRestoreMessageVisible, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.SettingsBackupRestoreMessageVisible, Mode=OneWay}"
+                    IsTabStop="False"
                     Severity="{x:Bind ViewModel.BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
                 <controls:SettingsGroup x:Uid="General_Experimentation" Visibility="Visible">
                     <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableExperimentation" IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
@@ -357,7 +357,7 @@
                         x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
+                        IsTabStop="False"
                         Severity="Informational" />
                 </controls:SettingsGroup>
             </StackPanel>
