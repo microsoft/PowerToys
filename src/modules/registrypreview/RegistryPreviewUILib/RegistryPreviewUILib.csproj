@@ -51,7 +51,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Update="Assets\RegistryPreviewUILib\*">
+		<Content Update="Assets\RegistryPreview\*">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

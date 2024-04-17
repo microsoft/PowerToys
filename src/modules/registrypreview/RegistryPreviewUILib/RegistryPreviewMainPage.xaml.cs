@@ -16,9 +16,9 @@ namespace RegistryPreviewUILib
         private const string REGISTRYHEADER4 = "regedit4";
         private const string REGISTRYHEADER5 = "windows registry editor version 5.00";
         private const string APPNAME = "RegistryPreview";
-        private const string KEYIMAGE = "ms-appx:///Assets/RegistryPreviewUILib/folder32.png";
-        private const string DELETEDKEYIMAGE = "ms-appx:///Assets/RegistryPreviewUILib/deleted-folder32.png";
-        private const string ERRORIMAGE = "ms-appx:///Assets/RegistryPreviewUILib/error32.png";
+        private const string KEYIMAGE = "ms-appx:///Assets/RegistryPreview/folder32.png";
+        private const string DELETEDKEYIMAGE = "ms-appx:///Assets/RegistryPreview/deleted-folder32.png";
+        private const string ERRORIMAGE = "ms-appx:///Assets/RegistryPreview/error32.png";
 
         // private members
         private ResourceLoader resourceLoader;
