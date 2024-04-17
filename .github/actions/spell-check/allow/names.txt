@@ -40,11 +40,13 @@ Bao
 betadele
 betsegaw
 bricelam
+CCcat
 Chinh
 chrdavis
 Chrzan
 clayton
 Coplen
+craigloewen
 crutkas
 damienleroy
 davidegiacometti
@@ -86,6 +88,7 @@ martinchrzan
 martinmoene
 Melman
 Mikhayelyan
+msft
 Myrvold
 Nemeth
 nielslaute
@@ -125,6 +128,7 @@ Yuniardi
 yuyoyuppe
 Zoltan
 Zykova
+riri
 
 
 # OTHERS

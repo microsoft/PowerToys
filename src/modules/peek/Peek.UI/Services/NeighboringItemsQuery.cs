@@ -27,12 +27,7 @@ namespace Peek.UI
             IsMultipleFilesActivation = hasMoreThanOneItem;
 
             var neighboringItemsShellArray = hasMoreThanOneItem ? selectedItemsShellArray : FileExplorerHelper.GetItems(foregroundWindowHandle);
-            if (neighboringItemsShellArray == null)
-            {
-                return null;
-            }
-
-            return new NeighboringItems(neighboringItemsShellArray);
+            return neighboringItemsShellArray == null ? null : new NeighboringItems(neighboringItemsShellArray);
         }
     }
 }

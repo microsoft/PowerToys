@@ -43,10 +43,6 @@ steps:
 - powershell: 'tar czf LocOutput.tar.gz LocOutput'
   displayName: 'PowerShell Script'
 
-- task: PublishBuildArtifacts@1
+- publish: LocOutput.tar.gz
   displayName: 'Publish Artifact: LocOutput'
-  inputs:
-    PathtoPublish: LocOutput.tar.gz
-    ArtifactName: LocOutput
-
-
+  artifact: LocOutput

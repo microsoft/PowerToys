@@ -37,10 +37,15 @@ namespace Awake.Core
 
         private static CancellationTokenSource _tokenSource;
 
+        private static SettingsUtils? _moduleSettings;
+
+        private static SettingsUtils? ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
+
         static Manager()
         {
             _tokenSource = new CancellationTokenSource();
             _stateQueue = new BlockingCollection<ExecutionState>();
+            ModuleSettings = new SettingsUtils();
         }
 
         public static void StartMonitor()
@@ -294,17 +299,28 @@ namespace Awake.Core
 
         public static void SetPassiveKeepAwakeMode(string moduleName)
         {
+            AwakeSettings currentSettings;
+
             try
             {
-                SettingsUtils settingsUtils = new SettingsUtils();
-                AwakeSettings settings = new AwakeSettings();
-
-                settings.Properties.Mode = AwakeMode.PASSIVE;
-                settingsUtils.SaveSettings(JsonSerializer.Serialize(settings), moduleName);
+                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
             }
             catch (Exception ex)
             {
-                string? errorString = $"Failed to reset Awake mode: {ex.Message}";
+                string? errorString = $"Failed to reset Awake mode GetSettings: {ex.Message}";
+                Logger.LogError(errorString);
+                currentSettings = new AwakeSettings();
+            }
+
+            currentSettings.Properties.Mode = AwakeMode.PASSIVE;
+
+            try
+            {
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            }
+            catch (Exception ex)
+            {
+                string? errorString = $"Failed to reset Awake mode SaveSettings: {ex.Message}";
                 Logger.LogError(errorString);
             }
         }

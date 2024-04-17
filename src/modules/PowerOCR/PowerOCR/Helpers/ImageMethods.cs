@@ -47,51 +47,17 @@ internal sealed class ImageMethods
         return destination;
     }
 
-    internal static ImageSource GetWindowBoundsImage(Window passedWindow)
+    internal static ImageSource GetWindowBoundsImage(OCROverlay passedWindow)
     {
-        DpiScale dpi = VisualTreeHelper.GetDpi(passedWindow);
-        int windowWidth = (int)(passedWindow.ActualWidth * dpi.DpiScaleX);
-        int windowHeight = (int)(passedWindow.ActualHeight * dpi.DpiScaleY);
-
-        System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
-        int thisCorrectedLeft = (int)absPosPoint.X;
-        int thisCorrectedTop = (int)absPosPoint.Y;
-
-        using Bitmap bmp = new(windowWidth, windowHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        Rectangle screenRectangle = passedWindow.GetScreenRectangle();
+        using Bitmap bmp = new(screenRectangle.Width, screenRectangle.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         using Graphics g = Graphics.FromImage(bmp);
 
-        g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+        g.CopyFromScreen(screenRectangle.Left, screenRectangle.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
         return BitmapToImageSource(bmp);
     }
 
-    internal static Bitmap GetWindowBoundsBitmap(Window passedWindow)
-    {
-        DpiScale dpi = VisualTreeHelper.GetDpi(passedWindow);
-        int windowWidth = (int)(passedWindow.ActualWidth * dpi.DpiScaleX);
-        int windowHeight = (int)(passedWindow.ActualHeight * dpi.DpiScaleY);
-
-        System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
-        int thisCorrectedLeft = (int)absPosPoint.X;
-        int thisCorrectedTop = (int)absPosPoint.Y;
-
-        Bitmap bmp = new(
-            windowWidth,
-            windowHeight,
-            System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-        using Graphics g = Graphics.FromImage(bmp);
-
-        g.CopyFromScreen(
-            thisCorrectedLeft,
-            thisCorrectedTop,
-            0,
-            0,
-            bmp.Size,
-            CopyPixelOperation.SourceCopy);
-
-        return bmp;
-    }
-
-    internal static Bitmap GetRegionAsBitmap(Window passedWindow, Rectangle selectedRegion)
+    internal static Bitmap GetRegionAsBitmap(OCROverlay passedWindow, Rectangle selectedRegion)
     {
         Bitmap bmp = new(
             selectedRegion.Width,
@@ -99,15 +65,11 @@ internal sealed class ImageMethods
             System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
         using Graphics g = Graphics.FromImage(bmp);
-
-        System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
-
-        int thisCorrectedLeft = (int)absPosPoint.X + selectedRegion.Left;
-        int thisCorrectedTop = (int)absPosPoint.Y + selectedRegion.Top;
+        Rectangle screenRectangle = passedWindow.GetScreenRectangle();
 
         g.CopyFromScreen(
-            thisCorrectedLeft,
-            thisCorrectedTop,
+            screenRectangle.Left + selectedRegion.Left,
+            screenRectangle.Top + selectedRegion.Top,
             0,
             0,
             bmp.Size,
@@ -117,7 +79,7 @@ internal sealed class ImageMethods
         return bmp;
     }
 
-    internal static async Task<string> GetRegionsText(Window? passedWindow, Rectangle selectedRegion, Language? preferredLanguage)
+    internal static async Task<string> GetRegionsText(OCROverlay? passedWindow, Rectangle selectedRegion, Language? preferredLanguage)
     {
         if (passedWindow is null)
         {
@@ -130,17 +92,15 @@ internal sealed class ImageMethods
         return resultText != null ? resultText.Trim() : string.Empty;
     }
 
-    internal static async Task<string> GetClickedWord(Window passedWindow, System.Windows.Point clickedPoint, Language? preferredLanguage)
+    internal static async Task<string> GetClickedWord(OCROverlay passedWindow, System.Windows.Point clickedPoint, Language? preferredLanguage)
     {
-        DpiScale dpi = VisualTreeHelper.GetDpi(passedWindow);
-        Bitmap bmp = new((int)(passedWindow.ActualWidth * dpi.DpiScaleX), (int)(passedWindow.ActualHeight * dpi.DpiScaleY), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        Rectangle screenRectangle = passedWindow.GetScreenRectangle();
+        Bitmap bmp = new((int)screenRectangle.Width, (int)passedWindow.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         Graphics g = Graphics.FromImage(bmp);
 
         System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
-        int thisCorrectedLeft = (int)absPosPoint.X;
-        int thisCorrectedTop = (int)absPosPoint.Y;
 
-        g.CopyFromScreen(thisCorrectedLeft, thisCorrectedTop, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+        g.CopyFromScreen((int)absPosPoint.X, (int)absPosPoint.Y, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
         System.Windows.Point adjustedPoint = new(clickedPoint.X, clickedPoint.Y);
 

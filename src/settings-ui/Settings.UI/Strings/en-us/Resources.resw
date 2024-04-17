@@ -632,7 +632,7 @@
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
-    <comment>Product name: Navigation view item name for FancyZones</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
     <value>Image Resizer</value>
@@ -859,7 +859,7 @@
   </data>
   <data name="Fancyzones_ImageHyperlinkToDocs.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>FancyZones windows</value>
-    <comment>do not loc the Product name</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="FancyZones.ModuleDescription" xml:space="preserve">
     <value>Create window layouts to help make multi-tasking easy.</value>
@@ -871,7 +871,7 @@
   </data>
   <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable FancyZones</value>
-    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="FancyZones_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
@@ -960,6 +960,7 @@
   </data>
   <data name="FancyZones_ZoneBehavior_GroupSettings.Description" xml:space="preserve">
     <value>Manage how zones behave when using FancyZones</value>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="FancyZones_Zones.Header" xml:space="preserve">
     <value>Zones</value>
@@ -1416,6 +1417,7 @@
   </data>
   <data name="FancyZones.ModuleTitle" xml:space="preserve">
     <value>FancyZones</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
     <value>File Explorer</value>
@@ -1578,7 +1580,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
-    <comment>Don't translate outlook.exe</comment>
+    <comment>{Locked="outlook.exe"}</comment>
   </data>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
@@ -1636,10 +1638,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_WindowBehavior_GroupSettings.Description" xml:space="preserve">
     <value>Manage how windows behave when using FancyZones</value>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="FancyZones_Windows.Header" xml:space="preserve">
     <value>Windows</value>
-    <comment>Do translate: refers to a set of application windows, not the product name</comment>
+    <comment>Refers to a set of application windows, not the product name</comment>
   </data>
   <data name="PowerRename_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>
@@ -1832,17 +1835,19 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Windows key + Up, down, left or right arrow key to move windows based on relative position</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Windows key + Left or right arrow keys to move windows based on zone index</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" xml:space="preserve">
     <value>Windows key +    or </value>
-    <comment>Do not loc the icons (hex numbers)</comment>
+    <comment>{Locked="Windows key +   ",""}</comment>
   </data>
   <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description.Text" xml:space="preserve">
     <value>Windows key +  or </value>
-    <comment>Do not loc the icons (hex numbers)</comment>
+    <comment>{Locked="Windows key + ",""}</comment>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition.Text" xml:space="preserve">
     <value>Relative position</value>
@@ -1987,6 +1992,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Oobe_FancyZones.Description" xml:space="preserve">
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="Oobe_FileLocksmith.Description" xml:space="preserve">
     <value>File Locksmith lists which processes are using the selected files or directories and allows closing those processes.</value>
@@ -2044,6 +2050,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_FancyZones_HowToUse_Shortcut.Text" xml:space="preserve">
     <value>to open the FancyZones editor.</value>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="Oobe_FancyZones_TipsAndTricks.Text" xml:space="preserve">
     <value>Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.</value>
@@ -2134,7 +2141,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_FancyZones.Title" xml:space="preserve">
     <value>FancyZones</value>
-    <comment>Do not localize this string</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="Oobe_FileLocksmith.Title" xml:space="preserve">
     <value>File Locksmith</value>
@@ -2389,7 +2396,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="LearnMore_FancyZones.Text" xml:space="preserve">
     <value>Learn more about FancyZones</value>
-    <comment>FancyZones is a product name, do not loc</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="LearnMore_FileLocksmith.Text" xml:space="preserve">
     <value>Learn more about File Locksmith</value>
@@ -2872,11 +2879,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
-    <comment>"Always On Top" is the name of the utility</comment>
+    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop.ModuleTitle" xml:space="preserve">
-    <value>Always On Top </value>
-    <comment>"Always On Top" is the name of the utility</comment>
+    <value>Always On Top</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="AlwaysOnTop_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
@@ -2886,7 +2893,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="AlwaysOnTop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable Always On Top</value>
-    <comment>"Always On Top" is the name of the utility</comment>
+    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop_ExcludedApps.Description" xml:space="preserve">
     <value>Excludes an application from pinning on top</value>
@@ -2912,7 +2919,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
     <value>Always On Top</value>
-    <comment>"Always On Top" is the name of the utility</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="AlwaysOnTop_GameMode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
@@ -2929,22 +2936,21 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="LearnMore_AlwaysOnTop.Text" xml:space="preserve">
     <value>Learn more about Always On Top</value>
-    <comment>"Always On Top" is the name of the utility</comment>
+    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
   <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to pin or unpin an app window</value>
-    <comment>"Always On Top" is the name of the utility</comment>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
-    <comment>"Always On Top" is the name of the utility</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Oobe_AlwaysOnTop.Description" xml:space="preserve">
     <value>Always On Top improves your multitasking workflow by pinning an application window so it's always in front - even when focus changes to another window after that.</value>
-    <comment>"Always On Top" is the name of the utility</comment>
+    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="Oobe_AlwaysOnTop_HowToUse.Text" xml:space="preserve">
     <value>to pin or unpin the selected window so it's always on top of all other windows.</value>
@@ -2960,6 +2966,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="AlwaysOnTop_Radio_Windows_Default.Content" xml:space="preserve">
     <value>Windows default</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FileExplorerPreview.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
@@ -3123,12 +3130,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="RegistryPreview_ShortDescription" xml:space="preserve">
     <value>Visualize and edit Windows Registry files</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ScreenRuler_ShortDescription" xml:space="preserve">
     <value>Measure pixels on your screen</value>
   </data>
   <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
     <value>Show a help overlay with Windows shortcuts</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="PowerOcr_ShortDescription" xml:space="preserve">
     <value>A convenient way to copy text from anywhere on screen</value>
@@ -3594,6 +3603,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
     <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FileLocksmith.ModuleTitle" xml:space="preserve">
     <value>File Locksmith</value>
@@ -3633,6 +3643,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Alternate_OOBE_AlwaysOnTop_Title.Text" xml:space="preserve">
     <value>Always On Top</value>
+    <comment>{Locked}</comment>
   </data>
   <data name="Alternate_OOBE_ColorPicker_Description.Text" xml:space="preserve">
     <value>To pick a color:</value>
@@ -3660,6 +3671,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
     <value>Note: Only Windows Insider builds may be selected for experimentation</value>
+    <comment>{Locked="Windows Insider"}</comment>
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
@@ -3792,8 +3804,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="SettingsTooltip.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="ShortcutsTxt.Text" xml:space="preserve">
-    <value>Shortcuts</value>
+  <data name="QuickAccessTxt.Text" xml:space="preserve">
+    <value>Quick access</value>
   </data>
   <data name="UpdateAvailable.Title" xml:space="preserve">
     <value>Update available</value>
@@ -3808,6 +3820,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="RegistryPreview.ModuleDescription" xml:space="preserve">
     <value>A quick little utility to visualize and edit complex Windows Registry files.</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="RegistryPreview.ModuleTitle" xml:space="preserve">
     <value>Registry Preview</value>
@@ -3828,6 +3841,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_RegistryPreview.Description" xml:space="preserve">
     <value>Registry Preview is a quick little utility to visualize and edit complex Windows Registry files.</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="Oobe_RegistryPreview.Title" xml:space="preserve">
     <value>Registry Preview</value>
@@ -3904,6 +3918,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
+    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="Oobe_Peek.Title" xml:space="preserve">
     <value>Peek</value>

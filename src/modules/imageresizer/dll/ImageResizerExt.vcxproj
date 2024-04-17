@@ -79,18 +79,16 @@
   <ItemGroup>
     <ClCompile Include="ContextMenuHandler.cpp" />
     <ClCompile Include="dllmain.cpp">
-      <CompileAsManaged Condition="'$(CIBuild)'!='true'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">
-      </PrecompiledHeader>
+      <CompileAsManaged>false</CompileAsManaged>
+      <PrecompiledHeader></PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ImageResizerExt.cpp" />
     <ClCompile Include="ImageResizerExt_i.c">
-      <CompileAsManaged Condition="'$(CIBuild)'!='true'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">
-      </PrecompiledHeader>
+      <CompileAsManaged>false</CompileAsManaged>
+      <PrecompiledHeader></PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

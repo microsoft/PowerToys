@@ -215,6 +215,7 @@
 
                 <ui:Flyout
                     x:Name="DetailsFlyout"
+                    Margin="24,0,0,0"
                     Closed="DetailsFlyout_Closed"
                     Opened="DetailsFlyout_Opened"
                     Placement="Top">

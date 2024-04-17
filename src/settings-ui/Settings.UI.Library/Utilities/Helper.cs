@@ -103,6 +103,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return LayoutMap.GetKeyName(key);
         }
 
+        public static uint GetKeyValue(string key)
+        {
+            return LayoutMap.GetKeyValue(key);
+        }
+
         public static string GetProductVersion()
         {
             return interop.CommonManaged.GetProductVersion();
