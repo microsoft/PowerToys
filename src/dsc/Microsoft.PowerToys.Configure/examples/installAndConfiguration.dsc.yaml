@@ -10,7 +10,7 @@ properties:
         id: Microsoft.PowerToys
         source: winget
 
-    - resource: PowerToysConfigure
+    - resource: Microsoft.PowerToys.Configure/PowerToysConfigure
       dependsOn:
         - installPowerToys
       directives:
