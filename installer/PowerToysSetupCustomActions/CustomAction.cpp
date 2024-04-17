@@ -1038,7 +1038,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.ColorPickerUI.exe",
         L"PowerToys.AlwaysOnTop.exe",
         L"PowerToys.RegistryPreview.exe",
-        L"PowerToys.HostsPackageConsumer.exe",
+        L"PowerToys.Hosts.exe",
         L"PowerToys.PowerRename.exe",
         L"PowerToys.ImageResizer.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",

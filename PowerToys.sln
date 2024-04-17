@@ -448,7 +448,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeasureToolUI", "src\module
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerAccentKeyboardService", "src\modules\poweraccent\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj", "{C97D9A5D-206C-454E-997E-009E227D7F02}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hosts", "src\modules\Hosts\Hosts\Hosts.csproj", "{31D1C81D-765F-4446-AA62-E743F6325049}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostsUILib", "src\modules\Hosts\HostsUILib\HostsUILib.csproj", "{31D1C81D-765F-4446-AA62-E743F6325049}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{F05E590D-AD46-42BE-9C25-6A63ADD2E3EA}"
 EndProject
@@ -568,11 +568,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithContextMenu", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLib", "src\modules\FileLocksmith\FileLocksmithLib\FileLocksmithLib.vcxproj", "{9D52FD25-EF90-4F9A-A015-91EFC5DAF54F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostsPackageConsumer", "src\modules\Hosts\HostsPackageConsumer\HostsPackageConsumer.csproj", "{02DD46D3-F761-47D9-8894-2D6DA0124650}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hosts", "src\modules\Hosts\Hosts\Hosts.csproj", "{02DD46D3-F761-47D9-8894-2D6DA0124650}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RegistryPreview", "src\modules\registrypreview\RegistryPreview\RegistryPreview.csproj", "{8E23E173-7127-4A5F-9F93-3049F2B68047}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnvironmentVariables", "src\modules\EnvironmentVariables\EnvironmentVariables\EnvironmentVariables.csproj", "{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentVariables", "src\modules\EnvironmentVariables\EnvironmentVariables\EnvironmentVariables.csproj", "{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -51,11 +51,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Update="Assets\RegistryPreviewUILib\data32.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="Assets\RegistryPreviewUILib\string32.png">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		<Content Update="Assets\RegistryPreviewUILib\*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 </Project>

@@ -23,7 +23,7 @@ std::vector<std::wstring> processes =
     L"PowerToys.Update.exe",
     L"PowerToys.ActionRunner.exe",
     L"PowerToys.AlwaysOnTop.exe",
-    L"PowerToys.HostsPackageConsumer.exe",
+    L"PowerToys.Hosts.exe",
     L"PowerToys.GcodePreviewHandler.exe",
     L"PowerToys.GcodeThumbnailProvider.exe",
     L"PowerToys.MarkdownPreviewHandler.exe",
