@@ -34,6 +34,18 @@
     <Folder Include="EnvironmentVariablesXAML\" />
   </ItemGroup>
 
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <Message Text="Executing CopyPRIFileToOutputDir task" Importance="High" />
+
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\PowerToys.EnvironmentVariablesUILib.pri" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+
+    <Message Text="Copied CopyPRIFileToOutputDir files" Importance="High" />
+  </Target>
+
   <!-- SelfContained=true requires RuntimeIdentifier to be set -->
   <PropertyGroup Condition="'$(Platform)'=='x64'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
