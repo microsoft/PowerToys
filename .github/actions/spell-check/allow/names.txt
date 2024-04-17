@@ -29,6 +29,7 @@ videoconference
 
 # USERS
 
+Adoumie
 Advaith
 alekhyareddy
 Aleks
@@ -72,6 +73,7 @@ htcfreek
 Huynh
 Jaswal
 jefflord
+Jordi
 jyuwono
 Kamra
 Kantarci
