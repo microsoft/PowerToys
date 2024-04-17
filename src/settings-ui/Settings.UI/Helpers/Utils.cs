@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 var json = File.ReadAllText(_placementPath);
                 var placement = JsonSerializer.Deserialize<WINDOWPLACEMENT>(json);
 
-                placement.Length = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
+                placement.Length = Marshal.SizeOf<WINDOWPLACEMENT>();
                 placement.Flags = 0;
                 placement.ShowCmd = (placement.ShowCmd == NativeMethods.SW_SHOWMAXIMIZED) ? NativeMethods.SW_SHOWMAXIMIZED : NativeMethods.SW_SHOWNORMAL;
                 return placement;

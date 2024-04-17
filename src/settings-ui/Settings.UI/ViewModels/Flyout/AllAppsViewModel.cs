@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
 
-            foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
+            foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
                 AddFlyoutMenuItem(moduleType);
             }

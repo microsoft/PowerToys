@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _allModules = new List<DashboardListItem>();
 
-            foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
+            foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
                 AddDashboardListItem(moduleType);
             }
@@ -466,7 +466,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void SWVersionButtonClicked()
         {
-            NavigationService.Navigate(typeof(GeneralPage));
+            NavigationService.Navigate<GeneralPage>();
         }
 
         private void EnvironmentVariablesLaunchClicked(object sender, RoutedEventArgs e)
