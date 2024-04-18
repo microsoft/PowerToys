@@ -16,7 +16,7 @@ public:
         static void EnableFancyZones(bool enabled) noexcept;
         static void OnKeyDown(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept;
         static void DataChanged() noexcept;
-        static void EditorLaunched(int value) noexcept;
+        static void EditorOpened(int value) noexcept;
         static void Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;
         static void QuickLayoutSwitched(bool shortcutUsed) noexcept;
         static void SnapNewWindowIntoZone(Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept;
