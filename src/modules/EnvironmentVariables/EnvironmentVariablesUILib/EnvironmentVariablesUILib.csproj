@@ -14,12 +14,22 @@
     <ProjectPriFileName>PowerToys.EnvironmentVariablesUILib.pri</ProjectPriFileName>
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <IsPackable>true</IsPackable>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pri" Pack="True" PackageCopyToOutput="true" />
-    <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+    <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pri" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
+    <XBFFile Include="$(OutDir)**\*.xbf" />
+    <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
     <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+
+    <None Include="Assets\**\*.png" Pack="true" PackagePath="Assets" />
+    <None Include="Assets\**\*.ico" Pack="true" PackagePath="Assets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Assets\**\*.png" Pack="false" />
+    <Content Remove="Assets\**\*.ico" Pack="false" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -40,6 +50,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
