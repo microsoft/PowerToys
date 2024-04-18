@@ -117,7 +117,7 @@
   <data name="DOCUMENTATION_MENU_TEXT" xml:space="preserve">
     <value>Documentation</value>
   </data>
-  <data name="EXIT_MENU_TEXT" xml:space="preserve">
+  <data name="CLOSE_MENU_TEXT" xml:space="preserve">
     <value>Exit</value>
     <comment>Exit as a verb, as in Exit the application</comment>
   </data>
