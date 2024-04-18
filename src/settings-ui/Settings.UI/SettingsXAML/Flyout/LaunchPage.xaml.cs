@@ -40,14 +40,14 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
             switch ((ModuleType)selectedModuleBtn.Tag)
             {
-                case ModuleType.ColorPicker: // Launch ColorPicker
+                case ModuleType.ColorPicker: // Open ColorPicker
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowColorPickerSharedEvent()))
                     {
                         eventHandle.Set();
                     }
 
                     break;
-                case ModuleType.EnvironmentVariables: // Launch Environment Variables
+                case ModuleType.EnvironmentVariables: // Open Environment Variables
                     {
                         bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
                         string eventName = !App.IsElevated && launchAdmin
@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
-                case ModuleType.FancyZones: // Launch FancyZones Editor
+                case ModuleType.FancyZones: // Open FancyZones Editor
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent()))
                     {
                         eventHandle.Set();
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
-                case ModuleType.Hosts: // Launch Hosts
+                case ModuleType.Hosts: // Open Hosts
                     {
                         bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
                         string eventName = !App.IsElevated && launchAdmin
@@ -85,14 +85,14 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
-                case ModuleType.RegistryPreview: // Launch Registry Preview
+                case ModuleType.RegistryPreview: // Open Registry Preview
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RegistryPreviewTriggerEvent()))
                     {
                         eventHandle.Set();
                     }
 
                     break;
-                case ModuleType.MeasureTool: // Launch Screen Ruler
+                case ModuleType.MeasureTool: // Open Screen Ruler
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent()))
                     {
                         eventHandle.Set();
@@ -100,7 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
-                case ModuleType.PowerLauncher: // Launch Run
+                case ModuleType.PowerLauncher: // Open Run
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerLauncherSharedEvent()))
                     {
                         eventHandle.Set();
@@ -108,7 +108,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
-                case ModuleType.PowerOCR: // Launch Text Extractor
+                case ModuleType.PowerOCR: // Open Text Extractor
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent()))
                     {
                         eventHandle.Set();
@@ -116,7 +116,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
-                case ModuleType.ShortcutGuide: // Launch Shortcut Guide
+                case ModuleType.ShortcutGuide: // Open Shortcut Guide
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
                     {
                         eventHandle.Set();

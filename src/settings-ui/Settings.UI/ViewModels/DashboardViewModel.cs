@@ -495,7 +495,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void FancyZoneLaunchClicked(object sender, RoutedEventArgs e)
         {
-            // send message to launch the zones editor;
+            // send message to open the zones editor;
             SendConfigMSG("{\"action\":{\"FancyZones\":{\"action_name\":\"ToggledFZEditor\", \"value\":\"\"}}}");
         }
 

@@ -356,7 +356,7 @@ namespace PowerLauncher
             {
                 if (Visibility == System.Windows.Visibility.Visible && _viewModel.MainWindowVisibility != Visibility.Hidden)
                 {
-                    // Not called on first launch
+                    // Not called on first open
                     // Called when window is made visible by hotkey. Not called when the window is deactivated by clicking away
                     UpdatePosition();
                     BringProcessToForeground();

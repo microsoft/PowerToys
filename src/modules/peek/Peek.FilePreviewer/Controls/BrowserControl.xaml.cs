@@ -209,7 +209,7 @@ namespace Peek.FilePreviewer.Controls
                 return;
             }
 
-            // In case user starts or tries to navigate from within the HTML file we launch default web browser for navigation.
+            // In case user starts or tries to navigate from within the HTML file we open default web browser for navigation.
             // TODO: && args.IsUserInitiated - always false for PDF files, revert the workaround when fixed in WebView2: https://github.com/microsoft/PowerToys/issues/27403
             if (args.Uri != null && args.Uri != _navigatedUri?.ToString())
             {

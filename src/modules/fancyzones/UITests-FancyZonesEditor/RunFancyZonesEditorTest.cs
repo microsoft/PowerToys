@@ -21,7 +21,7 @@ namespace UITests_FancyZonesEditor
         {
             _context = testContext;
 
-            // prepare files to launch Editor without errors
+            // prepare files to open Editor without errors
             EditorParameters editorParameters = new EditorParameters();
             EditorParameters.ParamsWrapper parameters = new EditorParameters.ParamsWrapper
             {
