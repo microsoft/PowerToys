@@ -796,7 +796,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         /// <returns>Returns the content of the config file (Json) as string.</returns>
         /// <exception cref="FileNotFoundException">Thrown if file is not found.</exception>
-        /// <remarks>If the settings window is launched from an installed instance of PT we need the path "...\Settings\\backup_restore_settings.json" and if the settings window is launched from a local VS build of PT we need the path "...\backup_restore_settings.json".</remarks>
+        /// <remarks>If the settings window is opened from an installed instance of PT we need the path "...\Settings\\backup_restore_settings.json" and if the settings window is opened from a local VS build of PT we need the path "...\backup_restore_settings.json".</remarks>
         private static string GetBackupRestoreSettingsJson()
         {
             if (File.Exists("backup_restore_settings.json"))
