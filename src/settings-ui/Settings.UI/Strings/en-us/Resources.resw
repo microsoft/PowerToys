@@ -3858,16 +3858,16 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Back</value>
   </data>
   <data name="BugReportBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Bug report</value>
+    <value>Create a bug report file</value>
   </data>
   <data name="BugReportTooltip.Text" xml:space="preserve">
-    <value>Bug report</value>
+    <value>Create a bug report file</value>
   </data>
   <data name="DocsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Documentation</value>
+    <value>Online documentation</value>
   </data>
   <data name="DocsTooltip.Text" xml:space="preserve">
-    <value>Documentation</value>
+    <value>Go to online documentation on MS Learn</value>
   </data>
   <data name="FZEditorString" xml:space="preserve">
     <value>FancyZones Editor</value>
@@ -3880,10 +3880,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>More</value>
   </data>
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Settings</value>
+    <value>Go to settings</value>
   </data>
   <data name="SettingsTooltip.Text" xml:space="preserve">
-    <value>Settings</value>
+    <value>Open PowerToys Settings</value>
   </data>
   <data name="QuickAccessTxt.Text" xml:space="preserve">
     <value>Quick access</value>
