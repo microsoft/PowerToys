@@ -16,7 +16,7 @@
 #define EventEnableFancyZonesKey "FancyZones_EnableFancyZones"
 #define EventKeyDownKey "FancyZones_OnKeyDown"
 #define EventZoneSettingsChangedKey "FancyZones_ZoneSettingsChanged"
-#define EventEditorLaunchKey "FancyZones_EditorLaunch"
+#define EventEditorOpenKey "FancyZones_EditorOpen"
 #define EventSettingsKey "FancyZones_Settings"
 #define EventDesktopChangedKey "FancyZones_VirtualDesktopChanged"
 #define EventWorkAreaKeyUpKey "FancyZones_ZoneWindowKeyUp"
@@ -38,7 +38,7 @@
 #define NumberOfZonesForEachCustomZoneSetKey "NumberOfZonesForEachCustomZoneSet"
 #define ActiveZoneSetsCountKey "ActiveZoneSetsCount"
 #define ActiveZoneSetsListKey "ActiveZoneSetsList"
-#define EditorLaunchValueKey "Value"
+#define EditorOpenValueKey "Value"
 #define ShiftDragKey "ShiftDrag"
 #define MouseSwitchKey "MouseSwitch"
 #define MoveWindowsOnDisplayChangeKey "MoveWindowsOnDisplayChange"
@@ -224,14 +224,14 @@ void Trace::FancyZones::DataChanged() noexcept
         TraceLoggingInt32(static_cast<int>(quickKeysCount), LayoutUsingQuickKeyCountKey));
 }
 
-void Trace::FancyZones::EditorLaunched(int value) noexcept
+void Trace::FancyZones::EditorOpened(int value) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        EventEditorLaunchKey,
+        EventEditorOpenKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingInt32(value, EditorLaunchValueKey));
+        TraceLoggingInt32(value, EditorOpenValueKey));
 }
 
 // Log if an error occurs in FZ

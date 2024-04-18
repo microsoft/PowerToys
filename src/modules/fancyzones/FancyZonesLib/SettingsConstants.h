@@ -16,7 +16,7 @@ enum class SettingId
     RestoreWindowSize,
     QuickLayoutSwitch,
     FlashZonesOnQuickSwitch,
-    LaunchEditorOnScreenWhereCursorPlaced,
+    OpenEditorOnScreenWhereCursorPlaced,
     ShowOnAllMonitors,
     SpanZonesAcrossMonitors,
     MakeDraggedWindowsTransparent,

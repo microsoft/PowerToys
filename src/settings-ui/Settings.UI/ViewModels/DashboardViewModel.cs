@@ -483,14 +483,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var settingsUtils = new SettingsUtils();
             var environmentVariablesViewModel = new EnvironmentVariablesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<EnvironmentVariablesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
-            environmentVariablesViewModel.Launch();
+            environmentVariablesViewModel.Open();
         }
 
         private void HostLaunchClicked(object sender, RoutedEventArgs e)
         {
             var settingsUtils = new SettingsUtils();
             var hostsViewModel = new HostsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<HostsSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
-            hostsViewModel.Launch();
+            hostsViewModel.Open();
         }
 
         private void FancyZoneLaunchClicked(object sender, RoutedEventArgs e)
@@ -515,7 +515,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void RegistryPreviewLaunchClicked(object sender, RoutedEventArgs e)
         {
-            var actionName = "Launch";
+            var actionName = "Open";
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 

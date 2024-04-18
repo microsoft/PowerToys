@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ButtonClickCommand LaunchEventHandler => new ButtonClickCommand(Launch);
+        public ButtonClickCommand LaunchEventHandler => new ButtonClickCommand(Open);
 
         public bool IsEnabled
         {
@@ -103,7 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public void Launch()
+        public void Open()
         {
             string eventName = !_isElevated && LaunchAdministrator
                 ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
