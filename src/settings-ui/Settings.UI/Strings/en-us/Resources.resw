@@ -2245,7 +2245,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Don't loc "GitHub", it's the name of a product</comment>
   </data>
   <data name="OOBE_Settings.Content" xml:space="preserve">
-    <value>Open Settings</value>
+    <value>Go to settings</value>
   </data>
   <data name="Oobe_NavViewItem.Content" xml:space="preserve">
     <value>Welcome to PowerToys</value>
