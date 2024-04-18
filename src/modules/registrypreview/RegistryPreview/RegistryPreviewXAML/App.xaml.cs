@@ -31,7 +31,7 @@ namespace RegistryPreview
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnOpened(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             // Keeping commented out but this is invaluable for protocol activation testing.
             // #if DEBUG

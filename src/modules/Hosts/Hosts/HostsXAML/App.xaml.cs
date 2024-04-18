@@ -85,7 +85,7 @@ namespace Hosts
             UnhandledException += App_UnhandledException;
         }
 
-        protected override void OnOpened(LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
