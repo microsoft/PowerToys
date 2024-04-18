@@ -19,7 +19,7 @@
                         x:Uid="Launch_ShortcutGuide"
                         Click="Start_ShortcutGuide_Click"
                         Style="{StaticResource AccentButtonStyle}" />
-                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+                    <Button x:Uid="OOBE_Settings" Click="GoToSettingsButton_Click" />
 
                     <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide" Style="{StaticResource TextButtonStyle}">
                         <TextBlock x:Uid="LearnMore_ShortcutGuide" TextWrapping="Wrap" />
