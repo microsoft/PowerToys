@@ -3883,7 +3883,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Go to settings</value>
   </data>
   <data name="SettingsTooltip.Text" xml:space="preserve">
-    <value>Open PowerToys Settings</value>
+    <value>Go to settings</value>
   </data>
   <data name="QuickAccessTxt.Text" xml:space="preserve">
     <value>Quick access</value>

@@ -290,10 +290,10 @@
     <value>Reload</value>
   </data>
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Settings</value>
+    <value>Go to settings</value>
   </data>
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Settings</value>
+    <value>Go to settings</value>
   </data>
   <data name="ShowOnlyDuplicates.Header" xml:space="preserve">
     <value>Show only duplicates</value>

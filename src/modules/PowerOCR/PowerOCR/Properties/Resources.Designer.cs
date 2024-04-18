@@ -124,7 +124,7 @@ namespace PowerOCR.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings.
+        ///   Looks up a localized string similar to Go to settings.
         /// </summary>
         public static string Settings {
             get {
