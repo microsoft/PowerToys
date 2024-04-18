@@ -159,7 +159,7 @@
   </data>
   <data name="Open_settings" xml:space="preserve">
     <value>Open settings</value>
-    <comment>Tooltip that shows that the user can click this button to open PowerToys settings</comment>
+    <comment>Tooltip that shows that the user can click this button to go to PowerToys settings</comment>
   </data>
   <data name="Pick_color" xml:space="preserve">
     <value>Pick color from screen</value>
