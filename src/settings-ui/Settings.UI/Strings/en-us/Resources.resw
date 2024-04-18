@@ -433,11 +433,11 @@
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Header" xml:space="preserve">
     <value>Shortcut to toggle Easy Mouse.</value>
-    <comment>{Locked="EasyMouse"}</comment>
+    <comment>{Locked="Easy Mouse"}</comment>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Description" xml:space="preserve">
-    <value>Only works if EasyMouse is set to Enabled or Disabled.</value>
-    <comment>{Locked="EasyMouse"}</comment>
+    <value>Only works if Easy Mouse is set to Enabled or Disabled.</value>
+    <comment>{Locked="Easy Mouse"}</comment>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut_Disabled.Content" xml:space="preserve">
     <value>Disabled</value>
@@ -1985,7 +1985,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Run_PositionHeader.Header" xml:space="preserve">
     <value>Preferred monitor position</value>
-    <comment>{Locked="PowerToys Run"} as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_PositionHeader.Description" xml:space="preserve">
     <value>If multiple monitors are in use, PowerToys Run can be launched on the desired monitor</value>
