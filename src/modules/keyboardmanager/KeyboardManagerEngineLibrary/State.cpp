@@ -85,3 +85,21 @@ DWORD State::GetPreviousActionKey()
 {
     return previousActionKey;
 }
+
+// Sets the previous modifier key to check in another shortcut
+void State::SetPreviousModifierKey(const DWORD prevKey)
+{
+    previousModifierKey.emplace_back(prevKey);
+}
+
+// Gets the previous modifier key
+std::vector<DWORD> State::GetPreviousModifierKey()
+{
+    return previousModifierKey;
+}
+
+// Resets the previous modifier key
+void State::ResetPreviousModifierKey()
+{
+    previousModifierKey.clear();
+}

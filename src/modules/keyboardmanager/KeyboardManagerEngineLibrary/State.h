@@ -8,6 +8,8 @@ private:
     std::wstring activatedAppSpecificShortcutTarget;
     // Stores the previous action key
     DWORD previousActionKey = {};
+    // Stores the previous modifier key
+    std::vector<DWORD> previousModifierKey;
 
 public:
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
@@ -34,4 +36,13 @@ public:
     
     // Gets the previous action key
     DWORD GetPreviousActionKey();
+
+    // Sets the previous modifier key to check in another shortcut
+    void SetPreviousModifierKey(const DWORD prevKey);
+
+    // Gets the previous modifier key
+    std::vector<DWORD> GetPreviousModifierKey();
+
+    // Resets the previous modifier key
+    void ResetPreviousModifierKey();
 };

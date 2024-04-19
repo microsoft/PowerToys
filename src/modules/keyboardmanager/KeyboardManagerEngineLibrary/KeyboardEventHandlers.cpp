@@ -241,6 +241,12 @@ namespace KeyboardEventHandlers
                 continue;
             }
 
+            // If action key is pressed check modifier key from shortcut with previous modifier key saved at state
+            if ((data->lParam->vkCode == it->first.GetActionKey()) && !CheckPreviousModifierKey(it, state.GetPreviousModifierKey()))
+            {
+                continue;
+            }
+
             // Check if the remap is to a key or a shortcut
             const bool remapToKey = it->second.targetShortcut.index() == 0;
             const bool remapToShortcut = it->second.targetShortcut.index() == 1;
@@ -567,6 +573,9 @@ namespace KeyboardEventHandlers
                         state.SetPreviousActionKey(it->first.GetActionKey());
                     }
 
+                    // Set the previous modifier key of the invoked shortcut
+                    SetPreviousModifierKey(it, state);
+
                     return 1;
                 }
             }
@@ -701,6 +710,15 @@ namespace KeyboardEventHandlers
                         state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                     }
 
+                    // Reset previous action key
+                    if (state.GetPreviousActionKey() != 0)
+                    {
+                        state.SetPreviousActionKey(0);
+                    }
+
+                    // Reset previous modifier key
+                    state.ResetPreviousModifierKey();
+
                     // key count can be 0 if both shortcuts have same modifiers and the action key is not held down. delete will throw an error if keyEventList is empty
                     if (key_count > 0)
                     {
@@ -802,6 +820,10 @@ namespace KeyboardEventHandlers
                         {
                             state.SetPreviousActionKey(0);
                         }
+                        else if (state.GetPreviousActionKey() != 0 && state.GetPreviousActionKey() != it->first.GetActionKey())
+                        {
+                            continue;
+                        }
 
                         if (remapToShortcut && !it->first.HasChord())
                         {
@@ -883,6 +905,9 @@ namespace KeyboardEventHandlers
                                 it->second.winKeyInvoked = ModifierKey::Disabled;
                                 it->second.isOriginalActionKeyPressed = false;
 
+                                // Reset previous modifier key
+                                state.ResetPreviousModifierKey();
+
                                 // If app specific shortcut has finished invoking, reset the target application
                                 if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
                                 {
@@ -921,6 +946,9 @@ namespace KeyboardEventHandlers
                     // Case 5: If any key apart from the action key or a modifier key in the original shortcut is pressed then revert the keyboard state to just the original modifiers being held down along with the current key press
                     if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                     {
+                        // Reset previous modifier key
+                        state.ResetPreviousModifierKey();
+
                         if (remapToShortcut)
                         {
                             // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps, Shift is pressed. System should not see Shift and Caps pressed together
@@ -1923,5 +1951,126 @@ namespace KeyboardEventHandlers
         UINT res = ii.SendVirtualInput(eventCount, keyEventList.get(), sizeof(INPUT));
 
         return 1;
+    }
+
+    bool CheckPreviousModifierKey(const ShortcutRemapTable::iterator it, std::vector<DWORD> prevkeys)
+    {
+        if (!prevkeys.empty())
+        {
+            bool isKeyFound = false;
+            if (it->first.GetShiftKey() != 0)
+            {
+                for (auto key : prevkeys)
+                {
+                    if (it->first.GetShiftKey() == key)
+                    {
+                        isKeyFound = true;
+                        break;
+                    }
+                    else
+                    {
+                        isKeyFound = false;
+                    }
+                }
+
+                if (!isKeyFound)
+                {
+                    return false;
+                }
+            }
+
+            if (it->first.GetAltKey() != 0)
+            {
+                for (auto key : prevkeys)
+                {
+                    if (it->first.GetAltKey() == key)
+                    {
+                        isKeyFound = true;
+                        break;
+                    }
+                    else
+                    {
+                        isKeyFound = false;
+                    }
+                }
+
+                if (!isKeyFound)
+                {
+                    return false;
+                }
+            }
+
+            if (it->first.GetCtrlKey() != 0)
+            {
+                for (auto key : prevkeys)
+                {
+                    if (it->first.GetCtrlKey() == key)
+                    {
+                        isKeyFound = true;
+                        break;
+                    }
+                    else
+                    {
+                        isKeyFound = false;
+                    }
+                }
+
+                if (!isKeyFound)
+                {
+                    return false;
+                }
+            }
+
+            if (it->first.GetWinKey(it->second.winKeyInvoked) != 0)
+            {
+                for (auto key : prevkeys)
+                {
+                    if (it->first.GetWinKey(it->second.winKeyInvoked) == key)
+                    {
+                        isKeyFound = true;
+                        break;
+                    }
+                    else
+                    {
+                        isKeyFound = false;
+                    }
+                }
+
+                if (!isKeyFound)
+                {
+                    return false;
+                }
+            }
+
+            if (!isKeyFound)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void SetPreviousModifierKey(const ShortcutRemapTable::iterator it, State& state)
+    {
+        if (it->first.GetWinKey(it->second.winKeyInvoked) != 0)
+        {
+            state.SetPreviousModifierKey(it->first.GetWinKey(it->second.winKeyInvoked));
+        }
+
+        if (it->first.GetCtrlKey() != 0)
+        {
+            state.SetPreviousModifierKey(it->first.GetCtrlKey());
+        }
+
+        if (it->first.GetAltKey() != 0)
+        {
+            state.SetPreviousModifierKey(it->first.GetAltKey());
+        }
+
+        if (it->first.GetShiftKey() != 0)
+        {
+            state.SetPreviousModifierKey(it->first.GetShiftKey());
+        }
     }
 }
