@@ -17,8 +17,11 @@ namespace winrt
 // This namespace contains UI methods that are to be used for both KBM windows
 namespace UIHelpers
 {
-    // This method sets focus to the first Type button on the last row of the Grid
-    void SetFocusOnTypeButtonInLastRow(StackPanel& parent, long colCount);
+    // This method sets focus to the first "Select" button on the last row of the Grid of EditKeyboardWindow
+    void SetFocusOnFirstSelectButtonInLastRowOfEditKeyboardWindow(StackPanel& parent, long colCount);
+
+    // This method sets focus to the first "Select" button on the last row of the Grid of EditShortcutsWindow
+    void SetFocusOnFirstSelectButtonInLastRowOfEditShortcutsWindow(StackPanel& parent, long colCount);
 
     RECT GetForegroundWindowDesktopRect();
 
