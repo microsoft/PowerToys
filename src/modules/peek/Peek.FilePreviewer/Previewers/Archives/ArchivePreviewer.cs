@@ -111,9 +111,9 @@ namespace Peek.FilePreviewer.Previewers.Archives
             State = PreviewState.Loaded;
         }
 
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(fileExt);
+            return _supportedFileTypes.Contains(item.Extension);
         }
 
         public void Dispose()

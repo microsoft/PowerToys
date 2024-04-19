@@ -109,18 +109,18 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             _webView = new WebView2();
             _webView.DefaultBackgroundColor = Color.Transparent;
 
-            // Checks if dataSource is a string
-            if (!(dataSource is string filePath))
+            try
             {
-                throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
-            }
+                // Checks if dataSource is a string
+                if (!(dataSource is string filePath))
+                {
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
+                }
 
-            // Check if the file is too big.
-            long fileSize = new FileInfo(filePath).Length;
+                // Check if the file is too big.
+                long fileSize = new FileInfo(filePath).Length;
 
-            if (fileSize < _settings.MaxFileSize)
-            {
-                try
+                if (fileSize < _settings.MaxFileSize)
                 {
                     InitializeIndexFileAndSelectedFile(filePath);
 
@@ -197,28 +197,28 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                         }
                     });
                 }
-                catch (UnauthorizedAccessException e)
+                else
                 {
-                    Logger.LogError(e.Message);
-                    AddTextBoxControl(Resources.Access_Denied_Exception_Message);
+                    Logger.LogInfo("File is too big to display. Showing error message");
+                    AddTextBoxControl(Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture));
                 }
-                catch (Exception e)
-                {
-                    Logger.LogError(e.Message);
-                    string errorMessage = Resources.Exception_Occurred;
-                    errorMessage += e.Message;
-                    errorMessage += "\n" + e.Source;
-                    errorMessage += "\n" + e.StackTrace;
-                    AddTextBoxControl(errorMessage);
-                }
-
-                this.Resize += FormResize;
             }
-            else
+            catch (UnauthorizedAccessException e)
             {
-                Logger.LogInfo("File is too big to display. Showing error message");
-                AddTextBoxControl(Resources.Max_File_Size_Error.Replace("%1", (_settings.MaxFileSize / 1000).ToString(CultureInfo.CurrentCulture), StringComparison.InvariantCulture));
+                Logger.LogError(e.Message);
+                AddTextBoxControl(Resources.Access_Denied_Exception_Message);
             }
+            catch (Exception e)
+            {
+                Logger.LogError(e.Message);
+                string errorMessage = Resources.Exception_Occurred;
+                errorMessage += e.Message;
+                errorMessage += "\n" + e.Source;
+                errorMessage += "\n" + e.StackTrace;
+                AddTextBoxControl(errorMessage);
+            }
+
+            this.Resize += FormResize;
         }
 
         private async void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)

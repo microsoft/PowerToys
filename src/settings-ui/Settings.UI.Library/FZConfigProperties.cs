@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -110,6 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public BoolProperty FancyzonesMakeDraggedWindowTransparent { get; set; }
 
         [JsonPropertyName("fancyzones_allowPopupWindowSnap")]
+        [CmdConfigureIgnore]
         public BoolProperty FancyzonesAllowPopupWindowSnap { get; set; }
 
         [JsonPropertyName("fancyzones_allowChildWindowSnap")]

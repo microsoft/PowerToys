@@ -212,7 +212,7 @@ namespace FancyZonesEditor
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
                 string name = customModel.Name;
-                if (name.StartsWith(defaultNamePrefix, StringComparison.CurrentCulture))
+                if (name != null && name.StartsWith(defaultNamePrefix, StringComparison.CurrentCulture))
                 {
                     if (int.TryParse(name.AsSpan(defaultNamePrefix.Length), out int i))
                     {

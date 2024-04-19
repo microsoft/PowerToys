@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MouseHighlighterProperties
     {
+        [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x48);
 
         [JsonPropertyName("activation_shortcut")]
@@ -20,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty RightButtonClickColor { get; set; }
 
         [JsonPropertyName("highlight_opacity")]
+        [CmdConfigureIgnore]
         public IntProperty HighlightOpacity { get; set; }
 
         [JsonPropertyName("always_color")]
