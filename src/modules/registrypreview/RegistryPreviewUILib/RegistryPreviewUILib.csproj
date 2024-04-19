@@ -23,8 +23,8 @@
     <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
     <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
 
-    <None Include="Assets\**\*.png" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets"/>
-    <None Include="Assets\**\*.ico" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets"/>
+    <None Include="Assets\**\*.png" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets" />
+    <None Include="Assets\**\*.ico" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets" />
   </ItemGroup>
 
 
@@ -33,7 +33,7 @@
     <Content Remove="Assets\**\*.ico" Pack="false" />
   </ItemGroup>
 
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DebugSymbols>true</DebugSymbols>
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
 		<DebugType>full</DebugType>
@@ -62,8 +62,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Update="Assets\RegistryPreview\*">
+		<None Update="Assets\RegistryPreview\*">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
+		</None>
 	</ItemGroup>
 </Project>
