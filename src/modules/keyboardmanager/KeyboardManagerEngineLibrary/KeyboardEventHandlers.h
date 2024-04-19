@@ -86,7 +86,7 @@ namespace KeyboardEventHandlers
     void ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target);
 
     // Function to check previous modifier key with state
-    bool CheckPreviousModifierKey(const ShortcutRemapTable::iterator it, std::vector<DWORD> prevkeys);
+    bool CheckPreviousModifierKey(const ShortcutRemapTable::iterator it, std::vector<DWORD> previousKeys);
 
     // Function to set previous modifier key to state
     void SetPreviousModifierKey(const ShortcutRemapTable::iterator it, State& state);

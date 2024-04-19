@@ -1953,14 +1953,14 @@ namespace KeyboardEventHandlers
         return 1;
     }
 
-    bool CheckPreviousModifierKey(const ShortcutRemapTable::iterator it, std::vector<DWORD> prevkeys)
+    bool CheckPreviousModifierKey(const ShortcutRemapTable::iterator it, std::vector<DWORD> previousKeys)
     {
-        if (!prevkeys.empty())
+        if (!previousKeys.empty())
         {
             bool isKeyFound = false;
             if (it->first.GetShiftKey() != 0)
             {
-                for (auto key : prevkeys)
+                for (auto key : previousKeys)
                 {
                     if (it->first.GetShiftKey() == key)
                     {
@@ -1981,7 +1981,7 @@ namespace KeyboardEventHandlers
 
             if (it->first.GetAltKey() != 0)
             {
-                for (auto key : prevkeys)
+                for (auto key : previousKeys)
                 {
                     if (it->first.GetAltKey() == key)
                     {
@@ -2002,7 +2002,7 @@ namespace KeyboardEventHandlers
 
             if (it->first.GetCtrlKey() != 0)
             {
-                for (auto key : prevkeys)
+                for (auto key : previousKeys)
                 {
                     if (it->first.GetCtrlKey() == key)
                     {
@@ -2023,7 +2023,7 @@ namespace KeyboardEventHandlers
 
             if (it->first.GetWinKey(it->second.winKeyInvoked) != 0)
             {
-                for (auto key : prevkeys)
+                for (auto key : previousKeys)
                 {
                     if (it->first.GetWinKey(it->second.winKeyInvoked) == key)
                     {
