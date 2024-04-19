@@ -153,15 +153,15 @@ std::wstring GetShortcutHumanReadableString(Shortcut const & shortcut, LayoutMap
     }
     if (shortcut.ctrlKey != ModifierKey::Disabled)
     {
-        humanReadableShortcut += keyboardMap.GetKeyName(shortcut.GetCtrlKey()) + L" + ";
+        humanReadableShortcut += keyboardMap.GetKeyName(shortcut.GetCtrlKey(ModifierKey::Both)) + L" + ";
     }
     if (shortcut.altKey != ModifierKey::Disabled)
     {
-        humanReadableShortcut += keyboardMap.GetKeyName(shortcut.GetAltKey()) + L" + ";
+        humanReadableShortcut += keyboardMap.GetKeyName(shortcut.GetAltKey(ModifierKey::Both)) + L" + ";
     }
     if (shortcut.shiftKey != ModifierKey::Disabled)
     {
-        humanReadableShortcut += keyboardMap.GetKeyName(shortcut.GetShiftKey()) + L" + ";
+        humanReadableShortcut += keyboardMap.GetKeyName(shortcut.GetShiftKey(ModifierKey::Both)) + L" + ";
     }
     if (shortcut.actionKey != NULL)
     {
