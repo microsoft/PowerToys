@@ -15,6 +15,8 @@
         var wrap = ([[PT_WRAP]] == 1) ? true : false;
 
         var base64code = "[[PT_CODE]]";
+
+        var stickyScroll = ([[PT_STICKY_SCROLL]] == 1) ? true : false;
         
         // Code taken from https://stackoverflow.com/a/30106551/14774889
         var code = decodeURIComponent(atob(base64code).split('').map(function(c) {
@@ -77,6 +79,7 @@
                     horizontal: 'auto',
 
                 },
+                stickyScroll: {enabled: stickyScroll},
                 wordWrap: (wrap?"on":"off") // Word wraps
             });
             window.onresize = function (){

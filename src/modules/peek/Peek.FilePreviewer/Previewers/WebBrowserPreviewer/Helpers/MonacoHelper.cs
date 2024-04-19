@@ -45,13 +45,13 @@ namespace Peek.FilePreviewer.Previewers
         /// <summary>
         /// Prepares temp html for the previewing
         /// </summary>
-        public static string PreviewTempFile(string fileText, string extension, string tempFolder, bool tryFormat, bool wrapText)
+        public static string PreviewTempFile(string fileText, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll)
         {
             // TODO: check if file is too big, add MaxFileSize to settings
-            return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder, tryFormat, wrapText);
+            return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder, tryFormat, wrapText, stickyScroll);
         }
 
-        private static string InitializeIndexFileAndSelectedFile(string fileContent, string extension, string tempFolder, bool tryFormat, bool wrapText)
+        private static string InitializeIndexFileAndSelectedFile(string fileContent, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll)
         {
             string vsCodeLangSet = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguage(extension);
 
@@ -79,6 +79,7 @@ namespace Peek.FilePreviewer.Previewers
 
             html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_WRAP]]", wrapText ? "1" : "0", StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_STICKY_SCROLL]]", stickyScroll ? "1" : "0", StringComparison.InvariantCulture);
             html = html.Replace("[[PT_THEME]]", theme, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_URL]]", Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
