@@ -240,30 +240,30 @@ namespace Helpers
     }
 
     // Function to set key events for modifier keys: When shortcutToCompare is passed (non-empty shortcut), then the key event is sent only if both shortcut's don't have the same modifier key. When keyToBeReleased is passed (non-NULL), then the key event is sent if either the shortcuts don't have the same modifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
-    void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& winKeyInvoked, LPINPUT keyEventArray, int& index, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare, const DWORD& keyToBeReleased)
+    void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& modifierKeyInvoked, LPINPUT keyEventArray, int& index, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare, const DWORD& keyToBeReleased)
     {
         // If key down is to be sent, send in the order Win, Ctrl, Alt, Shift
         if (isKeyDown)
         {
             // If shortcutToCompare is non-empty, then the key event is sent only if both shortcut's don't have the same modifier key. If keyToBeReleased is non-NULL, then the key event is sent if either the shortcuts don't have the same modifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
-            if (shortcutToBeSent.GetWinKey(winKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetWinKey(winKeyInvoked) != shortcutToCompare.GetWinKey(winKeyInvoked)) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckWinKey(keyToBeReleased)))
+            if (shortcutToBeSent.GetWinKey(modifierKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetWinKey(modifierKeyInvoked) != shortcutToCompare.GetWinKey(modifierKeyInvoked)) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckWinKey(keyToBeReleased)))
             {
-                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetWinKey(winKeyInvoked)), 0, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetWinKey(modifierKeyInvoked)), 0, extraInfoFlag);
                 index++;
             }
-            if (shortcutToBeSent.GetCtrlKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetCtrlKey() != shortcutToCompare.GetCtrlKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckCtrlKey(keyToBeReleased)))
+            if (shortcutToBeSent.GetCtrlKey(modifierKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetCtrlKey(modifierKeyInvoked) != shortcutToCompare.GetCtrlKey(modifierKeyInvoked)) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckCtrlKey(keyToBeReleased)))
             {
-                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetCtrlKey()), 0, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetCtrlKey(modifierKeyInvoked)), 0, extraInfoFlag);
                 index++;
             }
-            if (shortcutToBeSent.GetAltKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetAltKey() != shortcutToCompare.GetAltKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckAltKey(keyToBeReleased)))
+            if (shortcutToBeSent.GetAltKey(modifierKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetAltKey(modifierKeyInvoked) != shortcutToCompare.GetAltKey(modifierKeyInvoked)) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckAltKey(keyToBeReleased)))
             {
-                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetAltKey()), 0, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetAltKey(modifierKeyInvoked)), 0, extraInfoFlag);
                 index++;
             }
-            if (shortcutToBeSent.GetShiftKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetShiftKey() != shortcutToCompare.GetShiftKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckShiftKey(keyToBeReleased)))
+            if (shortcutToBeSent.GetShiftKey(modifierKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetShiftKey(modifierKeyInvoked) != shortcutToCompare.GetShiftKey(modifierKeyInvoked)) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckShiftKey(keyToBeReleased)))
             {
-                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetShiftKey()), 0, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetShiftKey(modifierKeyInvoked)), 0, extraInfoFlag);
                 index++;
             }
         }
@@ -272,24 +272,24 @@ namespace Helpers
         else
         {
             // If shortcutToCompare is non-empty, then the key event is sent only if both shortcut's don't have the same modifier key. If keyToBeReleased is non-NULL, then the key event is sent if either the shortcuts don't have the same modifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
-            if (shortcutToBeSent.GetShiftKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetShiftKey() != shortcutToCompare.GetShiftKey() || shortcutToBeSent.CheckShiftKey(keyToBeReleased)))
+            if (shortcutToBeSent.GetShiftKey(modifierKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetShiftKey(modifierKeyInvoked) != shortcutToCompare.GetShiftKey(modifierKeyInvoked) || shortcutToBeSent.CheckShiftKey(keyToBeReleased)))
             {
-                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetShiftKey()), KEYEVENTF_KEYUP, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetShiftKey(modifierKeyInvoked)), KEYEVENTF_KEYUP, extraInfoFlag);
                 index++;
             }
-            if (shortcutToBeSent.GetAltKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetAltKey() != shortcutToCompare.GetAltKey() || shortcutToBeSent.CheckAltKey(keyToBeReleased)))
+            if (shortcutToBeSent.GetAltKey(modifierKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetAltKey(modifierKeyInvoked) != shortcutToCompare.GetAltKey(modifierKeyInvoked) || shortcutToBeSent.CheckAltKey(keyToBeReleased)))
             {
-                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetAltKey()), KEYEVENTF_KEYUP, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetAltKey(modifierKeyInvoked)), KEYEVENTF_KEYUP, extraInfoFlag);
                 index++;
             }
-            if (shortcutToBeSent.GetCtrlKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetCtrlKey() != shortcutToCompare.GetCtrlKey() || shortcutToBeSent.CheckCtrlKey(keyToBeReleased)))
+            if (shortcutToBeSent.GetCtrlKey(modifierKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetCtrlKey(modifierKeyInvoked) != shortcutToCompare.GetCtrlKey(modifierKeyInvoked) || shortcutToBeSent.CheckCtrlKey(keyToBeReleased)))
             {
-                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetCtrlKey()), KEYEVENTF_KEYUP, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetCtrlKey(modifierKeyInvoked)), KEYEVENTF_KEYUP, extraInfoFlag);
                 index++;
             }
-            if (shortcutToBeSent.GetWinKey(winKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetWinKey(winKeyInvoked) != shortcutToCompare.GetWinKey(winKeyInvoked) || shortcutToBeSent.CheckWinKey(keyToBeReleased)))
+            if (shortcutToBeSent.GetWinKey(modifierKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetWinKey(modifierKeyInvoked) != shortcutToCompare.GetWinKey(modifierKeyInvoked) || shortcutToBeSent.CheckWinKey(keyToBeReleased)))
             {
-                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetWinKey(winKeyInvoked)), KEYEVENTF_KEYUP, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, static_cast<WORD>(shortcutToBeSent.GetWinKey(modifierKeyInvoked)), KEYEVENTF_KEYUP, extraInfoFlag);
                 index++;
             }
         }
