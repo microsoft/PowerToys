@@ -48,6 +48,7 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
         [NotifyPropertyChangedFor(nameof(VideoPreviewer))]
+        [NotifyPropertyChangedFor(nameof(AudioPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
         [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
@@ -56,7 +57,7 @@ namespace Peek.FilePreviewer
         private IPreviewer? previewer;
 
         [ObservableProperty]
-        private string imageInfoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
+        private string infoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
 
         private CancellationTokenSource _cancellationTokenSource = new();
 
@@ -93,6 +94,8 @@ namespace Peek.FilePreviewer
         public IImagePreviewer? ImagePreviewer => Previewer as IImagePreviewer;
 
         public IVideoPreviewer? VideoPreviewer => Previewer as IVideoPreviewer;
+
+        public IAudioPreviewer? AudioPreviewer => Previewer as IAudioPreviewer;
 
         public IBrowserPreviewer? BrowserPreviewer => Previewer as IBrowserPreviewer;
 
@@ -152,17 +155,12 @@ namespace Peek.FilePreviewer
                 Previewer = null;
                 ImagePreview.Visibility = Visibility.Collapsed;
                 VideoPreview.Visibility = Visibility.Collapsed;
+
+                AudioPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
                 DrivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
-
-                ImagePreview.FlowDirection = FlowDirection.LeftToRight;
-                VideoPreview.FlowDirection = FlowDirection.LeftToRight;
-                BrowserPreview.FlowDirection = FlowDirection.LeftToRight;
-                ArchivePreview.FlowDirection = FlowDirection.LeftToRight;
-                DrivePreview.FlowDirection = FlowDirection.LeftToRight;
-                UnsupportedFilePreview.FlowDirection = FlowDirection.LeftToRight;
 
                 return;
             }
@@ -203,7 +201,7 @@ namespace Peek.FilePreviewer
                     await Previewer.LoadPreviewAsync(cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
-                    await UpdateImageTooltipAsync(cancellationToken);
+                    await UpdateTooltipAsync(cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -224,7 +222,7 @@ namespace Peek.FilePreviewer
             VideoPreview.MediaPlayer.Pause();
             VideoPreview.MediaPlayer.Source = null;
             VideoPreview.Source = null;
-
+            AudioPreview.Source = null;
             ImagePreview.Source = null;
             ArchivePreview.Source = null;
             BrowserPreview.Source = null;
@@ -327,7 +325,7 @@ namespace Peek.FilePreviewer
             args.Handled = true;
         }
 
-        private async Task UpdateImageTooltipAsync(CancellationToken cancellationToken)
+        private async Task UpdateTooltipAsync(CancellationToken cancellationToken)
         {
             if (Item == null)
             {
@@ -353,7 +351,7 @@ namespace Peek.FilePreviewer
             string fileSizeFormatted = string.IsNullOrEmpty(fileSize) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileSize", fileSize);
             sb.Append(fileSizeFormatted);
 
-            ImageInfoTooltip = sb.ToString();
+            InfoTooltip = sb.ToString();
         }
     }
 }

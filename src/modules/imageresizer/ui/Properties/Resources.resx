@@ -290,4 +290,10 @@
   <data name="Input_RemoveMetadata" xml:space="preserve">
     <value>Remove meta_data that doesn't affect rendering</value>
   </data>
+  <data name="Image_Sizes" xml:space="preserve">
+    <value>Image sizes</value>
+  </data>
+  <data name="Input_ShrinkOnly.Content" xml:space="preserve">
+    <value>_Make pictures smaller but not larger</value>
+  </data>
 </root>

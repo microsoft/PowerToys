@@ -19,6 +19,7 @@
             <v:BoolValueConverter x:Key="BoolValueConverter" />
             <v:VisibilityBoolConverter x:Key="VisibilityBoolConverter" />
             <v:EnumToIntConverter x:Key="EnumToIntConverter" />
+            <v:AccessTextToTextConverter x:Key="AccessTextToTextConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

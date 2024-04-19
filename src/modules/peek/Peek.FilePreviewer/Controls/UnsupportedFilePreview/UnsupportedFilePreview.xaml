@@ -13,7 +13,7 @@
     mc:Ignorable="d">
 
     <Grid
-        Margin="48"
+        Margin="24"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Center">
 

@@ -70,9 +70,9 @@ namespace Peek.FilePreviewer.Previewers
 
         private ImageSource? highQualityThumbnailPreview;
 
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(fileExt);
+            return _supportedFileTypes.Contains(item.Extension);
         }
 
         public void Dispose()
@@ -346,6 +346,7 @@ namespace Peek.FilePreviewer.Previewers
                 ".wdp",
                 ".ico",  // NEED TO TEST
                 ".thumb", // NEED TO TEST
+                ".webp",
 
                 // Raw types
                 ".arw",

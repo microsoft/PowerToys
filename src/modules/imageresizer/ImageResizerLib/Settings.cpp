@@ -11,7 +11,8 @@ namespace
 {
     const wchar_t c_imageResizerDataFilePath[] = L"\\image-resizer-settings.json";
     const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\ImageResizer";
-    const wchar_t c_enabled[] = L"Enabled";
+    const wchar_t c_enabled[] = L"enabled";
+    const wchar_t c_ImageResizer[] = L"Image Resizer";
 
     unsigned int RegReadInteger(const std::wstring& valueName, unsigned int defaultValue)
     {
@@ -45,6 +46,7 @@ namespace
 
 CSettings::CSettings()
 {
+    generalJsonFilePath = PTSettingsHelper::get_powertoys_general_save_file_location();
     std::wstring oldSavePath = PTSettingsHelper::get_module_save_folder_location(ImageResizerConstants::ModuleOldSaveFolderKey);
     std::wstring savePath = PTSettingsHelper::get_module_save_folder_location(ImageResizerConstants::ModuleSaveFolderKey);
     std::error_code ec;
@@ -62,8 +64,6 @@ void CSettings::Save()
 {
     json::JsonObject jsonData;
 
-    jsonData.SetNamedValue(c_enabled, json::value(settings.enabled));
-
     json::to_file(jsonFilePath, jsonData);
     GetSystemTimeAsFileTime(&lastLoadedTime);
 }
@@ -79,6 +79,32 @@ void CSettings::Load()
     else
     {
         ParseJson();
+    }
+}
+
+void CSettings::RefreshEnabledState()
+{
+    // Load json settings from data file if it is modified in the meantime.
+    FILETIME lastModifiedTime{};
+    if (!(LastModifiedTime(generalJsonFilePath, &lastModifiedTime) &&
+          CompareFileTime(&lastModifiedTime, &lastLoadedGeneralSettingsTime) == 1))
+        return;
+
+    lastLoadedGeneralSettingsTime = lastModifiedTime;
+
+    auto json = json::from_file(generalJsonFilePath);
+    if (!json)
+        return;
+
+    const json::JsonObject& jsonSettings = json.value();
+    try
+    {
+        json::JsonObject modulesEnabledState;
+        json::get(jsonSettings, c_enabled, modulesEnabledState, json::JsonObject{});
+        json::get(modulesEnabledState, c_ImageResizer, settings.enabled, true);
+    }
+    catch (const winrt::hresult_error&)
+    {
     }
 }
 
@@ -106,10 +132,7 @@ void CSettings::ParseJson()
         const json::JsonObject& jsonSettings = json.value();
         try
         {
-            if (json::has(jsonSettings, c_enabled, json::JsonValueType::Boolean))
-            {
-                settings.enabled = jsonSettings.GetNamedBoolean(c_enabled);
-            }
+            // NB: add any new settings here
         }
         catch (const winrt::hresult_error&)
         {

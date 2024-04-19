@@ -29,6 +29,7 @@ videoconference
 
 # USERS
 
+Adoumie
 Advaith
 alekhyareddy
 Aleks
@@ -40,19 +41,23 @@ Bao
 betadele
 betsegaw
 bricelam
+CCcat
 Chinh
 chrdavis
 Chrzan
 clayton
 Coplen
+craigloewen
 crutkas
 damienleroy
 davidegiacometti
 debian
 Delimarsky
 Deondre
+DHowett
 ductdo
 Essey
+ethanfangg
 frankychen
 gabime
 Galaxi
@@ -70,6 +75,7 @@ htcfreek
 Huynh
 Jaswal
 jefflord
+Jordi
 jyuwono
 Kamra
 Kantarci
@@ -86,6 +92,7 @@ martinchrzan
 martinmoene
 Melman
 Mikhayelyan
+msft
 Myrvold
 Nemeth
 nielslaute
@@ -125,6 +132,7 @@ Yuniardi
 yuyoyuppe
 Zoltan
 Zykova
+riri
 
 
 # OTHERS

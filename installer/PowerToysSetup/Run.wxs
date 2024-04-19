@@ -142,7 +142,7 @@
         <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
           <Directory Id="UnitConverterImagesFolder" Name="Images" />
         </Directory>
-        <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspace">
+        <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspaces">
           <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
         </Directory>
         <Directory Id="WindowWalkerPluginFolder" Name="WindowWalker">

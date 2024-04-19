@@ -36,7 +36,7 @@
   <ItemGroup>
     <ClCompile Include="UnitTestsVersionHelper.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Settings.Tests.cpp" />
   </ItemGroup>
