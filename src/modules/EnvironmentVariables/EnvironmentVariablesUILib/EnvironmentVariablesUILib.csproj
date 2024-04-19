@@ -14,7 +14,7 @@
     <ProjectPriFileName>PowerToys.EnvironmentVariablesUILib.pri</ProjectPriFileName>
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <IsPackable>true</IsPackable>
-    <Version>1.0.4</Version>
+    <Version>10.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

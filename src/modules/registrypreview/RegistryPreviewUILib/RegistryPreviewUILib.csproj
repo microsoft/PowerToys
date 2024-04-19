@@ -14,13 +14,24 @@
 
 		<GenerateLibraryLayout>true</GenerateLibraryLayout>
 		<IsPackable>true</IsPackable>
+    <Version>10.0.0</Version>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="true" />
-		<None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
-		<None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
+    <XBFFile Include="$(OutDir)**\*.xbf" />
+    <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
+    <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+
+    <None Include="Assets\**\*.png" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets"/>
+    <None Include="Assets\**\*.ico" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Remove="Assets\**\*.png" Pack="false" />
+    <Content Remove="Assets\**\*.ico" Pack="false" />
+  </ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DebugSymbols>true</DebugSymbols>
