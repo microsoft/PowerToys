@@ -29,6 +29,7 @@ videoconference
 
 # USERS
 
+Adoumie
 Advaith
 alekhyareddy
 Aleks
@@ -53,8 +54,10 @@ davidegiacometti
 debian
 Delimarsky
 Deondre
+DHowett
 ductdo
 Essey
+ethanfangg
 frankychen
 gabime
 Galaxi
@@ -72,6 +75,7 @@ htcfreek
 Huynh
 Jaswal
 jefflord
+Jordi
 jyuwono
 Kamra
 Kantarci
@@ -130,6 +134,7 @@ Zoltan
 Zykova
 Kairu
 Deibisu
+riri
 
 # OTHERS
 

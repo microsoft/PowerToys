@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PeekProperties
     {
+        [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(false, true, false, false, 0x20);
 
         public PeekProperties()

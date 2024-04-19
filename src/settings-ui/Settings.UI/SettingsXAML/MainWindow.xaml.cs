@@ -27,6 +27,9 @@ namespace Microsoft.PowerToys.Settings.UI
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
+            App.ThemeService.ThemeChanged += OnThemeChanged;
+            App.ThemeService.ApplyTheme();
+
             ShellPage.SetElevationStatus(App.IsElevated);
             ShellPage.SetIsUserAnAdmin(App.IsUserAnAdmin);
 
@@ -36,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("Assets\\Settings\\icon.ico");
 
-            var placement = Utils.DeserializePlacementOrDefault(hWnd);
+            var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
             if (createHidden)
             {
                 placement.ShowCmd = NativeMethods.SW_HIDE;
@@ -202,7 +205,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private void Window_Closed(object sender, WindowEventArgs args)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            Utils.SerializePlacement(hWnd);
+            WindowHelper.SerializePlacement(hWnd);
 
             if (App.GetOobeWindow() == null)
             {
@@ -213,6 +216,8 @@ namespace Microsoft.PowerToys.Settings.UI
                 args.Handled = true;
                 NativeMethods.ShowWindow(hWnd, NativeMethods.SW_HIDE);
             }
+
+            App.ThemeService.ThemeChanged -= OnThemeChanged;
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -221,9 +226,14 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 this.Activated -= Window_Activated;
                 var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-                var placement = Utils.DeserializePlacementOrDefault(hWnd);
+                var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
                 NativeMethods.SetWindowPlacement(hWnd, ref placement);
             }
+        }
+
+        private void OnThemeChanged(object sender, ElementTheme theme)
+        {
+            WindowHelper.SetTheme(this, theme);
         }
 
         internal void EnsurePageIsSelected()

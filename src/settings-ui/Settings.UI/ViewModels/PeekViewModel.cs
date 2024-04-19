@@ -173,6 +173,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SourceCodeStickyScroll
+        {
+            get => _peekPreviewSettings.SourceCodeStickyScroll.Value;
+            set
+            {
+                if (_peekPreviewSettings.SourceCodeStickyScroll.Value != value)
+                {
+                    _peekPreviewSettings.SourceCodeStickyScroll.Value = value;
+                    OnPropertyChanged(nameof(SourceCodeStickyScroll));
+                    SavePreviewSettings();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Using InvariantCulture as this is an IPC message

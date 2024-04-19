@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid ColumnSpacing="24" RowSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -18,19 +18,17 @@
 
         <IconSourceElement
             Grid.Row="0"
-            Margin="3"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Foreground="{StaticResource TextFillColorSecondaryBrush}">
             <IconSourceElement.IconSource>
-                <FontIconSource FontSize="135" Glyph="&#xE783;" />
+                <FontIconSource FontSize="128" Glyph="&#xE783;" />
             </IconSourceElement.IconSource>
         </IconSourceElement>
 
         <TextBlock
             x:Uid="FailedFallbackTextBlock"
             Grid.Row="1"
-            Margin="3"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Foreground="{StaticResource TextFillColorSecondaryBrush}"
@@ -39,7 +37,6 @@
         <HyperlinkButton
             x:Uid="FailedFallbackReportBugHyperlinkButton"
             Grid.Row="2"
-            Margin="3"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             NavigateUri="https://aka.ms/powerToysReportBug" />
