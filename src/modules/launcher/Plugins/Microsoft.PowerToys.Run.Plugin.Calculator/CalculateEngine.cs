@@ -53,16 +53,18 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 {
                     coefficient = 1;
                 }
-                else{
-                    coefficient = int.Parse(match.Groups["n"].Value.TrimEnd('*').Trim());
+
+                else {
+                    coefficient = int.Parse(match.Groups["n"].Value.TrimEnd('*').Trim(), IFormatProvider);
                 }
+
                 if (Math.Abs(coefficient % 2) == 1)
                 {
                     error = "tan(n*pi/2) is undefined for odd values of n.";
                     return default;
                 }
             }
-            
+
             // mages has quirky log representation
             // mage has log == ln vs log10
             input = input.
