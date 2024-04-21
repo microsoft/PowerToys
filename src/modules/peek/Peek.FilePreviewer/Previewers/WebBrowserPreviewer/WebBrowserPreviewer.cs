@@ -15,6 +15,7 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Interfaces;
+using MonacoHelperCommon = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -129,10 +130,10 @@ namespace Peek.FilePreviewer.Previewers
                     {
                         string raw = await Task.Run(() => ReadHelper.Read(File.Path.ToString()));
                         (Preview, string vsCodeLangSet, string fileContent) = MonacoHelper.PreviewTempFile(raw, File.Extension, _previewSettings.SourceCodeTryFormat);
-                        _javascriptCommandQueue.Enqueue("editor.setValue(\"" + fileContent.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r") + "\");");
-                        _javascriptCommandQueue.Enqueue("monaco.editor.setModelLanguage(editor.getModel(), \"" + vsCodeLangSet + "\");");
-                        _javascriptCommandQueue.Enqueue("editor.updateOptions({\"wordWrap\": \"" + (_previewSettings.SourceCodeWrapText ? "on" : "off") + "\"});");
-                        _javascriptCommandQueue.Enqueue("editor.updateOptions({\"theme\": \"" + (ThemeManager.GetWindowsBaseColor().Equals("dark", StringComparison.OrdinalIgnoreCase) ? "vs-dark" : "vs") + "\"});");
+                        _javascriptCommandQueue.Enqueue(MonacoHelperCommon.GetSetContentCommand(fileContent));
+                        _javascriptCommandQueue.Enqueue(MonacoHelperCommon.GetSetLanguageCommand(vsCodeLangSet));
+                        _javascriptCommandQueue.Enqueue(MonacoHelperCommon.GetSetWordWrapCommand(_previewSettings.SourceCodeWrapText));
+                        _javascriptCommandQueue.Enqueue(MonacoHelperCommon.GetSetThemeCommand(ThemeManager.GetWindowsBaseColor().Equals("dark", StringComparison.OrdinalIgnoreCase) ? MonacoHelperCommon.DefaultDarkTheme : MonacoHelperCommon.DefaultLightTheme));
                     }
                     else if (isMarkdown)
                     {

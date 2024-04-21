@@ -213,10 +213,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             if (!_hasNavigated)
             {
                 await _gatherFileInformationTask.ConfigureAwait(true);
-                await _webView.CoreWebView2.ExecuteScriptAsync("editor.setValue(\"" + _fileContent.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r") + "\");").ConfigureAwait(true);
-                await _webView.CoreWebView2.ExecuteScriptAsync("monaco.editor.setModelLanguage(editor.getModel(), \"" + _vsCodeLangSet + "\");").ConfigureAwait(true);
-                await _webView.CoreWebView2.ExecuteScriptAsync("editor.updateOptions({\"wordWrap\": \"" + (Settings.Wrap ? "on" : "off") + "\"});").ConfigureAwait(true);
-                await _webView.CoreWebView2.ExecuteScriptAsync("editor.updateOptions({\"theme\": \"" + (Settings.GetTheme() == "dark" ? "vs-dark" : "vs") + "\"});").ConfigureAwait(true);
+                await _webView.CoreWebView2.ExecuteScriptAsync(MonacoHelper.GetSetContentCommand(_fileContent)).ConfigureAwait(true);
+                await _webView.CoreWebView2.ExecuteScriptAsync(MonacoHelper.GetSetLanguageCommand(_vsCodeLangSet)).ConfigureAwait(true);
+                await _webView.CoreWebView2.ExecuteScriptAsync(MonacoHelper.GetSetWordWrapCommand(Settings.Wrap)).ConfigureAwait(true);
+                await _webView.CoreWebView2.ExecuteScriptAsync(MonacoHelper.GetSetThemeCommand(Settings.GetTheme() == "dark" ? MonacoHelper.DefaultDarkTheme : MonacoHelper.DefaultLightTheme)).ConfigureAwait(true);
 
                 Logger.LogInfo("Setting WebView2 settings");
                 CoreWebView2Settings settings = (sender as WebView2).CoreWebView2.Settings;
