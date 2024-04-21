@@ -53,9 +53,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 {
                     coefficient = 1;
                 }
-
-                else {
-                    coefficient = int.Parse(match.Groups["n"].Value.TrimEnd('*').Trim(), IFormatProvider);
+                else
+                {
+                    coefficient = int.Parse(match.Groups["n"].Value.TrimEnd('*').Trim(), cultureInfo);
                 }
 
                 if (Math.Abs(coefficient % 2) == 1)
