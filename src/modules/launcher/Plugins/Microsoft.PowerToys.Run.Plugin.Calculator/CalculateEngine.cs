@@ -21,7 +21,36 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         });
 
         public const int RoundingDigits = 10;
+        
+        private static bool ContainsTanAndEvaluateSinCos(string input, out dynamic result)
+        {
+            result = null;
+            if (input.IndexOf("tan", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                try
+                    {
+                        var sinCosTerm = new Regex(@"tan\((.*?)\)", RegexOptions.IgnoreCase).Match(input).Groups[1].Value;
+                        var sinValue = Math.Sin(Convert.ToDouble(sinCosTerm));
+                        var cosValue = Math.Cos(Convert.ToDouble(sinCosTerm));
 
+                        if (cosValue == 0)
+                        {
+                            result = "Not Defined";
+                            return true;
+                        }
+                        else
+                        {
+                            result = sinValue / cosValue;
+                            return true;
+                        }
+                    }
+            catch
+                {
+                    // Ignore any exceptions
+                }
+        }
+        return false;
+    }
         /// <summary>
         /// Interpret
         /// </summary>
@@ -43,6 +72,26 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return default;
             }
 
+            // Check for tan and evaluate sin/cos
+            if (ContainsTanAndEvaluateSinCos(input, out var tanResult))
+            {
+                if (tanResult is string errorMessage)
+                {
+                    error = errorMessage;
+                    return default;
+                }
+                else
+                {
+                    var decimalResult = Convert.ToDecimal(tanResult, cultureInfo);
+                    var roundedResult = Round(decimalResult);
+                    return new CalculateResult
+                    {
+                        Result = decimalResult,
+                        RoundedResult = roundedResult
+                    };
+                }
+            }
+            
             // mages has quirky log representation
             // mage has log == ln vs log10
             input = input.
