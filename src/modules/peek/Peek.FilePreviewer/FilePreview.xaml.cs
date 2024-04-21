@@ -162,15 +162,6 @@ namespace Peek.FilePreviewer
                 DrivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
 
-                ImagePreview.FlowDirection = FlowDirection.LeftToRight;
-                VideoPreview.FlowDirection = FlowDirection.LeftToRight;
-
-                AudioPreview.FlowDirection = FlowDirection.LeftToRight;
-                BrowserPreview.FlowDirection = FlowDirection.LeftToRight;
-                ArchivePreview.FlowDirection = FlowDirection.LeftToRight;
-                DrivePreview.FlowDirection = FlowDirection.LeftToRight;
-                UnsupportedFilePreview.FlowDirection = FlowDirection.LeftToRight;
-
                 return;
             }
 
@@ -231,7 +222,6 @@ namespace Peek.FilePreviewer
             VideoPreview.MediaPlayer.Pause();
             VideoPreview.MediaPlayer.Source = null;
             VideoPreview.Source = null;
-
             AudioPreview.Source = null;
             ImagePreview.Source = null;
             ArchivePreview.Source = null;

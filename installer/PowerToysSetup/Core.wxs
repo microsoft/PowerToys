@@ -59,8 +59,9 @@
                          Type="integer"
                          Value="1"
                          KeyPath="yes"/>
-                <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
-                <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
+                <!-- Don't fail installation because of DSC. Files are marked as not vital. -->
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
                 <RemoveFolder Id="RemoveThisFolder" On="uninstall" />
                 <RemoveFolder Id="RemovePowerToysDscVerFolder" Directory="PowerToysDscVerFolder" On="uninstall" />
                 <RemoveFolder Id="RemovePowerToysDscFolder" Directory="PowerToysDscFolder" On="uninstall" />
@@ -79,8 +80,9 @@
           <Directory Id="PowerToysDscFolder" Name="Microsoft.PowerToys.Configure">
             <Directory Id="PowerToysDscVerFolder" Name="$(var.Version)">
               <Component Id="PowerToysDSC" Win64="yes" Guid="C52AECA0-DA73-49B8-BB49-31EF6640FF1F">
-                <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
-                <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
+                <!-- Don't fail installation because of DSC. Files are marked as not vital. -->
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
               </Component>
             </Directory>
           </Directory>

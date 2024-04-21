@@ -86,6 +86,7 @@
       $(LocalAppData)\Microsoft\Windows\INetCache\**;
       A:\;
       E:\;
+      $(windir)\**;
     </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
 
     <!-- Unit tests of low-priv processes, eg the preview handler tests, may log to this location. -->
