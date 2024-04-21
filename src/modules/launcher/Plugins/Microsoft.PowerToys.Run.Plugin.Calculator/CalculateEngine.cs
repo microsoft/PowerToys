@@ -43,6 +43,26 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return default;
             }
 
+            // Check for tan(n*pi/2) where n is any odd integer
+            var tanPattern = @"tan\(\s*(?<n>-?\d+\s*\*)\s*pi\s*/\s*2\s*\)";
+            var match = Regex.Match(input, tanPattern, RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                int coefficient;
+                if (string.IsNullOrWhiteSpace(match.Groups["n"].Value))
+                {
+                    coefficient = 1;
+                }
+                else{
+                    coefficient = int.Parse(match.Groups["n"].Value.TrimEnd('*').Trim());
+                }
+                if (Math.Abs(coefficient % 2) == 1)
+                {
+                    error = "tan(n*pi/2) is undefined for odd values of n.";
+                    return default;
+                }
+            }
+            
             // mages has quirky log representation
             // mage has log == ln vs log10
             input = input.
