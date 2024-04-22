@@ -49,9 +49,7 @@
                                 Style="{StaticResource BodyStrongTextBlockStyle}"
                                 Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
                                 Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
+                            <TextBlock Margin="4,0,0,0" Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
