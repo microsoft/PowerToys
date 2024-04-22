@@ -40,6 +40,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("=5 / 0", "Expression contains division by zero")]
         [DataRow("10+(8*9)/0+7", "Expression contains division by zero")]
         [DataRow("10+(8*9)/0*7", "Expression contains division by zero")]
+        [DataRow("tan(pi/2)", "tan(pi/2) is undefined for odd values of n.")]
+        [DataRow("tan(3*pi/2)", "tan(n*pi/2) is undefined for odd values of n.")]
         public void ErrorResultOnInvalidKeywordQuery(string typedString, string expectedResult)
         {
             Query expectedQuery = new(typedString, "=");
@@ -64,6 +66,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("5 / 0")]
         [DataRow("10+(8*9)/0+7")]
         [DataRow("10+(8*9)/0*7")]
+        [DataRow("tan(pi/2)")]
         public void NoResultOnInvalidGlobalQuery(string typedString)
         {
             // Setup
