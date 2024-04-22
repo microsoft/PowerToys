@@ -34,7 +34,7 @@
                         </Grid.RowDefinitions>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{Binding Name}" />
                         <StackPanel Grid.Row="1" Orientation="Horizontal">
-                            <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                            <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
                             <TextBlock
                                 Margin="4,0,0,0"
                                 Style="{StaticResource BodyStrongTextBlockStyle}"
