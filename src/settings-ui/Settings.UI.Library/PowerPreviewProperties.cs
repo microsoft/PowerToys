@@ -133,6 +133,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("monaco-previewer-max-file-size")]
         public IntProperty MonacoPreviewMaxFileSize { get; set; }
 
+        private bool monacoPreviewStickyScroll = true;
+
+        [JsonPropertyName("monaco-previewer-sticky-scroll")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool MonacoPreviewStickyScroll
+        {
+            get => monacoPreviewStickyScroll;
+            set
+            {
+                if (value != monacoPreviewStickyScroll)
+                {
+                    LogTelemetryEvent(value);
+                    monacoPreviewStickyScroll = value;
+                }
+            }
+        }
+
         private bool enablePdfPreview;
 
         [JsonPropertyName("pdf-previewer-toggle-setting")]

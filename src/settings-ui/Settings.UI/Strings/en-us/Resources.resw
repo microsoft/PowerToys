@@ -4056,4 +4056,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
     <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Sticky_Scroll.Content" xml:space="preserve">
+    <value>Enable sticky scroll</value>
+  </data>
+  <data name="Peek_SourceCode_StickyScroll.Content" xml:space="preserve">
+    <value>Enable sticky scroll</value>
+  </data>
 </root>
