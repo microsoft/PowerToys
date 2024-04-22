@@ -59,7 +59,10 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -995,6 +998,9 @@
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
     <value>Restore</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ButtonSelectFolder.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Select folder</value>
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Text" xml:space="preserve">
     <value>Select folder</value>
