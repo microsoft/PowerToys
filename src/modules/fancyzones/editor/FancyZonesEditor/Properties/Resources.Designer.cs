@@ -554,8 +554,8 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to 
         ///     - Ctrl+Tab to switch focus between dialog and zones.
-        ///     - [Shift]+Arrows to resize the focsued zone by 10px (5px per edge).
-        ///     - Ctrl+[Shift]+Arrows to resize the focsued zone by 2px (1px per edge).
+        ///     - [Shift]+Arrows to resize the focused zone by 10px (5px per edge).
+        ///     - Ctrl+[Shift]+Arrows to resize the focused zone by 2px (1px per edge).
         ///     - Arrows to move the focused zone by 10px.
         ///     - Ctrl+Arrows to move the focused zone by 1px..
         /// </summary>
