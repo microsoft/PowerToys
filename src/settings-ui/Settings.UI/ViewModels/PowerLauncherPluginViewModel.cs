@@ -196,6 +196,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => !Disabled && !IsGlobal && string.IsNullOrWhiteSpace(ActionKeyword);
         }
 
+        // The Badge is shown in case of ANY error event, but NEVER when the plugin is disabled.
+        // Logic = !disabled && (errorA or errorB or errorC...)
+        // Current count of possible error events: 1 (NotAccessible)
         public bool ShowBadgeOnPluginSettingError
         {
             get => !Disabled && ShowNotAccessibleWarning;
