@@ -37,16 +37,6 @@
         </Grid>
         <StackPanel Margin="16" FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
 
-            <StackPanel Margin="0,8,0,0">
-                <TextBlock
-                    Margin="0,8,0,0"
-                    Focusable="True"
-                    TextWrapping="Wrap">
-                    <Run FontWeight="Bold" Text="{x:Static props:Resources.KeyboardControlsName}" />
-                    <Run Text="{x:Static props:Resources.KeyboardControlsDescriptionCanvas}" />
-                </TextBlock>
-            </StackPanel>
-
             <local:ClickAutomationEventButton
                 x:Name="newZoneButton"
                 Width="64"
@@ -64,6 +54,17 @@
                 Style="{StaticResource AccentButtonStyle}"
                 TabIndex="0"
                 ToolTip="{x:Static props:Resources.Add_zone}" />
+
+            <TextBlock
+                Margin="0,16,0,0"
+                Focusable="True"
+                FontSize="12"
+                TextWrapping="Wrap">
+                <Run FontWeight="SemiBold" Text="{x:Static props:Resources.KeyboardControlsName}" />
+                <Run Foreground="{DynamicResource SecondaryForegroundBrush}" Text="{x:Static props:Resources.KeyboardControlsDescriptionCanvas}" />
+            </TextBlock>
+
+
 
             <Grid Margin="0,24,0,-36">
                 <Grid.ColumnDefinitions>
