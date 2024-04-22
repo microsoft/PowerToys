@@ -63,7 +63,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var index = ViewModel.ColorFormats.IndexOf(color);
             if (index > 0)
             {
-                ViewModel.ColorFormats.Move(index, index - 1);
+                ViewModel.ColorFormats.Move(index, --index);
+                SetColorFormatsFocus(index);
             }
         }
 
@@ -78,7 +79,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var index = ViewModel.ColorFormats.IndexOf(color);
             if (index < ViewModel.ColorFormats.Count - 1)
             {
-                ViewModel.ColorFormats.Move(index, index + 1);
+                ViewModel.ColorFormats.Move(index, ++index);
+                SetColorFormatsFocus(index);
             }
         }
 
@@ -95,7 +97,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
             dialog.PrimaryButtonClick += (s, args) =>
             {
-                ViewModel.DeleteModel(color);
+                var deleteIndex = ViewModel.DeleteModel(color);
+                SetColorFormatsFocus(deleteIndex < ViewModel.ColorFormats.Count ? deleteIndex : ViewModel.ColorFormats.Count - 1);
             };
             var result = await dialog.ShowAsync();
         }
@@ -105,6 +108,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatModel newColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
             ViewModel.AddNewColorFormat(newColorFormat.Name, newColorFormat.Format, true);
             ColorFormatDialog.Hide();
+            SetColorFormatsFocus(0);
         }
 
         private void Update()
@@ -158,6 +162,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 modifiedColorFormat.Name = oldProperties.Key;
                 modifiedColorFormat.Format = oldProperties.Value;
             }
+        }
+
+        private void SetColorFormatsFocus(int index)
+        {
+            ColorFormats.UpdateLayout();
+            var colorFormat = ColorFormats.ContainerFromIndex(index) as ContentPresenter;
+            colorFormat.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
         }
     }
 }
