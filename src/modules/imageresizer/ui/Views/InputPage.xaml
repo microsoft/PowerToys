@@ -51,7 +51,6 @@
                                 Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
                             <TextBlock
                                 Margin="4,0,0,0"
-                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
                         </StackPanel>
                     </Grid>
