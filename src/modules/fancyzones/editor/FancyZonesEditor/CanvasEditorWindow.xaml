@@ -35,9 +35,7 @@
                 Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
                 CornerRadius="1.5" />
         </Grid>
-        <StackPanel
-            Margin="16"
-            FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
+        <StackPanel Margin="16" FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
 
             <StackPanel Margin="0,8,0,0">
                 <TextBlock
