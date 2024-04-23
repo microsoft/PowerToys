@@ -664,7 +664,8 @@
                                 AutomationProperties.Name="{x:Static props:Resources.Show_Space_Zones}"
                                 IsOn="{Binding ShowSpacing}"
                                 OffContent=""
-                                OnContent="">
+                                OnContent=""
+                                KeyDown="SpaceAroundSetting_KeyDown">
                                 <ui:ToggleSwitch.Resources>
                                     <sys:Double x:Key="ToggleSwitchThemeMinWidth">0</sys:Double>
                                 </ui:ToggleSwitch.Resources>

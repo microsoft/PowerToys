@@ -662,5 +662,14 @@ namespace FancyZonesEditor
                 MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Vertical);
             }
         }
+
+        private void SpaceAroundSetting_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Making sure that pressing Enter while SpaceAroundSetting ToggleSwitch is focused will not close the edit dialog.
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+            }
+        }
     }
 }
