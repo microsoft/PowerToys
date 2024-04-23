@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  <Import Condition="exists('..\..\..\Version.props')" Project="..\..\..\Version.props" />
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -14,7 +14,6 @@
     <ProjectPriFileName>PowerToys.EnvironmentVariablesUILib.pri</ProjectPriFileName>
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <IsPackable>true</IsPackable>
-    <Version>10.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,7 +49,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />

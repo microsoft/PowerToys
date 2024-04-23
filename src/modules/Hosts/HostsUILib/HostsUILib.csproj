@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  <Import Condition="exists('..\..\..\Version.props')" Project="..\..\..\Version.props" />
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -15,7 +15,6 @@
 
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <IsPackable>true</IsPackable>
-    <Version>10.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
