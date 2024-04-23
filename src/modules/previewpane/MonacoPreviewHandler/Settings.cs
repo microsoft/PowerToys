@@ -78,6 +78,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         }
 
         /// <summary>
+        /// Gets a value indicating whether sticky scroll should be enabled. Set by PT settings.
+        /// </summary>
+        public bool StickyScroll
+        {
+            get
+            {
+                try
+                {
+                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.MonacoPreviewStickyScroll;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Couldn't read the settings.
+                    // Assume default of true.
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the color of the window background.
         /// </summary>
         public static Color BackgroundColor

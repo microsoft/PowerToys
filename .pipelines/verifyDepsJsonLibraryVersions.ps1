@@ -15,7 +15,8 @@ Param(
 $referencedFileVersionsPerDll = @{}
 $totalFailures = 0
 
-Get-ChildItem $targetDir -Recurse -Filter *.deps.json | ForEach-Object {
+Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude UITests-FancyZones* | ForEach-Object {
+    # Temporarily exclude FancyZones UI tests because of Appium.WebDriver dependencies
     $depsJsonFullFileName = $_.FullName
     $depsJsonFileName = $_.Name
     $depsJson = Get-Content $depsJsonFullFileName | ConvertFrom-Json

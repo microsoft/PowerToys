@@ -63,9 +63,6 @@ public:
 
     static HRESULT s_CreateInstance(_In_opt_ IUnknown* punkOuter, _In_ REFIID riid, _Outptr_ void** ppv);
 
-    static bool SetEnabled(_In_ bool enabled);
-    static bool IsEnabled();
-
 private:
     ~CPowerRenameMenu();
 

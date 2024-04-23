@@ -154,9 +154,9 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
             });
         }
 
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(fileExt);
+            return _supportedFileTypes.Contains(item.Extension);
         }
 
         private static readonly HashSet<string> _supportedFileTypes = new()

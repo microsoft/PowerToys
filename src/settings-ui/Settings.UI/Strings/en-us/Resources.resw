@@ -59,7 +59,10 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -995,6 +998,9 @@
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
     <value>Restore</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ButtonSelectFolder.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Select folder</value>
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Text" xml:space="preserve">
     <value>Select folder</value>
@@ -3514,12 +3520,12 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Host File Editor</value>
-    <comment>"Host File Editor" is a product name</comment>
+    <value>Launch Hosts File Editor</value>
+    <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Host File Editor</value>
-    <comment>"Host File Editor" is a product name</comment>
+    <value>Launch Hosts File Editor</value>
+    <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
     <value>Position of additional content</value>
@@ -4055,5 +4061,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GPO_SomeThumbnailProvidersAreManaged.Title" xml:space="preserve">
     <value>The enabled state of some thumbnail handlers is managed by your organization.</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Sticky_Scroll.Content" xml:space="preserve">
+    <value>Enable sticky scroll</value>
+  </data>
+  <data name="Peek_SourceCode_StickyScroll.Content" xml:space="preserve">
+    <value>Enable sticky scroll</value>
   </data>
 </root>

@@ -8,24 +8,39 @@ using namespace Windows::UI::Xaml::Automation::Peers;
 
 namespace UIHelpers
 {
-    // This method sets focus to the first Type button on the last row of the Grid
-    void SetFocusOnTypeButtonInLastRow(StackPanel& parent, long colCount)
+    // This method sets focus to the first "Select" button on the last row of the Grid of EditKeyboardWindow
+    void SetFocusOnFirstSelectButtonInLastRowOfEditKeyboardWindow(StackPanel& parent, long colCount)
     {
         // First element in the last row (StackPanel)
         auto lastHotKeyLine = parent.Children().GetAt(parent.Children().Size() - 1).as<StackPanel>();
 
-        // Get "To" Column
-        auto toColumn = lastHotKeyLine.Children().GetAt(2).as<StackPanel>();
+        // Get "From" Column
+        auto fromColumn = lastHotKeyLine.Children().GetAt(0).as<StackPanel>();
 
-        // Get first line in "To" Column
-        auto firstLineIntoColumn = toColumn.Children().GetAt(0).as<StackPanel>();
-
-        // Get Type Button from the first line
-        Button typeButton = firstLineIntoColumn.Children().GetAt(1).as<Button>();
-        if (typeButton != nullptr)
+        // Get "Select" Button from the "From" Column
+        Button selectButton = fromColumn.Children().GetAt(0).as<Button>();
+        if (selectButton != nullptr)
         {
             // Set programmatic focus on the button
-            typeButton.Focus(FocusState::Programmatic);
+            selectButton.Focus(FocusState::Programmatic);
+        }
+    }
+
+    // This method sets focus to the first "Select" button on the last row of the Grid of EditShortcutsWindow
+    void SetFocusOnFirstSelectButtonInLastRowOfEditShortcutsWindow(StackPanel& parent, long colCount)
+    {
+        // First element in the last row (StackPanel)
+        auto lastHotKeyLine = parent.Children().GetAt(parent.Children().Size() - 1).as<StackPanel>();
+
+        // Get "From" Column
+        auto fromColumn = lastHotKeyLine.Children().GetAt(0).as<StackPanel>();
+
+        StackPanel selectButtonTry = fromColumn.Children().GetAt(1).as<StackPanel>();
+        Button selectButtonTry2 = selectButtonTry.Children().GetAt(1).as<Button>();
+        if (selectButtonTry2 != nullptr)
+        {
+            // Set programmatic focus on the button
+            selectButtonTry2.Focus(FocusState::Programmatic);
         }
     }
 

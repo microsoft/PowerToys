@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                 _utilities.Add(new Utility(
                     UtilityKey.PowerOCR,
                     Resources.Text_Extractor,
-                    generalSettings.Enabled.PowerOCR,
+                    generalSettings.Enabled.PowerOcr,
                     (_) =>
                     {
                         using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent());
@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                                 case UtilityKey.ColorPicker: u.Enable(generalSettings.Enabled.ColorPicker); break;
                                 case UtilityKey.FancyZones: u.Enable(generalSettings.Enabled.FancyZones); break;
                                 case UtilityKey.Hosts: u.Enable(generalSettings.Enabled.Hosts); break;
-                                case UtilityKey.PowerOCR: u.Enable(generalSettings.Enabled.PowerOCR); break;
+                                case UtilityKey.PowerOCR: u.Enable(generalSettings.Enabled.PowerOcr); break;
                                 case UtilityKey.MeasureTool: u.Enable(generalSettings.Enabled.MeasureTool); break;
                                 case UtilityKey.ShortcutGuide: u.Enable(generalSettings.Enabled.ShortcutGuide); break;
                                 case UtilityKey.RegistryPreview: u.Enable(generalSettings.Enabled.RegistryPreview); break;

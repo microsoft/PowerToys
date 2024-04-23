@@ -183,6 +183,12 @@ IFACEMETHODIMP QoiThumbnailProvider::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_A
         }
     }
 
+    // ensure releasing the stream (not all if branches contain it)
+    if (m_pStream)
+    {
+        m_pStream->Release();
+        m_pStream = NULL;
+    }
 
     return S_OK;
 }
