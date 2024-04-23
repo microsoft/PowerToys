@@ -44,9 +44,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             }
 
             // Check for tan(n*pi/2) where n is any odd integer
-            var tanPattern = @"tan\(\s*(?<n>-?\d+\s*\*)\s*pi\s*/\s*2\s*\)";
-            var match = Regex.Match(input, tanPattern, RegexOptions.IgnoreCase);
-            if (match.Success)
+            if (new Regex("tan\(\s*(?<n>-?\d+\s*\*)\s*pi\s*/\s*2\s*\)").Match(input).Success)
             {
                 int coefficient;
                 if (string.IsNullOrWhiteSpace(match.Groups["n"].Value))
