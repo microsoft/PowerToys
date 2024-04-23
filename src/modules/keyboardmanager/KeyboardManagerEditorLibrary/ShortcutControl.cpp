@@ -496,11 +496,11 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         {
             // not sure why by we need to add the current item in here, so we have it even if does not change.
             auto newShortcut = std::get<Shortcut>(newKeys);
-            shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), newShortcut }, std::wstring(targetAppName)));
+            shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ Shortcut(), newShortcut }, std::wstring(targetAppName) });
         }
         else
         {
-            shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
+            shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName) });
         }
 
         KeyDropDownControl::AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 0, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects, shortcutRemapBuffer, row, targetAppTextBox, false, false);
@@ -526,7 +526,7 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     else
     {
         // Initialize both shortcuts as empty shortcuts
-        shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
+        shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName) });
 
         KeyDropDownControl::AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 0, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects, shortcutRemapBuffer, row, targetAppTextBox, false, false);
 
@@ -666,7 +666,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_DO_NOTHING)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_CLOSE)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_TERMINATE)));
-    
+
     runProgramAlreadyRunningAction.SelectedIndex(0);
 
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramElevationTypeCombo, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_ELEVATION), runProgramLabelWidth).as<StackPanel>());
@@ -1033,7 +1033,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     auto onReleaseSpace = [&keyboardManagerState,
                            allowChordSwitch] {
-        
+
         keyboardManagerState.AllowChord = !keyboardManagerState.AllowChord;
         allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
     };
