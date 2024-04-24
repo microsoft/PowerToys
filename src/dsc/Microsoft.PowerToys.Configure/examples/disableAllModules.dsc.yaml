@@ -1,6 +1,7 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 properties:
   resources:
-    - resource: PowerToysConfigure
+    - resource: Microsoft.PowerToys.Configure/PowerToysConfigure
       directives:
         description: Configure PowerToys
       settings:

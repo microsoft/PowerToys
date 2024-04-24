@@ -6,10 +6,11 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
-    internal sealed class Utils
+    internal sealed class WindowHelper
     {
         private static string _placementPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\PowerToys\settings-placement.json");
 
@@ -43,6 +44,14 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             }
             catch (Exception)
             {
+            }
+        }
+
+        public static void SetTheme(Window window, ElementTheme theme)
+        {
+            if (window.Content is FrameworkElement rootElement)
+            {
+                rootElement.RequestedTheme = theme;
             }
         }
     }

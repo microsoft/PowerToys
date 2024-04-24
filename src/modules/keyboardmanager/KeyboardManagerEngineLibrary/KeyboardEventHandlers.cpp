@@ -1387,11 +1387,14 @@ namespace KeyboardEventHandlers
                 return;
             }
 
-            std::wstring executable_and_args = fmt::format(L"\"{}\" {}", fullExpandedFilePath, shortcut.runProgramArgs);
+            std::wstring expandedArgs;
+            DWORD dwSize = ExpandEnvironmentStrings(shortcut.runProgramArgs.c_str(), nullptr, 0);
+            expandedArgs.resize(dwSize);
+            DWORD result = ExpandEnvironmentStrings(shortcut.runProgramArgs.c_str(), expandedArgs.data(), dwSize);
 
             WCHAR currentDir[MAX_PATH];
             WCHAR* currentDirPtr = currentDir;
-            DWORD result = ExpandEnvironmentStrings(shortcut.runProgramStartInDir.c_str(), currentDir, MAX_PATH);
+            result = ExpandEnvironmentStrings(shortcut.runProgramStartInDir.c_str(), currentDir, MAX_PATH);
 
             if (shortcut.runProgramStartInDir == L"")
             {
@@ -1416,16 +1419,16 @@ namespace KeyboardEventHandlers
 
             if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
             {
-                newProcessHandle = run_elevated(fullExpandedFilePath, shortcut.runProgramArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                newProcessHandle = run_elevated(fullExpandedFilePath, expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
                 processId = GetProcessId(newProcessHandle);
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
             {
-                run_non_elevated(fullExpandedFilePath, shortcut.runProgramArgs, &processId, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                run_non_elevated(fullExpandedFilePath, expandedArgs, &processId, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
             {
-                newProcessHandle = run_as_different_user(fullExpandedFilePath, shortcut.runProgramArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                newProcessHandle = run_as_different_user(fullExpandedFilePath, expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
                 processId = GetProcessId(newProcessHandle);
             }
 

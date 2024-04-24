@@ -1,14 +1,7 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 properties:
   resources:
-    # - resource: Microsoft.WinGet.DSC/WinGetPackage
-    #   directives:
-    #     description: Install PowerToys
-    #     allowPrerelease: true
-    #   settings:
-    #     id: PowerToys (Preview)
-    #     source: winget
-
-    - resource: PowerToysConfigure
+    - resource: Microsoft.PowerToys.Configure/PowerToysConfigure
       directives:
         description: Configure PowerToys
       settings:

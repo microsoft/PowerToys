@@ -49,3 +49,4 @@ Below are community created plugins that target a website or software.  They are
 | [WinGet](https://github.com/bostrot/PowerToysRunPluginWinget) | [bostrot](https://github.com/bostrot) | Search and install packages from WinGet |
 | [Scoop](https://github.com/Quriz/PowerToysRunScoop) | [Quriz](https://github.com/Quriz) | Search and install packages from Scoop |
 | [Spotify](https://github.com/waaverecords/PowerToys-Run-Spotify) | [waaverecords](https://github.com/waaverecords) | Search Spotify and control its player |
+| [PowerSearch for 1Password](https://github.com/KairuDeibisu/PowerToysRunPlugin1Password) | [KairuDeibisu](https://github.com/KairuDeibisu) | An unofficial plugin for searching 1Password for usernames and passwords |
