@@ -89,6 +89,14 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MonacoPreviewMaxFileSize, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Toggle_Monaco_Font_Size" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="2"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.MonacoPreviewFontSize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
                                 <CheckBox
                                     x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Sticky_Scroll"

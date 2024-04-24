@@ -55,6 +55,14 @@
                                     IsChecked="{x:Bind ViewModel.SourceCodeTryFormat, Mode=TwoWay}"
                                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="Peek_SourceCode_FontSize" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="2"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.SourceCodeFontSize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="Peek_SourceCode_StickyScroll" IsChecked="{x:Bind ViewModel.SourceCodeStickyScroll, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>

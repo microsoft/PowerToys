@@ -17,6 +17,8 @@
         var base64code = "[[PT_CODE]]";
 
         var stickyScroll = ([[PT_STICKY_SCROLL]] == 1) ? true : false;
+
+        var fontSize = [[PT_FONT_SIZE]];
         
         // Code taken from https://stackoverflow.com/a/30106551/14774889
         var code = decodeURIComponent(atob(base64code).split('').map(function(c) {
@@ -80,6 +82,7 @@
 
                 },
                 stickyScroll: {enabled: stickyScroll},
+                fontSize: fontSize,
                 wordWrap: (wrap?"on":"off") // Word wraps
             });
             window.onresize = function (){
