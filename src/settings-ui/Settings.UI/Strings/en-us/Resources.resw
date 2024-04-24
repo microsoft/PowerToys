@@ -4068,4 +4068,18 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Peek_SourceCode_StickyScroll.Content" xml:space="preserve">
     <value>Enable sticky scroll</value>
   </data>
+  <data name="FileExplorerPreview_Toggle_Monaco_Font_Size.Description" xml:space="preserve">
+    <value>Font size of the editor in pt. Recommended: 14pt</value>
+    <comment>{Locked="pt"}</comment>
+  </data>
+  <data name="FileExplorerPreview_Toggle_Monaco_Font_Size.Header" xml:space="preserve">
+    <value>Font size </value>
+  </data>
+  <data name="Peek_SourceCode_FontSize.Description" xml:space="preserve">
+    <value>Font size of the editor in pt. Recommended: 14pt</value>
+    <comment>{Locked="pt"}</comment>
+  </data>
+  <data name="Peek_SourceCode_FontSize.Header" xml:space="preserve">
+    <value>Font size</value>
+  </data>
 </root>

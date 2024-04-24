@@ -16,12 +16,15 @@ namespace Settings.UI.Library
 
         public BoolProperty SourceCodeTryFormat { get; set; }
 
+        public IntProperty SourceCodeFontSize { get; set; }
+
         public BoolProperty SourceCodeStickyScroll { get; set; }
 
         public PeekPreviewSettings()
         {
             SourceCodeWrapText = new BoolProperty(false);
             SourceCodeTryFormat = new BoolProperty(false);
+            SourceCodeFontSize = new IntProperty(14);
             SourceCodeStickyScroll = new BoolProperty(true);
         }
 

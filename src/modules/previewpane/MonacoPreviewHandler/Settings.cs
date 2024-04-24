@@ -78,6 +78,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         }
 
         /// <summary>
+        /// Gets the font size for the previewer. Set by PT settings.
+        /// </summary>
+        public double FontSize
+        {
+            get
+            {
+                try
+                {
+                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.MonacoPreviewFontSize.Value;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Couldn't read the settings.
+                    // Assume default of 14.
+                    return 14;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether sticky scroll should be enabled. Set by PT settings.
         /// </summary>
         public bool StickyScroll
