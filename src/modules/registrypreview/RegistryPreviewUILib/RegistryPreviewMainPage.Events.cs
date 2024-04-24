@@ -136,7 +136,7 @@ namespace RegistryPreviewUILib
 
             // Pull in a new REG file - we have to use the direct Win32 method because FileOpenPicker crashes when it's
             // called while running as admin
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
             string filename = OpenFilePicker.ShowDialog(
                 windowHandle,
                 resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
@@ -180,7 +180,7 @@ namespace RegistryPreviewUILib
         {
             // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
             // called while running as admin
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
             string filename = SaveFilePicker.ShowDialog(
                 windowHandle,
                 resourceLoader.GetString("SuggestFileName"),
