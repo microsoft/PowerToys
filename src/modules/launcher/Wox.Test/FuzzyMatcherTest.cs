@@ -41,7 +41,7 @@ namespace Wox.Test
         {
             var listToReturn = new List<int>();
 
-            Enum.GetValues(typeof(StringMatcher.SearchPrecisionScore))
+            Enum.GetValues<StringMatcher.SearchPrecisionScore>()
                 .Cast<StringMatcher.SearchPrecisionScore>()
                 .ToList()
                 .ForEach(x => listToReturn.Add((int)x));

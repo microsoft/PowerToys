@@ -39,7 +39,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 // Assert
                 Assert.AreEqual(2, markdownPreviewHandlerControl.Controls.Count);
-                Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebView2));
+                Assert.IsInstanceOfType<WebView2>(markdownPreviewHandlerControl.Controls[0]);
             }
         }
 
@@ -62,7 +62,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 // Assert
                 Assert.AreEqual(2, markdownPreviewHandlerControl.Controls.Count);
-                Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[1], typeof(RichTextBox));
+                Assert.IsInstanceOfType<RichTextBox>(markdownPreviewHandlerControl.Controls[1]);
             }
         }
 
@@ -85,7 +85,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 // Assert
                 Assert.AreEqual(2, markdownPreviewHandlerControl.Controls.Count);
-                Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[1], typeof(RichTextBox));
+                Assert.IsInstanceOfType<RichTextBox>(markdownPreviewHandlerControl.Controls[1]);
             }
         }
 
@@ -108,7 +108,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 // Assert
                 Assert.AreEqual(1, markdownPreviewHandlerControl.Controls.Count);
-                Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebView2));
+                Assert.IsInstanceOfType<WebView2>(markdownPreviewHandlerControl.Controls[0]);
             }
         }
 
@@ -130,7 +130,7 @@ namespace MarkdownPreviewHandlerUnitTests
                 }
 
                 // Assert
-                Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(WebView2));
+                Assert.IsInstanceOfType<WebView2>(markdownPreviewHandlerControl.Controls[0]);
                 Assert.AreEqual(DockStyle.Fill, ((WebView2)markdownPreviewHandlerControl.Controls[0]).Dock);
             }
         }
@@ -153,7 +153,7 @@ namespace MarkdownPreviewHandlerUnitTests
                 }
 
                 // Assert
-                Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[1], typeof(RichTextBox));
+                Assert.IsInstanceOfType<RichTextBox>(markdownPreviewHandlerControl.Controls[1]);
                 Assert.IsNotNull(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Text);
                 Assert.AreEqual(DockStyle.Top, ((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Dock);
                 Assert.AreEqual(BorderStyle.None, ((RichTextBox)markdownPreviewHandlerControl.Controls[1]).BorderStyle);

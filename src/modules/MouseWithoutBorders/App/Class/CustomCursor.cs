@@ -70,7 +70,7 @@ namespace MouseWithoutBorders.Class
         {
             if (Setting.Values.DrawMouse)
             {
-                ci.cbSize = Marshal.SizeOf(typeof(NativeMethods.CURSORINFO));
+                ci.cbSize = Marshal.SizeOf<NativeMethods.CURSORINFO>();
                 _ = NativeMethods.GetCursorInfo(out ci);
 
                 // The cursor is hidden or suppressed.q

@@ -127,7 +127,7 @@ public static class OSInterop
     [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Auto)]
     public class MONITORINFOEX
     {
-        public int CbSize { get; set; } = Marshal.SizeOf(typeof(MONITORINFOEX));
+        public int CbSize { get; set; } = Marshal.SizeOf<MONITORINFOEX>();
 
         public RECT RcMonitor { get; set; }
 

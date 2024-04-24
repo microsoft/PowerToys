@@ -30,7 +30,7 @@ namespace Awake.Core
 
         public bool PreFilterMessage(ref Message m)
         {
-            var trayCommandsSize = Enum.GetNames(typeof(TrayCommands)).Length;
+            var trayCommandsSize = Enum.GetNames<TrayCommands>().Length;
 
             switch (m.Msg)
             {

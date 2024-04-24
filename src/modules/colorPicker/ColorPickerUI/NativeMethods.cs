@@ -133,7 +133,7 @@ namespace ColorPicker
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 4)]
         internal class MonitorInfoEx
         {
-            public int cbSize = Marshal.SizeOf(typeof(MonitorInfoEx));
+            public int cbSize = Marshal.SizeOf<MonitorInfoEx>();
             public Rect rcMonitor;
             public Rect rcWork;
             public int dwFlags;

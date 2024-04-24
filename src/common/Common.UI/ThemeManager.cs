@@ -132,7 +132,7 @@ namespace Common.UI
                 else
                 {
                     string baseColor = ControlzEx.Theming.WindowsThemeHelper.GetWindowsBaseColor();
-                    ChangeTheme((Theme)Enum.Parse(typeof(Theme), baseColor));
+                    ChangeTheme(Enum.Parse<Theme>(baseColor));
                 }
             }
             else if (theme == Theme.HighContrastOne)

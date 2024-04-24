@@ -42,7 +42,7 @@ namespace SvgPreviewHandlerUnitTests
 
                 // Assert
                 Assert.AreEqual(1, svgPreviewControl.Controls.Count);
-                Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(WebView2));
+                Assert.IsInstanceOfType<WebView2>(svgPreviewControl.Controls[0]);
             }
         }
 
@@ -157,8 +157,8 @@ namespace SvgPreviewHandlerUnitTests
                 }
 
                 // Assert
-                Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(RichTextBox));
-                Assert.IsInstanceOfType(svgPreviewControl.Controls[1], typeof(WebView2));
+                Assert.IsInstanceOfType<RichTextBox>(svgPreviewControl.Controls[0]);
+                Assert.IsInstanceOfType<WebView2>(svgPreviewControl.Controls[1]);
                 Assert.AreEqual(2, svgPreviewControl.Controls.Count);
             }
         }
@@ -180,7 +180,7 @@ namespace SvgPreviewHandlerUnitTests
                 }
 
                 // Assert
-                Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(WebView2));
+                Assert.IsInstanceOfType<WebView2>(svgPreviewControl.Controls[0]);
                 Assert.AreEqual(1, svgPreviewControl.Controls.Count);
             }
         }

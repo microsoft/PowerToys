@@ -85,7 +85,7 @@ namespace MouseWithoutBorders.Class
 
                 _ = f.Read(buf, 0, buf.Length);
                 Marshal.Copy(buf, 0, p, buf.Length);
-                bitmapFileHeader = (BITMAPFILEHEADER)Marshal.PtrToStructure(p, typeof(BITMAPFILEHEADER));
+                bitmapFileHeader = Marshal.PtrToStructure<BITMAPFILEHEADER>(p);
                 Marshal.FreeHGlobal(p);
 
                 BITMAPINFOHEADER bitmapInfoHeader;
@@ -100,7 +100,7 @@ namespace MouseWithoutBorders.Class
 
                 _ = f.Read(buf, 0, buf.Length);
                 Marshal.Copy(buf, 0, p, buf.Length);
-                bitmapInfoHeader = (BITMAPINFOHEADER)Marshal.PtrToStructure(p, typeof(BITMAPINFOHEADER));
+                bitmapInfoHeader = Marshal.PtrToStructure<BITMAPINFOHEADER>(p);
                 Marshal.FreeHGlobal(p);
 
                 if (bitmapFileHeader.BfType != 0x4D42 || bitmapFileHeader.BfSize != fs || bitmapFileHeader.BfOffBits != BITMAP_FILE_HEADER_SIZE + BITMAP_INFO_HEADER_SIZE ||

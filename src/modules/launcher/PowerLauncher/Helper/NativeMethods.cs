@@ -87,7 +87,7 @@ namespace PowerLauncher.Helper
 
                 for (int i = 0; i < numArgs; i++)
                 {
-                    IntPtr currArg = Marshal.ReadIntPtr(argv, i * Marshal.SizeOf(typeof(IntPtr)));
+                    IntPtr currArg = Marshal.ReadIntPtr(argv, i * Marshal.SizeOf<nint>());
                     result[i] = Marshal.PtrToStringUni(currArg);
                 }
 

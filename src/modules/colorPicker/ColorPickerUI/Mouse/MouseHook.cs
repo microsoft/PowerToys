@@ -121,7 +121,7 @@ namespace ColorPicker.Mouse
         {
             if (nCode >= 0)
             {
-                MSLLHOOKSTRUCT mouseHookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+                MSLLHOOKSTRUCT mouseHookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
                 if (wParam.ToInt32() == WM_LBUTTONDOWN)
                 {
                     if (MouseDown != null)

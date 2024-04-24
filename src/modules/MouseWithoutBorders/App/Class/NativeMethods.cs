@@ -858,7 +858,7 @@ namespace MouseWithoutBorders.Class
 
             public MEMORYSTATUSEX()
             {
-                dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX));
+                dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>();
             }
         }
 

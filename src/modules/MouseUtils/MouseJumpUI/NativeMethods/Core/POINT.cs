@@ -37,7 +37,7 @@ internal static partial class Core
         }
 
         public static int Size =>
-            Marshal.SizeOf(typeof(POINT));
+            Marshal.SizeOf<POINT>();
 
         public override string ToString()
         {

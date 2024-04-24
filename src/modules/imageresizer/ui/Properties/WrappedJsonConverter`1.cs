@@ -19,7 +19,7 @@ namespace ImageResizer.Properties
                     continue;
                 }
 
-                var result = (T)JsonSerializer.Deserialize(ref reader, typeof(T), options);
+                var result = JsonSerializer.Deserialize<T>(ref reader, options);
                 reader.Read();
                 return result;
             }
@@ -37,7 +37,7 @@ namespace ImageResizer.Properties
             writer.WriteStartObject();
             writer.WritePropertyName("value");
 
-            JsonSerializer.Serialize(writer, value, typeof(T), options);
+            JsonSerializer.Serialize(writer, value, options);
 
             writer.WriteEndObject();
         }

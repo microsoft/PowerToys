@@ -35,7 +35,7 @@ internal static partial class Core
         }
 
         public static int Size =>
-            Marshal.SizeOf(typeof(CRECT));
+            Marshal.SizeOf<CRECT>();
 
         public override string ToString()
         {

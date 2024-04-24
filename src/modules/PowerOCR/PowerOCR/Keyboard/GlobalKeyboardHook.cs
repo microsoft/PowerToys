@@ -98,7 +98,7 @@ internal sealed class GlobalKeyboardHook : IDisposable
         var wparamTyped = wParam.ToInt32();
         if (Enum.IsDefined(typeof(KeyboardState), wparamTyped))
         {
-            object? o = Marshal.PtrToStructure(lParam, typeof(LowLevelKeyboardInputEvent));
+            object? o = Marshal.PtrToStructure<LowLevelKeyboardInputEvent>(lParam);
             if (o is not null)
             {
                 LowLevelKeyboardInputEvent p = (LowLevelKeyboardInputEvent)o;

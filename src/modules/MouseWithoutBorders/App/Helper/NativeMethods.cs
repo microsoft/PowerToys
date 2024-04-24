@@ -781,7 +781,7 @@ namespace MouseWithoutBorders
 
             public MEMORYSTATUSEX()
             {
-                this.dwLength = (uint)Marshal.SizeOf(typeof(NativeMethods.MEMORYSTATUSEX));
+                this.dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>();
             }
         }
 

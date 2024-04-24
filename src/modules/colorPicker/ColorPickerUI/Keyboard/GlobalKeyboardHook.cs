@@ -98,7 +98,7 @@ namespace ColorPicker.Keyboard
             var wparamTyped = wParam.ToInt32();
             if (Enum.IsDefined(typeof(KeyboardState), wparamTyped))
             {
-                object o = Marshal.PtrToStructure(lParam, typeof(LowLevelKeyboardInputEvent));
+                object o = Marshal.PtrToStructure<LowLevelKeyboardInputEvent>(lParam);
                 LowLevelKeyboardInputEvent p = (LowLevelKeyboardInputEvent)o;
 
                 var eventArguments = new GlobalKeyboardHookEventArgs(p, (KeyboardState)wparamTyped);

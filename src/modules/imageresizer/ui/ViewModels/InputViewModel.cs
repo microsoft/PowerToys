@@ -57,9 +57,9 @@ namespace ImageResizer.ViewModels
 
         public Settings Settings { get; }
 
-        public IEnumerable<ResizeFit> ResizeFitValues => Enum.GetValues(typeof(ResizeFit)).Cast<ResizeFit>();
+        public IEnumerable<ResizeFit> ResizeFitValues => Enum.GetValues<ResizeFit>().Cast<ResizeFit>();
 
-        public IEnumerable<ResizeUnit> ResizeUnitValues => Enum.GetValues(typeof(ResizeUnit)).Cast<ResizeUnit>();
+        public IEnumerable<ResizeUnit> ResizeUnitValues => Enum.GetValues<ResizeUnit>().Cast<ResizeUnit>();
 
         public ICommand ResizeCommand { get; }
 

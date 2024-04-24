@@ -30,7 +30,7 @@ internal static partial class User32
         }
 
         public static int Size =>
-            Marshal.SizeOf(typeof(INPUT));
+            Marshal.SizeOf<INPUT>();
 
         [StructLayout(LayoutKind.Explicit)]
         public readonly struct DUMMYUNIONNAME

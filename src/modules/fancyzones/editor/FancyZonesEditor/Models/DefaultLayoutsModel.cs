@@ -11,7 +11,7 @@ namespace FancyZonesEditor.Models
 {
     public class DefaultLayoutsModel : INotifyPropertyChanged
     {
-        private static int Count { get; } = Enum.GetValues(typeof(MonitorConfigurationType)).Length;
+        private static int Count { get; } = Enum.GetValues<MonitorConfigurationType>().Length;
 
         public Dictionary<MonitorConfigurationType,  LayoutModel> Layouts { get; } = new Dictionary<MonitorConfigurationType, LayoutModel>(Count);
 
