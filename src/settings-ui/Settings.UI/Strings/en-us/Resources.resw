@@ -1105,8 +1105,7 @@
     <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
-    <value>Source code files (Monaco)</value>
-    <comment>{Locked}</comment>
+    <value>Source code files</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Description" xml:space="preserve">
     <value>.txt, .cpp, .py, .json, .xml, .csproj, ...</value>
@@ -2785,7 +2784,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Header" xml:space="preserve">
     <value>Shake interval (ms)</value>
-    <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Description" xml:space="preserve">
     <value>The span of time during which we track mouse movement to detect shaking, for adjusting sensitivity</value>
@@ -3975,7 +3973,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="FZEditorString" xml:space="preserve">
     <value>FancyZones Editor</value>
-    <comment>{Locked}</comment>
+    <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="MoreBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More</value>
@@ -4043,7 +4041,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
     <value>Quickly move the mouse pointer long distances.</value>
-    <comment>{Locked="Mouse Jump"} is the name of the utility. Mouse is the hardware mouse.</comment>
+    <comment>Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
     <value>Mouse Jump</value>
@@ -4132,7 +4130,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Hosts_Encoding_Utf8Bom.Content" xml:space="preserve">
     <value>UTF-8 with BOM</value>
-    <comment>{Locked}</comment>
+    <comment>{Locked="UTF-8", "BOM"}</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_AlwaysColor.Header" xml:space="preserve">
     <value>Always highlight color</value>
@@ -4177,7 +4175,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Dashboard</value>
-    <comment>{Locked}</comment>
   </data>
   <data name="DisabledModules.Text" xml:space="preserve">
     <value>Disabled modules</value>
@@ -4192,8 +4189,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>.txt, .cpp, .py, .json, .xml, .csproj, ...</value>
   </data>
   <data name="Peek_SourceCode_Header.Header" xml:space="preserve">
-    <value>Source code files (Monaco)</value>
-    <comment>{Locked="Monaco"}</comment>
+    <value>Source code files</value>
   </data>
   <data name="Peek_SourceCode_TryFormat.Description" xml:space="preserve">
     <value>Applies to json and xml. Files remain unchanged.</value>
