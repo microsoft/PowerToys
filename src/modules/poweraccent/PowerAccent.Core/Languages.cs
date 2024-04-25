@@ -262,7 +262,6 @@ namespace PowerAccent.Core
             };
         }
 
-        
         // Finnish
         private static string[] GetDefaultLetterKeyFI(LetterKey letter)
         {
