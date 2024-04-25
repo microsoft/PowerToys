@@ -129,7 +129,7 @@
     <comment>Quake is a well-known computer game. Don't localize. See https://en.wikipedia.org/wiki/Quake_(video_game)</comment>
   </data>
   <data name="plugin_description" xml:space="preserve">
-    <value>Opens Windows Terminal profiles.</value>
+    <value>Opens Windows Terminal profiles</value>
   </data>
   <data name="plugin_name" xml:space="preserve">
     <value>Windows Terminal</value>
