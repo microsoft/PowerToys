@@ -448,7 +448,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeasureToolUI", "src\module
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerAccentKeyboardService", "src\modules\poweraccent\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj", "{C97D9A5D-206C-454E-997E-009E227D7F02}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hosts", "src\modules\Hosts\Hosts\Hosts.csproj", "{31D1C81D-765F-4446-AA62-E743F6325049}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostsUILib", "src\modules\Hosts\HostsUILib\HostsUILib.csproj", "{31D1C81D-765F-4446-AA62-E743F6325049}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{F05E590D-AD46-42BE-9C25-6A63ADD2E3EA}"
 EndProject
@@ -518,7 +518,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PastePlainModuleInterface",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AllExperiments", "src\common\AllExperiments\AllExperiments.csproj", "{9CE59ED5-7087-4353-88EB-788038A73CEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RegistryPreviewUI", "src\modules\registrypreview\RegistryPreviewUI\RegistryPreviewUI.csproj", "{FD86C06A-FB54-4D5E-9831-1CDADF60D45F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RegistryPreviewUILib", "src\modules\registrypreview\RegistryPreviewUILib\RegistryPreviewUILib.csproj", "{FD86C06A-FB54-4D5E-9831-1CDADF60D45F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RegistryPreviewExt", "src\modules\registrypreview\RegistryPreviewExt\RegistryPreviewExt.vcxproj", "{697C6AF9-0A48-49A9-866C-67DA12384015}"
 EndProject
@@ -546,7 +546,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-FancyZonesEditor"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EnvironmentVariables", "EnvironmentVariables", "{538ED0BB-B863-4B20-98CC-BCDF7FA0B68A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentVariables", "src\modules\EnvironmentVariables\EnvironmentVariables\EnvironmentVariables.csproj", "{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentVariablesUILib", "src\modules\EnvironmentVariables\EnvironmentVariablesUILib\EnvironmentVariablesUILib.csproj", "{51465DA1-C18B-4B99-93E1-ECF8E0FA0CBA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnvironmentVariablesModuleInterface", "src\modules\EnvironmentVariables\EnvironmentVariablesModuleInterface\EnvironmentVariablesModuleInterface.vcxproj", "{B9420661-B0E4-4241-ABD4-4A27A1F64250}"
 EndProject
@@ -567,6 +567,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithContextMenu", "src\modules\FileLocksmith\FileLocksmithContextMenu\FileLocksmithContextMenu.vcxproj", "{799A50D8-DE89-4ED1-8FF8-AD5A9ED8C0CA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLib", "src\modules\FileLocksmith\FileLocksmithLib\FileLocksmithLib.vcxproj", "{9D52FD25-EF90-4F9A-A015-91EFC5DAF54F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hosts", "src\modules\Hosts\Hosts\Hosts.csproj", "{02DD46D3-F761-47D9-8894-2D6DA0124650}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RegistryPreview", "src\modules\registrypreview\RegistryPreview\RegistryPreview.csproj", "{8E23E173-7127-4A5F-9F93-3049F2B68047}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentVariables", "src\modules\EnvironmentVariables\EnvironmentVariables\EnvironmentVariables.csproj", "{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITests-FancyZones", "src\modules\fancyzones\UITests-FancyZones\UITests-FancyZones.csproj", "{FE38FC07-1C05-4B57-ADA3-2FE2F53C6A52}"
 EndProject
@@ -2507,6 +2513,42 @@ Global
 		{9D52FD25-EF90-4F9A-A015-91EFC5DAF54F}.Release|x64.Build.0 = Release|x64
 		{9D52FD25-EF90-4F9A-A015-91EFC5DAF54F}.Release|x86.ActiveCfg = Release|x64
 		{9D52FD25-EF90-4F9A-A015-91EFC5DAF54F}.Release|x86.Build.0 = Release|x64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Debug|ARM64.Build.0 = Debug|ARM64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Debug|x64.ActiveCfg = Debug|x64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Debug|x64.Build.0 = Debug|x64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Debug|x86.ActiveCfg = Debug|x64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Debug|x86.Build.0 = Debug|x64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Release|ARM64.ActiveCfg = Release|ARM64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Release|ARM64.Build.0 = Release|ARM64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Release|x64.ActiveCfg = Release|x64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Release|x64.Build.0 = Release|x64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Release|x86.ActiveCfg = Release|x64
+		{02DD46D3-F761-47D9-8894-2D6DA0124650}.Release|x86.Build.0 = Release|x64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Debug|ARM64.Build.0 = Debug|ARM64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Debug|x64.ActiveCfg = Debug|x64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Debug|x64.Build.0 = Debug|x64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Debug|x86.ActiveCfg = Debug|x64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Debug|x86.Build.0 = Debug|x64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Release|ARM64.ActiveCfg = Release|ARM64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Release|ARM64.Build.0 = Release|ARM64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Release|x64.ActiveCfg = Release|x64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Release|x64.Build.0 = Release|x64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Release|x86.ActiveCfg = Release|x64
+		{8E23E173-7127-4A5F-9F93-3049F2B68047}.Release|x86.Build.0 = Release|x64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Debug|ARM64.Build.0 = Debug|ARM64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Debug|x64.ActiveCfg = Debug|x64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Debug|x64.Build.0 = Debug|x64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Debug|x86.ActiveCfg = Debug|x64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Debug|x86.Build.0 = Debug|x64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Release|ARM64.ActiveCfg = Release|ARM64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Release|ARM64.Build.0 = Release|ARM64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Release|x64.ActiveCfg = Release|x64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Release|x64.Build.0 = Release|x64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Release|x86.ActiveCfg = Release|x64
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8}.Release|x86.Build.0 = Release|x64
 		{FE38FC07-1C05-4B57-ADA3-2FE2F53C6A52}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{FE38FC07-1C05-4B57-ADA3-2FE2F53C6A52}.Debug|ARM64.Build.0 = Debug|ARM64
 		{FE38FC07-1C05-4B57-ADA3-2FE2F53C6A52}.Debug|x64.ActiveCfg = Debug|x64
@@ -2764,6 +2806,9 @@ Global
 		{0014D652-901F-4456-8D65-06FC5F997FB0} = {4C0D0746-BE5B-49EE-BD5D-A7811628AE8B}
 		{799A50D8-DE89-4ED1-8FF8-AD5A9ED8C0CA} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
 		{9D52FD25-EF90-4F9A-A015-91EFC5DAF54F} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
+		{02DD46D3-F761-47D9-8894-2D6DA0124650} = {F05E590D-AD46-42BE-9C25-6A63ADD2E3EA}
+		{8E23E173-7127-4A5F-9F93-3049F2B68047} = {929C1324-22E8-4412-A9A8-80E85F3985A5}
+		{DFF88D16-D36F-40A4-A955-CDCAA76EF7B8} = {538ED0BB-B863-4B20-98CC-BCDF7FA0B68A}
 		{FE38FC07-1C05-4B57-ADA3-2FE2F53C6A52} = {D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}
 		{3A9A791E-94A9-49F8-8401-C11CE288D5FB} = {D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}
 		{C0974915-8A1D-4BF0-977B-9587D3807AB7} = {D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}

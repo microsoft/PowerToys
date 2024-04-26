@@ -96,6 +96,7 @@
                 "PowerToys.SvgThumbnailProviderCpp.dll",
 
                 "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.HostsUILib.dll",
                 "WinUI3Apps\\PowerToys.Hosts.dll",
                 "WinUI3Apps\\PowerToys.Hosts.exe",
 
@@ -113,6 +114,7 @@
                 "WinUI3Apps\\Powertoys.Peek.dll",
 
                 "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariablesUILib.dll",
                 "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
                 "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
@@ -186,6 +188,7 @@
                 "WinUI3Apps\\PowerRenameContextMenuPackage.msix",
 
                 "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
+                "WinUI3Apps\\PowerToys.RegistryPreviewUILib.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreview.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreview.exe",
 

@@ -5,14 +5,13 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Threading.Tasks;
-using Hosts.Exceptions;
-using Hosts.Helpers;
-using Hosts.Models;
-using Hosts.Settings;
 using Hosts.Tests.Mocks;
+using HostsUILib.Exceptions;
+using HostsUILib.Helpers;
+using HostsUILib.Models;
+using HostsUILib.Settings;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Settings.UI.Library.Enumerations;
 
 namespace Hosts.Tests
 {
