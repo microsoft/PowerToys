@@ -17,6 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
     <None Include="$(OutDir)\PowerToys.RegistryPreviewUILib.pri" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
     <XBFFile Include="$(OutDir)**\*.xbf" />
     <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
