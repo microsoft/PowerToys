@@ -1343,7 +1343,7 @@ EXHIBIT A -Mozilla Public License.
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
 - ScipBe.Common.Office.OneNote 3.0.1
-- SharpCompress 0.33.0
+- SharpCompress 0.37.2
 - StreamJsonRpc 2.14.24
 - StyleCop.Analyzers 1.2.0-beta.556
 - System.CodeDom 8.0.0
