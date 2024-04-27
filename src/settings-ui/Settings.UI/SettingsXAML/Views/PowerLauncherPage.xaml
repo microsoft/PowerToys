@@ -29,10 +29,10 @@
             CheckBoxTemplate="{StaticResource CheckBoxTemplate}"
             CheckBoxTextBoxTemplate="{StaticResource CheckBoxTextBoxTemplate}"
             ComboBoxTemplate="{StaticResource ComboBoxTemplate}"
+            EmptyTemplate="{StaticResource EmptyTemplate}"
             MultilineTextBoxTemplate="{StaticResource MultilineTextBoxTemplate}"
             NumberBoxTemplate="{StaticResource NumberBoxTemplate}"
-            TextboxTemplate="{StaticResource TextBoxTemplate}"
-            EmptyTemplate="{StaticResource EmptyTemplate}" />
+            TextboxTemplate="{StaticResource TextBoxTemplate}" />
 
         <DataTemplate x:Key="CheckBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
@@ -297,8 +297,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="EmptyTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
-            <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
-            </StackPanel>
+            <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical" />
         </DataTemplate>
     </Page.Resources>
 
