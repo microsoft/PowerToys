@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -69,6 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty ImageresizerFileName { get; set; }
 
         [JsonPropertyName("imageresizer_sizes")]
+        [CmdConfigureIgnoreAttribute]
         public ImageResizerSizes ImageresizerSizes { get; set; }
 
         [JsonPropertyName("imageresizer_keepDateModified")]
@@ -78,6 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty ImageresizerFallbackEncoder { get; set; }
 
         [JsonPropertyName("imageresizer_customSize")]
+        [CmdConfigureIgnoreAttribute]
         public ImageResizerCustomSizeProperty ImageresizerCustomSize { get; set; }
 
         public string ToJsonString()

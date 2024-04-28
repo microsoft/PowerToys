@@ -4,10 +4,10 @@ parameters:
     default: 'Release'
   - name: platform
     type: string
-    default: '/p:RestorePackagesConfig=true -m'
+    default: 'x64'
   - name: additionalBuildArguments
     type: string
-    default: '/p:RestorePackagesConfig=true -m'
+    default: '-p:RestorePackagesConfig=true -m'
   - name: enableCaching
     type: boolean
     default: false

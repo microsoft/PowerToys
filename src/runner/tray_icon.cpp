@@ -68,6 +68,11 @@ void change_menu_item_text(const UINT item_id, wchar_t* new_text)
     SetMenuItemInfoW(h_menu, item_id, false, &menuitem);
 }
 
+void open_quick_access_flyout_window(const POINT flyout_position)
+{
+    open_settings_window(std::nullopt, true, flyout_position);
+}
+
 void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
 {
     switch (command_id)
@@ -105,6 +110,13 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         RunNonElevatedEx(L"https://aka.ms/PowerToysOverview", L"", L"");
         break;
     }
+    case ID_QUICK_ACCESS_MENU_COMMAND:
+    {
+        POINT mouse_pointer;
+        GetCursorPos(&mouse_pointer);
+        open_quick_access_flyout_window(mouse_pointer);
+        break;
+    }
     }
 }
 
@@ -113,7 +125,7 @@ void click_timer_elapsed()
     double_click_timer_running = false;
     if (!double_clicked)
     {
-        open_settings_window(std::nullopt, true, tray_icon_click_point);
+        open_quick_access_flyout_window(tray_icon_click_point);
     }
 }
 
@@ -181,10 +193,12 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                     static std::wstring exit_menuitem_label = GET_RESOURCE_STRING(IDS_EXIT_MENU_TEXT);
                     static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
                     static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
+                    static std::wstring quick_access_menuitem_label = GET_RESOURCE_STRING(IDS_QUICK_ACCESS_MENU_TEXT);
                     change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
                     change_menu_item_text(ID_EXIT_MENU_COMMAND, exit_menuitem_label.data());
                     change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
                     change_menu_item_text(ID_DOCUMENTATION_MENU_COMMAND, documentation_menuitem_label.data());
+                    change_menu_item_text(ID_QUICK_ACCESS_MENU_COMMAND, quick_access_menuitem_label.data());
                 }
                 if (!h_sub_menu)
                 {

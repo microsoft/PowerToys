@@ -5,12 +5,15 @@
 #include <common/logger/logger.h>
 #include <common/logger/logger_settings.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/package.h>
+#include <common/utils/process_path.h>
 #include <optional>
 
-#include "Constants.h"
+#include "FileLocksmithLib/Constants.h"
+#include "FileLocksmithLib/Settings.h"
+#include "FileLocksmithLib/Trace.h"
+
 #include "dllmain.h"
-#include "Settings.h"
-#include "Trace.h"
 #include "Generated Files/resource.h"
 
 class FileLocksmithModule : public PowertoyModuleIface
@@ -74,15 +77,25 @@ public:
     virtual void enable() override
     {
         Logger::info(L"File Locksmith enabled");
+
+        if (package::IsWin11OrGreater())
+        {
+            std::wstring path = get_module_folderpath(globals::instance);
+            std::wstring packageUri = path + L"\\FileLocksmithContextMenuPackage.msix";
+
+            if (!package::IsPackageRegistered(constants::nonlocalizable::ContextMenuPackageName))
+            {
+                package::RegisterSparsePackage(path, packageUri);
+            }
+        }
+
         m_enabled = true;
-        save_settings();
     }
 
     virtual void disable() override
     {
         Logger::info(L"File Locksmith disabled");
         m_enabled = false;
-        save_settings();
     }
 
     virtual bool is_enabled() override
@@ -108,7 +121,7 @@ public:
     }
 
 private:
-    bool m_enabled;
+    bool m_enabled = false;
     bool m_extended_only;
 
     void init_settings()
@@ -121,7 +134,7 @@ private:
     void save_settings()
     {
         auto& settings = FileLocksmithSettingsInstance();
-        settings.SetEnabled(m_enabled);
+        m_enabled = FileLocksmithSettingsInstance().GetEnabled();
         settings.SetExtendedContextMenuOnly(m_extended_only);
 
         settings.Save();

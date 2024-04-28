@@ -7,7 +7,7 @@
                 "*.resources.dll",
                 
                 "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
-                
+
                 "PowerToys.ActionRunner.exe",
                 "PowerToys.Update.exe",
                 "PowerToys.BackgroundActivatorDLL.dll",
@@ -54,6 +54,7 @@
                 "fancyzones.dll",
                 "PowerToys.FancyZonesEditor.exe",
                 "PowerToys.FancyZonesEditor.dll",
+                "PowerToys.FancyZonesEditorCommon.dll",
                 "PowerToys.FancyZonesModuleInterface.dll",
                 "PowerToys.FancyZones.exe",
 
@@ -95,6 +96,7 @@
                 "PowerToys.SvgThumbnailProviderCpp.dll",
 
                 "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.HostsUILib.dll",
                 "WinUI3Apps\\PowerToys.Hosts.dll",
                 "WinUI3Apps\\PowerToys.Hosts.exe",
 
@@ -102,6 +104,8 @@
                 "WinUI3Apps\\PowerToys.FileLocksmithExt.dll",
                 "WinUI3Apps\\PowerToys.FileLocksmithUI.exe",
                 "WinUI3Apps\\PowerToys.FileLocksmithUI.dll",
+                "WinUI3Apps\\PowerToys.FileLocksmithContextMenu.dll",
+                "FileLocksmithContextMenuPackage.msix",
 
                 "WinUI3Apps\\Peek.Common.dll",
                 "WinUI3Apps\\Peek.FilePreviewer.dll",
@@ -110,6 +114,7 @@
                 "WinUI3Apps\\Powertoys.Peek.dll",
 
                 "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.EnvironmentVariablesUILib.dll",
                 "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
                 "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
@@ -183,6 +188,7 @@
                 "WinUI3Apps\\PowerRenameContextMenuPackage.msix",
 
                 "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
+                "WinUI3Apps\\PowerToys.RegistryPreviewUILib.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreview.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreview.exe",
 

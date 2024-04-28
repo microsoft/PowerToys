@@ -1,4 +1,4 @@
-name: Submit Microsoft.PowerToys package to Windows Store
+name: Store submission on release
 
 on:
   workflow_dispatch:

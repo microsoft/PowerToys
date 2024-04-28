@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using System.Threading.Tasks;
 using Peek.Common.Helpers;
 using Windows.Storage;
@@ -18,7 +17,7 @@ namespace Peek.Common.Models
         {
             get
             {
-                DateTime? dateModified = null;
+                DateTime? dateModified;
                 try
                 {
                     dateModified = System.IO.File.GetCreationTime(Path);
@@ -32,7 +31,7 @@ namespace Peek.Common.Models
             }
         }
 
-        public string Extension => System.IO.Path.GetExtension(Path).ToLower(CultureInfo.InvariantCulture);
+        public string Extension { get; }
 
         public string Name { get; init; }
 

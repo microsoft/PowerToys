@@ -88,11 +88,11 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to H.
+        ///   Looks up a localized string similar to Image sizes.
         /// </summary>
-        public static string HeightChar {
+        public static string Image_Sizes {
             get {
-                return ResourceManager.GetString("HeightChar", resourceCulture);
+                return ResourceManager.GetString("Image_Sizes", resourceCulture);
             }
         }
         
@@ -142,7 +142,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ign_ore the orientation of pictures.
+        ///   Looks up a localized string similar to Ignore the _orientation of pictures.
         /// </summary>
         public static string Input_IgnoreOrientation {
             get {
@@ -151,7 +151,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Remove metadata that doesn&apos;t affect rendering.
+        ///   Looks up a localized string similar to Remove meta_data that doesn&apos;t affect rendering.
         /// </summary>
         public static string Input_RemoveMetadata {
             get {
@@ -160,7 +160,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to R_esize the original pictures (don&apos;t create copies).
+        ///   Looks up a localized string similar to Ov_erwrite files.
         /// </summary>
         public static string Input_Replace {
             get {
@@ -183,6 +183,15 @@ namespace ImageResizer.Properties {
         public static string Input_ShrinkOnly {
             get {
                 return ResourceManager.GetString("Input_ShrinkOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Make pictures smaller but not larger.
+        /// </summary>
+        public static string Input_ShrinkOnly_Content {
+            get {
+                return ResourceManager.GetString("Input_ShrinkOnly.Content", resourceCulture);
             }
         }
         
@@ -520,15 +529,6 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Times Symbol.
-        /// </summary>
-        public static string Times_Symbol {
-            get {
-                return ResourceManager.GetString("Times_Symbol", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unit.
         /// </summary>
         public static string Unit {
@@ -561,15 +561,6 @@ namespace ImageResizer.Properties {
         public static string Width {
             get {
                 return ResourceManager.GetString("Width", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to W.
-        /// </summary>
-        public static string WidthChar {
-            get {
-                return ResourceManager.GetString("WidthChar", resourceCulture);
             }
         }
     }

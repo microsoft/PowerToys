@@ -10,11 +10,13 @@ using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
 
@@ -35,10 +37,15 @@ namespace Awake.Core
 
         private static CancellationTokenSource _tokenSource;
 
+        private static SettingsUtils? _moduleSettings;
+
+        private static SettingsUtils? ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
+
         static Manager()
         {
             _tokenSource = new CancellationTokenSource();
             _stateQueue = new BlockingCollection<ExecutionState>();
+            ModuleSettings = new SettingsUtils();
         }
 
         public static void StartMonitor()
@@ -153,6 +160,8 @@ namespace Awake.Core
                 {
                     Logger.LogInfo($"Completed expirable keep-awake.");
                     CancelExistingThread();
+
+                    SetPassiveKeepAwakeMode(Constants.AppName);
                 },
                 _tokenSource.Token);
             }
@@ -179,6 +188,8 @@ namespace Awake.Core
             {
                 Logger.LogInfo($"Completed timed thread.");
                 CancelExistingThread();
+
+                SetPassiveKeepAwakeMode(Constants.AppName);
             },
             _tokenSource.Token);
         }
@@ -284,6 +295,34 @@ namespace Awake.Core
                 { string.Format(CultureInfo.InvariantCulture, AwakeHours, 2), 7200 },
             };
             return optionsList;
+        }
+
+        public static void SetPassiveKeepAwakeMode(string moduleName)
+        {
+            AwakeSettings currentSettings;
+
+            try
+            {
+                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
+            }
+            catch (Exception ex)
+            {
+                string? errorString = $"Failed to reset Awake mode GetSettings: {ex.Message}";
+                Logger.LogError(errorString);
+                currentSettings = new AwakeSettings();
+            }
+
+            currentSettings.Properties.Mode = AwakeMode.PASSIVE;
+
+            try
+            {
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            }
+            catch (Exception ex)
+            {
+                string? errorString = $"Failed to reset Awake mode SaveSettings: {ex.Message}";
+                Logger.LogError(errorString);
+            }
         }
     }
 }

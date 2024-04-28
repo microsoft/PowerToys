@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Windows.Storage;
@@ -24,6 +25,8 @@ namespace Peek.Common.Models
         public string Name { get; init; }
 
         public string Path { get; init; }
+
+        public string Extension => System.IO.Path.GetExtension(Path).ToLower(CultureInfo.InvariantCulture);
 
         public async Task<IStorageItem?> GetStorageItemAsync()
         {

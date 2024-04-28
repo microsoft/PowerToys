@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d">
@@ -20,6 +21,8 @@
             <Setter Property="Height" Value="32" />
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         </Style>
+
+        <tkconverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -37,7 +40,7 @@
 
             <Grid Padding="36,32,36,0">
                 <TextBlock
-                    x:Uid="ShortcutsTxt"
+                    x:Uid="QuickAccessTxt"
                     VerticalAlignment="Center"
                     Style="{StaticResource BodyStrongTextBlockStyle}" />
                 <Button
@@ -79,7 +82,6 @@
                                 AutomationProperties.Name="{x:Bind Label}"
                                 Click="ModuleButton_Click"
                                 Tag="{x:Bind Tag}"
-                                ToolTipService.ToolTip="{x:Bind ToolTip}"
                                 Visibility="{x:Bind Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <controls:FlyoutMenuButton.Content>
                                     <TextBlock
@@ -95,6 +97,9 @@
                                         </Image.Source>
                                     </Image>
                                 </controls:FlyoutMenuButton.Icon>
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind ToolTip}" Visibility="{x:Bind ToolTip, Converter={StaticResource StringVisibilityConverter}}" />
+                                </ToolTipService.ToolTip>
                             </controls:FlyoutMenuButton>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

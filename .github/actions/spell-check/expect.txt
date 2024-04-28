@@ -38,6 +38,7 @@ ALPHATYPE
 AModifier
 AMPROPERTY
 AMPROPSETID
+amr
 ANDSCANS
 animatedvisuals
 ansicolor
@@ -53,7 +54,7 @@ Apm
 APPBARDATA
 appdata
 APPEXECLINK
-appium
+Appium
 Applicationcan
 appmanifest
 APPNAME
@@ -99,6 +100,7 @@ bbwe
 bck
 BESTEFFORT
 bhid
+BIF
 bigbar
 bigobj
 binlog
@@ -125,6 +127,7 @@ BPBF
 bpmf
 bpp
 Browsable
+BROWSEINFO
 bsd
 bthprops
 bti
@@ -212,6 +215,7 @@ cominterop
 commandline
 COMMANDTITLE
 commctrl
+commdlg
 compmgmt
 COMPOSITIONFULL
 comsupp
@@ -367,6 +371,7 @@ DUMMYUNIONNAME
 dutil
 DVASPECT
 DVASPECTINFO
+DVD
 DVH
 DVHD
 dvr
@@ -422,8 +427,8 @@ EResize
 ERole
 ERRORIMAGE
 ERRORTITLE
+erwrite
 ESettings
-esize
 esrp
 etl
 ETW
@@ -468,9 +473,11 @@ FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
 FILELOCKSMITH
+FILELOCKSMITHCONTEXTMENU
 FILELOCKSMITHEXT
 FILELOCKSMITHLIB
 FILELOCKSMITHLIBINTEROP
+FILEMUSTEXIST
 FILEOP
 FILEOS
 FILESUBTYPE
@@ -482,6 +489,7 @@ Filterkeyboard
 Filterx
 findfast
 FIXEDFILEINFO
+flac
 flyouts
 FOF
 FOFX
@@ -743,6 +751,7 @@ keyremaps
 KILLFOCUS
 killrunner
 Knownfolders
+ksh
 KSPROPERTY
 Kybd
 languagesjson
@@ -799,6 +808,7 @@ LPCTSTR
 lpdw
 lpfn
 LPINPUT
+LPITEMIDLIST
 lpmi
 LPMINMAXINFO
 LPMONITORINFO
@@ -806,6 +816,7 @@ LPOSVERSIONINFOEXW
 LPQUERY
 lprc
 LPSAFEARRAY
+lpstr
 lpsz
 lpt
 LPTHREAD
@@ -831,6 +842,7 @@ lwin
 LZero
 majortype
 makecab
+MAKELANGID
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -917,6 +929,7 @@ mscorlib
 msdata
 msedge
 MSGFLT
+msiexec
 MSIFASTINSTALL
 MSIHANDLE
 msiquery
@@ -969,6 +982,7 @@ netsetup
 netsh
 newcolor
 newdev
+NEWDIALOGSTYLE
 newitem
 newpath
 newrow
@@ -1015,6 +1029,7 @@ NOSIZE
 NOTIFICATIONSDLL
 NOTIFYICONDATAW
 NOTIMPL
+notlike
 NOTOPMOST
 NOTRACK
 NOTSRCCOPY
@@ -1039,6 +1054,7 @@ ocr
 Ocrsettings
 odbccp
 officehubintl
+OFN
 ofs
 oldcolor
 olditem
@@ -1049,6 +1065,7 @@ OLECHAR
 onebranch
 OOBEPT
 opencode
+OPENFILENAME
 opensource
 openxmlformats
 OPTIMIZEFORINVOKE
@@ -1083,6 +1100,7 @@ parray
 PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 pathcch
+PATHMUSTEXIST
 Pathto
 PATINVERT
 PATPAINT
@@ -1093,6 +1111,7 @@ pcb
 pcch
 pcelt
 pch
+pchast
 PCIDLIST
 PCWSTR
 pdisp
@@ -1171,6 +1190,7 @@ PRINTCLIENT
 printmanagement
 prm
 proactively
+PROCESSENTRY
 PROCESSKEY
 processthreadsapi
 PRODEXT
@@ -1290,6 +1310,7 @@ RESTORETOMAXIMIZED
 restrictedcapabilities
 restrictederrorinfo
 resultlist
+RETURNONLYFSDIRS
 RGBQUAD
 rgbs
 rgelt
@@ -1434,6 +1455,7 @@ sln
 SMALLICON
 smartphone
 SMTO
+SNAPPROCESS
 snwprintf
 softline
 SOURCECLIENTAREAONLY
@@ -1576,6 +1598,7 @@ tlbimp
 TMPVAR
 TNP
 toggleswitch
+Toolhelp
 toolkitconverters
 Toolset
 toolwindow
@@ -1590,6 +1613,7 @@ TRAYMOUSEMESSAGE
 triaging
 TRK
 trl
+trx
 Tsd
 TServer
 TStr
@@ -1632,6 +1656,7 @@ Updatelayout
 UPGRADINGPRODUCTCODE
 Uptool
 urld
+urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
@@ -1690,10 +1715,12 @@ vscdb
 vsconfig
 VSCROLL
 vsetq
+VSINSTALLDIR
 VSM
 vso
 vsonline
 vstemplate
+vstest
 VSTHRD
 VSTT
 vswhere
@@ -1707,6 +1734,7 @@ wcautil
 WCE
 wcex
 WClass
+wcsicmp
 wcsnicmp
 WDA
 wdp

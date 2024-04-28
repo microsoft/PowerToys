@@ -395,6 +395,7 @@
         <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)"/>
       </Directory>
       <Directory Id="DesktopFolder" Name="Desktop" />
+      <Directory Id="PersonalFolder" Name="UserHomeDocuments" />
     </Directory>
   </Fragment>
 </Wix>

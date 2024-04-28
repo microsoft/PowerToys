@@ -54,6 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "PT",
             "RO",
             "SK",
+            "SL",
             "SP",
             "SR",
             "SV",

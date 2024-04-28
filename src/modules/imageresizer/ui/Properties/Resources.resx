@@ -140,13 +140,13 @@
     <value>Custom</value>
   </data>
   <data name="Input_IgnoreOrientation" xml:space="preserve">
-    <value>Ign_ore the orientation of pictures</value>
+    <value>Ignore the _orientation of pictures</value>
   </data>
   <data name="Input_GifWarning" xml:space="preserve">
     <value>Gif files with animations may not be correctly resized.</value>
   </data>
   <data name="Input_Replace" xml:space="preserve">
-    <value>R_esize the original pictures (don't create copies)</value>
+    <value>Ov_erwrite files</value>
   </data>
   <data name="Input_Resize" xml:space="preserve">
     <value>Resize</value>
@@ -189,33 +189,43 @@
   </data>
   <data name="Progress_TimeRemaining_HourMinute" xml:space="preserve">
     <value>About {0} hour, {1} minute remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_HourMinutes" xml:space="preserve">
     <value>About {0} hour, {1} minutes remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_HoursMinute" xml:space="preserve">
     <value>About {0} hours, {1} minute remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_HoursMinutes" xml:space="preserve">
     <value>About {0} hours, {1} minutes remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_MinuteSecond" xml:space="preserve">
     <value>About {1} minute, {2} second remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_MinuteSeconds" xml:space="preserve">
     <value>About {1} minute, {2} seconds remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_MinutesSecond" xml:space="preserve">
     <value>About {1} minutes, {2} second remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_MinutesSeconds" xml:space="preserve">
     <value>About {1} minutes, {2} seconds remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_Second" xml:space="preserve">
     <value>About {2} second remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_Seconds" xml:space="preserve">
     <value>About {2} seconds remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="ResizeFit_Fill" xml:space="preserve">
     <value>Fill</value>
@@ -262,9 +272,6 @@
   <data name="Small" xml:space="preserve">
     <value>Small</value>
   </data>
-  <data name="Times_Symbol" xml:space="preserve">
-    <value>Times Symbol</value>
-  </data>
   <data name="Unit" xml:space="preserve">
     <value>Unit</value>
   </data>
@@ -281,14 +288,12 @@
     <value>Settings</value>
   </data>
   <data name="Input_RemoveMetadata" xml:space="preserve">
-    <value>Remove metadata that doesn't affect rendering</value>
+    <value>Remove meta_data that doesn't affect rendering</value>
   </data>
-  <data name="HeightChar" xml:space="preserve">
-    <value>H</value>
-    <comment>First character of 'Height'</comment>
+  <data name="Image_Sizes" xml:space="preserve">
+    <value>Image sizes</value>
   </data>
-  <data name="WidthChar" xml:space="preserve">
-    <value>W</value>
-    <comment>First character of 'Width'</comment>
+  <data name="Input_ShrinkOnly.Content" xml:space="preserve">
+    <value>_Make pictures smaller but not larger</value>
   </data>
 </root>

@@ -29,6 +29,7 @@ videoconference
 
 # USERS
 
+Adoumie
 Advaith
 alekhyareddy
 Aleks
@@ -40,19 +41,23 @@ Bao
 betadele
 betsegaw
 bricelam
+CCcat
 Chinh
 chrdavis
 Chrzan
 clayton
 Coplen
+craigloewen
 crutkas
 damienleroy
 davidegiacometti
 debian
 Delimarsky
 Deondre
+DHowett
 ductdo
 Essey
+ethanfangg
 frankychen
 gabime
 Galaxi
@@ -70,6 +75,7 @@ htcfreek
 Huynh
 Jaswal
 jefflord
+Jordi
 jyuwono
 Kamra
 Kantarci
@@ -86,6 +92,7 @@ martinchrzan
 martinmoene
 Melman
 Mikhayelyan
+msft
 Myrvold
 Nemeth
 nielslaute
@@ -99,6 +106,7 @@ Pooja
 Quriz
 randyrants
 ricardosantos
+ritchielawrence
 robmikh
 Rutkas
 ryanbodrug
@@ -124,10 +132,13 @@ Yuniardi
 yuyoyuppe
 Zoltan
 Zykova
-
+Kairu
+Deibisu
+riri
 
 # OTHERS
 
+cmdow
 Controlz
 cortana
 fancymouse

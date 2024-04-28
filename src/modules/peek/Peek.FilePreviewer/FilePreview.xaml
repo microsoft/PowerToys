@@ -30,15 +30,16 @@
             MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"
             MaxHeight="{x:Bind ImagePreviewer.MaxImageSize.Height, Mode=OneWay}"
             Source="{x:Bind ImagePreviewer.Preview, Mode=OneWay}"
-            ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind InfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}" />
 
         <MediaPlayerElement
             x:Name="VideoPreview"
             AreTransportControlsEnabled="True"
             AutoPlay="True"
+            FlowDirection="LeftToRight"
             Source="{x:Bind VideoPreviewer.Preview, Mode=OneWay}"
-            ToolTipService.ToolTip="{x:Bind ImageInfoTooltip, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind InfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
             <MediaPlayerElement.KeyboardAccelerators>
                 <KeyboardAccelerator Key="Space" Invoked="KeyboardAccelerator_Space_Invoked" />
@@ -47,15 +48,22 @@
                 <MediaTransportControls
                     x:Name="mediaTransport"
                     Width="auto"
-                    MaxWidth="420"
+                    MaxWidth="800"
                     IsCompact="True" />
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
+
+        <controls:AudioControl
+            x:Name="AudioPreview"
+            Source="{x:Bind AudioPreviewer.Preview, Mode=OneWay}"
+            ToolTipText="{x:Bind InfoTooltip, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(AudioPreviewer, Previewer.State), Mode=OneWay}" />
 
         <controls:BrowserControl
             x:Name="BrowserPreview"
             x:Load="True"
             DOMContentLoaded="BrowserPreview_DOMContentLoaded"
+            FlowDirection="LeftToRight"
             IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"
             NavigationCompleted="PreviewBrowser_NavigationCompleted"
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
@@ -69,6 +77,11 @@
             Size="{x:Bind ArchivePreviewer.SizeText, Mode=OneWay}"
             Source="{x:Bind ArchivePreviewer.Tree, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(ArchivePreviewer, Previewer.State), Mode=OneWay}" />
+
+        <controls:DriveControl
+            x:Name="DrivePreview"
+            Source="{x:Bind DrivePreviewer.Preview, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(DrivePreviewer, Previewer.State), Mode=OneWay}" />
 
         <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"

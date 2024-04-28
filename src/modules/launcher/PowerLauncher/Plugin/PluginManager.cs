@@ -30,7 +30,7 @@ namespace PowerLauncher.Plugin
         private static readonly IDirectory Directory = FileSystem.Directory;
         private static readonly object AllPluginsLock = new object();
 
-        private static readonly CompositeFormat FailedToInitializePluginsTitle = System.Text.CompositeFormat.Parse(Properties.Resources.FailedToInitializePluginsTitle);
+        private static readonly CompositeFormat FailedToInitializePluginsDescription = System.Text.CompositeFormat.Parse(Properties.Resources.FailedToInitializePluginsDescription);
 
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
@@ -184,7 +184,7 @@ namespace PowerLauncher.Plugin
             if (!failedPlugins.IsEmpty)
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
-                var description = string.Format(CultureInfo.CurrentCulture, FailedToInitializePluginsTitle, failed);
+                var description = string.Format(CultureInfo.CurrentCulture, FailedToInitializePluginsDescription, failed);
                 Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false));
             }
         }
@@ -220,8 +220,7 @@ namespace PowerLauncher.Plugin
 
                     if (results != null)
                     {
-                        UpdatePluginMetadata(results, metadata, query);
-                        UpdateResultWithActionKeyword(results, query);
+                        UpdateResults(results, metadata, query);
                     }
                 });
 
@@ -233,14 +232,6 @@ namespace PowerLauncher.Plugin
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;
 
-                if (results != null)
-                {
-                    foreach (var result in results)
-                    {
-                        result.Metadata = pair.Metadata;
-                    }
-                }
-
                 return results;
             }
             catch (Exception e)
@@ -251,10 +242,15 @@ namespace PowerLauncher.Plugin
             }
         }
 
-        private static List<Result> UpdateResultWithActionKeyword(List<Result> results, Query query)
+        private static void UpdateResults(List<Result> results, PluginMetadata metadata, Query query)
         {
             foreach (Result result in results)
             {
+                result.PluginDirectory = metadata.PluginDirectory;
+                result.PluginID = metadata.ID;
+                result.OriginQuery = query;
+                result.Metadata = metadata;
+
                 if (string.IsNullOrEmpty(result.QueryTextDisplay))
                 {
                     result.QueryTextDisplay = result.Title;
@@ -266,8 +262,6 @@ namespace PowerLauncher.Plugin
                     result.QueryTextDisplay = string.Format(CultureInfo.CurrentCulture, "{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
                 }
             }
-
-            return results;
         }
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)

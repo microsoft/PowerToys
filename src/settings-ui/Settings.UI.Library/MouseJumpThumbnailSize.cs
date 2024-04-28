@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class MouseJumpThumbnailSize : INotifyPropertyChanged
+    public record MouseJumpThumbnailSize : INotifyPropertyChanged, ICmdLineRepresentable
     {
         private int _width;
         private int _height;
@@ -63,6 +63,31 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public static bool TryParseFromCmd(string cmd, out object result)
+        {
+            result = null;
+
+            var parts = cmd.Split('x');
+            if (parts.Length != 2)
+            {
+                return false;
+            }
+
+            if (int.TryParse(parts[0], out int width) && int.TryParse(parts[1], out int height))
+            {
+                result = new MouseJumpThumbnailSize { Width = width, Height = height };
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryToCmdRepresentable(out string result)
+        {
+            result = $"{Width}x{Height}";
+            return true;
         }
     }
 }

@@ -156,7 +156,7 @@ extends:
           inputs:
             solution: '**\PowerToys.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -167,7 +167,7 @@ extends:
           inputs:
             solution: '**/tools/BugReportTool/BugReportTool.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -178,7 +178,7 @@ extends:
           inputs:
             solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -189,7 +189,7 @@ extends:
           inputs:
             solution: '**/tools/StylesReportTool/StylesReportTool.sln'
             vsVersion: 17.0
-            msbuildArgs: -restore /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
@@ -202,6 +202,7 @@ extends:
             vsVersion: 17.0
             msbuildArgs: >-
               /target:Publish
+              /graph
               /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
               /p:VCRTForwarders-IncludeDebugCRT=false
               /p:PowerToysRoot=$(Build.SourcesDirectory)
@@ -218,6 +219,7 @@ extends:
             # The arguments should be the same as the ones for Settings; make sure they are.
             msbuildArgs: >-
               /target:Publish
+              /graph
               /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
               /p:VCRTForwarders-IncludeDebugCRT=false
               /p:PowerToysRoot=$(Build.SourcesDirectory)
@@ -234,6 +236,7 @@ extends:
             # The arguments should be the same as the ones for Settings; make sure they are.
             msbuildArgs: >-
               /target:Publish
+              /graph
               /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
               /p:VCRTForwarders-IncludeDebugCRT=false
               /p:PowerToysRoot=$(Build.SourcesDirectory)
@@ -250,6 +253,7 @@ extends:
             # The arguments should be the same as the ones for Settings; make sure they are.
             msbuildArgs: >-
               /target:Publish
+              /graph
               /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
               /p:VCRTForwarders-IncludeDebugCRT=false
               /p:PowerToysRoot=$(Build.SourcesDirectory)
@@ -266,6 +270,7 @@ extends:
             # The arguments should be the same as the ones for Settings; make sure they are.
             msbuildArgs: >-
               /target:Publish
+              /graph
               /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
               /p:VCRTForwarders-IncludeDebugCRT=false
               /p:PowerToysRoot=$(Build.SourcesDirectory)
@@ -282,6 +287,7 @@ extends:
             # The arguments should be the same as the ones for Settings; make sure they are.
             msbuildArgs: >-
               /target:Publish
+              /graph
               /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
               /p:VCRTForwarders-IncludeDebugCRT=false
               /p:PowerToysRoot=$(Build.SourcesDirectory)
@@ -298,6 +304,7 @@ extends:
             # The arguments should be the same as the ones for Settings; make sure they are.
             msbuildArgs: >-
               /target:Publish
+              /graph
               /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
               /p:VCRTForwarders-IncludeDebugCRT=false
               /p:PowerToysRoot=$(Build.SourcesDirectory)
@@ -340,6 +347,15 @@ extends:
             FolderPath: '$(BuildPlatform)/$(BuildConfiguration)' # Video conf uses x86 and x64.
             signType: batchSigning
             batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
+            ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
+          displayName: Sign DSC Powershell files
+          inputs:
+            ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+            FolderPath: 'src/dsc/Microsoft.PowerToys.Configure'
+            signType: batchSigning
+            batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
             ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
         - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3

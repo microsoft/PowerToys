@@ -57,9 +57,9 @@ namespace ImageResizer.ViewModels
 
         public Settings Settings { get; }
 
-        public IEnumerable<ResizeFit> ResizeFitValues { get => Enum.GetValues(typeof(ResizeFit)).Cast<ResizeFit>(); }
+        public IEnumerable<ResizeFit> ResizeFitValues => Enum.GetValues(typeof(ResizeFit)).Cast<ResizeFit>();
 
-        public IEnumerable<ResizeUnit> ResizeUnitValues { get => Enum.GetValues(typeof(ResizeUnit)).Cast<ResizeUnit>(); }
+        public IEnumerable<ResizeUnit> ResizeUnitValues => Enum.GetValues(typeof(ResizeUnit)).Cast<ResizeUnit>();
 
         public ICommand ResizeCommand { get; }
 
@@ -69,14 +69,9 @@ namespace ImageResizer.ViewModels
 
         public ICommand EnterKeyPressedCommand { get; private set; }
 
-        public bool TryingToResizeGifFiles
-        {
-            get
-            {
-                // Any of the files is a gif.
-                return _batch.Files.Any(filename => filename.EndsWith(".gif", System.StringComparison.InvariantCultureIgnoreCase));
-            }
-        }
+        // Any of the files is a gif
+        public bool TryingToResizeGifFiles =>
+                _batch.Files.Any(filename => filename.EndsWith(".gif", System.StringComparison.InvariantCultureIgnoreCase));
 
         public void Resize()
         {

@@ -71,7 +71,7 @@ namespace
         }
 
         result = spView->QueryInterface(riid, ppv);
-        if (result != S_OK || ppv == nullptr || *ppv == nullptr )
+        if (result != S_OK || ppv == nullptr || *ppv == nullptr)
         {
             Logger::warn(L"Failed to query interface. {}", GetErrorString(result));
             return false;
@@ -83,7 +83,7 @@ namespace
     inline bool GetDesktopAutomationObject(REFIID riid, void** ppv)
     {
         CComPtr<IShellView> spsv;
-        
+
         // Desktop may not be available on startup
         auto attempts = 5;
         for (auto i = 1; i <= attempts; i++)
@@ -207,8 +207,34 @@ inline bool drop_elevated_privileges()
     return result;
 }
 
+// Run command as different user, returns true if succeeded
+inline HANDLE run_as_different_user(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr, const bool showWindow = true)
+{
+    Logger::info(L"run_elevated with params={}", params);
+    SHELLEXECUTEINFOW exec_info = { 0 };
+    exec_info.cbSize = sizeof(SHELLEXECUTEINFOW);
+    exec_info.lpVerb = L"runAsUser";
+    exec_info.lpFile = file.c_str();
+    exec_info.lpParameters = params.c_str();
+    exec_info.hwnd = 0;
+    exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
+    exec_info.lpDirectory = workingDir;
+    exec_info.hInstApp = 0;
+    if (showWindow)
+    {
+        exec_info.nShow = SW_SHOWDEFAULT;
+    }
+    else
+    {
+        // might have limited success, but only option with ShellExecuteExW
+        exec_info.nShow = SW_HIDE;
+    }
+
+    return ShellExecuteExW(&exec_info) ? exec_info.hProcess : nullptr;
+}
+
 // Run command as elevated user, returns true if succeeded
-inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params)
+inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir = nullptr, const bool showWindow = true)
 {
     Logger::info(L"run_elevated with params={}", params);
     SHELLEXECUTEINFOW exec_info = { 0 };
@@ -218,15 +244,24 @@ inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params)
     exec_info.lpParameters = params.c_str();
     exec_info.hwnd = 0;
     exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
-    exec_info.lpDirectory = 0;
+    exec_info.lpDirectory = workingDir;
     exec_info.hInstApp = 0;
-    exec_info.nShow = SW_SHOWDEFAULT;
+
+    if (showWindow)
+    {
+        exec_info.nShow = SW_SHOWDEFAULT;
+    }
+    else
+    {
+        // might have limited success, but only option with ShellExecuteExW
+        exec_info.nShow = SW_HIDE;
+    }
 
     return ShellExecuteExW(&exec_info) ? exec_info.hProcess : nullptr;
 }
 
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
-inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr)
+inline bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr, const bool showWindow = true)
 {
     Logger::info(L"run_non_elevated with params={}", params);
     auto executable_args = L"\"" + file + L"\"";
@@ -292,15 +327,22 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     STARTUPINFOEX siex = { 0 };
     siex.lpAttributeList = pptal;
     siex.StartupInfo.cb = sizeof(siex);
-
     PROCESS_INFORMATION pi = { 0 };
+    auto dwCreationFlags = EXTENDED_STARTUPINFO_PRESENT;
+
+    if (!showWindow)
+    {
+        siex.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
+        siex.StartupInfo.wShowWindow = SW_HIDE;
+        dwCreationFlags = CREATE_NO_WINDOW;
+    }
 
     auto succeeded = CreateProcessW(file.c_str(),
                                     &executable_args[0],
                                     nullptr,
                                     nullptr,
                                     FALSE,
-                                    EXTENDED_STARTUPINFO_PRESENT,
+                                    dwCreationFlags,
                                     nullptr,
                                     workingDir,
                                     &siex.StartupInfo,
@@ -341,7 +383,10 @@ inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& param
     catch (...)
     {
     }
-    if (SUCCEEDED(co_init)) CoUninitialize();
+    if (SUCCEEDED(co_init))
+    {
+        CoUninitialize();
+    }
 
     return success;
 }
@@ -372,7 +417,7 @@ inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& fil
         }
     }
 
-    auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE | handleAccess );
+    auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE | handleAccess);
 
     if (handles.empty())
         return std::nullopt;
@@ -385,7 +430,7 @@ inline std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& fil
 }
 
 // Run command with the same elevation, returns true if succeeded
-inline bool run_same_elevation(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
+inline bool run_same_elevation(const std::wstring& file, const std::wstring& params, DWORD* returnPid, const wchar_t* workingDir = nullptr)
 {
     auto executable_args = L"\"" + file + L"\"";
     if (!params.empty())
@@ -403,7 +448,7 @@ inline bool run_same_elevation(const std::wstring& file, const std::wstring& par
                                     FALSE,
                                     0,
                                     nullptr,
-                                    nullptr,
+                                    workingDir,
                                     &si,
                                     &pi);
 
