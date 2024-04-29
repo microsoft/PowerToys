@@ -29,7 +29,7 @@ namespace LoggerHelpers
         return false;
     }
 
-    inline bool dir_exists(std::filesystem::path dir)
+    inline bool dir_exists(const std::filesystem::path& dir)
     {
         std::error_code err;
         auto entry = std::filesystem::directory_entry(dir, err);
@@ -81,7 +81,7 @@ namespace LoggerHelpers
         return result;
     }
 
-    inline void init_logger(std::wstring moduleName, std::wstring internalPath, std::string loggerName)
+    inline void init_logger(const std::wstring& moduleName, std::wstring internalPath, std::string loggerName)
     {
         std::filesystem::path rootFolder(PTSettingsHelper::get_module_save_folder_location(moduleName));
         rootFolder.append(internalPath);

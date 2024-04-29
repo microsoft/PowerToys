@@ -19,8 +19,7 @@ namespace PowerToys.FileLocksmithUI.Converters
                 return string.Empty;
             }
 
-            string firstPath = paths[0];
-            firstPath = Path.GetFileName(paths[0]);
+            var firstPath = Path.GetFileName(paths[0]);
             if (string.IsNullOrEmpty(firstPath))
             {
                 firstPath = Path.GetDirectoryName(paths[0]);

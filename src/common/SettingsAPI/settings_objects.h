@@ -95,7 +95,7 @@ namespace PowerToysSettings
         void set_version();
         json::JsonObject m_json;
         std::wstring _key;
-        PowerToyValues() {}
+        PowerToyValues() = default;
     };
 
     class CustomActionObject

@@ -61,7 +61,7 @@ namespace json
         return json::JsonValue::CreateBooleanValue(boolean);
     }
 
-    inline JsonValue value(JsonObject value)
+    inline JsonValue value(const JsonObject& value)
     {
         return value.as<JsonValue>();
     }

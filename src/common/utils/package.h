@@ -37,7 +37,7 @@ namespace package {
             dwlConditionMask);
     }
 
-    inline bool IsPackageRegistered(std::wstring packageDisplayName)
+    inline bool IsPackageRegistered(const std::wstring& packageDisplayName)
     {
         using namespace winrt::Windows::Foundation;
         using namespace winrt::Windows::Management::Deployment;

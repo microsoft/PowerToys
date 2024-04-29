@@ -93,13 +93,13 @@ namespace powertoys_gpo {
         // Read string
         if (RegGetValueW(hRootKey, subKey.c_str(), value_name.c_str(), reg_flags, &reg_value_type, temp_buffer, &string_buffer_capacity) != ERROR_SUCCESS)
         {
-            delete temp_buffer;
+            delete[] temp_buffer;
             return std::nullopt;
         }
 
         // Convert buffer to std::wstring, delete buffer and return REG_SZ value
         std::wstring string_value = temp_buffer;
-        delete temp_buffer;
+        delete[] temp_buffer;
         return string_value;
     }
 
@@ -421,9 +421,9 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_ALLOW_EXPERIMENTATION);
     }
 
-    inline gpo_rule_configured_t getRunPluginEnabledValue(std::string pluginID)
+    inline gpo_rule_configured_t getRunPluginEnabledValue(const std::string& pluginID)
     {     
-        if (pluginID == "" || pluginID == " ")
+        if (pluginID.empty() || pluginID == " ")
         {
             // this plugin id can't exist in the registry
             return gpo_rule_configured_not_configured;

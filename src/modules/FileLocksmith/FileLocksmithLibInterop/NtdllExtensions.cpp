@@ -75,7 +75,7 @@ namespace
         
             for (auto mod : modules)
             {
-                result.push_back(get_module_name(process, mod));
+                result.emplace_back(get_module_name(process, mod));
             }
 
             completed = true;

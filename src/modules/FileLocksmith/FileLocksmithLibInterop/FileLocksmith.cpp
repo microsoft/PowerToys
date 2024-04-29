@@ -3,7 +3,7 @@
 #include "FileLocksmith.h"
 #include "NtdllExtensions.h"
 
-static bool is_directory(const std::wstring path)
+static bool is_directory(const std::wstring& path)
 {
     DWORD attributes = GetFileAttributesW(path.c_str());
     return attributes != INVALID_FILE_ATTRIBUTES && attributes & FILE_ATTRIBUTE_DIRECTORY;
@@ -71,7 +71,7 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
             auto path = kernel_paths_contain(handle_info.kernel_file_name);
             if (!path.empty())
             {
-                pid_files[handle_info.pid].insert(std::move(path));
+                pid_files[handle_info.pid].emplace(std::move(path));
             }
         }
     }
@@ -88,7 +88,7 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
             auto found_path = kernel_paths_contain(kernel_name);
             if (!found_path.empty())
             {
-                pid_files[process.pid].insert(std::move(found_path));
+                pid_files[process.pid].emplace(std::move(found_path));
             }
         }
     }
