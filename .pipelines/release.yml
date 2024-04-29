@@ -33,6 +33,10 @@ extends:
       name: SHINE-INT-S
       image: SHINE-VS17-Latest
       os: windows
+    sdl:
+      tsa:
+        enabled: true
+        configFile: '$(Build.SourcesDirectory)\.pipelines\tsa.json'
 
     stages:
     - stage: build
@@ -55,9 +59,6 @@ extends:
           - output: pipelineArtifact
             artifactName: setup-$(BuildPlatform)
             targetPath: $(Build.ArtifactStagingDirectory)
-          sdl:
-            baseline:
-              baselineFile: $(Build.SourcesDirectory)\.pipelines\sdl.gdnbaselines
         displayName: Build
         timeoutInMinutes: 240 # Some of the 1ES Pipeline stuff and Loc take a very long time
         cancelTimeoutInMinutes: 1
