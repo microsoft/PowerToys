@@ -107,9 +107,9 @@ extends:
             authId: '$(TouchdownApplicationID)'
             authKey: '$(TouchdownApplicationKey)'
             resourceFilePath: |
-             **\Resources.resx
-             **\Resource.resx
-             **\Resources.resw
+             **\EnvironmentVariablesUILib\**\Resources.resw
+             **\HostsUILib\**\Resources.resw
+             **\RegistryPreviewUILib\**\Resources.resw
             appendRelativeDir: true
             localizationTarget: false
             # pseudoSetting: Included
