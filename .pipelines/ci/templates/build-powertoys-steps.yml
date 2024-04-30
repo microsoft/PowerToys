@@ -84,6 +84,14 @@ steps:
   displayName: Ensure VSTest Platform
 
 - ${{ if eq(parameters.enableCaching, true) }}:
+  # Needed to trigger the pipeline in setting up Pipeline Caching which is what project caching uses as the backing store.
+  # Note: The EnablePipelineCache pipeline variable should also enable this, but doesn't appear to be respected in pipeline runs from forks
+  - task: Cache@2
+    displayName: 'Enable Pipeline Caching'
+    inputs:
+      key: '"PiplineCaching" | packages.config'
+      path: packages
+
   - task: NuGetToolInstaller@1
     displayName: Install NuGet
 
