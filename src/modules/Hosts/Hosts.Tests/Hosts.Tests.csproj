@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hosts\Hosts.csproj" />
+    <ProjectReference Include="..\HostsUILib\HostsUILib.csproj" />
   </ItemGroup>
 
 </Project>
