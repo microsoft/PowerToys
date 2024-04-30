@@ -60,7 +60,6 @@ extends:
         timeoutInMinutes: 240 # Some of the 1ES Pipeline stuff and Loc take a very long time
         cancelTimeoutInMinutes: 1
         variables:
-          BuildPlatform: x64
           SkipCppCodeAnalysis: 1 # Skip the code analysis to speed up release CI. It runs on PR CI, anyway
 
         steps:

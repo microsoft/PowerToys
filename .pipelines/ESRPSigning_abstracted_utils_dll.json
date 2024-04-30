@@ -4,9 +4,9 @@
     "SignBatches": [
         {
             "MatchedPath": [
-                "PowerToys.HostsUILib.dll",
-                "PowerToys.EnvironmentVariablesUILib.dll",
-                "PowerToys.RegistryPreviewUILib.dll"
+                "**\\bin\\**\\PowerToys.HostsUILib.dll",
+                "**\\bin\\**\\PowerToys.EnvironmentVariablesUILib.dll",
+                "**\\bin\\**\\PowerToys.RegistryPreviewUILib.dll"
             ],
             "SigningInfo": {
                 "Operations": [
