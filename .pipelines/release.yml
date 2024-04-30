@@ -206,7 +206,7 @@ extends:
             flattenFolders: True
             targetFolder: $(Build.ArtifactStagingDirectory)/nupkg
 
-        - task: EsrpCodeSigning@1
+        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
           displayName: Submit *.nupkg to ESRP for code signing
           inputs:
             ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'

@@ -1,12 +1,12 @@
 {
     "Version": "1.0.0",
-    "UseMinimatch": false,
+    "UseMinimatch": true,
     "SignBatches": [
         {
             "MatchedPath": [
-                "**\\bin\\**\\PowerToys.HostsUILib.dll",
-                "**\\bin\\**\\PowerToys.EnvironmentVariablesUILib.dll",
-                "**\\bin\\**\\PowerToys.RegistryPreviewUILib.dll"
+                "Hosts/HostsUILib/bin/**/PowerToys.HostsUILib.dll",
+                "EnvironmentVariables/EnvironmentVariablesUILib/bin/**/PowerToys.EnvironmentVariablesUILib.dll",
+                "RegistryPreview/RegistryPreviewUILib/bin/**/PowerToys.RegistryPreviewUILib.dll"
             ],
             "SigningInfo": {
                 "Operations": [
