@@ -34,11 +34,9 @@ jobs:
   - template: ./templates/build-powertoys-ci.yml
     parameters:
       platform: x64
-      enableCaching: true
   - template: ./templates/build-powertoys-ci.yml
     parameters:
       platform: arm64
-      enableCaching: true
   - template: ./templates/run-ui-tests-ci.yml
     parameters:
       platform: x64 
