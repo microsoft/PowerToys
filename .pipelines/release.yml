@@ -132,7 +132,6 @@ extends:
             solution: '**\HostsUILib.csproj'
             vsVersion: 17.0
             msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
-            platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
             maximumCpuCount: true
@@ -143,7 +142,6 @@ extends:
             solution: '**\EnvironmentVariablesUILib.csproj'
             vsVersion: 17.0
             msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
-            platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
             maximumCpuCount: true
@@ -154,7 +152,6 @@ extends:
             solution: '**\RegistryPreviewUILib.csproj'
             vsVersion: 17.0
             msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
-            platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
             maximumCpuCount: true
