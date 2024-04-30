@@ -127,11 +127,33 @@ extends:
             pwsh: true
 
         - task: VSBuild@1
-          displayName: Build Utilities
+          displayName: Build Hosts File Editor UI Library
           inputs:
-            solution: '**\PowerToys.sln'
+            solution: '**\HostsUILib.csproj'
             vsVersion: 17.0
-            msbuildArgs: -restore -graph -t:modules\Hosts\HostsUILib;modules\EnvironmentVariables\EnvironmentVariablesUILib;modules\RegistryPreview\RegistryPreviewUILib /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            platform: $(BuildPlatform)
+            configuration: $(BuildConfiguration)
+            clean: true
+            maximumCpuCount: true
+
+        - task: VSBuild@1
+          displayName: Build Environment Variables UI Library
+          inputs:
+            solution: '**\EnvironmentVariablesUILib.csproj'
+            vsVersion: 17.0
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            platform: $(BuildPlatform)
+            configuration: $(BuildConfiguration)
+            clean: true
+            maximumCpuCount: true
+
+        - task: VSBuild@1
+          displayName: Build Registry Preview UI Library
+          inputs:
+            solution: '**\RegistryPreviewUILib.csproj'
+            vsVersion: 17.0
+            msbuildArgs: -restore -graph /p:RestorePackagesConfig=true /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:CIBuild=true /bl:$(Build.SourcesDirectory)\msbuild.binlog
             platform: $(BuildPlatform)
             configuration: $(BuildConfiguration)
             clean: true
