@@ -204,7 +204,33 @@ extends:
           inputs:
             contents: "**/bin/Release/PowerToys*.nupkg"
             flattenFolders: True
-            targetFolder: $(Build.ArtifactStagingDirectory)
+            targetFolder: $(Build.ArtifactStagingDirectory)/nupkg
+
+        - task: EsrpCodeSigning@1
+          displayName: Submit *.nupkg to ESRP for code signing
+          inputs:
+            ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+            FolderPath: $(Build.ArtifactStagingDirectory)/nupkg
+            Pattern: '*.nupkg'
+            UseMinimatch: true
+            signConfigType: inlineSignParams
+            inlineOperation: >-
+              [
+                  {
+                      "KeyCode": "CP-401405",
+                      "OperationCode": "NuGetSign",
+                      "Parameters": {},
+                      "ToolName": "sign",
+                      "ToolVersion": "1.0"
+                  },
+                  {
+                      "KeyCode": "CP-401405",
+                      "OperationCode": "NuGetVerify",
+                      "Parameters": {},
+                      "ToolName": "sign",
+                      "ToolVersion": "1.0"
+                  }
+              ]
 
       - job: Build
         strategy:
