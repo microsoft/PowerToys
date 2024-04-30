@@ -28,17 +28,16 @@ name: 0.0.$(Date:yyMM).$(Date:dd)$(Rev:rr)
 
 variables:
   EnablePipelineCache: true
+  MSBuildCacheEnabled: ${{ variables.EnablePipelineCache }}
 
 jobs:
   - template: ./templates/build-powertoys-precheck.yml
   - template: ./templates/build-powertoys-ci.yml
     parameters:
       platform: x64
-      enableCaching: true
   - template: ./templates/build-powertoys-ci.yml
     parameters:
       platform: arm64
-      enableCaching: true
   - template: ./templates/run-ui-tests-ci.yml
     parameters:
       platform: x64 

@@ -2,9 +2,6 @@ parameters:
   - name: additionalBuildArguments
     type: string
     default: ''
-  - name: enableCaching
-    type: boolean
-    default: false
 
 steps:
 - checkout: self
@@ -83,7 +80,7 @@ steps:
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
 
-- ${{ if eq(parameters.enableCaching, true) }}:
+- ${{ if eq(variables.MSBuildCacheEnabled, 'true') }}:
   - task: NuGetToolInstaller@1
     displayName: Install NuGet
 
@@ -97,13 +94,13 @@ steps:
     vsVersion: 17.0
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    ${{ if eq(parameters.enableCaching, true) }}:
-      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -t:Build;Test -graph -reportfileaccesses -p:MSBuildCacheEnabled=true -p:MSBuildCacheLogDirectory=$(Build.ArtifactStagingDirectory)\logs\MSBuildCache -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
+    ${{ if eq(variables.MSBuildCacheEnabled, 'true') }}:
+      msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -t:Build;Test -graph -reportfileaccesses -p:MSBuildCacheLogDirectory=$(Build.ArtifactStagingDirectory)\logs\MSBuildCache -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
     ${{ else }}:
       msbuildArgs: -restore ${{ parameters.additionalBuildArguments }} -t:Build;Test -graph -bl:$(Build.ArtifactStagingDirectory)\logs\PowerToys.binlog -ds:false
     msbuildArchitecture: x64
     maximumCpuCount: true
-  ${{ if eq(parameters.enableCaching, true) }}:
+  ${{ if eq(variables.MSBuildCacheEnabled, 'true') }}:
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
