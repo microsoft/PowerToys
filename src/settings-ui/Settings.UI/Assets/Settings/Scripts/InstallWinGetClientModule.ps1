@@ -1,8 +1,12 @@
-if (Get-Module -ListAvailable -Name Microsoft.WinGet.Client)
-{
-  Write-Host "WinGet Client module detected."
-  # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
-} 
+$wingetModule = Get-Module -ListAvailable -Name Microsoft.WinGet.Client
+if ($wingetModule) {
+  if ($wingetModule.Version -ge "1.8.1133") {
+    Write-Host "WinGet Client module detected."
+    # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
+  } else {
+      Upgrade-Module -Name Microsoft.WinGet.Client
+  }
+}
 else {
   Install-Module -Name Microsoft.WinGet.Client
   if (Get-Module -ListAvailable -Name Microsoft.WinGet.Client)
