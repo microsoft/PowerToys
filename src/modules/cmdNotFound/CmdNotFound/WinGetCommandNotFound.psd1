@@ -7,5 +7,5 @@
     Description = 'Enable suggestions on how to install missing commands via winget'
     PowerShellVersion = '7.4'
     NestedModules = @('PowerToys.CmdNotFound.dll')
-    RequiredModules   = @(@{ModuleName = 'Microsoft.WinGet.Client';  ModuleVersion = "0.2.1"; })
+    RequiredModules   = @(@{ModuleName = 'Microsoft.WinGet.Client';  ModuleVersion = "1.8.1133"; })
 }
