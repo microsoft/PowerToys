@@ -65,7 +65,7 @@
                                 BorderThickness="0"
                                 CornerRadius="0"
                                 IsClosable="False"
-                                IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.IsArm64Arch, Converter={StaticResource BoolNegationConverter}}">
+                                IsOpen="True">
                                 <InfoBar.ActionButton>
                                     <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckRequirementsEventHandler}">
                                         <ToolTipService.ToolTip>
