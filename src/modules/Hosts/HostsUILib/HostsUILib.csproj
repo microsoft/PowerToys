@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0-windows10.0.20348</TargetFramework>
+    <TargetFramework>net9.0-windows10.0.20348</TargetFramework>
     <RootNamespace>HostsUILib</RootNamespace>
     <UseWinUI>true</UseWinUI>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
