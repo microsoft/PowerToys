@@ -2,7 +2,7 @@
   <Import Condition="exists('..\..\..\Version.props')" Project="..\..\..\Version.props" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0-windows10.0.20348</TargetFramework>
+    <TargetFramework>net9.0-windows10.0.20348</TargetFramework>
     <RootNamespace>RegistryPreviewUILib</RootNamespace>
     <UseWinUI>true</UseWinUI>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
