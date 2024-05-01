@@ -203,6 +203,12 @@ namespace winrt::PowerRenameUI::implementation
         m_CounterShortcuts.Append(winrt::make<PatternSnippet>(L"${padding=8}", manager.MainResourceMap().GetValue(L"Resources/CounterCheatSheet_Padding").ValueAsString()));
         m_CounterShortcuts.Append(winrt::make<PatternSnippet>(L"${increment=3,padding=4,start=900}", manager.MainResourceMap().GetValue(L"Resources/CounterCheatSheet_Complex").ValueAsString()));
 
+        m_RandomizerShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
+        m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${rstring=9}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Basic").ValueAsString()));
+        m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${rstringchar=13}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Char").ValueAsString()));
+        m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${rstringnum=36}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Num").ValueAsString()));
+        m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${ruuidv4}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Uuid").ValueAsString()));
+
         InitializeComponent();
 
         listView_ExplorerItems().ApplyTemplate();
