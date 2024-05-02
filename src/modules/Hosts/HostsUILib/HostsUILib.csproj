@@ -27,8 +27,6 @@
   <ItemGroup>
     <None Include="$(OutDir)\PowerToys.HostsUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
     <None Include="$(OutDir)\PowerToys.HostsUILib.pri" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
-    <XBFFile Include="$(OutDir)**\*.xbf" />
-    <None Include="@(XBFFile)" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
     <None Include="$(OutDir)\PowerToys.HostsUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
 
     <None Include="Assets\**\*.png" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets" />
