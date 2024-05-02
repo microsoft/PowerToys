@@ -740,19 +740,38 @@ namespace KeyboardEventHandlers
                             size_t key_count = 1;
                             LPINPUT keyEventList = nullptr;
 
-                            if (remapToShortcut)
+                            if (remapToShortcut && !it->first.HasChord())
+                            {
+                                keyEventList = new INPUT[key_count]{};
+                                Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                                if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
+                                {
+                                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
+                                }
+                            }
+                            else if (remapToShortcut && it->first.HasChord())
                             {
                                 key_count = (dest_size) + (src_size + 1) - (2 * static_cast<size_t>(commonKeys));
                                 keyEventList = new INPUT[key_count]{};
                                 Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                                if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
+                                {
+                                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
+                                }
                             }
                             else if (remapToKey)
                             {
-                                int i = 0;
-                                key_count = dest_size + (src_size - 1) + KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE;
                                 keyEventList = new INPUT[key_count]{};
                                 Helpers::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, static_cast<WORD>(state.GetPreviousActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                i++;
+
+                                auto maybeTargetKey = std::get_if<DWORD>(&it->second.targetShortcut);
+
+                                if (maybeTargetKey)
+                                {
+                                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, Helpers::FilterArtificialKeys(*maybeTargetKey));
+                                }
                             }
 
                             UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
@@ -812,18 +831,14 @@ namespace KeyboardEventHandlers
                     // Case 3: If the action key is released from the original shortcut, keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
                     if (!remapToText && ((!it->first.HasChord() && data->lParam->vkCode == it->first.GetActionKey()) || (it->first.HasChord() && data->lParam->vkCode == it->first.GetSecondKey()) || (state.GetPreviousActionKey() != 0)) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
-                        size_t key_count = 1;
-                        LPINPUT keyEventList = nullptr;
-
-                        // Check if the released key is the previous action key. If so, reset previous action key 
-                        if (state.GetPreviousActionKey() == data->lParam->vkCode)
-                        {
-                            state.SetPreviousActionKey(0);
-                        }
-                        else if (state.GetPreviousActionKey() != 0 && state.GetPreviousActionKey() != it->first.GetActionKey())
+                        // Check if the released key is the previous action key. If not, continue
+                        if (state.GetPreviousActionKey() != 0 && state.GetPreviousActionKey() != data->lParam->vkCode)
                         {
                             continue;
                         }
+
+                        size_t key_count = 1;
+                        LPINPUT keyEventList = nullptr;                        
 
                         if (remapToShortcut && !it->first.HasChord())
                         {
@@ -866,6 +881,13 @@ namespace KeyboardEventHandlers
                             // If remapped to disable, do nothing and suppress the key event
                             // Since the original shortcut's action key is released, set it to false
                             it->second.isOriginalActionKeyPressed = false;
+
+                            // Check if the released key is the previous action key. If so, reset previous action key
+                            if (state.GetPreviousActionKey() != 0 && state.GetPreviousActionKey() == data->lParam->vkCode)
+                            {
+                                state.SetPreviousActionKey(0);
+                            }
+
                             return 1;
                         }
                         else
@@ -918,6 +940,13 @@ namespace KeyboardEventHandlers
 
                         UINT res = ii.SendVirtualInput(static_cast<UINT>(key_count), keyEventList, sizeof(INPUT));
                         delete[] keyEventList;
+
+                        // Check if the released key is the previous action key. If so, reset previous action key
+                        if (state.GetPreviousActionKey() != 0 && state.GetPreviousActionKey() == data->lParam->vkCode)
+                        {
+                            state.SetPreviousActionKey(0);
+                        }                        
+
                         return 1;
                     }
 
