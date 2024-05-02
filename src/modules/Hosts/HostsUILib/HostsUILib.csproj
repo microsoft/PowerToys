@@ -17,6 +17,13 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Properties for nuget package. -->
+    <Authors>Microsoft Corporation</Authors>
+    <Description>Implements the UI control for the PowerToys Hosts File Editor Utility</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="$(OutDir)\PowerToys.HostsUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
     <None Include="$(OutDir)\PowerToys.HostsUILib.pri" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
