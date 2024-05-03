@@ -1,4 +1,4 @@
-{
+{.pipelines/ESRPSigning_core.json
     "Version": "1.0.0",
     "UseMinimatch": false,
     "SignBatches": [
