@@ -117,12 +117,12 @@ extends:
             targetType: filePath
             filePath: '$(build.sourcesdirectory)\.pipelines\installWiX.ps1'
 
-        - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
+        - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@3
           displayName: 'Download Localization Files -- PowerToys 37400'
           inputs:
             teamId: 37400
-            authId: '$(TouchdownApplicationID)'
-            authKey: '$(TouchdownApplicationKey)'
+            TDBuildServiceConnection: $(TouchdownServiceConnection)
+            authType: SubjectNameIssuer
             resourceFilePath: |
              **\Resources.resx
              **\Resource.resx
