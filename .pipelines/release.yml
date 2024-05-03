@@ -163,6 +163,77 @@ extends:
             clean: true
             maximumCpuCount: true
 
+        ### BEGIN SECTION - build and sign nuget packages for abstracted UI utils
+        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
+          displayName: Sign Utilities libraries
+          inputs:
+            ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+            FolderPath: 'src/modules'
+            signType: batchSigning
+            batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_abstracted_utils_dll.json'
+            ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+        - task: VSBuild@1
+          displayName: Create Hosts File Editor package
+          inputs:
+            solution: '**\HostsUILib.csproj'
+            vsVersion: 17.0
+            msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            configuration: $(BuildConfiguration)
+            maximumCpuCount: true
+
+        - task: VSBuild@1
+          displayName: Create Environment Variables Editor package
+          inputs:
+            solution: '**\EnvironmentVariablesUILib.csproj'
+            vsVersion: 17.0
+            msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            configuration: $(BuildConfiguration)
+            maximumCpuCount: true
+
+        - task: VSBuild@1
+          displayName: Create Registry Preview package
+          inputs:
+            solution: '**\RegistryPreviewUILib.csproj'
+            vsVersion: 17.0
+            msbuildArgs: /p:CIBuild=true -t:pack /bl:$(Build.SourcesDirectory)\msbuild.binlog
+            configuration: $(BuildConfiguration)
+            maximumCpuCount: true
+
+        - task: CopyFiles@2
+          displayName: Copying nuget packages file over
+          inputs:
+            contents: "**/bin/Release/PowerToys*.nupkg"
+            flattenFolders: True
+            targetFolder: $(Build.ArtifactStagingDirectory)/nupkg
+
+        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
+          displayName: Submit *.nupkg to ESRP for code signing
+          inputs:
+            ConnectedServiceName: 'Terminal/Console/WinAppDriver Team Code Signing Connection'
+            FolderPath: $(Build.ArtifactStagingDirectory)/nupkg
+            Pattern: '*.nupkg'
+            UseMinimatch: true
+            signConfigType: inlineSignParams
+            inlineOperation: >-
+              [
+                  {
+                      "KeyCode": "CP-401405",
+                      "OperationCode": "NuGetSign",
+                      "Parameters": {},
+                      "ToolName": "sign",
+                      "ToolVersion": "1.0"
+                  },
+                  {
+                      "KeyCode": "CP-401405",
+                      "OperationCode": "NuGetVerify",
+                      "Parameters": {},
+                      "ToolName": "sign",
+                      "ToolVersion": "1.0"
+                  }
+              ]
+        ### END SECTION - build and sign nuget packages for abstracted UI utils
+
         - task: VSBuild@1
           displayName: Build BugReportTool
           inputs:
