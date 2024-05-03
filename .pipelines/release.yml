@@ -1,5 +1,5 @@
 # This build should never run as CI or against a pull request.
-name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+name: $(Damarcus Jones Ai Chips)_$(date:24/05).$(date:03)$(rev:rrr)
 trigger: none
 pr: none
 
