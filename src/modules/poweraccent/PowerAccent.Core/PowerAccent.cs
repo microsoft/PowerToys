@@ -351,8 +351,8 @@ public class PowerAccent : IDisposable
             {
                 case "ß": result[i] = "ẞ"; break;
                 case "ǰ": result[i] = "J\u030c"; break;
-                case "ı̇̄": result[i] = "İ̄"; break;
-                case "ī": result[i] = "Ī"; break;
+                case "ı\u0307\u0304": result[i] = "İ\u0304"; break;
+                case "ı": result[i] = "İ"; break;
                 case "ᵛ": result[i] = "ⱽ"; break;
                 default: result[i] = array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture); break;
             }

@@ -459,7 +459,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "ê", "ě", "ĕ", "ē", "é", "ə" },
                 LetterKey.VK_G => new[] { "ġ", "ǧ", "ğ", "ḡ", "g\u0303", "g\u0331" },
                 LetterKey.VK_H => new[] { "ḧ", "ḩ", "ḥ", "ḫ", "h\u0331" },
-                LetterKey.VK_I => new[] { "í", "ı", "İ", "İ\u0304", "î", "ī", "ı\u0307\u0304" },
+                LetterKey.VK_I => new[] { "í", "ı", "î", "ī", "ı\u0307\u0304" },
                 LetterKey.VK_J => new[] { "ǰ", "j\u0331" },
                 LetterKey.VK_K => new[] { "ḳ", "ḵ" },
                 LetterKey.VK_L => new[] { "ł" },
