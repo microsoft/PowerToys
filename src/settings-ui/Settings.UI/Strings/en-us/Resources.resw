@@ -1494,6 +1494,9 @@
   <data name="ImageResizer_FallBackEncoderText.Header" xml:space="preserve">
     <value>Fallback encoder</value>
   </data>
+  <data name="ImageResizer_FallBackEncoderText.Description" xml:space="preserve">
+    <value>Used when missing encoder for original format</value>
+  </data>
   <data name="ImageResizer_FileFormatDescription.Text" xml:space="preserve">
     <value>The following parameters can be used:</value>
   </data>
