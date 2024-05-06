@@ -10,10 +10,11 @@ using System.Linq;
 using System.Windows.Forms;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using MouseJumpUI.Common.Helpers;
 using MouseJumpUI.Helpers;
 using MouseJumpUI.Models.Drawing;
 using MouseJumpUI.Models.Layout;
-using static MouseJumpUI.NativeMethods.Core;
+using static MouseJumpUI.Common.NativeMethods.Core;
 
 namespace MouseJumpUI;
 
