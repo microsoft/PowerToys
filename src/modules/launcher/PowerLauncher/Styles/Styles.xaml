@@ -84,11 +84,11 @@
                             <Setter TargetName="border" Property="Background" Value="Transparent" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlStrokeColorSecondaryBrush}" />
                             <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlStrokeColorTertiaryBrush}" />
                             <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
@@ -130,7 +130,7 @@
                             <!--<Setter TargetName="border" Property="BorderBrush" Value="Transparent" />-->
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlStrokeColorTertiaryBrush  }" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
