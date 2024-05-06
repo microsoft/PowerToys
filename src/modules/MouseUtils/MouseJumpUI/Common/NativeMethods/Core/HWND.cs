@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MouseJumpUI.Common.NativeMethods;
 
@@ -19,6 +20,9 @@ internal static partial class Core
     internal readonly struct HWND
     {
         public static readonly HWND Null = new(IntPtr.Zero);
+
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Name and value taken from Win32Api")]
+        public static readonly HWND HWND_MESSAGE = new(-3);
 
         public readonly IntPtr Value;
 

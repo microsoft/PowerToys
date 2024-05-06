@@ -31,15 +31,15 @@ internal static partial class Core
 
         public static implicit operator int(HMONITOR value) => value.Value.ToInt32();
 
-        public static implicit operator HMONITOR(int value) => new(value);
+        public static explicit operator HMONITOR(int value) => new(value);
 
         public static implicit operator IntPtr(HMONITOR value) => value.Value;
 
-        public static implicit operator HMONITOR(IntPtr value) => new(value);
+        public static explicit operator HMONITOR(IntPtr value) => new(value);
 
         public static implicit operator HANDLE(HMONITOR value) => new(value.Value);
 
-        public static implicit operator HMONITOR(HANDLE value) => new(value.Value);
+        public static explicit operator HMONITOR(HANDLE value) => new(value.Value);
 
         public override string ToString()
         {
