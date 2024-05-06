@@ -22,7 +22,6 @@ namespace ColorPicker.Keyboard
 
         private List<string> _activationKeys = new List<string>();
         private GlobalKeyboardHook _keyboardHook;
-        private bool disposedValue;
         private bool _activationShortcutPressed;
         private int keyboardMoveSpeed;
         private Key lastArrowKeyPressed = Key.None;
@@ -222,15 +221,7 @@ namespace ColorPicker.Keyboard
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _keyboardHook?.Dispose();
-                }
-
-                disposedValue = true;
-            }
+            _keyboardHook?.Dispose();
         }
 
         public void Dispose()
