@@ -19,7 +19,7 @@ namespace Peek.UI
 
         private readonly SettingsUtils _settingsUtils;
         private readonly IFileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new object();
+        private readonly object _loadingSettingsLock = new();
 
         public bool CloseAfterLosingFocus { get; private set; }
 

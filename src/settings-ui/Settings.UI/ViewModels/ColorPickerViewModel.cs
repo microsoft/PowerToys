@@ -424,10 +424,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return colorFormatModel.IsValid;
         }
 
-        internal void DeleteModel(ColorFormatModel colorFormatModel)
+        internal int DeleteModel(ColorFormatModel colorFormatModel)
         {
+            var deleteIndex = ColorFormats.IndexOf(colorFormatModel);
             ColorFormats.Remove(colorFormatModel);
-            SetPreviewSelectedIndex();
+            return deleteIndex;
         }
 
         internal void UpdateColorFormat(string oldName, ColorFormatModel colorFormat)

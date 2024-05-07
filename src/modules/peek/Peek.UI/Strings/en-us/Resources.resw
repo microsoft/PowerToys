@@ -194,7 +194,7 @@
     <comment>Date Modified label for the tooltip of preview. {0} is the date.</comment>
   </data>
   <data name="PreviewTooltip_Dimensions" xml:space="preserve">
-    <value>Dimensions: {0} x {1}</value>
+    <value>Dimensions: {0} × {1}</value>
     <comment>Dimensions label for the tooltip of preview. {0} is the width, {1} is the height.</comment>
   </data>
   <data name="PreviewTooltip_FileSize" xml:space="preserve">
@@ -206,7 +206,7 @@
     <comment>Tooltip of preview when there's no file info available.</comment>
   </data>
   <data name="PinButton_Tooltip" xml:space="preserve">
-    <value>Pin the window to the current location</value>
+    <value>Pin the window to the current size</value>
     <comment>Tooltip for button to pin the Peek window.</comment>
   </data>
   <data name="UnpinButton_ToolTip" xml:space="preserve">
@@ -266,7 +266,7 @@
     <comment>Title of the Peek window. {0} is the name of the currently previewed item."Peek" is the name of the utility.</comment>
   </data>
   <data name="Drive_FreeSpace" xml:space="preserve">
-    <value>{0} free</value>
+    <value>{0} available</value>
     <comment>{0} is the free space of the drive</comment>
   </data>
   <data name="Drive_UsedSpace" xml:space="preserve">

@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+properties:
+  resources:
+    - resource: Microsoft.PowerToys.Configure/PowerToysConfigure
+      directives:
+        description: Configure PowerToys
+      settings:
+        PowerLauncher:
+          Enabled: true
+          Plugins:
+            - Name: "Calculator"
+              Disabled: false
+            - Name: "Folder"
+              Disabled: false
+            - Name: "History"
+              Disabled: false
+            - Name: "Windows Search"
+              Disabled: false
+            - Name: "OneNote"
+              Disabled: false
+            - Name: "PowerToys"
+              Disabled: false
+            - Name: "Program"
+              Disabled: false
+              ActionKeyword: "P:"
+              IsGlobal: false
+            - Name: "Registry Plugin"
+              Disabled: false
+            - Name: "Service"
+              Disabled: false
+            - Name: "Shell"
+              Disabled: false
+            - Name: "Windows System Commands"
+              Disabled: false
+            - Name: "Time and Date"
+              Disabled: false
+            - Name: "Unit Converter"
+              Disabled: false
+            - Name: "URI Handler"
+              Disabled: false
+            - Name: "Value Generator"
+              Disabled: false
+            - Name: "Visual Studio Code Workspaces"
+              Disabled: false
+            - Name: "Web Search"
+              Disabled: false
+            - Name: "Windows settings"
+              Disabled: false
+            - Name: "Windows Terminal"
+              Disabled: false
+            - Name: "Window Walker"
+              Disabled: false
+
+  configurationVersion: 0.2.0

@@ -34,6 +34,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Clipboard Manager](https://github.com/CoreyHayward/PowerToys-Run-ClipboardManager) | [CoreyHayward](https://github.com/CoreyHayward) | Search and paste text from your clipboard history |
 | [Currency Converter](https://github.com/Advaith3600/PowerToys-Run-Currency-Converter) | [advaith3600](https://github.com/advaith3600) | Convert real and crypto currencies |
 | [FastWeb](https://github.com/CCcat8059/FastWeb) | [CCcat](https://github.com/CCcat8059) | Open website in browser |
+| [WebSearchShortcut](https://github.com/Daydreamer-riri/PowerToys-Run-WebSearchShortcut) | [Riri](https://github.com/Daydreamer-riri) | Select a specific search engine to perform searches. |
 
 ## Extending software plugins
 
@@ -48,3 +49,4 @@ Below are community created plugins that target a website or software.  They are
 | [WinGet](https://github.com/bostrot/PowerToysRunPluginWinget) | [bostrot](https://github.com/bostrot) | Search and install packages from WinGet |
 | [Scoop](https://github.com/Quriz/PowerToysRunScoop) | [Quriz](https://github.com/Quriz) | Search and install packages from Scoop |
 | [Spotify](https://github.com/waaverecords/PowerToys-Run-Spotify) | [waaverecords](https://github.com/waaverecords) | Search Spotify and control its player |
+| [PowerSearch for 1Password](https://github.com/KairuDeibisu/PowerToysRunPlugin1Password) | [KairuDeibisu](https://github.com/KairuDeibisu) | An unofficial plugin for searching 1Password for usernames and passwords |
