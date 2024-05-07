@@ -58,7 +58,7 @@
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
-    <PackageVersion Include="SharpCompress" Version="0.33.0" />
+    <PackageVersion Include="SharpCompress" Version="0.37.2" />
     <PackageVersion Include="StreamJsonRpc" Version="2.14.24" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- Package System.CodeDom added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
