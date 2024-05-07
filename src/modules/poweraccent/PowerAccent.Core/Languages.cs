@@ -20,6 +20,7 @@ namespace PowerAccent.Core
         DE,
         EL,
         EST,
+        EPO,
         FI,
         FR,
         HR,
@@ -62,6 +63,7 @@ namespace PowerAccent.Core
                 Language.DE => GetDefaultLetterKeyDE(letter), // German
                 Language.EL => GetDefaultLetterKeyEL(letter), // Greek
                 Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
+                Language.EPO => GetDefaultLetterKeyEPO(letter), // Esperanto
                 Language.FI => GetDefaultLetterKeyFI(letter), // Finnish
                 Language.FR => GetDefaultLetterKeyFR(letter), // French
                 Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
@@ -107,6 +109,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyDE(letter))
                 .Union(GetDefaultLetterKeyEL(letter))
                 .Union(GetDefaultLetterKeyEST(letter))
+                .Union(GetDefaultLetterKeyEPO(letter))
                 .Union(GetDefaultLetterKeyFI(letter))
                 .Union(GetDefaultLetterKeyFR(letter))
                 .Union(GetDefaultLetterKeyHR(letter))
@@ -240,6 +243,21 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new[] { "ü" },
                 LetterKey.VK_Z => new[] { "ž" },
                 LetterKey.VK_S => new[] { "š" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Esperanto
+        private static string[] GetDefaultLetterKeyEPO(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_C => new[] { "ĉ" },
+                LetterKey.VK_G => new[] { "ĝ" },
+                LetterKey.VK_H => new[] { "ĥ" },
+                LetterKey.VK_J => new[] { "ĵ" },
+                LetterKey.VK_S => new[] { "ŝ" },
+                LetterKey.VK_U => new[] { "ǔ" },
                 _ => Array.Empty<string>(),
             };
         }
