@@ -9,8 +9,13 @@ Enable-ExperimentalFeature PSFeedbackProvider
 Write-Host "Enabling experimental feature: PSCommandNotFoundSuggestion"
 Enable-ExperimentalFeature PSCommandNotFoundSuggestion
 
-if (Get-Module -ListAvailable -Name Microsoft.WinGet.Client) {
+$wingetModule = Get-Module -ListAvailable -Name Microsoft.WinGet.Client
+if ($wingetModule) {
+  if ($wingetModule.Version -ge "1.8.1133") {
     Write-Host "WinGet Client module detected"
+  } else {
+    Write-Host "WinGet module needs to be updated. Run `"Upgrade-Module -Name Microsoft.WinGet.Client`" to update `r`n"
+  }
 } 
 else {
     Write-Host "WinGet module was not found. Installation instructions can be found on https://www.powershellgallery.com/packages/Microsoft.WinGet.Client `r`n"
@@ -27,14 +32,26 @@ $profileContent = Get-Content -Path $PROFILE -Raw
 
 if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contains("34de4b3d-13a8-4540-b76d-b9e8d3851756")))
 {
+  if ($profileContent.Contains("Import-Module `"$scriptPath\WinGetCommandNotFound.psd1`""))
+  {
+    $profileContent.Replace("Import-Module `"$scriptPath\WinGetCommandNotFound.psd1`"",
+                            "Import-Module -Name Microsoft.WinGet.CommandNotFound")
+    $profileContent.Replace("34de4b3d-13a8-4540-b76d-b9e8d3851756",
+                            "f45873b3-b655-43a6-b217-97c00aa0db58")
+    Write-Host "Module was successfully upgraded in the profile file."
+    # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
+  }
+}
+elseif ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contains("f45873b3-b655-43a6-b217-97c00aa0db58")))
+{
   Write-Host "Module is already registered in the profile file."
   # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
 }
 else
 {
-  Add-Content -Path $PROFILE  -Value "`r`n#34de4b3d-13a8-4540-b76d-b9e8d3851756 PowerToys CommandNotFound module"
-  Add-Content -Path $PROFILE  -Value "`r`nImport-Module `"$scriptPath\WinGetCommandNotFound.psd1`""
-  Add-Content -Path $PROFILE  -Value "#34de4b3d-13a8-4540-b76d-b9e8d3851756"  
+  Add-Content -Path $PROFILE  -Value "`r`n#f45873b3-b655-43a6-b217-97c00aa0db58 PowerToys CommandNotFound module"
+  Add-Content -Path $PROFILE  -Value "`r`nImport-Module -Name Microsoft.WinGet.CommandNotFound`""
+  Add-Content -Path $PROFILE  -Value "#f45873b3-b655-43a6-b217-97c00aa0db58"  
   Write-Host "Module was successfully registered in the profile file."
   # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
 }
