@@ -34,10 +34,11 @@ if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contai
 {
   if ($profileContent.Contains("Import-Module `"$scriptPath\WinGetCommandNotFound.psd1`""))
   {
-    $profileContent.Replace("Import-Module `"$scriptPath\WinGetCommandNotFound.psd1`"",
-                            "Import-Module -Name Microsoft.WinGet.CommandNotFound")
-    $profileContent.Replace("34de4b3d-13a8-4540-b76d-b9e8d3851756",
-                            "f45873b3-b655-43a6-b217-97c00aa0db58")
+    $profileContent = $profileContent.Replace("Import-Module `"$scriptPath\WinGetCommandNotFound.psd1`"",
+                                              "Import-Module -Name Microsoft.WinGet.CommandNotFound")
+    $profileContent = $profileContent.Replace("34de4b3d-13a8-4540-b76d-b9e8d3851756",
+                                              "f45873b3-b655-43a6-b217-97c00aa0db58")
+    Set-Content -Path $PROFILE -Value $profileContent
     Write-Host "Module was successfully upgraded in the profile file."
     # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
   }

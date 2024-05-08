@@ -164,6 +164,9 @@
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles">
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
+      <Custom Action="UpgradeCommandNotFound" After="InstallFinalize">
+        Installed AND UPGRADINGPRODUCTCODE AND (NOT REMOVE="ALL")
+      </Custom>
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
           Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
@@ -268,6 +271,14 @@
                     Execute="deferred"
                     BinaryKey="PTCustomActions"
                     DllEntry="UninstallCommandNotFoundModuleCA"
+                   />
+      
+      <CustomAction Id="UpgradeCommandNotFound"
+                    Return="ignore"
+                    Impersonate="yes"
+                    Execute="deferred"
+                    BinaryKey="PTCustomActions"
+                    DllEntry="UpgradeCommandNotFoundModuleCA"
                    />
 
       <CustomAction Id="TelemetryLogInstallSuccess"
