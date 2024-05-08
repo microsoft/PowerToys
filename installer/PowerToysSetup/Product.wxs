@@ -396,8 +396,8 @@
       </Directory>
       <Directory Id="DesktopFolder" Name="Desktop" />
       <?if $(var.PerUser) = "true" ?>
-          <Directory Id="PersonalFolder" Name="UserHomeDocuments" />
+        <Directory Id="PersonalFolder" Name="UserHomeDocuments" />
       <?endif?>
-	</Directory>
+    </Directory>
   </Fragment>
 </Wix>
