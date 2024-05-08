@@ -31,7 +31,7 @@ parameters:
       AppRegistrationTenantId: $(SigningTenantId)
       AuthAKVName: $(SigningAKVName)
       AuthCertName: $(SigningAuthCertName)
-      AuthSignCertNamr: $(SigningSignCertName)
+      AuthSignCertName: $(SigningSignCertName)
 
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
