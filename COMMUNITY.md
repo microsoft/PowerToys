@@ -160,7 +160,13 @@ Other contributors:
 - [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
 - [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
+- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
 - [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
+
+# Former PowerToys core team members
+
+- [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
+- [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
