@@ -412,24 +412,23 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Entry">
                         <Grid
+                            Margin="0"
                             AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
                             Background="Transparent"
                             ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" MinWidth="175" />
+                                <ColumnDefinition Width="*" MinWidth="150" />
                                 <!--  Address  -->
-                                <ColumnDefinition Width="*" MinWidth="128" />
+                                <ColumnDefinition Width="*" MinWidth="120" />
                                 <!--  Comment  -->
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="20" />
                                 <!--  Status  -->
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="20" />
                                 <!--  Duplicate  -->
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="40" />
                                 <!--  ToggleSwitch  -->
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="54" />
                                 <!--  DeleteEntry  -->
-                                <ColumnDefinition Width="Auto" />
-                                <!--  Right space after delete button  -->
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 Grid.Column="0"
@@ -512,7 +511,7 @@
                                 Grid.Column="4"
                                 Width="40"
                                 MinWidth="0"
-                                HorizontalAlignment="Right"
+                                HorizontalAlignment="Center"
                                 GotFocus="Entries_GotFocus"
                                 IsOn="{x:Bind Active, Mode=TwoWay}"
                                 OffContent=""
@@ -520,6 +519,7 @@
                             <Button
                                 x:Uid="DeleteEntryBtn"
                                 Grid.Column="5"
+                                Width="48"
                                 Height="32"
                                 Click="Delete_Click"
                                 CommandParameter="{x:Bind (models:Entry)}"
