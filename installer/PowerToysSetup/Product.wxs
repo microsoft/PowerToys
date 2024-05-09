@@ -163,7 +163,7 @@
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles">
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
-      <Custom Action="UpgradeCommandNotFound" After="InstallFinalize">
+      <Custom Action="UpgradeCommandNotFound" After="InstallFiles">
         Installed AND UPGRADINGPRODUCTCODE AND (NOT REMOVE="ALL")
       </Custom>
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
