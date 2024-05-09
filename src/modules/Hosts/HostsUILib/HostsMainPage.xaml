@@ -416,9 +416,9 @@
                             Background="Transparent"
                             ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="256" />
+                                <ColumnDefinition Width="*" MinWidth="175" />
                                 <!--  Address  -->
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" MinWidth="128" />
                                 <!--  Comment  -->
                                 <ColumnDefinition Width="Auto" />
                                 <!--  Status  -->
@@ -429,6 +429,7 @@
                                 <ColumnDefinition Width="Auto" />
                                 <!--  DeleteEntry  -->
                                 <ColumnDefinition Width="Auto" />
+                                <!--  Right space after delete button  -->
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 Grid.Column="0"
