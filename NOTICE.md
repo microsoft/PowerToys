@@ -1323,7 +1323,6 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Extensions.Hosting.WindowsServices 8.0.0
 - Microsoft.Extensions.Logging 8.0.0
 - Microsoft.Extensions.Logging.Abstractions 8.0.0
-- Microsoft.Extensions.ObjectPool 8.0.0
 - Microsoft.NET.Test.Sdk 17.8.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2365.46
@@ -1358,7 +1357,6 @@ EXHIBIT A -Mozilla Public License.
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0
-- System.Management.Automation 7.4.0
 - System.Reactive 6.0.0-preview.9
 - System.Runtime.Caching 8.0.0
 - System.Security.Cryptography.ProtectedData 8.0.0
