@@ -14,6 +14,7 @@
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
+#include <winrt/Windows.Security.Credentials.h>
 
 #include <wtsapi32.h>
 #include <processthreadsapi.h>
@@ -431,6 +432,31 @@ UINT __stdcall RemoveWindowsServiceByName(std::wstring serviceName)
     }
 
     return ERROR_SUCCESS;
+}
+
+UINT __stdcall UnsetAdvancedPasteAPIKeyCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+
+    try
+    {
+        winrt::Windows::Security::Credentials::PasswordVault vault;
+        winrt::Windows::Security::Credentials::PasswordCredential cred;
+
+        hr = WcaInitialize(hInstall, "UnsetAdvancedPasteAPIKey");
+        ExitOnFailure(hr, "Failed to initialize");
+
+        cred = vault.Retrieve(L"https://platform.openai.com/api-keys", L"PowerToys_AdvancedPaste_OpenAIKey");
+        vault.Remove(cred);
+    }
+    catch (...)
+    {
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
 }
 
 UINT __stdcall UninstallCommandNotFoundModuleCA(MSIHANDLE hInstall)
@@ -1051,9 +1077,10 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 31> processesToTerminate = {
+    std::array<std::wstring_view, 32> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
+        L"PowerToys.AdvancedPaste.exe",
         L"PowerToys.Awake.exe",
         L"PowerToys.FancyZones.exe",
         L"PowerToys.FancyZonesEditor.exe",

@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.12" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.0.240109" />
     <PackageVersion Include="CommunityToolkit.WinUI.Collections" Version="8.0.240109" />
@@ -20,6 +21,7 @@
     <PackageVersion Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.57" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageVersion Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
     <PackageVersion Include="LazyCache" Version="2.4.0" />
@@ -56,6 +58,7 @@
     <PackageVersion Include="NLog" Version="5.0.4" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
+    <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.37.2" />
     <PackageVersion Include="StreamJsonRpc" Version="2.14.24" />

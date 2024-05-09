@@ -59,10 +59,7 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root"
-    xmlns=""
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -706,6 +703,24 @@
   </data>
   <data name="Shortcut.Header" xml:space="preserve">
     <value>Shortcut</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIButton.Content" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="AdvancedPaste_DisableAIButton.Content" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="AdvancedPaste_EnableAISettingsCard.Header" xml:space="preserve">
+    <value>Enable Paste with AI</value>
+  </data>
+  <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
+    <value>Clipboard history</value>
+  </data>
+  <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
+    <value>Save multiple items to your clipboard. This is an OS feature.</value>
+  </data>
+  <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
+    <value>Shortcuts</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
@@ -1978,6 +1993,30 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Activation_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to activate this module</value>
   </data>
+  <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
+    <value>Paste as plain text directly</value>
+  </data>
+  <data name="AdvancedPasteUI_Shortcut.Header" xml:space="preserve">
+    <value>Open Advanced Paste window</value>
+  </data>
+  <data name="PasteAsMarkdown_Shortcut.Header" xml:space="preserve">
+    <value>Paste as Markdown directly</value>
+  </data>
+  <data name="PasteAsJson_Shortcut.Header" xml:space="preserve">
+    <value>Paste as JSON directly</value>
+  </data>
+  <data name="PasteAsCustom_Shortcut.Header" xml:space="preserve">
+    <value>Paste as Custom with AI directly</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
+    <value>OpenAI API key:</value>
+  </data>
+  <data name="EnableAIDialog_SaveBtnText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="EnableAIDialog_CancelBtnText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
   <data name="Oobe_GetStarted.Text" xml:space="preserve">
     <value>Let's get started!</value>
   </data>
@@ -2422,9 +2461,9 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Learn more about Mouse utilities</value>
     <comment>Mouse utilities is a product name, do not loc</comment>
   </data>
-  <data name="LearnMore_PastePlain.Text" xml:space="preserve">
-    <value>Learn more about Paste as Plain Text</value>
-    <comment> Paste as Plain Text is the name of the module. </comment>
+  <data name="LearnMore_AdvancedPaste.Text" xml:space="preserve">
+    <value>Learn more about Advanced Paste</value>
+    <comment> Advanced Paste is the name of the module. </comment>
   </data>
   <data name="LearnMore_MouseWithoutBorders.Text" xml:space="preserve">
     <value>Learn more about Mouse Without Borders</value>
@@ -3122,8 +3161,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseWithoutBorders_ShortDescription" xml:space="preserve">
     <value>Move your cursor across multiple devices</value>
   </data>
-  <data name="PastePlain_ShortDescription" xml:space="preserve">
-    <value>Paste clipboard content without formatting</value>
+  <data name="AdvancedPaste_ShortDescription" xml:space="preserve">
+    <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
+    <value>This feature allows you to format your clipboard content with the power of AI. An OpenAI API key is required.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
+    <value>Learn more</value>
   </data>
   <data name="Peek_ShortDescription" xml:space="preserve">
     <value>Quick and easy previewer</value>
@@ -3688,30 +3733,54 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
   </data>
-  <data name="Shell_PastePlain.Content" xml:space="preserve">
-    <value>Paste As Plain Text</value>
-    <comment>Product name: Navigation view item name for Paste as Plain Text</comment>
+  <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
+    <value>Advanced Paste</value>
+    <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
-  <data name="PastePlain.ModuleDescription" xml:space="preserve">
-    <value>Paste As Plain Text is a quick shortcut for pasting the text contents of your clipboard without formatting. Note: the formatted text in the clipboard is replaced with the unformatted text.</value>
+  <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
+    <value>Advanced Paste is an AI powered tool to put your clipboard content into any format you need</value>
   </data>
-  <data name="PastePlain.ModuleTitle" xml:space="preserve">
-    <value>Paste As Plain Text</value>
+  <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
+    <value>Advanced Paste</value>
   </data>
-  <data name="PastePlain_Cancel" xml:space="preserve">
+  <data name="AdvancedPaste_Cancel" xml:space="preserve">
     <value>cancel</value>
   </data>
-  <data name="PastePlain_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Paste As Plain Text</value>
+  <data name="AdvancedPaste_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Advanced Paste</value>
   </data>
-  <data name="Oobe_PastePlain.Description" xml:space="preserve">
-    <value>Paste As Plain Text strips rich formatting from your clipboard data and pastes it as non-formatted text.</value>
+  <data name="AdvancedPaste_EnableAISettingsGroup.Header" xml:space="preserve">
+    <value>Paste with AI</value>
   </data>
-  <data name="Oobe_PastePlain.Title" xml:space="preserve">
-    <value>Paste As Plain Text</value>
+  <data name="AdvancedPaste_ClipboardHistorySettingsGroup.Header" xml:space="preserve">
+    <value>Clipboard history</value>
   </data>
-  <data name="Oobe_PastePlain_HowToUse.Text" xml:space="preserve">
-    <value>to paste your clipboard data as plain text. Note: this will replace the formatted text in your clipboard with the plain text.</value>
+  <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Header" xml:space="preserve">
+    <value>Custom format preview</value>
+  </data>
+  <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
+    <value>Preview the output of the custom format before pasting</value>
+  </data>
+  <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
+    <value>Advanced Paste is An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows. Note: this will replace the formatted text in your clipboard with the selected format.</value>
+  </data>
+  <data name="Oobe_AdvancedPaste.Title" xml:space="preserve">
+    <value>Advanced Paste</value>
+  </data>
+  <data name="Oobe_AdvancedPasteUI_HowToUse.Text" xml:space="preserve">
+    <value>to open UI to select the format you want to paste your data as.</value>
+  </data>
+  <data name="Oobe_AdvancedPastePlain_HowToUse.Text" xml:space="preserve">
+    <value>to paste your clipboard data as plain text.</value>
+  </data>
+  <data name="Oobe_AdvancedPasteMarkdown_HowToUse.Text" xml:space="preserve">
+    <value>to paste your clipboard data as Markdown. Note: Clipboard content type has to be HTML.</value>
+  </data>
+  <data name="Oobe_AdvancedPasteJson_HowToUse.Text" xml:space="preserve">
+    <value>to paste your clipboard data as JSON. Note: Clipboard content data has to contain XML or CSV text.</value>
+  </data>
+  <data name="Oobe_AdvancedPasteCustom_HowToUse.Text" xml:space="preserve">
+    <value>to open AI-powered dialog to enter query and convert your data to any format you need.</value>
   </data>
   <data name="Shell_CmdNotFound.Content" xml:space="preserve">
     <value>Command Not Found</value>
@@ -3908,7 +3977,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Make Registry Preview default app for opening .reg files</value>
     <comment>Registry Preview is app name. Do not localize.</comment>
   </data>
-  <data name="PastePlain_ShortcutWarning.Title" xml:space="preserve">
+  <data name="AdvancedPaste_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
   </data>
   <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
@@ -4071,6 +4140,24 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Peek_SourceCode_StickyScroll.Content" xml:space="preserve">
     <value>Enable sticky scroll</value>
   </data>
+  <data name="PrivacyLink.Text" xml:space="preserve">
+    <value>OpenAI Privacy</value>
+  </data>
+  <data name="TermsLink.Text" xml:space="preserve">
+    <value>OpenAI Terms</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_Description.Text" xml:space="preserve">
+    <value>Paste with AI allows you to format your clipboard content into any format you need. Learn more about the terms of conditions while using OpenAI and privacy at Microsoft:</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_LoginIntoText.Text" xml:space="preserve">
+    <value>• Login into your</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText.Text" xml:space="preserve">
+    <value>OpenAI API keys overview</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_CreateNewKeyText.Text" xml:space="preserve">
+    <value>• Create a new secret key and paste it in the field below</value>
+  </data>
   <data name="FileExplorerPreview_Toggle_Monaco_Font_Size.Description" xml:space="preserve">
     <value>Font size of the editor in pt. Recommended: 14pt</value>
     <comment>{Locked="pt"}</comment>
@@ -4084,5 +4171,11 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_SourceCode_FontSize.Header" xml:space="preserve">
     <value>Font size</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsText.Text" xml:space="preserve">
+    <value>• NOTE: You need to have available paid credits in your OpenAI account to use this feature. If you do not have credits you will see an 'API key quota exceeded' error</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
+    <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
 </root>

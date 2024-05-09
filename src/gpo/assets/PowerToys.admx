@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.8" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.9" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.8"/><!-- Last changed with PowerToys v0.78.0 -->
+  <resources minRequiredRevision="1.9"/><!-- Last changed with PowerToys v0.81.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -17,20 +17,21 @@
       <definition name="SUPPORTED_POWERTOYS_0_76_0" displayName="$(string.SUPPORTED_POWERTOYS_0_76_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_77_0" displayName="$(string.SUPPORTED_POWERTOYS_0_77_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_78_0" displayName="$(string.SUPPORTED_POWERTOYS_0_78_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_81_0" displayName="$(string.SUPPORTED_POWERTOYS_0_81_0)"/>
     </definitions>
   </supportedOn>
   <categories>
     <category name="PowerToys" displayName="$(string.PowerToys)" />
-	<category name="InstallerUpdates" displayName="$(string.InstallerUpdates)">
-		<parentCategory ref="PowerToys" />
+    <category name="InstallerUpdates" displayName="$(string.InstallerUpdates)">
+      <parentCategory ref="PowerToys" />
     </category>
-	<category name="PowerToysRun" displayName="$(string.PowerToysRun)">
-		<parentCategory ref="PowerToys" />
+    <category name="PowerToysRun" displayName="$(string.PowerToysRun)">
+      <parentCategory ref="PowerToys" />
     </category>
   </categories>
   <policies>
-  
-  <policy name="ConfigureGlobalUtilityEnabledState" class="Both" displayName="$(string.ConfigureGlobalUtilityEnabledState)" explainText="$(string.ConfigureGlobalUtilityEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="ConfigureGlobalUtilityEnabledState">
+
+    <policy name="ConfigureGlobalUtilityEnabledState" class="Both" displayName="$(string.ConfigureGlobalUtilityEnabledState)" explainText="$(string.ConfigureGlobalUtilityEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="ConfigureGlobalUtilityEnabledState">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
       <enabledValue>
@@ -40,7 +41,17 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-  
+
+    <policy name="ConfigureEnabledUtilityAdvancedPaste" class="Both" displayName="$(string.ConfigureEnabledUtilityAdvancedPaste)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityAdvancedPaste">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_81_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="ConfigureEnabledUtilityAlwaysOnTop" class="Both" displayName="$(string.ConfigureEnabledUtilityAlwaysOnTop)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityAlwaysOnTop">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
@@ -311,16 +322,6 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityPastePlain" class="Both" displayName="$(string.ConfigureEnabledUtilityPastePlain)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPastePlain">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
     <policy name="ConfigureEnabledUtilityPeek" class="Both" displayName="$(string.ConfigureEnabledUtilityPeek)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPeek">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_70_0" />
@@ -361,17 +362,17 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	  <policy name="ConfigureEnabledUtilityRegistryPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityRegistryPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityRegistryPreview">
-		  <parentCategory ref="PowerToys" />
-		  <supportedOn ref="SUPPORTED_POWERTOYS_0_69_0" />
-		  <enabledValue>
-			  <decimal value="1" />
-		  </enabledValue>
-		  <disabledValue>
-			  <decimal value="0" />
-		  </disabledValue>
-	  </policy>
-	  <policy name="ConfigureEnabledUtilityScreenRuler" class="Both" displayName="$(string.ConfigureEnabledUtilityScreenRuler)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityScreenRuler">
+    <policy name="ConfigureEnabledUtilityRegistryPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityRegistryPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityRegistryPreview">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_69_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityScreenRuler" class="Both" displayName="$(string.ConfigureEnabledUtilityScreenRuler)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityScreenRuler">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
       <enabledValue>
@@ -411,7 +412,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	  <policy name="DisablePerUserInstallation" class="Machine" displayName="$(string.DisablePerUserInstallation)" explainText="$(string.DisablePerUserInstallationDescription)" key="Software\Policies\PowerToys" valueName="PerUserInstallationDisabled">
+    <policy name="DisablePerUserInstallation" class="Machine" displayName="$(string.DisablePerUserInstallation)" explainText="$(string.DisablePerUserInstallationDescription)" key="Software\Policies\PowerToys" valueName="PerUserInstallationDisabled">
       <parentCategory ref="InstallerUpdates" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_69_0" />
       <enabledValue>
@@ -421,7 +422,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	  <policy name="DisableAutomaticUpdateDownload" class="Both" displayName="$(string.DisableAutomaticUpdateDownload)" explainText="$(string.DisableAutomaticUpdateDownloadDescription)" key="Software\Policies\PowerToys" valueName="AutomaticUpdateDownloadDisabled">
+    <policy name="DisableAutomaticUpdateDownload" class="Both" displayName="$(string.DisableAutomaticUpdateDownload)" explainText="$(string.DisableAutomaticUpdateDownloadDescription)" key="Software\Policies\PowerToys" valueName="AutomaticUpdateDownloadDisabled">
       <parentCategory ref="InstallerUpdates" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
       <enabledValue>
@@ -431,7 +432,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	  <policy name="SuspendNewUpdateToast" class="Both" displayName="$(string.SuspendNewUpdateToast)" explainText="$(string.SuspendNewUpdateToastDescription)" key="Software\Policies\PowerToys" valueName="SuspendNewUpdateAvailableToast">
+    <policy name="SuspendNewUpdateToast" class="Both" displayName="$(string.SuspendNewUpdateToast)" explainText="$(string.SuspendNewUpdateToastDescription)" key="Software\Policies\PowerToys" valueName="SuspendNewUpdateAvailableToast">
       <parentCategory ref="InstallerUpdates" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
       <enabledValue>
@@ -441,7 +442,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	<policy name="DisableNewUpdateToast" class="Both" displayName="$(string.DisableNewUpdateToast)" explainText="$(string.DisableNewUpdateToastDescription)" key="Software\Policies\PowerToys" valueName="DisableNewUpdateAvailableToast">
+    <policy name="DisableNewUpdateToast" class="Both" displayName="$(string.DisableNewUpdateToast)" explainText="$(string.DisableNewUpdateToastDescription)" key="Software\Policies\PowerToys" valueName="DisableNewUpdateAvailableToast">
       <parentCategory ref="InstallerUpdates" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_78_0" />
       <enabledValue>
@@ -451,7 +452,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	<policy name="DoNotShowWhatsNewAfterUpdates" class="Both" displayName="$(string.DoNotShowWhatsNewAfterUpdates)" explainText="$(string.DoNotShowWhatsNewAfterUpdatesDescription)" key="Software\Policies\PowerToys" valueName="DoNotShowWhatsNewAfterUpdates">
+    <policy name="DoNotShowWhatsNewAfterUpdates" class="Both" displayName="$(string.DoNotShowWhatsNewAfterUpdates)" explainText="$(string.DoNotShowWhatsNewAfterUpdatesDescription)" key="Software\Policies\PowerToys" valueName="DoNotShowWhatsNewAfterUpdates">
       <parentCategory ref="InstallerUpdates" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_78_0" />
       <enabledValue>
@@ -471,7 +472,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	<policy name="PowerToysRunAllPluginsEnabledState" class="Both" displayName="$(string.PowerToysRunAllPluginsEnabledState)" explainText="$(string.PowerToysRunAllPluginsEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PowerLauncherAllPluginsEnabledState">
+    <policy name="PowerToysRunAllPluginsEnabledState" class="Both" displayName="$(string.PowerToysRunAllPluginsEnabledState)" explainText="$(string.PowerToysRunAllPluginsEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PowerLauncherAllPluginsEnabledState">
       <parentCategory ref="PowerToysRun" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
       <enabledValue>
@@ -481,12 +482,12 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-	<policy name="PowerToysRunIndividualPluginEnabledState" class="Both" displayName="$(string.PowerToysRunIndividualPluginEnabledState)" explainText="$(string.PowerToysRunIndividualPluginEnabledStateDescription)" presentation="$(presentation.PowerToysRunIndividualPluginEnabledState)" key="Software\Policies\PowerToys\PowerLauncherIndividualPluginEnabledList">
+    <policy name="PowerToysRunIndividualPluginEnabledState" class="Both" displayName="$(string.PowerToysRunIndividualPluginEnabledState)" explainText="$(string.PowerToysRunIndividualPluginEnabledStateDescription)" presentation="$(presentation.PowerToysRunIndividualPluginEnabledState)" key="Software\Policies\PowerToys\PowerLauncherIndividualPluginEnabledList">
       <parentCategory ref="PowerToysRun" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0"/>
-	  <elements>
-		<list id="PowerToysRunIndividualPluginEnabledList" explicitValue="true" />
-	  </elements>
+      <elements>
+        <list id="PowerToysRunIndividualPluginEnabledList" explicitValue="true" />
+      </elements>
     </policy>
   </policies>
 </policyDefinitions>
