@@ -164,7 +164,7 @@
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
       <Custom Action="UpgradeCommandNotFound" After="InstallFiles">
-        Installed AND UPGRADINGPRODUCTCODE AND (NOT REMOVE="ALL")
+        WIX_UPGRADE_DETECTED
       </Custom>
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
           Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
