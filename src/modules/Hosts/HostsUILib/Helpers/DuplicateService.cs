@@ -26,6 +26,7 @@ namespace HostsUILib.Helpers
         private readonly string[] _loopbackAddresses =
         {
             "0.0.0.0",
+            "::",
             "::0",
             "0:0:0:0:0:0:0:0",
             "127.0.0.1",
