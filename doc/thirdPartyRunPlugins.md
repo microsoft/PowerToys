@@ -35,6 +35,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Currency Converter](https://github.com/Advaith3600/PowerToys-Run-Currency-Converter) | [advaith3600](https://github.com/advaith3600) | Convert real and crypto currencies |
 | [FastWeb](https://github.com/CCcat8059/FastWeb) | [CCcat](https://github.com/CCcat8059) | Open website in browser |
 | [WebSearchShortcut](https://github.com/Daydreamer-riri/PowerToys-Run-WebSearchShortcut) | [Riri](https://github.com/Daydreamer-riri) | Select a specific search engine to perform searches. |
+| [UnicodeInput](https://github.com/nathancartlidge/powertoys-run-unicode) | [nathancartlidge](https://github.com/nathancartlidge) | Copy Unicode characters to the clipboard |
 
 ## Extending software plugins
 
