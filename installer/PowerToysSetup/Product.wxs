@@ -149,7 +149,10 @@
       <!--<Custom Action="InstallEmbeddedMSIXTask" After="InstallFinalize">
         NOT Installed
       </Custom>-->
-      <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize">
+        <?if $(var.PerUser) = "true" ?>
+        <Custom Action="InstallDSCModule" After="InstallFiles"/>
+        <?endif?>
+        <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize">
         NOT Installed
       </Custom>
       <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize">
@@ -171,8 +174,12 @@
       <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
         Installed AND (REMOVE="ALL")
       </Custom>-->
+      <?if $(var.PerUser) = "true" ?>
+      <Custom Action="UninstallDSCModule" After="InstallFinalize">
+          Installed AND (REMOVE="ALL")
+      </Custom>
+      <?endif?>
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
-
       <Custom Action="LaunchPowerToys" Before="InstallFinalize">NOT Installed</Custom>
 
     </InstallExecuteSequence>
@@ -253,6 +260,20 @@
                   Impersonate="yes"
                   BinaryKey="PTCustomActions"
                   DllEntry="UninstallEmbeddedMSIXCA"
+                   />
+
+    <CustomAction Id="InstallDSCModule"
+                  Return="ignore"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="InstallDSCModuleCA"
+                   />
+
+    <CustomAction Id="UninstallDSCModule"
+                  Return="ignore"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="UninstallDSCModuleCA"
                    />
 
       <CustomAction Id="UninstallServicesTask"
@@ -395,7 +416,6 @@
         <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)"/>
       </Directory>
       <Directory Id="DesktopFolder" Name="Desktop" />
-      <Directory Id="PersonalFolder" Name="UserHomeDocuments" />
     </Directory>
   </Fragment>
 </Wix>

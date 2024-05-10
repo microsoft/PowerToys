@@ -138,6 +138,23 @@ LExit:
     return SUCCEEDED(hr);
 }
 
+static std::filesystem::path GetUserPowerShellModulesPath()
+{
+    PWSTR myDocumentsBlockPtr;
+
+    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &myDocumentsBlockPtr)))
+    {
+        const std::wstring myDocuments{ myDocumentsBlockPtr };
+        CoTaskMemFree(myDocumentsBlockPtr);
+        return std::filesystem::path(myDocuments) / "PowerShell" / "Modules";
+    }
+    else
+    {
+        CoTaskMemFree(myDocumentsBlockPtr);
+        return {};
+    }
+}
+
 UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -161,7 +178,7 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     BOOL isSystemUser = IsLocalSystem();
 
     if (isSystemUser) {
-    
+
         auto action = [&commandLine](HANDLE userToken) {
             STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
             PROCESS_INFORMATION processInformation;
@@ -313,6 +330,150 @@ UINT __stdcall UnApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
 
 LExit:
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+const wchar_t* DSC_CONFIGURE_PSD1_NAME = L"Microsoft.PowerToys.Configure.psd1";
+const wchar_t* DSC_CONFIGURE_PSM1_NAME = L"Microsoft.PowerToys.Configure.psm1";
+
+UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "InstallDSCModuleCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    LPWSTR currentScope = nullptr;
+    hr = WcaGetProperty(L"InstallScope", &currentScope);
+    ExitOnFailure(hr, "Failed to get current install scope");
+
+    if (std::wstring{ currentScope } != L"perUser")
+    {
+        hr = E_FAIL;
+        ExitOnFailure(hr, "InstallDSCModuleCA only supported for perUser");
+    }
+    else
+    {
+        const auto baseModulesPath = GetUserPowerShellModulesPath();
+        if (baseModulesPath.empty())
+        {
+            hr = E_FAIL;
+            ExitOnFailure(hr, "Unable to determine Powershell modules path");
+        }
+
+        const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / get_product_version();
+
+        std::error_code errorCode;
+        fs::create_directories(modulesPath, errorCode);
+        if (errorCode)
+        {
+            hr = E_FAIL;
+            ExitOnFailure(hr, "Unable to create Powershell modules folder");
+        }
+
+        std::array embeddedResources =
+        {
+            std::pair(DSC_CONFIGURE_PSD1_NAME, IDR_BIN_DSC_POWERTOYS_CONFIGURE_MODULE_PSD1),
+            std::pair(DSC_CONFIGURE_PSM1_NAME, IDR_BIN_DSC_POWERTOYS_CONFIGURE_MODULE_PSM1)
+        };
+
+        for (const auto& [filename, resourceId] : embeddedResources)
+        {
+            auto extractedFile = RcResource::create(resourceId, L"BIN", DLL_HANDLE);
+
+            if (!extractedFile)
+            {
+                hr = E_FAIL;
+                ExitOnFailure(hr, "Failed to extract DSC module");
+            }
+            else
+            {
+                extractedFile->saveAsFile(modulesPath / filename);
+            }
+        }
+    }
+
+LExit:
+    if (SUCCEEDED(hr))
+    {
+        er = ERROR_SUCCESS;
+        Logger::info(L"DSC module was installed!");
+    }
+    else
+    {
+        er = ERROR_INSTALL_FAILURE;
+        Logger::error(L"Couldn't install DSC module!");
+    }
+
+    return WcaFinalize(er);
+}
+
+UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+
+    hr = WcaInitialize(hInstall, "UninstallDSCModuleCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    LPWSTR currentScope = nullptr;
+    hr = WcaGetProperty(L"InstallScope", &currentScope);
+    ExitOnFailure(hr, "Failed to get current install scope");
+
+    if (std::wstring{ currentScope } != L"perUser")
+    {
+        hr = E_FAIL;
+        ExitOnFailure(hr, "UninstallDSCModuleCA only supported for perUser");
+    }
+    else
+    {
+        const auto baseModulesPath = GetUserPowerShellModulesPath();
+        if (baseModulesPath.empty())
+        {
+            hr = E_FAIL;
+            ExitOnFailure(hr, "Unable to determine Powershell modules path");
+        }
+
+        const auto powerToysModulePath = baseModulesPath / L"Microsoft.PowerToys.Configure";
+        const auto versionedModulePath = powerToysModulePath / get_product_version();
+
+        std::error_code errorCode;
+
+        for (const auto* filename : { DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME })
+        {
+            fs::remove(versionedModulePath / filename, errorCode);
+
+            if (errorCode)
+            {
+                hr = E_FAIL;
+                ExitOnFailure(hr, "Unable to delete DSC file");
+            }
+        }
+
+        for (const auto* modulePath : { &versionedModulePath, &powerToysModulePath })
+        {
+            fs::remove(*modulePath, errorCode);
+
+            if (errorCode)
+            {
+                hr = E_FAIL;
+                ExitOnFailure(hr, "Unable to delete DSC folder");
+            }
+        }
+    }
+
+LExit:
+    if (SUCCEEDED(hr))
+    {
+        er = ERROR_SUCCESS;
+        Logger::info(L"DSC module was uninstalled!");
+    }
+    else
+    {
+        er = ERROR_INSTALL_FAILURE;
+        Logger::error(L"Couldn't uninstall DSC module!");
+    }
+
     return WcaFinalize(er);
 }
 
