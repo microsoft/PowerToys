@@ -289,6 +289,7 @@ namespace winrt::PowerRenameUI::implementation
 
         button_rename().IsEnabled(false);
         toggleButton_enumItems().IsChecked(true);
+        toggleButton_randItems().IsChecked(true);
         InitAutoComplete();
         SearchReplaceChanged();
         InvalidateItemListViewState();
@@ -755,6 +756,15 @@ namespace winrt::PowerRenameUI::implementation
             UpdateFlag(EnumerateItems, UpdateFlagCommand::Reset);
         });
 
+        // CheckBox RandomizeItems
+        toggleButton_randItems().Checked([&](auto const&, auto const&) {
+            ValidateFlags(RandomizeItems);
+            UpdateFlag(RandomizeItems, UpdateFlagCommand::Set);
+        });
+        toggleButton_randItems().Unchecked([&](auto const&, auto const&) {
+            UpdateFlag(RandomizeItems, UpdateFlagCommand::Reset);
+        });
+
         // ButtonSettings
         button_settings().Click([&](auto const&, auto const&) {
             OpenSettingsApp();
@@ -949,6 +959,10 @@ namespace winrt::PowerRenameUI::implementation
         if (flags & EnumerateItems)
         {
             toggleButton_enumItems().IsChecked(true);
+        }
+        if (flags & RandomizeItems)
+        {
+            toggleButton_randItems().IsChecked(true);
         }
         if (flags & ExcludeFiles)
         {

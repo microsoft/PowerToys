@@ -378,4 +378,10 @@
   <data name="RandomizerCheatSheet_Uuid" xml:space="preserve">
     <value>Random UUID according to v4 specification.</value>
   </data>
+  <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Use random values</value>
+  </data>
+  <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Use random values</value>
+  </data>
 </root>
