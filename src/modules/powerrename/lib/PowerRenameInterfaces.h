@@ -156,7 +156,7 @@ interface __declspec(uuid("FAB18E93-2E76-436B-8E26-B1240519AF12")) IPowerRenameR
 {
 public:
     IFACEMETHOD(Start)
-    (_In_ IEnumShellItems * enumShellItems) = 0; // randomizertodo: add logic here
+    (_In_ IEnumShellItems * enumShellItems) = 0;
     IFACEMETHOD(Cancel)
     () = 0;
 };
