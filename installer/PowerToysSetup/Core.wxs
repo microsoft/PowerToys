@@ -47,7 +47,7 @@
     </DirectoryRef>
 
     <?if $(var.PerUser) = "true" ?>
-    <!--Nothing to do here; installation handled via custom action elsewhere -->
+    <!-- DSC module files for PerUser handled in InstallDSCModule custom action. -->
     <?else?>
     <DirectoryRef Id="ProgramFiles64Folder">
       <Directory Id="WindowsPowerShellFolder" Name="WindowsPowerShell">
