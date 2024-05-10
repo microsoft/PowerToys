@@ -27,6 +27,8 @@
 #include <variant>
 #include <charconv>
 #include <string>
+#include <random>
+#include <sstream>
 
 #include <ProjectTelemetry.h>
 

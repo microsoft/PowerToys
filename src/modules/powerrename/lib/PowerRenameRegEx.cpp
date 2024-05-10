@@ -150,6 +150,28 @@ HRESULT CPowerRenameRegEx::_OnEnumerateItemsChanged()
     return SHStrDup(replaceWith.data(), &m_replaceTerm);
 }
 
+HRESULT CPowerRenameRegEx::_OnRandomizerItemsChanged()
+{
+    m_randomizer.clear();
+    const auto options = parseRandomizerOptions(m_RawReplaceTerm);
+
+    for (const auto& option : options)
+    {
+        m_randomizer.emplace_back(option);
+    }
+
+    std::wstring replaceWith{ m_RawReplaceTerm };
+
+    int32_t offset = 0;
+    for (const auto& option : options)
+    {
+        replaceWith.erase(option.replaceStrSpan.offset + offset, option.replaceStrSpan.length);
+        offset -= static_cast<int32_t>(option.replaceStrSpan.length);
+    }
+
+    return SHStrDup(replaceWith.data(), &m_replaceTerm);
+}
+
 IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm, bool forceRenaming)
 {
     bool changed = false || forceRenaming;
@@ -165,6 +187,8 @@ IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm, bool f
 
             if (m_flags & EnumerateItems)
                 hr = _OnEnumerateItemsChanged();
+            if (m_flags & RandomizeItems)
+                hr = _OnRandomizerItemsChanged();
             else
                 hr = SHStrDup(replaceTerm, &m_replaceTerm);
         }
@@ -189,13 +213,20 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
     if (m_flags != flags)
     {
         const bool newEnumerate = flags & EnumerateItems;
+        const bool newRandomizer = flags & RandomizeItems;
         const bool refreshReplaceTerm = !!(m_flags & EnumerateItems) != newEnumerate;
         m_flags = flags;
         if (refreshReplaceTerm)
         {
             CSRWExclusiveAutoLock lock(&m_lock);
             if (newEnumerate)
+            {
                 _OnEnumerateItemsChanged();
+            }
+            else if (newRandomizer)
+            {
+                _OnRandomizerItemsChanged();
+            }
             else
             {
                 CoTaskMemFree(m_replaceTerm);
@@ -336,6 +367,20 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
                 const auto replacementLength = static_cast<int32_t>(e.printTo(buffer.data(), buffer.size(), enumIndex));
                 replaceTerm.insert(e.replaceStrSpan.offset + offset + m_replaceWithEnumeratorOffsets[ei], buffer.data());
                 offset += replacementLength;
+            }
+        }
+
+        if (m_flags & RandomizeItems)
+        {
+            int32_t offset = 0;
+
+            for (size_t ri = 0; ri < m_randomizer.size(); ++ri)
+            {
+                const auto& r = m_randomizer[ri];
+                std::string randomValue = r.randomize();
+                std::wstring wRandomValue(randomValue.begin(), randomValue.end());
+                replaceTerm.insert(r.options.replaceStrSpan.offset + offset, wRandomValue);
+                offset += static_cast<int32_t>(wRandomValue.length());
             }
         }
 
