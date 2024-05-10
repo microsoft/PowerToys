@@ -189,7 +189,7 @@ IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm, bool f
                 hr = _OnEnumerateItemsChanged();
             if (m_flags & RandomizeItems)
                 hr = _OnRandomizerItemsChanged();
-            else
+            if (!(m_flags & EnumerateItems) && !(m_flags & RandomizeItems))
                 hr = SHStrDup(replaceTerm, &m_replaceTerm);
         }
     }
@@ -214,8 +214,12 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
     {
         const bool newEnumerate = flags & EnumerateItems;
         const bool newRandomizer = flags & RandomizeItems;
-        const bool refreshReplaceTerm = !!(m_flags & EnumerateItems) != newEnumerate;
+        const bool refreshReplaceTerm =
+            (!!(m_flags & EnumerateItems) != newEnumerate) ||
+            (!!(m_flags & RandomizeItems) != newRandomizer);
+
         m_flags = flags;
+
         if (refreshReplaceTerm)
         {
             CSRWExclusiveAutoLock lock(&m_lock);
@@ -223,11 +227,11 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
             {
                 _OnEnumerateItemsChanged();
             }
-            else if (newRandomizer)
+            if (newRandomizer)
             {
                 _OnRandomizerItemsChanged();
             }
-            else
+            if (!newEnumerate && !newRandomizer)
             {
                 CoTaskMemFree(m_replaceTerm);
                 SHStrDup(m_RawReplaceTerm.c_str(), &m_replaceTerm);
