@@ -59,11 +59,6 @@ struct Randomizer
             chars += "0123456789";
         }
 
-        if (chars.size() > static_cast<size_t>(std::numeric_limits<int>::max()))
-        {
-            throw std::overflow_error("Size of chars exceeds maximum int value");
-        }
-
         std::string result;
         std::random_device rd;
         std::mt19937 generator(rd());
