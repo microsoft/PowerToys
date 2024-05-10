@@ -29,6 +29,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string SecondDisplayDescription => _additionalOption.SecondDisplayDescription;
 
+        public PluginAdditionalOption.AdditionalOptionType Type => _additionalOption.PluginOptionType;
+
         // Bool checkbox setting
         public bool ShowCheckBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Checkbox;
 
