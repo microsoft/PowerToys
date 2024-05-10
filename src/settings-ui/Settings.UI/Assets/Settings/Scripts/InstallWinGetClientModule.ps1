@@ -6,7 +6,7 @@ if ($wingetModule)
     Write-Host "WinGet Client module detected."
     # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
   } else {
-    Upgrade-Module -Name Microsoft.WinGet.Client
+    Update-Module -Name Microsoft.WinGet.Client
     if (Get-Module -ListAvailable -Name Microsoft.WinGet.Client)
     {
       Write-Host "WinGet Client module updated."

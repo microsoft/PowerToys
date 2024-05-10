@@ -10,7 +10,7 @@ if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contai
   # Upgrade Microsoft.WinGet.Client module
   $wingetModule = Get-Module -ListAvailable -Name Microsoft.WinGet.Client
   if ($wingetModule -and $wingetModule.Version -lt "1.8.1133") {
-    Upgrade-Module -Name Microsoft.WinGet.Client
+    Update-Module -Name Microsoft.WinGet.Client
   }
 
   # Replace old module with new one (and new GUID comment)

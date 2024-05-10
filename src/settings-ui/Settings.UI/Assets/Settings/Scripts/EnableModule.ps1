@@ -14,7 +14,7 @@ if ($wingetModule) {
   if ($wingetModule.Version -ge "1.8.1133") {
     Write-Host "WinGet Client module detected"
   } else {
-    Write-Host "WinGet module needs to be updated. Run `"Upgrade-Module -Name Microsoft.WinGet.Client`" to update `r`n"
+    Write-Host "WinGet module needs to be updated. Run `"Update-Module -Name Microsoft.WinGet.Client`" to update `r`n"
   }
 } 
 else {
