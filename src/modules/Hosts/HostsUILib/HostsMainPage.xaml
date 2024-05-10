@@ -425,9 +425,9 @@
                                 <!--  Status  -->
                                 <ColumnDefinition Width="20" />
                                 <!--  Duplicate  -->
-                                <ColumnDefinition Width="40" />
+                                <ColumnDefinition Width="Auto" />
                                 <!--  ToggleSwitch  -->
-                                <ColumnDefinition Width="54" />
+                                <ColumnDefinition Width="Auto" />
                                 <!--  DeleteEntry  -->
                             </Grid.ColumnDefinitions>
                             <TextBlock
@@ -519,7 +519,6 @@
                             <Button
                                 x:Uid="DeleteEntryBtn"
                                 Grid.Column="5"
-                                Width="48"
                                 Height="32"
                                 Click="Delete_Click"
                                 CommandParameter="{x:Bind (models:Entry)}"
