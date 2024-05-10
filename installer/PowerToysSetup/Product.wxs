@@ -134,6 +134,7 @@
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
+      <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize">
@@ -209,6 +210,10 @@
 
     <CustomAction Id="SetUninstallCommandNotFoundParam"
                     Property="UninstallCommandNotFound"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetUpgradeCommandNotFoundParam"
+                    Property="UpgradeCommandNotFound"
                     Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetCreateWinAppSDKHardlinksParam"
