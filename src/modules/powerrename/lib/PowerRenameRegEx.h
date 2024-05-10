@@ -64,6 +64,7 @@ protected:
     std::vector<int32_t> m_replaceWithEnumeratorOffsets;
 
     std::vector<Randomizer> m_randomizer;
+    std::vector<int32_t> m_replaceWithRandomizerOffsets;
 
     struct RENAME_REGEX_EVENT
     {

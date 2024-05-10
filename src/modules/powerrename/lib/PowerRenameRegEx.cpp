@@ -160,12 +160,14 @@ HRESULT CPowerRenameRegEx::_OnRandomizerItemsChanged()
         m_randomizer.emplace_back(option);
     }
 
+    m_replaceWithRandomizerOffsets.clear();
     std::wstring replaceWith{ m_RawReplaceTerm };
 
     int32_t offset = 0;
     for (const auto& option : options)
     {
         replaceWith.erase(option.replaceStrSpan.offset + offset, option.replaceStrSpan.length);
+        m_replaceWithRandomizerOffsets.push_back(offset);
         offset -= static_cast<int32_t>(option.replaceStrSpan.length);
     }
 
@@ -383,7 +385,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
                 const auto& r = m_randomizer[ri];
                 std::string randomValue = r.randomize();
                 std::wstring wRandomValue(randomValue.begin(), randomValue.end());
-                replaceTerm.insert(r.options.replaceStrSpan.offset + offset, wRandomValue);
+                replaceTerm.insert(r.options.replaceStrSpan.offset + offset + m_replaceWithRandomizerOffsets[ri], wRandomValue);
                 offset += static_cast<int32_t>(wRandomValue.length());
             }
         }
