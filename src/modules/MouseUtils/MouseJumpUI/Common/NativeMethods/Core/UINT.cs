@@ -27,6 +27,10 @@ internal static partial class Core
 
         public static implicit operator UINT(uint value) => new(value);
 
+        public static explicit operator int(UINT value) => (int)value.Value;
+
+        public static explicit operator UINT(int value) => new((uint)value);
+
         public override string ToString()
         {
             return $"{this.GetType().Name}({this.Value})";

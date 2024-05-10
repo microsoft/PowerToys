@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using MouseJumpUI.Common.Models.Drawing;
 using MouseJumpUI.Common.NativeMethods;
-using MouseJumpUI.Models.Drawing;
-using MouseJumpUI.Models.Screen;
 using static MouseJumpUI.Common.NativeMethods.Core;
 using static MouseJumpUI.Common.NativeMethods.User32;
 
@@ -28,22 +28,21 @@ internal static class ScreenHelper
             User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYVIRTUALSCREEN));
     }
 
-    public static IEnumerable<ScreenInfo> GetAllScreens()
+    internal static IEnumerable<ScreenInfo> GetAllScreens()
     {
         // enumerate the monitors attached to the system
         var hMonitors = new List<HMONITOR>();
-        var result = User32.EnumDisplayMonitors(
-            HDC.Null,
-            LPCRECT.Null,
-            (unnamedParam1, unnamedParam2, unnamedParam3, unnamedParam4) =>
+        var callback = new User32.MONITORENUMPROC(
+            (hMonitor, hdcMonitor, lprcMonitor, dwData) =>
             {
-                hMonitors.Add(unnamedParam1);
+                hMonitors.Add(hMonitor);
                 return true;
-            },
-            LPARAM.Null);
+            });
+        var result = User32.EnumDisplayMonitors(HDC.Null, LPCRECT.Null, callback, LPARAM.Null);
         if (!result)
         {
             throw new Win32Exception(
+                result.Value,
                 $"{nameof(User32.EnumDisplayMonitors)} failed with return code {result.Value}");
         }
 
@@ -51,11 +50,12 @@ internal static class ScreenHelper
         foreach (var hMonitor in hMonitors)
         {
             var monitorInfoPtr = new LPMONITORINFO(
-                new MONITORINFO((uint)MONITORINFO.Size, RECT.Empty, RECT.Empty, 0));
+                new MONITORINFO((DWORD)MONITORINFO.Size, RECT.Empty, RECT.Empty, 0));
             result = User32.GetMonitorInfoW(hMonitor, monitorInfoPtr);
             if (!result)
             {
                 throw new Win32Exception(
+                    result.Value,
                     $"{nameof(User32.GetMonitorInfoW)} failed with return code {result.Value}");
             }
 
@@ -78,9 +78,11 @@ internal static class ScreenHelper
         }
     }
 
-    public static HMONITOR MonitorFromPoint(
+    internal static ScreenInfo GetScreenFromPoint(
+        List<ScreenInfo> screens,
         PointInfo pt)
     {
+        // get the monitor handle from the point
         var hMonitor = User32.MonitorFromPoint(
             new((int)pt.X, (int)pt.Y),
             User32.MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
@@ -89,6 +91,9 @@ internal static class ScreenHelper
             throw new InvalidOperationException($"no monitor found for point {pt}");
         }
 
-        return hMonitor;
+        // find the screen with the given monitor handle
+        var screen = screens
+            .Single(item => item.Handle == hMonitor);
+        return screen;
     }
 }

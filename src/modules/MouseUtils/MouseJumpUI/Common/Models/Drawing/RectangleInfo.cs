@@ -61,40 +61,57 @@ public sealed class RectangleInfo
     }
 
     [JsonIgnore]
-    public decimal Left => this.X;
+    public decimal Left =>
+        this.X;
 
     [JsonIgnore]
-    public decimal Top => this.Y;
+    public decimal Top =>
+        this.Y;
 
     [JsonIgnore]
-    public decimal Right => this.X + this.Width;
+    public decimal Right =>
+        this.X + this.Width;
 
     [JsonIgnore]
-    public decimal Bottom => this.Y + this.Height;
+    public decimal Bottom =>
+        this.Y + this.Height;
 
     [JsonIgnore]
-    public decimal Area => this.Width * this.Height;
+    public decimal Area =>
+        this.Width * this.Height;
 
     [JsonIgnore]
-    public PointInfo Location => new(this.X, this.Y);
+    public PointInfo Location =>
+        new(this.X, this.Y);
 
     [JsonIgnore]
-    public PointInfo Midpoint => new(
-        x: this.X + (this.Width / 2),
-        y: this.Y + (this.Height / 2));
+    public PointInfo Midpoint =>
+        new(
+            x: this.X + (this.Width / 2),
+            y: this.Y + (this.Height / 2));
 
     [JsonIgnore]
     public SizeInfo Size => new(this.Width, this.Height);
 
-    public RectangleInfo Center(PointInfo point) => new(
-        x: point.X - (this.Width / 2),
-        y: point.Y - (this.Height / 2),
-        width: this.Width,
-        height: this.Height);
+    /// <summary>
+    /// Centers the rectangle around a specified point.
+    /// </summary>
+    /// <param name="point">The <see cref="PointInfo"/> around which the rectangle will be centered.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is centered around the specified point.</returns>
+    public RectangleInfo Center(PointInfo point) =>
+        new(
+            x: point.X - (this.Width / 2),
+            y: point.Y - (this.Height / 2),
+            width: this.Width,
+            height: this.Height);
 
     /// <summary>
-    /// Moves this RectangleInfo inside the specified RectangleInfo.
+    /// Returns a new <see cref="RectangleInfo"/> that is moved within the bounds of the specified outer rectangle.
+    /// If the current rectangle is larger than the outer rectangle, an exception is thrown.
     /// </summary>
+    /// <param name="outer">The outer <see cref="RectangleInfo"/> within which to confine this rectangle.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is the result of moving this rectangle within the bounds of the outer rectangle.</returns>
+    /// <exception cref="ArgumentException">Thrown when the current rectangle is larger than the outer rectangle.</exception>
     public RectangleInfo Clamp(RectangleInfo outer)
     {
         if ((this.Width > outer.Width) || (this.Height > outer.Height))
@@ -131,6 +148,12 @@ public sealed class RectangleInfo
         (this.X <= rect.X) && (rect.X + rect.Width <= this.X + this.Width) &&
         (this.Y <= rect.Y) && (rect.Y + rect.Height <= this.Y + this.Height);
 
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> that is larger than the current rectangle.
+    /// The dimensions of the new rectangle are calculated by enlarging the current rectangle's dimensions by the size of the border.
+    /// </summary>
+    /// <param name="border">The <see cref="BorderStyle"/> that specifies the amount to enlarge the rectangle on each side.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is larger than the current rectangle by the specified border amounts.</returns>
     public RectangleInfo Enlarge(BorderStyle border) =>
         new(
             this.X - border.Left,
@@ -138,6 +161,12 @@ public sealed class RectangleInfo
             this.Width + border.Horizontal,
             this.Height + border.Vertical);
 
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> that is larger than the current rectangle.
+    /// The dimensions of the new rectangle are calculated by enlarging the current rectangle's dimensions by the size of the margin.
+    /// </summary>
+    /// <param name="margin">The <see cref="MarginStyle"/> that specifies the amount to enlarge the rectangle on each side.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is larger than the current rectangle by the specified margin amounts.</returns>
     public RectangleInfo Enlarge(MarginStyle margin) =>
         new(
             this.X - margin.Left,
@@ -145,6 +174,12 @@ public sealed class RectangleInfo
             this.Width + margin.Horizontal,
             this.Height + margin.Vertical);
 
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> that is larger than the current rectangle.
+    /// The dimensions of the new rectangle are calculated by enlarging the current rectangle's dimensions by the size of the padding.
+    /// </summary>
+    /// <param name="padding">The <see cref="PaddingStyle"/> that specifies the amount to enlarge the rectangle on each side.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is larger than the current rectangle by the specified padding amounts.</returns>
     public RectangleInfo Enlarge(PaddingStyle padding) =>
         new(
             this.X - padding.Left,
@@ -152,16 +187,42 @@ public sealed class RectangleInfo
             this.Width + padding.Horizontal,
             this.Height + padding.Vertical);
 
-    public RectangleInfo Offset(SizeInfo amount) => this.Offset(amount.Width, amount.Height);
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> that is offset by the specified amount.
+    /// </summary>
+    /// <param name="amount">The <see cref="SizeInfo"/> representing the amount to offset in both the X and Y directions.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is offset by the specified amount.</returns>
+    public RectangleInfo Offset(SizeInfo amount) =>
+        this.Offset(amount.Width, amount.Height);
 
-    public RectangleInfo Offset(decimal dx, decimal dy) => new(this.X + dx, this.Y + dy, this.Width, this.Height);
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> that is offset by the specified X and Y distances.
+    /// </summary>
+    /// <param name="dx">The distance to offset the rectangle along the X-axis.</param>
+    /// <param name="dy">The distance to offset the rectangle along the Y-axis.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is offset by the specified X and Y distances.</returns>
+    public RectangleInfo Offset(decimal dx, decimal dy) =>
+        new(this.X + dx, this.Y + dy, this.Width, this.Height);
 
-    public RectangleInfo Scale(decimal scalingFactor) => new(
-        this.X * scalingFactor,
-        this.Y * scalingFactor,
-        this.Width * scalingFactor,
-        this.Height * scalingFactor);
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> that is a scaled version of the current rectangle.
+    /// The dimensions of the new rectangle are calculated by multiplying the current rectangle's dimensions by the scaling factor.
+    /// </summary>
+    /// <param name="scalingFactor">The factor by which to scale the rectangle's dimensions.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is a scaled version of the current rectangle.</returns>
+    public RectangleInfo Scale(decimal scalingFactor) =>
+        new(
+            this.X * scalingFactor,
+            this.Y * scalingFactor,
+            this.Width * scalingFactor,
+            this.Height * scalingFactor);
 
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> that is smaller than the current rectangle.
+    /// The dimensions of the new rectangle are calculated by shrinking the current rectangle's dimensions by the size of the border.
+    /// </summary>
+    /// <param name="border">The <see cref="BorderStyle"/> that specifies the amount to shrink the rectangle on each side.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is smaller than the current rectangle by the specified border amounts.</returns>
     public RectangleInfo Shrink(BorderStyle border) =>
         new(
             this.X + border.Left,
@@ -169,6 +230,12 @@ public sealed class RectangleInfo
             this.Width - border.Horizontal,
             this.Height - border.Vertical);
 
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> that is smaller than the current rectangle.
+    /// The dimensions of the new rectangle are calculated by shrinking the current rectangle's dimensions by the size of the margin.
+    /// </summary>
+    /// <param name="margin">The <see cref="MarginStyle"/> that specifies the amount to shrink the rectangle on each side.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is smaller than the current rectangle by the specified margin amounts.</returns>
     public RectangleInfo Shrink(MarginStyle margin) =>
         new(
             this.X + margin.Left,
@@ -176,6 +243,12 @@ public sealed class RectangleInfo
             this.Width - margin.Horizontal,
             this.Height - margin.Vertical);
 
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> that is smaller than the current rectangle.
+    /// The dimensions of the new rectangle are calculated by shrinking the current rectangle's dimensions by the size of the padding.
+    /// </summary>
+    /// <param name="padding">The <see cref="PaddingStyle"/> that specifies the amount to shrink the rectangle on each side.</param>
+    /// <returns>A new <see cref="RectangleInfo"/> that is smaller than the current rectangle by the specified padding amounts.</returns>
     public RectangleInfo Shrink(PaddingStyle padding) =>
         new(
             this.X + padding.Left,
@@ -183,6 +256,10 @@ public sealed class RectangleInfo
             this.Width - padding.Horizontal,
             this.Height - padding.Vertical);
 
+    /// <summary>
+    /// Returns a new <see cref="RectangleInfo"/> where the X, Y, Width, and Height properties of the current rectangle are truncated to integers.
+    /// </summary>
+    /// <returns>A new <see cref="RectangleInfo"/> with the X, Y, Width, and Height properties of the current rectangle truncated to integers.</returns>
     public RectangleInfo Truncate() =>
         new(
             (int)this.X,
@@ -204,7 +281,12 @@ public sealed class RectangleInfo
         return new RectangleInfo(x1, y1, x2 - x1, y2 - y1);
     }
 
-    public Rectangle ToRectangle() => new((int)this.X, (int)this.Y, (int)this.Width, (int)this.Height);
+    public Rectangle ToRectangle() =>
+        new(
+            (int)this.X,
+            (int)this.Y,
+            (int)this.Width,
+            (int)this.Height);
 
     public override string ToString()
     {

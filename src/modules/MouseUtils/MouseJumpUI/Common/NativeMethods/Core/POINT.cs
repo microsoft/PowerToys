@@ -29,6 +29,14 @@ internal static partial class Core
         public readonly LONG y;
 
         public POINT(
+            int x,
+            int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public POINT(
             LONG x,
             LONG y)
         {

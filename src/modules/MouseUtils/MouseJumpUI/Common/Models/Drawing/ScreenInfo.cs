@@ -11,7 +11,7 @@ namespace MouseJumpUI.Common.Models.Drawing;
 /// Immutable version of a System.Windows.Forms.Screen object so we don't need to
 /// take a dependency on WinForms just for screen info.
 /// </summary>
-public sealed class ScreenInfo
+internal sealed class ScreenInfo
 {
     internal ScreenInfo(HMONITOR handle, bool primary, RectangleInfo displayArea, RectangleInfo workingArea)
     {

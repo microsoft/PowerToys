@@ -26,6 +26,15 @@ internal static partial class Core
         public readonly LONG bottom;
 
         public CRECT(
+            int left, int top, int right, int bottom)
+        {
+            this.left = left;
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+        }
+
+        public CRECT(
             LONG left, LONG top, LONG right, LONG bottom)
         {
             this.left = left;
