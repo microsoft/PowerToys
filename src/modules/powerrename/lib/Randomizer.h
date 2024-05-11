@@ -37,14 +37,7 @@ struct Randomizer
 
         if (options.uuid.value_or(false))
         {
-            std::string uuid = unwide(CreateGuidString());
-
-            if (!uuid.empty() && uuid.front() == '{' && uuid.back() == '}')
-            {
-                uuid = uuid.substr(1, uuid.size() - 2);
-            }
-
-            return uuid;
+            return unwide(CreateGuidStringWithoutBrackets());
         }
         if (options.basic.value_or(false))
         {
