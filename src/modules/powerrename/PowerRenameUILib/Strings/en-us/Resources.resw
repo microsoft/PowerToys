@@ -295,10 +295,10 @@
     <value>Capitalize each word</value>
   </data>
   <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Enumerate items</value>
+    <value>Enumeration features</value>
   </data>
   <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Enumerate items</value>
+    <value>Enumeration features</value>
   </data>
   <data name="SelectAllCheckBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Select or deselect all</value>
@@ -379,9 +379,9 @@
     <value>Random UUID according to v4 specification.</value>
   </data>
   <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Use random values</value>
+    <value>Random string features</value>
   </data>
   <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Use random values</value>
+    <value>Random string features</value>
   </data>
 </root>
