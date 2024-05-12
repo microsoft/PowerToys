@@ -52,6 +52,11 @@ struct Randomizer
             chars += "0123456789";
         }
 
+        if (chars.empty())
+        {
+            return "";
+        }
+
         std::string result;
         std::random_device rd;
         std::mt19937 generator(rd());
