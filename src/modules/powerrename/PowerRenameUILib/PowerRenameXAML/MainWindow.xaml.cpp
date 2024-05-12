@@ -289,7 +289,7 @@ namespace winrt::PowerRenameUI::implementation
 
         button_rename().IsEnabled(false);
         toggleButton_enumItems().IsChecked(true);
-        toggleButton_randItems().IsChecked(true);
+        toggleButton_randItems().IsChecked(false);
         InitAutoComplete();
         SearchReplaceChanged();
         InvalidateItemListViewState();
@@ -588,6 +588,21 @@ namespace winrt::PowerRenameUI::implementation
                 toggleButton_upperCase().IsChecked(false);
                 toggleButton_lowerCase().IsChecked(false);
                 toggleButton_titleCase().IsChecked(false);
+            }
+        }
+
+        if (flag == EnumerateItems)
+        {
+            if (toggleButton_enumItems().IsChecked())
+            {
+                toggleButton_randItems().IsChecked(false);
+            }
+        }
+        else if (flag == RandomizeItems)
+        {
+            if (toggleButton_randItems().IsChecked())
+            {
+                toggleButton_enumItems().IsChecked(false);
             }
         }
 
