@@ -105,7 +105,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _additionalOption.NumberValue;
             set
             {
-                if (value != _additionalOption.NumberValue)
+                if (double.IsNaN(value))
+                {
+                    // If the user clears the number box and presses enter or moves focus awai then `value` convertet to double results in `double.NaN`. This crashes the setiings app. (https://github.com/microsoft/PowerToys/issues/32738#issuecomment-2105983967)
+                    // To prevent the crash an provide a nice user experienece we reset the numberbox to the last valid value. This happens by sending a `NotifyPropertyChanged()` command and let the NumberBox reload its value.
+                    // (Yes we could use 0, but this needs additional code for checking 0 against min and max.
+                    //  And yes we could also use the min value of the NumberBox, but is not user firendly as NumberBoxMin can be `double.MinValue`.)
+                    NotifyPropertyChanged();
+                }
+                else if (value != _additionalOption.NumberValue)
                 {
                     _additionalOption.NumberValue = value;
                     NotifyPropertyChanged();
