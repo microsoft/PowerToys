@@ -1331,6 +1331,9 @@ RRF
 rrr
 rsop
 Rsp
+rstring
+rstringchar
+rstringnum
 Rstrtmgr
 RTB
 RTLREADING
@@ -1345,6 +1348,7 @@ runtimeclass
 runtimeobject
 runtimepack
 runtimes
+ruuid
 rvm
 rwin
 rwl
