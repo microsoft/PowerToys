@@ -130,10 +130,15 @@ internal partial class MainForm : Form
 
         if (mouseEventArgs.Button == MouseButtons.Left)
         {
+            if (this.PreviewLayout is null)
+            {
+                // there's no layout data so we can't work out what screen was clicked
+                return;
+            }
+
             // work out which screenshot was clicked
-            var clickedScreenshot = (this.PreviewLayout ?? throw new InvalidOperationException())
-                .ScreenshotBounds
-                .SingleOrDefault(
+            var clickedScreenshot = this.PreviewLayout.ScreenshotBounds
+                .FirstOrDefault(
                     box => box.BorderBounds.Contains(mouseEventArgs.X, mouseEventArgs.Y));
             if (clickedScreenshot is null)
             {
