@@ -84,6 +84,7 @@ END
 // TODO: Use to activate embedded MSIX
 //IDR_BIN_MSIX_HELLO_PACKAGE BIN "..\\..\..\\src\\modules\\HelloModule\\AppPackages\\HelloModule_1.0.0.0_x64_Test\\HelloModule_1.0.0.0_x64.msix"
 
+
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
