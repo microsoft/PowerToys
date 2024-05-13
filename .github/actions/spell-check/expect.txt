@@ -1331,9 +1331,9 @@ RRF
 rrr
 rsop
 Rsp
-rstring
-rstringchar
-rstringnum
+rstringalnum
+rstringalpha
+rstringdigit
 Rstrtmgr
 RTB
 RTLREADING

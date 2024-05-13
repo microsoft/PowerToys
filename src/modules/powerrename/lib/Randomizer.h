@@ -15,9 +15,9 @@ struct ReplaceStrSpan
 struct RandomizerOptions
 {
     std::optional<int> length;
-    std::optional<boolean> basic;
-    std::optional<boolean> characters;
-    std::optional<boolean> numbers;
+    std::optional<boolean> alnum;
+    std::optional<boolean> alpha;
+    std::optional<boolean> digit;
     std::optional<boolean> uuid;
     ReplaceStrSpan replaceStrSpan;
 };
@@ -39,19 +39,18 @@ struct Randomizer
         {
             return unwide(CreateGuidStringWithoutBrackets());
         }
-        if (options.basic.value_or(false))
+        if (options.alnum.value_or(false))
         {
-            chars += "abcdefghijklmnopqrstuvwxyz0123456789";
+            chars += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         }
-        if (options.characters.value_or(false))
+        if (options.alpha.value_or(false))
         {
-            chars += "abcdefghijklmnopqrstuvwxyz";
+            chars += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         }
-        if (options.numbers.value_or(false))
+        if (options.digit.value_or(false))
         {
             chars += "0123456789";
         }
-
         if (chars.empty())
         {
             return "";

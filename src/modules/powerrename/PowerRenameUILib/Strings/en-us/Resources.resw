@@ -363,14 +363,14 @@
   <data name="RenameParts_ExtensionOnly.Content" xml:space="preserve">
     <value>Extension only</value>
   </data>
-  <data name="RandomizerCheatSheet_Basic" xml:space="preserve">
-    <value>Random string with ASCII alphabet characters and 0-9 numbers, customized length.</value>
+  <data name="RandomizerCheatSheet_Alnum" xml:space="preserve">
+    <value>Random string with uppercase letters, lowercase letters and 0-9 digits, customized length.</value>
   </data>
-  <data name="RandomizerCheatSheet_Char" xml:space="preserve">
-    <value>Random string with ASCII alphabet characters, customized length.</value>
+  <data name="RandomizerCheatSheet_Alpha" xml:space="preserve">
+    <value>Random string with uppercase letters and lowercase letters, customized length.</value>
   </data>
-  <data name="RandomizerCheatSheet_Num" xml:space="preserve">
-    <value>Random string with 0-9 numbers, customized length.</value>
+  <data name="RandomizerCheatSheet_Digit" xml:space="preserve">
+    <value>Random string with 0-9 digits, customized length.</value>
   </data>
   <data name="RandomizerCheatSheet_Title.Text" xml:space="preserve">
     <value>Replace using random values</value>

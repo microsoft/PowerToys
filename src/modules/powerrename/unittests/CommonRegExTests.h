@@ -472,22 +472,21 @@ TEST_METHOD (VerifyRandomizerDefaultFlags)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = 0;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstring=9}") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=9}") == S_OK);
     unsigned long index = {};
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
-    Assert::AreEqual(L"foo$1bar_${rstring=9}", result);
+    Assert::AreEqual(L"foo$1bar_${rstringalnum=9}", result);
     CoTaskMemFree(result);
 }
+
 TEST_METHOD (VerifyRandomizerNoRegex)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = RandomizeItems;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
     Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${}") == S_OK);
@@ -503,13 +502,12 @@ TEST_METHOD (VerifyRandomizerNoRandomizerRegEx)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstring=9}") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=9}") == S_OK);
     unsigned long index = {};
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
-    Assert::AreEqual(L"foobar_${rstring=9}", result);
+    Assert::AreEqual(L"foobar_${rstringalnum=9}", result);
     CoTaskMemFree(result);
 }
 
@@ -519,17 +517,14 @@ TEST_METHOD (VerifyRandomizerRegEx)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = RandomizeItems | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstring=9}") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=9}") == S_OK);
     unsigned long index = {};
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
-
     std::wstring resultStr(result);
     std::wregex pattern(L"foobar_\\w{9}");
     Assert::IsTrue(std::regex_match(resultStr, pattern));
-
     CoTaskMemFree(result);
 }
 
@@ -539,10 +534,9 @@ TEST_METHOD (VerifyRandomizerRegExZeroValue)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = RandomizeItems | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstring=0}") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=0}") == S_OK);
     unsigned long index = {};
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
     Assert::AreEqual(L"foobar_", result);
@@ -555,17 +549,14 @@ TEST_METHOD (VerifyRandomizerRegExChar)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = RandomizeItems | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringchar=9}") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalpha=9}") == S_OK);
     unsigned long index = {};
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
-
     std::wstring resultStr(result);
     std::wregex pattern(L"foobar_[A-Za-z]{9}");
     Assert::IsTrue(std::regex_match(resultStr, pattern));
-
     CoTaskMemFree(result);
 }
 
@@ -575,17 +566,14 @@ TEST_METHOD (VerifyRandomizerRegExNum)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = RandomizeItems | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringnum=9}") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringdigit=9}") == S_OK);
     unsigned long index = {};
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
-
     std::wstring resultStr(result);
     std::wregex pattern(L"foobar_\\d{9}");
     Assert::IsTrue(std::regex_match(resultStr, pattern));
-
     CoTaskMemFree(result);
 }
 
@@ -595,17 +583,14 @@ TEST_METHOD (VerifyRandomizerRegExUuid)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = RandomizeItems | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
     Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${ruuidv4}") == S_OK);
     unsigned long index = {};
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
-
     std::wstring resultStr(result);
     std::wregex pattern(L"foobar_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
     Assert::IsTrue(std::regex_match(resultStr, pattern));
-
     CoTaskMemFree(result);
 }
 
@@ -615,17 +600,14 @@ TEST_METHOD (VerifyRandomizerRegExAllBackToBack)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = RandomizeItems | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstring=2}${rstringchar=2}${rstringnum=2}${ruuidv4}") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=2}${rstringalpha=2}${rstringdigit=2}${ruuidv4}") == S_OK);
     unsigned long index = {};
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
-
     std::wstring resultStr(result);
     std::wregex pattern(L"foobar_\\w{2}[A-Za-z]{2}\\d{2}[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
     Assert::IsTrue(std::regex_match(resultStr, pattern));
-
     CoTaskMemFree(result);
 }
 

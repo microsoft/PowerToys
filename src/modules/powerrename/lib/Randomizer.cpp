@@ -4,9 +4,9 @@
 
 std::vector<RandomizerOptions> parseRandomizerOptions(const std::wstring& replaceWith)
 {
-    static const std::wregex randBasicRegex(LR"(rstring=(\d+))");
-    static const std::wregex randCharRegex(LR"(rstringchar=(-?\d+))");
-    static const std::wregex randNumRegex(LR"(rstringnum=(\d+))");
+    static const std::wregex randAlnumRegex(LR"(rstringalnum=(\d+))");
+    static const std::wregex randAlphaRegex(LR"(rstringalpha=(-?\d+))");
+    static const std::wregex randDigitRegex(LR"(rstringdigit=(\d+))");
     static const std::wregex randUuidRegex(LR"(ruuidv4)");
 
     std::string buf;
@@ -23,22 +23,22 @@ std::vector<RandomizerOptions> parseRandomizerOptions(const std::wstring& replac
         option.replaceStrSpan.length = match.length();
 
         std::wsmatch subMatch;
-        if (std::regex_search(matchString, subMatch, randBasicRegex))
+        if (std::regex_search(matchString, subMatch, randAlnumRegex))
         {
             int length = std::stoi(subMatch.str(1));
-            option.basic = true;
+            option.alnum = true;
             option.length = length;
         }
-        if (std::regex_search(matchString, subMatch, randCharRegex))
+        if (std::regex_search(matchString, subMatch, randAlphaRegex))
         {
             int length = std::stoi(subMatch.str(1));
-            option.characters = true;
+            option.alpha = true;
             option.length = length;
         }
-        if (std::regex_search(matchString, subMatch, randNumRegex))
+        if (std::regex_search(matchString, subMatch, randDigitRegex))
         {
             int length = std::stoi(subMatch.str(1));
-            option.numbers = true;
+            option.digit = true;
             option.length = length;
         }
         if (std::regex_search(matchString, subMatch, randUuidRegex))
