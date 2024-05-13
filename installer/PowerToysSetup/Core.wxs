@@ -46,6 +46,16 @@
       </Component>
     </DirectoryRef>
 
+    <DirectoryRef Id="DSCModulesReferenceFolder">
+      <Component Id="PowerToysDSCReference" Win64="yes" Guid="40869ACB-0BEB-4911-AE41-5E73BC1586A9">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="DSCModulesReference" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psd1" Id="PTConfReference.psd1" />
+        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version)\Microsoft.PowerToys.Configure.psm1" Id="PTConfReference.psm1" />
+      </Component>
+    </DirectoryRef>
+
     <?if $(var.PerUser) = "true" ?>
     <!-- DSC module files for PerUser handled in InstallDSCModule custom action. -->
     <?else?>
@@ -110,6 +120,7 @@
           <RegistryValue Type="string" Name="RemoveCoreFolder" Value="" KeyPath="yes"/>
         </RegistryKey>
         <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveDSCModulesReferenceFolder" Directory="DSCModulesReferenceFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall"/>
@@ -121,6 +132,7 @@
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
       <ComponentRef Id="DesktopShortcut" />
+      <ComponentRef Id="PowerToysDSCReference" />
       <?if $(var.PerUser) = "false" ?>
       <ComponentRef Id="PowerToysDSC" />
       <?endif?>

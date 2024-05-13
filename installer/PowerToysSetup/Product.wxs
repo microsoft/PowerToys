@@ -136,6 +136,11 @@
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
+
+      <?if $(var.PerUser) = "true" ?>
+      <Custom Action="SetInstallDSCModuleParam" Before="InstallDSCModule" />
+      <?endif?>
+
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize">
         NOT Installed
@@ -212,6 +217,10 @@
                     Property="UnApplyModulesRegistryChangeSets"
                     Value="[INSTALLFOLDER]" />
 
+    <CustomAction Id="SetInstallDSCModuleParam"
+                    Property="InstallDSCModule"
+                    Value="[INSTALLFOLDER]" />
+
     <CustomAction Id="SetUninstallCommandNotFoundParam"
                     Property="UninstallCommandNotFound"
                     Value="[INSTALLFOLDER]" />
@@ -265,6 +274,7 @@
     <CustomAction Id="InstallDSCModule"
                   Return="ignore"
                   Impersonate="yes"
+                  Execute="deferred"
                   BinaryKey="PTCustomActions"
                   DllEntry="InstallDSCModuleCA"
                    />
@@ -402,6 +412,7 @@
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
           </Directory>
+          <Directory Id="DSCModulesReferenceFolder" Name="DSCModules" />
           <Directory Id="WinUI3AppsInstallFolder" Name="WinUI3Apps">
               <Directory Id="WinUI3AppsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
                 <Directory Id="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />

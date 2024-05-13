@@ -340,19 +340,14 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
     hr = WcaInitialize(hInstall, "InstallDSCModuleCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    LPWSTR currentScope = nullptr;
-    hr = WcaGetProperty(L"InstallScope", &currentScope);
-    ExitOnFailure(hr, "Failed to get current install scope");
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
 
-    if (std::wstring{ currentScope } != L"perUser")
-    {
-        hr = E_FAIL;
-        ExitOnFailure(hr, "InstallDSCModuleCA only supported for perUser");
-    }
-    else
     {
         const auto baseModulesPath = GetUserPowerShellModulesPath();
         if (baseModulesPath.empty())
@@ -371,24 +366,14 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
             ExitOnFailure(hr, "Unable to create Powershell modules folder");
         }
 
-        std::array embeddedResources =
+        for (const auto* filename : { DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME })
         {
-            std::pair(DSC_CONFIGURE_PSD1_NAME, IDR_BIN_DSC_POWERTOYS_CONFIGURE_MODULE_PSD1),
-            std::pair(DSC_CONFIGURE_PSM1_NAME, IDR_BIN_DSC_POWERTOYS_CONFIGURE_MODULE_PSM1)
-        };
+            fs::copy_file(fs::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, fs::copy_options::overwrite_existing, errorCode);
 
-        for (const auto& [filename, resourceId] : embeddedResources)
-        {
-            auto extractedFile = RcResource::create(resourceId, L"BIN", DLL_HANDLE);
-
-            if (!extractedFile)
+            if (errorCode)
             {
                 hr = E_FAIL;
-                ExitOnFailure(hr, "Failed to extract DSC module");
-            }
-            else
-            {
-                extractedFile->saveAsFile(modulesPath / filename);
+                ExitOnFailure(hr, "Unable to copy Powershell modules file");
             }
         }
     }
@@ -416,16 +401,6 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "UninstallDSCModuleCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    LPWSTR currentScope = nullptr;
-    hr = WcaGetProperty(L"InstallScope", &currentScope);
-    ExitOnFailure(hr, "Failed to get current install scope");
-
-    if (std::wstring{ currentScope } != L"perUser")
-    {
-        hr = E_FAIL;
-        ExitOnFailure(hr, "UninstallDSCModuleCA only supported for perUser");
-    }
-    else
     {
         const auto baseModulesPath = GetUserPowerShellModulesPath();
         if (baseModulesPath.empty())

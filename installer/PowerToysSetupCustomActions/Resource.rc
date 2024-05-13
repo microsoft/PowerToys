@@ -84,13 +84,6 @@ END
 // TODO: Use to activate embedded MSIX
 //IDR_BIN_MSIX_HELLO_PACKAGE BIN "..\\..\..\\src\\modules\\HelloModule\\AppPackages\\HelloModule_1.0.0.0_x64_Test\\HelloModule_1.0.0.0_x64.msix"
 
-// Macro to construct path to a DSC file
-// Contains multiple workarounds for issues relating to macro expansion within resource files, which works differently than in regular files
-#define DSC_FILE(ext) STRINGIZE(\x2E\x2E\\\x2E\x2E\\\x2E\x2E\\src\\dsc\\Microsoft\x2EPowerToys\x2EConfigure\\Generated\\Microsoft\x2EPowerToys\x2EConfigure\\VERSION_MAJOR.VERSION_MINOR.VERSION_REVISION\\Microsoft\x2EPowerToys\x2EConfigure.ext)
-
-IDR_BIN_DSC_POWERTOYS_CONFIGURE_MODULE_PSD1 BIN DSC_FILE(psd1)
-IDR_BIN_DSC_POWERTOYS_CONFIGURE_MODULE_PSM1 BIN DSC_FILE(psm1)
-
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
