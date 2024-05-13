@@ -21,6 +21,15 @@ else {
     Write-Host "WinGet module was not found. Installation instructions can be found on https://www.powershellgallery.com/packages/Microsoft.WinGet.Client `r`n"
 }
 
+$CNFModule = Get-Module -ListAvailable -Name Microsoft.WinGet.CommandNotFound
+if ($CNFModule) {
+  Write-Host "Microsoft.WinGet.CommandNotFound module detected"
+} else {
+  Write-Host "Microsoft.WinGet.CommandNotFound was not found. Installing...`r`n"
+  Install-Module -Name Microsoft.WinGet.CommandNotFound -Force
+  Write-Host "Microsoft.WinGet.CommandNotFound module installed`r`n"
+}
+
 if (!(Test-Path $PROFILE))
 {
   Write-Host "Profile file $PROFILE not found".

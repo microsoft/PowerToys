@@ -13,6 +13,11 @@ if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contai
     Update-Module -Name Microsoft.WinGet.Client
   }
 
+  # Install Microsoft.WinGet.CommandNotFound module
+  if (-Not (Get-Module -ListAvailable -Name Microsoft.WinGet.CommandNotFound)) {
+    Install-Module -Name Microsoft.WinGet.CommandNotFound -Force
+  }
+
   # Replace old module with new one (and new GUID comment)
   $regex = "Import-Module .*WinGetCommandNotFound.psd1`""
   if ($profileContent -match $regex)
