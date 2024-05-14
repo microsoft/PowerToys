@@ -193,6 +193,26 @@ namespace PowerAccent.Core
             };
         }
 
+        // Crimean Tatar
+        private static string[] GetDefaultLetterKeyCRH(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "â" },
+                LetterKey.VK_C => new[] { "ç" },
+                LetterKey.VK_E => new[] { "€" },
+                LetterKey.VK_G => new[] { "ğ" },
+                LetterKey.VK_H => new[] { "₴" },
+                LetterKey.VK_I => new[] { "ı", "İ" },
+                LetterKey.VK_N => new[] { "ñ" },
+                LetterKey.VK_O => new[] { "ö" },
+                LetterKey.VK_S => new[] { "ş" },
+                LetterKey.VK_T => new[] { "₺" },
+                LetterKey.VK_U => new[] { "ü" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
         // Currencies (source: https://www.eurochange.co.uk/travel-money/world-currency-abbreviations-symbols-and-codes-travel-money)
         private static string[] GetDefaultLetterKeyCUR(LetterKey letter)
         {
