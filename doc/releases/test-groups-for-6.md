@@ -31,21 +31,23 @@ All:
 - Crop And Lock
 - Environment Variables
 - Command Not Found
+- DSC
 ```
 
 ```
 Group 1:
-- Install
-- Functional
-- Localization
-- General
+- Color Picker
+- File Explorer Add-ons
 - Keyboard Manager
+- AlwaysOnTop
 - Screen Ruler
+- Text Extractor
 - File Locksmith
 - GPO
-- Paste As Plain Text
+- Registry Preview
+- Peek
 - MWB
-- Environment Variables
+- Command Not Found
 ```
 
 ```
@@ -56,17 +58,18 @@ Group 2:
 - OOBE
 - Mouse Utils
 - VCM
-- AlwaysOnTop
 - Hosts File Editor
 - File Locksmith
 - Registry Preview
 - Peek
-- Command Not Found
+- Environment Variables
+- DSC
 ```
 
 ```
 Group 3:
 - Image Resizer
+- File Explorer Add-ons
 - PowerRename
 - PowerToys Run
 - OOBE
@@ -102,19 +105,19 @@ Group 5:
 - General
 - FZ Editor
 - FZ
-- File Explorer Add-ons
 - Awake
 - Crop And Lock
+- DSC
 ```
 
 ```
 Group 6:
-- Color Picker
+- Install
+- Functional
+- Localization
+- General
 - FZ Editor
 - FZ
-- File Explorer Add-ons
 - Quick Accent
-- Text Extractor
-- Registry Preview
-- Peek
+- Paste As Plain Text
 ```
