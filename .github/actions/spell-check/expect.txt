@@ -196,6 +196,7 @@ CMock
 CMONITORS
 cmpgt
 cne
+CNF
 coclass
 codeofconduct
 codereview
