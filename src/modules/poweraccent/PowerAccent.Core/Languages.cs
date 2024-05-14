@@ -11,6 +11,7 @@ namespace PowerAccent.Core
     {
         ALL,
         CA,
+        CRH,
         CUR,
         CY,
         CZ,
