@@ -250,23 +250,23 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 
 ## Quick Accent
  * Enable Quick Accent and open notepad. Then:
-   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+   - [x] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [x] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [x] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
  * Test the different settings and verify they are applied:
-   - [ ] Activation key
-   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [ ] Toolbar position (test every option, some had issues before)
-   - [ ] Input delay
-   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [ ] Sort characters by frequency.
-   - [ ] Always start on the first character when using left/right arrows as activation method.
+   - [x] Activation key
+   - [x] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [x] Toolbar position (test every option, some had issues before)
+   - [x] Input delay
+   - [x] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [x] Sort characters by frequency.
+   - [x] Always start on the first character when using left/right arrows as activation method.
 
 ## Paste As Plain Text
  * Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.). Then:
-   - [ ] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
-   - [ ] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
-   - [ ] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
-   - [ ] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
-   - [ ] Disable the module and ensure that text is not being pasted using activation shortcut. 
+   - [x] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
+   - [x] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
+   - [x] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
+   - [x] Change the activation shorctut and ensure that Paste As Plain Text is triggered using new shortcut.
+   - [x] Disable the module and ensure that text is not being pasted using activation shortcut. 
 
