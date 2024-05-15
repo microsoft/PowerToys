@@ -9,9 +9,18 @@ Enable-ExperimentalFeature PSFeedbackProvider
 Write-Host "Enabling experimental feature: PSCommandNotFoundSuggestion"
 Enable-ExperimentalFeature PSCommandNotFoundSuggestion
 
-$wingetModule = Get-Module -ListAvailable -Name Microsoft.WinGet.Client
-if ($wingetModule) {
-  if ($wingetModule.Version -ge "1.8.1133") {
+$wingetModules = Get-Module -ListAvailable -Name Microsoft.WinGet.Client
+if ($wingetModules) {
+
+  $moduleUpToDate = $false;
+  foreach ($mod in $wingetModules) {
+    if ($mod.Version -ge "1.8.1133") {
+      $moduleUpToDate = $true;
+      break;
+    }
+  }
+
+  if ($moduleUpToDate) {
     Write-Host "WinGet Client module detected"
   } else {
     Write-Host "WinGet module needs to be updated. Run `"Update-Module -Name Microsoft.WinGet.Client`" to update `r`n"
@@ -60,7 +69,7 @@ elseif ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Co
 else
 {
   Add-Content -Path $PROFILE  -Value "`r`n#f45873b3-b655-43a6-b217-97c00aa0db58 PowerToys CommandNotFound module"
-  Add-Content -Path $PROFILE  -Value "`r`nImport-Module -Name Microsoft.WinGet.CommandNotFound`""
+  Add-Content -Path $PROFILE  -Value "`r`nImport-Module -Name Microsoft.WinGet.CommandNotFound"
   Add-Content -Path $PROFILE  -Value "#f45873b3-b655-43a6-b217-97c00aa0db58"  
   Write-Host "Module was successfully registered in the profile file."
   # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.

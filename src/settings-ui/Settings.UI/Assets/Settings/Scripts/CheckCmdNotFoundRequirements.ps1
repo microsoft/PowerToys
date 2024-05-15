@@ -15,12 +15,12 @@ if ($mods = Get-Module -ListAvailable -Name Microsoft.WinGet.Client)
   Write-Host "WinGet Client module detected."
   # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
 
-  $needsUpdate = $false;
+  $needsUpdate = $true;
   foreach ($mod in $mods)
   {
-    if ($mod.Version -lt "1.8.1133")
+    if ($mod.Version -ge "1.8.1133")
     {
-      $needsUpdate = $true;
+      $needsUpdate = $false;
       break;
     }
   }
