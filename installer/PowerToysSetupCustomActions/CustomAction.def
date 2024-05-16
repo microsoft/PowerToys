@@ -24,3 +24,4 @@ EXPORTS
 	UninstallEmbeddedMSIXCA
 	UninstallServicesCA
 	UninstallCommandNotFoundModuleCA
+	UpgradeCommandNotFoundModuleCA

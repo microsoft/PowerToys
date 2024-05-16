@@ -129,11 +129,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
-        public bool IsArm64Arch
-        {
-            get => RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
-        }
-
         public string RunPowerShellOrPreviewScript(string powershellExecutable, string powershellArguments, bool hidePowerShellWindow = false)
         {
             if (isPowerShellPreviewDetected)
@@ -228,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 IsWinGetClientModuleDetected = true;
             }
-            else if (result.Contains("WinGet Client module not detected."))
+            else if (result.Contains("WinGet Client module not detected.") || result.Contains("WinGet Client module needs to be updated."))
             {
                 IsWinGetClientModuleDetected = false;
             }
@@ -237,7 +232,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 IsCommandNotFoundModuleInstalled = true;
             }
-            else if (result.Contains("Command Not Found module is not registered in the profile file."))
+            else if (result.Contains("Command Not Found module is not registered in the profile file.") || result.Contains("Outdated version of Command Not Found module found in the profile file."))
             {
                 IsCommandNotFoundModuleInstalled = false;
             }
@@ -266,7 +261,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var ps1File = AssemblyDirectory + "\\Assets\\Settings\\Scripts\\InstallWinGetClientModule.ps1";
             var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\"";
             var result = RunPowerShellOrPreviewScript("pwsh.exe", arguments);
-            if (result.Contains("WinGet Client module detected."))
+            if (result.Contains("WinGet Client module detected.") || result.Contains("WinGet Client module updated."))
             {
                 IsWinGetClientModuleDetected = true;
             }
@@ -284,7 +279,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var arguments = $"-NoProfile -ExecutionPolicy Unrestricted -File \"{ps1File}\" -scriptPath \"{AssemblyDirectory}\\..\"";
             var result = RunPowerShellOrPreviewScript("pwsh.exe", arguments);
 
-            if (result.Contains("Module is already registered in the profile file.") || result.Contains("Module was successfully registered in the profile file."))
+            if (result.Contains("Module is already registered in the profile file.")
+                || result.Contains("Module was successfully registered in the profile file.")
+                || result.Contains("Module was successfully upgraded in the profile file."))
             {
                 IsCommandNotFoundModuleInstalled = true;
                 PowerToysTelemetry.Log.WriteEvent(new CmdNotFoundInstallEvent());

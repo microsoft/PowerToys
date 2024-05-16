@@ -72,7 +72,6 @@
       <ComponentGroupRef Id="VideoConferenceComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
       <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
-      <ComponentGroupRef Id="CmdNotFoundComponentGroup" />
         
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
@@ -135,6 +134,7 @@
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
+      <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize">
@@ -163,6 +163,9 @@
       </Custom>
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles">
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="UpgradeCommandNotFound" After="InstallFiles">
+        WIX_UPGRADE_DETECTED
       </Custom>
       <Custom Action="UninstallServicesTask" After="InstallFinalize">
           Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
@@ -207,6 +210,10 @@
 
     <CustomAction Id="SetUninstallCommandNotFoundParam"
                     Property="UninstallCommandNotFound"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetUpgradeCommandNotFoundParam"
+                    Property="UpgradeCommandNotFound"
                     Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetCreateWinAppSDKHardlinksParam"
@@ -268,6 +275,14 @@
                     Execute="deferred"
                     BinaryKey="PTCustomActions"
                     DllEntry="UninstallCommandNotFoundModuleCA"
+                   />
+      
+      <CustomAction Id="UpgradeCommandNotFound"
+                    Return="ignore"
+                    Impersonate="yes"
+                    Execute="deferred"
+                    BinaryKey="PTCustomActions"
+                    DllEntry="UpgradeCommandNotFoundModuleCA"
                    />
 
       <CustomAction Id="TelemetryLogInstallSuccess"

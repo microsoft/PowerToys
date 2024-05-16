@@ -34,7 +34,6 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2365.46" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
@@ -77,7 +76,6 @@
     <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
     <PackageVersion Include="System.Management" Version="8.0.0" />
-    <PackageVersion Include="System.Management.Automation" Version="7.4.0" />
     <PackageVersion Include="System.Reactive" Version="6.0.0-preview.9" />
     <PackageVersion Include="System.Runtime.Caching" Version="8.0.0" />
     <!-- Package System.Security.Cryptography.ProtectedData added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
