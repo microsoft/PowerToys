@@ -304,6 +304,7 @@
                 "MessagePack.dll",
                 "Nerdbank.Streams.dll",
                 "WinUI3Apps\\SharpCompress.dll",
+                "WinUI3Apps\\ZstdSharp.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",

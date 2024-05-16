@@ -1342,7 +1342,7 @@ EXHIBIT A -Mozilla Public License.
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
 - ScipBe.Common.Office.OneNote 3.0.1
-- SharpCompress 0.33.0
+- SharpCompress 0.37.2
 - StreamJsonRpc 2.14.24
 - StyleCop.Analyzers 1.2.0-beta.556
 - System.CodeDom 8.0.0
@@ -1353,7 +1353,7 @@ EXHIBIT A -Mozilla Public License.
 - System.Data.SqlClient 4.8.6
 - System.Diagnostics.EventLog 8.0.0
 - System.Diagnostics.PerformanceCounter 8.0.0
-- System.Drawing.Common 8.0.4
+- System.Drawing.Common 8.0.5
 - System.IO.Abstractions 17.2.3
 - System.IO.Abstractions.TestingHelpers 17.2.3
 - System.Management 8.0.0
