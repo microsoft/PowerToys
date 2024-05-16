@@ -32,5 +32,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         PastePlain,
         WhatsNew,
         RegistryPreview,
+        New,
     }
 }

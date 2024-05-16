@@ -118,6 +118,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                     Tag="MouseWithoutBorders" />
                 <NavigationViewItem
+                    x:Uid="New_Product_Name"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/New.png}"
+                    Tag="New" />
+                <NavigationViewItem
                     x:Uid="Shell_PastePlain"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PasteAsPlainText.png}"
                     Tag="PastePlain" />

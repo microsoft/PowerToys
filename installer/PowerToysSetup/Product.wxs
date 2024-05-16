@@ -73,8 +73,9 @@
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
       <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
       <ComponentGroupRef Id="CmdNotFoundComponentGroup" />
-        
-      <ComponentGroupRef Id="ResourcesComponentGroup" />
+      <ComponentGroupRef Id="NewComponentGroup" />
+
+		<ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />

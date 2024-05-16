@@ -200,6 +200,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "RegistryPreview",
                 IsNew = true,
             });
+
+            Modules.Insert((int)PowerToysModules.New, new OobePowerToysModule()
+            {
+                ModuleName = "New",
+                IsNew = true,
+            });
         }
 
         public void OnClosing()
@@ -277,6 +283,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
                     case "PastePlain": NavigationFrame.Navigate(typeof(OobePastePlain)); break;
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
+                    case "New": NavigationFrame.Navigate(typeof(OobeNew)); break;
                 }
             }
         }
