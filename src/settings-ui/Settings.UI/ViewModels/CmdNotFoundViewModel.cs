@@ -58,6 +58,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _enabledStateIsGPOConfigured = true;
             }
 
+            // Update PATH environment variable to get pwsh.exe on further calls.
+            Environment.SetEnvironmentVariable("PATH", (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? string.Empty) + ";" + (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty), EnvironmentVariableTarget.Process);
+
             CheckCommandNotFoundRequirements();
         }
 
