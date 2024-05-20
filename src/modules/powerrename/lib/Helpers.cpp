@@ -167,7 +167,10 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                         {
                             wordLength++;
                         }
-                        if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), stem.substr(i, wordLength)) == exceptions.end())
+
+                        auto subStr = stem.substr(i, wordLength);
+                        std::transform(subStr.begin(), subStr.end(), subStr.begin(), ::towlower);
+                        if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), subStr) == exceptions.end())
                         {
                             stem[i] = towupper(stem[i]);
                             isFirstWord = false;
