@@ -14,6 +14,7 @@ public:
     bool AddFolder(_In_ const std::wstring path);
     const std::filesystem::path GetTempDirectory() { return _tempDirectory; }
     bool PathExists(_In_ const std::wstring path);
+    bool PathExistsCS(_In_ const std::wstring path);
     std::filesystem::path GetFullPath(_In_ const std::wstring path);
 
 private:

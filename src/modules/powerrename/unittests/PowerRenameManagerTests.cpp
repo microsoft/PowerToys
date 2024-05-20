@@ -94,8 +94,8 @@ namespace PowerRenameManagerTests
             // Verify the rename occurred
             for (int i = 0; i < numPairs; i++)
             {
-                Assert::IsTrue(testFileHelper.PathExists(renamePairs[i].originalName) == !renamePairs[i].shouldRename);
-                Assert::IsTrue(testFileHelper.PathExists(renamePairs[i].newName) == renamePairs[i].shouldRename);
+                Assert::IsTrue(testFileHelper.PathExistsCS(renamePairs[i].originalName) == !renamePairs[i].shouldRename);
+                Assert::IsTrue(testFileHelper.PathExistsCS(renamePairs[i].newName) == renamePairs[i].shouldRename);
             }
 
             Assert::IsTrue(mgr->Shutdown() == S_OK);
@@ -257,6 +257,17 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Titlecase);
         }
 
+        TEST_METHOD (VerifyTitlecaseWithContractionTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"the foo i'll and i've you're the i'd it's i'm don't dogs' gimme'em to y'all", L"The Bar I'll and I've You're the I'd It's I'm Don't Dogs' Gimme'em to Y'all", false, true, 0 },
+                { L"the foo i'll and i've you're the i'd it's i'm don't dogs' gimme'em to y'all.txt", L"The Bar I'll and I've You're the I'd It's I'm Don't Dogs' Gimme'em to Y'all.txt", true, true, 0 },
+                { L"Test", L"Test_norename", false, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Titlecase);
+        }
+
         TEST_METHOD (VerifyCapitalizedTransform)
         {
             rename_pairs renamePairs[] = {
@@ -267,10 +278,22 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Capitalized);
         }
 
+        TEST_METHOD (VerifyCapitalizedWithContractionTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo i'll and i've you're the i'd it's i'm don't dogs' gimme'em to y'all", L"Bar I'll And I've You're The I'd It's I'm Don't Dogs' Gimme'em To Y'all", false, true, 0 },
+                { L"foo i'll and i've you're the i'd it's i'm don't dogs' gimme'em to y'all.txt", L"Bar I'll And I've You're The I'd It's I'm Don't Dogs' Gimme'em To Y'all.txt", false, true, 0 },
+                { L"Test", L"Test_norename", false, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Capitalized);
+        }
+
         TEST_METHOD (VerifyNameOnlyTransform)
         {
             rename_pairs renamePairs[] = {
-                { L"foo.txt", L"BAR.txt", false, true, 0 },
+                { L"foo.foo", L"BAR.foo", true, true, 0 },
+                { L"foo.txt", L"BAR.TXT", false, true, 0 },
                 { L"TEST", L"TEST_norename", false, false, 1 }
             };
 
