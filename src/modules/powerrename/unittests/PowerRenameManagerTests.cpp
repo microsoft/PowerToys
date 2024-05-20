@@ -91,11 +91,15 @@ namespace PowerRenameManagerTests
 
             Assert::IsTrue(replaceSuccess);
 
+            std::vector<std::wstring> shouldRename = { L"not ", L"" };
+
             // Verify the rename occurred
             for (int i = 0; i < numPairs; i++)
             {
-                Assert::IsTrue(testFileHelper.PathExistsCS(renamePairs[i].originalName) == !renamePairs[i].shouldRename);
-                Assert::IsTrue(testFileHelper.PathExistsCS(renamePairs[i].newName) == renamePairs[i].shouldRename);
+                Assert::IsTrue(testFileHelper.PathExistsCaseSensitive(renamePairs[i].originalName) == !renamePairs[i].shouldRename, 
+                               (std::wstring(L"The path: [" +  renamePairs[i].originalName + L"] should ") + shouldRename[!renamePairs[i].shouldRename] + L"exist.").c_str());
+                Assert::IsTrue(testFileHelper.PathExistsCaseSensitive(renamePairs[i].newName) == renamePairs[i].shouldRename,
+                               (std::wstring(L"The path: [" + renamePairs[i].newName + L"] should ") + shouldRename[renamePairs[i].shouldRename] + L"exist.").c_str());
             }
 
             Assert::IsTrue(mgr->Shutdown() == S_OK);
@@ -258,11 +262,11 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Titlecase);
         }      
 
-        TEST_METHOD (VerifyTitlecaseWithContractionTransform)
+        TEST_METHOD (VerifyTitlecaseWithApostropheTransform)
         {
             rename_pairs renamePairs[] = {
-                { L"the foo i'll and i've you're the i'd it's i'm don't dogs' gimme'em to y'all", L"The Bar I'll and I've You're the I'd It's I'm Don't Dogs' Gimme'em to Y'all", false, true, 0 },
-                { L"the foo i'll and i've you're the i'd it's i'm don't dogs' gimme'em to y'all.txt", L"The Bar I'll and I've You're the I'd It's I'm Don't Dogs' Gimme'em to Y'all.txt", true, true, 0 },
+                { L"the foo i'll and i've you're the i'd it's i'm don't its' gimme'em to y'all", L"The Bar I'll and I've You're the I'd It's I'm Don't Its' Gimme'em to Y'all", false, true, 0 },
+                { L"'the 'foo' 'i'll' and i've you're the 'i'd' it's i'm don't its' gimme'em to y'all.txt", L"'The 'Bar' 'I'll' and I've You're the 'I'd' It's I'm Don't Its' Gimme'em to Y'all.txt", true, true, 0 },
                 { L"Test", L"Test_norename", false, false, 0 }
             };
 
@@ -279,11 +283,11 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Capitalized);
         }
 
-        TEST_METHOD (VerifyCapitalizedWithContractionTransform)
+        TEST_METHOD (VerifyCapitalizedWithApostropheTransform)
         {
             rename_pairs renamePairs[] = {
-                { L"foo i'll and i've you're the i'd it's i'm don't dogs' gimme'em to y'all", L"Bar I'll And I've You're The I'd It's I'm Don't Dogs' Gimme'em To Y'all", false, true, 0 },
-                { L"foo i'll and i've you're the i'd it's i'm don't dogs' gimme'em to y'all.txt", L"Bar I'll And I've You're The I'd It's I'm Don't Dogs' Gimme'em To Y'all.txt", false, true, 0 },
+                { L"foo i'll and i've you're the i'd it's i'm don't its' gimme'em to y'all", L"Bar I'll And I've You're The I'd It's I'm Don't Its' Gimme'em To Y'all", false, true, 0 },
+                { L"'foo i'll 'and' i've you're the i'd it's i'm don't its' gimme'em to y'all.txt", L"'Bar I'll 'And' I've You're The I'd It's I'm Don't Its' Gimme'em To Y'all.txt", true, true, 0 },
                 { L"Test", L"Test_norename", false, false, 0 }
             };
 

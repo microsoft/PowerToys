@@ -46,6 +46,11 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
 {
     std::locale::global(std::locale(""));
     HRESULT hr = E_INVALIDARG;
+
+    auto contractionOrSingleQuotedWordCheck = [](std::wstring stem, size_t i) {
+        return !i || stem[i - 1] != '\'' || (i == 1 || iswpunct(stem[i - 2]) || iswspace(stem[i - 2]));
+    };
+
     if (source && flags)
     {
         if (flags & Uppercase)
@@ -155,8 +160,8 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                 }
 
                 for (size_t i = 0; i < stemLength; i++)
-                {
-                    if (!i || iswspace(stem[i - 1]) || (iswpunct(stem[i - 1] && stem[i - 1] != '\'')))
+                {                    
+                    if (!i || iswspace(stem[i - 1]) || (iswpunct(stem[i - 1]) && contractionOrSingleQuotedWordCheck(stem, i)))
                     {
                         if (iswspace(stem[i]) || iswpunct(stem[i]))
                         {
@@ -208,7 +213,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                                 
                 for (size_t i = 0; i < stemLength; i++)
                 {
-                    if (!i || iswspace(stem[i - 1]) || (iswpunct(stem[i - 1] && stem[i - 1] != '\'')))
+                    if (!i || iswspace(stem[i - 1]) || (iswpunct(stem[i - 1]) && contractionOrSingleQuotedWordCheck(stem, i)))
                     {
                         if (iswspace(stem[i]) || iswpunct(stem[i]))
                         {
