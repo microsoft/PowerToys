@@ -265,8 +265,8 @@ namespace PowerRenameManagerTests
         TEST_METHOD (VerifyTitlecaseWithApostropheTransform)
         {
             rename_pairs renamePairs[] = {
-                { L"the foo i'll and i've you're the i'd it's i'm don't its' gimme'em to y'all", L"The Bar I'll and I've You're the I'd It's I'm Don't Its' Gimme'em to Y'all", false, true, 0 },
-                { L"'the 'foo' 'i'll' and i've you're the 'i'd' it's i'm don't its' gimme'em to y'all.txt", L"'The 'Bar' 'I'll' and I've You're the 'I'd' It's I'm Don't Its' Gimme'em to Y'all.txt", true, true, 0 },
+                { L"the foo i'll and i've you're dogs' the i'd it's i'm don't to y'all", L"The Bar I'll and I've You're Dogs' the I'd It's I'm Don't to Y'all", false, true, 0 },
+                { L"'the 'foo' 'i'll' and i've you're dogs' the 'i'd' it's i'm don't to y'all.txt", L"'The 'Bar' 'I'll' and I've You're Dogs' the 'I'd' It's I'm Don't to Y'all.txt", true, true, 0 },
                 { L"Test", L"Test_norename", false, false, 0 }
             };
 
@@ -286,8 +286,8 @@ namespace PowerRenameManagerTests
         TEST_METHOD (VerifyCapitalizedWithApostropheTransform)
         {
             rename_pairs renamePairs[] = {
-                { L"foo i'll and i've you're the i'd it's i'm don't its' gimme'em to y'all", L"Bar I'll And I've You're The I'd It's I'm Don't Its' Gimme'em To Y'all", false, true, 0 },
-                { L"'foo i'll 'and' i've you're the i'd it's i'm don't its' gimme'em to y'all.txt", L"'Bar I'll 'And' I've You're The I'd It's I'm Don't Its' Gimme'em To Y'all.txt", true, true, 0 },
+                { L"foo i'll and i've you're dogs' the i'd it's i'm don't to y'all", L"Bar I'll And I've You're Dogs' The I'd It's I'm Don't To Y'all", false, true, 0 },
+                { L"'foo i'll 'and' i've you're dogs' the i'd it's i'm don't to y'all.txt", L"'Bar I'll 'And' I've You're Dogs' The I'd It's I'm Don't To Y'all.txt", true, true, 0 },
                 { L"Test", L"Test_norename", false, false, 0 }
             };
 
