@@ -81,11 +81,11 @@ namespace ProjectsEditor.Utils
             }
 
             ProjectsData.ProjectWrapper projectWrapper = projects.Projects[0];
-            project = GetProjectFromWrappper(projectWrapper);
+            project = GetProjectFromWrapper(projectWrapper);
             return true;
         }
 
-        private Project GetProjectFromWrappper(ProjectsData.ProjectWrapper project)
+        private Project GetProjectFromWrapper(ProjectsData.ProjectWrapper project)
         {
             Project newProject = new Project()
             {
@@ -217,7 +217,7 @@ namespace ProjectsEditor.Utils
         {
             foreach (var project in projects.Projects)
             {
-                mainViewModel.Projects.Add(GetProjectFromWrappper(project));
+                mainViewModel.Projects.Add(GetProjectFromWrapper(project));
             }
 
             mainViewModel.Initialize();

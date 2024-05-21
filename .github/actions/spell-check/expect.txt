@@ -61,6 +61,7 @@ appmanifest
 APPNAME
 appref
 appsettings
+appsfolder
 appwindow
 appwiz
 APSTUDIO
@@ -236,6 +237,7 @@ CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
 copiedcolorrepresentation
+COREWINDOW
 cotaskmem
 COULDNOT
 countof
@@ -1202,6 +1204,9 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
+PROJECTSEDITOR
+PROJECTSLAUNCHER
+PROJECTSSNAPSHOTTOOL
 PROPBAG
 PROPERTYKEY
 propkey
@@ -1370,6 +1375,7 @@ sddl
 SDKDDK
 sdns
 searchterm
+SEARCHUI
 secpol
 SENDCHANGE
 sendinput
@@ -1553,7 +1559,9 @@ SYSKEYUP
 SYSLIB
 SYSMENU
 SYSTEMAPPS
+systemsettings
 SYSTEMTIME
+SYSTEMWOW
 tapp
 TApplication
 TApplied
@@ -1665,9 +1673,11 @@ urlmon
 Usb
 USEDEFAULT
 USEFILEATTRIBUTES
+USEPOSITION
 USERDATA
 Userenv
 USESHOWWINDOW
+USESIZE
 USESTDHANDLES
 USRDLL
 UType

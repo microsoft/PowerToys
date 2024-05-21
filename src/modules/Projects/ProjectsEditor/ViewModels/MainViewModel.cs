@@ -348,7 +348,7 @@ namespace ProjectsEditor.ViewModels
                                 p.StartInfo = new ProcessStartInfo(launchParam);
                                 p.StartInfo.Arguments = app.CommandLineArguments;
                                 p.StartInfo.UseShellExecute = true;
-                                p.StartInfo.Verb = "runas"; // administrator privilages, some apps start only that way
+                                p.StartInfo.Verb = "runas"; // administrator privileges, some apps start only that way
                                 p.Start();
                             });
                             newlyStartedApps.Add(app);

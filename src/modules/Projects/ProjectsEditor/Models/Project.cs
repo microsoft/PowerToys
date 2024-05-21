@@ -121,19 +121,19 @@ namespace ProjectsEditor.Models
             }
         }
 
-        private bool _isPopoupVisible;
+        private bool _isPopupVisible;
 
         [JsonIgnore]
         public bool IsPopupVisible
         {
             get
             {
-                return _isPopoupVisible;
+                return _isPopupVisible;
             }
 
             set
             {
-                _isPopoupVisible = value;
+                _isPopupVisible = value;
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsPopupVisible)));
             }
         }
@@ -322,7 +322,7 @@ namespace ProjectsEditor.Models
                 app.RepeatIndex = repeatCounter[app.AppPath];
             }
 
-            // remove those repeatIndexes, which are single 1-es (no repetions) by setting them to 0
+            // remove those repeatIndexes, which are single 1-es (no repetitions) by setting them to 0
             foreach (Application app in selectedApps.Where(x => repeatCounter[x.AppPath] == 1))
             {
                 app.RepeatIndex = 0;
