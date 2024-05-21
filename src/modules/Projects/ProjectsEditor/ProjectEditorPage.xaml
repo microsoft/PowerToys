@@ -1,0 +1,317 @@
+<Page x:Class="ProjectsEditor.ProjectEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:props="clr-namespace:ProjectsEditor.Properties"
+        xmlns:local="clr-namespace:ProjectsEditor"
+        xmlns:models="clr-namespace:ProjectsEditor.Models"
+        mc:Ignorable="d"
+        Title="Project Editor"
+        Background="{DynamicResource PrimaryBackgroundBrush}">
+    <Page.Resources>
+        <Style TargetType="{x:Type CheckBox}">
+            <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                            <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" Width="15" Height="15">
+                                <Grid>
+                                    <Grid Background="{TemplateBinding Foreground}" Margin="1" Visibility="Collapsed" Name="nullBlock"/>
+                                    <Path Stretch="Uniform" Width="15" Height="10" Fill="{TemplateBinding Foreground}" Name="eliCheck" Data="F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z " Visibility="Collapsed"/>
+                                </Grid>
+                            </Border>
+                            <TextBlock Margin="5,0,0,0"  VerticalAlignment="Center" Foreground="{DynamicResource PrimaryForegroundBrush}" Text="{TemplateBinding Content}"></TextBlock>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource SecondaryBorderBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource SecondaryForegroundBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="eliCheck" Property="Visibility" Value="Visible"></Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="{x:Null}">
+                                <Setter TargetName="nullBlock" Property="Visibility" Value="Visible"></Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CancelButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#9d0808" />
+            <Setter Property="BorderBrush" Value="#FF262E34"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentButtonForeground}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="#FF262E34" BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#ec4d37"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#9d0808"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <DataTemplate x:Key="headerTemplate">
+            <Border>
+                <TextBlock
+                    Text="{Binding .}"
+                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    FontSize="14"
+                    FontWeight="Normal"
+                    Margin="0,20,20,5"
+                    VerticalAlignment="Center"/>
+            </Border>
+        </DataTemplate>
+        <DataTemplate x:Key="appTemplate">
+            <Border
+                Background="{DynamicResource SecondaryBackgroundBrush}"
+                MouseEnter="AppBorder_MouseEnter"
+                MouseLeave="AppBorder_MouseLeave">
+                <Grid Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Image
+                        Width="20"
+                        Height="20"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="10"
+                        Source="{Binding IconBitmapImage}"/>
+                    <TextBlock
+                        Grid.Column="1"
+                        Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        FontSize="14"
+                        FontWeight="Normal"
+                        Width="20"
+                        VerticalAlignment="Center"/>
+                    <TextBlock
+                        Grid.Column="2"
+                        Text="{Binding AppName}"
+                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        FontSize="14"
+                        FontWeight="Normal"
+                        VerticalAlignment="Center"/>
+                    <TextBox
+                        x:Name="CommandLineTextBox"
+                        Grid.Column="3"
+                        Text="{Binding CommandLineArguments, Mode=TwoWay}"
+                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        Background="{DynamicResource TertiaryBackgroundBrush}"
+                        BorderThickness="0"
+                        FontSize="14"
+                        FontWeight="Normal"
+                        VerticalContentAlignment="Center" />
+                    <TextBlock
+                        Grid.Column="3"
+                        IsHitTestVisible="False"
+                        Text="{x:Static props:Resources.WriteArgs}"
+                        Foreground="{DynamicResource SecondaryForegroundBrush}"
+                        Background="{DynamicResource TertiaryBackgroundBrush}"
+                        FontSize="14"
+                        FontWeight="Normal"
+                        VerticalAlignment="Center"
+                        Margin="12,0,12,0">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=CommandLineTextBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <CheckBox
+                        Grid.Column="4"
+                        IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                        Checked="CheckBox_Checked"
+                        Unchecked="CheckBox_Checked"
+                        Margin="10"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+        <models:AppListDataTemplateSelector
+            HeaderTemplate="{StaticResource headerTemplate}"
+            AppTemplate="{StaticResource appTemplate}"
+            x:Key="AppListDataTemplateSelector"/>
+    </Page.Resources>
+    <Grid Margin="40,0,40,40">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Text="{x:Static props:Resources.Projects}" FontSize="24" FontWeight="Normal" Margin="0,20,0,20" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+            <TextBlock
+                FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                FontSize="16"
+                Margin="10,30,0,20"
+                Text="&#xE76C;" />
+            <TextBlock Text="{Binding EditorWindowTitle}" FontSize="24" FontWeight="SemiBold" Margin="10,20,0,20" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+            <TextBlock Text="{x:Static props:Resources.ProjectName}" FontSize="14" FontWeight="Normal" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+            <TextBox
+                x:Name="EditNameTextBox"
+                Width="320"
+                Text="{Binding Name, Mode=TwoWay}"
+                Background="{DynamicResource SecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                BorderThickness="2"
+                Margin="0,6,0,6"
+                HorizontalAlignment="Left"
+                GotFocus="EditNameTextBox_GotFocus"
+                KeyDown="EditNameTextBoxKeyDown" />
+        </StackPanel>
+        <ScrollViewer
+            VerticalScrollBarVisibility="Auto"
+            Grid.Row="2">
+            <StackPanel Orientation="Vertical">
+                <Border
+                    Grid.Row="2"
+                    HorizontalAlignment="Stretch"
+                    Background="{DynamicResource MonitorViewBackgroundBrush}"
+                    CornerRadius="5">
+                    <ScrollViewer
+                        HorizontalAlignment="Center"
+                        HorizontalScrollBarVisibility="Auto">
+                        <ItemsControl
+                            ItemsSource="{Binding Monitors, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel
+                                        IsItemsHost="True"
+                                        Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:MonitorSetup">
+                                    <Grid
+                                        Margin="20,20,20,20">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding MonitorInfoWithResolution}" Foreground="{DynamicResource PrimaryForegroundBrush}" FontSize="16" FontWeight="Normal" Margin="0,5,0,5"/>
+                                        <Border
+                                            Grid.Row="1"
+                                            CornerRadius="5"
+                                            BorderBrush="{DynamicResource TertiaryBackgroundBrush}"
+                                            BorderThickness="2"
+                                            Margin="0,0,0,10">
+                                            <Image
+                                                Width="200"
+                                                Height="140"
+                                                Source="{Binding PreviewImage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Stretch="Fill"
+                                                Margin="2"/>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <ItemsControl
+                        ItemsSource="{Binding ApplicationsListed, Mode=OneWay}"
+                        ItemTemplateSelector="{StaticResource AppListDataTemplateSelector}">
+                    </ItemsControl>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+        <DockPanel Grid.Row="3" Margin="0,20,0,20">
+            <CheckBox
+                DockPanel.Dock="Left"
+                Content="{x:Static props:Resources.CreateShortcut}"
+                IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                FontSize="14"/>
+            <StackPanel
+                DockPanel.Dock="Right"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Margin="40,0,0,0">
+                <Button
+                    x:Name="CancelButton"
+                    Margin="20,0,0,0"
+                    Height="36"
+                    AutomationProperties.Name="{x:Static props:Resources.Cancel}"
+                    Click="CancelButtonClicked">
+                    <StackPanel Orientation="Horizontal" Margin="12, 2, 12, 0" >
+                        <TextBlock
+                            AutomationProperties.Name="{x:Static props:Resources.Cancel}"
+                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                            Foreground="{DynamicResource AccentButtonForeground}"
+                            Text="&#xE711;" />
+                        <TextBlock
+                            Margin="12,-4,0,0"
+                            Foreground="{DynamicResource AccentButtonForeground}"
+                            Text="{x:Static props:Resources.Cancel}" />
+                    </StackPanel>
+                    <Button.Effect>
+                        <DropShadowEffect
+                            BlurRadius="6"
+                            Opacity="0.32"
+                            ShadowDepth="1" />
+                    </Button.Effect>
+                </Button>
+                <Button
+                    x:Name="SaveButton"
+                    Margin="20,0,0,0"
+                    Height="36"
+                    AutomationProperties.Name="{x:Static props:Resources.Save_project}"
+                    Click="SaveButtonClicked"
+                    Style="{StaticResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Margin="12, 2, 12, 0" >
+                        <TextBlock
+                            AutomationProperties.Name="{x:Static props:Resources.Save_project}"
+                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                            Foreground="{DynamicResource AccentButtonForeground}"
+                            Text="&#xE74E;" />
+                        <TextBlock
+                            Margin="12,-4,0,0"
+                            Foreground="{DynamicResource AccentButtonForeground}"
+                            Text="{x:Static props:Resources.Save_project}" />
+                    </StackPanel>
+                    <Button.Effect>
+                        <DropShadowEffect
+                            BlurRadius="6"
+                            Opacity="0.32"
+                            ShadowDepth="1" />
+                    </Button.Effect>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Page>
