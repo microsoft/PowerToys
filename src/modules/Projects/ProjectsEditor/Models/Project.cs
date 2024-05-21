@@ -182,23 +182,23 @@ namespace ProjectsEditor.Models
 
         private BitmapImage _previewImage;
 
-        public Project(Project selectedProjeсt)
+        public Project(Project selectedProject)
         {
-            Name = selectedProjeсt.Name;
-            PreviewImage = selectedProjeсt.PreviewImage;
-            IsShortcutNeeded = selectedProjeсt.IsShortcutNeeded;
+            Name = selectedProject.Name;
+            PreviewImage = selectedProject.PreviewImage;
+            IsShortcutNeeded = selectedProject.IsShortcutNeeded;
 
             int screenIndex = 1;
 
             Monitors = new List<MonitorSetup>();
-            foreach (var item in selectedProjeсt.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.Left).ThenBy(x => x.MonitorDpiAwareBounds.Top))
+            foreach (var item in selectedProject.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.Left).ThenBy(x => x.MonitorDpiAwareBounds.Top))
             {
                 Monitors.Add(new MonitorSetup($"Screen {screenIndex}", item.MonitorInstanceId, item.MonitorNumber, item.Dpi, item.MonitorDpiAwareBounds, item.MonitorDpiUnawareBounds) { PreviewImage = item.PreviewImage });
                 screenIndex++;
             }
 
             Applications = new List<Application>();
-            foreach (var item in selectedProjeсt.Applications)
+            foreach (var item in selectedProject.Applications)
             {
                 Applications.Add(new Application()
                 {
