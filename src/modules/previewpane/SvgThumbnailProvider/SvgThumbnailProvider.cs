@@ -5,7 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
+using System.Text.RegularExpressions;
 using Common.Utilities;
 using ManagedCommon;
 using Microsoft.Web.WebView2.Core;
@@ -120,7 +120,25 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 var a = await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].viewBox;");
                 if (a != null)
                 {
-                    await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].style = 'width:100%;height:100%';");
+                    // Retrieve the entire HTML content
+                    var htmlContent = await _browser.ExecuteScriptAsync("document.documentElement.outerHTML;");
+
+                    // Directly search for the fill-rule within the HTML content
+                    string fillRule = string.Empty;
+                    var match = Regex.Match(htmlContent, @"fill-rule\s*:\s*([^;]+)");
+                    if (match.Success)
+                    {
+                        fillRule = match.Groups[1].Value;
+                    }
+
+                    if (!string.IsNullOrEmpty(fillRule))
+                    {
+                        await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].style = 'width:100%;height:100%;fill-rule:{fillRule};'");
+                    }
+                    else
+                    {
+                        await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].style = 'width:100%;height:100%';");
+                    }
                 }
 
                 // Hide scrollbar - fixes #18286
