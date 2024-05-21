@@ -14,23 +14,9 @@ namespace AdvancedPaste.Helpers
 {
     internal static class JsonHelper
     {
-        internal static string ToJsonFromXmlOrCsv(DataPackageView clipboardData)
+        internal static string ToJsonFromXmlOrCsv(string inputText)
         {
             Logger.LogTrace();
-
-            if (clipboardData == null || !clipboardData.Contains(StandardDataFormats.Text))
-            {
-                Logger.LogWarning("Clipboard does not contain text data");
-                return string.Empty;
-            }
-
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-            string text = Task.Run(async () =>
-            {
-                string plainText = await clipboardData.GetTextAsync() as string;
-                return plainText;
-            }).Result;
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
             string jsonText = string.Empty;
 
@@ -38,7 +24,7 @@ namespace AdvancedPaste.Helpers
             try
             {
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(text);
+                doc.LoadXml(inputText);
                 jsonText = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.Indented);
             }
             catch (Exception ex)
@@ -53,7 +39,7 @@ namespace AdvancedPaste.Helpers
                 {
                     var csv = new List<string[]>();
 
-                    foreach (var line in text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var line in inputText.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         csv.Add(line.Split(","));
                     }
@@ -66,7 +52,7 @@ namespace AdvancedPaste.Helpers
                 Logger.LogError("Failed parsing input as csv", ex);
             }
 
-            return string.IsNullOrEmpty(jsonText) ? text : jsonText;
+            return string.IsNullOrEmpty(jsonText) ? inputText : jsonText;
         }
     }
 }

@@ -89,7 +89,7 @@
                             <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard Visibility="Collapsed">
-                                    <!--  There's a bug that makes it so that the first shortcut control inside an expander doesn't work. We add this dummy one so the other entries aren't affected.  -->
+                                    <!-- There's a bug that makes it so that the first shortcut control inside an expander doesn't work. We add this dummy one so the other entries aren't affected. -->
                                     <TextBox />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard x:Uid="PasteAsPlainText_Shortcut">

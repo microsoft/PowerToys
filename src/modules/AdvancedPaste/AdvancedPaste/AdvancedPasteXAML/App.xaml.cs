@@ -5,6 +5,7 @@
 using System;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
+using AdvancedPaste.Pages;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
@@ -100,14 +101,12 @@ namespace AdvancedPaste
 
         private void OnAdvancedPasteJsonHotkey()
         {
-            viewModel.GetClipboardData();
-            viewModel.ToJsonFunction(true);
+            viewModel.ToJson();
         }
 
         private void OnAdvancedPasteMarkdownHotkey()
         {
-            viewModel.GetClipboardData();
-            viewModel.ToMarkdownFunction(true);
+            viewModel.ToMarkdown();
         }
 
         private void OnAdvancedPasteHotkey()

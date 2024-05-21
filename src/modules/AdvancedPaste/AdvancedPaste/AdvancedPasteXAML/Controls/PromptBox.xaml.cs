@@ -137,6 +137,10 @@ namespace AdvancedPaste.Controls
         private void InputTxtBox_TextChanging(Microsoft.UI.Xaml.Controls.TextBox sender, TextBoxTextChangingEventArgs args)
         {
             SendBtn.Visibility = InputTxtBox.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            // Sort available options
+            string input = InputTxtBox.Text;
+            ViewModel.FilterOptionsFromInput(input);
         }
 
         private void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)

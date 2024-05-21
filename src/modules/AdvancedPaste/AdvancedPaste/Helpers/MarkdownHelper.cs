@@ -14,69 +14,6 @@ namespace AdvancedPaste.Helpers
 {
     internal static class MarkdownHelper
     {
-        public static string ToMarkdown(DataPackageView clipboardData)
-        {
-            Logger.LogTrace();
-
-            if (clipboardData == null)
-            {
-                Logger.LogWarning("Clipboard does not contain data");
-
-                return string.Empty;
-            }
-
-            string data = string.Empty;
-
-            if (clipboardData.Contains(StandardDataFormats.Html))
-            {
-                data = Task.Run(async () =>
-                {
-                    string data = await clipboardData.GetHtmlFormatAsync() as string;
-                    return data;
-                }).Result;
-            }
-            else if (clipboardData.Contains(StandardDataFormats.Text))
-            {
-                data = Task.Run(async () =>
-                {
-                    string plainText = await clipboardData.GetTextAsync() as string;
-                    return plainText;
-                }).Result;
-            }
-
-            if (!string.IsNullOrEmpty(data))
-            {
-                string cleanedHtml = CleanHtml(data);
-
-                return ConvertHtmlToMarkdown(cleanedHtml);
-            }
-
-            return string.Empty;
-        }
-
-        public static string PasteAsPlainTextFromClipboard(DataPackageView clipboardData)
-        {
-            Logger.LogTrace();
-
-            if (clipboardData != null)
-            {
-                if (!clipboardData.Contains(StandardDataFormats.Text))
-                {
-                    Logger.LogWarning("Clipboard does not contain text data");
-
-                    return string.Empty;
-                }
-
-                return Task.Run(async () =>
-                {
-                    string plainText = await clipboardData.GetTextAsync() as string;
-                    return plainText;
-                }).Result;
-            }
-
-            return string.Empty;
-        }
-
         private static string CleanHtml(string html)
         {
             Logger.LogTrace();
@@ -158,13 +95,15 @@ namespace AdvancedPaste.Helpers
             }
         }
 
-        private static string ConvertHtmlToMarkdown(string html)
+        internal static string ConvertHtmlToMarkdown(string data)
         {
             Logger.LogTrace();
 
+            string cleanedHtml = CleanHtml(data);
+
             // Perform the conversion from HTML to Markdown using your chosen library or method
             var converter = new ReverseMarkdown.Converter();
-            string markdown = converter.Convert(html);
+            string markdown = converter.Convert(cleanedHtml);
             return markdown;
         }
     }

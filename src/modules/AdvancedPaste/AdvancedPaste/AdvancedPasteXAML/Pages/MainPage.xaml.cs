@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -24,8 +25,17 @@ namespace AdvancedPaste.Pages
     public sealed partial class MainPage : Page
     {
         private readonly ObservableCollection<ClipboardItem> clipboardHistory;
-        private readonly ObservableCollection<PasteFormat> pasteFormats;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+
+        private string _filterText;
+
+        private ObservableCollection<PasteFormat> pasteFormats = new();
+
+        private bool _pasteAsPlainEnabled;
+        private bool _pasteAsMarkdownEnabled;
+        private bool _pasteAsJsonEnabled;
+        private bool _pasteAudioToTextEnabled;
+        private bool _pasteAsFileEnabled;
 
         public OptionsViewModel ViewModel { get; private set; }
 
@@ -33,19 +43,21 @@ namespace AdvancedPaste.Pages
         {
             this.InitializeComponent();
 
-            pasteFormats =
-            [
-                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE8E9" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsPlainText"), Format = PasteFormats.PlainText },
-                new PasteFormat { Icon = new FontIcon() { Glyph = "\ue8a5" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsMarkdown"), Format = PasteFormats.Markdown },
-                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE943" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsJson"), Format = PasteFormats.Json },
-            ];
-
             ViewModel = App.GetService<OptionsViewModel>();
 
             clipboardHistory = new ObservableCollection<ClipboardItem>();
 
-            LoadClipboardHistoryEvent(null, null);
+            LoadClipboardHistoryAsync();
             Clipboard.HistoryChanged += LoadClipboardHistoryEvent;
+            ViewModel.FormatsChanged += FormatsChangedHandler;
+            ViewModel.WindowShown += WindowShownHandler;
+            this.EnablePasteOptions();
+        }
+
+        private bool WindowShownHandler()
+        {
+            EnablePasteOptions();
+            return true;
         }
 
         private void LoadClipboardHistoryEvent(object sender, object e)
@@ -54,6 +66,72 @@ namespace AdvancedPaste.Pages
             {
                 LoadClipboardHistoryAsync();
             });
+        }
+
+        private void GenerateFormatList()
+        {
+            List<PasteFormat> pasteFormatFullList =
+            [
+                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE8AC" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsPlainText"), Format = PasteFormats.PlainText, Enabled = _pasteAsPlainEnabled },
+                new PasteFormat { Icon = new FontIcon() { Glyph = "\ue8a5" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsMarkdown"), Format = PasteFormats.Markdown, Enabled = _pasteAsMarkdownEnabled },
+                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE943" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsJson"), Format = PasteFormats.Json, Enabled = _pasteAsJsonEnabled },
+                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE943" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAudioToText"), Format = PasteFormats.AudioToText, Enabled = _pasteAudioToTextEnabled },
+                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE943" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsFile"), Format = PasteFormats.File, Enabled = _pasteAsFileEnabled },
+            ];
+
+            ObservableCollection<PasteFormat> toAddFormats;
+
+            if (_filterText != null)
+            {
+                toAddFormats = new ObservableCollection<PasteFormat>(pasteFormatFullList.Where(pasteFormat => pasteFormat.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)).OrderByDescending(pasteFormat => pasteFormat.Enabled));
+            }
+            else
+            {
+                toAddFormats = new ObservableCollection<PasteFormat>(pasteFormatFullList.OrderByDescending(pasteFormat => pasteFormat.Enabled));
+            }
+
+            pasteFormats.Clear();
+
+            foreach (var format in toAddFormats)
+            {
+                pasteFormats.Add(format);
+            }
+        }
+
+        private void EnablePasteOptions()
+        {
+            Logger.LogInfo("Enabling paste options");
+
+            _pasteAsPlainEnabled = false;
+            _pasteAsMarkdownEnabled = false;
+            _pasteAsJsonEnabled = false;
+            _pasteAudioToTextEnabled = false;
+            _pasteAsFileEnabled = false;
+
+            if (ViewModel.ClipboardHasText)
+            {
+                _pasteAsJsonEnabled = true;
+                _pasteAsPlainEnabled = true;
+                _pasteAsFileEnabled = true;
+            }
+
+            if (ViewModel.ClipboardHasHtml)
+            {
+                _pasteAsMarkdownEnabled = true;
+                _pasteAsFileEnabled = true;
+            }
+
+            if (ViewModel.ClipboardHasImage)
+            {
+                _pasteAsFileEnabled = true;
+            }
+
+            if (ViewModel.ClipboardHasAudio)
+            {
+                _pasteAudioToTextEnabled = true;
+            }
+
+            GenerateFormatList();
         }
 
         public async void LoadClipboardHistoryAsync()
@@ -131,17 +209,27 @@ namespace AdvancedPaste.Pages
 
         private void PasteAsPlain()
         {
-            ViewModel.ToPlainTextFunction();
+            ViewModel.ToPlainText();
         }
 
         private void PasteAsMarkdown()
         {
-            ViewModel.ToMarkdownFunction();
+            ViewModel.ToMarkdown();
         }
 
         private void PasteAsJson()
         {
-            ViewModel.ToJsonFunction();
+            ViewModel.ToJson();
+        }
+
+        private void AudioToText()
+        {
+            ViewModel.AudioToText();
+        }
+
+        private void PasteAsFile()
+        {
+            ViewModel.ToFile();
         }
 
         private void PasteOptionsListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -168,6 +256,20 @@ namespace AdvancedPaste.Pages
                         {
                             PasteAsJson();
                             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteFormatClickedEvent(PasteFormats.Json));
+                            break;
+                        }
+
+                    case PasteFormats.AudioToText:
+                        {
+                            AudioToText();
+                            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteFormatClickedEvent(PasteFormats.AudioToText));
+                            return;
+                        }
+
+                    case PasteFormats.File:
+                        {
+                            PasteAsFile();
+                            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteFormatClickedEvent(PasteFormats.File));
                             break;
                         }
                 }
@@ -236,6 +338,25 @@ namespace AdvancedPaste.Pages
                     ClipboardHelper.SetClipboardImageContent(image);
                 }
             }
+        }
+
+        private void PasteFormatListContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            var listViewItem = args.ItemContainer;
+
+            if (listViewItem != null)
+            {
+                var model = (PasteFormat)args.Item;
+
+                listViewItem.IsEnabled = model.Enabled;
+            }
+        }
+
+        private bool FormatsChangedHandler(string input)
+        {
+            _filterText = input;
+            GenerateFormatList();
+            return true;
         }
     }
 }

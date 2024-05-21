@@ -3,11 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Specialized;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
 
@@ -15,6 +20,16 @@ namespace AdvancedPaste.Helpers
 {
     internal static class ClipboardHelper
     {
+        public enum ClipboardContentFormats
+        {
+            Text,
+            Image,
+            File,
+            HTML,
+            Audio,
+            Invalid,
+        }
+
         internal static void SetClipboardTextContent(string text)
         {
             Logger.LogTrace();
@@ -89,6 +104,81 @@ namespace AdvancedPaste.Helpers
             }
         }
 
+        internal static string ConvertHTMLToPlainText(string inputHTML)
+        {
+            return System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(inputHTML, "<.*?>", string.Empty));
+        }
+
+        internal static async Task<bool> SetClipboardFile(string fileName)
+        {
+            Logger.LogTrace();
+
+            if (fileName != null)
+            {
+                StorageFile storageFile = await StorageFile.GetFileFromPathAsync(fileName).AsTask();
+
+                DataPackage output = new();
+                output.SetStorageItems(new[] { storageFile });
+                Clipboard.SetContent(output);
+
+                // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
+                // Calling inside a loop makes it work.
+                for (int i = 0; i < 5; i++)
+                {
+                    try
+                    {
+                        Clipboard.Flush();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Clipboard.Flush() failed", ex);
+                    }
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static void SetClipboardHTMLContent(string htmlContent)
+        {
+            Logger.LogTrace();
+
+            if (htmlContent != null)
+            {
+                // Set htmlContent to output
+                DataPackage output = new();
+                output.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat(htmlContent));
+
+                // Extract plain text from HTML
+                string plainText = ConvertHTMLToPlainText(htmlContent);
+
+                output.SetText(plainText);
+                Clipboard.SetContent(output);
+
+                // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
+                // Calling inside a loop makes it work.
+                for (int i = 0; i < 5; i++)
+                {
+                    try
+                    {
+                        Clipboard.Flush();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Clipboard.Flush() failed", ex);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Error");
+            }
+        }
+
         // Function to send a single key event
         private static void SendSingleKeyboardInput(short keyCode, uint keyStatus)
         {
@@ -134,6 +224,92 @@ namespace AdvancedPaste.Helpers
             SendSingleKeyboardInput((short)VirtualKey.Control, (uint)NativeMethods.KeyEventF.KeyUp);
 
             Logger.LogInfo("Paste sent");
+        }
+
+        internal static async Task<string> GetClipboardTextContent(DataPackageView clipboardData)
+        {
+            if (clipboardData != null)
+            {
+                if (clipboardData.Contains(StandardDataFormats.Text))
+                {
+                    return await Task.Run(async () =>
+                    {
+                        string plainText = await clipboardData.GetTextAsync() as string;
+                        return plainText;
+                    });
+                }
+            }
+
+            return string.Empty;
+        }
+
+        internal static async Task<string> GetClipboardHTMLContent(DataPackageView clipboardData)
+        {
+            if (clipboardData != null)
+            {
+                if (clipboardData.Contains(StandardDataFormats.Html))
+                {
+                    return await Task.Run(async () =>
+                    {
+                        string htmlText = await clipboardData.GetHtmlFormatAsync() as string;
+                        return htmlText;
+                    });
+                }
+            }
+
+            return string.Empty;
+        }
+
+        internal static async Task<string> GetClipboardFileName(DataPackageView clipboardData)
+        {
+            if (clipboardData != null)
+            {
+                if (clipboardData.Contains(StandardDataFormats.StorageItems))
+                {
+                    return await Task.Run(async () =>
+                    {
+                        var storageItems = await clipboardData.GetStorageItemsAsync();
+                        var file = storageItems[0] as StorageFile;
+                        return file.Path;
+                    });
+                }
+            }
+
+            return string.Empty;
+        }
+
+        internal static async Task<SoftwareBitmap> GetClipboardImageContent(DataPackageView clipboardData)
+        {
+            SoftwareBitmap softwareBitmap = null;
+
+            // Check if the clipboard contains a file reference
+            if (clipboardData.Contains(StandardDataFormats.StorageItems))
+            {
+                var storageItems = await clipboardData.GetStorageItemsAsync();
+                var file = storageItems[0] as StorageFile;
+                if (file != null)
+                {
+                    using (var stream = await file.OpenReadAsync())
+                    {
+                        // Get image stream and create a software bitmap
+                        BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream);
+                        softwareBitmap = await decoder.GetSoftwareBitmapAsync();
+                    }
+                }
+            }
+            else
+            {
+                if (clipboardData.Contains(StandardDataFormats.Bitmap))
+                {
+                    // If it's not a file reference, get bitmap directly
+                    var imageStreamReference = await clipboardData.GetBitmapAsync();
+                    var imageStream = await imageStreamReference.OpenReadAsync();
+                    BitmapDecoder decoder = await BitmapDecoder.CreateAsync(imageStream);
+                    softwareBitmap = await decoder.GetSoftwareBitmapAsync();
+                }
+            }
+
+            return softwareBitmap;
         }
     }
 }

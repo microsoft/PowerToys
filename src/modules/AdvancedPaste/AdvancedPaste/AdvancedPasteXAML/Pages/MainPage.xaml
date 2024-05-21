@@ -115,6 +115,7 @@
                 ItemClick="PasteOptionsListView_ItemClick"
                 ItemContainerTransitions="{x:Null}"
                 ItemsSource="{x:Bind pasteFormats, Mode=OneWay}"
+                ContainerContentChanging="PasteFormatListContentChanging"
                 SelectionMode="None"
                 TabIndex="1">
                 <ListView.ItemTemplate>

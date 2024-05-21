@@ -13,5 +13,7 @@ namespace AdvancedPaste.Models
         public string Name { get; set; }
 
         public PasteFormats Format { get; set; }
+
+        public bool Enabled { get; set; }
     }
 }

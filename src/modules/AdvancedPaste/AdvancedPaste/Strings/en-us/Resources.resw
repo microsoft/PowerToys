@@ -165,6 +165,12 @@
   <data name="PasteAsPlainText" xml:space="preserve">
     <value>Paste as plain text</value>
   </data>
+  <data name="PasteAudioToText" xml:space="preserve">
+    <value>Paste audio to text</value>
+  </data>
+  <data name="PasteAsFile" xml:space="preserve">
+    <value>Paste as file</value>
+  </data>
   <data name="PasteButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Paste</value>
   </data>
