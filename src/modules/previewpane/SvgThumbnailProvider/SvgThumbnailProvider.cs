@@ -131,6 +131,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                         fillRule = match.Groups[1].Value;
                     }
 
+                    // Apply fill-rule if present in SVG file - fixes #28814
                     if (!string.IsNullOrEmpty(fillRule))
                     {
                         await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].style = 'width:100%;height:100%;fill-rule:{fillRule};'");
