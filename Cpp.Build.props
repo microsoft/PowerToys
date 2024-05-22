@@ -105,6 +105,7 @@
   <PropertyGroup Label="Configuration">
     <PlatformToolset Condition="'$(OverridePlatformToolset)'!='True'">v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <DesktopCompatible>true</DesktopCompatible>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
