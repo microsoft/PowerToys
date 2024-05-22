@@ -16,7 +16,6 @@
     -->
     <TargetName>PowerToys.MeasureToolCore</TargetName>
     <DefaultLanguage>en-US</DefaultLanguage>
-    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <AppContainerApplication>false</AppContainerApplication>
     <AppxPackage>false</AppxPackage>
     <ApplicationType>Windows Store</ApplicationType>
