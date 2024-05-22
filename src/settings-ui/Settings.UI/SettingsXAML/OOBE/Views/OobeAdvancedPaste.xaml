@@ -1,0 +1,36 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeAdvancedPaste"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <controls:OOBEPageControl x:Uid="Oobe_AdvancedPaste" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/AdvancedPaste.gif">
+        <controls:OOBEPageControl.PageContent>
+            <StackPanel Orientation="Vertical" Spacing="12">
+                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
+
+                <controls:ShortcutWithTextLabelControl x:Name="AdvancedPasteUIHotkeyControl" x:Uid="Oobe_AdvancedPasteUI_HowToUse" />
+                <controls:ShortcutWithTextLabelControl x:Name="PasteAsPlainTextHotkeyControl" x:Uid="Oobe_AdvancedPastePlain_HowToUse" />
+                <controls:ShortcutWithTextLabelControl
+                    x:Name="PasteAsMarkdownHotkeyControl"
+                    x:Uid="Oobe_AdvancedPasteMarkdown_HowToUse"
+                    Visibility="Collapsed" />
+                <controls:ShortcutWithTextLabelControl
+                    x:Name="PasteAsJsonHotkeyControl"
+                    x:Uid="Oobe_AdvancedPasteJson_HowToUse"
+                    Visibility="Collapsed" />
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
+
+                    <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_AdvancedPaste" Style="{StaticResource TextButtonStyle}">
+                        <TextBlock x:Uid="LearnMore_AdvancedPaste" TextWrapping="Wrap" />
+                    </HyperlinkButton>
+                </StackPanel>
+            </StackPanel>
+        </controls:OOBEPageControl.PageContent>
+    </controls:OOBEPageControl>
+</Page>

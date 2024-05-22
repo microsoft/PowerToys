@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.8" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.9" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
     <stringTable>
       <string id="PowerToys">Microsoft PowerToys</string>
-	  <string id="InstallerUpdates">Installer and Updates</string>
-	  <string id="PowerToysRun">PowerToys Run</string>
+      <string id="InstallerUpdates">Installer and Updates</string>
+      <string id="PowerToysRun">PowerToys Run</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
@@ -19,8 +19,9 @@
       <string id="SUPPORTED_POWERTOYS_0_76_0">PowerToys version 0.76.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_77_0">PowerToys version 0.77.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_78_0">PowerToys version 0.78.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_81_0">PowerToys version 0.81.0 or later</string>
 
-            <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
+      <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
 If you enable this setting, all utilities will be always enabled and the user won't be able to disable it.
 
@@ -31,7 +32,7 @@ If you don't configure this setting, users are able to enable or disable the uti
 The individual enabled state policies for the utilities will override this policy.
 </string>
 
-	  <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
+      <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
 If you enable this setting, the utility will be always enabled and the user won't be able to disable it.
 
@@ -119,6 +120,7 @@ You can set the enabled state for all plugins not configured by this policy usin
 Note: Changes require a restart of PowerToys Run.
 </string>
       <string id="ConfigureGlobalUtilityEnabledState">Configure global utility enabled state</string>
+      <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
@@ -144,12 +146,11 @@ Note: Changes require a restart of PowerToys Run.
       <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseWithoutBorders">Mouse Without Borders: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityPastePlain">Paste as Plain Text: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPeek">Peek: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>		
+      <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityScreenRuler">Screen Ruler: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
@@ -165,13 +166,13 @@ Note: Changes require a restart of PowerToys Run.
       <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
     </stringTable>
-	
-	<presentationTable>
-	  <presentation id="PowerToysRunIndividualPluginEnabledState">
+
+    <presentationTable>
+      <presentation id="PowerToysRunIndividualPluginEnabledState">
         <listBox refId="PowerToysRunIndividualPluginEnabledList">List of managed plugins:</listBox>
       </presentation>
-	</presentationTable>
-	
+    </presentationTable>
+
   </resources>
 </policyDefinitionResources>
 

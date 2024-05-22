@@ -28,6 +28,7 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     reportPath.append(L"gpo-configuration-info.txt");
     std::wofstream report(reportPath);
     report << "GPO policies configuration" << std::endl;
+    report << "getConfiguredAdvancedPasteEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredAdvancedPasteEnabledValue()) << std::endl;
     report << "getConfiguredAlwaysOnTopEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredAlwaysOnTopEnabledValue()) << std::endl;
     report << "getConfiguredAwakeEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredAwakeEnabledValue()) << std::endl;
     report << "getConfiguredColorPickerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredColorPickerEnabledValue()) << std::endl;
@@ -51,7 +52,6 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getConfiguredMouseJumpEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseJumpEnabledValue()) << std::endl;
     report << "getConfiguredMousePointerCrosshairsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue()) << std::endl;
     report << "getConfiguredMouseWithoutBordersEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseWithoutBordersEnabledValue()) << std::endl;
-    report << "getConfiguredPastePlainEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPastePlainEnabledValue()) << std::endl;
     report << "getConfiguredPowerRenameEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerRenameEnabledValue()) << std::endl;
     report << "getConfiguredPowerLauncherEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPowerLauncherEnabledValue()) << std::endl;
     report << "getConfiguredQuickAccentEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQuickAccentEnabledValue()) << std::endl;
