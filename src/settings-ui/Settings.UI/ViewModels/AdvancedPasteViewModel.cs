@@ -145,6 +145,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private bool IsClipboardHistoryDisabledByGPO()
+        {
+            string registryKey = @"HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\System\";
+            try
+            {
+                object allowClipboardHistory = Registry.GetValue(registryKey, "AllowClipboardHistory", null);
+                if (allowClipboardHistory != null)
+                {
+                    return (int)allowClipboardHistory == 0;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         private void SetClipboardHistoryEnabled(bool value)
         {
             string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Clipboard\";
@@ -167,6 +188,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SetClipboardHistoryEnabled(value);
                 }
             }
+        }
+
+        public bool ClipboardHistoryDisabledByGPO
+        {
+            get => IsClipboardHistoryDisabledByGPO();
         }
 
         public HotkeySettings AdvancedPasteUIShortcut

@@ -76,9 +76,18 @@
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_ClipboardHistorySettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
+                        <tkcontrols:SettingsCard
+                            x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}"
+                            IsEnabled="{x:Bind ViewModel.ClipboardHistoryDisabledByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
+                        <InfoBar
+                            x:Uid="GPO_SettingIsManaged"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.ClipboardHistoryDisabledByGPO, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.ClipboardHistoryDisabledByGPO, Mode=OneWay}"
+                            Severity="Informational" />
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
