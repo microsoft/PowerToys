@@ -105,7 +105,8 @@ In this release, we focused on new features, stability and improvements.
 
 **Highlights**
 
- - New utility: Advanced Paste, an AI powered tool to convert your clipboard content into another format. Thanks [@craigloewen-msft](https://github.com/craigloewen-msft) for the core functionality and [@niels9001](https://github.com/niels9001) for the UI/UX design!
+ - New utility: Advanced Paste - This is an evolution based on feedback of the Paste As Plain Text utility to do more. It can paste as plain text, markdown, or json directly with the new UX or with a direct keystroke invoke.  These are fully locally executed. In addition, it now has an AI powered option as well if you wish with the free form text box.  The AI feature is 100% opt-in and requires an Open AI key. This new system will allow us to have more freedom in the future to quickly add in new features like pasting an image directly to a file or handle additional meta data types past just text. 
+    - Thanks [@craigloewen-msft](https://github.com/craigloewen-msft) for the core functionality and [@niels9001](https://github.com/niels9001) for the UI/UX design!
  - Command Not Found now uses the PowerShell Gallery release and now supports ARM64. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
  - Fixed most accessibility issues opened after the latest accessibility review.
  - Refactored, packaged and released the main Environment Variables Editor, Hosts File Editor and Registry Preview utilities functionality as controls to be integrated into DevHome. Thanks [@dabhattimsft](https://github.com/dabhattimsft) for validating and integrating into DevHome!
@@ -116,7 +117,8 @@ In this release, we focused on new features, stability and improvements.
 
 ### Advanced Paste
 
- - New utility: Advanced Paste, an AI powered tool to convert your clipboard content into another format. Thanks [@craigloewen-msft](https://github.com/craigloewen-msft) for the core functionality and [@niels9001](https://github.com/niels9001) for the UI/UX design!
+ - New utility: Advanced Paste - This is an evolution based on feedback of the Paste As Plain Text utility to do more. It can paste as plain text, markdown, or json directly with the new UX or with a direct keystroke invoke.  These are fully locally executed. In addition, it now has an AI powered option as well if you wish with the free form text box.  The AI feature is 100% opt-in and requires an Open AI key. This new system will allow us to have more freedom in the future to quickly add in new features like pasting an image directly to a file or handle additional meta data types past just text. 
+    - Thanks [@craigloewen-msft](https://github.com/craigloewen-msft) for the core functionality and [@niels9001](https://github.com/niels9001) for the UI/UX design!
 
 ### AlwaysOnTop
 
