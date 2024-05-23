@@ -83,6 +83,13 @@ steps:
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
 
+- task: PowerShell@2
+  displayName: List the ExtensionSDKs
+  inputs:
+    targetType: inline
+    script: Tree "C:\Program Files (x86)\Microsoft SDKs\Windows Kits\10\ExtensionSDKs"
+    pwsh: true
+
 - task: Cache@2
   displayName: 'Cache nuget packages (PackageReference)'
   inputs:

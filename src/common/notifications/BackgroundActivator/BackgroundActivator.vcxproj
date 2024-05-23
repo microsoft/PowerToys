@@ -13,7 +13,6 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.20348.0</WindowsTargetPlatformVersion>
     <AppContainerApplication>true</AppContainerApplication>
-    <Support81SDKs>false</Support81SDKs>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
   </PropertyGroup>
