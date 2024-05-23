@@ -23,6 +23,7 @@
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <UseWinUI>true</UseWinUI>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.20348.0</WindowsTargetPlatformVersion>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
