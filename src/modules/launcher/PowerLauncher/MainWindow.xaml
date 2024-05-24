@@ -46,8 +46,8 @@
             Padding="12,4,12,3">
             <local:LauncherControl x:Name="SearchBox" />
             <Border.Background>
-                <!-- Setting the background of the search bar to fix https://github.com/microsoft/PowerToys/issues/30206 -->
-                <!-- The title bar accent would bleed if the option to "Show accent color on title bars and windows borders" is enabled on Windows -->
+                <!--  Setting the background of the search bar to fix https://github.com/microsoft/PowerToys/issues/30206  -->
+                <!--  The title bar accent would bleed if the option to "Show accent color on title bars and windows borders" is enabled on Windows  -->
                 <SolidColorBrush Opacity="1" Color="{DynamicResource ApplicationBackgroundColor}" />
             </Border.Background>
         </Border>
