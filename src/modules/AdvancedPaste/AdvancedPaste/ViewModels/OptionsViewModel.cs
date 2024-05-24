@@ -80,7 +80,7 @@ namespace AdvancedPaste.ViewModels
         {
             GetClipboardData();
 
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAdvancedPasteAIFeatureEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            if (PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 IsCustomAIEnabled = false;
                 OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
@@ -153,7 +153,7 @@ namespace AdvancedPaste.ViewModels
             {
                 app.GetMainWindow().ClearInputText();
 
-                if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAdvancedPasteAIFeatureEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                if (PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
                 {
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAIGpoDisabled");
                 }

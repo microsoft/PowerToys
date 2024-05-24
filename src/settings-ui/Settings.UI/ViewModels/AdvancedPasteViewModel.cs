@@ -32,8 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
-        private GpoRuleConfigured _enabledAIGpoRuleConfiguration;
-        private bool _enabledAIStateIsGPOConfigured;
+        private GpoRuleConfigured _onlineAIModelsGpoRuleConfiguration;
+        private bool _onlineAIModelsIsGPOConfigured;
         private bool _isEnabled;
 
         private Func<string, int> SendConfigMSG { get; }
@@ -83,10 +83,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _isEnabled = GeneralSettingsConfig.Enabled.AdvancedPaste;
             }
 
-            _enabledAIGpoRuleConfiguration = GPOWrapper.GetConfiguredAdvancedPasteAIFeatureEnabledValue();
-            if (_enabledAIGpoRuleConfiguration == GpoRuleConfigured.Disabled)
+            _onlineAIModelsGpoRuleConfiguration = GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue();
+            if (_onlineAIModelsGpoRuleConfiguration == GpoRuleConfigured.Disabled)
             {
-                _enabledAIStateIsGPOConfigured = true;
+                _onlineAIModelsIsGPOConfigured = true;
 
                 // disable AI if it was enabled
                 DisableAI();
@@ -142,14 +142,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
-        public bool IsAIEnabledGpoConfigured
+        public bool IsOnlineAIModelsGpoConfigured
         {
-            get => _enabledAIStateIsGPOConfigured || _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+            get => _onlineAIModelsIsGPOConfigured || _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
         }
 
-        public bool ShowAIEnabledGpoConfiguredInfoBar
+        public bool ShowOnlineAIModelsGpoConfiguredInfoBar
         {
-            get => _enabledAIStateIsGPOConfigured && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled;
+            get => _onlineAIModelsIsGPOConfigured && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled;
         }
 
         private bool IsClipboardHistoryEnabled()
