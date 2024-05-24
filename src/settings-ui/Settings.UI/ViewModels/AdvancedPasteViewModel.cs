@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private GpoRuleConfigured _onlineAIModelsGpoRuleConfiguration;
-        private bool _onlineAIModelsIsGPOConfigured;
+        private bool _onlineAIModelsDisallowedByGPO;
         private bool _isEnabled;
 
         private Func<string, int> SendConfigMSG { get; }
@@ -86,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _onlineAIModelsGpoRuleConfiguration = GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue();
             if (_onlineAIModelsGpoRuleConfiguration == GpoRuleConfigured.Disabled)
             {
-                _onlineAIModelsIsGPOConfigured = true;
+                _onlineAIModelsDisallowedByGPO = true;
 
                 // disable AI if it was enabled
                 DisableAI();
@@ -135,21 +135,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return cred is not null;
         }
 
-        public bool IsOpenAIEnabled => OpenAIKeyExists() && !IsOnlineAIModelsGpoConfigured;
+        public bool IsOpenAIEnabled => OpenAIKeyExists() && !IsOnlineAIModelsDisallowedByGPO;
 
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
         }
 
-        public bool IsOnlineAIModelsGpoConfigured
+        public bool IsOnlineAIModelsDisallowedByGPO
         {
-            get => _onlineAIModelsIsGPOConfigured || _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+            get => _onlineAIModelsDisallowedByGPO || _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
         }
 
         public bool ShowOnlineAIModelsGpoConfiguredInfoBar
         {
-            get => _onlineAIModelsIsGPOConfigured && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled;
+            get => _onlineAIModelsDisallowedByGPO && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled;
         }
 
         private bool IsClipboardHistoryEnabled()
