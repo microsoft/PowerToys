@@ -32,6 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
+        private GpoRuleConfigured _enabledAIGpoRuleConfiguration;
+        private bool _enabledAIStateIsGPOConfigured;
         private bool _isEnabled;
 
         private Func<string, int> SendConfigMSG { get; }
@@ -79,6 +81,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.AdvancedPaste;
+            }
+
+            _enabledAIGpoRuleConfiguration = GPOWrapper.GetConfiguredAdvancedPasteAIFeatureEnabledValue();
+            if (_enabledAIGpoRuleConfiguration == GpoRuleConfigured.Disabled)
+            {
+                _enabledAIStateIsGPOConfigured = true;
+
+                // disable AI if it was enabled
+                DisableAI();
             }
         }
 
@@ -129,6 +140,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public bool IsAIEnabledGpoConfigured
+        {
+            get => _enabledAIStateIsGPOConfigured || _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+        }
+
+        public bool ShowAIEnabledGpoConfiguredInfoBar
+        {
+            get => _enabledAIStateIsGPOConfigured && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled;
         }
 
         private bool IsClipboardHistoryEnabled()
@@ -334,18 +355,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void DisableAI()
         {
-            PasswordVault vault = new PasswordVault();
-            PasswordCredential cred = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
-            vault.Remove(cred);
-            OnPropertyChanged(nameof(IsOpenAIEnabled));
+            try
+            {
+                PasswordVault vault = new PasswordVault();
+                PasswordCredential cred = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+                vault.Remove(cred);
+                OnPropertyChanged(nameof(IsOpenAIEnabled));
+            }
+            catch (Exception)
+            {
+            }
         }
 
         internal void EnableAI(string password)
         {
-            PasswordVault vault = new PasswordVault();
-            PasswordCredential cred = new PasswordCredential("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey", password);
-            vault.Add(cred);
-            OnPropertyChanged(nameof(IsOpenAIEnabled));
+            try
+            {
+                PasswordVault vault = new PasswordVault();
+                PasswordCredential cred = new PasswordCredential("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey", password);
+                vault.Add(cred);
+                OnPropertyChanged(nameof(IsOpenAIEnabled));
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }
