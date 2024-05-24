@@ -135,7 +135,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return cred is not null;
         }
 
-        public bool IsOpenAIEnabled => OpenAIKeyExists();
+        public bool IsOpenAIEnabled => OpenAIKeyExists() && !IsOnlineAIModelsGpoConfigured;
 
         public bool IsEnabledGpoConfigured
         {
