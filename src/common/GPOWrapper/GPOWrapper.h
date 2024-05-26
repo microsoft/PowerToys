@@ -49,6 +49,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
     };
 }
 
