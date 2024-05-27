@@ -1,20 +1,19 @@
 #include "pch.h"
 #include "AppLauncher.h"
 
-#include <TlHelp32.h>
-
-#include <future>
-#include <iostream>
-#include <string>
-#include <vector>
+#include <winrt/Windows.Management.Deployment.h>
+#include <winrt/Windows.ApplicationModel.Core.h>
 
 #include <ShellScalingApi.h>
+#include <shellapi.h>
 
-#include <winrt/Windows.UI.Notifications.h>
-#include <winrt/Windows.Data.Xml.Dom.h>
+#include <iostream>
 
 #include "../projects-common/MonitorEnumerator.h"
-#include "../projects-common/WindowEnumerator.h"
+
+using namespace winrt;
+using namespace Windows::Foundation;
+using namespace Windows::Management::Deployment;
 
 namespace FancyZones
 {
@@ -326,328 +325,95 @@ namespace FancyZones
     }
 }
 
-namespace KBM
+bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs)
 {
-    using namespace winrt;
-    using namespace Windows::UI::Notifications;
-    using namespace Windows::Data::Xml::Dom;
+    SHELLEXECUTEINFO shExecInfo;
+    shExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+    shExecInfo.fMask = NULL;
+    shExecInfo.hwnd = NULL;
+    shExecInfo.lpVerb = NULL;
+    shExecInfo.lpFile = appPath.c_str();
+    shExecInfo.lpParameters = commandLineArgs.c_str();
+    shExecInfo.lpDirectory = NULL;
+    shExecInfo.nShow = SW_MAXIMIZE;
+    shExecInfo.hInstApp = NULL;
 
-    // Use to find a process by its name
-    std::wstring GetFileNameFromPath(const std::wstring& fullPath)
+    BOOL result = ShellExecuteEx(&shExecInfo);
+
+    return result;
+}
+
+bool LaunchPackagedApp(const std::wstring& packageFullName)
+{
+    try
     {
-        size_t found = fullPath.find_last_of(L"\\");
-        if (found != std::wstring::npos)
+        // Create a PackageManager object to get the package information.
+        PackageManager packageManager;
+
+        // Find the package by its full name.
+        for (const auto& package : packageManager.FindPackagesForUser({}))
         {
-            return fullPath.substr(found + 1);
-        }
-        return fullPath;
-    }
-
-    DWORD GetProcessIdByName(const std::wstring& processName)
-    {
-        DWORD pid = 0;
-        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-
-        if (snapshot != INVALID_HANDLE_VALUE)
-        {
-            PROCESSENTRY32 processEntry;
-            processEntry.dwSize = sizeof(PROCESSENTRY32);
-
-            if (Process32First(snapshot, &processEntry))
+            if (package.Id().FullName() == packageFullName)
             {
-                do
+                // Get the AppListEntry for the package.
+                auto getAppListEntriesOperation = package.GetAppListEntriesAsync();
+                auto appEntries = getAppListEntriesOperation.get();
+
+                // Launch the first app in the list.
+                if (appEntries.Size() > 0)
                 {
-                    if (_wcsicmp(processEntry.szExeFile, processName.c_str()) == 0)
-                    {
-                        pid = processEntry.th32ProcessID;
-                        break;
-                    }
-                } while (Process32Next(snapshot, &processEntry));
-            }
-
-            CloseHandle(snapshot);
-        }
-
-        return pid;
-    }
-
-    std::vector<DWORD> GetProcessesIdByName(const std::wstring& processName)
-    {
-        std::vector<DWORD> processIds;
-        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-
-        if (snapshot != INVALID_HANDLE_VALUE)
-        {
-            PROCESSENTRY32 processEntry;
-            processEntry.dwSize = sizeof(PROCESSENTRY32);
-
-            if (Process32First(snapshot, &processEntry))
-            {
-                do
-                {
-                    if (_wcsicmp(processEntry.szExeFile, processName.c_str()) == 0)
-                    {
-                        processIds.push_back(processEntry.th32ProcessID);
-                    }
-                } while (Process32Next(snapshot, &processEntry));
-            }
-
-            CloseHandle(snapshot);
-        }
-
-        return processIds;
-    }
-
-    struct handle_data
-    {
-        unsigned long process_id;
-        HWND window_handle;
-    };
-
-    // used by FindMainWindow
-    BOOL CALLBACK EnumWindowsCallbackAllowNonVisible(HWND handle, LPARAM lParam)
-    {
-        handle_data& data = *reinterpret_cast<handle_data*>(lParam);
-        unsigned long process_id = 0;
-        GetWindowThreadProcessId(handle, &process_id);
-
-        if (data.process_id == process_id)
-        {
-            data.window_handle = handle;
-            return FALSE;
-        }
-        return TRUE;
-    }
-
-    // used by FindMainWindow
-    BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam)
-    {
-        handle_data& data = *reinterpret_cast<handle_data*>(lParam);
-        unsigned long process_id = 0;
-        GetWindowThreadProcessId(handle, &process_id);
-
-        if (data.process_id != process_id || !(GetWindow(handle, GW_OWNER) == static_cast<HWND>(0) && IsWindowVisible(handle)))
-        {
-            return TRUE;
-        }
-
-        data.window_handle = handle;
-        return FALSE;
-    }
-
-    // used for reactivating a window for a program we already started.
-    HWND FindMainWindow(unsigned long process_id, const bool allowNonVisible)
-    {
-        handle_data data;
-        data.process_id = process_id;
-        data.window_handle = 0;
-
-        if (allowNonVisible)
-        {
-            EnumWindows(EnumWindowsCallbackAllowNonVisible, reinterpret_cast<LPARAM>(&data));
-        }
-        else
-        {
-            EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&data));
-        }
-
-        return data.window_handle;
-    }
-
-    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool minimizeIfVisible, const RECT& windowPosition, int retryCount)
-    {
-        // a good place to look for this...
-        // https://github.com/ritchielawrence/cmdow
-
-        // try by main window.
-        auto allowNonVisible = true;
-        HWND hwnd = FindMainWindow(pid, allowNonVisible);
-
-        if (hwnd == NULL)
-        {
-            if (retryCount < 20)
-            {
-                auto future = std::async(std::launch::async, [=] {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                    ShowProgram(pid, programName, isNewProcess, minimizeIfVisible, windowPosition, retryCount + 1);
-                    return false;
-                });
-            }
-        }
-        else
-        {
-            if (hwnd == GetForegroundWindow())
-            {
-                // only hide if this was a call from a already open program, don't make small if we just opened it.
-                if (!isNewProcess && minimizeIfVisible)
-                {
-                    return ShowWindow(hwnd, SW_MINIMIZE);
-                }
-
-                FancyZones::SizeWindowToRect(hwnd, windowPosition, false);
-                return false;
-            }
-            else
-            {
-                // Check if the window is minimized
-                if (IsIconic(hwnd))
-                {
-                    // Show the window since SetForegroundWindow fails on minimized windows
-                    if (!ShowWindow(hwnd, SW_RESTORE))
-                    {
-                        std::wcout << L"ShowWindow failed" << std::endl;
-                    }
-                }
-
-                //INPUT inputs[1] = { {.type = INPUT_MOUSE } };
-                //SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
-
-                if (!SetForegroundWindow(hwnd))
-                {
-                    return false;
+                    IAsyncOperation<bool> launchOperation = appEntries.GetAt(0).LaunchAsync();
+                    bool launchResult = launchOperation.get();
+                    return launchResult;
                 }
                 else
                 {
-                    FancyZones::SizeWindowToRect(hwnd, windowPosition, false);
-                    return true;
-                }
-            }
-        }
-
-        if (isNewProcess)
-        {
-            return true;
-        }
-
-        if (false)
-        {
-            // try by console.
-            hwnd = FindWindow(nullptr, nullptr);
-            if (AttachConsole(pid))
-            {
-                // Get the console window handle
-                hwnd = GetConsoleWindow();
-                auto showByConsoleSuccess = false;
-                if (hwnd != NULL)
-                {
-                    ShowWindow(hwnd, SW_RESTORE);
-                    if (SetForegroundWindow(hwnd))
-                    {
-                        showByConsoleSuccess = true;
-                    }
-                }
-
-                // Detach from the console
-                FreeConsole();
-                if (showByConsoleSuccess)
-                {
-                    return true;
-                }
-            }
-        }
-
-        // try to just show them all (if they have a title)!.
-        hwnd = FindWindow(nullptr, nullptr);
-        if (hwnd)
-        {
-            while (hwnd)
-            {
-                DWORD pidForHwnd;
-                GetWindowThreadProcessId(hwnd, &pidForHwnd);
-                if (pid == pidForHwnd)
-                {
-                    int length = GetWindowTextLength(hwnd);
-
-                    if (length > 0)
-                    {
-                        ShowWindow(hwnd, SW_RESTORE);
-
-                        // hwnd is the window handle with targetPid
-                        if (SetForegroundWindow(hwnd))
-                        {
-                            FancyZones::SizeWindowToRect(hwnd, windowPosition, false);
-                            return true;
-                        }
-                    }
-                }
-                hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
-            }
-        }
-
-        return false;
-    }
-
-    bool HideProgram(DWORD pid, std::wstring programName, int retryCount)
-    {
-        HWND hwnd = FindMainWindow(pid, false);
-        if (hwnd == NULL)
-        {
-            if (retryCount < 20)
-            {
-                auto future = std::async(std::launch::async, [=] {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                    HideProgram(pid, programName, retryCount + 1);
+                    std::wcout << L"No app entries found for the package." << std::endl;
                     return false;
-                });
-            }
-        }
-
-        hwnd = FindWindow(nullptr, nullptr);
-        while (hwnd)
-        {
-            DWORD pidForHwnd;
-            GetWindowThreadProcessId(hwnd, &pidForHwnd);
-            if (pid == pidForHwnd)
-            {
-                if (IsWindowVisible(hwnd))
-                {
-                    ShowWindow(hwnd, SW_HIDE);
                 }
             }
-            hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
         }
-
-        return true;
     }
+    catch (const hresult_error& ex)
+    {
+        std::wcerr << L"Error: " << ex.message().c_str() << std::endl;
+    }
+
+    return false;
 }
 
-void Launch(const std::wstring& appPath, bool startMinimized, const std::wstring& commandLineArgs, const RECT& windowPosition) noexcept
+bool Launch(const Project::Application& app)
 {
-    WCHAR fullExpandedFilePath[MAX_PATH];
-    ExpandEnvironmentStrings(appPath.c_str(), fullExpandedFilePath, MAX_PATH);
+    bool launched = false;
+    if (!app.packageFullName.empty() && app.commandLineArgs.empty())
+    {
+        std::wcout << L"Launching packaged " << app.name << std::endl;
+        launched = LaunchPackagedApp(app.packageFullName);
+    }
+    else
+    {
+        // TODO: verify app path is up to date. 
+        // Packaged apps have version in the path, it will be outdated after update.
+        std::wcout << L"Launching " << app.name << " at " << app.path << std::endl;
 
-    auto fileNamePart = KBM::GetFileNameFromPath(fullExpandedFilePath);
+        DWORD dwAttrib = GetFileAttributesW(app.path.c_str());
+        if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+        {
+            std::wcout << L"  File not found at " << app.path << std::endl;
+            return false;
+        }
+
+        launched = LaunchApp(app.path, app.commandLineArgs);
+    }
+
+    if (launched)
+    {
+        std::wcout << L"Launched " << app.name << std::endl;
+    }
+    else
+    {
+        std::wcout << L"Failed to launch " << app.name << std::endl;
+    }
     
-    DWORD dwAttrib = GetFileAttributesW(fullExpandedFilePath);
-    if (dwAttrib == INVALID_FILE_ATTRIBUTES)
-    {
-        return;
-    }
-
-    DWORD processId = 0;
-    if (Common::Utils::Elevation::run_non_elevated(fullExpandedFilePath, commandLineArgs, &processId, nullptr, !startMinimized))
-    {
-        std::wcout << "Launched " << fileNamePart << std::endl;
-    }
-    else
-    {
-        std::wcout << "Failed to launch " << fileNamePart << std::endl;
-    }
-
-    if (processId == 0)
-    {
-        return;
-    }
-
-    auto targetPid = KBM::GetProcessIdByName(fileNamePart);
-    if (!startMinimized)
-    {
-        KBM::ShowProgram(targetPid, fileNamePart, false, false, windowPosition, 0);
-    }
-    else
-    {
-        KBM::HideProgram(targetPid, fileNamePart, 0);
-    }
-
-    return;
+    return launched;
 }
