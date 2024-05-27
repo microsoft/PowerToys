@@ -101,7 +101,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
     <Compile Include="Product.wxs" />
-
     <Compile Include="AdvancedPaste.wxs" />
     <Compile Include="Awake.wxs" />
     <Compile Include="BaseApplications.wxs" />
