@@ -91,18 +91,18 @@ namespace Utils
                         PropVariantInit(&pv);
                         if (SUCCEEDED(store->GetValue(pk, &pv)))
                         {
-                            CComHeapPtr<wchar_t> pvs;
-                            pvs.Allocate(512);
-                            PropVariantToString(pv, pvs, 512);
+                            CComHeapPtr<wchar_t> propVariantString;
+                            propVariantString.Allocate(512);
+                            PropVariantToString(pv, propVariantString, 512);
                             PropVariantClear(&pv);
 
                             if (prop == NonLocalizable::PackageFullNameProp)
                             {
-                                data.packageFullName = pvs.m_pData;
+                                data.packageFullName = propVariantString.m_pData;
                             }
                             else if (prop == NonLocalizable::PackageInstallPathProp || prop == NonLocalizable::InstallPathProp)
                             {
-                                data.installPath = pvs.m_pData;
+                                data.installPath = propVariantString.m_pData;
                             }
                         }
 
