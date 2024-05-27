@@ -69,6 +69,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "Overview",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.AdvancedPaste, new OobePowerToysModule()
+            {
+                ModuleName = "AdvancedPaste",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.AlwaysOnTop, new OobePowerToysModule()
             {
                 ModuleName = "AlwaysOnTop",
@@ -183,12 +188,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = true,
             });
 
-            Modules.Insert((int)PowerToysModules.PastePlain, new OobePowerToysModule()
-            {
-                ModuleName = "PastePlain",
-                IsNew = true,
-            });
-
             Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
             {
                 ModuleName = "WhatsNew",
@@ -259,6 +258,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                         }
 
                     case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
+                    case "AdvancedPaste": NavigationFrame.Navigate(typeof(OobeAdvancedPaste)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
                     case "CmdNotFound": NavigationFrame.Navigate(typeof(OobeCmdNotFound)); break;
@@ -281,7 +281,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "MeasureTool": NavigationFrame.Navigate(typeof(OobeMeasureTool)); break;
                     case "Hosts": NavigationFrame.Navigate(typeof(OobeHosts)); break;
                     case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
-                    case "PastePlain": NavigationFrame.Navigate(typeof(OobePastePlain)); break;
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
                     case "New": NavigationFrame.Navigate(typeof(OobeNew)); break;
                 }

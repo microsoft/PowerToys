@@ -150,7 +150,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.MousePointerCrosshairs.dll",
             L"PowerToys.PowerAccentModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",
-            L"PowerToys.PastePlainModuleInterface.dll",
+            L"PowerToys.AdvancedPasteModuleInterface.dll",
             L"WinUI3Apps/PowerToys.FileLocksmithExt.dll",
             L"WinUI3Apps/PowerToys.RegistryPreviewExt.dll",
             L"WinUI3Apps/PowerToys.MeasureToolModuleInterface.dll",

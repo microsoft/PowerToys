@@ -393,6 +393,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 case "Dashboard": return typeof(DashboardPage);
                 case "Overview": return typeof(GeneralPage);
+                case "AdvancedPaste": return typeof(AdvancedPastePage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);
@@ -413,7 +414,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
-                case "PastePlain": return typeof(PastePlainPage);
                 case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);

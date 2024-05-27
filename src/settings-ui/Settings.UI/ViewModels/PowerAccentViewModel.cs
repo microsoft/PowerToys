@@ -34,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "NL",
             "EL",
             "EST",
+            "EPO",
             "FI",
             "FR",
             "DE",

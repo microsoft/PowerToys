@@ -6,6 +6,7 @@ namespace ManagedCommon
 {
     public enum ModuleType
     {
+        AdvancedPaste,
         AlwaysOnTop,
         Awake,
         ColorPicker,
@@ -21,7 +22,6 @@ namespace ManagedCommon
         MouseJump,
         MousePointerCrosshairs,
         MouseWithoutBorders,
-        PastePlain,
         Peek,
         PowerRename,
         PowerLauncher,

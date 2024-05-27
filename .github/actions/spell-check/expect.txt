@@ -29,6 +29,7 @@ AFFINETRANSFORM
 AFX
 AGGREGATABLE
 AHybrid
+AKV
 ALarger
 ALLAPPS
 ALLINPUT
@@ -196,6 +197,7 @@ CMock
 CMONITORS
 cmpgt
 cne
+CNF
 coclass
 codeofconduct
 codereview
@@ -421,6 +423,7 @@ ENTERSIZEMOVE
 ENU
 EOAC
 epu
+EPO
 ERASEBKGND
 EREOF
 EResize
@@ -891,6 +894,7 @@ MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
 miniz
+Mip
 Miracast
 mjpg
 mkdn
@@ -1614,6 +1618,7 @@ triaging
 TRK
 trl
 trx
+tsa
 Tsd
 TServer
 TStr

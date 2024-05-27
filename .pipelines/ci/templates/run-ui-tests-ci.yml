@@ -60,7 +60,7 @@ jobs:
       searchFolder: '$(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}'
       vstestLocationMethod: 'location' # otherwise fails to find vstest.console.exe 
       #vstestLocation: '$(Agent.ToolsDirectory)\VsTest\**\${{ parameters.platform }}\tools\net462\Common7\IDE\Extensions\TestPlatform'
-      vstestLocation: '$(Agent.ToolsDirectory)\VsTest\17.10.0-release-24177-07\x64\tools\net462\Common7\IDE\Extensions\TestPlatform'
+      vstestLocation: '$(Agent.ToolsDirectory)\VsTest\17.10.0\x64\tools\net462\Common7\IDE\Extensions\TestPlatform'
       uiTests: true
       rerunFailedTests: true
       testAssemblyVer2: |

@@ -11,6 +11,9 @@ parameters:
   - name: installerPrefix
     type: string
     default: "PowerToysSetup"
+  - name: signingParameters
+    type: object
+    default: {}
 
 steps:
   - task: VSBuild@1
@@ -24,10 +27,10 @@ steps:
       clean: true
       maximumCpuCount: true
 
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
     displayName: Sign PowerToysSetupCustomActions DLL
     inputs:
-      ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
+      ${{ insert }}: ${{ parameters.signingParameters }}
       FolderPath: 'installer/PowerToysSetupCustomActions/$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
@@ -74,10 +77,10 @@ steps:
       scriptName: .pipelines/versionAndSignCheck.ps1
       arguments: -targetDir '$(build.sourcesdirectory)\extractedMsi\Binary'
 
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
     displayName: Sign MSI
     inputs:
-      ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
+      ${{ insert }}: ${{ parameters.signingParameters }}
       FolderPath: 'installer/PowerToysSetup/$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
@@ -101,10 +104,10 @@ steps:
     inputs:
       script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ib installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\engine.exe'
 
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
     displayName: "ESRP CodeSigning (Engine)"
     inputs:
-      ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
+      ${{ insert }}: ${{ parameters.signingParameters }}
       FolderPath: "installer"
       Pattern: engine.exe
       signConfigType: inlineSignParams
@@ -137,10 +140,10 @@ steps:
     inputs:
       script: '"C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ab installer\engine.exe installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe -o installer\PowerToysSetup\$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}\${{parameters.installerPrefix}}-${{ parameters.versionNumber }}-$(BuildPlatform).exe'
 
-  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
     displayName: Sign Bootstrapper
     inputs:
-      ConnectedServiceName: "Terminal/Console/WinAppDriver Team Code Signing Connection"
+      ${{ insert }}: ${{ parameters.signingParameters }}
       FolderPath: 'installer/PowerToysSetup/$(BuildPlatform)\$(BuildConfiguration)\${{parameters.buildSubDir}}'
       signType: batchSigning
       batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'

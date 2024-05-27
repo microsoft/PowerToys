@@ -62,6 +62,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToys.png}"
                     Tag="Overview" />
                 <NavigationViewItem
+                    x:Uid="Shell_AdvancedPaste"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}"
+                    Tag="AdvancedPaste" />
+                <NavigationViewItem
                     x:Uid="Shell_AlwaysOnTop"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"
                     Tag="AlwaysOnTop" />

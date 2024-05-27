@@ -38,7 +38,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredScreenRulerEnabledValue();
         static GpoRuleConfigured GetConfiguredShortcutGuideEnabledValue();
         static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
-        static GpoRuleConfigured GetConfiguredPastePlainEnabledValue();
+        static GpoRuleConfigured GetConfiguredAdvancedPasteEnabledValue();
         static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
         static GpoRuleConfigured GetConfiguredPeekEnabledValue();
         static GpoRuleConfigured GetDisableNewUpdateToastValue();
@@ -49,6 +49,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
         static GpoRuleConfigured GetConfiguredNewEnabledValue();
     };
 }

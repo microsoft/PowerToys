@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="AdvancedPaste.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="using:AdvancedPaste.Pages"
+    xmlns:winuiex="using:WinUIEx"
+    Width="420"
+    Height="308"
+    MinWidth="420"
+    MinHeight="308"
+    Closed="WindowEx_Closed"
+    IsAlwaysOnTop="True"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="true"
+    mc:Ignorable="d">
+    <winuiex:WindowEx.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="titleBar">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Image
+                Width="16"
+                Margin="12,0,0,0"
+                AutomationProperties.AccessibilityView="Raw"
+                Source="/Assets/AdvancedPaste/AdvancedPaste.ico" />
+            <Rectangle
+                Grid.ColumnSpan="2"
+                Width="30"
+                Height="3"
+                HorizontalAlignment="Center"
+                Fill="{ThemeResource ControlStrongFillColorDefaultBrush}"
+                RadiusX="2"
+                RadiusY="2" />
+        </Grid>
+
+        <pages:MainPage
+            x:Name="MainPage"
+            Grid.Row="1"
+            x:FieldModifier="public" />
+    </Grid>
+</winuiex:WindowEx>

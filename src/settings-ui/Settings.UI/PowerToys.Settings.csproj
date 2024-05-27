@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -22,10 +22,13 @@
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
+    <None Remove="Assets\Settings\Modules\APDialog.light.png" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="SettingsXAML\OOBE\Views\OobeNew.xaml" />
     <None Remove="SettingsXAML\Views\New.xaml" />
   </ItemGroup>
-
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />
   </ItemGroup>
