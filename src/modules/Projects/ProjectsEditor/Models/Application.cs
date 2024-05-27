@@ -180,18 +180,6 @@ namespace ProjectsEditor.Models
             PropertyChanged?.Invoke(this, e);
         }
 
-        internal bool IsMyAppPath(string path)
-        {
-            if (!IsPackagedApp)
-            {
-                return path.Equals(AppPath, StringComparison.Ordinal);
-            }
-            else
-            {
-                return path.Contains(PackagedName + "_", StringComparison.InvariantCultureIgnoreCase) && path.Contains(PackagedPublisherID, StringComparison.InvariantCultureIgnoreCase);
-            }
-        }
-
         private bool? _isPackagedApp;
 
         public string PackagedId { get; set; }
