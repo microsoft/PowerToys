@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include <chrono>
 #include <iostream>
@@ -8,6 +8,7 @@
 #include "../projects-common/WindowEnumerator.h"
 
 #include "MonitorUtils.h"
+#include "PackagedAppUtils.h"
 #include "WindowFilter.h"
 
 int main(int argc, char* argv[])
@@ -77,6 +78,9 @@ int main(int argc, char* argv[])
     // get list of windows
     auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
 
+    // get installed apps list
+    auto apps = Utils::Apps::GetAppsList();
+
     for (const auto& window : windows)
     {
         // filter by window rect size
@@ -95,7 +99,13 @@ int main(int argc, char* argv[])
 
         // filter by app path
         std::wstring processPath = Common::Utils::ProcessPath::get_process_path_waiting_uwp(window);
-        if (WindowUtils::IsExcludedByDefault(window, processPath, title))
+        if (processPath.empty() || WindowUtils::IsExcludedByDefault(window, processPath, title))
+        {
+            continue;
+        }
+
+        auto data = Utils::Apps::GetApp(processPath, apps);
+        if (!data.has_value())
         {
             continue;
         }
