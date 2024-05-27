@@ -202,7 +202,6 @@ namespace ProjectsEditor.Models
             {
                 Applications.Add(new Application()
                 {
-                    Hwnd = item.Hwnd,
                     AppPath = item.AppPath,
                     AppTitle = item.AppTitle,
                     CommandLineArguments = item.CommandLineArguments,

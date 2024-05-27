@@ -102,7 +102,6 @@ namespace ProjectsEditor.Utils
             {
                 newProject.Applications.Add(new Models.Application()
                 {
-                    Hwnd = new IntPtr(app.Hwnd),
                     AppName = app.Application,
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
@@ -158,7 +157,6 @@ namespace ProjectsEditor.Utils
                     {
                         wrapper.Applications.Add(new ProjectsData.ApplicationWrapper
                         {
-                            Hwnd = app.Hwnd,
                             Application = app.AppName,
                             ApplicationPath = app.AppPath,
                             Title = app.AppTitle,

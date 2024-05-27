@@ -23,7 +23,6 @@ struct Project
             }
         };
 
-        HWND hwnd{};
         std::wstring name;
         std::wstring title;
         std::wstring path;
@@ -125,7 +124,6 @@ namespace JsonUtils
                 const static wchar_t* AppNameID = L"application";
                 const static wchar_t* AppPathID = L"application-path";
                 const static wchar_t* AppPackageFullNameID = L"package-full-name";
-                const static wchar_t* HwndID = L"hwnd";
                 const static wchar_t* AppTitleID = L"title";
                 const static wchar_t* CommandLineArgsID = L"command-line-arguments";
                 const static wchar_t* MinimizedID = L"minimized";
@@ -137,7 +135,6 @@ namespace JsonUtils
             inline json::JsonObject ToJson(const Project::Application& data)
             {
                 json::JsonObject json{};
-                json.SetNamedValue(NonLocalizable::HwndID, json::value(static_cast<double>(reinterpret_cast<long long>(data.hwnd))));
                 json.SetNamedValue(NonLocalizable::AppNameID, json::value(data.name));
                 json.SetNamedValue(NonLocalizable::AppPathID, json::value(data.path));
                 json.SetNamedValue(NonLocalizable::AppTitleID, json::value(data.title));
@@ -156,7 +153,6 @@ namespace JsonUtils
                 Project::Application result;
                 try
                 {
-                    result.hwnd = reinterpret_cast<HWND>(static_cast<long long>(json.GetNamedNumber(NonLocalizable::HwndID)));
                     if (json.HasKey(NonLocalizable::AppNameID))
                     {
                         result.name = json.GetNamedString(NonLocalizable::AppNameID);

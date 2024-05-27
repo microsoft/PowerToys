@@ -122,7 +122,6 @@ int main(int argc, char* argv[])
         }
 
         Project::Application app {
-            .hwnd = window,
             .name = data.value().name,
             .title = title,
             .path = data.value().installPath,

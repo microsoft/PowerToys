@@ -33,8 +33,6 @@ namespace ProjectsEditor.Models
             public int Height { get; set; }
         }
 
-        public IntPtr Hwnd { get; set; }
-
         public string AppName { get; set; }
 
         public string AppPath { get; set; }
