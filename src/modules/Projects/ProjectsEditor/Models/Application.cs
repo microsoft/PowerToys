@@ -35,9 +35,13 @@ namespace ProjectsEditor.Models
 
         public IntPtr Hwnd { get; set; }
 
+        public string AppName { get; set; }
+
         public string AppPath { get; set; }
 
         public string AppTitle { get; set; }
+
+        public string PackageFullName { get; set; }
 
         public string CommandLineArguments { get; set; }
 
@@ -129,20 +133,6 @@ namespace ProjectsEditor.Models
                 }
 
                 return _iconBitmapImage;
-            }
-        }
-
-        [JsonIgnore]
-        public string AppName
-        {
-            get
-            {
-                if (File.Exists(AppPath))
-                {
-                    return Path.GetFileNameWithoutExtension(AppPath);
-                }
-
-                return AppPath.Split('\\').LastOrDefault();
             }
         }
 

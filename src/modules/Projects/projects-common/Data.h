@@ -24,8 +24,10 @@ struct Project
         };
 
         HWND hwnd{};
-        std::wstring appPath;
-        std::wstring appTitle;
+        std::wstring name;
+        std::wstring title;
+        std::wstring path;
+        std::wstring packageFullName;
         std::wstring commandLineArgs;
         bool isMinimized{};
         bool isMaximized{};
@@ -120,7 +122,9 @@ namespace JsonUtils
 
             namespace NonLocalizable
             {
-                const static wchar_t* AppPathID = L"application";
+                const static wchar_t* AppNameID = L"application";
+                const static wchar_t* AppPathID = L"application-path";
+                const static wchar_t* AppPackageFullNameID = L"package-full-name";
                 const static wchar_t* HwndID = L"hwnd";
                 const static wchar_t* AppTitleID = L"title";
                 const static wchar_t* CommandLineArgsID = L"command-line-arguments";
@@ -134,8 +138,10 @@ namespace JsonUtils
             {
                 json::JsonObject json{};
                 json.SetNamedValue(NonLocalizable::HwndID, json::value(static_cast<double>(reinterpret_cast<long long>(data.hwnd))));
-                json.SetNamedValue(NonLocalizable::AppPathID, json::value(data.appPath));
-                json.SetNamedValue(NonLocalizable::AppTitleID, json::value(data.appTitle));
+                json.SetNamedValue(NonLocalizable::AppNameID, json::value(data.name));
+                json.SetNamedValue(NonLocalizable::AppPathID, json::value(data.path));
+                json.SetNamedValue(NonLocalizable::AppTitleID, json::value(data.title));
+                json.SetNamedValue(NonLocalizable::AppPackageFullNameID, json::value(data.packageFullName));
                 json.SetNamedValue(NonLocalizable::CommandLineArgsID, json::value(data.commandLineArgs));
                 json.SetNamedValue(NonLocalizable::MinimizedID, json::value(data.isMinimized));
                 json.SetNamedValue(NonLocalizable::MaximizedID, json::value(data.isMaximized));
@@ -151,8 +157,18 @@ namespace JsonUtils
                 try
                 {
                     result.hwnd = reinterpret_cast<HWND>(static_cast<long long>(json.GetNamedNumber(NonLocalizable::HwndID)));
-                    result.appPath = json.GetNamedString(NonLocalizable::AppPathID);
-                    result.appTitle = json.GetNamedString(NonLocalizable::AppTitleID);
+                    if (json.HasKey(NonLocalizable::AppNameID))
+                    {
+                        result.name = json.GetNamedString(NonLocalizable::AppNameID);
+                    }
+
+                    result.path = json.GetNamedString(NonLocalizable::AppPathID);
+                    result.title = json.GetNamedString(NonLocalizable::AppTitleID);
+                    if (json.HasKey(NonLocalizable::AppPackageFullNameID))
+                    {
+                        result.packageFullName = json.GetNamedString(NonLocalizable::AppPackageFullNameID);
+                    }
+                    
                     result.commandLineArgs = json.GetNamedString(NonLocalizable::CommandLineArgsID);
                     result.isMaximized = json.GetNamedBoolean(NonLocalizable::MaximizedID);
                     result.isMinimized = json.GetNamedBoolean(NonLocalizable::MinimizedID);

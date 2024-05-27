@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 
 #include <chrono>
 #include <iostream>
@@ -123,8 +123,10 @@ int main(int argc, char* argv[])
 
         Project::Application app {
             .hwnd = window,
-            .appPath = processPath,
-            .appTitle = title,
+            .name = data.value().name,
+            .title = title,
+            .path = data.value().installPath,
+            .packageFullName = data.value().packageFullName,
             .commandLineArgs = L"",
             .isMinimized = WindowUtils::IsMinimized(window),
             .isMaximized = WindowUtils::IsMaximized(window),
