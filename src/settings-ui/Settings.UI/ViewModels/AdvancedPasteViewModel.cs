@@ -149,7 +149,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowOnlineAIModelsGpoConfiguredInfoBar
         {
-            get => _onlineAIModelsDisallowedByGPO && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled;
+            get => _onlineAIModelsDisallowedByGPO && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled && _isEnabled;
         }
 
         private bool IsClipboardHistoryEnabled()
@@ -213,7 +213,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ClipboardHistoryDisabledByGPO
         {
-            get => IsClipboardHistoryDisabledByGPO();
+            get => IsClipboardHistoryDisabledByGPO() && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled && _isEnabled && ;
         }
 
         public HotkeySettings AdvancedPasteUIShortcut
