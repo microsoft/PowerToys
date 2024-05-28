@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <Import Project="..\..\src\Version.props" />
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
@@ -16,6 +17,7 @@ call "..\..\..\publish.cmd" x64
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
     </PreBuildEvent>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
@@ -41,7 +43,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
     call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
     call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
-    call move /Y ..\..\..\New.wxs.bk ..\..\..\New.wxs
     call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
     call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
     call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
@@ -65,6 +66,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
   </PropertyGroup>
+
   <PropertyGroup>
     <!-- We do not support debug installer builds -->
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
@@ -96,11 +98,11 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <LinkerAdditionalOptions>-v -sh -sw1108</LinkerAdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="New.wxs" />
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
     <Compile Include="Product.wxs" />
+
     <Compile Include="AdvancedPaste.wxs" />
     <Compile Include="Awake.wxs" />
     <Compile Include="BaseApplications.wxs" />
@@ -121,7 +123,9 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="VideoConference.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />
     <Compile Include="WinUI3Applications.wxs" />
+
     <Compile Include="MonacoSRC.wxs" />
+
     <Compile Include="Core.wxs" />
     <Compile Include="Resources.wxs" />
     <Compile Include="WinAppSDK.wxs" />
@@ -179,6 +183,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
 	<Target Name="AfterBuild">
 	</Target> -->
   <Target Name="BeforeBuild">
-    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\Assets\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="true" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true" />
+    <HeatDirectory Directory="..\..\src\common\FilePreviewCommon\Assets\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="true" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true"/>
   </Target>
 </Project>
