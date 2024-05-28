@@ -86,9 +86,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="PowerToys.ManagedCommon">
-      <HintPath>..\..\..\common\ManagedCommon\bin\x64\Debug\net8.0-windows\PowerToys.ManagedCommon.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

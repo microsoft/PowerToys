@@ -33,9 +33,9 @@ namespace ProjectsEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            Logger.InitializeLogger("\\Projects\\Logs");
-
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+            Logger.InitializeLogger("\\Projects\\Logs");
 
             _themeManager = new ThemeManager(this);
 
