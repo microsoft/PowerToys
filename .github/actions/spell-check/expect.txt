@@ -197,6 +197,7 @@ CMock
 CMONITORS
 cmpgt
 cne
+CNF
 coclass
 codeofconduct
 codereview
@@ -893,6 +894,7 @@ MINIMIZEBOX
 MINIMIZEEND
 MINIMIZESTART
 miniz
+Mip
 Miracast
 mjpg
 mkdn
