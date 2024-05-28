@@ -216,7 +216,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => IsClipboardHistoryDisabledByGPO();
         }
 
-        public bool ShowClipboardHistorylsGpoConfiguredInfoBar
+        public bool ShowClipboardHistoryIsGpoConfiguredInfoBar
         {
             get => IsClipboardHistoryDisabledByGPO() && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled && _isEnabled;
         }
