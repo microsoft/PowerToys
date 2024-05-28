@@ -213,7 +213,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ClipboardHistoryDisabledByGPO
         {
-            get => IsClipboardHistoryDisabledByGPO() && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled && _isEnabled && ;
+            get => IsClipboardHistoryDisabledByGPO();
+        }
+
+        public bool ShowClipboardHistorylsGpoConfiguredInfoBar
+        {
+            get => IsClipboardHistoryDisabledByGPO() && _enabledGpoRuleConfiguration != GpoRuleConfigured.Disabled && _isEnabled;
         }
 
         public HotkeySettings AdvancedPasteUIShortcut
