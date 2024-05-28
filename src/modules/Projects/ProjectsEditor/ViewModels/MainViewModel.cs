@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using ManagedCommon;
 using ProjectsEditor.Models;
 using ProjectsEditor.Utils;
 using Windows.ApplicationModel.Core;
@@ -224,6 +225,7 @@ namespace ProjectsEditor.ViewModels
         {
             if (!Projects.Where(x => x.Id == projectId).Any())
             {
+                Logger.LogWarning($"Project to launch not find. Id: {projectId}");
                 return;
             }
 
@@ -242,12 +244,15 @@ namespace ProjectsEditor.ViewModels
                 string launchParam = app.AppPath;
                 if (string.IsNullOrEmpty(launchParam))
                 {
+                    Logger.LogWarning($"Project launch. App path is empty. App name: {app.AppName}");
                     continue;
                 }
 
+                // todo: app path might be different for packaged apps.
                 if (actualSetup.Applications.Exists(x => x.AppPath.Equals(app.AppPath, StringComparison.Ordinal)))
                 {
                     // just move the existing window to the desired position
+                    Logger.LogInfo($"Project launch. App exists. Moving the first app with same app path to the desired position. App name: {app.AppName}");
                     Application existingApp = actualSetup.Applications.Where(x => x.AppPath.Equals(app.AppPath, StringComparison.Ordinal)).First();
                     NativeMethods.ShowWindow(existingApp.Hwnd, app.Minimized ? NativeMethods.SW_MINIMIZE : NativeMethods.SW_NORMAL);
                     if (!app.Minimized)
@@ -267,9 +272,10 @@ namespace ProjectsEditor.ViewModels
                         bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri($"ms-settings:{args}"));
                         newlyStartedApps.Add(app);
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
                         // todo exception handling
+                        Logger.LogError($"Exception while launching the project {project.Id}. Tried to launch the settings app via LaunchUriAsync. Exception message: {e.Message}");
                     }
                 }
 
@@ -315,9 +321,10 @@ namespace ProjectsEditor.ViewModels
                                 started = true;
                             }
                         }
-                        catch (Exception)
+                        catch (Exception e)
                         {
                             // todo exception handling
+                            Logger.LogError($"Exception while launching the project {project.Id}. Tried to launch a packaged app {app.AppName}. Exception message{e.Message}");
                             Thread.Sleep(100);
                         }
 
@@ -353,9 +360,10 @@ namespace ProjectsEditor.ViewModels
                             });
                             newlyStartedApps.Add(app);
                         }
-                        catch (Exception)
+                        catch (Exception e)
                         {
                             // todo exception handling
+                            Logger.LogError($"Exception while launching the project {project.Id}. Tried to launch an exe via Process.Start: {app.AppName}. Exception message{e.Message}");
                         }
                     }
                 }
@@ -369,6 +377,7 @@ namespace ProjectsEditor.ViewModels
 
                 if (pkg == null)
                 {
+                    Logger.LogWarning($"Could not load any app for {packageFamilyName}.");
                     return null;
                 }
 
@@ -437,6 +446,7 @@ namespace ProjectsEditor.ViewModels
 
             if (exitAfterLaunch)
             {
+                Logger.LogInfo($"Launched the project {project.Name}. Exiting.");
                 Environment.Exit(0);
             }
         }

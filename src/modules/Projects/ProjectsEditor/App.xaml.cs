@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+using ManagedCommon;
 using ProjectsEditor.Common;
 using ProjectsEditor.Utils;
 using ProjectsEditor.ViewModels;
@@ -32,6 +33,8 @@ namespace ProjectsEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            Logger.InitializeLogger("\\Projects\\Logs");
+
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             _themeManager = new ThemeManager(this);
@@ -46,6 +49,7 @@ namespace ProjectsEditor
             string[] args = Environment.GetCommandLineArgs();
             if (args != null && args.Length > 1)
             {
+                Logger.LogInfo($"Strated with a parameter: {args[1]}. Trying to launch that project.");
                 _mainViewModel.LaunchProject(args[1]);
                 return;
             }

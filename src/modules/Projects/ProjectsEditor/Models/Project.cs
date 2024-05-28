@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using ManagedCommon;
 using ProjectsEditor.Utils;
 
 namespace ProjectsEditor.Models
@@ -274,8 +275,9 @@ namespace ProjectsEditor.Models
                     {
                         graphics.DrawIcon(app.Icon, new Rectangle(32 * appIndex, 0, 24, 24));
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        Logger.LogError($"Exception while drawing the icon for app {Name}. Exception message: {e.Message}");
                     }
 
                     appIndex++;

@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Windows.Media.Imaging;
+using ManagedCommon;
 
 namespace ProjectsEditor.Models
 {
@@ -77,8 +78,9 @@ namespace ProjectsEditor.Models
                     {
                         _icon = Icon.ExtractAssociatedIcon(AppPath);
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        Logger.LogError($"Exception while extracting icon from app path: {AppPath}. Exception message: {e.Message}");
                         _icon = new Icon(@"images\DefaultIcon.ico");
                     }
                 }
@@ -122,9 +124,9 @@ namespace ProjectsEditor.Models
                             _iconBitmapImage = bitmapImage;
                         }
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
-                        // todo
+                        Logger.LogError($"Exception while drawing icon for app with path: {AppPath}. Exception message: {e.Message}");
                     }
                 }
 
