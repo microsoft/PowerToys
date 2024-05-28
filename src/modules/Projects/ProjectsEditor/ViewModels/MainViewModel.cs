@@ -9,14 +9,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using ManagedCommon;
 using ProjectsEditor.Models;
 using ProjectsEditor.Utils;
-using Windows.ApplicationModel.Core;
-using Windows.Management.Deployment;
 using static ProjectsEditor.Data.ProjectsData;
 
 namespace ProjectsEditor.ViewModels
@@ -234,215 +231,11 @@ namespace ProjectsEditor.ViewModels
 
         public async void LaunchProject(Project project, bool exitAfterLaunch = false)
         {
-            Project actualSetup = await GetActualSetup();
-
-            // Launch apps
-            // TODO: move launching to ProjectsLauncher
-            List<Application> newlyStartedApps = new List<Application>();
-            foreach (Application app in project.Applications.Where(x => x.IsSelected))
-            {
-                string launchParam = app.AppPath;
-                if (string.IsNullOrEmpty(launchParam))
-                {
-                    Logger.LogWarning($"Project launch. App path is empty. App name: {app.AppName}");
-                    continue;
-                }
-
-                // todo: app path might be different for packaged apps.
-                if (actualSetup.Applications.Exists(x => x.AppPath.Equals(app.AppPath, StringComparison.Ordinal)))
-                {
-                    // just move the existing window to the desired position
-                    Logger.LogInfo($"Project launch. App exists. Moving the first app with same app path to the desired position. App name: {app.AppName}");
-                    Application existingApp = actualSetup.Applications.Where(x => x.AppPath.Equals(app.AppPath, StringComparison.Ordinal)).First();
-                    NativeMethods.ShowWindow(existingApp.Hwnd, app.Minimized ? NativeMethods.SW_MINIMIZE : NativeMethods.SW_NORMAL);
-                    if (!app.Minimized)
-                    {
-                        MoveWindowWithScaleAdjustment(project, existingApp.Hwnd, app, true);
-                        NativeMethods.SetForegroundWindow(existingApp.Hwnd);
-                    }
-
-                    continue;
-                }
-
-                if (launchParam.EndsWith("systemsettings.exe", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    try
-                    {
-                        string args = string.IsNullOrWhiteSpace(app.CommandLineArguments) ? "home" : app.CommandLineArguments;
-                        bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri($"ms-settings:{args}"));
-                        newlyStartedApps.Add(app);
-                    }
-                    catch (Exception e)
-                    {
-                        // todo exception handling
-                        Logger.LogError($"Exception while launching the project {project.Id}. Tried to launch the settings app via LaunchUriAsync. Exception message: {e.Message}");
-                    }
-                }
-
-                // todo: check the user's packaged apps folder
-                else if (app.IsPackagedApp)
-                {
-                    bool started = false;
-                    int retryCountLaunch = 50;
-
-                    while (!started && retryCountLaunch > 0)
-                    {
-                        try
-                        {
-                            if (string.IsNullOrEmpty(app.CommandLineArguments))
-                            {
-                                // the official app launching method.No parameters are expected
-                                var packApp = await GetAppByPackageFamilyNameAsync(app.PackagedId);
-                                if (packApp != null)
-                                {
-                                    await packApp.LaunchAsync();
-                                }
-
-                                newlyStartedApps.Add(app);
-                                started = true;
-                            }
-                            else
-                            {
-                                await Task.Run(() =>
-                                {
-                                    Process p = new Process();
-                                    p.StartInfo = new ProcessStartInfo("cmd.exe");
-                                    p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                                    p.StartInfo.Arguments = $"cmd /c start shell:appsfolder\\{app.Aumid} {app.CommandLineArguments}";
-                                    p.EnableRaisingEvents = true;
-                                    p.ErrorDataReceived += (sender, e) =>
-                                    {
-                                        started = false;
-                                    };
-                                    p.Start();
-                                    p.WaitForExit();
-                                });
-                                newlyStartedApps.Add(app);
-                                started = true;
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            // todo exception handling
-                            Logger.LogError($"Exception while launching the project {project.Id}. Tried to launch a packaged app {app.AppName}. Exception message{e.Message}");
-                            Thread.Sleep(100);
-                        }
-
-                        retryCountLaunch--;
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        await Task.Run(() =>
-                        {
-                            Process p = new Process();
-                            p.StartInfo = new ProcessStartInfo(launchParam);
-                            p.StartInfo.Arguments = app.CommandLineArguments;
-                            p.Start();
-                        });
-                        newlyStartedApps.Add(app);
-                    }
-                    catch (Exception)
-                    {
-                        // try again as admin
-                        try
-                        {
-                            await Task.Run(() =>
-                            {
-                                Process p = new Process();
-                                p.StartInfo = new ProcessStartInfo(launchParam);
-                                p.StartInfo.Arguments = app.CommandLineArguments;
-                                p.StartInfo.UseShellExecute = true;
-                                p.StartInfo.Verb = "runas"; // administrator privileges, some apps start only that way
-                                p.Start();
-                            });
-                            newlyStartedApps.Add(app);
-                        }
-                        catch (Exception e)
-                        {
-                            // todo exception handling
-                            Logger.LogError($"Exception while launching the project {project.Id}. Tried to launch an exe via Process.Start: {app.AppName}. Exception message{e.Message}");
-                        }
-                    }
-                }
-            }
-
-            // the official launching method needs this task.
-            static async Task<AppListEntry> GetAppByPackageFamilyNameAsync(string packageFamilyName)
-            {
-                var pkgManager = new PackageManager();
-                var pkg = pkgManager.FindPackagesForUser(string.Empty, packageFamilyName).FirstOrDefault();
-
-                if (pkg == null)
-                {
-                    Logger.LogWarning($"Could not load any app for {packageFamilyName}.");
-                    return null;
-                }
-
-                var apps = await pkg.GetAppListEntriesAsync();
-                var firstApp = apps.Any() ? apps[0] : null;
-                return firstApp;
-            }
-
-            // next step: move newly created apps to their desired position
-            // the OS needs some time to show the apps, so do it in multiple steps until all windows all in place
-            // retry every 100ms for 5 sec totally
-            int retryCount = 50;
-            while (newlyStartedApps.Count > 0 && retryCount > 0)
-            {
-                List<Application> finishedApps = new List<Application>();
-                actualSetup = await GetActualSetup();
-                foreach (Application app in newlyStartedApps)
-                {
-                    IEnumerable<Application> candidates = actualSetup.Applications.Where(x => app.IsMyAppPath(x.AppPath));
-                    if (candidates.Any())
-                    {
-                        if (app.AppPath.EndsWith("PowerToys.Settings.exe", StringComparison.Ordinal))
-                        {
-                            // give it time to not get confused (the app tries to position itself)
-                            Thread.Sleep(1000);
-                        }
-                        else
-                        {
-                            // the other apps worked fine and reacted correctly to the MoveWindow event, but to be safe, give them also a little time
-                            Thread.Sleep(100);
-                        }
-
-                        // just move the existing window to the desired position
-                        Application existingApp = candidates.First();
-                        NativeMethods.ShowWindow(existingApp.Hwnd, app.Minimized ? NativeMethods.SW_MINIMIZE : NativeMethods.SW_NORMAL);
-                        if (!app.Minimized)
-                        {
-                            MoveWindowWithScaleAdjustment(project, existingApp.Hwnd, app, true);
-                            NativeMethods.SetForegroundWindow(existingApp.Hwnd);
-                        }
-
-                        finishedApps.Add(app);
-                    }
-                }
-
-                foreach (Application app in finishedApps)
-                {
-                    newlyStartedApps.Remove(app);
-                }
-
-                Thread.Sleep(100);
-                retryCount--;
-            }
-
-            // update last launched time
-            var ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            project.LastLaunchedTime = (long)ts.TotalSeconds;
-            _projectsEditorIO.SerializeProjects(Projects.ToList());
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
-
-            /*await Task.Run(() => RunLauncher(project.Id));
+            await Task.Run(() => RunLauncher(project.Id));
             if (_projectsEditorIO.ParseProjects(this).Result == true)
             {
-                OnPropertyChanged(new PropertyChangedEventArgs("ProjectsView"));
-            }*/
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(ProjectsView)));
+            }
 
             if (exitAfterLaunch)
             {
@@ -462,32 +255,6 @@ namespace ProjectsEditor.ViewModels
             {
                 project.OnPropertyChanged(new PropertyChangedEventArgs("LastLaunched"));
             }
-        }
-
-        private void MoveWindowWithScaleAdjustment(Project project, nint hwnd, Application app, bool repaint)
-        {
-            NativeMethods.SetForegroundWindow(hwnd);
-
-            NativeMethods.MoveWindow(hwnd, app.ScaledPosition.X, app.ScaledPosition.Y, app.ScaledPosition.Width, app.ScaledPosition.Height, repaint);
-        }
-
-        private async Task<Project> GetActualSetup()
-        {
-            string filename = Path.GetTempFileName();
-            if (File.Exists(filename))
-            {
-                File.Delete(filename);
-            }
-
-            await Task.Run(() => RunSnapshotTool(filename));
-            Project actualProject;
-            _projectsEditorIO.ParseProject(filename, out actualProject);
-            if (File.Exists(filename))
-            {
-                File.Delete(filename);
-            }
-
-            return actualProject;
         }
 
         private void RunSnapshotTool(string filename = null)

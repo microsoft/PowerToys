@@ -31,11 +31,13 @@ namespace ProjectsEditor.Data
                 public int Height { get; set; }
             }
 
-            public long Hwnd { get; set; }
-
             public string Application { get; set; }
 
+            public string ApplicationPath { get; set; }
+
             public string Title { get; set; }
+
+            public string PackageFullName { get; set; }
 
             public string CommandLineArguments { get; set; }
 

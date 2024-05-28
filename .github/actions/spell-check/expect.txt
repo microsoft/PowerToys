@@ -1210,6 +1210,8 @@ PROJECTSSNAPSHOTTOOL
 PROPBAG
 PROPERTYKEY
 propkey
+propsys
+PROPVARIANT
 propvarutil
 prvpane
 psapi

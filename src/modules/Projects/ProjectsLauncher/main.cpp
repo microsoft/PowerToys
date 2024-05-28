@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
     // launch apps
     for (const auto& app : projectToLaunch.apps)
     {
-        Launch(app.appPath, app.isMinimized, app.commandLineArgs, app.position.toRect());
+        Launch(app);
     }
 
     // update last-launched time

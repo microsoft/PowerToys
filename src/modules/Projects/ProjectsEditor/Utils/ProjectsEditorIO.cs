@@ -109,9 +109,10 @@ namespace ProjectsEditor.Utils
             {
                 newProject.Applications.Add(new Models.Application()
                 {
-                    Hwnd = new IntPtr(app.Hwnd),
-                    AppPath = app.Application,
+                    AppName = app.Application,
+                    AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
+                    PackageFullName = app.PackageFullName,
                     Parent = newProject,
                     CommandLineArguments = app.CommandLineArguments,
                     Maximized = app.Maximized,
@@ -163,9 +164,10 @@ namespace ProjectsEditor.Utils
                     {
                         wrapper.Applications.Add(new ProjectsData.ApplicationWrapper
                         {
-                            Hwnd = app.Hwnd,
-                            Application = app.AppPath,
+                            Application = app.AppName,
+                            ApplicationPath = app.AppPath,
                             Title = app.AppTitle,
+                            PackageFullName = app.PackageFullName,
                             CommandLineArguments = app.CommandLineArguments,
                             Maximized = app.Maximized,
                             Minimized = app.Minimized,

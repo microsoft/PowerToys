@@ -204,10 +204,11 @@ namespace ProjectsEditor.Models
             {
                 Applications.Add(new Application()
                 {
-                    Hwnd = item.Hwnd,
+                    AppName = item.AppName,
                     AppPath = item.AppPath,
                     AppTitle = item.AppTitle,
                     CommandLineArguments = item.CommandLineArguments,
+                    PackageFullName = item.PackageFullName,
                     Minimized = item.Minimized,
                     Maximized = item.Maximized,
                     IsSelected = item.IsSelected,

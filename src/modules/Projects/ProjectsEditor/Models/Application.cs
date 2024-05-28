@@ -34,11 +34,13 @@ namespace ProjectsEditor.Models
             public int Height { get; set; }
         }
 
-        public IntPtr Hwnd { get; set; }
+        public string AppName { get; set; }
 
         public string AppPath { get; set; }
 
         public string AppTitle { get; set; }
+
+        public string PackageFullName { get; set; }
 
         public string CommandLineArguments { get; set; }
 
@@ -134,20 +136,6 @@ namespace ProjectsEditor.Models
             }
         }
 
-        [JsonIgnore]
-        public string AppName
-        {
-            get
-            {
-                if (File.Exists(AppPath))
-                {
-                    return Path.GetFileNameWithoutExtension(AppPath);
-                }
-
-                return AppPath.Split('\\').LastOrDefault();
-            }
-        }
-
         public WindowPosition Position { get; set; }
 
         private WindowPosition? _scaledPosition;
@@ -192,18 +180,6 @@ namespace ProjectsEditor.Models
         public void OnPropertyChanged(PropertyChangedEventArgs e)
         {
             PropertyChanged?.Invoke(this, e);
-        }
-
-        internal bool IsMyAppPath(string path)
-        {
-            if (!IsPackagedApp)
-            {
-                return path.Equals(AppPath, StringComparison.Ordinal);
-            }
-            else
-            {
-                return path.Contains(PackagedName + "_", StringComparison.InvariantCultureIgnoreCase) && path.Contains(PackagedPublisherID, StringComparison.InvariantCultureIgnoreCase);
-            }
         }
 
         private bool? _isPackagedApp;
