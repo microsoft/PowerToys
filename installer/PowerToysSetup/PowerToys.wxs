@@ -57,17 +57,6 @@
     
         <Chain>
             <ExePackage
-                DisplayName="Closing PowerToys application"
-                Name="terminate_powertoys.cmd"
-                Cache="no"
-                Compressed="yes"
-                Id="TerminatePowerToys"
-                SourceFile="terminate_powertoys.cmd"
-                Permanent="yes"
-                PerMachine="$(var.PerMachineYesNo)"
-                Vital="no">
-            </ExePackage>
-            <ExePackage
                 DisplayName="Microsoft Edge WebView2"
                 Name="MicrosoftEdgeWebview2Setup.exe"
                 Compressed="yes"
