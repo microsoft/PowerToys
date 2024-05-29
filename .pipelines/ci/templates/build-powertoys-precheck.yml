@@ -2,7 +2,7 @@
 jobs:
 - job: Precheck
   pool:
-    demands: ImageOverride -equals SHINE-VS17-Latest
+    demands: ImageOverride -equals SHINE-VS17-Preview
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: SHINE-OSS-L
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
