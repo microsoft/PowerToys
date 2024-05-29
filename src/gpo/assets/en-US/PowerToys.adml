@@ -155,7 +155,7 @@ If you disable this policy, the user won't be able to enable Enable paste with A
       <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseWithoutBorders">Mouse Without Borders: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityNew">New+: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityNewPlus">New+: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPeek">Peek: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>

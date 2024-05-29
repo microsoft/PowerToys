@@ -327,7 +327,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityNew" class="Both" displayName="$(string.ConfigureEnabledUtilityNew)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityNew">
+    <policy name="ConfigureEnabledUtilityNewPlus" class="Both" displayName="$(string.ConfigureEnabledUtilityNewPlus)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityNewPlus">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_82_0" />
       <enabledValue>
