@@ -13,5 +13,6 @@ struct ThemeHelpers
     static Theme GetSystemTheme();
     static void SetImmersiveDarkMode(HWND window, bool enabled);
 
+protected:
     static Theme ThemeRegistryHelper(LPCWSTR theme_key);
 };
