@@ -86,9 +86,7 @@
     <None Include="powerpreview.def" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources.resx">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
