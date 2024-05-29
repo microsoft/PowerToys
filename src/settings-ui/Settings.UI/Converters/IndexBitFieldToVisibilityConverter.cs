@@ -10,6 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 {
     public sealed class IndexBitFieldToVisibilityConverter : IValueConverter
     {
+        // Receives a hexadecimal bit mask as a parameter. Will check the value against that bitmask.
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             var currentIndexBit = 1 << (int)value;
