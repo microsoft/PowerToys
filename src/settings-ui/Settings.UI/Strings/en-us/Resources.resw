@@ -4152,6 +4152,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAIDialog_LoginIntoText.Text" xml:space="preserve">
     <value>• Login into your</value>
   </data>
+  <data name="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey.Text" xml:space="preserve">
+    <value>Configure OpenAI key</value>
+  </data>
   <data name="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText.Text" xml:space="preserve">
     <value>OpenAI API keys overview</value>
   </data>
