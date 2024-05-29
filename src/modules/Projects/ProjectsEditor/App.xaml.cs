@@ -49,7 +49,7 @@ namespace ProjectsEditor
             string[] args = Environment.GetCommandLineArgs();
             if (args != null && args.Length > 1)
             {
-                Logger.LogInfo($"Strated with a parameter: {args[1]}. Trying to launch that project.");
+                Logger.LogInfo($"Started with a parameter: {args[1]}. Trying to launch that project.");
                 _mainViewModel.LaunchProject(args[1]);
                 return;
             }
