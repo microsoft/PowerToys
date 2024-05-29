@@ -57,10 +57,10 @@ namespace Peek.UI.Views
                new PropertyMetadata(null, null));
 
         [ObservableProperty]
-        private string openWithAppText = ResourceLoaderInstance.ResourceLoader.GetString("OpenAppButton_OpenWith_Text");
+        private string openWithAppText = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_Text");
 
         [ObservableProperty]
-        private string openWithAppToolTip = ResourceLoaderInstance.ResourceLoader.GetString("OpenAppButton_OpenWith_ToolTip");
+        private string openWithAppToolTip = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_ToolTip");
 
         [ObservableProperty]
         private string? fileCountText;
@@ -272,10 +272,10 @@ namespace Peek.UI.Views
                 // Update the name of default app to launch
                 DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
 
-                string openWithAppTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("OpenAppButton_OpenWithApp_Text");
+                string openWithAppTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_Text");
                 OpenWithAppText = string.Format(CultureInfo.InvariantCulture, openWithAppTextFormat, DefaultAppName);
 
-                string openWithAppToolTipFormat = ResourceLoaderInstance.ResourceLoader.GetString("OpenAppButton_OpenWithApp_ToolTip");
+                string openWithAppToolTipFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_ToolTip");
                 OpenWithAppToolTip = string.Format(CultureInfo.InvariantCulture, openWithAppToolTipFormat, DefaultAppName);
             }
             else

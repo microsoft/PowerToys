@@ -183,17 +183,17 @@
   <data name="Setting_Description_RestoreSize" xml:space="preserve">
     <value>Restore the original size of windows when unsnapping</value>
   </data>
-  <data name="Setting_OpenEditor_Label" xml:space="preserve">
+  <data name="Setting_Launch_Editor_Label" xml:space="preserve">
     <value>Zone configuration</value>
   </data>
-  <data name="Setting_OpenEditor_Button" xml:space="preserve">
+  <data name="Setting_Launch_Editor_Button" xml:space="preserve">
     <value>Edit zones</value>
   </data>
-  <data name="Setting_OpenEditor_Description" xml:space="preserve">
+  <data name="Setting_Launch_Editor_Description" xml:space="preserve">
     <value>To launch the zone editor, select the Edit zones button below or press the zone editor hotkey anytime</value>
-    <comment>"Edit zones" must match value from Setting_OpenEditor_Button value</comment>
+    <comment>"Edit zones" must match value from Setting_Launch_Editor_Button value</comment>
   </data>
-  <data name="Setting_OpenEditor_Hotkey_Label" xml:space="preserve">
+  <data name="Setting_Launch_Editor_Hotkey_Label" xml:space="preserve">
     <value>Configure the zone editor hotkey</value>
   </data>
   <data name="Setting_Window_Switching_Toggle_Label" xml:space="preserve">
@@ -245,7 +245,7 @@
     <value>FancyZones persisted data path not found. Please report the bug to</value>
     <comment>"Report bug to" will have a URL after. FancyZones is a product name, keep as is.</comment>
   </data>
-  <data name="FancyZones_Editor_Open_Error" xml:space="preserve">
+  <data name="FancyZones_Editor_Launch_Error" xml:space="preserve">
     <value>The FancyZones editor failed to start. Please report the bug to</value>
     <comment>"Report bug to" will have a URL after. FancyZones is a product name, keep as is.</comment>
   </data>

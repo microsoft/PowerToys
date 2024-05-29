@@ -515,7 +515,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void RegistryPreviewLaunchClicked(object sender, RoutedEventArgs e)
         {
-            var actionName = "Open";
+            var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 

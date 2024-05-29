@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Launch_RegistryPreview_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            ShellPage.SendDefaultIPCMessage("{\"action\":{\"RegistryPreview\":{\"action_name\":\"Open\", \"value\":\"\"}}}");
+            ShellPage.SendDefaultIPCMessage("{\"action\":{\"RegistryPreview\":{\"action_name\":\"Launch\", \"value\":\"\"}}}");
         }
 
         private void GoToSettingsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
