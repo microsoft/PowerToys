@@ -62,6 +62,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToys.png}"
                     Tag="Overview" />
                 <NavigationViewItem
+                    x:Uid="Shell_AdvancedPaste"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}"
+                    Tag="AdvancedPaste" />
+                <NavigationViewItem
                     x:Uid="Shell_AlwaysOnTop"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"
                     Tag="AlwaysOnTop" />
@@ -117,10 +121,6 @@
                     x:Uid="Shell_MouseWithoutBorders"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                     Tag="MouseWithoutBorders" />
-                <NavigationViewItem
-                    x:Uid="Shell_PastePlain"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PasteAsPlainText.png}"
-                    Tag="PastePlain" />
                 <NavigationViewItem
                     x:Uid="Shell_Peek"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
