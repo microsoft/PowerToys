@@ -186,11 +186,6 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/New.png}" />
 
                 <NavigationViewItem
-                    x:Uid="Shell_PastePlain"
-                    helpers:NavHelper.NavigateTo="views:PastePlainPage"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PasteAsPlainText.png}" />
-
-                <NavigationViewItem
                     x:Uid="Shell_Peek"
                     helpers:NavHelper.NavigateTo="views:PeekPage"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}" />

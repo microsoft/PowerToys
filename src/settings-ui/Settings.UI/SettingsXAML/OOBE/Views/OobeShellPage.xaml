@@ -126,10 +126,6 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/New.png}"
                     Tag="New" />
                 <NavigationViewItem
-                    x:Uid="Shell_PastePlain"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PasteAsPlainText.png}"
-                    Tag="PastePlain" />
-                <NavigationViewItem
                     x:Uid="Shell_Peek"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
                     Tag="Peek" />
