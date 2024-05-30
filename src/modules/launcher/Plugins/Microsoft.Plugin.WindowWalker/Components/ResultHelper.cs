@@ -99,7 +99,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (!window.Process.Responding)
             {
-                subtitleText = $"{Resources.wox_plugin_windowwalker_Process}: {window.Process.Name} [{Resources.wox_plugin_windowwalker_NotResponding}]";
+                subtitleText += $" [{Resources.wox_plugin_windowwalker_NotResponding}] ";
             }
 
             return subtitleText;
