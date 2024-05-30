@@ -168,6 +168,7 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
+CHR
 cidl
 cim
 CImage
