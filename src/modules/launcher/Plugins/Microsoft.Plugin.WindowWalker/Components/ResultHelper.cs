@@ -97,6 +97,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 subtitleText += $" - {Resources.wox_plugin_windowwalker_Desktop}: {window.Desktop.Name}";
             }
 
+            if (!window.Process.Responding)
+            {
+                subtitleText = "Not Responding";
+            }
+
             return subtitleText;
         }
 
