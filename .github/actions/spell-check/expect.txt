@@ -26,6 +26,7 @@ advapi
 advfirewall
 AFeature
 AFFINETRANSFORM
+AFolder
 AFX
 AGGREGATABLE
 AHybrid
@@ -77,6 +78,8 @@ asf
 AShortcut
 ASingle
 ASSOCCHANGED
+ASSOCF
+ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -200,6 +203,7 @@ cne
 CNF
 coclass
 codeofconduct
+codepaths
 codereview
 Codespaces
 codicon
@@ -215,7 +219,6 @@ comdlg
 comexp
 cominterop
 commandline
-COMMANDTITLE
 commctrl
 commdlg
 compmgmt
@@ -310,6 +313,7 @@ Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
 DEFAULTFLAGS
+DEFAULTICON
 DEFAULTONLY
 DEFAULTTONEAREST
 DEFAULTTONULL
@@ -324,6 +328,7 @@ deletethis
 DENORMAL
 depersist
 deprioritized
+DESELECTOTHERS
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
@@ -419,11 +424,12 @@ encodedlaunch
 encryptor
 endpointvolume
 ENDSESSION
+ENSUREVISIBLE
 ENTERSIZEMOVE
 ENU
 EOAC
-epu
 EPO
+epu
 ERASEBKGND
 EREOF
 EResize
@@ -465,6 +471,7 @@ exsb
 exstyle
 EXTENDEDKEY
 EXTENDEDVERBS
+extention
 EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
@@ -478,7 +485,6 @@ FILEFLAGSMASK
 FILELOCKSMITH
 FILELOCKSMITHCONTEXTMENU
 FILELOCKSMITHEXT
-FILELOCKSMITHLIB
 FILELOCKSMITHLIBINTEROP
 FILEMUSTEXIST
 FILEOP
@@ -500,6 +506,7 @@ FOLDERID
 folderpath
 FORCEMINIMIZE
 formatetc
+FORPARSING
 FRAMECHANGED
 frm
 Froml
@@ -507,6 +514,7 @@ FROMTOUCH
 fsmgmt
 Functiondiscoverykeys
 FZE
+gaardmark
 gacutil
 Gaeilge
 Gaidhlig
@@ -515,7 +523,6 @@ GCLP
 gdi
 gdiplus
 GDISCALED
-gdnbaselines
 GEmoji
 GETCLIENTAREAANIMATION
 GETDESKWALLPAPER
@@ -535,7 +542,6 @@ gpedit
 gpo
 GPOCA
 gpp
-GPT
 gpu
 GSM
 gtm
@@ -556,6 +562,7 @@ Hashset
 hashtag
 HASHVAL
 HASSTRINGS
+HASSUBCOMMANDS
 hbitmap
 hbm
 hbmp
@@ -635,6 +642,7 @@ IBeam
 ICapture
 IClass
 ICONERROR
+ICONLOCATION
 IData
 IDD
 IDesktop
@@ -652,6 +660,7 @@ IFACEMETHOD
 IFACEMETHODIMP
 IFile
 IFilter
+IGNOREUNKNOWN
 IGraphics
 iid
 Iindex
@@ -695,7 +704,6 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Intelli
-interactable
 Interlop
 INTRESOURCE
 INVALIDARG
@@ -714,6 +722,7 @@ ISettings
 IShell
 isocpp
 iss
+ISSEPARATOR
 ITask
 ith
 ITHUMBNAIL
@@ -724,7 +733,6 @@ IWeb
 IWIC
 iwr
 IYUV
-JArray
 jfi
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -754,7 +762,6 @@ keyremaps
 KILLFOCUS
 killrunner
 Knownfolders
-ksh
 KSPROPERTY
 Kybd
 languagesjson
@@ -790,7 +797,6 @@ LOADFROMFILE
 LOBYTE
 LOCALDISPLAY
 LOCALPACKAGE
-localport
 LOCALSYSTEM
 LOCATIONCHANGE
 LOGFONT
@@ -845,10 +851,10 @@ lwin
 LZero
 majortype
 makecab
-MAKELANGID
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
+MAKELANGID
 makepri
 manifestdependency
 MAPPEDTOSAMEKEY
@@ -989,6 +995,8 @@ newdev
 NEWDIALOGSTYLE
 newitem
 newpath
+newplus
+NEWPLUSCONTEXTMENU
 newrow
 newsgroups
 NIF
@@ -1001,7 +1009,10 @@ NOAGGREGATION
 NOASYNC
 NOCLOSEPROCESS
 NOCOALESCE
+NOCOMM
+NOCONFIRMMKDIR
 NOCOPYBITS
+NOCOPYSECURITYATTRIBS
 nodeca
 nodoc
 NODRAWCAPTION
@@ -1009,6 +1020,7 @@ NODRAWICON
 NOINHERITLAYOUT
 NOINTERFACE
 NOLINKINFO
+NOMCX
 NOMINMAX
 NOMIRRORBITMAP
 NOMOVE
@@ -1067,7 +1079,6 @@ oldtheme
 oleaut
 OLECHAR
 onebranch
-OOBEPT
 opencode
 OPENFILENAME
 opensource
@@ -1105,7 +1116,6 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 pathcch
 PATHMUSTEXIST
-Pathto
 PATINVERT
 PATPAINT
 PAUDIO
@@ -1246,8 +1256,6 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 QUNS
-qwertyuiopasdfghjklzxcvbnm
-qwrtyuiopsghjklzxvnm
 raf
 RAII
 RAlt
@@ -1264,7 +1272,6 @@ RECTDESTINATION
 rectp
 RECTSOURCE
 recyclebin
-redirectedfrom
 Redist
 redistributable
 reencode
@@ -1343,8 +1350,6 @@ runas
 rundll
 rungameid
 RUNLEVEL
-runsettings
-runspace
 runtimeclass
 runtimeobject
 runtimepack
@@ -1405,6 +1410,8 @@ SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 shellscalingapi
 SHFILEINFO
+SHFILEOPSTRUCT
+SHGDN
 SHGDNF
 SHGFI
 shinfo
@@ -1412,6 +1419,7 @@ shldisp
 shlobj
 shlwapi
 shmem
+SHNAMEMAPPING
 shobjidl
 SHORTCUTATLEAST
 shortcutcontrol
@@ -1517,7 +1525,7 @@ stringtable
 stringval
 Strm
 Strmiids
-Strret
+strret
 strsafe
 strutil
 sttngs
@@ -1533,6 +1541,7 @@ svchost
 SVGIn
 SVGIO
 svgz
+SVSI
 SWC
 SWFO
 SWP
@@ -1576,7 +1585,6 @@ TDevice
 telem
 telephon
 templatenamespace
-testhost
 testprocess
 TEXCOORD
 TEXTEXTRACTOR
@@ -1601,7 +1609,6 @@ tlb
 tlbimp
 TMPVAR
 TNP
-toggleswitch
 Toolhelp
 toolkitconverters
 Toolset
@@ -1730,6 +1737,7 @@ VSTHRD
 VSTT
 vswhere
 Vtbl
+WANTMAPPINGHANDLE
 WANTPALM
 wbem
 wbemuuid
