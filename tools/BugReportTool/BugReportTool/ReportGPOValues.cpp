@@ -67,4 +67,5 @@ void ReportGPOValues(const std::filesystem::path& tmpDir)
     report << "getAllowExperimentationValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowExperimentationValue()) << std::endl;
     report << "getConfiguredQoiPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiPreviewEnabledValue()) << std::endl;
     report << "getConfiguredQoiThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue()) << std::endl;
+    report << "getAllowedAdvancedPasteOnlineAIModelsValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue()) << std::endl;
 }
