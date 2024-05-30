@@ -99,7 +99,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             if (!window.Process.Responding)
             {
-                subtitleText = "Not Responding";
+                subtitleText = $"{Resources.wox_plugin_windowwalker_Process}: {window.Process.Name} [{Resources.wox_plugin_windowwalker_NotResponding}]";
             }
 
             return subtitleText;
@@ -153,7 +153,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     $"Desktop number: {window.Desktop.Number}\n" +
                     $"Desktop is visible: {window.Desktop.IsVisible}\n" +
                     $"Desktop position: {window.Desktop.Position}\n" +
-                    $"Is AllDesktops view: {window.Desktop.IsAllDesktopsView}";
+                    $"Is AllDesktops view: {window.Desktop.IsAllDesktopsView}\n" +
+                    $"Responding: {window.Process.Responding}";
 
                 return new ToolTipData(window.Title, text);
             }
