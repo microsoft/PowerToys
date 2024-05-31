@@ -225,4 +225,7 @@
   <data name="TermsLink.Text" xml:space="preserve">
     <value>OpenAI Terms</value>
   </data>
+  <data name="OpenAIGpoDisabled" xml:space="preserve">
+    <value>To custom with AI is disabled by your organization</value>
+  </data>
 </root>

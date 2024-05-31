@@ -151,7 +151,7 @@
     <value>Fail to open folder at</value>
   </data>
   <data name="Microsoft_plugin_indexer_plugin_description" xml:space="preserve">
-    <value>Searches files and folders.</value>
+    <value>Searches files and folders</value>
   </data>
   <data name="Microsoft_plugin_indexer_plugin_name" xml:space="preserve">
     <value>Windows Search</value>
