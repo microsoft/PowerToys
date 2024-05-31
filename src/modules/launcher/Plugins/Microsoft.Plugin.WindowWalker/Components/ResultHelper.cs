@@ -92,14 +92,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 subtitleText += $" ({window.Process.ProcessID})";
             }
 
+            if (!window.Process.Responding)
+            {
+                subtitleText += $" [{Resources.wox_plugin_windowwalker_NotResponding}]";
+            }
+
             if (WindowWalkerSettings.Instance.SubtitleShowDesktopName && Main.VirtualDesktopHelperInstance.GetDesktopCount() > 1)
             {
                 subtitleText += $" - {Resources.wox_plugin_windowwalker_Desktop}: {window.Desktop.Name}";
-            }
-
-            if (!window.Process.Responding)
-            {
-                subtitleText += $" [{Resources.wox_plugin_windowwalker_NotResponding}] ";
             }
 
             return subtitleText;
